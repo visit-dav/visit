@@ -16,11 +16,11 @@
     <name>AddOperatorActionUI</name>
     <message>
         <source>Add operator</source>
-        <translation type="unfinished">Ajouter un filtre</translation>
+        <translation>Ajouter un filtre</translation>
     </message>
     <message>
         <source>Add %1 operator</source>
-        <translation type="unfinished">Ajouter le filtre &quot;%1&quot;</translation>
+        <translation>Ajouter le filtre &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -38,11 +38,11 @@
     <name>AddPlotActionUI</name>
     <message>
         <source>Add plot</source>
-        <translation type="unfinished">Ajouter un tracé</translation>
+        <translation>Ajouter un tracé</translation>
     </message>
     <message>
         <source>Add %1 plot</source>
-        <translation type="unfinished">Ajouter un tracé &quot;%1&quot;</translation>
+        <translation>Ajouter un tracé &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -60,11 +60,11 @@
     <name>AddWindowActionUI</name>
     <message>
         <source>Create a new viewer window</source>
-        <translation type="unfinished">Créer une nouvelle fenêtre de visualisation</translation>
+        <translation>Créer une nouvelle fenêtre de visualisation</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouvelle</translation>
+        <translation>Nouvelle</translation>
     </message>
 </context>
 <context>
@@ -82,11 +82,11 @@
     <name>AnimationPlayActionUI</name>
     <message>
         <source>Play</source>
-        <translation type="unfinished">PLay/Défiler</translation>
+        <translation>Play/Défiler</translation>
     </message>
     <message>
         <source>Play animation</source>
-        <translation type="unfinished">Lancer l&apos;animation</translation>
+        <translation>Lancer l&apos;animation</translation>
     </message>
 </context>
 <context>
@@ -104,11 +104,11 @@
     <name>AnimationReversePlayActionUI</name>
     <message>
         <source>Reverse play</source>
-        <translation type="unfinished">Lancer à l&apos;envers</translation>
+        <translation>Lancer à l&apos;envers</translation>
     </message>
     <message>
         <source>Play animation in reverse</source>
-        <translation type="unfinished">Lancer l&apos;animation à l&apos;envers</translation>
+        <translation>Lancer l&apos;animation à l&apos;envers</translation>
     </message>
 </context>
 <context>
@@ -126,11 +126,11 @@
     <name>AnimationStopActionUI</name>
     <message>
         <source>Stop</source>
-        <translation type="unfinished">Stop</translation>
+        <translation>Stop/Arrêt</translation>
     </message>
     <message>
         <source>Stop animation</source>
-        <translation type="unfinished">Arrêter l&apos;animation</translation>
+        <translation>Arrêter l&apos;animation</translation>
     </message>
 </context>
 <context>
@@ -169,11 +169,11 @@
     <name>ChooseCenterOfRotationActionUI</name>
     <message>
         <source>Choose center</source>
-        <translation type="unfinished">Choisir le centre</translation>
+        <translation>Choisir le centre</translation>
     </message>
     <message>
         <source>Choose center of rotation</source>
-        <translation type="unfinished">Choisir un centre de rotation</translation>
+        <translation>Choisir un centre de rotation</translation>
     </message>
 </context>
 <context>
@@ -187,7 +187,7 @@
     <name>ClearAllWindowsActionUI</name>
     <message>
         <source>Clear all windows</source>
-        <translation type="unfinished">Effacer toutes les fenêtres</translation>
+        <translation>Effacer toutes les fenêtres</translation>
     </message>
 </context>
 <context>
@@ -201,7 +201,7 @@
     <name>ClearPickPointsActionUI</name>
     <message>
         <source>Clear pick points</source>
-        <translation type="unfinished">Effacer les points de pioche</translation>
+        <translation>Effacer les points de pioche</translation>
     </message>
 </context>
 <context>
@@ -215,7 +215,7 @@
     <name>ClearReferenceLinesActionUI</name>
     <message>
         <source>Clear reference lines</source>
-        <translation type="unfinished">Effacer les lignes de référence</translation>
+        <translation>Effacer les lignes de référence</translation>
     </message>
 </context>
 <context>
@@ -229,7 +229,7 @@
     <name>ClearWindowActionUI</name>
     <message>
         <source>Clear all plots from this window</source>
-        <translation type="unfinished">Effacer tous les tracés de cette fenêtre</translation>
+        <translation>Effacer tous les tracés de cette fenêtre</translation>
     </message>
 </context>
 <context>
@@ -247,11 +247,11 @@
     <name>CloneWindowActionUI</name>
     <message>
         <source>Clone this window</source>
-        <translation type="unfinished">Dupliquer cette fenêtre</translation>
+        <translation>Fermer cette fenêtre</translation>
     </message>
     <message>
         <source>Clone</source>
-        <translation type="unfinished">Cloner</translation>
+        <translation>Cloner</translation>
     </message>
 </context>
 <context>
@@ -265,7 +265,7 @@
     <name>CopyPlotActionUI</name>
     <message>
         <source>Copy active plots</source>
-        <translation type="unfinished">Dupliquer les tracés actifs</translation>
+        <translation>Copier les tracés actifs</translation>
     </message>
 </context>
 <context>
@@ -334,7 +334,7 @@
     <name>DeleteActivePlotsActionUI</name>
     <message>
         <source>Delete active plots</source>
-        <translation type="unfinished">Supprimer les tracés actifs</translation>
+        <translation>Supprimer les tracés actifs</translation>
     </message>
 </context>
 <context>
@@ -352,11 +352,11 @@
     <name>DeleteWindowActionUI</name>
     <message>
         <source>Delete this window</source>
-        <translation type="unfinished">Supprimer cette fenêtre</translation>
+        <translation>Supprimer cette fenêtre</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished">Supprimer</translation>
+        <translation>Supprimer</translation>
     </message>
 </context>
 <context>
@@ -370,7 +370,7 @@
     <name>DrawPlotsActionUI</name>
     <message>
         <source>Draw plots</source>
-        <translation type="unfinished">Tracer</translation>
+        <translation>Tracer</translation>
     </message>
 </context>
 <context>
@@ -432,55 +432,55 @@
     <name>EnableToolActionUI</name>
     <message>
         <source>Tools</source>
-        <translation type="unfinished">Outils</translation>
+        <translation>Outils</translation>
     </message>
     <message>
         <source>Box</source>
-        <translation type="unfinished">Boîte</translation>
+        <translation>Boîte</translation>
     </message>
     <message>
         <source>Box tool</source>
-        <translation type="unfinished">Outil Boîte</translation>
+        <translation>Outil Boîte</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="unfinished">Ligne</translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Line tool</source>
-        <translation type="unfinished">Outil ligne</translation>
+        <translation>Outil ligne</translation>
     </message>
     <message>
         <source>Plane</source>
-        <translation type="unfinished">Plan</translation>
+        <translation>Plan</translation>
     </message>
     <message>
         <source>Plane tool</source>
-        <translation type="unfinished">Outil plan</translation>
+        <translation>Outil plan</translation>
     </message>
     <message>
         <source>Sphere</source>
-        <translation type="unfinished">Sphère</translation>
+        <translation>Sphère</translation>
     </message>
     <message>
         <source>Sphere tool</source>
-        <translation type="unfinished">Outil sphère</translation>
+        <translation>Outil sphère</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation type="unfinished">Point</translation>
+        <translation>Point</translation>
     </message>
     <message>
         <source>Point tool</source>
-        <translation type="unfinished">Outil point</translation>
+        <translation>Outil point</translation>
     </message>
     <message>
         <source>Axis Restriction</source>
-        <translation type="unfinished">Restriction des axes</translation>
+        <translation>Restriction axe</translation>
     </message>
     <message>
         <source>Axis Restriction tool</source>
-        <translation type="unfinished">Outil de restriction des axes</translation>
+        <translation>Outil de restriction axe</translation>
     </message>
 </context>
 <context>
@@ -498,11 +498,11 @@
     <name>EnableToolbarActionUI</name>
     <message>
         <source>Toolbars</source>
-        <translation type="unfinished">Barres d&apos;outils</translation>
+        <translation>Barres d&apos;outils</translation>
     </message>
     <message>
         <source>Enable toolbars</source>
-        <translation type="unfinished">Activer les barres d&apos;outils</translation>
+        <translation>Activer les barres d&apos;outils</translation>
     </message>
 </context>
 <context>
@@ -516,7 +516,7 @@
     <name>HideActivePlotsActionUI</name>
     <message>
         <source>Hide active plots</source>
-        <translation type="unfinished">Cacher les tracés actifs</translation>
+        <translation>Cacher les tracés actifs</translation>
     </message>
 </context>
 <context>
@@ -530,7 +530,7 @@
     <name>HideToolbarsActionUI</name>
     <message>
         <source>Hide toolbars</source>
-        <translation type="unfinished">Cacher les barres d&apos;outils</translation>
+        <translation>Cacher les barres d&apos;outils</translation>
     </message>
 </context>
 <context>
@@ -544,7 +544,7 @@
     <name>HideToolbarsForAllWindowsActionUI</name>
     <message>
         <source>Hide toolbars (all windows)</source>
-        <translation type="unfinished">Cacher les barres d&apos;outils (toutes les fenêtres)</translation>
+        <translation>Cacher les barres d&apos;outils (toutes les fenêtres)</translation>
     </message>
 </context>
 <context>
@@ -562,11 +562,11 @@
     <name>InvertBackgroundActionUI</name>
     <message>
         <source>Invert background</source>
-        <translation type="unfinished">Inverser la couleur de fond</translation>
+        <translation>Inverser la couleur de fond</translation>
     </message>
     <message>
         <source>Swap background and foreground colors</source>
-        <translation type="unfinished">Inverser les couleurs du fond et du texte</translation>
+        <translation>Inverser les couleurs du fond et du texte</translation>
     </message>
 </context>
 <context>
@@ -603,21 +603,21 @@
     <name>MovieSequenceBTSlide</name>
     <message>
         <source>Slide bottom to top</source>
-        <translation type="alterlegacy">Glisser le bas vers le haut</translation>
+        <translation>Glisser le bas vers le haut</translation>
     </message>
 </context>
 <context>
     <name>MovieSequenceBTWipe</name>
     <message>
         <source>Wipe bottom to top</source>
-        <translation type="new">Balayer de bas en haut</translation>
+        <translation>Balayer de bas en haut</translation>
     </message>
 </context>
 <context>
     <name>MovieSequenceBlock</name>
     <message>
         <source>Block fade</source>
-        <translation type="unfinished">Bloc fondu</translation>
+        <translation>Bloquer le fondu</translation>
     </message>
 </context>
 <context>
@@ -799,7 +799,7 @@
     <name>OperatorNames</name>
     <message>
         <source>Boundary</source>
-        <translation type="guess">Frontière</translation>
+        <translation>Frontière</translation>
     </message>
     <message>
         <source>Box</source>
@@ -807,7 +807,7 @@
     </message>
     <message>
         <source>Clip</source>
-        <translation type="guess">Extrait</translation>
+        <translation>Extrait</translation>
     </message>
     <message>
         <source>Cone</source>
@@ -815,7 +815,7 @@
     </message>
     <message>
         <source>Reduce Connected Components</source>
-        <translation type="alterlegacy">Réduire les composants connectés</translation>
+        <translation>Réduire les composants connectés</translation>
     </message>
     <message>
         <source>Context</source>
@@ -823,19 +823,19 @@
     </message>
     <message>
         <source>CoordSwap</source>
-        <translation type="new">Echanger les coordonnées</translation>
+        <translation>Echanger les coordonnées</translation>
     </message>
     <message>
         <source>CracksClipper</source>
-        <translation type="new">Coupe-fissures</translation>
+        <translation>Coupe-fissures</translation>
     </message>
     <message>
         <source>CreateBonds</source>
-        <translation type="alterlegacy">Créer les liaisons</translation>
+        <translation>Créer les liaisons</translation>
     </message>
     <message>
         <source>Cylinder</source>
-        <translation type="guess">Cylindre</translation>
+        <translation>Cylindre</translation>
     </message>
     <message>
         <source>Decimate</source>
@@ -863,7 +863,7 @@
     </message>
     <message>
         <source>Inverse Ghost Zone</source>
-        <translation type="alterlegacy">Inverser la Zone fantôme</translation>
+        <translation>Inverser la Zone fantôme</translation>
     </message>
     <message>
         <source>Isosurface</source>
@@ -891,19 +891,19 @@
     </message>
     <message>
         <source>Onion Peel</source>
-        <translation type="guess">Pelure d&apos;oignon</translation>
+        <translation>Pelure d&apos;oignon</translation>
     </message>
     <message>
         <source>Probability Density Function</source>
-        <translation type="guess">Fonction de densité de probabilité </translation>
+        <translation>Fonction de densité de probabilité </translation>
     </message>
     <message>
         <source>Project</source>
-        <translation type="guess">Projeter</translation>
+        <translation>Projeter</translation>
     </message>
     <message>
         <source>Reflect</source>
-        <translation type="guess">Refléter</translation>
+        <translation>Refléter</translation>
     </message>
     <message>
         <source>RemoveCells</source>
@@ -951,7 +951,7 @@
     </message>
     <message>
         <source>Threshold</source>
-        <translation type="alterlegacy">Valeur Seuil</translation>
+        <translation>Valeur Seuil</translation>
     </message>
     <message>
         <source>TraceHistory</source>
@@ -971,7 +971,7 @@
     </message>
     <message>
         <source>AMR Dual Grid and Stitch Cells</source>
-        <translation type="new">AMR Grille duale et Cellules de couture</translation>
+        <translation>AMR Grille duale et Cellules de couture</translation>
     </message>
     <message>
         <source>ConnectedComponents</source>
@@ -991,11 +991,11 @@
     </message>
     <message>
         <source>Dual Mesh</source>
-        <translation type="new">Maillage Dual</translation>
+        <translation>Maillage Dual</translation>
     </message>
     <message>
         <source>Edge</source>
-        <translation type="guess">Bordure</translation>
+        <translation>Bordure</translation>
     </message>
     <message>
         <source>Flux</source>
@@ -1003,7 +1003,7 @@
     </message>
     <message>
         <source>MultiresControl</source>
-        <translation type="new">Contrôle multi-résolution</translation>
+        <translation>Contrôle multi-résolution</translation>
     </message>
     <message>
         <source>PersistentParticles</source>
@@ -1011,7 +1011,7 @@
     </message>
     <message>
         <source>SurfaceNormal</source>
-        <translation type="alterlegacy">Normale à la surface</translation>
+        <translation>Normale à la surface</translation>
     </message>
     <message>
         <source>Triangulate Regular Points</source>
@@ -1023,7 +1023,7 @@
     </message>
     <message>
         <source>Extrude</source>
-        <translation type="guess">Extruder</translation>
+        <translation>Extruder</translation>
     </message>
     <message>
         <source>FFT</source>
@@ -1031,11 +1031,11 @@
     </message>
     <message>
         <source>Five Fold Tet Subdvision</source>
-        <translation type="new">Découpage en cinq tétraèdres</translation>
+        <translation>Découpage en cinq tétraèdres</translation>
     </message>
     <message>
         <source>LineSampler</source>
-        <translation type="alterlegacy">Echantillonneur de ligne</translation>
+        <translation>Echantillonneur de ligne</translation>
     </message>
     <message>
         <source>ExtremeValueAnalysis</source>
@@ -1051,7 +1051,7 @@
     </message>
     <message>
         <source>ModelFit</source>
-        <translation type="alterlegacy">Ajustement du modèle</translation>
+        <translation>Ajustement du modèle</translation>
     </message>
     <message>
         <source>Stagger</source>
@@ -1059,7 +1059,7 @@
     </message>
     <message>
         <source>ToroidalPoloidalProjection</source>
-        <translation type="alterlegacy">Projection poloïdale/torique</translation>
+        <translation>Projection poloïdale/torique</translation>
     </message>
     <message>
         <source>Cartographic Projection</source>
@@ -1075,7 +1075,7 @@
     </message>
     <message>
         <source>LCS</source>
-        <translation type="alterlegacy">Structures cohérentes lagrangiennes (LCS)</translation>
+        <translation>Structures cohérentes lagrangiennes (LCS)</translation>
     </message>
     <message>
         <source>ModelBasedClustering</source>
@@ -1099,19 +1099,19 @@
     </message>
     <message>
         <source>StatisticalTrends</source>
-        <translation type="new">Tendances statistique</translation>
+        <translation>Tendances statistique</translation>
     </message>
     <message>
         <source>Axis Aligned Slice 4D</source>
-        <translation type="new">Tranche alignée sur un axe 4D</translation>
+        <translation>Tranche alignée sur un axe 4D</translation>
     </message>
     <message>
         <source>EllipsoidSlice</source>
-        <translation type="guess">Ellipsoïdale</translation>
+        <translation>Ellipsoïdale</translation>
     </message>
     <message>
         <source>Explode</source>
-        <translation type="guess">Eclater</translation>
+        <translation>Eclater</translation>
     </message>
     <message>
         <source>LimitCycle</source>
@@ -1119,11 +1119,11 @@
     </message>
     <message>
         <source>Radial Resample</source>
-        <translation type="guess">Rééchantillonage radial</translation>
+        <translation>Rééchantillonage radial</translation>
     </message>
     <message>
         <source>Remap</source>
-        <translation type="guess">Réaffecter</translation>
+        <translation>Réaffecter</translation>
     </message>
     <message>
         <source>SPH Resample</source>
@@ -1131,14 +1131,18 @@
     </message>
     <message>
         <source>Tessellate</source>
-        <translation type="guess">Paver (tessellation)</translation>
+        <translation>Paver (tessellation)</translation>
+    </message>
+    <message>
+        <source>ExtrudeStacked</source>
+        <translation type="unfinished">Extruder la pile</translation>
     </message>
 </context>
 <context>
     <name>PlotNames</name>
     <message>
         <source>Boundary</source>
-        <translation type="guess">Matériaux interfaces</translation>
+        <translation>Matériaux interfaces</translation>
     </message>
     <message>
         <source>Contour</source>
@@ -1150,7 +1154,7 @@
     </message>
     <message>
         <source>Filled Boundary</source>
-        <translation type="guess">Matériaux en volume</translation>
+        <translation>Matériaux en volume</translation>
     </message>
     <message>
         <source>Histogram</source>
@@ -1174,7 +1178,7 @@
     </message>
     <message>
         <source>Pseudocolor</source>
-        <translation type="guess">Pseudo-couleur</translation>
+        <translation>Pseudo-couleur</translation>
     </message>
     <message>
         <source>Scatter</source>
@@ -1182,7 +1186,7 @@
     </message>
     <message>
         <source>Spreadsheet</source>
-        <translation type="guess">Tableur</translation>
+        <translation>Tableur</translation>
     </message>
     <message>
         <source>Streamline</source>
@@ -1226,7 +1230,7 @@
     </message>
     <message>
         <source>Well Bore</source>
-        <translation type="guess">Puits de forage</translation>
+        <translation>Puits de forage</translation>
     </message>
 </context>
 <context>
@@ -1234,21 +1238,21 @@
     <message>
         <source>hidden</source>
         <comment>QvisPlotListBoxItem</comment>
-        <translation type="alterlegacy">cacher</translation>
+        <translation>cacher</translation>
     </message>
     <message>
         <source>Reopening </source>
-        <translation type="alterlegacy">Réouverture en cours</translation>
+        <translation>Réouverture en cours</translation>
     </message>
     <message>
         <source> on </source>
         <comment>Opening on host</comment>
-        <translation type="alterlegacy"> sur </translation>
+        <translation type="vanished"> sur </translation>
     </message>
     <message>
         <source>Opening </source>
         <comment>Display a message while we open the file.</comment>
-        <translation type="alterlegacy">Ouverture en cours </translation>
+        <translation type="vanished">Ouverture en cours </translation>
     </message>
     <message>
         <source>VisIt could not open the file %1.
@@ -1256,7 +1260,7 @@
 The metadata server returned the following message:
 
 %2</source>
-        <translation type="alterlegacy">Visit n&apos;a pas pu ouvrir le fichier %1.
+        <translation>Visit n&apos;a pas pu ouvrir le fichier %1.
 
 Le serveur de méta données a retourné le message suivant :
 
@@ -1265,7 +1269,7 @@ Le serveur de méta données a retourné le message suivant :
     <message>
         <source>The value(s) for &apos;%1&apos; were invalid. Resetting to the last good value(s) of %2.</source>
         <comment>ResettingError</comment>
-        <translation type="alterlegacy">Les valeurs de &apos;%1&apos; ne sont pas valables, remise des dernières bonnes valeurs de %2.</translation>
+        <translation>Les valeurs de &apos;%1&apos; ne sont pas valables, remise des dernières bonnes valeurs de %2.</translation>
     </message>
     <message>
         <source>Use selection [%1]</source>
@@ -1284,11 +1288,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source> on </source>
-        <translation type="new"> sur </translation>
+        <translation> sur </translation>
     </message>
     <message>
         <source>Opening </source>
-        <translation type="new">Ouverture en cours </translation>
+        <translation>Ouverture en cours </translation>
     </message>
 </context>
 <context>
@@ -1306,11 +1310,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     <name>QvisAMRStitchCellWindow</name>
     <message>
         <source>Create cells of type</source>
-        <translation type="new">Créer des cellules de type</translation>
+        <translation>Créer des cellules de type</translation>
     </message>
     <message>
         <source>DualGridAndStitchCells</source>
-        <translation type="new">Grille Duale et Cellules de couture</translation>
+        <translation>Grille Duale et Cellules de couture</translation>
     </message>
     <message>
         <source>DualGrid</source>
@@ -1318,7 +1322,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>StitchCells</source>
-        <translation type="new">Cellules de couture</translation>
+        <translation>Cellules de couture</translation>
     </message>
     <message>
         <source>Add case number</source>
@@ -1357,7 +1361,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Play once</source>
-        <translation type="alterlegacy">Une seule fois</translation>
+        <translation>Une seule fois</translation>
     </message>
     <message>
         <source>Swing</source>
@@ -1384,7 +1388,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     <name>QvisAnnotationObjectInterface</name>
     <message>
         <source>The %1 value was invalid. Resetting to the last good value.</source>
-        <translation type="alterlegacy">La valeur %1 est invalide. La valeur précédente a été rétablie.</translation>
+        <translation>La valeur %1 est invalide. La valeur précédente a été rétablie.</translation>
     </message>
 </context>
 <context>
@@ -1399,11 +1403,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>No annotations</source>
-        <translation type="new">Aucune annotation</translation>
+        <translation>Aucune annotation</translation>
     </message>
     <message>
         <source>Database</source>
-        <translation type="alterlegacy">Base de données</translation>
+        <translation>Base de données</translation>
     </message>
     <message>
         <source>File</source>
@@ -1427,7 +1431,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Path expansion</source>
-        <translation type="alterlegacy">Nom du chemin</translation>
+        <translation>Nom du chemin</translation>
     </message>
     <message>
         <source>User information</source>
@@ -1443,11 +1447,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>X axis</source>
-        <translation type="new">Abscisses (X)</translation>
+        <translation>Abscisses (X)</translation>
     </message>
     <message>
         <source>Y axis</source>
-        <translation type="new">Ordonnées (Y)</translation>
+        <translation>Ordonnées (Y)</translation>
     </message>
     <message>
         <source>Auto scale label values</source>
@@ -1487,7 +1491,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Bottom-left</source>
-        <translation type="new">En bas à gauche</translation>
+        <translation>En bas à gauche</translation>
     </message>
     <message>
         <source>All axes</source>
@@ -1495,7 +1499,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Show tick marks</source>
-        <translation type="guess">Afficher les marques</translation>
+        <translation>Afficher les marques</translation>
     </message>
     <message>
         <source>Line width</source>
@@ -1511,11 +1515,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Show bounding box</source>
-        <translation type="alterlegacy">Afficher la boîte englobante</translation>
+        <translation>Afficher la boîte englobante</translation>
     </message>
     <message>
         <source>Z axis</source>
-        <translation type="new">Profondeur (Z)</translation>
+        <translation>Profondeur (Z)</translation>
     </message>
     <message>
         <source>Closest triad</source>
@@ -1539,7 +1543,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Axis type</source>
-        <translation type="alterlegacy">Type d&apos;axe</translation>
+        <translation>Type d&apos;axe</translation>
     </message>
     <message>
         <source>Colors</source>
@@ -1575,19 +1579,19 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Top to bottom</source>
-        <translation type="alterlegacy">De haut en bas</translation>
+        <translation>De haut en bas</translation>
     </message>
     <message>
         <source>Bottom to top</source>
-        <translation type="alterlegacy">De bas en haut</translation>
+        <translation>De bas en haut</translation>
     </message>
     <message>
         <source>Left to right</source>
-        <translation type="alterlegacy">De gauche à droite</translation>
+        <translation>De gauche à droite</translation>
     </message>
     <message>
         <source>Right to left</source>
-        <translation type="alterlegacy">De droite à gauche</translation>
+        <translation>De droite à gauche</translation>
     </message>
     <message>
         <source>Radial</source>
@@ -1612,7 +1616,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     <message>
         <source>The local file must be accessible to the compute engine in order to be used in scalable rendering mode.</source>
         <translatorcomment>Le fichier locale doit être accessible au moteur de calcul pour pouvoir utiliser le mode de rendu d&apos;échelle.</translatorcomment>
-        <translation type="guess">Le fichier local doit être accessible au moteur pour être utilisé en mode rendu scalable.</translation>
+        <translation>Le fichier local doit être accessible au moteur pour être utilisé en mode rendu scalable.</translation>
     </message>
     <message>
         <source>Repetitions in X</source>
@@ -1652,7 +1656,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Time scale factor</source>
-        <translation type="alterlegacy">Facteur d&apos;échelle de temps</translation>
+        <translation>Facteur d&apos;échelle de temps</translation>
     </message>
     <message>
         <source>Time offset</source>
@@ -1660,7 +1664,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Array</source>
-        <translation type="alterlegacy">Tableau</translation>
+        <translation>Tableau</translation>
     </message>
     <message>
         <source>Axes</source>
@@ -1676,66 +1680,66 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Set bounding box location manually</source>
-        <translation type="alterlegacy">Position manuellement la boîte englobante</translation>
+        <translation>Position manuellement la boîte englobante</translation>
     </message>
     <message>
         <source>Bounding box</source>
-        <translation type="guess">Boîte englobante</translation>
+        <translation>Boîte englobante</translation>
     </message>
     <message>
         <source>Triad</source>
-        <translation type="guess">Trièdre</translation>
+        <translation>Trièdre</translation>
     </message>
     <message>
         <source>Set triad manually</source>
-        <translation type="guess">Définir le trièdre manuellement</translation>
+        <translation>Définir le trièdre manuellement</translation>
     </message>
     <message>
         <source>Select color</source>
-        <translation type="guess">Choisir couleur</translation>
+        <translation>Choisir couleur</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="guess">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Arial</source>
-        <translation type="correct">Arial</translation>
+        <translation>Arial</translation>
     </message>
     <message>
         <source>Courier</source>
-        <translation type="correct">Courier</translation>
+        <translation>Courier</translation>
     </message>
     <message>
         <source>Times</source>
-        <translation type="guess">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Font</source>
-        <translation type="guess">Police</translation>
+        <translation>Police</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation type="correct">Gras</translation>
+        <translation>Gras</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation type="correct">Italique</translation>
+        <translation>Italique</translation>
     </message>
 </context>
 <context>
     <name>QvisAppearanceWindow</name>
     <message>
         <source>GUI background</source>
-        <translation type="guess">Fond de l&apos;Interface Graphique</translation>
+        <translation>Fond de l&apos;Interface Graphique</translation>
     </message>
     <message>
         <source>GUI foreground</source>
-        <translation type="guess">Texte de l&apos;Interface Graphique</translation>
+        <translation>Texte de l&apos;Interface Graphique</translation>
     </message>
     <message>
         <source>GUI style</source>
-        <translation type="guess">Style de l&apos;Interface Graphique</translation>
+        <translation>Style de l&apos;Interface Graphique</translation>
     </message>
     <message>
         <source>Vertical</source>
@@ -1747,11 +1751,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>GUI orientation</source>
-        <translation type="guess">Orientation de l&apos;Interface Graphique</translation>
+        <translation>Orientation de l&apos;Interface Graphique</translation>
     </message>
     <message>
         <source>GUI font</source>
-        <translation type="guess">Police de l&apos;Interface Graphique</translation>
+        <translation>Police de l&apos;Interface Graphique</translation>
     </message>
     <message>
         <source>The background color and foreground color will not be changed because the selected colors are too similar and using them would make it too difficult to use VisIt.</source>
@@ -1809,19 +1813,19 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Major minimum</source>
-        <translation type="alterlegacy">Limiter le minimum</translation>
+        <translation>Limiter le minimum</translation>
     </message>
     <message>
         <source>Major maximum</source>
-        <translation type="alterlegacy">Limiter le maximum</translation>
+        <translation>Limiter le maximum</translation>
     </message>
     <message>
         <source>Minor spacing</source>
-        <translation type="alterlegacy">Espacement min</translation>
+        <translation>Espacement min</translation>
     </message>
     <message>
         <source>Major spacing</source>
-        <translation type="alterlegacy">Espacement max</translation>
+        <translation>Espacement max</translation>
     </message>
     <message>
         <source>Show grid</source>
@@ -1848,11 +1852,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Materials</source>
-        <translation type="new">Matériaux</translation>
+        <translation>Matériaux</translation>
     </message>
     <message>
         <source>Subsets</source>
-        <translation type="alterlegacy">Sous ensembles</translation>
+        <translation>Sous ensembles</translation>
     </message>
     <message>
         <source>Species</source>
@@ -1899,7 +1903,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Elevé</translation>
+        <translation>Elevé</translation>
     </message>
 </context>
 <context>
@@ -1914,15 +1918,15 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Boundary colors</source>
-        <translation type="new">Couleurs des frontières</translation>
+        <translation>Couleurs des frontières</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="new">Table de couleur</translation>
+        <translation>Table de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation type="new">Unique</translation>
+        <translation>Unique</translation>
     </message>
     <message>
         <source>Multiple</source>
@@ -1930,7 +1934,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Boundaries</source>
-        <translation type="alterlegacy">Frontières</translation>
+        <translation>Frontières</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -1950,11 +1954,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Fast</source>
-        <translation type="new">Rapide</translation>
+        <translation>Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="new">Elevé</translation>
+        <translation>Elevé</translation>
     </message>
     <message>
         <source>Options</source>
@@ -1978,7 +1982,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Lines</source>
-        <translation type="new">Traits</translation>
+        <translation>Traits</translation>
     </message>
 </context>
 <context>
@@ -2040,23 +2044,23 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Data level comparisons</source>
-        <translation type="guess">Comparaisons au niveau des données</translation>
+        <translation>Comparaisons au niveau des données</translation>
     </message>
     <message>
         <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
-        <translation type="guess">Les évaluations de champ entre maillages (CMFE) prennent un champ d&apos;un maillage donneur et placent ce champ sur un maillage cible. Sélectionner le type d&apos;évaluation à configurer :</translation>
+        <translation>Les évaluations de champ entre maillages (CMFE) prennent un champ d&apos;un maillage donneur et placent ce champ sur un maillage cible. Sélectionner le type d&apos;évaluation à configurer :</translation>
     </message>
     <message>
         <source>Between different time slices on the same mesh</source>
-        <translation type="guess">Entre différentes tranches de temps sur le même maillage</translation>
+        <translation>Entre différentes tranches de temps sur le même maillage</translation>
     </message>
     <message>
         <source>Donor &amp; Target Setup</source>
-        <translation type="guess">Configuration du donneur et de la cible</translation>
+        <translation>Configuration du donneur et de la cible</translation>
     </message>
     <message>
         <source>Which mesh should be used as the evaluation target? What is the desired donor field?</source>
-        <translation type="guess">Quel maillage utiliser comme évaluation de destination ? Quel est le champ source désiré ?</translation>
+        <translation>Quel maillage utiliser comme évaluation de destination ? Quel est le champ source désiré ?</translation>
     </message>
     <message>
         <source>Target mesh:</source>
@@ -2072,11 +2076,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Specify donor time slice</source>
-        <translation type="guess">Spécifier l&apos;intervalle de temps du donneur </translation>
+        <translation>Spécifier l&apos;intervalle de temps du donneur </translation>
     </message>
     <message>
         <source>Which time slice do you want to extract data from?</source>
-        <translation type="guess">De quelle tranche de temps voulez-vous extraire des données ?</translation>
+        <translation>De quelle tranche de temps voulez-vous extraire des données ?</translation>
     </message>
     <message>
         <source>&lt;u&gt;Absolute versus relative time&lt;/u&gt;</source>
@@ -2146,7 +2150,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Connectivity-based CMFE</source>
-        <translation type="new">CMFE basé sur la la connectivité</translation>
+        <translation>CMFE basé sur la la connectivité</translation>
     </message>
     <message>
         <source>The value at index &apos;i&apos; of the target is assigned</source>
@@ -2158,11 +2162,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>but requires that the meshes are congruent.</source>
-        <translation type="new">mais exige que les maillages soient conformes.</translation>
+        <translation>mais exige que les maillages soient conformes.</translation>
     </message>
     <message>
         <source>Position-based CMFE</source>
-        <translation type="new">CMFE basé sur la position</translation>
+        <translation>CMFE basé sur la position</translation>
     </message>
     <message>
         <source>The value at index &apos;i&apos; from the target is evaluated</source>
@@ -2178,7 +2182,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>efficient, but is robust and works on non-congruent meshes.</source>
-        <translation type="new">efficace, mais c&apos;est robuste et ça fonctionne sur les maillages non conformes.</translation>
+        <translation>efficace, mais c&apos;est robuste et ça fonctionne sur les maillages non conformes.</translation>
     </message>
     <message>
         <source>&lt;u&gt;Handling for non-overlapping regions&lt;/u&gt;</source>
@@ -2198,7 +2202,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>How do you want to use your new CMFE expression?  What is its name?</source>
-        <translation type="new">Comment voulez-vous utiliser votre nouvelle expression CMFE ? Quel est son nom ?</translation>
+        <translation>Comment voulez-vous utiliser votre nouvelle expression CMFE ? Quel est son nom ?</translation>
     </message>
     <message>
         <source>Name of expression</source>
@@ -2238,19 +2242,19 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Between two or more meshes in a single database</source>
-        <translation type="guess">Entre deux ou plusieurs maillages dans une seule base de données</translation>
+        <translation>Entre deux ou plusieurs maillages dans une seule base de données</translation>
     </message>
     <message>
         <source>Between meshes in two or more separate databases</source>
-        <translation type="guess">Entre les maillages de deux ou plusieurs bases de données distinctes</translation>
+        <translation>Entre les maillages de deux ou plusieurs bases de données distinctes</translation>
     </message>
     <message>
         <source>Add donor</source>
-        <translation type="guess">Ajouter une source (un donneur)</translation>
+        <translation>Ajouter une source (un donneur)</translation>
     </message>
     <message>
         <source>Delete donor</source>
-        <translation type="guess">Effacer la source (donneur)</translation>
+        <translation>Effacer la source (donneur)</translation>
     </message>
     <message>
         <source>Delete all donors</source>
@@ -2282,11 +2286,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Minimum of values</source>
-        <translation type="guess">Minimum des valeurs</translation>
+        <translation>Minimum des valeurs</translation>
     </message>
     <message>
         <source>Maximum of values</source>
-        <translation type="guess">Maximum des valeurs</translation>
+        <translation>Maximum des valeurs</translation>
     </message>
 </context>
 <context>
@@ -2372,7 +2376,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Lambert Azimuthal Equal Area</source>
-        <translation type="alterlegacy">Aire égale azimutale de Lambert</translation>
+        <translation>Aire égale azimutale de Lambert</translation>
     </message>
     <message>
         <source>Lambert Conformal Conic</source>
@@ -2422,7 +2426,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <name>QvisCinemaWizard</name>
     <message>
         <source>Save Cinema wizard</source>
-        <translation type="guess">Sauver les préférences de l&apos;assistant de réalisation de film</translation>
+        <translation>Sauver les préférences de l&apos;assistant de réalisation de film</translation>
     </message>
     <message>
         <source>&lt;a href=&quot;http://www.cinemascience.org&quot;&gt;www.cinemascience.org&lt;/a&gt;</source>
@@ -2430,27 +2434,27 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Cinema settings</source>
-        <translation type="guess">Préférences cinématographiques</translation>
+        <translation>Préférences cinématographiques</translation>
     </message>
     <message>
         <source>Set Cinema export options.</source>
-        <translation type="guess">Positionner les options d&apos;exportation film</translation>
+        <translation>Positionner les options d&apos;exportation film</translation>
     </message>
     <message>
         <source>Database settings</source>
-        <translation type="guess">Préférences de base de donnée (plugin)</translation>
+        <translation>Préférences de base de donnée (plugin)</translation>
     </message>
     <message>
         <source>File name</source>
-        <translation type="correct">Nom du fichier</translation>
+        <translation>Nom du fichier</translation>
     </message>
     <message>
         <source>Specification</source>
-        <translation type="guess">Spécification</translation>
+        <translation>Spécification</translation>
     </message>
     <message>
         <source>The specification determines the type of Cinema database that will be created.</source>
-        <translation type="guess">La spécification détermine le type de base de donnée cinématographique qui sera créé</translation>
+        <translation>La spécification détermine le type de base de donnée cinématographique qui sera créé</translation>
     </message>
     <message>
         <source>A</source>
@@ -2466,79 +2470,79 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Image settings</source>
-        <translation type="guess">Réglages de l&apos;image</translation>
+        <translation>Réglages de l&apos;image</translation>
     </message>
     <message>
         <source>File format</source>
-        <translation type="guess">Format de fichier</translation>
+        <translation>Format de fichier</translation>
     </message>
     <message>
         <source>Create composite images</source>
-        <translation type="guess">Créer des images composites</translation>
+        <translation>Créer des images composites</translation>
     </message>
     <message>
         <source>A composite image consists of data files containing luminance, depth, and value data.</source>
-        <translation type="guess">Une image composite est constituée de fichiers contenant la luminance, la profondeur et des données de valeur</translation>
+        <translation>Une image composite est constituée de fichiers contenant la luminance, la profondeur et des données de valeur</translation>
     </message>
     <message>
         <source>Use screen capture</source>
-        <translation type="guess">Utiliser la capture d&apos;écran</translation>
+        <translation>Utiliser la capture d&apos;écran</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="correct">Largeur</translation>
+        <translation>Largeur</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation type="correct">Hauteur</translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>Camera</source>
-        <translation type="guess">Caméra</translation>
+        <translation>Caméra</translation>
     </message>
     <message>
         <source>Camera type</source>
-        <translation type="guess">Type de caméra</translation>
+        <translation>Type de caméra</translation>
     </message>
     <message>
         <source>Phi</source>
-        <translation type="correct">Phi</translation>
+        <translation>Phi</translation>
     </message>
     <message>
         <source>Theta</source>
-        <translation type="correct">Theta</translation>
+        <translation>Theta</translation>
     </message>
     <message>
         <source>Choose length</source>
-        <translation type="guess">Choix de la longueur</translation>
+        <translation>Choix de la longueur</translation>
     </message>
     <message>
         <source>Choose start/end frame and stride.</source>
-        <translation type="guess">Choisir début/fin numéro image et pas</translation>
+        <translation>Choisir début/fin numéro image et pas</translation>
     </message>
     <message>
         <source>Frame start</source>
-        <translation type="guess">Image de début</translation>
+        <translation>Image de début</translation>
     </message>
     <message>
         <source>Frame end</source>
-        <translation type="guess">Image de fin</translation>
+        <translation>Image de fin</translation>
     </message>
     <message>
         <source>Frame stride</source>
-        <translation type="new">Ecrire une image sur (1=toutes) :</translation>
+        <translation>Ecrire une image sur (1=toutes) :</translation>
     </message>
     <message>
         <source>File location is not writable.</source>
-        <translation type="guess">Il n&apos;st pas possible d&apos;écrire le fichier à cet emplacement</translation>
+        <translation>Il n&apos;st pas possible d&apos;écrire le fichier à cet emplacement</translation>
     </message>
     <message>
         <source>Save File</source>
-        <translation type="guess">Sauver le fichier</translation>
+        <translation>Sauver le fichier</translation>
     </message>
     <message>
         <source>Cinema database (*.cdb)</source>
-        <translation type="guess">Base de donnée cinématographique (*.cdb)</translation>
+        <translation>Base de donnée cinématographique (*.cdb)</translation>
     </message>
 </context>
 <context>
@@ -2565,11 +2569,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Clip parameters</source>
-        <translation type="guess">Paramètres d&apos;extraction</translation>
+        <translation>Paramètres d&apos;extraction</translation>
     </message>
     <message>
         <source>Inverse</source>
-        <translation type="alterlegacy">Inverser</translation>
+        <translation>Inverser</translation>
     </message>
     <message>
         <source>Plane tool controls:</source>
@@ -2613,26 +2617,26 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Plane 1 Normal</source>
-        <translation type="alterlegacy">Plan 1 normale</translation>
+        <translation>Plan 1 normale</translation>
     </message>
     <message>
         <source>Plane 2 Normal</source>
-        <translation type="alterlegacy">Plan 2 normale</translation>
+        <translation>Plan 2 normale</translation>
     </message>
     <message>
         <source>Plane 3 Normal</source>
-        <translation type="alterlegacy">Plan 3 normale</translation>
+        <translation>Plan 3 normale</translation>
     </message>
     <message>
         <source>Crinkle clip</source>
-        <translation type="guess">Extrait gondolé</translation>
+        <translation>Extrait gondolé</translation>
     </message>
 </context>
 <context>
     <name>QvisColorManagerWidget</name>
     <message>
         <source>Material</source>
-        <translation type="guess">Matériau</translation>
+        <translation>Matériau</translation>
     </message>
     <message>
         <source>Color</source>
@@ -2654,14 +2658,14 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <name>QvisColorTableWidget</name>
     <message>
         <source>Invert</source>
-        <translation type="guess">Inverser</translation>
+        <translation>Inverser</translation>
     </message>
 </context>
 <context>
     <name>QvisColorTableWindow</name>
     <message>
         <source>Active color table</source>
-        <translation type="alterlegacy">Table de couleur active</translation>
+        <translation type="vanished">Table de couleur active</translation>
     </message>
     <message>
         <source>Continuous</source>
@@ -2673,7 +2677,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Manager</source>
-        <translation type="guess">Gestionnaire</translation>
+        <translation>Gestionnaire</translation>
     </message>
     <message>
         <source>New</source>
@@ -2701,7 +2705,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Color table type</source>
-        <translation type="alterlegacy">Type de table de couleur</translation>
+        <translation>Type de table de couleur</translation>
     </message>
     <message>
         <source>Align</source>
@@ -2709,7 +2713,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Equal</source>
-        <translation type="guess">Égaliser</translation>
+        <translation>Égaliser</translation>
     </message>
     <message>
         <source>Red</source>
@@ -2725,7 +2729,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>The color table </source>
-        <translation type="alterlegacy">La table de couleur</translation>
+        <translation>La table de couleur</translation>
     </message>
     <message>
         <source> is already in the color table list. You must provide a unique name for the new color table before it can be added.</source>
@@ -2733,7 +2737,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Show index hints</source>
-        <translation type="guess">Afficher les conseils d&apos;index</translation>
+        <translation>Afficher les conseils d&apos;index</translation>
     </message>
     <message>
         <source>Alpha</source>
@@ -2757,11 +2761,83 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Group tables by Category</source>
-        <translation type="guess">Groupes les tableaux par catégorie</translation>
+        <translation type="vanished">Groupes les tableaux par catégorie</translation>
     </message>
     <message>
         <source>Category</source>
-        <translation type="correct">Catégorie</translation>
+        <translation type="vanished">Catégorie</translation>
+    </message>
+    <message>
+        <source>Default Color Table</source>
+        <translation>Tableau de couleur par défaut</translation>
+    </message>
+    <message>
+        <source>Select All Tags</source>
+        <translation>Sélectionner toutes les balises</translation>
+    </message>
+    <message>
+        <source>Colortables must match ANY selected tag</source>
+        <translation>Les tableaux de couleur doivent correspondre à UNE QUELCONQUE des balises choisies</translation>
+    </message>
+    <message>
+        <source>Colortables must match EVERY selected tag</source>
+        <translation>Les tableaux de couleur doivent correspondre à TOUTES les balises choisies</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Activé</translation>
+    </message>
+    <message>
+        <source>Tag Name</source>
+        <translation>Nom de la balise</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Rechercher</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>Balises</translation>
+    </message>
+    <message>
+        <source>Tag Editor</source>
+        <translation>Editeur de balise</translation>
+    </message>
+    <message>
+        <source>Add/Remove Tag</source>
+        <translation>Ajouter/Enlever une balise</translation>
+    </message>
+    <message>
+        <source> is built-in. You cannot edit a built-in color table.</source>
+        <translation> est intégré en dur. Vous ne pouvez pas éditer un tableau de couleur en dur dans VisIt.</translation>
+    </message>
+    <message>
+        <source>Not able to delete a color table; there are no color tables to delete.</source>
+        <translation>Incapable de supprimer un tableau de couleur ; il n'y a pas de tableau de couleur à supprimer</translation>
+    </message>
+    <message>
+        <source> is built-in. You cannot delete a built-in color table.</source>
+        <translation>est intégré en dur. Vous ne pouvez pas supprimer un tableau de couleur en dur dans VisIt.</translation>
+    </message>
+    <message>
+        <source>This is the last Continuous Color Table. There must be at least one Continuous Color Table, so this Color Table will not be deleted.</source>
+        <translation type="unfinished">Il s'agit de la dernière table de couleurs continue. Il doit y avoir au moins une table de couleurs continue, cette table de couleurs ne sera donc pas supprimée.</translation>
+    </message>
+    <message>
+        <source>This is the last Discrete Color Table. There must be at least one Discrete Color Table, so this Color Table will not be deleted.</source>
+        <translation type="unfinished">Il s'agit de la dernière table de couleurs discrètes. Il doit y avoir au moins une table de couleurs discrète, cette table de couleurs ne sera donc pas supprimée.</translation>
+    </message>
+    <message>
+        <source>No color table selected; cannot delete.</source>
+        <translation type="unfinished">Aucune table de couleurs sélectionnée ; Impossible de suprimer.</translation>
+    </message>
+    <message>
+        <source> is built-in. You cannot export a built-in color table.</source>
+        <translation type="unfinished">est intégré en dur. Vous ne pouvez pas exporter une table de couleurs intégrée.</translation>
+    </message>
+    <message>
+        <source>Tag Editing WARNING: </source>
+        <translation type="unfinished">Modification des balises AVERTISSEMENT :</translation>
     </message>
 </context>
 <context>
@@ -2776,7 +2852,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Start recording commands</source>
-        <translation type="guess">Commencer les commandes d&apos;enregistrement</translation>
+        <translation>Commencer les commandes d&apos;enregistrement</translation>
     </message>
     <message>
         <source>Pause</source>
@@ -2784,7 +2860,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Pause recording commands</source>
-        <translation type="guess">Mettre en pause les commandes d&apos;enregistrement</translation>
+        <translation>Mettre en pause les commandes d&apos;enregistrement</translation>
     </message>
     <message>
         <source>Stop</source>
@@ -2792,7 +2868,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Stop recording commands</source>
-        <translation type="guess">Arrêter les commandes d&apos;enregistrement</translation>
+        <translation>Arrêter les commandes d&apos;enregistrement</translation>
     </message>
     <message>
         <source>Active tab</source>
@@ -2808,11 +2884,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Store commands in</source>
-        <translation type="guess">Enregistrer les commandes dans</translation>
+        <translation>Enregistrer les commandes dans</translation>
     </message>
     <message>
         <source>Append commands to existing text</source>
-        <translation type="guess">Ajouter les commandes au texte déjà existant</translation>
+        <translation>Ajouter les commandes au texte déjà existant</translation>
     </message>
     <message>
         <source>Execute</source>
@@ -2847,7 +2923,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Reverse</source>
-        <translation type="alterlegacy">Inverser</translation>
+        <translation>Inverser</translation>
     </message>
 </context>
 <context>
@@ -2890,7 +2966,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Cone Length</source>
-        <translation type="alterlegacy">Longueur du cône</translation>
+        <translation>Longueur du cône</translation>
     </message>
 </context>
 <context>
@@ -2919,7 +2995,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Use the primary variable if it is below </source>
-        <translation type="alterlegacy">Utiliser la variable primaire si elle est en dessous</translation>
+        <translation>Utiliser la variable primaire si elle est en dessous</translation>
     </message>
     <message>
         <source>Context Variable</source>
@@ -2927,15 +3003,15 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Cutoff for context variable</source>
-        <translation type="alterlegacy">Seuil pour la variable de contexte</translation>
+        <translation>Seuil pour la variable de contexte</translation>
     </message>
     <message>
         <source>Map values below the cutoff to </source>
-        <translation type="alterlegacy">Assigner les valeurs sous le seuil à </translation>
+        <translation>Assigner les valeurs sous le seuil à </translation>
     </message>
     <message>
         <source>Map values above the cutoff to </source>
-        <translation type="alterlegacy">Assigner les valeurs au dessus du seuil à </translation>
+        <translation>Assigner les valeurs au dessus du seuil à </translation>
     </message>
 </context>
 <context>
@@ -2950,11 +3026,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Contour colors</source>
-        <translation type="alterlegacy">Couleurs de bord</translation>
+        <translation>Couleurs de bord</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="alterlegacy">Table des couleurs</translation>
+        <translation>Table des couleurs</translation>
     </message>
     <message>
         <source>Single</source>
@@ -2982,7 +3058,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Select by</source>
-        <translation type="alterlegacy">Choisir par</translation>
+        <translation>Choisir par</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -3014,7 +3090,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>VisIt requires at least one contour.</source>
-        <translation type="alterlegacy">VisIt nécessite au moins un contour.</translation>
+        <translation>VisIt nécessite au moins un contour.</translation>
     </message>
     <message>
         <source>VisIt will not allow more than %1 contours.</source>
@@ -3050,18 +3126,18 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Lines</source>
-        <translation type="correct">Lignes</translation>
+        <translation>Lignes</translation>
     </message>
 </context>
 <context>
     <name>QvisCoordSwapWindow</name>
     <message>
         <source>New Coordinate 3</source>
-        <translation type="alterlegacy">Nouvelle coordonnée 3</translation>
+        <translation>Nouvelle coordonnée 3</translation>
     </message>
     <message>
         <source>New Coordinate 1</source>
-        <translation type="alterlegacy">Nouvelle coordonnée 1</translation>
+        <translation>Nouvelle coordonnée 1</translation>
     </message>
     <message>
         <source>Coord1</source>
@@ -3077,7 +3153,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>New Coordinate 2</source>
-        <translation type="alterlegacy">Nouvelle coordonnée 2</translation>
+        <translation>Nouvelle coordonnée 2</translation>
     </message>
 </context>
 <context>
@@ -3123,7 +3199,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Maximum bonds per atom</source>
-        <translation type="new">Nombre maximum de liaisons par atome</translation>
+        <translation>Nombre maximum de liaisons par atome</translation>
     </message>
     <message>
         <source>Note: first match is taken, so order is significant</source>
@@ -3183,7 +3259,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>The value for maxBonds must be between 1 and 100.</source>
-        <translation type="new">La valeur de maxBonds (nombre max de liaisons) doit être comprise entre 1 et 100.</translation>
+        <translation>La valeur de maxBonds (nombre max de liaisons) doit être comprise entre 1 et 100.</translation>
     </message>
     <message>
         <source>Bonding parameters</source>
@@ -3195,11 +3271,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Add periodic bonds</source>
-        <translation type="new">Ajouter des liaisons périodiques</translation>
+        <translation>Ajouter des liaisons périodiques</translation>
     </message>
     <message>
         <source>Periodic in</source>
-        <translation type="new">Périodique en</translation>
+        <translation>Périodique en</translation>
     </message>
     <message>
         <source>X</source>
@@ -3215,7 +3291,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Use provided unit cell vectors</source>
-        <translation type="new">Utiliser les vecteurs de cellules unitaires fournis</translation>
+        <translation>Utiliser les vecteurs de cellules unitaires fournis</translation>
     </message>
     <message>
         <source>Vector for X</source>
@@ -3326,15 +3402,15 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Create Cue For Current Location</source>
-        <translation type="new">Créer un repère pour l&apos;emplacement actuel</translation>
+        <translation>Créer un repère pour l&apos;emplacement actuel</translation>
     </message>
     <message>
         <source>Add Ball</source>
-        <translation type="new">Ajouter une boule</translation>
+        <translation>Ajouter une boule</translation>
     </message>
     <message>
         <source>Ball size</source>
-        <translation type="new">Taille de la boule</translation>
+        <translation>Taille de la boule</translation>
     </message>
     <message>
         <source>Add Line</source>
@@ -3343,11 +3419,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <message>
         <source>Crop</source>
         <translatorcomment>Couper</translatorcomment>
-        <translation type="guess">Recadrer/Couper</translation>
+        <translation>Recadrer/Couper</translation>
     </message>
     <message>
         <source>Position of cue</source>
-        <translation type="alterlegacy">Position de la fin/queue</translation>
+        <translation>Position de la fin/queue</translation>
     </message>
     <message>
         <source>Misc</source>
@@ -3355,11 +3431,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Time Cue Ball Size</source>
-        <translation type="alterlegacy">Taille de la boule de fin de temps</translation>
+        <translation>Taille de la boule de fin de temps</translation>
     </message>
     <message>
         <source>timeForTimeCue</source>
-        <translation type="alterlegacy">Instant de fin des temps</translation>
+        <translation>Instant de fin des temps</translation>
     </message>
     <message>
         <source>Data</source>
@@ -3415,7 +3491,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Polar to Cartesian</source>
-        <translation type="new">De Polaire à Cartésien</translation>
+        <translation>De Polaire à Cartésien</translation>
     </message>
     <message>
         <source>R_Theta</source>
@@ -3446,11 +3522,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <name>QvisCylinderWindow</name>
     <message>
         <source>Endpoint 1</source>
-        <translation type="alterlegacy">Point final 1</translation>
+        <translation>Point final 1</translation>
     </message>
     <message>
         <source>Endpoint 2</source>
-        <translation type="alterlegacy">Point final 2</translation>
+        <translation>Point final 2</translation>
     </message>
     <message>
         <source>Radius</source>
@@ -3473,25 +3549,25 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Help</source>
-        <translation type="correct">Aide</translation>
+        <translation>Aide</translation>
     </message>
     <message>
         <source>Options help for %1 plugin</source>
-        <translation type="guess">Aide sur les options pour le plug-in %1</translation>
+        <translation>Aide sur les options pour le plug-in %1</translation>
     </message>
 </context>
 <context>
     <name>QvisDBOptionsHelpWindow</name>
     <message>
         <source>Dismiss</source>
-        <translation type="correct">Fermer</translation>
+        <translation>Fermer</translation>
     </message>
 </context>
 <context>
     <name>QvisDataBinningWindow</name>
     <message>
         <source>Bin Definitions</source>
-        <translation type="guess">Définitions des barres</translation>
+        <translation>Définitions des barres</translation>
     </message>
     <message>
         <source>Dimensions</source>
@@ -3515,7 +3591,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Specify range</source>
-        <translation type="alterlegacy">Spécifier la gamme/étendue/intervalle</translation>
+        <translation>Spécifier la gamme/étendue/intervalle</translation>
     </message>
     <message>
         <source>Min</source>
@@ -3527,7 +3603,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Behavior for data outside range</source>
-        <translation type="alterlegacy">Comportement des données en dehors d'intervalle</translation>
+        <translation>Comportement des données en dehors d&apos;intervalle</translation>
     </message>
     <message>
         <source>Clamp</source>
@@ -3547,19 +3623,19 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Value for bins with no data</source>
-        <translation type="guess">Valeurs des barres sans données</translation>
+        <translation>Valeurs des barres sans données</translation>
     </message>
     <message>
         <source>NumBins</source>
-        <translation type="guess">Nombre de Barres</translation>
+        <translation>Nombre de Barres</translation>
     </message>
     <message>
         <source>Value for Bins With No Data</source>
-        <translation type="guess">Valeur pour les barres sans donnée</translation>
+        <translation>Valeur pour les barres sans donnée</translation>
     </message>
     <message>
         <source>Bin based on</source>
-        <translation type="guess">Barre basée sur </translation>
+        <translation>Barre basée sur </translation>
     </message>
     <message>
         <source>X</source>
@@ -3575,7 +3651,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Number of bins</source>
-        <translation type="guess">Nombre de barres</translation>
+        <translation>Nombre de barres</translation>
     </message>
     <message>
         <source>Remove bins with no data (curves only)</source>
@@ -3591,7 +3667,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Bins</source>
-        <translation type="guess">Barres</translation>
+        <translation>Barres</translation>
     </message>
     <message>
         <source>Mesh</source>
@@ -3622,7 +3698,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Prompt before creating new correlation</source>
-        <translation type="guess">Demander avant de créer une nouvelle corrélation</translation>
+        <translation>Demander avant de créer une nouvelle corrélation</translation>
     </message>
     <message>
         <source>Always</source>
@@ -3646,7 +3722,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Stretched index</source>
-        <translation type="alterlegacy">Indice étiré</translation>
+        <translation>Indice étiré</translation>
     </message>
     <message>
         <source>Time</source>
@@ -3681,7 +3757,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Stretched index</source>
-        <translation type="alterlegacy">Indice étiré</translation>
+        <translation>Indice étiré</translation>
     </message>
     <message>
         <source>Time</source>
@@ -3785,14 +3861,14 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Tetrahedralization</source>
-        <translation type="alterlegacy">Tétraédrisation</translation>
+        <translation>Tétraédrisation</translation>
     </message>
 </context>
 <context>
     <name>QvisDisplaceWindow</name>
     <message>
         <source>Displacement multiplier </source>
-        <translation type="new">Multiplicateur de déplacement </translation>
+        <translation>Multiplicateur de déplacement </translation>
     </message>
     <message>
         <source>Displacement variable</source>
@@ -3811,25 +3887,25 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Nodes to Zones</source>
-        <translation type="guess">des Nœuds aux Cellules</translation>
+        <translation>des Nœuds aux Cellules</translation>
     </message>
     <message>
         <source>Zones to Nodes</source>
-        <translation type="guess">des Cellules aux Nœuds</translation>
+        <translation>des Cellules aux Nœuds</translation>
     </message>
 </context>
 <context>
     <name>QvisEdgeWindow</name>
     <message>
         <source>dummy</source>
-        <translation type="new">factice</translation>
+        <translation>factice</translation>
     </message>
 </context>
 <context>
     <name>QvisElementSelectionWidget</name>
     <message>
         <source>Match any element</source>
-        <translation type="alterlegacy">Faire correspondre n'importe quel élément</translation>
+        <translation>Faire correspondre n&apos;importe quel élément</translation>
     </message>
 </context>
 <context>
@@ -3868,7 +3944,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Use min</source>
-        <translation type="alterlegacy">Utiliser min</translation>
+        <translation>Utiliser min</translation>
     </message>
     <message>
         <source>Min</source>
@@ -3876,7 +3952,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Use max</source>
-        <translation type="alterlegacy">Utiliser max</translation>
+        <translation>Utiliser max</translation>
     </message>
     <message>
         <source>Max</source>
@@ -3884,11 +3960,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Elevate with zero height?</source>
-        <translation type="alterlegacy">Elevation hauteur nulle ?</translation>
+        <translation>Elevation hauteur nulle ?</translation>
     </message>
     <message>
         <source>Limits Mode</source>
-        <translation type="unfinished">Mode limites</translation>
+        <translation>Mode limites</translation>
     </message>
     <message>
         <source>Elevate by Variable</source>
@@ -3896,34 +3972,34 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Scale Elevation Height</source>
-        <translation type="guess">Echelle d&apos;élévation (en hauteur)</translation>
+        <translation>Echelle d&apos;élévation (en hauteur)</translation>
     </message>
     <message>
         <source>Never</source>
-        <translation type="correct">Jamais</translation>
+        <translation>Jamais</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="guess">Automatique</translation>
+        <translation>Automatique</translation>
     </message>
     <message>
         <source>Always</source>
-        <translation type="correct">Toujours</translation>
+        <translation>Toujours</translation>
     </message>
 </context>
 <context>
     <name>QvisEllipsoidSliceWindow</name>
     <message>
         <source>Origin</source>
-        <translation type="correct">Origine</translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Radii</source>
-        <translation type="guess">Rayons</translation>
+        <translation>Rayons</translation>
     </message>
     <message>
         <source>Rotation Angle</source>
-        <translation type="guess">Angle de rotation</translation>
+        <translation>Angle de rotation</translation>
     </message>
 </context>
 <context>
@@ -3934,11 +4010,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Engine information</source>
-        <translation type="alterlegacy">Information moteur</translation>
+        <translation>Information moteur</translation>
     </message>
     <message>
         <source>Load balancing:</source>
-        <translation type="alterlegacy">Equilibrage de charge :</translation>
+        <translation>Equilibrage de charge :</translation>
     </message>
     <message>
         <source>Total status:</source>
@@ -3963,7 +4039,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <message>
         <source> on </source>
         <comment> engine is on host </comment>
-        <translation type="alterlegacy"> sur </translation>
+        <translation type="vanished"> sur </translation>
     </message>
     <message>
         <source>Simulation:</source>
@@ -4043,118 +4119,118 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Domain assignment:</source>
-        <translation type="alterlegacy">Affectation des domaines :</translation>
+        <translation>Affectation des domaines :</translation>
     </message>
     <message>
         <source> on </source>
-        <translation type="new"> sur </translation>
+        <translation> sur </translation>
     </message>
 </context>
 <context>
     <name>QvisExplodeWindow</name>
     <message>
         <source>Explosions</source>
-        <translation type="guess">Eclatements</translation>
+        <translation>Eclatements</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="correct">Origine</translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation type="correct">Point</translation>
+        <translation>Point</translation>
     </message>
     <message>
         <source>Plane</source>
-        <translation type="correct">Plan</translation>
+        <translation>Plan</translation>
     </message>
     <message>
         <source>Cylinder</source>
-        <translation type="guess">Cylindre</translation>
+        <translation>Cylindre</translation>
     </message>
     <message>
         <source>Explosion Point</source>
-        <translation type="guess">Point d&apos;explosion</translation>
+        <translation>Point d&apos;explosion</translation>
     </message>
     <message>
         <source>Plane Point</source>
-        <translation type="guess">Point du plan</translation>
+        <translation>Point du plan</translation>
     </message>
     <message>
         <source>Plane Normal</source>
-        <translation type="guess">Normale au plan</translation>
+        <translation>Normale au plan</translation>
     </message>
     <message>
         <source>Cylinder Point 1</source>
-        <translation type="guess">Cylindre Point 1</translation>
+        <translation>Cylindre Point 1</translation>
     </message>
     <message>
         <source>Cylinder Point 2</source>
-        <translation type="guess">Cylindre Point 2</translation>
+        <translation>Cylindre Point 2</translation>
     </message>
     <message>
         <source>Cylinder Radius</source>
-        <translation type="guess">Rayon du cylindre</translation>
+        <translation>Rayon du cylindre</translation>
     </message>
     <message>
         <source>Material Explosion</source>
-        <translation type="guess">Eclatement matériau</translation>
+        <translation>Eclatement matériau</translation>
     </message>
     <message>
         <source>Explosion Factor</source>
-        <translation type="guess">Facteur d&apos;éclatement</translation>
+        <translation>Facteur d&apos;éclatement</translation>
     </message>
     <message>
         <source>Available Materials</source>
-        <translation type="guess">Matériaux disponibles</translation>
+        <translation>Matériaux disponibles</translation>
     </message>
     <message>
         <source>Cell Explosion</source>
-        <translation type="guess">Eclatement cellule</translation>
+        <translation>Eclatement cellule</translation>
     </message>
     <message>
         <source>Explode Material Cells</source>
-        <translation type="guess">Eclater les cellules matériau</translation>
+        <translation>Eclater les cellules matériau</translation>
     </message>
     <message>
         <source>Explode All Cells</source>
-        <translation type="guess">Eclater toutes les cellules</translation>
+        <translation>Eclater toutes les cellules</translation>
     </message>
     <message>
         <source>Explosion Pattern</source>
-        <translation type="guess">Modèle d&apos;explosion</translation>
+        <translation>Modèle d&apos;explosion</translation>
     </message>
     <message>
         <source>explosionPoint</source>
-        <translation type="unfinished">Point d'éclatement</translation>
+        <translation>Point d&apos;éclatement</translation>
     </message>
     <message>
         <source>planePoint</source>
-        <translation type="unfinished">Point du plan</translation>
+        <translation>Point du plan</translation>
     </message>
     <message>
         <source>planeNorm</source>
-        <translation type="unfinished">Normale au plan</translation>
+        <translation>Normale au plan</translation>
     </message>
     <message>
         <source>cylinderPoint1</source>
-        <translation type="unfinished">Cylindre Point 1</translation>
+        <translation>Cylindre Point 1</translation>
     </message>
     <message>
         <source>cylinderPoint2</source>
-        <translation type="unfinished">Cylindre Point 2</translation>
+        <translation>Cylindre Point 2</translation>
     </message>
     <message>
         <source>materialExplosionFactor</source>
-        <translation type="unfinished">Facteur d'éclatement matériau</translation>
+        <translation>Facteur d&apos;éclatement matériau</translation>
     </message>
     <message>
         <source>cellExplosionFactor</source>
-        <translation type="unfinished">Facteur d'éclatement cellule</translation>
+        <translation>Facteur d&apos;éclatement cellule</translation>
     </message>
     <message>
         <source>cylinderRadius</source>
-        <translation type="unfinished">Rayon du cylindre</translation>
+        <translation>Rayon du cylindre</translation>
     </message>
 </context>
 <context>
@@ -4169,7 +4245,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Directory name</source>
-        <translation type="vanished">Nom du répertoire</translation>
+        <translation>Nom du répertoire</translation>
     </message>
     <message>
         <source>Export to</source>
@@ -4197,39 +4273,39 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Output</source>
-        <translation type="correct">Sortie</translation>
+        <translation>Sortie</translation>
     </message>
     <message>
         <source>Export all time states  </source>
-        <translation type="guess">Exporter tous les temps</translation>
+        <translation>Exporter tous les temps</translation>
     </message>
     <message>
         <source>Format</source>
-        <translation type="correct">Format</translation>
+        <translation>Format</translation>
     </message>
     <message>
         <source>Space</source>
-        <translation type="guess">Espace</translation>
+        <translation>Espace</translation>
     </message>
     <message>
         <source>Comma</source>
-        <translation type="guess">Virgule</translation>
+        <translation>Virgule</translation>
     </message>
     <message>
         <source>Delimiter</source>
-        <translation type="guess">Délimiteur</translation>
+        <translation>Délimiteur</translation>
     </message>
     <message>
         <source>Add variable</source>
-        <translation type="guess">Ajouter une variable</translation>
+        <translation>Ajouter une variable</translation>
     </message>
     <message>
         <source>I/O options</source>
-        <translation type="guess">Options d&apos;entrée sorties (E/S)</translation>
+        <translation>Options d&apos;entrée sorties (E/S)</translation>
     </message>
     <message>
         <source>Coordinate parallel writes with groups.</source>
-        <translation type="guess">Coordonner les écritures parallèles avec les groupes.</translation>
+        <translation>Coordonner les écritures parallèles avec les groupes.</translation>
     </message>
     <message>
         <source>Large scale write access to parallel file systems is sometimes accomplished 
@@ -4238,7 +4314,7 @@ to write to the file system simultaneously. Certain database plug-ins can
 coordinate their aggregation and file writing to be more efficient when 
 writing to the parallel file system at large scale.
 </source>
-        <translation type="guess">L&apos;accès en écriture à grande échelle aux systèmes de fichiers parallèles est parfois réalisé
+        <translation>L&apos;accès en écriture à grande échelle aux systèmes de fichiers parallèles est parfois réalisé
 plus efficacement en utilisant des groupes de processeurs au lieu de permettre à tous les processeurs
 d&apos;écrire simultanément sur le système de fichiers. Certains plug-ins de base de données peuvent
 coordonner leur agrégation et l&apos;écriture de fichiers pour être plus efficaces lors
@@ -4247,19 +4323,19 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Write group size</source>
-        <translation type="new">Taille du groupe d&apos;écriture</translation>
+        <translation>Taille du groupe d&apos;écriture</translation>
     </message>
     <message>
         <source>The time state format was invalid. Resetting to the last good value &quot;%1&quot;.</source>
-        <translation type="guess">Le format du temps de simulation était invalide. Reprise de la dernière valeur valide &quot;%1&quot;.</translation>
+        <translation>Le format du temps de simulation était invalide. Reprise de la dernière valeur valide &quot;%1&quot;.</translation>
     </message>
     <message>
         <source>%1 License</source>
-        <translation type="guess">%1 Licence</translation>
+        <translation>%1 Licence</translation>
     </message>
     <message>
         <source>default</source>
-        <translation type="new">défaut</translation>
+        <translation>défaut</translation>
     </message>
 </context>
 <context>
@@ -4282,7 +4358,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Material</source>
-        <translation tyep="new">Matériau</translation>
+        <translation>Matériau</translation>
     </message>
     <message>
         <source>Mesh</source>
@@ -4310,7 +4386,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Relational</source>
-        <translation type="unfinished">Relation binaire</translation>
+        <translation>Relation binaire</translation>
     </message>
     <message>
         <source>Conditional</source>
@@ -4354,7 +4430,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Vector mesh variable</source>
-        <translation>Variable scalaire</translation>
+        <translation>Variable vectorielle</translation>
     </message>
     <message>
         <source>Tensor mesh variable</source>
@@ -4386,7 +4462,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Time iteration</source>
-        <translation>Temporelle</translation>
+        <translation>Itération temporelle</translation>
     </message>
     <message>
         <source>Arguments</source>
@@ -4423,7 +4499,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     <message>
         <source>Display expressions from database
 and auto-generated expressions</source>
-<translation type="guess">Afficher les expressions de la base de données
+        <translation>Afficher les expressions de la base de données
 et les expressions générées automatiquement</translation>
     </message>
 </context>
@@ -4431,11 +4507,11 @@ et les expressions générées automatiquement</translation>
     <name>QvisExternalSurfaceWindow</name>
     <message>
         <source>Remove ghost faces?</source>
-        <translation type="guess">Enlever les faces fantômes ?</translation>
+        <translation>Enlever les faces fantômes ?</translation>
     </message>
     <message>
         <source>Find external edges for 2D datasets</source>
-        <translation type="guess">Trouver les arêtes de bords externes pour les ensembles de données 2D</translation>
+        <translation>Trouver les arêtes de bords externes pour les ensembles de données 2D</translation>
     </message>
 </context>
 <context>
@@ -4589,11 +4665,11 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Compute return value for years</source>
-        <translation type="vanished">calcul la valeur de retour annuels</translation>
+        <translation type="vanished">Calcul de la valeur de retour annuels</translation>
     </message>
     <message>
         <source>Compute return value differences for years</source>
-        <translation type="vanished">calcul la valeur de retour des différences annuels</translation>
+        <translation type="vanished">Calcul de la valeur de retour des différences annuels</translation>
     </message>
     <message>
         <source>Output parameter values</source>
@@ -4629,7 +4705,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>dataYearBegin</source>
-        <translation type="vanished">Donnéds du début d&apos;année</translation>
+        <translation type="vanished">Données du début d&apos;année</translation>
     </message>
     <message>
         <source>dataAnalysisYear1</source>
@@ -4657,10 +4733,101 @@ et les expressions générées automatiquement</translation>
     </message>
 </context>
 <context>
+    <name>QvisExtrudeStackedWindow</name>
+    <message>
+        <source>Extrusion axis</source>
+        <translation>Axe d&apos;extrusion</translation>
+    </message>
+    <message>
+        <source>Extrude by variable</source>
+        <translation>Extruder par variable</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>Indice</translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation>Variable</translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation>Echelle</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Ajouter une variable</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Supprimer</translation>
+    </message>
+    <message>
+        <source>Move up</source>
+        <translation>Déplacer vers le haut</translation>
+    </message>
+    <message>
+        <source>Move down</source>
+        <translation>Déplacer vers le bas</translation>
+    </message>
+    <message>
+        <source>Min value</source>
+        <translation>Valeur min</translation>
+    </message>
+    <message>
+        <source>Max value</source>
+        <translation>Valeur max</translation>
+    </message>
+    <message>
+        <source>Reset all</source>
+        <translation>Réinitialiser tout</translation>
+    </message>
+    <message>
+        <source>Display by</source>
+        <translation>Afficher par</translation>
+    </message>
+    <message>
+        <source>Node Height</source>
+        <translation>Hauteur de noeud</translation>
+    </message>
+    <message>
+        <source>Cell Height</source>
+        <translation>Hauteur de cellule</translation>
+    </message>
+    <message>
+        <source>Original Data</source>
+        <translation>Donnée originelle</translation>
+    </message>
+    <message>
+        <source>Extrude by fixed length</source>
+        <translation>Extruder d'une longueur fixe</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>Longueur</translation>
+    </message>
+    <message>
+        <source>Number of steps</source>
+        <translation>Nombre de pas/étapes</translation>
+    </message>
+    <message>
+        <source>Preserve original cell numbers</source>
+        <translation>Préserver les numéros de cellules d&apos;origine</translation>
+    </message>
+</context>
+<context>
     <name>QvisExtrudeWindow</name>
     <message>
         <source>Extrusion axis</source>
-        <translation type="new">Axe d&apos;extrusion</translation>
+        <translation>Axe d&apos;extrusion</translation>
     </message>
     <message>
         <source>Length</source>
@@ -4676,14 +4843,14 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Extrude by variable</source>
-        <translation type="guess">Extruder par variable</translation>
+        <translation>Extruder par variable</translation>
     </message>
 </context>
 <context>
     <name>QvisFFTWindow</name>
     <message>
         <source>Dummy attribute</source>
-        <translation type="guess">Attribut factice</translation>
+        <translation>Attribut factice</translation>
     </message>
 </context>
 <context>
@@ -4746,7 +4913,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Field</source>
-        <translation type="vanished">Champ </translation>
+        <translation type="vanished">Champ</translation>
     </message>
     <message>
         <source>Default</source>
@@ -4826,7 +4993,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
-        <translation type="vanished">tolérance relative</translation>
+        <translation type="vanished">Tolérance relative</translation>
     </message>
     <message>
         <source>Absolute tolerance</source>
@@ -5077,7 +5244,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Filename</source>
-        <translation type="correct">Nom de fichier</translation>
+        <translation>Nom de fichier</translation>
     </message>
 </context>
 <context>
@@ -5120,7 +5287,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Selected Files</source>
-        <translation type="alterlegacy">Fichiers sélectionnés</translation>
+        <translation>Fichiers sélectionnés</translation>
     </message>
     <message>
         <source>&amp;Open</source>
@@ -5132,7 +5299,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Replace &amp;Selected</source>
-        <translation type="alterlegacy">Remplacer &amp;Sélection</translation>
+        <translation>Remplacer &amp;Sélection</translation>
     </message>
     <message>
         <source>&amp;Overlay</source>
@@ -5175,7 +5342,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Remove all</source>
-        <translation type="alterlegacy">Tout supprimer</translation>
+        <translation>Tout supprimer</translation>
     </message>
     <message>
         <source>Group</source>
@@ -5187,7 +5354,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Selected files</source>
-        <translation type="alterlegacy">Fichiers sélectionnés</translation>
+        <translation>Fichiers sélectionnés</translation>
     </message>
     <message>
         <source>OK</source>
@@ -5199,7 +5366,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Creating group list on %1</source>
-        <translation type="alterlegacy">Création d&apos;une liste de groupe sur %1</translation>
+        <translation>Création d&apos;une liste de groupe sur %1</translation>
     </message>
 </context>
 <context>
@@ -5262,7 +5429,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Changing directory.</source>
-        <translation type="alterlegacy">Changement de répertoire.</translation>
+        <translation>Changement de répertoire.</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not change the current directory to %2.</source>
@@ -5286,7 +5453,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Changing directory</source>
-        <translation type="alterlegacy">Changement de répertoire</translation>
+        <translation>Changement de répertoire</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
@@ -5309,15 +5476,15 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>FilledBoundary colors</source>
-        <translation type="new">Couleurs matériaux pleins</translation>
+        <translation>Couleurs matériaux pleins</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="new">Table de couleur</translation>
+        <translation>Table de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation type="new">Unique</translation>
+        <translation>Unique</translation>
     </message>
     <message>
         <source>Multiple</source>
@@ -5341,7 +5508,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Draw internal surfaces</source>
-        <translation type="guess">Dessiner les surfaces internes</translation>
+        <translation>Dessiner les surfaces internes</translation>
     </message>
     <message>
         <source>Clean zones only</source>
@@ -5349,7 +5516,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>--  mixed color: </source>
-        <translation type="alterlegacy">--  couleur mélangée :</translation>
+        <translation>--  couleur mélangée :</translation>
     </message>
     <message>
         <source>None</source>
@@ -5361,7 +5528,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Elevé</translation>
+        <translation>Elevé</translation>
     </message>
     <message>
         <source>Options</source>
@@ -5369,7 +5536,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Point / Line Style</source>
-        <translation type="alterlegacy">Style de Point/Ligne</translation>
+        <translation>Style de Point/Ligne</translation>
     </message>
     <message>
         <source>Geometry</source>
@@ -5416,14 +5583,14 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Highlighted IDs</source>
-        <translation type="guess">Identifiants en surbrillance</translation>
+        <translation>Identifiants en surbrillance</translation>
     </message>
 </context>
 <context>
     <name>QvisFluxWindow</name>
     <message>
         <source>Flow field</source>
-        <translation type="alterlegacy">Champ d'écoulement</translation>
+        <translation>Champ d&apos;écoulement</translation>
     </message>
     <message>
         <source>Multiply dot product by a scalar variable?</source>
@@ -5438,7 +5605,7 @@ et les expressions générées automatiquement</translation>
     <name>QvisFontAttributesWidget</name>
     <message>
         <source>Font name</source>
-        <translation type="alterlegacy">Police de caractère (fonte)</translation>
+        <translation>Police de caractère (fonte)</translation>
     </message>
     <message>
         <source>Font scale</source>
@@ -5461,7 +5628,7 @@ et les expressions générées automatiquement</translation>
     <name>QvisGUIApplication</name>
     <message>
         <source>File selection</source>
-        <translation type="alterlegacy">Sélection de fichier</translation>
+        <translation>Sélection de fichier</translation>
     </message>
     <message>
         <source>File information</source>
@@ -5481,7 +5648,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Set save options</source>
-        <translation type="alterlegacy">Régler les options d'enregistrement</translation>
+        <translation>Régler les options d&apos;enregistrement</translation>
     </message>
     <message>
         <source>Compute engines</source>
@@ -5493,11 +5660,11 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Annotation</source>
-        <translation type="new">Annotation</translation>
+        <translation>Annotation</translation>
     </message>
     <message>
         <source>Color tables</source>
-        <translation type="new">Tables de couleur</translation>
+        <translation>Tables de couleur</translation>
     </message>
     <message>
         <source>Expressions</source>
@@ -5533,11 +5700,11 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Material Reconstruction Options</source>
-        <translation type="new">Options de reconstruction matériaux</translation>
+        <translation>Options de reconstruction matériaux</translation>
     </message>
     <message>
         <source>Pick</source>
-        <translation type="guess">Piocher</translation>
+        <translation>Piocher</translation>
     </message>
     <message>
         <source>Help</source>
@@ -5545,7 +5712,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Query</source>
-        <translation type="alterlegacy">Interroger</translation>
+        <translation>Interroger</translation>
     </message>
     <message>
         <source>Preferences</source>
@@ -5593,35 +5760,35 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Calculating window metrics...</source>
-        <translation type="alterlegacy">Calcul des métriques de fenêtre en cours...</translation>
+        <translation>Calcul des métriques de fenêtre en cours...</translation>
     </message>
     <message>
         <source>Creating main window...</source>
-        <translation type="alterlegacy">Création d'une fenêtre principale...</translation>
+        <translation>Création d&apos;une fenêtre principale...</translation>
     </message>
     <message>
         <source>Starting viewer...</source>
-        <translation type="alterlegacy">Démarrage de l&apos;affichage...</translation>
+        <translation>Démarrage de l&apos;affichage...</translation>
     </message>
     <message>
         <source>Starting metadata server...</source>
-        <translation type="alterlegacy">Démarrage du serveur de données...</translation>
+        <translation>Démarrage du serveur de données...</translation>
     </message>
     <message>
         <source>Launched the metadata server...</source>
-        <translation type="alterlegacy">Le serveur de données est lancé...</translation>
+        <translation>Le serveur de données est lancé...</translation>
     </message>
     <message>
         <source>Getting the path...</source>
-        <translation type="alterlegacy">Obtention du chemin...</translation>
+        <translation>Obtention du chemin...</translation>
     </message>
     <message>
         <source>Creating crucial windows...</source>
-        <translation type="alterlegacy">Création des fenêtres cruciales...</translation>
+        <translation>Création des fenêtres cruciales...</translation>
     </message>
     <message>
         <source>Loading plugin information...</source>
-        <translation type="alterlegacy">Chargement des informations du...</translation>
+        <translation>Chargement des informations du...</translation>
     </message>
     <message>
         <source>Processing config file...</source>
@@ -5629,7 +5796,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Creating visible windows...</source>
-        <translation type="alterlegacy">Création des fenêtres visibles...</translation>
+        <translation>Création des fenêtres visibles...</translation>
     </message>
     <message>
         <source>Processing window configs...</source>
@@ -5673,7 +5840,7 @@ En répondant non ça détache l&apos;interface et laisse la vue et ses clients 
     </message>
     <message>
         <source>Keyframer</source>
-        <translation type="alterlegacy">Gestionnaire de Transition</translation>
+        <translation>Gestionnaire de Transition</translation>
     </message>
     <message>
         <source>Lineout</source>
@@ -5701,15 +5868,15 @@ En répondant non ça détache l&apos;interface et laisse la vue et ses clients 
     </message>
     <message>
         <source>MeshManagement</source>
-        <translation type="alterlegacy">Gestion de maillage</translation>
+        <translation>Gestion de maillage</translation>
     </message>
     <message>
         <source>Loading plugins...</source>
-        <translation type="alterlegacy">Chargement des plugins...</translation>
+        <translation>Chargement des plugins...</translation>
     </message>
     <message>
         <source>Creating plugin windows...</source>
-        <translation type="alterlegacy">Création des fenêtres de plugins...</translation>
+        <translation>Création des fenêtres de plugins...</translation>
     </message>
     <message>
         <source>VisIt session</source>
@@ -5717,7 +5884,7 @@ En répondant non ça détache l&apos;interface et laisse la vue et ses clients 
     </message>
     <message>
         <source>Saving settings</source>
-        <translation type="alterlegacy">Enregistrement des paramètres</translation>
+        <translation>Enregistrement des paramètres</translation>
     </message>
     <message>
         <source>VisIt encountered an error while setting up printer options.</source>
@@ -5727,7 +5894,7 @@ En répondant non ça détache l&apos;interface et laisse la vue et ses clients 
         <source>VisIt has been updated. Would you like VisIt to save 
 its session, quit, and restart the session using the new 
 version of VisIt?</source>
-<translation type="vanished">Visit a été mis-à-jour. Voulez vous que VisIt sauve
+        <translation type="vanished">Visit a été mis-à-jour. Voulez vous que VisIt sauve
 sa session, quitte et redémarre la session avec sa nouvelle
 version ?</translation>
     </message>
@@ -5738,11 +5905,11 @@ version ?</translation>
     </message>
     <message>
         <source>VisIt movie progress</source>
-        <translation type="alterlegacy">Visit progression du film en cours</translation>
+        <translation>Visit progression du film en cours</translation>
     </message>
     <message>
         <source>Making movie</source>
-        <translation type="alterlegacy">Animation en cours de réalisation</translation>
+        <translation>Animation en cours de réalisation</translation>
     </message>
     <message>
         <source>VisIt executed the following command line to begin making your movie:
@@ -5762,7 +5929,7 @@ version ?</translation>
     </message>
     <message>
         <source>Crash recovery</source>
-        <translation type="alterlegacy">Récupération après incident (crash)</translation>
+        <translation>Récupération après incident (crash)</translation>
     </message>
     <message>
         <source>VisIt found a crash recovery session file. Would you like to restore it to return to the last saved state?</source>
@@ -5778,11 +5945,11 @@ version ?</translation>
     </message>
     <message>
         <source>%1 operator attributes</source>
-        <translation type="alterlegacy">%1 attributs du filtre</translation>
+        <translation>%1 attributs du filtre</translation>
     </message>
     <message>
         <source>%1 operator</source>
-        <translation type="alterlegacy">%1 filtres</translation>
+        <translation>%1 filtres</translation>
     </message>
     <message>
         <source>VisIt was able to read the session file, %1, but the session file might be from before VisIt 1.5.5. Consequently, VisIt will open the session file in the normal manner. If you want to restore this session using different sources then you should first resave your session with a newer version of VisIt.</source>
@@ -5790,7 +5957,7 @@ version ?</translation>
     </message>
     <message>
         <source>Preventing the metadata server from being launched on %1.</source>
-        <translation type="alterlegacy">Empêcher le lancement du serveur de métadonnées sur %1. </translation>
+        <translation>Empêcher le lancement du serveur de métadonnées sur %1. </translation>
     </message>
     <message>
         <source>Hostname &quot;%1&quot; is not a recognized host.</source>
@@ -5859,35 +6026,35 @@ Parce-que le serveur de méta données n&apos;a pas pu être démarré de cet h�
     </message>
     <message>
         <source>Plugin Manager</source>
-        <translation type="guess">Gestionnaire de plugins</translation>
+        <translation>Gestionnaire de plugins</translation>
     </message>
     <message>
         <source>PDF file</source>
-        <translation type="guess">Fichier PDF</translation>
+        <translation>Fichier PDF</translation>
     </message>
     <message>
         <source>Choose pdf file name</source>
-        <translation type="guess">Choisir le nom du fichier PDF</translation>
+        <translation>Choisir le nom du fichier PDF</translation>
     </message>
     <message>
         <source>VisIt Cinema progress</source>
-        <translation type="guess">Progression de la réalisation de film par VisIt</translation>
+        <translation>Progression de la réalisation de film par VisIt</translation>
     </message>
     <message>
         <source>Saving Cinema</source>
-        <translation type="guess">Enregistrement du film</translation>
+        <translation>Enregistrement du film</translation>
     </message>
     <message>
         <source>You must create plots before saving to Cinema.</source>
-        <translation type="guess">Vous devez créer des tracés avant d&apos;enregistrer un film</translation>
+        <translation>Vous devez créer des tracés avant d&apos;enregistrer un film</translation>
     </message>
     <message>
         <source>Select Crash Recovery File</source>
-        <translation type="guess">Sélectionner le fichier de récupération après incident</translation>
+        <translation>Sélectionner le fichier de récupération après incident</translation>
     </message>
     <message>
         <source>Session files (*.session)</source>
-        <translation type="guess">Fichiers de session (*.session)</translation>
+        <translation>Fichiers de session (*.session)</translation>
     </message>
 </context>
 <context>
@@ -5902,7 +6069,7 @@ utiliseront cette même fenêtre.</translation>
     </message>
     <message>
         <source>Window #</source>
-        <translation type="new">Fenêtre number</translation>
+        <translation>Fenêtre number</translation>
     </message>
     <message>
         <source>Freeze in time</source>
@@ -5939,28 +6106,28 @@ utiliseront cette même fenêtre.</translation>
     <message>
         <source>These items can be overridden
 by the Lineout operator</source>
-        <translation type="new">Ces éléments peuvent être remplacés
+        <translation>Ces éléments peuvent être remplacés
 par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Use sampling</source>
-        <translation type="new">Utiliser un échantillonnage</translation>
+        <translation>Utiliser un échantillonnage</translation>
     </message>
     <message>
         <source>Sample points</source>
-        <translation type="new">Nombre de points d&apos;échantillon</translation>
+        <translation>Nombre de points d&apos;échantillon</translation>
     </message>
     <message>
         <source>Create refline labels</source>
-        <translation type="new">Créer des étiquettes de ligne de référence</translation>
+        <translation>Créer des étiquettes de ligne de référence</translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
-        <translation type="new">La valeur de windowId n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de windowId n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of numSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="alterlegacy">La valeur du nombre d'échantillons (numSamples) est invalide. On reprend la dernière valeur valable de %1.</translation>
+        <translation>La valeur du nombre d&apos;échantillons (numSamples) est invalide. On reprend la dernière valeur valable de %1.</translation>
     </message>
 </context>
 <context>
@@ -5983,7 +6150,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>&amp;Bookmarks</source>
-        <translation type="alterlegacy">Marques page</translation>
+        <translation>Marques page</translation>
     </message>
     <message>
         <source>Add</source>
@@ -6007,11 +6174,11 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Larger font</source>
-        <translation type="alterlegacy">En plus gros</translation>
+        <translation>En plus gros</translation>
     </message>
     <message>
         <source>Smaller font</source>
-        <translation type="alterlegacy">En plus petit</translation>
+        <translation>En plus petit</translation>
     </message>
     <message>
         <source>Dismiss</source>
@@ -6035,7 +6202,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Frequently asked questions</source>
-        <translation type="alterlegacy">Questions fréquemment posées (FAQ)</translation>
+        <translation>Questions fréquemment posées (FAQ)</translation>
     </message>
     <message>
         <source>Command line arguments</source>
@@ -6095,14 +6262,14 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>VisIt Manuals</source>
-        <translation type="guess">Manuels VisIt</translation>
+        <translation>Manuels VisIt</translation>
     </message>
 </context>
 <context>
     <name>QvisHistogram</name>
     <message>
         <source>No data</source>
-        <translation type="alterlegacy">Pas de donnée</translation>
+        <translation>Pas de donnée</translation>
     </message>
     <message>
         <source>minimum</source>
@@ -6166,7 +6333,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Frequency</source>
-        <translation type="guess">Fréquence</translation>
+        <translation>Fréquence</translation>
     </message>
     <message>
         <source>Weighted</source>
@@ -6206,15 +6373,15 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Number of Bins</source>
-        <translation type="guess">Nombre de barres</translation>
+        <translation>Nombre de barres</translation>
     </message>
     <message>
         <source>Bin Scale</source>
-        <translation type="guess">Échelle des barres</translation>
+        <translation>Échelle des barres</translation>
     </message>
     <message>
         <source>Single Zone Plot Options</source>
-        <translation type="alterlegacy">Options de tracé sur zone unique</translation>
+        <translation>Options de tracé sur zone unique</translation>
     </message>
     <message>
         <source>domain</source>
@@ -6266,7 +6433,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Weighting</source>
-        <translation type="alterlegacy">Pondération</translation>
+        <translation>Pondération</translation>
     </message>
     <message>
         <source>Data</source>
@@ -6286,15 +6453,15 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Use Original Data</source>
-        <translation type="guess">Utiliser les données d&apos;origine</translation>
+        <translation>Utiliser les données d&apos;origine</translation>
     </message>
     <message>
         <source>Use Current Plot</source>
-        <translation type="guess">Utiliser les données du tracé en cours</translation>
+        <translation>Utiliser les données du tracé en cours</translation>
     </message>
     <message>
         <source>Use bin widths</source>
-        <translation type="guess">Utiliser les épaisseurs de barres</translation>
+        <translation>Utiliser les épaisseurs de barres</translation>
     </message>
     <message>
         <source>Statistical Options</source>
@@ -6306,7 +6473,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Compute the CDF</source>
-        <translation type="guess">Calculer la fonction de répartition (CDF)</translation>
+        <translation>Calculer la fonction de répartition (CDF)</translation>
     </message>
 </context>
 <context>
@@ -6356,7 +6523,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Username</source>
-        <translation type="guess">Nom utilisateur</translation>
+        <translation>Nom utilisateur</translation>
     </message>
     <message>
         <source>Timeout (minutes)</source>
@@ -6372,7 +6539,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Launcher arguments</source>
-        <translation type="alterlegacy">Arguments de démarrage</translation>
+        <translation>Arguments de démarrage</translation>
     </message>
     <message>
         <source>Sublauncher arguments</source>
@@ -6392,7 +6559,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Load balancing</source>
-        <translation type="alterlegacy">Equilibrage de charge</translation>
+        <translation>Equilibrage de charge</translation>
     </message>
     <message>
         <source>Default number of processors</source>
@@ -6440,7 +6607,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Use cluster&apos;s graphics cards</source>
-        <translation type="alterlegacy">Utiliser les cartes graphiques du cluster</translation>
+        <translation>Utiliser les cartes graphiques du cluster</translation>
     </message>
     <message>
         <source>Sublauncher pre-mpi command</source>
@@ -6488,7 +6655,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Host nickname</source>
-        <translation type="alterlegacy">Pseudo/surnom</translation>
+        <translation>Pseudo/surnom</translation>
     </message>
     <message>
         <source>Path to VisIt installation</source>
@@ -6653,7 +6820,7 @@ Please contact VisIt developers.
 url: %1
 
 %2.</source>
-<translation type="guess">Une erreur s&apos;est produite lors de la tentative de téléchargement des hôtes.
+        <translation>Une erreur s&apos;est produite lors de la tentative de téléchargement des hôtes.
 Veuillez contacter les développeurs de VisIt.
 
 url: %1
@@ -6667,7 +6834,7 @@ Please contact VisIt developers.
 url: %1.
 
 http error %2: %3.</source>
-<translation type="guess">Une erreur s&apos;est produite lors de la tentative de téléchargement des hôtes.
+        <translation>Une erreur s&apos;est produite lors de la tentative de téléchargement des hôtes.
 Veuillez contacter les développeurs de VisIt.
 
 url: %1.
@@ -6676,51 +6843,51 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Number of threads per task</source>
-        <translation type="guess">Nombre de threads par tâche (processus)</translation>
+        <translation>Nombre de threads par tâche (processus)</translation>
     </message>
     <message>
         <source>Defaults</source>
-        <translation type="guess">Valeurs par défaut</translation>
+        <translation>Valeurs par défaut</translation>
     </message>
     <message>
         <source>Number of processors</source>
-        <translation type="guess">Nombre de processeurs</translation>
+        <translation>Nombre de processeurs</translation>
     </message>
     <message>
         <source>Number of nodes</source>
-        <translation type="guess">Nombre de nœuds</translation>
+        <translation>Nombre de nœuds</translation>
     </message>
     <message>
         <source>Bank / Account</source>
-        <translation type="guess">Banque / Compte</translation>
+        <translation>Banque / Compte</translation>
     </message>
     <message>
         <source>Time Limit</source>
-        <translation type="guess">Temps limite</translation>
+        <translation>Temps limite</translation>
     </message>
     <message>
         <source>Machine File</source>
-        <translation type="guess">Fichier machine</translation>
+        <translation>Fichier machine</translation>
     </message>
     <message>
         <source>Constraints</source>
-        <translation type="guess">Contraintes</translation>
+        <translation>Contraintes</translation>
     </message>
     <message>
         <source>Add row</source>
-        <translation type="guess">Ajouter une ligne</translation>
+        <translation>Ajouter une ligne</translation>
     </message>
     <message>
         <source>Delete row</source>
-        <translation type="guess">Supprimer ligne</translation>
+        <translation>Supprimer ligne</translation>
     </message>
     <message>
         <source>Nodes</source>
-        <translation type="guess">Nœuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>Processors</source>
-        <translation type="guess">Processeurs</translation>
+        <translation>Processeurs</translation>
     </message>
 </context>
 <context>
@@ -6889,11 +7056,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Location</source>
-        <translation type="alterlegacy">Emplacement</translation>
+        <translation>Emplacement</translation>
     </message>
     <message>
         <source>Read Text File</source>
-        <translation type="alterlegacy">Lire fichier texte</translation>
+        <translation>Lire fichier texte</translation>
     </message>
     <message>
         <source>Add Point</source>
@@ -6937,20 +7104,20 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>X Extents</source>
-        <translation type="alterlegacy">Etendu en X</translation>
+        <translation>Etendu en X</translation>
     </message>
     <message>
         <source>Y Extents</source>
-        <translation type="alterlegacy">Etendu enn Y</translation>
+        <translation>Etendu enn Y</translation>
     </message>
     <message>
         <source>Z Extents</source>
-        <translation type="alterlegacy">Etendu en Z</translation>
+        <translation>Etendu en Z</translation>
     </message>
     <message>
         <source>Sampling</source>
         <translatorcomment>Echantillonnage</translatorcomment>
-        <translation type="alterlegacy">Echantillonnage</translation>
+        <translation>Echantillonnage</translation>
     </message>
     <message>
         <source>Sampling type:</source>
@@ -6970,7 +7137,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Boundary</source>
-        <translation type="alterlegacy">Frontière</translation>
+        <translation>Frontière</translation>
     </message>
     <message>
         <source>Interior</source>
@@ -6978,11 +7145,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Number of random samples</source>
-        <translation type="alterlegacy">Nombre d&apos;échantillons aléatoires</translation>
+        <translation>Nombre d&apos;échantillons aléatoires</translation>
     </message>
     <message>
         <source>Random number seed</source>
-        <translation type="new">Graine de nombre aléatoire</translation>
+        <translation>Graine de nombre aléatoire</translation>
     </message>
     <message>
         <source>Sample density 0</source>
@@ -7062,11 +7229,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Forward Euler (Single-step)</source>
-        <translation type="correct">Euler explicite (une seule étape) </translation>
+        <translation>Euler explicite (une seule étape) </translation>
     </message>
     <message>
         <source>Leapfrog (Single-step)</source>
-        <translation type="correct">Saute-mouton (une seule étape)</translation>
+        <translation>Saute-mouton (une seule étape)</translation>
     </message>
     <message>
         <source>Dormand-Prince (Runge-Kutta)</source>
@@ -7090,11 +7257,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Limit maximum time step</source>
-        <translation type="alterlegacy">Limiter le max du pas de temps</translation>
+        <translation>Limiter le max du pas de temps</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation type="new">Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
+        <translation>Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -7110,7 +7277,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation type="guess">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Termination</source>
@@ -7262,7 +7429,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Override starting time</source>
-        <translation type="alterlegacy">Outrepasser le temps de départ</translation>
+        <translation>Outrepasser le temps de départ</translation>
     </message>
     <message>
         <source>Time</source>
@@ -7282,7 +7449,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Parallel integration options</source>
-        <translation type="alterlegacy">Options d&apos;intégration parallèle</translation>
+        <translation>Options d&apos;intégration parallèle</translation>
     </message>
     <message>
         <source>Parallelization</source>
@@ -7302,7 +7469,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="new">Laisser Visit sélectionner le meilleur algorithme</translation>
+        <translation>Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -7354,43 +7521,43 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Distance in X:</source>
-        <translation type="guess">Distance en X :</translation>
+        <translation>Distance en X :</translation>
     </message>
     <message>
         <source>Distance in Y:</source>
-        <translation type="guess">Distance en Y :</translation>
+        <translation>Distance en Y :</translation>
     </message>
     <message>
         <source>Samples in X:</source>
-        <translation type="guess">Echantillons selon X :</translation>
+        <translation>Echantillons selon X :</translation>
     </message>
     <message>
         <source>Samples in Y:</source>
-        <translation type="guess">Echantillons selon Y :</translation>
+        <translation>Echantillons selon Y :</translation>
     </message>
     <message>
         <source>Samples in Theta:</source>
-        <translation type="guess">Echantillons selon Theta :</translation>
+        <translation>Echantillons selon Theta :</translation>
     </message>
     <message>
         <source>Samples in R:</source>
-        <translation type="guess">Echantillons selon R :</translation>
+        <translation>Echantillons selon R :</translation>
     </message>
     <message>
         <source>Samples in Latitude:</source>
-        <translation type="guess">Echantillons selon la latitude :</translation>
+        <translation>Echantillons selon la latitude :</translation>
     </message>
     <message>
         <source>Samples in Longitude:</source>
-        <translation type="guess">Echantillons selon la longitude :</translation>
+        <translation>Echantillons selon la longitude :</translation>
     </message>
     <message>
         <source>Samples in Z:</source>
-        <translation type="guess">Echantillons selon Z :</translation>
+        <translation>Echantillons selon Z :</translation>
     </message>
     <message>
         <source>Sampling stride:</source>
-        <translation type="guess">Pas d&apos;échantillonnage :</translation>
+        <translation>Pas d&apos;échantillonnage :</translation>
     </message>
     <message>
         <source>field constant</source>
@@ -7402,11 +7569,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>maxsteps</source>
-        <translation type="guess">Nombre max de pas</translation>
+        <translation>Nombre max de pas</translation>
     </message>
     <message>
         <source>maxtime</source>
-        <translation type="guess">Temps max</translation>
+        <translation>Temps max</translation>
     </message>
     <message>
         <source>maxdistance</source>
@@ -7414,7 +7581,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Pathlines Override Starting Time</source>
-        <translation type="alterlegacy">Trajectoires outrepassent le temps de départ</translation>
+        <translation>Trajectoires outrepassent le temps de départ</translation>
     </message>
     <message>
         <source>relative tolerance</source>
@@ -7446,7 +7613,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>plane normal</source>
-        <translation type="guess">Normale au plan</translation>
+        <translation>Normale au plan</translation>
     </message>
     <message>
         <source>plane up axis</source>
@@ -7490,11 +7657,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Field Data</source>
-        <translation type="guess">Champ de données</translation>
+        <translation>Champ de données</translation>
     </message>
     <message>
         <source>Copy to point list</source>
-        <translation type="guess">Copier dans la liste des points</translation>
+        <translation>Copier dans la liste des points</translation>
     </message>
     <message>
         <source>Nektar++</source>
@@ -7502,15 +7669,15 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Forward Directionless</source>
-        <translation type="guess">Avance sans direction</translation>
+        <translation>Avance sans direction</translation>
     </message>
     <message>
         <source>Backward Directionless</source>
-        <translation type="guess">Recule sans direction</translation>
+        <translation>Recule sans direction</translation>
     </message>
     <message>
         <source>Both Directionless</source>
-        <translation type="guess">Les deux sans direction</translation>
+        <translation>Les deux sans direction</translation>
     </message>
     <message>
         <source>Runge-Kutta-Dormand-Prince (RKDP)</source>
@@ -7518,139 +7685,139 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Coloring</source>
-        <translation type="guess">Coloration</translation>
+        <translation>Coloration</translation>
     </message>
     <message>
         <source>Color by</source>
-        <translation type="guess">Couleur par</translation>
+        <translation>Couleur par</translation>
     </message>
     <message>
         <source>Solid Color</source>
-        <translation type="guess">Couleur solide</translation>
+        <translation>Couleur solide</translation>
     </message>
     <message>
         <source>Seed Point ID</source>
-        <translation type="guess">Identifiant du point graine</translation>
+        <translation>Identifiant du point graine</translation>
     </message>
     <message>
         <source>Vector magnitude</source>
-        <translation type="guess">Grandeur du vecteur</translation>
+        <translation>Grandeur du vecteur</translation>
     </message>
     <message>
         <source>Absolute integration time</source>
-        <translation type="guess">Temps d&apos;intégration absolu</translation>
+        <translation>Temps d&apos;intégration absolu</translation>
     </message>
     <message>
         <source>Relative integration time</source>
-        <translation type="guess">Temps d&apos;intégration relatif</translation>
+        <translation>Temps d&apos;intégration relatif</translation>
     </message>
     <message>
         <source>Avg. dist. from seed</source>
-        <translation type="guess">Dist. moy. de la graine de départ</translation>
+        <translation>Dist. moy. de la graine de départ</translation>
     </message>
     <message>
         <source>Closed Curve</source>
-        <translation type="guess">Courbe fermée</translation>
+        <translation>Courbe fermée</translation>
     </message>
     <message>
         <source>Variable at Seed</source>
-        <translation type="guess">Variable à la graine de départ</translation>
+        <translation>Variable à la graine de départ</translation>
     </message>
     <message>
         <source>Cleanup the integral curve</source>
-        <translation type="guess">Nettoyage de la courbe intégrale</translation>
+        <translation>Nettoyage de la courbe intégrale</translation>
     </message>
     <message>
         <source>Point cleanup</source>
-        <translation type="guess">Nettoyage de points</translation>
+        <translation>Nettoyage de points</translation>
     </message>
     <message>
         <source>Keep all points</source>
-        <translation type="guess">Garder tous les points</translation>
+        <translation>Garder tous les points</translation>
     </message>
     <message>
         <source>Merge points</source>
-        <translation type="guess">Fusionner les points</translation>
+        <translation>Fusionner les points</translation>
     </message>
     <message>
         <source>Delete points before</source>
-        <translation type="guess">Supprimer les points avant</translation>
+        <translation>Supprimer les points avant</translation>
     </message>
     <message>
         <source>Delete points after </source>
-        <translation type="guess">Supprimer les points après</translation>
+        <translation>Supprimer les points après</translation>
     </message>
     <message>
         <source>Velocity threshold</source>
-        <translation type="guess">Seuil de vitesse</translation>
+        <translation>Seuil de vitesse</translation>
     </message>
     <message>
         <source>Crop the integral curve (for animations)</source>
-        <translation type="guess">Recadrer la courbe intégrale (pour les animations)</translation>
+        <translation>Recadrer la courbe intégrale (pour les animations)</translation>
     </message>
     <message>
         <source>Crop value</source>
-        <translation type="guess">Valeur du recadrage</translation>
+        <translation>Valeur du recadrage</translation>
     </message>
     <message>
         <source>Distance</source>
-        <translation type="guess">Distance</translation>
+        <translation>Distance</translation>
     </message>
     <message>
         <source>Step numbers</source>
-        <translation type="new">Numéros de pas</translation>
+        <translation>Numéros de pas</translation>
     </message>
     <message>
         <source>From</source>
-        <translation type="guess">De</translation>
+        <translation>De</translation>
     </message>
     <message>
         <source>To</source>
-        <translation type="guess">A</translation>
+        <translation>A</translation>
     </message>
     <message>
         <source>Pathline Options</source>
-        <translation type="guess">Options de trajectoire</translation>
+        <translation>Options de trajectoire</translation>
     </message>
     <message>
         <source>Period</source>
-        <translation type="guess">Période</translation>
+        <translation>Période</translation>
     </message>
     <message>
         <source>Issue warning if the advection limit is not reached.</source>
-        <translation type="guess">Émettre un avertissement si la limite d&apos;advection n&apos;est pas atteinte</translation>
+        <translation>Émettre un avertissement si la limite d&apos;advection n&apos;est pas atteinte</translation>
     </message>
     <message>
         <source>Issue warning if the spatial boundary is reached.</source>
-        <translation type="guess">Émettre un avertissement si la limite spatiale est atteinte</translation>
+        <translation>Émettre un avertissement si la limite spatiale est atteinte</translation>
     </message>
     <message>
         <source>Issue warning when a step size underflow is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
     </message>
     <message>
         <source>Issue warning when a stiffness condition is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
     </message>
     <message>
         <source>Spatial threshold</source>
-        <translation type="guess">Seuil spatial</translation>
+        <translation>Seuil spatial</translation>
     </message>
     <message>
         <source>velocity threshold</source>
-        <translation type="guess">Seuil de vitesse</translation>
+        <translation>Seuil de vitesse</translation>
     </message>
     <message>
         <source>crop begin</source>
-        <translation type="guess">Début du cadrage</translation>
+        <translation>Début du cadrage</translation>
     </message>
     <message>
         <source>crop end</source>
-        <translation type="guess">Fin du cadrage</translation>
+        <translation>Fin du cadrage</translation>
     </message>
     <message>
         <source>Pathlines Period</source>
-        <translation type="guess">Période des trajectoires</translation>
+        <translation>Période des trajectoires</translation>
     </message>
 </context>
 <context>
@@ -7665,11 +7832,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Clamp to Square</source>
-        <translation type="guess">Serrer à l&apos;équerre</translation>
+        <translation>Serrer à l&apos;équerre</translation>
     </message>
     <message>
         <source>Fill viewport on zoom</source>
-        <translation type="guess">Remplir la fenêtre en zoomant</translation>
+        <translation>Remplir la fenêtre en zoomant</translation>
     </message>
     <message>
         <source>Navigation mode:</source>
@@ -7697,7 +7864,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Switch to bounding box when changing views:</source>
-        <translation type="new">Tracer seulement la boîte englobante au changement de vue :</translation>
+        <translation>Tracer seulement la boîte englobante au changement de vue :</translation>
     </message>
     <message>
         <source>Always</source>
@@ -7713,7 +7880,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Auto (scalable rendering only)</source>
-        <translation type="new">Auto (Seulement en rendu scalable)</translation>
+        <translation>Auto (Seulement en rendu scalable)</translation>
+    </message>
+    <message>
+        <source>Changing mode will automatically trigger a View reset.</source>
+        <translation type="unfinished">Le changement de mode déclenchera automatiquement une réinitialisation de la vue.</translation>
     </message>
 </context>
 <context>
@@ -7770,7 +7941,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Select by</source>
-        <translation type="alterlegacy">Choisir par</translation>
+        <translation>Choisir par</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -7790,7 +7961,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>VisIt requires at least one contour.</source>
-        <translation type="alterlegacy">VisIt nécessite au moins un contour.</translation>
+        <translation>VisIt nécessite au moins un contour.</translation>
     </message>
     <message>
         <source>Minimum</source>
@@ -7813,11 +7984,11 @@ http error %2: %3.</translation>
     <name>QvisIsovolumeWindow</name>
     <message>
         <source>Lower bound</source>
-        <translation type="alterlegacy">Borne inférieure</translation>
+        <translation>Borne inférieure</translation>
     </message>
     <message>
         <source>Upper bound</source>
-        <translation type="alterlegacy">Borne supérieure</translation>
+        <translation>Borne supérieure</translation>
     </message>
     <message>
         <source>Variable</source>
@@ -7941,11 +8112,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation type="new">Avant</translation>
+        <translation>Avant</translation>
     </message>
     <message>
         <source>Backward</source>
-        <translation type="new">Arrière</translation>
+        <translation>Arrière</translation>
     </message>
     <message>
         <source>Integrator</source>
@@ -7953,11 +8124,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Forward Euler (Single-step)</source>
-        <translation type="correct">Euler explicite (une seule étape) </translation>
+        <translation>Euler explicite (une seule étape) </translation>
     </message>
     <message>
         <source>Leapfrog (Single-step)</source>
-        <translation type="correct">Saute-mouton (une seule étape)</translation>
+        <translation>Saute-mouton (une seule étape)</translation>
     </message>
     <message>
         <source>Dormand-Prince (Runge-Kutta)</source>
@@ -7981,11 +8152,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Limit maximum time step</source>
-        <translation type="alterlegacy">Limiter le max du pas de temps</translation>
+        <translation>Limiter le max du pas de temps</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation type="guess">Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
+        <translation>Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -7993,7 +8164,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Absolute tolerance</source>
-        <translation type="new">Tolérance absolue</translation>
+        <translation>Tolérance absolue</translation>
     </message>
     <message>
         <source>Absolute</source>
@@ -8001,7 +8172,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation type="new">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Termination</source>
@@ -8025,7 +8196,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Average distance from seed</source>
-        <translation type="alterlegacy">Distance moyenne à partir de la graine</translation>
+        <translation>Distance moyenne à partir de la graine</translation>
     </message>
     <message>
         <source>Base value</source>
@@ -8037,19 +8208,19 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Clamp exponent values</source>
-        <translation type="unfinished">Clamp exponent values</translation>
+        <translation type="unfinished">Valeurs des exposants de serrage</translation>
     </message>
     <message>
         <source>Limit maximum advection time i.e. FTLE</source>
-        <translation type="alterlegacy">Limiter le temps d&apos;avection maxi c&apos;est-à-dire FTLE</translation>
+        <translation>Limiter le temps d&apos;avection maxi c&apos;est-à-dire FTLE</translation>
     </message>
     <message>
         <source>Limit maximum advection distance i.e. FLLE</source>
-        <translation type="alterlegacy">Limiter la distance d&apos;avection maxi c&apos;est-à-dire FLLE</translation>
+        <translation>Limiter la distance d&apos;avection maxi c&apos;est-à-dire FLLE</translation>
     </message>
     <message>
         <source>Limit maximum size i.e. FSLE</source>
-        <translation type="alterlegacy">Limiter la taille maximale c&apos;est-à-dire FSLE</translation>
+        <translation>Limiter la taille maximale c&apos;est-à-dire FSLE</translation>
     </message>
     <message>
         <source>Limit maximum advection time</source>
@@ -8089,7 +8260,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Override Starting Time</source>
-        <translation type="alterlegacy">Outrepasser le temps de départ</translation>
+        <translation>Outrepasser le temps de départ</translation>
     </message>
     <message>
         <source>Time</source>
@@ -8129,7 +8300,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="new">Laisser Visit sélectionner le meilleur algorithme</translation>
+        <translation>Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -8209,7 +8380,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Pathlines Override Starting Time</source>
-        <translation type="alterlegacy">Trajectoires outrepassent le temps de départ</translation>
+        <translation>Trajectoires outrepassent le temps de départ</translation>
     </message>
     <message>
         <source>relative tolerance</source>
@@ -8225,15 +8396,15 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>LCS</source>
-        <translation type="guess">Structures cohérentes lagrangiennes (LCS)</translation>
+        <translation>Structures cohérentes lagrangiennes (LCS)</translation>
     </message>
     <message>
         <source>Auxiliary Grid</source>
-        <translation type="guess">Grille auxiliaire</translation>
+        <translation>Grille auxiliaire</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Aucune</translation>
+        <translation>Aucune</translation>
     </message>
     <message>
         <source>2D</source>
@@ -8245,7 +8416,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Spacing</source>
-        <translation type="guess">Espacement</translation>
+        <translation>Espacement</translation>
     </message>
     <message>
         <source>Nektar++</source>
@@ -8257,147 +8428,147 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Eigen Value</source>
-        <translation type="correct">Valeur propre</translation>
+        <translation>Valeur propre</translation>
     </message>
     <message>
         <source>Eigen Vector</source>
-        <translation type="correct">Vecteur propre</translation>
+        <translation>Vecteur propre</translation>
     </message>
     <message>
         <source>Tensor</source>
-        <translation type="correct">Tenseur</translation>
+        <translation>Tenseur</translation>
     </message>
     <message>
         <source>Left Cauchy Green</source>
-        <translation type="guess">Tenseur de Cauchy-Green gauche</translation>
+        <translation>Tenseur de Cauchy-Green gauche</translation>
     </message>
     <message>
         <source>Right Cauchy Green</source>
-        <translation type="guess">Tenseur de Cauchy-Green droit</translation>
+        <translation>Tenseur de Cauchy-Green droit</translation>
     </message>
     <message>
         <source>Eigen value</source>
-        <translation type="correct">Valeur propre</translation>
+        <translation>Valeur propre</translation>
     </message>
     <message>
         <source>Smallest</source>
-        <translation type="guess">Le plus petit</translation>
+        <translation>Le plus petit</translation>
     </message>
     <message>
         <source>Intermediate (3D only)</source>
-        <translation type="guess">Intermédiaire (3D seulement)</translation>
+        <translation>Intermédiaire (3D seulement)</translation>
     </message>
     <message>
         <source>Largest</source>
-        <translation type="guess">Le plus grand</translation>
+        <translation>Le plus grand</translation>
     </message>
     <message>
         <source>Shear Pos.</source>
-        <translation type="guess">Cisaillement Pos.</translation>
+        <translation>Cisaillement Pos.</translation>
     </message>
     <message>
         <source>Shear Neg.</source>
-        <translation type="guess">Cisaillement Neg.</translation>
+        <translation>Cisaillement Neg.</translation>
     </message>
     <message>
         <source>Shear Pos. linear combination</source>
-        <translation type="guess">Cisaillement Pos. combinaison linéaire</translation>
+        <translation>Cisaillement Pos. combinaison linéaire</translation>
     </message>
     <message>
         <source>Shear Neg. linear combination</source>
-        <translation type="guess">Cisaillement Neg. combinaison linéaire</translation>
+        <translation>Cisaillement Neg. combinaison linéaire</translation>
     </message>
     <message>
         <source>Seed generation</source>
-        <translation type="guess">Génération des graines</translation>
+        <translation>Génération des graines</translation>
     </message>
     <message>
         <source>Threshold limit</source>
-        <translation type="guess">Valeur seuil</translation>
+        <translation>Valeur seuil</translation>
     </message>
     <message>
         <source>Radial limit</source>
-        <translation type="guess">Limite radiale</translation>
+        <translation>Limite radiale</translation>
     </message>
     <message>
         <source>Boundary limit</source>
-        <translation type="guess">Limite de frontière</translation>
+        <translation>Limite de frontière</translation>
     </message>
     <message>
         <source>Maximum number of seeds</source>
-        <translation type="guess">Nombre maximum de graines</translation>
+        <translation>Nombre maximum de graines</translation>
     </message>
     <message>
         <source>Pathline Options</source>
-        <translation type="guess">Options de trajectoire</translation>
+        <translation>Options de trajectoire</translation>
     </message>
     <message>
         <source>Period</source>
-        <translation type="guess">Période</translation>
+        <translation>Période</translation>
     </message>
     <message>
         <source>Issue warning if the advection limit is not reached.</source>
-        <translation type="guess">Émettre un avertissement si la limite d&apos;advection n&apos;est pas atteinte</translation>
+        <translation>Émettre un avertissement si la limite d&apos;advection n&apos;est pas atteinte</translation>
     </message>
     <message>
         <source>Issue warning if the spatial boundary is reached.</source>
-        <translation type="guess">Émettre un avertissement si la limite spatiale est atteinte</translation>
+        <translation>Émettre un avertissement si la limite spatiale est atteinte</translation>
     </message>
     <message>
         <source>Issue warning when a step size underflow is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
     </message>
     <message>
         <source>Issue warning when a stiffness condition is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
     </message>
     <message>
         <source>Lambda Shear Pos.</source>
-        <translation type="guess">Cisaillement Lambda Pos.</translation>
+        <translation>Cisaillement Lambda Pos.</translation>
     </message>
     <message>
         <source>Lambda Shear Neg.</source>
-        <translation type="guess">Cisaillement Lambda Neg.</translation>
+        <translation>Cisaillement Lambda Neg.</translation>
     </message>
     <message>
         <source>auxiliary grid spacing</source>
-        <translation type="guess">espacement de la grille auxiliaire</translation>
+        <translation>espacement de la grille auxiliaire</translation>
     </message>
     <message>
         <source>eigen weight</source>
-        <translation type="guess">propre poids</translation>
+        <translation>propre poids</translation>
     </message>
     <message>
         <source>max steps</source>
-        <translation type="guess">nombre de pas max</translation>
+        <translation>nombre de pas max</translation>
     </message>
     <message>
         <source>max time</source>
-        <translation type="guess">temps max</translation>
+        <translation>temps max</translation>
     </message>
     <message>
         <source>max distance</source>
-        <translation type="guess">distance max</translation>
+        <translation>distance max</translation>
     </message>
     <message>
         <source>max size</source>
-        <translation type="guess">taille max</translation>
+        <translation>taille max</translation>
     </message>
     <message>
         <source>Pathlines Period</source>
-        <translation type="guess">Période des trajectoires</translation>
+        <translation>Période des trajectoires</translation>
     </message>
     <message>
         <source>Threshold Limit</source>
-        <translation type="guess">Valeur seuil</translation>
+        <translation>Valeur seuil</translation>
     </message>
     <message>
         <source>Radial Limit</source>
-        <translation type="guess">Limite radiale</translation>
+        <translation>Limite radiale</translation>
     </message>
     <message>
         <source>Boundary Limit</source>
-        <translation type="guess">Limite de frontière</translation>
+        <translation>Limite de frontière</translation>
     </message>
 </context>
 <context>
@@ -8416,23 +8587,23 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Restrict number of labels to</source>
-        <translation type="guess">Restreindre le nombre de libellés à</translation>
+        <translation>Restreindre le nombre de libellés à</translation>
     </message>
     <message>
         <source>Front</source>
-        <translation type="guess">Devant</translation>
+        <translation>Devant</translation>
     </message>
     <message>
         <source>Back</source>
-        <translation type="guess">Derrière</translation>
+        <translation>Derrière</translation>
     </message>
     <message>
         <source>Front or Back</source>
-        <translation type="guess">Devant ou Derrière</translation>
+        <translation>Devant ou Derrière</translation>
     </message>
     <message>
         <source>Draw labels that face</source>
-        <translation type="guess">Dessiner les étiquettes qui font face</translation>
+        <translation>Dessiner les étiquettes qui font face</translation>
     </message>
     <message>
         <source>Auto</source>
@@ -8452,7 +8623,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Formatting</source>
-        <translation type="guess">Formatage</translation>
+        <translation>Formatage</translation>
     </message>
     <message>
         <source>Natural</source>
@@ -8492,11 +8663,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="new">Gauche</translation>
+        <translation>Gauche</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="new">Droite</translation>
+        <translation>Droite</translation>
     </message>
     <message>
         <source>Horizontal justification</source>
@@ -8504,11 +8675,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Top</source>
-        <translation type="new">Haute</translation>
+        <translation>Haute</translation>
     </message>
     <message>
         <source>Bottom</source>
-        <translation type="new">Basse</translation>
+        <translation>Basse</translation>
     </message>
     <message>
         <source>Vertical justification</source>
@@ -8552,18 +8723,18 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Cell labels</source>
-        <translation type="guess">Étiquettes de cellule</translation>
+        <translation>Étiquettes de cellule</translation>
     </message>
     <message>
         <source>Node labels</source>
-        <translation type="guess">Étiquettes de nœuds</translation>
+        <translation>Étiquettes de nœuds</translation>
     </message>
 </context>
 <context>
     <name>QvisLagrangianWindow</name>
     <message>
         <source>Seed Point</source>
-        <translation type="unfinished">Point d&apos;origine de la graine</translation>
+        <translation>Point d&apos;origine de la graine</translation>
     </message>
     <message>
         <source>Number of steps</source>
@@ -8571,7 +8742,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>X Axis Sample</source>
-        <translation type="guess">Echantillon axe X</translation>
+        <translation>Echantillon axe X</translation>
     </message>
     <message>
         <source>Step</source>
@@ -8599,14 +8770,14 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Y Axis Sample</source>
-        <translation type="guess">Echantillon axe Y</translation>
+        <translation>Echantillon axe Y</translation>
     </message>
 </context>
 <context>
     <name>QvisLegendAttributesInterface</name>
     <message>
         <source>Let VisIt manage legend position</source>
-        <translation type="guess">Laisser Visit gérer la position de la légende</translation>
+        <translation>Laisser Visit gérer la position de la légende</translation>
     </message>
     <message>
         <source>Legend position</source>
@@ -8622,7 +8793,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Bounding box</source>
-        <translation type="guess">Boîte englobante</translation>
+        <translation>Boîte englobante</translation>
     </message>
     <message>
         <source>Draw title</source>
@@ -8770,7 +8941,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Custom title</source>
-        <translation type="correct">Titre personnalisé</translation>
+        <translation>Titre personnalisé</translation>
     </message>
 </context>
 <context>
@@ -8836,107 +9007,107 @@ http error %2: %3.</translation>
     <name>QvisLimitCycleWindow</name>
     <message>
         <source>Integration</source>
-        <translation type="correct">Intégration</translation>
+        <translation>Intégration</translation>
     </message>
     <message>
         <source>Appearance</source>
-        <translation type="correct">Apparence</translation>
+        <translation>Apparence</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="correct">Avancé</translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <source>Source</source>
-        <translation type="correct">Source</translation>
+        <translation>Source</translation>
     </message>
     <message>
         <source>Source type</source>
-        <translation type="correct">Type de source</translation>
+        <translation>Type de source</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="correct">Ligne</translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="correct">Début</translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>End</source>
-        <translation type="correct">Fin</translation>
+        <translation>Fin</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="correct">Origine</translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation type="guess">Normale</translation>
+        <translation>Normale</translation>
     </message>
     <message>
         <source>Up axis</source>
-        <translation type="correct">Axe vertical</translation>
+        <translation>Axe vertical</translation>
     </message>
     <message>
         <source>Sampling</source>
-        <translation type="guess">Echantillonnage</translation>
+        <translation>Echantillonnage</translation>
     </message>
     <message>
         <source>Sampling type:</source>
-        <translation type="correct">Type d&apos;échantillonnage :</translation>
+        <translation>Type d&apos;échantillonnage :</translation>
     </message>
     <message>
         <source>Uniform</source>
-        <translation type="correct">Uniforme</translation>
+        <translation>Uniforme</translation>
     </message>
     <message>
         <source>Sampling along:</source>
-        <translation type="guess">Echantillonnage la long de :</translation>
+        <translation>Echantillonnage la long de :</translation>
     </message>
     <message>
         <source>Boundary</source>
-        <translation type="guess">Frontière</translation>
+        <translation>Frontière</translation>
     </message>
     <message>
         <source>Interior</source>
-        <translation type="correct">Intérieur</translation>
+        <translation>Intérieur</translation>
     </message>
     <message>
         <source>Number of random samples</source>
-        <translation type="guess">Nombre d&apos;échantillons aléatoires</translation>
+        <translation>Nombre d&apos;échantillons aléatoires</translation>
     </message>
     <message>
         <source>Random number seed</source>
-        <translation type="guess">Graine de nombre aléatoire</translation>
+        <translation>Graine de nombre aléatoire</translation>
     </message>
     <message>
         <source>Sample density 0</source>
-        <translation type="correct">Densité 0 d&apos;échantillon</translation>
+        <translation>Densité 0 d&apos;échantillon</translation>
     </message>
     <message>
         <source>Sample density 1</source>
-        <translation type="correct">Densité 1 d&apos;échantillon</translation>
+        <translation>Densité 1 d&apos;échantillon</translation>
     </message>
     <message>
         <source>Sample distance 0</source>
-        <translation type="correct">Distance 0 d&apos;échantillon</translation>
+        <translation>Distance 0 d&apos;échantillon</translation>
     </message>
     <message>
         <source>Sample distance 1</source>
-        <translation type="correct">Distance 1 d&apos;échantillon</translation>
+        <translation>Distance 1 d&apos;échantillon</translation>
     </message>
     <message>
         <source>Field</source>
-        <translation type="guess">Champ</translation>
+        <translation>Champ</translation>
     </message>
     <message>
         <source>Default</source>
-        <translation type="guess">Valeur par défaut</translation>
+        <translation>Valeur par défaut</translation>
     </message>
     <message>
         <source>Flash</source>
-        <translation type="guess">Eclair</translation>
+        <translation>Eclair</translation>
     </message>
     <message>
         <source>M3D-C1 2D</source>
@@ -8968,39 +9139,39 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation type="correct">Suivant</translation>
+        <translation>Suivant</translation>
     </message>
     <message>
         <source>Backward</source>
-        <translation type="correct">Précédent</translation>
+        <translation>Précédent</translation>
     </message>
     <message>
         <source>Both</source>
-        <translation type="correct">Les deux</translation>
+        <translation>Les deux</translation>
     </message>
     <message>
         <source>Forward Directionless</source>
-        <translation type="guess">Avance sans direction</translation>
+        <translation>Avance sans direction</translation>
     </message>
     <message>
         <source>Backward Directionless</source>
-        <translation type="guess">Recule sans direction</translation>
+        <translation>Recule sans direction</translation>
     </message>
     <message>
         <source>Both Directionless</source>
-        <translation type="guess">Les deux sans direction</translation>
+        <translation>Les deux sans direction</translation>
     </message>
     <message>
         <source>Integrator</source>
-        <translation type="correct">Intégrateur</translation>
+        <translation>Intégrateur</translation>
     </message>
     <message>
         <source>Forward Euler (Single-step)</source>
-        <translation type="correct">Euler explicite (une seule étape) </translation>
+        <translation>Euler explicite (une seule étape) </translation>
     </message>
     <message>
         <source>Leapfrog (Single-step)</source>
-        <translation type="correct">Saute-mouton (une seule étape)</translation>
+        <translation>Saute-mouton (une seule étape)</translation>
     </message>
     <message>
         <source>Runge-Kutta-Dormand-Prince (RKDP)</source>
@@ -9016,131 +9187,131 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
-        <translation type="correct">M3D-C1 2D Integrateur (M3D-C1 2D seulement les champs)</translation>
+        <translation>M3D-C1 2D Integrateur (M3D-C1 2D seulement les champs)</translation>
     </message>
     <message>
         <source>Step length</source>
-        <translation type="guess">Longueur du pas</translation>
+        <translation>Longueur du pas</translation>
     </message>
     <message>
         <source>Limit maximum time step</source>
-        <translation type="guess">Limiter le pas de temps maximum</translation>
+        <translation>Limiter le pas de temps maximum</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation type="guess">Tolérances: max erreur par pas &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
+        <translation>Tolérances: max erreur par pas &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
-        <translation type="guess">Tolérence relative</translation>
+        <translation>Tolérence relative</translation>
     </message>
     <message>
         <source>Absolute tolerance</source>
-        <translation type="guess">Tolérance absolue</translation>
+        <translation>Tolérance absolue</translation>
     </message>
     <message>
         <source>Absolute</source>
-        <translation type="correct">Absolue</translation>
+        <translation>Absolue</translation>
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation type="guess">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Termination</source>
-        <translation type="correct">Terminaison</translation>
+        <translation>Terminaison</translation>
     </message>
     <message>
         <source>Maximum number of steps</source>
-        <translation type="correct">Nombre maximal de pas</translation>
+        <translation>Nombre maximal de pas</translation>
     </message>
     <message>
         <source>Limit maximum time elapsed for particles</source>
-        <translation type="guess">Limiter le temps maximum écoulé pour les particules</translation>
+        <translation>Limiter le temps maximum écoulé pour les particules</translation>
     </message>
     <message>
         <source>Limit maximum distance traveled by particles</source>
-        <translation type="guess">Limiter la distance maximale parcourue par les particules</translation>
+        <translation>Limiter la distance maximale parcourue par les particules</translation>
     </message>
     <message>
         <source>Limit cycle search</source>
-        <translation type="unfinished">Limiter la recherche de cycle</translation>
+        <translation>Limiter la recherche de cycle</translation>
     </message>
     <message>
         <source>Cycle tolerance</source>
-        <translation type="unfinished">Tolérance de cycle</translation>
+        <translation>Tolérance de cycle</translation>
     </message>
     <message>
         <source>Maximum iterations</source>
-        <translation type="guess">Nombre d&apos;itérations maxi</translation>
+        <translation>Nombre d&apos;itérations maxi</translation>
     </message>
     <message>
         <source>Show partial results</source>
-        <translation type="guess">Montrer les résultats partiels</translation>
+        <translation>Montrer les résultats partiels</translation>
     </message>
     <message>
         <source>Show the signed return distances for the first iteration</source>
-        <translation type="guess">Afficher les distances de retour signées pour la première itération</translation>
+        <translation>Afficher les distances de retour signées pour la première itération</translation>
     </message>
     <message>
         <source>Coloring</source>
-        <translation type="guess">Coloration</translation>
+        <translation>Coloration</translation>
     </message>
     <message>
         <source>Color by</source>
-        <translation type="guess">Couleur par</translation>
+        <translation>Couleur par</translation>
     </message>
     <message>
         <source>Solid Color</source>
-        <translation type="guess">Couleur solide</translation>
+        <translation>Couleur solide</translation>
     </message>
     <message>
         <source>Random Color</source>
-        <translation type="guess">Couleur aléatoire</translation>
+        <translation>Couleur aléatoire</translation>
     </message>
     <message>
         <source>Vector magnitude</source>
-        <translation type="guess">Grandeur du vecteur</translation>
+        <translation>Grandeur du vecteur</translation>
     </message>
     <message>
         <source>Vorticity magnitude</source>
-        <translation type="guess">Grandeur de vorticité</translation>
+        <translation>Grandeur de vorticité</translation>
     </message>
     <message>
         <source>Arc length</source>
-        <translation type="guess">Taille de l&apos;arc</translation>
+        <translation>Taille de l&apos;arc</translation>
     </message>
     <message>
         <source>Absolute integration time</source>
-        <translation type="guess">Temps d&apos;intégration absolu</translation>
+        <translation>Temps d&apos;intégration absolu</translation>
     </message>
     <message>
         <source>Relative integration time</source>
-        <translation type="guess">Temps d&apos;intégration relatif</translation>
+        <translation>Temps d&apos;intégration relatif</translation>
     </message>
     <message>
         <source>Avg. dist. from seed</source>
-        <translation type="guess">Dist. moy. de la graine de départ</translation>
+        <translation>Dist. moy. de la graine de départ</translation>
     </message>
     <message>
         <source>Correlation distance</source>
-        <translation type="correct">Distance de corrélation</translation>
+        <translation>Distance de corrélation</translation>
     </message>
     <message>
         <source>Difference</source>
-        <translation type="correct">Différence</translation>
+        <translation>Différence</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Angular tolerance (degrees)</source>
-        <translation type="correct">Tolérance angulaire (degrés)</translation>
+        <translation>Tolérance angulaire (degrés)</translation>
     </message>
     <message>
         <source>Minimum measuring distance</source>
-        <translation type="guess">Distance de mesure minimale</translation>
+        <translation>Distance de mesure minimale</translation>
     </message>
     <message>
         <source>Streamlines vs Pathlines</source>
@@ -9150,7 +9321,7 @@ http error %2: %3.</translation>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-        <translation type="correct">Ligne de courant
+        <translation>Ligne de courant
     Calculer les trajectoires (immédiatement) dans un instantané du champ de vecteur.
     Utiliser et charger les données du vecteur, seulement de l&apos;actuel tranche de temps.</translation>
     </message>
@@ -9158,89 +9329,89 @@ http error %2: %3.</translation>
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
-        <translation type="guess">Trajectoire
+        <translation>Trajectoire
     Calculer des trajectoires dans le champ vectoriel variant dans le temps.
     Utilise et charge les données vectorielles de toutes les tranches de temps pertinentes</translation>
     </message>
     <message>
         <source>Pathlines Options</source>
-        <translation type="correct">Options des trajectoires</translation>
+        <translation>Options des trajectoires</translation>
     </message>
     <message>
         <source>Override starting time</source>
-        <translation type="guess">Outrepasser le temps de départ</translation>
+        <translation>Outrepasser le temps de départ</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="correct">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Period</source>
-        <translation type="guess">Période</translation>
+        <translation>Période</translation>
     </message>
     <message>
         <source>How to perform interpolation over time</source>
-        <translation type="correct">Comment effectuer une interpolation sur le temps</translation>
+        <translation>Comment effectuer une interpolation sur le temps</translation>
     </message>
     <message>
         <source>Mesh is static over time (fast, but special purpose)</source>
-        <translation type="guess">Maillage fixe en temps (rapide, mais spécifique)</translation>
+        <translation>Maillage fixe en temps (rapide, mais spécifique)</translation>
     </message>
     <message>
         <source>Mesh changes over time (slow, but robust)</source>
-        <translation type="guess">Maillage variable en temps (lent, mais robuste)</translation>
+        <translation>Maillage variable en temps (lent, mais robuste)</translation>
     </message>
     <message>
         <source>Parallel integration options</source>
-        <translation type="guess">Options d&apos;intégration parallèle</translation>
+        <translation>Options d&apos;intégration parallèle</translation>
     </message>
     <message>
         <source>Parallelization</source>
-        <translation type="guess">Parallélisation</translation>
+        <translation>Parallélisation</translation>
     </message>
     <message>
         <source>Parallelize over curves</source>
-        <translation type="guess">Paralléliser sur les courbes</translation>
+        <translation>Paralléliser sur les courbes</translation>
     </message>
     <message>
         <source>Parallelize over domains</source>
-        <translation type="guess">Paralléliser sur les domaines</translation>
+        <translation>Paralléliser sur les domaines</translation>
     </message>
     <message>
         <source>Parallelize over curves and domains</source>
-        <translation type="guess">Paralléliser sur les courbes et les domaines</translation>
+        <translation>Paralléliser sur les courbes et les domaines</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="guess">Laisser Visit choisir le meilleur algorithme</translation>
+        <translation>Laisser Visit choisir le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
-        <translation type="guess">Seuil de communication</translation>
+        <translation>Seuil de communication</translation>
     </message>
     <message>
         <source>Domain cache size</source>
-        <translation type="correct">Taille du cache de domaine</translation>
+        <translation>Taille du cache de domaine</translation>
     </message>
     <message>
         <source>Work group size</source>
-        <translation type="correct">Taille du groupe de travail</translation>
+        <translation>Taille du groupe de travail</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="correct">Alertes</translation>
+        <translation>Alertes</translation>
     </message>
     <message>
         <source>Issue warning when the maximum number of steps is reached.</source>
-        <translation type="correct">Lancer une alerte lorsque le nombre maximum d&apos;étapes est atteint.</translation>
+        <translation>Lancer une alerte lorsque le nombre maximum d&apos;étapes est atteint.</translation>
     </message>
     <message>
         <source>Issue warning when a step size underflow is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
     </message>
     <message>
         <source>Issue warning when a stiffness condition is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
     </message>
     <message>
         <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
@@ -9248,83 +9419,83 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Speed cutoff for critical points</source>
-        <translation type="guess">Limitation de la vitesse pour les points critiques</translation>
+        <translation>Limitation de la vitesse pour les points critiques</translation>
     </message>
     <message>
         <source>Samples along line:</source>
-        <translation type="guess">Échantillons le long de la ligne:</translation>
+        <translation>Échantillons le long de la ligne:</translation>
     </message>
     <message>
         <source>Distance in X:</source>
-        <translation type="guess">Distance selon X :</translation>
+        <translation>Distance selon X :</translation>
     </message>
     <message>
         <source>Distance in Y:</source>
-        <translation type="guess">Distance selon Y :</translation>
+        <translation>Distance selon Y :</translation>
     </message>
     <message>
         <source>Samples in X:</source>
-        <translation type="guess">Échantillons selon X :</translation>
+        <translation>Échantillons selon X :</translation>
     </message>
     <message>
         <source>Samples in Y:</source>
-        <translation type="guess">Échantillons selon Y :</translation>
+        <translation>Échantillons selon Y :</translation>
     </message>
     <message>
         <source>field constant</source>
-        <translation type="guess">Champ constant</translation>
+        <translation>Champ constant</translation>
     </message>
     <message>
         <source>step length</source>
-        <translation type="guess">Longueur du pas</translation>
+        <translation>Longueur du pas</translation>
     </message>
     <message>
         <source>maxsteps</source>
-        <translation type="guess">Nombre max de pas</translation>
+        <translation>Nombre max de pas</translation>
     </message>
     <message>
         <source>maxtime</source>
-        <translation type="guess">Temps max</translation>
+        <translation>Temps max</translation>
     </message>
     <message>
         <source>maxdistance</source>
-        <translation type="guess">Distance max</translation>
+        <translation>Distance max</translation>
     </message>
     <message>
         <source>Pathlines Override Starting Time</source>
-        <translation type="guess">Trajectoires outrepassent le temps de départ</translation>
+        <translation>Trajectoires outrepassent le temps de départ</translation>
     </message>
     <message>
         <source>Pathlines Period</source>
-        <translation type="guess">Période des trajectoires</translation>
+        <translation>Période des trajectoires</translation>
     </message>
     <message>
         <source>relative tolerance</source>
-        <translation type="guess">Tolérance relative</translation>
+        <translation>Tolérance relative</translation>
     </message>
     <message>
         <source>absolute tolerance</source>
-        <translation type="guess">Tolérance absolue</translation>
+        <translation>Tolérance absolue</translation>
     </message>
     <message>
         <source>velocity source</source>
-        <translation type="guess">source de vélocité</translation>
+        <translation>source de vélocité</translation>
     </message>
     <message>
         <source>line start</source>
-        <translation type="correct">Début de ligne</translation>
+        <translation>Début de ligne</translation>
     </message>
     <message>
         <source>line end</source>
-        <translation type="correct">Fin de ligne</translation>
+        <translation>Fin de ligne</translation>
     </message>
     <message>
         <source>plane origin</source>
-        <translation type="correct">Origine du plan</translation>
+        <translation>Origine du plan</translation>
     </message>
     <message>
         <source>plane normal</source>
-        <translation type="guess">Normale au plan</translation>
+        <translation>Normale au plan</translation>
     </message>
     <message>
         <source>plane up axis</source>
@@ -9332,7 +9503,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>maximum iterations</source>
-        <translation type="guess">Nombre de pas max</translation>
+        <translation>Nombre de pas max</translation>
     </message>
     <message>
         <source>cycle tolerance</source>
@@ -9340,19 +9511,19 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
-        <translation type="guess">La tolérance angulaire de la distance de corrélation doit être&gt; = 0.0</translation>
+        <translation>La tolérance angulaire de la distance de corrélation doit être&gt; = 0.0</translation>
     </message>
     <message>
         <source>Correlation distance angular tolerance</source>
-        <translation type="guess">Tolérance angulaire de distance de corrélation</translation>
+        <translation>Tolérance angulaire de distance de corrélation</translation>
     </message>
     <message>
         <source>Correlation distance minimum distance must be &gt;= 0.0</source>
-        <translation type="guess">La distance minimale de corrélation doit être&gt; = 0.0</translation>
+        <translation>La distance minimale de corrélation doit être&gt; = 0.0</translation>
     </message>
     <message>
         <source>Correlation distance minimum distnace</source>
-        <translation type="guess">Distance minimale de corrélation</translation>
+        <translation>Distance minimale de corrélation</translation>
     </message>
 </context>
 <context>
@@ -9407,102 +9578,102 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="guess">Utiliser la couleur de premier plan</translation>
+        <translation>Utiliser la couleur de premier plan</translation>
     </message>
 </context>
 <context>
     <name>QvisLine3DInterface</name>
     <message>
         <source>Start</source>
-        <translation type="correct">Début</translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>End</source>
-        <translation type="correct">Fin</translation>
+        <translation>Fin</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="correct">Ligne</translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Tube</source>
-        <translation type="guess">Tube (tuyau)</translation>
+        <translation>Tube (tuyau)</translation>
     </message>
     <message>
         <source>Line type</source>
-        <translation type="guess">Type de ligne</translation>
+        <translation>Type de ligne</translation>
     </message>
     <message>
         <source>Line Width</source>
-        <translation type="guess">Épaisseur du trait</translation>
+        <translation>Épaisseur du trait</translation>
     </message>
     <message>
         <source>Low</source>
-        <translation type="guess">Bas</translation>
+        <translation>Bas</translation>
     </message>
     <message>
         <source>Medium</source>
-        <translation type="guess">Moyen</translation>
+        <translation>Moyen</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Haut</translation>
+        <translation>Haut</translation>
     </message>
     <message>
         <source>Tube Quality</source>
-        <translation type="guess">Qualité du tube</translation>
+        <translation>Qualité du tube</translation>
     </message>
     <message>
         <source>Tube Radius</source>
-        <translation type="guess">Rayon du tube</translation>
+        <translation>Rayon du tube</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="guess">Utiliser la couleur de premier plan</translation>
+        <translation>Utiliser la couleur de premier plan</translation>
     </message>
     <message>
         <source>Line color</source>
-        <translation type="guess">Couleur du trait</translation>
+        <translation>Couleur du trait</translation>
     </message>
     <message>
         <source>Begin Arrow</source>
-        <translation type="guess">Début flèche</translation>
+        <translation>Début flèche</translation>
     </message>
     <message>
         <source>Resolution</source>
-        <translation type="guess">Résolution</translation>
+        <translation>Résolution</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="correct">Rayon</translation>
+        <translation>Rayon</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation type="correct">Hauteur</translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>End Arrow</source>
-        <translation type="guess">Fin flèche</translation>
+        <translation>Fin flèche</translation>
     </message>
     <message>
         <source>Visible</source>
-        <translation type="correct">Visible</translation>
+        <translation>Visible</translation>
     </message>
     <message>
         <source>The start point must be specified as a 3D  coordinate. Resetting to the last good value of %1.</source>
-        <translation type="guess">Le point de départ doit être spécifié en tant que coordonnée 3D. On reprend la dernière valeur valable de %1.</translation>
+        <translation>Le point de départ doit être spécifié en tant que coordonnée 3D. On reprend la dernière valeur valable de %1.</translation>
     </message>
     <message>
         <source>The end point must be specified as a 3D  coordinate. Resetting to the last good value of %1.</source>
-        <translation type="guess">Le point d&apos;arrivée doit être spécifié en tant que coordonnée 3D. On reprend la dernière valeur valable de %1.</translation>
+        <translation>Le point d&apos;arrivée doit être spécifié en tant que coordonnée 3D. On reprend la dernière valeur valable de %1.</translation>
     </message>
     <message>
         <source>The radius must be specified as a floating point value. Resetting to the last good value of %1.</source>
-        <translation type="guess">Le rayon doit être spécifié en tant que nombre réel. On reprend la dernière valeur valable de %1.</translation>
+        <translation>Le rayon doit être spécifié en tant que nombre réel. On reprend la dernière valeur valable de %1.</translation>
     </message>
     <message>
         <source>The height must be specified as a floating point value. Resetting to the last good value of %1.</source>
-        <translation type="guess">La hauteur doit être spécifié en tant que nombre réel. On reprend la dernière valeur valable de %1.</translation>
+        <translation>La hauteur doit être spécifié en tant que nombre réel. On reprend la dernière valeur valable de %1.</translation>
     </message>
 </context>
 <context>
@@ -9513,7 +9684,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Array configuration</source>
-        <translation type="guess">Configuration du tableau</translation>
+        <translation>Configuration du tableau</translation>
     </message>
     <message>
         <source>List</source>
@@ -9521,7 +9692,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Number of arrays</source>
-        <translation type="guess">Nombre de tableaux</translation>
+        <translation>Nombre de tableaux</translation>
     </message>
     <message>
         <source>Number of channels</source>
@@ -9557,7 +9728,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Array axis direction</source>
-        <translation type="guess">Axe de direction du tableau</translation>
+        <translation>Axe de direction du tableau</translation>
     </message>
     <message>
         <source>R</source>
@@ -9569,7 +9740,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>View dimension</source>
-        <translation type="guess">Afficher la dimension</translation>
+        <translation>Afficher la dimension</translation>
     </message>
     <message>
         <source>One</source>
@@ -9625,11 +9796,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Standard deviation</source>
-        <translation type="guess">Écart-type</translation>
+        <translation>Écart-type</translation>
     </message>
     <message>
         <source>Linear sample distance</source>
-        <translation type="guess">Distance d&apos;échantillonnage linéaire</translation>
+        <translation>Distance d&apos;échantillonnage linéaire</translation>
     </message>
     <message>
         <source>Time sampling</source>
@@ -9637,11 +9808,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Start time step</source>
-        <translation type="guess">Pas de temps de début</translation>
+        <translation>Pas de temps de début</translation>
     </message>
     <message>
         <source>Stop time step</source>
-        <translation type="guess">Pas de temps de fin</translation>
+        <translation>Pas de temps de fin</translation>
     </message>
     <message>
         <source>Stride</source>
@@ -9673,7 +9844,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Toroidal</source>
-        <translation type="guess">Torique</translation>
+        <translation>Torique</translation>
     </message>
     <message>
         <source>Geometry</source>
@@ -9685,7 +9856,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Boundary</source>
-        <translation type="guess">Frontière</translation>
+        <translation>Frontière</translation>
     </message>
     <message>
         <source>Data File</source>
@@ -9701,7 +9872,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Coordinate layout R, Z</source>
-        <translation type="guess">Disposition des coordonnées R, Z </translation>
+        <translation>Disposition des coordonnées R, Z </translation>
     </message>
     <message>
         <source>Set the instance when applying to multiple 
@@ -9745,7 +9916,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Toroidal angle between arrays</source>
-        <translation type="guess">Angle torique entre les tableaux</translation>
+        <translation>Angle torique entre les tableaux</translation>
     </message>
     <message>
         <source>Number of divergent channels</source>
@@ -9781,7 +9952,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Poloidal angle</source>
-        <translation type="guess">Angle poloïdal</translation>
+        <translation>Angle poloïdal</translation>
     </message>
     <message>
         <source>Poloidal plane R-tilt</source>
@@ -9793,15 +9964,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Toroidal angle</source>
-        <translation type="guess">Angle torique</translation>
+        <translation>Angle torique</translation>
     </message>
     <message>
         <source>Flip toroidal angle</source>
-        <translation type="guess">Inverser l&apos;angle torique</translation>
+        <translation>Inverser l&apos;angle torique</translation>
     </message>
     <message>
         <source> R, Z, Phi, and Poloidal Angle</source>
-        <translation type="guess"> R, Z, Phi et angle poloïdal</translation>
+        <translation> R, Z, Phi et angle poloïdal</translation>
     </message>
     <message>
         <source>Read channel configuration file</source>
@@ -9809,7 +9980,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Sampling</source>
-        <translation type="guess">Échantillonnage</translation>
+        <translation>Échantillonnage</translation>
     </message>
     <message>
         <source>Channel geometry</source>
@@ -9821,7 +9992,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Cylinder sample profile</source>
-        <translation type="guess">Profil de l&apos;échantillon cylindrique</translation>
+        <translation>Profil de l&apos;échantillon cylindrique</translation>
     </message>
     <message>
         <source>Integration</source>
@@ -9837,11 +10008,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Integrate along the channel</source>
-        <translation type="guess">Intégrer le long du canal</translation>
+        <translation>Intégrer le long du canal</translation>
     </message>
     <message>
         <source>Sample toroidally as time</source>
-        <translation type="guess">Echantillonner toroïdalement au fil du temps</translation>
+        <translation type="vanished">Echantillonner toroïdalement au fil du temps</translation>
     </message>
     <message>
         <source>Integrate toroidally</source>
@@ -9849,15 +10020,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Toroidal angle sampling</source>
-        <translation type="new">Échantillonnage d&apos;angle torique</translation>
+        <translation>Échantillonnage d&apos;angle torique</translation>
     </message>
     <message>
         <source>Sample</source>
-        <translation type="guess">Échantillon</translation>
+        <translation>Échantillon</translation>
     </message>
     <message>
         <source>Absolute</source>
-        <translation type="guess">Absolu</translation>
+        <translation>Absolu</translation>
     </message>
     <message>
         <source>Relative</source>
@@ -9865,7 +10036,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Toroidal sample angle</source>
-        <translation type="alterlegacy">Angle torique d&apos;échantillon</translation>
+        <translation>Angle torique d&apos;échantillon</translation>
     </message>
     <message>
         <source>Start</source>
@@ -9877,11 +10048,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Current Time Step</source>
-        <translation type="guess">Pas de temps courant</translation>
+        <translation>Pas de temps courant</translation>
     </message>
     <message>
         <source>Multiple Time Steps</source>
-        <translation type="guess">Pas de temps multiples</translation>
+        <translation>Pas de temps multiples</translation>
     </message>
     <message>
         <source>Time step</source>
@@ -9917,7 +10088,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Misc viewing parameters</source>
-        <translation type="guess">Paramètres d&apos;affichage divers</translation>
+        <translation>Paramètres d&apos;affichage divers</translation>
     </message>
     <message>
         <source>View geometry</source>
@@ -9941,15 +10112,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Toroidal start angle</source>
-        <translation type="alterlegacy">Angle torique de début</translation>
+        <translation>Angle torique de début</translation>
     </message>
     <message>
         <source>Toroidal stop angle</source>
-        <translation type="alterlegacy">Angle torique de fin</translation>
+        <translation>Angle torique de fin</translation>
     </message>
     <message>
         <source>Toroidal sampling angle</source>
-        <translation type="unfinished">Angle d&apos;échantillonnage torique</translation>
+        <translation>Angle d&apos;échantillonnage torique</translation>
     </message>
     <message>
         <source>Number of channel list arrays</source>
@@ -9965,15 +10136,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Coordinate layout X, Z</source>
-        <translation type="alterlegacy">Disposition des coordonnées X, Z </translation>
+        <translation>Disposition des coordonnées X, Z </translation>
     </message>
     <message>
         <source>Y distance between arrays</source>
-        <translation type="guess">Distance en Y entre les tableaux</translation>
+        <translation>Distance en Y entre les tableaux</translation>
     </message>
     <message>
         <source>Array origin (X,Y,Z)</source>
-        <translation type="alterlegacy">Tableau origine (Z,Y,Z)</translation>
+        <translation>Tableau origine (Z,Y,Z)</translation>
     </message>
     <message>
         <source>X</source>
@@ -9993,31 +10164,43 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Y axis offset</source>
-        <translation type="alterlegacy">Décalage axe Y </translation>
+        <translation>Décalage axe Y </translation>
     </message>
     <message>
         <source> X, Y, Z, and Y Rotation</source>
-        <translation type="alterlegacy">X, Y, Z, et Rotation Y </translation>
+        <translation>X, Y, Z, et Rotation Y </translation>
     </message>
     <message>
         <source>Y axis</source>
-        <translation type="alterlegacy">Ordonnées (Y)</translation>
+        <translation>Ordonnées (Y)</translation>
     </message>
     <message>
         <source>Sample Y axis as time</source>
-        <translation type="unfinished">Echantillonner l'axe Y en temps</translation>
+        <translation type="obsolete">Echantillonner l&apos;axe Y en temps</translation>
     </message>
     <message>
         <source>Y axis sampling</source>
-        <translation type="unfinished">Echantillonnage axe Y (ordonnées)</translation>
+        <translation>Echantillonnage axe Y (ordonnées)</translation>
     </message>
     <message>
         <source>Y sample distance</source>
-        <translation type="unfinished">Distance d&apos;échantillon Y</translation>
+        <translation>Distance d&apos;échantillon Y</translation>
     </message>
     <message>
         <source>Array origin (R,Phi,Z)</source>
-        <translation type="alterlegacy">Tableau Origine (R,phi,Z)</translation>
+        <translation>Tableau Origine (R,phi,Z)</translation>
+    </message>
+    <message>
+        <source>Cone divergence</source>
+        <translation type="unfinished">Divergence du cône</translation>
+    </message>
+    <message>
+        <source>Sample toroidally</source>
+        <translation type="unfinished">Échantillon toroïdal</translation>
+    </message>
+    <message>
+        <source>Sample Y axis</source>
+        <translation type="unfinished">Exemple d'axe Y</translation>
     </message>
 </context>
 <context>
@@ -10074,7 +10257,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Use sampling</source>
-        <translation type="alterlegacy">Echantillonner</translation>
+        <translation>Echantillonner</translation>
     </message>
     <message>
         <source>Sample points</source>
@@ -10105,7 +10288,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Samples</source>
-        <translation type="guess">Échantillons</translation>
+        <translation>Échantillons</translation>
     </message>
     <message>
         <source>Refline Labels</source>
@@ -10117,7 +10300,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Use Sampling</source>
-        <translation type="guess">Echantillonner</translation>
+        <translation>Echantillonner</translation>
     </message>
 </context>
 <context>
@@ -10143,7 +10326,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Advanced file options</source>
-        <translation type="alterlegacy">Options de fichier avancées</translation>
+        <translation>Options de fichier avancées</translation>
     </message>
     <message>
         <source>ReOpen file</source>
@@ -10159,7 +10342,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>File &amp;information . . .</source>
-        <translation type="alterlegacy">&amp;Informations fichier . . .</translation>
+        <translation>&amp;Informations fichier . . .</translation>
     </message>
     <message>
         <source>Compute &amp;engines . . .</source>
@@ -10215,11 +10398,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>A&amp;nnotation . . .</source>
-        <translation style="new">Formats et A&amp;nnotations . . .</translation>
+        <translation>Formats et A&amp;nnotations . . .</translation>
     </message>
     <message>
         <source>Color &amp;table . . .</source>
-        <translation type="alterlegacy">&amp;Table de couleurs . . .</translation>
+        <translation>&amp;Table de couleurs . . .</translation>
     </message>
     <message>
         <source>Command . . .</source>
@@ -10235,11 +10418,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Keyframing . . .</source>
-        <translation type="alterlegacy">Transitions . . .</translation>
+        <translation>Transitions . . .</translation>
     </message>
     <message>
         <source>&amp;Lighting . . .</source>
-        <translation type="alterlegacy">&amp;Lumière/éclairage . . .</translation>
+        <translation>&amp;Lumière/éclairage . . .</translation>
     </message>
     <message>
         <source>&amp;Lineout . . .</source>
@@ -10251,15 +10434,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Material options . . .</source>
-        <translation type="alterlegacy">Options &amp;matériaux . . .</translation>
+        <translation>Options &amp;matériaux . . .</translation>
     </message>
     <message>
         <source>&amp;Mesh management . . .</source>
-        <translation type="alterlegacy">Gestion du &amp;Maillage . . .</translation>
+        <translation>Gestion du &amp;Maillage . . .</translation>
     </message>
     <message>
         <source>&amp;Pick . . .</source>
-        <translation type="guess">&amp;Piocher . . .</translation>
+        <translation>&amp;Piocher . . .</translation>
     </message>
     <message>
         <source>Quer&amp;y . . .</source>
@@ -10267,11 +10450,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Quer&amp;y over time options . . .</source>
-        <translation type="alterlegacy">Options de requêtes au fil du temps.</translation>
+        <translation>Options de requêtes au fil du temps.</translation>
     </message>
     <message>
         <source>&amp;Query over time options . . .</source>
-        <translation type="alterlegacy">Options de re&amp;quêtes au fil du temps.</translation>
+        <translation>Options de re&amp;quêtes au fil du temps.</translation>
     </message>
     <message>
         <source>&amp;Query . . .</source>
@@ -10279,11 +10462,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>S&amp;ubset . . .</source>
-        <translation type="alterlegacy">Composant . . .</translation>
+        <translation>Composant . . .</translation>
     </message>
     <message>
         <source>&amp;View . . .</source>
-        <translation type="alterlegacy">&amp;Vue caméra . . .</translation>
+        <translation>&amp;Vue caméra . . .</translation>
     </message>
     <message>
         <source>&amp;Options</source>
@@ -10291,7 +10474,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Appearance . . .</source>
-        <translation type="alterlegacy">&amp;Apparence . . .</translation>
+        <translation>&amp;Apparence . . .</translation>
     </message>
     <message>
         <source>&amp;Host profiles . . .</source>
@@ -10303,7 +10486,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Plugin manager . . .</source>
-        <translation type="alterlegacy">Gestionnaire de &amp;Plugins . . .</translation>
+        <translation>Gestionnaire de &amp;Plugins . . .</translation>
     </message>
     <message>
         <source>Preferences . . .</source>
@@ -10323,7 +10506,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Clone</source>
-        <translation type="alterlegacy">Cloner</translation>
+        <translation>Cloner</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -10359,7 +10542,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Layouts</source>
-        <translation type="new">Dispositions</translation>
+        <translation>Dispositions</translation>
     </message>
     <message>
         <source>Active window</source>
@@ -10375,15 +10558,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Annotations from</source>
-        <translation style="new">Annotations de</translation>
+        <translation>Annotations de</translation>
     </message>
     <message>
         <source>Plots from</source>
-        <translation style="new">Tracés de</translation>
+        <translation>Tracés de</translation>
     </message>
     <message>
         <source>Everything from</source>
-        <translation type="alterlegacy">A partir de tout</translation>
+        <translation>A partir de tout</translation>
     </message>
     <message>
         <source>Copy</source>
@@ -10391,7 +10574,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Pick points</source>
-        <translation type="guess">Points de pioche</translation>
+        <translation>Points de pioche</translation>
     </message>
     <message>
         <source>Plots</source>
@@ -10443,7 +10626,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Release notes . . .</source>
-        <translation style="new">Notes de version . . .</translation>
+        <translation>Notes de version . . .</translation>
     </message>
     <message>
         <source>Check for new version . . .</source>
@@ -10479,11 +10662,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Data level comparisons . . .</source>
-        <translation type="guess">Comparaisons au niveau des &amp;données . . .</translation>
+        <translation>Comparaisons au niveau des &amp;données . . .</translation>
     </message>
     <message>
         <source>Selections . . .</source>
-        <translation type="new">Sélections . . .</translation>
+        <translation>Sélections . . .</translation>
     </message>
     <message>
         <source>New</source>
@@ -10531,7 +10714,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Save to Cinema . . .</source>
-        <translation type="guess">Enregistrer dans Cinéma . . .</translation>
+        <translation>Enregistrer dans Cinéma . . .</translation>
     </message>
 </context>
 <context>
@@ -10554,11 +10737,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Simplify heavily mixed zones</source>
-        <translation type="new">Simplifier les zones fortement mélangées</translation>
+        <translation>Simplifier les zones fortement mélangées</translation>
     </message>
     <message>
         <source>Maximum materials per zone</source>
-        <translation type="new">Nombre maximum de matériaux par zone</translation>
+        <translation>Nombre maximum de matériaux par zone</translation>
     </message>
     <message>
         <source>Volume fraction for isovolume</source>
@@ -10566,19 +10749,19 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
-        <translation type="guess">Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux tracés. Pour les appliquer aux tracés en cours, réouvrir le fichier.</translation>
+        <translation>Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux tracés. Pour les appliquer aux tracés en cours, réouvrir le fichier.</translation>
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.  VisIt will NOT issue this message any further times for this session, but keep in mind that you must re-open each time you change the material attributes.</source>
-        <translation type="new">Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux graphiques. Pour les appliquer aux graphiques actuels, réouvrir le fichier. VisIt ne devrait PAS émettre ce message de nouveau dans cette session, mais gardez à l&apos;esprit que vous devez réouvrir chaque fois que vous changez les attributs matériau.</translation>
+        <translation>Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux graphiques. Pour les appliquer aux graphiques actuels, réouvrir le fichier. VisIt ne devrait PAS émettre ce message de nouveau dans cette session, mais gardez à l&apos;esprit que vous devez réouvrir chaque fois que vous changez les attributs matériau.</translation>
     </message>
     <message>
         <source>Max mats per zone must be at least 1.Resetting to the last good value of %1.</source>
-        <translation type="new">Le nombre max de matériaux par zone doit être au moins 1. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>Le nombre max de matériaux par zone doit être au moins 1. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of isoVolumeFraction was invalid. Resetting to the last good value of %1.</source>
-        <translation type="new">La valeur de fraction du volume-iso était invalide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de fraction du volume-iso était invalide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>Equi-T (obsolete)</source>
@@ -10586,7 +10769,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Equi-Z (default, supports iteration)</source>
-        <translation type="new">Equi-Z (par défaut, accepte itération)</translation>
+        <translation>Equi-Z (par défaut, accepte itération)</translation>
     </message>
     <message>
         <source>PLIC (accurate/discontinuous)</source>
@@ -10594,11 +10777,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Discrete (accurate/10X memory footprint/rect. only)</source>
-        <translation type="new">Discret (exacte / 10X empreinte mémoire / rect. seul)</translation>
+        <translation>Discret (exacte / 10X empreinte mémoire / rect. seul)</translation>
     </message>
     <message>
         <source>Enable interface smoothing (Equi-* only)</source>
-        <translation type="new">Activer le lissage d&apos;interface (Equi-* uniquement)</translation>
+        <translation>Activer le lissage d&apos;interface (Equi-* uniquement)</translation>
     </message>
     <message>
         <source>Force full connectivity (Equi-T only)</source>
@@ -10606,7 +10789,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Enable iteration (Equi-Z, Isovolume only)</source>
-        <translation type="new">Activer l&apos;itération (Equi-Z et volume-iso seulement)</translation>
+        <translation>Activer l&apos;itération (Equi-Z et volume-iso seulement)</translation>
     </message>
     <message>
         <source>Number of iterations</source>
@@ -10622,22 +10805,22 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
-        <translation type="new">La valeur de numIterations n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de numIterations n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
-        <translation type="new">La valeur de iterationDamping (itération &apos;amortissement) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de iterationDamping (itération &apos;amortissement) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="new">La valeur de annealingTime (temps de recuit) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de annealingTime (temps de recuit) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
 </context>
 <context>
     <name>QvisMergeWindow</name>
     <message>
         <source>Merge across all processors?</source>
-        <translation type="new">Fusionner à travers tous les processeurs ?</translation>
+        <translation>Fusionner à travers tous les processeurs ?</translation>
     </message>
     <message>
         <source>Maximum distance between points that should be merged</source>
@@ -10656,7 +10839,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Discretize boundary only</source>
-        <translation type="new">Discrétiser la frontière uniquement</translation>
+        <translation>Discrétiser la frontière uniquement</translation>
     </message>
     <message>
         <source>Discretization mode</source>
@@ -10676,7 +10859,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Flat enough (recip. curvature)</source>
-        <translation type="new">Suffisamment plat (recip. courbure)</translation>
+        <translation>Suffisamment plat (recip. courbure)</translation>
     </message>
     <message>
         <source>Adaptive not available. Missing boost interval template library. Overriding to Uniform.</source>
@@ -10747,15 +10930,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Elevé</translation>
+        <translation>Elevé</translation>
     </message>
     <message>
         <source>Zone</source>
-        <translation type="guess">Cellule/Zone</translation>
+        <translation>Cellule/Zone</translation>
     </message>
     <message>
         <source>Show internal zones</source>
-        <translation type="guess">Afficher les cellules/zones internes</translation>
+        <translation>Afficher les cellules/zones internes</translation>
     </message>
     <message>
         <source>Color</source>
@@ -10779,7 +10962,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Point / Line Style</source>
-        <translation type="alterlegacy">Style de Point/Ligne</translation>
+        <translation>Style de Point/Ligne</translation>
     </message>
     <message>
         <source>Geometry</source>
@@ -10799,7 +10982,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Random</source>
-        <translation type="guess">Aléatoire</translation>
+        <translation>Aléatoire</translation>
     </message>
 </context>
 <context>
@@ -10837,7 +11020,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Aspect Ratio</source>
-        <translation type="alterlegacy">Rapport d&apos;aspect</translation>
+        <translation>Rapport d&apos;aspect</translation>
     </message>
     <message>
         <source>Aspect Gamma</source>
@@ -10885,7 +11068,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Shear</source>
-        <translation type="alterlegacy">Cisaillement</translation>
+        <translation>Cisaillement</translation>
     </message>
     <message>
         <source>Shape</source>
@@ -10905,7 +11088,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Warpage</source>
-        <translation type="alterlegacy">Gauchissement</translation>
+        <translation>Gauchissement</translation>
     </message>
     <message>
         <source>Smallest Angle</source>
@@ -10917,7 +11100,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Hexahedron</source>
-        <translation type="alterlegacy">Hexaèdre</translation>
+        <translation>Hexaèdre</translation>
     </message>
     <message>
         <source>hex_lower</source>
@@ -10929,7 +11112,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Tetrahedron</source>
-        <translation type="alterlegacy">Tétraèdre</translation>
+        <translation>Tétraèdre</translation>
     </message>
     <message>
         <source>tet_lower</source>
@@ -10941,15 +11124,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Wedge</source>
-        <translation type="new">Prisme triangulaire</translation>
+        <translation>Prisme triangulaire</translation>
     </message>
     <message>
         <source>wed_lower</source>
-        <translation type="new">prisme_bas</translation>
+        <translation>prisme_bas</translation>
     </message>
     <message>
         <source>wed_upper</source>
-        <translation type="new">prisme_haut</translation>
+        <translation>prisme_haut</translation>
     </message>
     <message>
         <source>Pyramid</source>
@@ -10977,7 +11160,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Quad</source>
-        <translation type="new">Quadrilatère</translation>
+        <translation>Quadrilatère</translation>
     </message>
     <message>
         <source>quad_lower</source>
@@ -11095,11 +11278,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Define Models</source>
-        <translation type="alterlegacy">Définir les Modèles</translation>
+        <translation>Définir les Modèles</translation>
     </message>
     <message>
         <source>Add Variable</source>
-        <translation type="alterlegacy">Ajouter une Variable</translation>
+        <translation>Ajouter une Variable</translation>
     </message>
     <message>
         <source>Add Point</source>
@@ -11107,7 +11290,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Delete Variable</source>
-        <translation type="alterlegacy">Effacer la variable</translation>
+        <translation>Effacer la variable</translation>
     </message>
     <message>
         <source>Delete Point</source>
@@ -11126,7 +11309,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Draw atoms as</source>
-        <translation type="alterlegacy">Tracer les atomes par</translation>
+        <translation>Tracer les atomes par</translation>
     </message>
     <message>
         <source>None</source>
@@ -11138,27 +11321,27 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Sphere imposters</source>
-        <translation type="new">Pseudo sphères</translation>
+        <translation>Pseudo sphères</translation>
     </message>
     <message>
         <source>Atom sphere quality</source>
-        <translation type="new">Qualité de la sphère atomique</translation>
+        <translation>Qualité de la sphère atomique</translation>
     </message>
     <message>
         <source>Low</source>
-        <translation type="new">Basse</translation>
+        <translation>Basse</translation>
     </message>
     <message>
         <source>Medium</source>
-        <translation type="new">Moyenne</translation>
+        <translation>Moyenne</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="new">Haute</translation>
+        <translation>Haute</translation>
     </message>
     <message>
         <source>Super</source>
-        <translation type="new">Super</translation>
+        <translation>Super</translation>
     </message>
     <message>
         <source>Radius based on</source>
@@ -11174,7 +11357,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Atomic radius</source>
-        <translation type="new">Rayon atomique</translation>
+        <translation>Rayon atomique</translation>
     </message>
     <message>
         <source>Scalar variable</source>
@@ -11182,7 +11365,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Variable for atom radius</source>
-        <translation type="new">Variable pour le rayon atomique</translation>
+        <translation>Variable pour le rayon atomique</translation>
     </message>
     <message>
         <source>Atom radius scale factor</source>
@@ -11194,7 +11377,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Bonds</source>
-        <translation type="new">Liaisons</translation>
+        <translation>Liaisons</translation>
     </message>
     <message>
         <source>Draw bonds as</source>
@@ -11210,11 +11393,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Bond cylinder quality</source>
-        <translation type="new">Qualité du cylindre de liaison</translation>
+        <translation>Qualité du cylindre de liaison</translation>
     </message>
     <message>
         <source>Bond radius</source>
-        <translation type="new">Rayon de liaison</translation>
+        <translation>Rayon de liaison</translation>
     </message>
     <message>
         <source>Bond line width</source>
@@ -11226,7 +11409,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Color bonds by</source>
-        <translation type="new">Colorier les liaisons par</translation>
+        <translation>Colorier les liaisons par</translation>
     </message>
     <message>
         <source>Adjacent atom color</source>
@@ -11250,11 +11433,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Element types</source>
-        <translation type="new">Types d&apos;élément</translation>
+        <translation>Types d&apos;élément</translation>
     </message>
     <message>
         <source>Residue types</source>
-        <translation type="alterlegacy">Types de résidus</translation>
+        <translation>Types de résidus</translation>
     </message>
     <message>
         <source>Other discrete fields</source>
@@ -11294,7 +11477,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>bond radius</source>
-        <translation type="alterlegacy">rayon de liaison</translation>
+        <translation>rayon de liaison</translation>
     </message>
     <message>
         <source>minimum</source>
@@ -11340,15 +11523,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Y-Axis title format</source>
-        <translation type="new">Format du titre axe Y</translation>
+        <translation>Format du titre axe Y</translation>
     </message>
     <message>
         <source>Y-Axis tick spacing</source>
-        <translation type="new">Espacement des marques axe Y</translation>
+        <translation>Espacement des marques axe Y</translation>
     </message>
     <message>
         <source>Display markers</source>
-        <translation type="alterlegacy">Afficher les marqueurs</translation>
+        <translation>Afficher les marqueurs</translation>
     </message>
     <message>
         <source>Marker variable</source>
@@ -11360,7 +11543,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Id variable</source>
-        <translation type="alterlegacy">variable ID</translation>
+        <translation>variable ID</translation>
     </message>
     <message>
         <source>Legend</source>
@@ -11402,7 +11585,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Seed</source>
-        <translation type="alterlegacy">Graine</translation>
+        <translation>Graine</translation>
     </message>
     <message>
         <source>Cell</source>
@@ -11410,7 +11593,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Seed # or i j [k]</source>
-        <translation type="new">Numéro de graine ou i j [k]</translation>
+        <translation>Numéro de graine ou i j [k]</translation>
     </message>
     <message>
         <source>Seed # is Global</source>
@@ -11422,15 +11605,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>The values for the index were invalid. Resetting to the last good value.</source>
-        <translation type="alterlegacy">Les valeurs de l&apos;indice ne sont pas licites. On reprend la dernière valeur valable.</translation>
+        <translation>Les valeurs de l&apos;indice ne sont pas licites. On reprend la dernière valeur valable.</translation>
     </message>
     <message>
         <source>Honor actual mesh</source>
-        <translation type="guess">Respecter le maillage réel</translation>
+        <translation>Respecter le maillage réel</translation>
     </message>
     <message>
         <source>Honor original mesh</source>
-        <translation type="guess">Respecter le maillage original</translation>
+        <translation>Respecter le maillage original</translation>
     </message>
 </context>
 <context>
@@ -11462,7 +11645,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>WARNING: </source>
-        <translation type="alterlegacy">ALERTE :</translation>
+        <translation>ALERTE :</translation>
     </message>
 </context>
 <context>
@@ -11557,11 +11740,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Use variable 3 min</source>
-        <translation type="alterlegacy">Utiliser le min de la variable 3</translation>
+        <translation>Utiliser le min de la variable 3</translation>
     </message>
     <message>
         <source>Use variable 3 max</source>
-        <translation type="alterlegacy">Utiliser le max de la variable 3</translation>
+        <translation>Utiliser le max de la variable 3</translation>
     </message>
     <message>
         <source>Variable 3 Min</source>
@@ -11601,18 +11784,18 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>ZoneCount</source>
-        <translation type="alterlegacy">Nombre de zones</translation>
+        <translation>Nombre de zones</translation>
     </message>
 </context>
 <context>
     <name>QvisParallelCoordinatesPlotWindow</name>
     <message>
         <source>Axes</source>
-        <translation type="guess">Axes</translation>
+        <translation>Axes</translation>
     </message>
     <message>
         <source>Axis</source>
-        <translation type="guess">Axe</translation>
+        <translation>Axe</translation>
     </message>
     <message>
         <source>Min</source>
@@ -11632,19 +11815,19 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Move up</source>
-        <translation type="guess">Déplacer vers le haut</translation>
+        <translation>Déplacer vers le haut</translation>
     </message>
     <message>
         <source>Move down</source>
-        <translation type="guess">Déplacer vers le bas</translation>
+        <translation>Déplacer vers le bas</translation>
     </message>
     <message>
         <source>Reset all axis restrictions</source>
-        <translation type="guess">RAZ de toutes les restriction sur les axes</translation>
+        <translation>RAZ de toutes les restriction sur les axes</translation>
     </message>
     <message>
         <source>... but only when axis extents have been restricted</source>
-        <translation type="guess">... mais uniquement si les étendues des axes ont été limitées</translation>
+        <translation>... mais uniquement si les étendues des axes ont été limitées</translation>
     </message>
     <message>
         <source>Draw context</source>
@@ -11652,7 +11835,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Brightness (gamma)</source>
-        <translation type="guess">Luminosité (gamma)</translation>
+        <translation>Luminosité (gamma)</translation>
     </message>
     <message>
         <source>Number of partitions</source>
@@ -11696,11 +11879,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Bins of constant color</source>
-        <translation type="guess">Barres de couleur constante</translation>
+        <translation>Barres de couleur constante</translation>
     </message>
     <message>
         <source>Bins colored by population</source>
-        <translation type="guess">Barres colorées par population</translation>
+        <translation>Barres colorées par population</translation>
     </message>
     <message>
         <source>Focus color</source>
@@ -11712,11 +11895,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Context gamma</source>
-        <translation type="guess">Gamma contextuel</translation>
+        <translation>Gamma contextuel</translation>
     </message>
     <message>
         <source>Focus gamma</source>
-        <translation type="guess">Gamma de mise au point</translation>
+        <translation>Gamma de mise au point</translation>
     </message>
     <message>
         <source>Context num partitions</source>
@@ -11750,11 +11933,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Move Up</source>
-        <translation type="alterlegacy">Monter</translation>
+        <translation>Monter</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <translation type="alterlegacy">Descendre</translation>
+        <translation>Descendre</translation>
     </message>
     <message>
         <source>Remove</source>
@@ -12016,15 +12199,15 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>X-Coordinate</source>
-        <translation type="alterlegacy">Coordonnée X</translation>
+        <translation>Coordonnée X</translation>
     </message>
     <message>
         <source>Y-Coordinate</source>
-        <translation type="alterlegacy">Coordonnée Y</translation>
+        <translation>Coordonnée Y</translation>
     </message>
     <message>
         <source>Z-Coordinate</source>
-        <translation type="alterlegacy">Coordonnée Z</translation>
+        <translation>Coordonnée Z</translation>
     </message>
     <message>
         <source>Index of the first time slice</source>
@@ -12040,11 +12223,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Number of slices forward in time</source>
-        <translation type="alterlegacy">Nombre de tranches en avant en temps</translation>
+        <translation>Nombre de tranches en avant en temps</translation>
     </message>
     <message>
         <source>Time Slices</source>
-        <translation type="alterlegacy">Tranches de temps</translation>
+        <translation>Tranches de temps</translation>
     </message>
     <message>
         <source>Coordinate replacement</source>
@@ -12052,7 +12235,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Connect particles</source>
-        <translation type="alterlegacy">Relier les particules</translation>
+        <translation>Relier les particules</translation>
     </message>
     <message>
         <source>Show points</source>
@@ -12060,26 +12243,26 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Index variable</source>
-        <translation type="alterlegacy">Variable d&apos;indice</translation>
+        <translation>Variable d&apos;indice</translation>
     </message>
 </context>
 <context>
     <name>QvisPickQueryWidget</name>
     <message>
         <source>Pick using coordinate to determine zone</source>
-        <translation type="guess">Piocher en utilisant les coordonnées pour déterminer la zone/cellule</translation>
+        <translation>Piocher en utilisant les coordonnées pour déterminer la zone/cellule</translation>
     </message>
     <message>
         <source>Pick using coordinate to determine node</source>
-        <translation type="guess">Piocher en utilisant les coordonnées pour déterminer le nœud</translation>
+        <translation>Piocher en utilisant les coordonnées pour déterminer le nœud</translation>
     </message>
     <message>
         <source>Pick using domain and element Id</source>
-        <translation type="guess">Piocher en utilisant le domaine et l&apos;élément ID</translation>
+        <translation>Piocher en utilisant le domaine et l&apos;élément ID</translation>
     </message>
     <message>
         <source>Pick using global element Id</source>
-        <translation type="guess">Piocher en utilisant l&apos;identifiant (ID) gloabl de l&apos;élément</translation>
+        <translation>Piocher en utilisant l&apos;identifiant (ID) gloabl de l&apos;élément</translation>
     </message>
     <message>
         <source>Coordinate</source>
@@ -12087,7 +12270,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Node Id</source>
-        <translation type="guess">Identifiant de Nœud (ID)</translation>
+        <translation>Identifiant de Nœud (ID)</translation>
     </message>
     <message>
         <source>Zone Id</source>
@@ -12103,11 +12286,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Preserve Picked Coordinate</source>
-        <translation type="guess">Préserver les Coordonnées Piochées</translation>
+        <translation>Préserver les Coordonnées Piochées</translation>
     </message>
     <message>
         <source>Preserve Picked Element Id</source>
-        <translation type="guess">Préserver l&apos;ID de l&apos;élément pioché</translation>
+        <translation>Préserver l&apos;ID de l&apos;élément pioché</translation>
     </message>
     <message>
         <source>Multiple-variable Time Curve options:</source>
@@ -12123,7 +12306,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Pick using unique element label</source>
-        <translation type="guess">Piocher en utilisant l&apos;étiquette unique de l&apos;élément</translation>
+        <translation>Piocher en utilisant l&apos;étiquette unique de l&apos;élément</translation>
     </message>
 </context>
 <context>
@@ -12166,27 +12349,27 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Time curve use picked element</source>
-        <translation type="guess">Utiliser l&apos;élément pioché pour la courbe temporelle</translation>
+        <translation>Utiliser l&apos;élément pioché pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Time curve use picked coordinates</source>
-        <translation type="guess">Utiliser les coordonnées piochées pour la courbe temporelle</translation>
+        <translation>Utiliser les coordonnées piochées pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Invalid pick floating point format string.</source>
-        <translation type="guess">Chaîne de format à virgule flottante de sélection non valide.</translation>
+        <translation>Chaîne de format à virgule flottante de sélection non valide.</translation>
     </message>
     <message>
         <source>VisIt could not save the pick resultsto the selected file</source>
-        <translation type="guess">VisIt n&apos;a pas pu sauvegarder les résultats des pioches dans le fichier sélectionné</translation>
+        <translation>VisIt n&apos;a pas pu sauvegarder les résultats des pioches dans le fichier sélectionné</translation>
     </message>
     <message>
         <source>Float format</source>
-        <translation type="guess">Format de nombre réel</translation>
+        <translation>Format de nombre réel</translation>
     </message>
     <message>
         <source>Concise output</source>
-        <translation type="new">Sortie concise</translation>
+        <translation>Sortie concise</translation>
     </message>
     <message>
         <source>Clear picks</source>
@@ -12206,7 +12389,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Choose save filename</source>
-        <translation type="new">Choisir le nom du fichier pour sauver</translation>
+        <translation>Choisir le nom du fichier pour sauver</translation>
     </message>
     <message>
         <source>Mesh name</source>
@@ -12226,7 +12409,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Reference pick letter</source>
-        <translation type="guess">Lettre de sélection de référence</translation>
+        <translation>Lettre de sélection de référence</translation>
     </message>
     <message>
         <source>For nodes</source>
@@ -12234,19 +12417,19 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>For zones</source>
-        <translation type="new">Pour les zones/cellules</translation>
+        <translation>Pour les zones/cellules</translation>
     </message>
     <message>
         <source>Do time curve with next pick</source>
-        <translation type="guess">Tracer le courbe temporelle avec la prochaine pioche</translation>
+        <translation>Tracer le courbe temporelle avec la prochaine pioche</translation>
     </message>
     <message>
         <source>Time curve use single Y axis</source>
-        <translation type="new">Utiliser un unique axe des ordonnées (Y) pour la courbe temporelle</translation>
+        <translation>Utiliser un unique axe des ordonnées (Y) pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Time curve use multiple Y axes</source>
-        <translation type="new">Utiliser plusieurs axes des ordonnées (Y) pour la courbe temporelle</translation>
+        <translation>Utiliser plusieurs axes des ordonnées (Y) pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Output display</source>
@@ -12254,7 +12437,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Time pick</source>
-        <translation type="guess">Pioche en temps</translation>
+        <translation>Pioche en temps</translation>
     </message>
     <message>
         <source>Spreadsheet</source>
@@ -12266,23 +12449,27 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Add Pick to DDT</source>
-        <translation type="guess">Ajouter la pioche au DDT</translation>
+        <translation>Ajouter la pioche au DDT</translation>
     </message>
     <message>
         <source>Reset pick letter</source>
-        <translation type="guess">Réinitialiser la lettre de sélection</translation>
+        <translation>Réinitialiser la lettre de sélection</translation>
     </message>
     <message>
         <source>Set highlight color</source>
-        <translation type="guess">Définir la couleur de surbrillance</translation>
+        <translation>Définir la couleur de surbrillance</translation>
     </message>
     <message>
         <source>Swivel focus</source>
-        <translation type="guess">Mise au point pivotante</translation>
+        <translation>Mise au point pivotante</translation>
     </message>
     <message>
         <source>Pick highlights</source>
-        <translation type="guess">Choisir les surbrillances</translation>
+        <translation>Choisir les surbrillances</translation>
+    </message>
+    <message>
+        <source>Distance to previous</source>
+        <translation type="unfinished">Distance au précédent</translation>
     </message>
 </context>
 <context>
@@ -12345,7 +12532,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Move toward first</source>
-        <translation type="alterlegacy">Déplacer vers le premier</translation>
+        <translation>Déplacer vers le premier</translation>
     </message>
     <message>
         <source>Move this plot one slot toward the first plot in the plot list</source>
@@ -12353,7 +12540,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Move toward last</source>
-        <translation type="alterlegacy">Déplacer vers le dernier</translation>
+        <translation>Déplacer vers le dernier</translation>
     </message>
     <message>
         <source>Move this plot one slot toward the last plot in the plot list</source>
@@ -12362,7 +12549,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     <message>
         <source>Make first</source>
         <translatorcomment>Faire en premier</translatorcomment>
-        <translation type="alterlegacy">Mettre et faire en premier</translation>
+        <translation>Mettre et faire en premier</translation>
     </message>
     <message>
         <source>Make this plot be the first in the plot list</source>
@@ -12370,7 +12557,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Make last</source>
-        <translation type="alterlegacy">Mettre et faire en dernier</translation>
+        <translation>Mettre et faire en dernier</translation>
     </message>
     <message>
         <source>Make this plot be the last in the plot list</source>
@@ -12386,18 +12573,18 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Animate</source>
-        <translation type="guess">Dérouler l&apos;animation</translation>
+        <translation>Dérouler l&apos;animation</translation>
     </message>
     <message>
         <source>Set whether this plot can perform animation</source>
-        <translation type="guess">Définir si ce tracé peut effectuer une animation</translation>
+        <translation>Définir si ce tracé peut effectuer une animation</translation>
     </message>
 </context>
 <context>
     <name>QvisPlotManagerWidget</name>
     <message>
         <source>Hide/Show</source>
-        <translation type="guess">Cacher/Afficher</translation>
+        <translation>Cacher/Afficher</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -12461,11 +12648,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Molecular</source>
-        <translation type="guess">Moléculaire</translation>
+        <translation>Moléculaire</translation>
     </message>
     <message>
         <source>Selection</source>
-        <translation type="guess">Sélection</translation>
+        <translation>Sélection</translation>
     </message>
     <message>
         <source>Slicing</source>
@@ -12500,7 +12687,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     <name>QvisPluginManagerAttributesDataModel</name>
     <message>
         <source>Enabled</source>
-        <translation type="alterlegacy">Activé</translation>
+        <translation>Activé</translation>
     </message>
     <message>
         <source>Version</source>
@@ -12547,7 +12734,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Enabled</source>
-        <translation type="alterlegacy">Activé</translation>
+        <translation>Activé</translation>
     </message>
     <message>
         <source>Options</source>
@@ -12563,11 +12750,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Set default open options</source>
-        <translation type="alterlegacy">Définir les options d&apos;ouverture par défaut</translation>
+        <translation>Définir les options d&apos;ouverture par défaut</translation>
     </message>
     <message>
         <source>Add to preferred list</source>
-        <translation type="alterlegacy">Ajouter à la liste des favoris</translation>
+        <translation>Ajouter à la liste des favoris</translation>
     </message>
     <message>
         <source>Up</source>
@@ -12587,11 +12774,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Preferred Database Plugins</source>
-        <translation type="new">Plugins de base de données favoris</translation>
+        <translation>Plugins de base de données favoris</translation>
     </message>
     <message>
         <source>This is an ordered list of plugins which take precedence when opening files.  When they accept the given file name pattern, these are tried frst.  And when all attempts to guess based on file name fail, these are tried before giving up.</source>
-        <translation type="guess">C&apos;est une liste ordonnée de plugins qui sont prioritaires lors de l&apos;ouverture de fichiers. Lorsqu&apos;ils acceptent le modèle de nom de fichier donné, ils sont essayés en premier. Et lorsque toutes les tentatives de deviner basées sur le nom de fichier échouent, elles sont essayées avant d&apos;abandonner.</translation>
+        <translation>C&apos;est une liste ordonnée de plugins qui sont prioritaires lors de l&apos;ouverture de fichiers. Lorsqu&apos;ils acceptent le modèle de nom de fichier donné, ils sont essayés en premier. Et lorsque toutes les tentatives de deviner basées sur le nom de fichier échouent, elles sont essayées avant d&apos;abandonner.</translation>
     </message>
 </context>
 <context>
@@ -12687,7 +12874,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Override toroidal winding</source>
-        <translation type="vanished">Outrepasser l'enroulement torique</translation>
+        <translation type="vanished">Outrepasser l&apos;enroulement torique</translation>
     </message>
     <message>
         <source>Winding pair confidence</source>
@@ -12959,7 +13146,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Override poloidal winding</source>
-        <translation type="vanished">Outrepasser l'enroulement poloïdal</translation>
+        <translation type="vanished">Outrepasser l&apos;enroulement poloïdal</translation>
     </message>
     <message>
         <source>Rational surface factor</source>
@@ -13171,7 +13358,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
-        <translation>Lancer une alerte lorsqu&apos;une courbe ne se termine pas au point critique.</translation>
+        <translation type="vanished">Lancer une alerte lorsqu&apos;une courbe ne se termine pas au point critique.</translation>
     </message>
     <message>
         <source>(I.e. the curve circles around the critical point without stopping.)</source>
@@ -13230,7 +13417,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Location</source>
-        <translation type="alterlegacy">Emplacement</translation>
+        <translation>Emplacement</translation>
     </message>
     <message>
         <source>Start Point</source>
@@ -13242,11 +13429,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Point density</source>
-        <translation type="unfinished">Densité du point</translation>
+        <translation>Densité de point</translation>
     </message>
     <message>
         <source>Field</source>
-        <translation type="new">Champ</translation>
+        <translation>Champ</translation>
     </message>
     <message>
         <source>Default</source>
@@ -13282,11 +13469,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Forward Euler (Single-step)</source>
-        <translation type="correct">Euler explicite (une seule étape) </translation>
+        <translation>Euler explicite (une seule étape) </translation>
     </message>
     <message>
         <source>Leapfrog (Single-step)</source>
-        <translation type="correct">Saute-mouton (une seule étape)</translation>
+        <translation>Saute-mouton (une seule étape)</translation>
     </message>
     <message>
         <source>Dormand-Prince (Runge-Kutta)</source>
@@ -13310,11 +13497,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Limit maximum time step</source>
-        <translation type="alterlegacy">Limiter le max du pas de temps</translation>
+        <translation>Limiter le max du pas de temps</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation type="new">Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
+        <translation>Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -13330,7 +13517,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation type="guess">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Punctures</source>
@@ -13350,19 +13537,19 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Poloidal</source>
-        <translation type="alterlegacy">Poloïdale</translation>
+        <translation>Poloïdale</translation>
     </message>
     <message>
         <source>Toroidal</source>
-        <translation type="alterlegacy">Torique</translation>
+        <translation>Torique</translation>
     </message>
     <message>
         <source>Analysis type</source>
-        <translation type="new">Type d&apos;analyse</translation>
+        <translation>Type d&apos;analyse</translation>
     </message>
     <message>
         <source>None - Punctures only</source>
-        <translation type="alterlegacy">Aucun, Ponctions uniquement</translation>
+        <translation>Aucun, Ponctions uniquement</translation>
     </message>
     <message>
         <source>Full</source>
@@ -13370,19 +13557,19 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Maximum toroidal winding</source>
-        <translation type="new">Enroulement toroïdal maximum</translation>
+        <translation>Enroulement toroïdal maximum</translation>
     </message>
     <message>
         <source>Override toroidal winding</source>
-        <translation type="new">Outrepasser l'enroulement torique</translation>
+        <translation>Outrepasser l&apos;enroulement torique</translation>
     </message>
     <message>
         <source>Override poloidal winding</source>
-        <translation type="new">Outrepasser l&apos;enroulement poloïdal</translation>
+        <translation>Outrepasser l&apos;enroulement poloïdal</translation>
     </message>
     <message>
         <source>Winding pair confidence</source>
-        <translation type="unfinished">Winding pair confidence</translation>
+        <translation type="unfinished">Confiance de la paire sinueuse</translation>
     </message>
     <message>
         <source>Rational surface factor</source>
@@ -13406,7 +13593,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Detect O Points</source>
-        <translation type="alterlegacy">Effacer tous les points en O</translation>
+        <translation>Effacer tous les points en O</translation>
     </message>
     <message>
         <source>O-Line Analysis</source>
@@ -13418,11 +13605,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>O-Line toroidal windings</source>
-        <translation type="alterlegacy">Enroulements toriques ligne O </translation>
+        <translation>Enroulements toriques ligne O </translation>
     </message>
     <message>
         <source>Options</source>
-        <translation type="new">Options</translation>
+        <translation>Options</translation>
     </message>
     <message>
         <source>Show chaotic fieldlines as points</source>
@@ -13430,7 +13617,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Show islands only</source>
-        <translation type="alterlegacy">Afficher uniquement les îles</translation>
+        <translation>Afficher uniquement les îles</translation>
     </message>
     <message>
         <source>Summary</source>
@@ -13442,7 +13629,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Show distance/ridgeline plots</source>
-        <translation type="alterlegacy">Afficher ttracés distance / ligne de crête</translation>
+        <translation>Afficher ttracés distance / ligne de crête</translation>
     </message>
     <message>
         <source>Data</source>
@@ -13474,15 +13661,15 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Toroidal Windings</source>
-        <translation type="alterlegacy">Enroulements toriques</translation>
+        <translation>Enroulements toriques</translation>
     </message>
     <message>
         <source>Poloidal Windings Q</source>
-        <translation type="alterlegacy">Enroulements poloïdaux Q </translation>
+        <translation>Enroulements poloïdaux Q </translation>
     </message>
     <message>
         <source>Poloidal Windings P</source>
-        <translation type="alterlegacy">Enroulement poloïdaux P </translation>
+        <translation>Enroulement poloïdaux P </translation>
     </message>
     <message>
         <source>Fieldline Order</source>
@@ -13554,7 +13741,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Overlaping curve sections</source>
-        <translation type="alterlegacy">Chevauchement de sections de courbe</translation>
+        <translation>Chevauchement de sections de courbe</translation>
     </message>
     <message>
         <source>Raw</source>
@@ -13562,7 +13749,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Remove</source>
-        <translation type="new">Enlever</translation>
+        <translation>Enlever</translation>
     </message>
     <message>
         <source>Merge</source>
@@ -13598,7 +13785,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Override Starting Time</source>
-        <translation type="alterlegacy">Outrepassser le temps de départ</translation>
+        <translation>Outrepassser le temps de départ</translation>
     </message>
     <message>
         <source>Time</source>
@@ -13638,7 +13825,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="new">Laisser Visit sélectionner le meilleur algorithme</translation>
+        <translation>Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -13690,7 +13877,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Point Source</source>
-        <translation type="alterlegacy">Source ponctuelle</translation>
+        <translation>Source ponctuelle</translation>
     </message>
     <message>
         <source>Line Point Start</source>
@@ -13702,7 +13889,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>field constant</source>
-        <translation type="unfinished">Champs constant</translation>
+        <translation>Champs constant</translation>
     </message>
     <message>
         <source>Maximum step length</source>
@@ -13730,7 +13917,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Pathlines Override Starting Time</source>
-        <translation type="alterlegacy">Trajectoires outrepassent le temps de départ</translation>
+        <translation>Trajectoires outrepassent le temps de départ</translation>
     </message>
     <message>
         <source>Open O-Line Axis Point File</source>
@@ -13738,27 +13925,27 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Source type</source>
-        <translation type="correct">Type de source</translation>
+        <translation>Type de source</translation>
     </message>
     <message>
         <source>PointList</source>
-        <translation type="guess">Liste de points</translation>
+        <translation>Liste de points</translation>
     </message>
     <message>
         <source>Add Point</source>
-        <translation type="correct">Ajouter un point</translation>
+        <translation>Ajouter un point</translation>
     </message>
     <message>
         <source>Delete Point</source>
-        <translation type="correct">Effacer le point</translation>
+        <translation>Effacer le point</translation>
     </message>
     <message>
         <source>Delete All Points</source>
-        <translation type="correct">Effacer tous les points</translation>
+        <translation>Effacer tous les points</translation>
     </message>
     <message>
         <source>Read Text File</source>
-        <translation type="guess">Lire fichier texte</translation>
+        <translation>Lire fichier texte</translation>
     </message>
     <message>
         <source>Nektar++</source>
@@ -13770,71 +13957,71 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Puncture plot type</source>
-        <translation type="guess">Type de tracé de Ponction</translation>
+        <translation>Type de tracé de Ponction</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation type="guess">Simple</translation>
+        <translation>Simple</translation>
     </message>
     <message>
         <source>Double</source>
-        <translation type="guess">Double</translation>
+        <translation>Double</translation>
     </message>
     <message>
         <source>Period tolerance</source>
-        <translation type="guess">Tolérance période</translation>
+        <translation>Tolérance période</translation>
     </message>
     <message>
         <source>Maximum number of steps</source>
-        <translation type="correct">Nombre maxi de pas</translation>
+        <translation>Nombre maxi de pas</translation>
     </message>
     <message>
         <source>Limit maximum time elapsed for particles</source>
-        <translation type="guess">Limiter le temps maximum écoulé pour les particules</translation>
+        <translation>Limiter le temps maximum écoulé pour les particules</translation>
     </message>
     <message>
         <source>Coloring</source>
-        <translation type="guess">Coloration</translation>
+        <translation>Coloration</translation>
     </message>
     <message>
         <source>Color by</source>
-        <translation type="guess">Couleur par</translation>
+        <translation>Couleur par</translation>
     </message>
     <message>
         <source>Pathline Options</source>
-        <translation type="guess">Options de trajectoire</translation>
+        <translation>Options de trajectoire</translation>
     </message>
     <message>
         <source>Period</source>
-        <translation type="guess">Période</translation>
+        <translation>Période</translation>
     </message>
     <message>
         <source>Issue warning when a step size underflow is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une taille de pas trop petite est détectée.</translation>
     </message>
     <message>
         <source>Issue warning when a stiffness condition is detected.</source>
-        <translation type="guess">Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
+        <translation>Émettre un avertissement lorsqu&apos;une condition de rigidité est détectée</translation>
     </message>
     <message>
         <source>Puncture Period Tolerance</source>
-        <translation type="unfinished">Tolérance sur la période de ponction</translation>
+        <translation>Tolérance sur la période de ponction</translation>
     </message>
     <message>
         <source>maxsteps</source>
-        <translation type="guess">Nombre max de pas</translation>
+        <translation>Nombre max de pas</translation>
     </message>
     <message>
         <source>maxtime</source>
-        <translation type="guess">Temps max</translation>
+        <translation>Temps max</translation>
     </message>
     <message>
         <source>Pathlines Period</source>
-        <translation type="guess">Période des trajectoires</translation>
+        <translation>Période des trajectoires</translation>
     </message>
     <message>
         <source>Open text file</source>
-        <translation type="correct">Ouvre le fichier texte</translation>
+        <translation>Ouvre le fichier texte</translation>
     </message>
 </context>
 <context>
@@ -13845,7 +14032,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Scale point size by variable</source>
-        <translation type="alterlegacy">Mettre à l'échelle la taille de point par variable</translation>
+        <translation>Mettre à l&apos;échelle la taille de point par variable</translation>
     </message>
     <message>
         <source>Box</source>
@@ -13985,162 +14172,162 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     <name>QvisPredefinedViewports</name>
     <message>
         <source>Single</source>
-        <translation type="guess">Simple</translation>
+        <translation>Simple</translation>
     </message>
     <message>
         <source>Side by side</source>
-        <translation type="guess">Cote à cote</translation>
+        <translation>Cote à cote</translation>
     </message>
     <message>
         <source>Two by Two</source>
-        <translation type="guess">Deux par deux</translation>
+        <translation>Deux par deux</translation>
     </message>
     <message>
         <source>Picture in picture 1</source>
-        <translation type="guess">Image dans image 1</translation>
+        <translation>Image dans image 1</translation>
     </message>
     <message>
         <source>Picture in picture 2</source>
-        <translation type="guess">Image dans image 2</translation>
+        <translation>Image dans image 2</translation>
     </message>
     <message>
         <source>2x Picture in picture</source>
-        <translation type="guess">2x Image dans image</translation>
+        <translation>2x Image dans image</translation>
     </message>
 </context>
 <context>
     <name>QvisPreferencesWindow</name>
     <message>
         <source>Clone window on first reference</source>
-        <translation type="guess">Cloner la fenêtre sur la première référence</translation>
+        <translation>Cloner la fenêtre sur la première référence</translation>
     </message>
     <message>
         <source>Post windows when shown</source>
-        <translation type="new">Epingler les fenêtres quand montrées</translation>
+        <translation>Epingler les fenêtres quand montrées</translation>
     </message>
     <message>
         <source>Prompt before setting default attributes</source>
-        <translation type="guess">Demander avant de définir les attributs par défaut</translation>
+        <translation>Demander avant de définir les attributs par défaut</translation>
     </message>
     <message>
         <source>Prompt before applying new operator</source>
-        <translation type="guess">Demander avant d&apos;appliquer un nouvel filtre (opérateur)</translation>
+        <translation>Demander avant d&apos;appliquer un nouvel filtre (opérateur)</translation>
     </message>
     <message>
         <source>New plots inherit SIL restriction</source>
-        <translation type="guess">Les nouveaux tracés héritent de la restriction SIL</translation>
+        <translation>Les nouveaux tracés héritent de la restriction SIL</translation>
     </message>
     <message>
         <source>Try harder to get accurate cycles/times</source>
-        <translation type="guess">Essayez encore plus d&apos;obtenir des cycles/temps précis</translation>
+        <translation>Essayez encore plus d&apos;obtenir des cycles/temps précis</translation>
     </message>
     <message>
         <source>Treat all databases as time-varying</source>
-        <translation type="guess">Traiter toutes les bases de données comme variables en temps</translation>
+        <translation>Traiter toutes les bases de données comme variables en temps</translation>
     </message>
     <message>
         <source>Automatically create mesh quality expressions</source>
-        <translation type="guess">Créer automatiquement des expressions d&apos;évaluation de la qualité du maillage</translation>
+        <translation>Créer automatiquement des expressions d&apos;évaluation de la qualité du maillage</translation>
     </message>
     <message>
         <source>Automatically create time derivative expressions</source>
-        <translation type="guess">Créer automatiquement les expressions de dérivées en temps</translation>
+        <translation>Créer automatiquement les expressions de dérivées en temps</translation>
     </message>
     <message>
         <source>Automatically create vector magnitude expressions</source>
-        <translation type="guess">Créez automatiquement des expressions de norme des vecteurs</translation>
+        <translation>Créez automatiquement des expressions de norme des vecteurs</translation>
     </message>
     <message>
         <source>User directory is default location for session files</source>
-        <translation type="guess">Le répertoire utilisateur est l&apos;emplacement par défaut des fichiers de session</translation>
+        <translation>Le répertoire utilisateur est l&apos;emplacement par défaut des fichiers de session</translation>
     </message>
     <message>
         <source>Periodically save a crash recovery file</source>
-        <translation type="guess">Enregistrez périodiquement un fichier de récupération après incident</translation>
+        <translation>Enregistrez périodiquement un fichier de récupération après incident</translation>
     </message>
     <message>
         <source>Show selected files</source>
-        <translation type="guess">Afficher les fichiers sélectionnés</translation>
+        <translation>Afficher les fichiers sélectionnés</translation>
     </message>
     <message>
         <source>Automatically highlight open file</source>
-        <translation type="guess">Mettre automatiquement en surbrillance le fichier ouvert</translation>
+        <translation>Mettre automatiquement en surbrillance le fichier ouvert</translation>
     </message>
     <message>
         <source>Display time using:</source>
-        <translation type="guess">Afficher le temps en utilisant :</translation>
+        <translation>Afficher le temps en utilisant :</translation>
     </message>
     <message>
         <source>Cycles</source>
-        <translation type="unfinished">Cycles</translation>
+        <translation>Cycles</translation>
     </message>
     <message>
         <source>Times</source>
-        <translation type="correct">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Cycles and times</source>
-        <translation type="unfinished">Cycles et temps</translation>
+        <translation>Cycles et temps</translation>
     </message>
     <message>
         <source>Number of significant digits</source>
-        <translation type="guess">Nombre de chiffres significatifs</translation>
+        <translation>Nombre de chiffres significatifs</translation>
     </message>
     <message>
         <source>New plots automatically expanded</source>
-        <translation type="guess">Nouveaux tracés automatiquement étendus</translation>
+        <translation>Nouveaux tracés automatiquement étendus</translation>
     </message>
     <message>
         <source>Replace plots</source>
-        <translation type="guess">Remplacer les tracés</translation>
+        <translation>Remplacer les tracés</translation>
     </message>
     <message>
         <source>Enable warning message popups</source>
-        <translation type="guess">Activer les fenêtres contextuelles de message d&apos;avertissement (popups)</translation>
+        <translation>Activer les fenêtres contextuelles de message d&apos;avertissement (popups)</translation>
     </message>
     <message>
         <source>Ignore database extents (may degrade performance)</source>
-        <translation type="guess">Ignorer les étendues (min, max) de la base de données (peut dégrader les performances)</translation>
+        <translation>Ignorer les étendues (min, max) de la base de données (peut dégrader les performances)</translation>
     </message>
     <message>
         <source>Floating point precision:</source>
-        <translation type="guess">Précision des nombres réels :</translation>
+        <translation>Précision des nombres réels :</translation>
     </message>
     <message>
         <source>Float</source>
-        <translation type="guess">Simple</translation>
+        <translation>Simple</translation>
     </message>
     <message>
         <source>Native</source>
-        <translation type="guess">Native</translation>
+        <translation>Native</translation>
     </message>
     <message>
         <source>Double</source>
-        <translation type="guess">Double</translation>
+        <translation>Double</translation>
     </message>
     <message>
         <source>Restore session on startup</source>
-        <translation type="guess">Restaurer la session au démarrage</translation>
+        <translation>Restaurer la session au démarrage</translation>
     </message>
     <message>
         <source>General</source>
-        <translation type="correct">Général</translation>
+        <translation>Général</translation>
     </message>
     <message>
         <source>Database</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Session file</source>
-        <translation type="guess">Fichier de session</translation>
+        <translation>Fichier de session</translation>
     </message>
     <message>
         <source>File panel</source>
-        <translation type="guess">Explorateur de fichiers</translation>
+        <translation>Explorateur de fichiers</translation>
     </message>
     <message>
         <source>Parallel computation library:</source>
-        <translation type="guess">Bibliothèque de calcul parallèle :</translation>
+        <translation>Bibliothèque de calcul parallèle :</translation>
     </message>
     <message>
         <source>VTK</source>
@@ -14152,360 +14339,360 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Automatically remove duplicate nodes from fully disconnected unstructured grids</source>
-        <translation type="guess">Supprimer automatiquement les nœuds en double des grilles non structurées entièrement déconnectées</translation>
+        <translation>Supprimer automatiquement les nœuds en double des grilles non structurées entièrement déconnectées</translation>
     </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
     <message>
         <source>Projection type</source>
-        <translation type="correct">Type de projection</translation>
+        <translation>Type de projection</translation>
     </message>
     <message>
         <source>Vector transform method:</source>
-        <translation type="guess">Méthode de transformation vectorielle :</translation>
+        <translation>Méthode de transformation vectorielle :</translation>
     </message>
     <message>
         <source>No transformation</source>
-        <translation type="guess">Pas de transformation</translation>
+        <translation>Pas de transformation</translation>
     </message>
     <message>
         <source>Treat as point coordinates</source>
-        <translation type="guess">Considérer comme des coordonnées de point</translation>
+        <translation>Considérer comme des coordonnées de point</translation>
     </message>
     <message>
         <source>Treat as coordinate displacements</source>
-        <translation type="guess">Considérer comme des déplacements de coordonnées</translation>
+        <translation>Considérer comme des déplacements de coordonnées</translation>
     </message>
     <message>
         <source>Treat as instantaneous directions</source>
-        <translation type="guess">Considérer comme des directions instantanées</translation>
+        <translation>Considérer comme des directions instantanées</translation>
     </message>
     <message>
         <source>X-Axis Cartesian (x&apos; = z, y&apos; = y)</source>
-        <translation type="guess">Axe Cartésien X (x&apos; = z, y&apos; = y)</translation>
+        <translation>Axe Cartésien X (x&apos; = z, y&apos; = y)</translation>
     </message>
     <message>
         <source>Y-Axis Cartesian (x&apos; = x, y&apos; = z)</source>
-        <translation type="new">Axe Cartésien Y (x&apos; = x, y&apos; = z)</translation>
+        <translation>Axe Cartésien Y (x&apos; = x, y&apos; = z)</translation>
     </message>
     <message>
         <source>Z-Axis Cartesian (x&apos; = x, y&apos; = y)</source>
-        <translation type="new">Axe Cartésien Z (x&apos; = x, y&apos; = y)</translation>
+        <translation>Axe Cartésien Z (x&apos; = x, y&apos; = y)</translation>
     </message>
     <message>
         <source>X-Axis Cylindrical (x&apos; = x, y&apos; = r)</source>
-        <translation type="guess">Axe X Cylindrique (x&apos; = x, y&apos; = r)</translation>
+        <translation>Axe X Cylindrique (x&apos; = x, y&apos; = r)</translation>
     </message>
     <message>
         <source>Y-Axis Cylindrical (x&apos; = y, y&apos; = r)</source>
-        <translation type="guess">Axe Y Cylindrique (x&apos; = y, y&apos; = r)</translation>
+        <translation>Axe Y Cylindrique (x&apos; = y, y&apos; = r)</translation>
     </message>
     <message>
         <source>Z-Axis Cylindrical (x&apos; = z, y&apos; = r)</source>
-        <translation type="guess">Axe Z Cylindrique (x&apos; = z, y&apos; = r)</translation>
+        <translation>Axe Z Cylindrique (x&apos; = z, y&apos; = r)</translation>
     </message>
 </context>
 <context>
     <name>QvisPseudocolorPlotWindow</name>
     <message>
         <source>Centering</source>
-        <translation type="guess">Centrage</translation>
+        <translation>Centrage</translation>
     </message>
     <message>
         <source>Nodal</source>
-        <translation type="guess">Nodal</translation>
+        <translation>Nodal</translation>
     </message>
     <message>
         <source>Zonal</source>
-        <translation type="guess">Cellulaire</translation>
+        <translation>Cellulaire</translation>
     </message>
     <message>
         <source>Use Original Data</source>
-        <translation type="guess">Utilise les données d&apos;origine</translation>
+        <translation>Utilise les données d&apos;origine</translation>
     </message>
     <message>
         <source>Limits</source>
-        <translation type="correct">Limites</translation>
+        <translation>Limites</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="guess">Echelle</translation>
+        <translation>Echelle</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="correct">Linéaire</translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="correct">Logarithmique</translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="guess">Biais (skew)</translation>
+        <translation>Biais (skew)</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="correct">Opacité</translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="guess">Table des couleurs</translation>
+        <translation>Table des couleurs</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Lighting</source>
-        <translation type="guess">Lumière</translation>
+        <translation>Lumière</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Fast</source>
-        <translation type="guess">Rapide</translation>
+        <translation>Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="new">Elevé</translation>
+        <translation>Elevé</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Original</source>
-        <translation type="guess">D&apos;origine</translation>
+        <translation>D&apos;origine</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>From color table</source>
-        <translation type="correct">De la table de couleur</translation>
+        <translation>De la table de couleur</translation>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="guess">Epaisseur du trait</translation>
+        <translation>Epaisseur du trait</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="correct">Géométrie</translation>
+        <translation>Géométrie</translation>
     </message>
     <message>
         <source>Smoothing</source>
-        <translation type="guess">Lissage</translation>
+        <translation>Lissage</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>minimum value</source>
-        <translation type="correct">valeur minimale</translation>
+        <translation>valeur minimale</translation>
     </message>
     <message>
         <source>maximum value</source>
-        <translation type="correct">valeur maximale</translation>
+        <translation>valeur maximale</translation>
     </message>
     <message>
         <source>Fully opaque</source>
-        <translation type="guess">Totalement opaque</translation>
+        <translation>Totalement opaque</translation>
     </message>
     <message>
         <source>Constant</source>
-        <translation type="correct">Constante</translation>
+        <translation>Constante</translation>
     </message>
     <message>
         <source>Ramp</source>
-        <translation type="guess">Rampe</translation>
+        <translation>Rampe</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Opacity Min</source>
-        <translation type="guess">Opacité minimale</translation>
+        <translation>Opacité minimale</translation>
     </message>
     <message>
         <source>Opacity Max</source>
-        <translation type="guess">Opacité maximale</translation>
+        <translation>Opacité maximale</translation>
     </message>
     <message>
         <source>Line </source>
-        <translation type="guess">Trait </translation>
+        <translation>Trait </translation>
     </message>
     <message>
         <source>Line type</source>
-        <translation type="guess">Type de trait</translation>
+        <translation>Type de trait</translation>
     </message>
     <message>
         <source>Lines</source>
-        <translation type="correct">Lignes</translation>
+        <translation>Lignes</translation>
     </message>
     <message>
         <source>Tubes</source>
-        <translation type="unfinished">Tubes (Tuyaux, conduits)</translation>
+        <translation>Tubes (Tuyaux, conduits)</translation>
     </message>
     <message>
         <source>Ribbons</source>
-        <translation type="correct">Rubans</translation>
+        <translation>Rubans</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="correct">Rayon</translation>
+        <translation>Rayon</translation>
     </message>
     <message>
         <source>Radius used for tubes and ribbons.</source>
-        <translation type="guess">Rayon utilisé pour les tubes et les rubans.</translation>
+        <translation>Rayon utilisé pour les tubes et les rubans.</translation>
     </message>
     <message>
         <source>Absolute</source>
-        <translation type="correct">Absolue</translation>
+        <translation>Absolue</translation>
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation type="guess">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Point </source>
-        <translation type="guess">Point </translation>
+        <translation>Point </translation>
     </message>
     <message>
         <source>Rendering</source>
-        <translation type="correct">Rendu graphique</translation>
+        <translation>Rendu graphique</translation>
     </message>
     <message>
         <source>Draw objects as</source>
-        <translation type="guess">Dessiner les objets comme</translation>
+        <translation>Dessiner les objets comme</translation>
     </message>
     <message>
         <source>Surfaces</source>
-        <translation type="correct">Surfaces</translation>
+        <translation>Surfaces</translation>
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="new">Fils</translation>
+        <translation>Fils</translation>
     </message>
     <message>
         <source>Points</source>
-        <translation type="correct">Points</translation>
+        <translation>Points</translation>
     </message>
     <message>
         <source>tube radius</source>
-        <translation type="guess">Rayon de tube</translation>
+        <translation>Rayon de tube</translation>
     </message>
     <message>
         <source>endPoint ratio</source>
-        <translation type="unfinished">rapport (ratio) de point final</translation>
+        <translation>rapport (ratio) de point final</translation>
     </message>
     <message>
         <source>Use Actual Data</source>
-        <translation type="guess">Utiliser les données réelles (effectives du tracé)</translation>
+        <translation>Utiliser les données réelles (effectives du tracé)</translation>
     </message>
     <message>
         <source>Color for values &lt; min</source>
-        <translation type="guess">Couleur pour valeurs &lt; min</translation>
+        <translation>Couleur pour valeurs &lt; min</translation>
     </message>
     <message>
         <source>Color for values &gt; max</source>
-        <translation type="guess">Couleur pour valeurs &gt; max</translation>
+        <translation>Couleur pour valeurs &gt; max</translation>
     </message>
     <message>
         <source>Variable radius</source>
-        <translation type="guess">Rayon variable</translation>
+        <translation>Rayon variable</translation>
     </message>
     <message>
         <source>Max/Min Ratio</source>
-        <translation type="guess">Ratio Max/Min</translation>
+        <translation>Ratio Max/Min</translation>
     </message>
     <message>
         <source>Resolution</source>
-        <translation type="correct">Résolution</translation>
+        <translation>Résolution</translation>
     </message>
     <message>
         <source>Tail</source>
-        <translation type="guess">Queue</translation>
+        <translation>Queue</translation>
     </message>
     <message>
         <source>Sphere</source>
-        <translation type="correct">Sphère</translation>
+        <translation>Sphère</translation>
     </message>
     <message>
         <source>Cone</source>
-        <translation type="guess">Cône</translation>
+        <translation>Cône</translation>
     </message>
     <message>
         <source>Head</source>
-        <translation type="guess">Tête</translation>
+        <translation>Tête</translation>
     </message>
     <message>
         <source>Fraction of bounding box</source>
-        <translation type="guess">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Cone ratio</source>
-        <translation type="guess">Rapport de cône (ratio)</translation>
+        <translation>Rapport de cône (ratio)</translation>
     </message>
     <message>
         <source>Max/Min ratio</source>
-        <translation type="guess">ratio Max/Min</translation>
+        <translation>ratio Max/Min</translation>
     </message>
     <message>
         <source>skew</source>
-        <translation type="guess">biais (skew)</translation>
+        <translation>biais (skew)</translation>
     </message>
     <message>
         <source>Tube radius must be &gt; 0.0</source>
-        <translation type="guess">Rayon de tube foit être &gt; 0.0</translation>
+        <translation>Rayon de tube foit être &gt; 0.0</translation>
     </message>
     <message>
         <source>Tube variable radius ratio must be &gt;= 1.0</source>
-        <translation type="guess">Rayon de tube foit être &gt;= 1.0</translation>
+        <translation>Rayon de tube foit être &gt;= 1.0</translation>
     </message>
     <message>
         <source>Tube variable radius ratio</source>
-        <translation type="guess">Rapport de rayon variable du tube</translation>
+        <translation>Rapport de rayon variable du tube</translation>
     </message>
     <message>
         <source>End point radius must be &gt; 0.0</source>
-        <translation type="guess">Le rayon au point final doit être &gt; 0.0</translation>
+        <translation>Le rayon au point final doit être &gt; 0.0</translation>
     </message>
     <message>
         <source>End point radius</source>
-        <translation type="guess">Rayon au point final</translation>
+        <translation>Rayon au point final</translation>
     </message>
     <message>
         <source>End point height ratio must be &gt; 0.0</source>
-        <translation type="guess">Rapport de hauteur au point final doit être &gt; 0.0</translation>
+        <translation>Rapport de hauteur au point final doit être &gt; 0.0</translation>
     </message>
     <message>
         <source>EndPoint variable radius ratio must be &gt;= 1.0</source>
-        <translation type="guess">Le rapport de rayon variable du point final doit être &gt;= 1.0</translation>
+        <translation>Le rapport de rayon variable du point final doit être &gt;= 1.0</translation>
     </message>
     <message>
         <source>EndPoint variable radius ratio</source>
-        <translation type="guess">Le rapport de rayon variable du point final</translation>
+        <translation>Le rapport de rayon variable du point final</translation>
     </message>
 </context>
 <context>
     <name>QvisPythonFilterEditor</name>
     <message>
         <source>Load script</source>
-        <translation type="guess">Charger le script</translation>
+        <translation>Charger le script</translation>
     </message>
     <message>
         <source>&amp;Template</source>
@@ -14517,68 +14704,68 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>&amp;Simple filter</source>
-        <translation type="guess">&amp;Simple filtre</translation>
+        <translation>&amp;Simple filtre</translation>
     </message>
     <message>
         <source>&amp;Advanced filter</source>
-        <translation type="guess">Filtre &amp;Avancé</translation>
+        <translation>Filtre &amp;Avancé</translation>
     </message>
     <message>
         <source>Save script</source>
-        <translation type="guess">Sauver le script</translation>
+        <translation>Sauver le script</translation>
     </message>
     <message>
         <source>Python script file</source>
-        <translation type="guess">Fichier de script Python</translation>
+        <translation>Fichier de script Python</translation>
     </message>
     <message>
         <source>All files</source>
-        <translation type="guess">Tous les fichiers</translation>
+        <translation>Tous les fichiers</translation>
     </message>
     <message>
         <source>Save Python filter script</source>
-        <translation type="guess">Sauver le script de filtre Python</translation>
+        <translation>Sauver le script de filtre Python</translation>
     </message>
     <message>
         <source>Load Python filter</source>
-        <translation type="guess">Charger le filtre Python</translation>
+        <translation>Charger le filtre Python</translation>
     </message>
 </context>
 <context>
     <name>QvisQueryOverTimeWindow</name>
     <message>
         <source>X-axis</source>
-        <translation type="guess">Axe X</translation>
+        <translation>Axe X</translation>
     </message>
     <message>
         <source>Cycle</source>
-        <translation type="unfinished">Cycle</translation>
+        <translation>Cycle</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="correct">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Timestep</source>
-        <translation type="correct">Pas de temps</translation>
+        <translation>Pas de temps</translation>
     </message>
     <message>
         <source>Window #</source>
-        <translation type="new">Fenêtre numéro </translation>
+        <translation>Fenêtre numéro </translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur de windowId n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de windowId n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>Choices entered here only apply to values displayed in the x-axis of the time curve.</source>
-        <translation type="guess">Les choix saisis ici ne s&apos;appliquent qu&apos;aux valeurs affichées dans l&apos;axe des X de la courbe de temps</translation>
+        <translation>Les choix saisis ici ne s&apos;appliquent qu&apos;aux valeurs affichées dans l&apos;axe des X de la courbe de temps</translation>
     </message>
     <message>
         <source>Use 1st unused window or create new
 one. All subsequent queries will use this
 same window.</source>
-<translation type="guess">Utilisez la 1ère fenêtre inutilisée ou créez-en une
+        <translation>Utilisez la 1ère fenêtre inutilisée ou créez-en une
 nouvelle. Toutes les requêtes suivantes utiliseront cette
 même fenêtre.</translation>
     </message>
@@ -14587,67 +14774,67 @@ même fenêtre.</translation>
     <name>QvisQueryWindow</name>
     <message>
         <source>Standard queries</source>
-        <translation type="guess">Requêtes standards</translation>
+        <translation>Requêtes standards</translation>
     </message>
     <message>
         <source>Python query editor</source>
-        <translation type="guess">Éditeur de requêtes Python</translation>
+        <translation>Éditeur de requêtes Python</translation>
     </message>
     <message>
         <source>All</source>
-        <translation type="guess">Tous</translation>
+        <translation>Tous</translation>
     </message>
     <message>
         <source>All queries-over-time</source>
-        <translation type="guess">Toutes les requêtes au fil du temps</translation>
+        <translation>Toutes les requêtes au fil du temps</translation>
     </message>
     <message>
         <source>Display </source>
-        <translation type="guess">Affichage</translation>
+        <translation>Affichage</translation>
     </message>
     <message>
         <source>Queries</source>
-        <translation type="guess">Requêtes</translation>
+        <translation>Requêtes</translation>
     </message>
     <message>
         <source>Query parameters</source>
-        <translation type="guess">Paramètres de requête</translation>
+        <translation>Paramètres de requête</translation>
     </message>
     <message>
         <source>Use Global Id</source>
-        <translation type="guess">Utiliser l&apos;identifiant global</translation>
+        <translation>Utiliser l&apos;identifiant global</translation>
     </message>
     <message>
         <source>Original Data</source>
-        <translation type="guess">Données d&apos;origine</translation>
+        <translation>Données d&apos;origine</translation>
     </message>
     <message>
         <source>Actual Data</source>
-        <translation type="guess">Données effectives (en cours d&apos;utilisation)</translation>
+        <translation>Données effectives (en cours d&apos;utilisation)</translation>
     </message>
     <message>
         <source>Query</source>
-        <translation type="guess">Requête</translation>
+        <translation>Requête</translation>
     </message>
     <message>
         <source>Query results</source>
-        <translation type="guess">Résultats de requête</translation>
+        <translation>Résultats de requête</translation>
     </message>
     <message>
         <source>Float format</source>
-        <translation type="guess">Format de nombre réel</translation>
+        <translation>Format de nombre réel</translation>
     </message>
     <message>
         <source>Clear results</source>
-        <translation type="guess">Effacer les résultats</translation>
+        <translation>Effacer les résultats</translation>
     </message>
     <message>
         <source>Save results as</source>
-        <translation type="guess">Enregistrer les résultats sous</translation>
+        <translation>Enregistrer les résultats sous</translation>
     </message>
     <message>
         <source>Post</source>
-        <translation type="correct">Épingler</translation>
+        <translation>Épingler</translation>
     </message>
     <message>
         <source>Dismiss</source>
@@ -14655,43 +14842,43 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Variables</source>
-        <translation type="correct">Variables</translation>
+        <translation>Variables</translation>
     </message>
     <message>
         <source>Domain</source>
-        <translation type="correct">Domaine</translation>
+        <translation>Domaine</translation>
     </message>
     <message>
         <source>Zone</source>
-        <translation type="guess">Zone/Cellule</translation>
+        <translation>Zone/Cellule</translation>
     </message>
     <message>
         <source>Node</source>
-        <translation type="correct">Nœud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>Number of Lines</source>
-        <translation type="correct">Nombre de lignes</translation>
+        <translation>Nombre de lignes</translation>
     </message>
     <message>
         <source>Number of Bins</source>
-        <translation type="guess">Nombre de barres</translation>
+        <translation>Nombre de barres</translation>
     </message>
     <message>
         <source>Min Length</source>
-        <translation type="guess">Longueur min</translation>
+        <translation>Longueur min</translation>
     </message>
     <message>
         <source>Max Length</source>
-        <translation type="guess">Longueur max</translation>
+        <translation>Longueur max</translation>
     </message>
     <message>
         <source>Output File</source>
-        <translation type="guess">Fichier de sortie</translation>
+        <translation>Fichier de sortie</translation>
     </message>
     <message>
         <source>Beta</source>
-        <translation type="unfinished">Bêta</translation>
+        <translation>Bêta</translation>
     </message>
     <message>
         <source>NMax</source>
@@ -14699,126 +14886,126 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Recomp Output (Vtk)</source>
-        <translation type="guess">Recomp Sortie (Vtk)</translation>
+        <translation>Recomp Sortie (Vtk)</translation>
     </message>
     <message>
         <source>[skip]</source>
-        <translation type="guess">[passer (au suivant)]</translation>
+        <translation>[passer (au suivant)]</translation>
     </message>
     <message>
         <source>Invalid query floating point format string.</source>
-        <translation type="guess">Format de nombre réel de la chaîne de requête non valide</translation>
+        <translation>Format de nombre réel de la chaîne de requête non valide</translation>
     </message>
     <message>
         <source>The domain must be an integer &gt;= 0.</source>
-        <translation type="guess">Le domaine doit être un entier &gt;= 0.</translation>
+        <translation>Le domaine doit être un entier &gt;= 0.</translation>
     </message>
     <message>
         <source>The zone must be an integer &gt;= 0.</source>
-        <translation type="guess">La cellule (zone) doit être un entier &gt;= 0.</translation>
+        <translation>La cellule (zone) doit être un entier &gt;= 0.</translation>
     </message>
     <message>
         <source>The node must be an integer &gt;= 0.</source>
-        <translation type="guess">Le nœud doit être un entier &gt;= 0.</translation>
+        <translation>Le nœud doit être un entier &gt;= 0.</translation>
     </message>
     <message>
         <source>The list of variables contains an error.</source>
-        <translation type="guess">La liste des variables contient une erreur</translation>
+        <translation>La liste des variables contient une erreur</translation>
     </message>
     <message>
         <source>save</source>
-        <translation type="guess">sauver</translation>
+        <translation>sauver</translation>
     </message>
     <message>
         <source>Performing %1 query.</source>
-        <translation type="guess">Exécution de la requête %1.</translation>
+        <translation>Exécution de la requête %1.</translation>
     </message>
     <message>
         <source>Python query script</source>
-        <translation type="guess">Script de requête en Python</translation>
+        <translation>Script de requête en Python</translation>
     </message>
     <message>
         <source>Execute query</source>
-        <translation type="guess">Effectuer la requête</translation>
+        <translation>Effectuer la requête</translation>
     </message>
     <message>
         <source>There are currently no query results to save.</source>
-        <translation type="guess">Il n&apos;y a actuellement aucun résultat de requête à enregistrer</translation>
+        <translation>Il n&apos;y a actuellement aucun résultat de requête à enregistrer</translation>
     </message>
     <message>
         <source>Save Query Results As</source>
-        <translation type="guess">Enregistrer les résultats de la requête sous</translation>
+        <translation>Enregistrer les résultats de la requête sous</translation>
     </message>
     <message>
         <source>VisIt could not save the query results to the selected file</source>
-        <translation type="correct">VisIt n&apos;a pas pu enregistrer les résultats de la requête dans le fichier sélectionné</translation>
+        <translation>VisIt n&apos;a pas pu enregistrer les résultats de la requête dans le fichier sélectionné</translation>
     </message>
     <message>
         <source>Dump Coordinates</source>
-        <translation type="guess">Déverser les coordonnées</translation>
+        <translation>Déverser les coordonnées</translation>
     </message>
     <message>
         <source>Dump Values</source>
-        <translation type="guess">Déverser les valeurs</translation>
+        <translation>Déverser les valeurs</translation>
     </message>
     <message>
         <source>Dump Index</source>
-        <translation type="guess">Déverser indice</translation>
+        <translation>Déverser indice</translation>
     </message>
     <message>
         <source>Dump Arc Length</source>
-        <translation type="guess">Déverser longueur d&apos;arc</translation>
+        <translation>Déverser longueur d&apos;arc</translation>
     </message>
     <message>
         <source>Centroid</source>
-        <translation type="guess">Centroïde (barycentre)</translation>
+        <translation>Centroïde (barycentre)</translation>
     </message>
 </context>
 <context>
     <name>QvisRadialResampleWindow</name>
     <message>
         <source>Fast Mode</source>
-        <translation type="guess">Mode rapide</translation>
+        <translation>Mode rapide</translation>
     </message>
     <message>
         <source>Min Elevation</source>
-        <translation type="guess">Élévation min</translation>
+        <translation>Élévation min</translation>
     </message>
     <message>
         <source>Max Elevation</source>
-        <translation type="guess">Élévation max</translation>
+        <translation>Élévation max</translation>
     </message>
     <message>
         <source>Delta Elevation</source>
-        <translation type="guess">Elévation Delta</translation>
+        <translation>Elévation Delta</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="correct">Rayon</translation>
+        <translation>Rayon</translation>
     </message>
     <message>
         <source>Delta Radius</source>
-        <translation type="guess">Rayon Delta</translation>
+        <translation>Rayon Delta</translation>
     </message>
     <message>
         <source>Center</source>
-        <translation type="correct">Centre</translation>
+        <translation>Centre</translation>
     </message>
     <message>
         <source>3D Resampling</source>
-        <translation type="guess">Rééchantillonnage 3D</translation>
+        <translation>Rééchantillonnage 3D</translation>
     </message>
     <message>
         <source>Min Azimuth</source>
-        <translation type="guess">Azimut min</translation>
+        <translation>Azimut min</translation>
     </message>
     <message>
         <source>Max Azimuth</source>
-        <translation type="guess">Azimut max</translation>
+        <translation>Azimut max</translation>
     </message>
     <message>
         <source>Delta Azimuth</source>
-        <translation type="guess">Azimut Delta</translation>
+        <translation>Azimut Delta</translation>
     </message>
 </context>
 <context>
@@ -14859,7 +15046,7 @@ même fenêtre.</translation>
     <name>QvisReflectWindow</name>
     <message>
         <source>Input mode</source>
-        <translation type="guess">Mode de saisie</translation>
+        <translation>Mode de saisie</translation>
     </message>
     <message>
         <source>2D</source>
@@ -14871,11 +15058,11 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Original data quadrant</source>
-        <translation type="guess">Quadrant données d&apos;origine</translation>
+        <translation>Quadrant données d&apos;origine</translation>
     </message>
     <message>
         <source>Reflection quadrants</source>
-        <translation type="new">Quadrants de réflexion</translation>
+        <translation>Quadrants de réflexion</translation>
     </message>
     <message>
         <source>Reflection Limits:</source>
@@ -14883,27 +15070,27 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Use X Min</source>
-        <translation type="guess">X Min</translation>
+        <translation>X Min</translation>
     </message>
     <message>
         <source>Specify X =</source>
-        <translation type="guess">Spécifier X</translation>
+        <translation>Spécifier X</translation>
     </message>
     <message>
         <source>Use Y Min</source>
-        <translation type="guess">Y Min</translation>
+        <translation>Y Min</translation>
     </message>
     <message>
         <source>Specify Y =</source>
-        <translation type="guess">Spécifier Y</translation>
+        <translation>Spécifier Y</translation>
     </message>
     <message>
         <source>Use Z Min</source>
-        <translation type="guess">Z Min</translation>
+        <translation>Z Min</translation>
     </message>
     <message>
         <source>Specify Z =</source>
-        <translation type="guess">Spécifier Z</translation>
+        <translation>Spécifier Z</translation>
     </message>
     <message>
         <source>Use dataset max</source>
@@ -14963,7 +15150,7 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Reflection octants</source>
-        <translation type="alterlegacy">Octants de réflexion</translation>
+        <translation>Octants de réflexion</translation>
     </message>
     <message>
         <source>Original data octant</source>
@@ -14975,62 +15162,62 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Specified X</source>
-        <translation type="alterlegacy">X Spécfié</translation>
+        <translation>X Spécfié</translation>
     </message>
     <message>
         <source>Specified Y</source>
-        <translation type="alterlegacy">Y Spécifié</translation>
+        <translation>Y Spécifié</translation>
     </message>
     <message>
         <source>Specified Z</source>
-        <translation type="alterlegacy">Z Spécifié</translation>
+        <translation>Z Spécifié</translation>
     </message>
     <message>
         <source>Reflect across axis</source>
-        <translation type="guess">Axe de réflexion</translation>
+        <translation>Axe de réflexion</translation>
     </message>
     <message>
         <source>Reflect across plane</source>
-        <translation type="guess">Plan de réflexion</translation>
+        <translation>Plan de réflexion</translation>
     </message>
     <message>
         <source>Plane Point</source>
-        <translation type="guess">Point du plan</translation>
+        <translation>Point du plan</translation>
     </message>
     <message>
         <source>Plane Normal</source>
-        <translation type="guess">Normale au plan</translation>
+        <translation>Normale au plan</translation>
     </message>
 </context>
 <context>
     <name>QvisRemapWindow</name>
     <message>
         <source>Remap Entire Extents</source>
-        <translation type="guess">Réassigner toutes les étendues</translation>
+        <translation>Réassigner toutes les étendues</translation>
     </message>
     <message>
         <source>Start X</source>
-        <translation type="guess">X début</translation>
+        <translation>X début</translation>
     </message>
     <message>
         <source>End X</source>
-        <translation type="guess">X fin</translation>
+        <translation>X fin</translation>
     </message>
     <message>
         <source>Cells in X</source>
-        <translation type="guess">Cellules en X</translation>
+        <translation>Cellules en X</translation>
     </message>
     <message>
         <source>Start Y</source>
-        <translation type="guess">Y début</translation>
+        <translation>Y début</translation>
     </message>
     <message>
         <source>End Y</source>
-        <translation type="guess">Y fin</translation>
+        <translation>Y fin</translation>
     </message>
     <message>
         <source>Cells in Y</source>
-        <translation type="guess">Cellules en Y</translation>
+        <translation>Cellules en Y</translation>
     </message>
     <message>
         <source>3D remapping</source>
@@ -15038,27 +15225,27 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Start Z</source>
-        <translation type="correct">Z début</translation>
+        <translation>Z début</translation>
     </message>
     <message>
         <source>End Z</source>
-        <translation type="correct">Z fin</translation>
+        <translation>Z fin</translation>
     </message>
     <message>
         <source>Cells in Z</source>
-        <translation type="guess">Cellules en Z</translation>
+        <translation>Cellules en Z</translation>
     </message>
     <message>
         <source>Variable type</source>
-        <translation type="guess">Type de variable</translation>
+        <translation>Type de variable</translation>
     </message>
     <message>
         <source>intrinsic</source>
-        <translation type="guess">intrinsèque</translation>
+        <translation>intrinsèque</translation>
     </message>
     <message>
         <source>extrinsic</source>
-        <translation type="guess">extrinsèque</translation>
+        <translation>extrinsèque</translation>
     </message>
 </context>
 <context>
@@ -15088,51 +15275,51 @@ même fenêtre.</translation>
     <name>QvisRenderingWindow</name>
     <message>
         <source>Basic</source>
-        <translation type="guess">basique</translation>
+        <translation>basique</translation>
     </message>
     <message>
         <source>Antialiasing</source>
-        <translation type="guess">Anti crénelage</translation>
+        <translation>Anti crénelage</translation>
     </message>
     <message>
         <source>Draw objects as</source>
-        <translation type="guess">Dessiner les objets comme</translation>
+        <translation>Dessiner les objets comme</translation>
     </message>
     <message>
         <source>Surfaces</source>
-        <translation type="correct">Surfaces</translation>
+        <translation>Surfaces</translation>
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="guess">Filaire</translation>
+        <translation>Filaire</translation>
     </message>
     <message>
         <source>Points</source>
-        <translation type="correct">Points</translation>
+        <translation>Points</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="guess">Auto</translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>Always</source>
-        <translation type="correct">Toujours</translation>
+        <translation>Toujours</translation>
     </message>
     <message>
         <source>Never</source>
-        <translation type="correct">Jamais</translation>
+        <translation>Jamais</translation>
     </message>
     <message>
         <source>Stereo</source>
-        <translation type="correct">Stéréo</translation>
+        <translation>Stéréo</translation>
     </message>
     <message>
         <source>Red/Blue</source>
-        <translation type="correct">Rouge/Bleu</translation>
+        <translation>Rouge/Bleu</translation>
     </message>
     <message>
         <source>Interlace</source>
-        <translation type="guess">Entrelacer</translation>
+        <translation>Entrelacer</translation>
     </message>
     <message>
         <source>Crystal Eyes</source>
@@ -15140,79 +15327,79 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Red/Green</source>
-        <translation type="correct">Rouge/Vert</translation>
+        <translation>Rouge/Vert</translation>
     </message>
     <message>
         <source>Specular lighting</source>
-        <translation type="guess">Éclairage spéculaire</translation>
+        <translation>Éclairage spéculaire</translation>
     </message>
     <message>
         <source>Strength</source>
-        <translation type="new">Intensite</translation>
+        <translation>Intensite</translation>
     </message>
     <message>
         <source>Sharpness</source>
-        <translation type="guess">Netteté</translation>
+        <translation>Netteté</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="correct">Avancé</translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <source>Use scalable rendering</source>
-        <translation type="guess">Utiliser le rendu scalable</translation>
+        <translation>Utiliser le rendu scalable</translation>
     </message>
     <message>
         <source>When polygon count exceeds</source>
-        <translation type="guess">Lorsque le nombre de polygones dépasse</translation>
+        <translation>Lorsque le nombre de polygones dépasse</translation>
     </message>
     <message>
         <source>Shadows (scalable rendering only)</source>
-        <translation type="guess">Ombres (rendu scalable uniquement)</translation>
+        <translation>Ombres (rendu scalable uniquement)</translation>
     </message>
     <message>
         <source>Depth Cueing (scalable rendering only)</source>
-        <translation type="guess">Repérage de profondeur (rendu scalable uniquement)</translation>
+        <translation>Repérage de profondeur (rendu scalable uniquement)</translation>
     </message>
     <message>
         <source>Apply color using textures</source>
-        <translation type="guess">Appliquer de la couleur à l&apos;aide de textures</translation>
+        <translation>Appliquer de la couleur à l&apos;aide de textures</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation type="correct">Information</translation>
+        <translation>Information</translation>
     </message>
     <message>
         <source>Query after each render</source>
-        <translation type="new">Effectuer la requête après chaque rendu</translation>
+        <translation>Effectuer la requête après chaque rendu</translation>
     </message>
     <message>
         <source>Using Scalable Rendering: </source>
-        <translation type="guess">Utiliser le rendu scalable :</translation>
+        <translation>Utiliser le rendu scalable :</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="guess">Non disponible</translation>
+        <translation>Non disponible</translation>
     </message>
     <message>
         <source>Frames per second:</source>
-        <translation type="guess">Images par seconde :</translation>
+        <translation>Images par seconde :</translation>
     </message>
     <message>
         <source>Approximate polygon count:</source>
-        <translation type="guess">Nombre approximatif de polygones :</translation>
+        <translation>Nombre approximatif de polygones :</translation>
     </message>
     <message>
         <source>X Extents:</source>
-        <translation type="guess">Étendues en X</translation>
+        <translation>Étendues en X</translation>
     </message>
     <message>
         <source>Y Extents:</source>
-        <translation type="guess">Étendues en Y</translation>
+        <translation>Étendues en Y</translation>
     </message>
     <message>
         <source>Z Extents:</source>
-        <translation type="guess">Étendues en Z</translation>
+        <translation>Étendues en Z</translation>
     </message>
     <message>
         <source>yes</source>
@@ -15224,77 +15411,77 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Seconds per frame:</source>
-        <translation type="guess">Secondes par image :</translation>
+        <translation>Secondes par image :</translation>
     </message>
     <message>
         <source>not set</source>
-        <translation type="guess">non défini</translation>
+        <translation>non défini</translation>
     </message>
     <message>
         <source>Compress images (geometry too) from engine</source>
-        <translation type="guess">Compresser les images (la géométrie aussi) depuis le moteur (engine)</translation>
+        <translation>Compresser les images (la géométrie aussi) depuis le moteur (engine)</translation>
     </message>
     <message>
         <source>Compact domains on engine</source>
-        <translation type="guess">Compacter les domaines sur le moteur</translation>
+        <translation>Compacter les domaines sur le moteur</translation>
     </message>
     <message>
         <source>When domains per process exceeds</source>
-        <translation type="guess">Lorsque le nombre de domaines par processus dépasse</translation>
+        <translation>Lorsque le nombre de domaines par processus dépasse</translation>
     </message>
     <message>
         <source>Cue automatically along camera depth</source>
-        <translation type="guess">Repérage automatique le long de la profondeur de la caméra</translation>
+        <translation>Repérage automatique le long de la profondeur de la caméra</translation>
     </message>
     <message>
         <source>Manual start point</source>
-        <translation type="guess">Point de départ manuel</translation>
+        <translation>Point de départ manuel</translation>
     </message>
     <message>
         <source>Manual end point</source>
-        <translation type="guess">Point final manuel</translation>
+        <translation>Point final manuel</translation>
     </message>
     <message>
         <source>start point</source>
-        <translation type="guess">point de départ</translation>
+        <translation>point de départ</translation>
     </message>
     <message>
         <source>end point</source>
-        <translation type="correct">point d&apos;arrivée</translation>
+        <translation>point d&apos;arrivée</translation>
     </message>
     <message>
         <source>Multi resolution for 2d AMR data</source>
-        <translation type="guess">Multi résolution pour les données AMR 2d</translation>
+        <translation>Multi résolution pour les données AMR 2d</translation>
     </message>
     <message>
         <source>Smallest cell</source>
-        <translation type="guess">Plus petite cellule</translation>
+        <translation>Plus petite cellule</translation>
     </message>
     <message>
         <source>As shadows only work with VisIt&apos;s software rendering mode, software rendering is now being enabled.  If you turn off shadows at a later time, you must manually disable software rendering.  You do this by setting &quot;Use scalable rendering&quot; to &quot;Auto&quot;.</source>
-        <translation type="guess">Comme les ombrages ne fonctionnent qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est désormais activé. Si vous désactivez les ombrages ultérieurement, vous devrez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur le mode &quot;Auto&quot;.</translation>
+        <translation>Comme les ombrages ne fonctionnent qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est désormais activé. Si vous désactivez les ombrages ultérieurement, vous devrez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur le mode &quot;Auto&quot;.</translation>
     </message>
     <message>
         <source>As depth cueing only work with VisIt&apos;s software rendering mode, software rendering is now being enabled.  If you turn off depth cueing at a later time, you must manually disable software rendering.  You do this by setting &quot;Use scalable rendering&quot; to &quot;Auto&quot;.</source>
-        <translation type="guess">Comme le repérage de profondeur ne fonctionne qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est maintenant activé. Si vous désactivez le repérage de profondeur ultérieurement, vous devez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur &quot;Auto&quot;.</translation>
+        <translation>Comme le repérage de profondeur ne fonctionne qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est maintenant activé. Si vous désactivez le repérage de profondeur ultérieurement, vous devez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur &quot;Auto&quot;.</translation>
     </message>
     <message>
         <source> (Requires restart)</source>
-        <translation type="correct"> (Nécessite un redémarrage)</translation>
+        <translation> (Nécessite un redémarrage)</translation>
     </message>
     <message>
         <source>When changing antialiasing, a VisIt restart is required
 before the changes can take effect.</source>
-<translation type="guess">Lors d&apos;un changement de l&apos;anticrénelage, un redémarrage de VisIt est requis
+        <translation>Lors d&apos;un changement de l&apos;anticrénelage, un redémarrage de VisIt est requis
 avant que les modifications puissent prendre effet.</translation>
     </message>
     <message>
         <source>Compositer Settings</source>
-        <translation type="guess">Réglages du compositeur</translation>
+        <translation>Réglages du compositeur</translation>
     </message>
     <message>
         <source>Ordered Compositing</source>
-        <translation type="guess">Composition ordonnée</translation>
+        <translation>Composition ordonnée</translation>
     </message>
     <message>
         <source>Enable ordered compositing. For block stuctured domain
@@ -15303,7 +15490,7 @@ for a global parallel camera order geometry sort when
 rendering translucent geometry. When combined with depth
 peeling all geometry sorting is eliminated
 </source>
-<translation type="guess">Activer la composition ordonnée. Pour la décomposition de domaine structurée par blocs,
+        <translation>Activer la composition ordonnée. Pour la décomposition de domaine structurée par blocs,
 la composition ordonnée élimine le besoin
 d&apos;un tri de géométrie d&apos;ordre global de caméra parallèle lors
 du rendu de la géométrie translucide. Lorsqu&apos;il est combiné avec l&apos;épluchage en profondeur,
@@ -15312,18 +15499,18 @@ tout tri de géométrie est éliminé
     </message>
     <message>
         <source>Depth Compositer Threads</source>
-        <translation type="guess">Nombre de Threads du compositeur de profondeur</translation>
+        <translation>Nombre de Threads du compositeur de profondeur</translation>
     </message>
     <message>
         <source>Sets the number of threads that process communication streams
 during depth compositing.
 </source>
-<translation type="guess">Définit le nombre de threads qui traitent les flux de communication
+        <translation>Définit le nombre de threads qui traitent les flux de communication
 pendant la composition en profondeur.</translation>
     </message>
     <message>
         <source>Depth Compositer Blocking</source>
-        <translation type="unfinished">Blocage du compositeur de profondeur</translation>
+        <translation>Blocage du compositeur de profondeur</translation>
     </message>
     <message>
         <source>Sets the block size used for streaming communication
@@ -15331,7 +15518,7 @@ during depth compositing. Images are split into blocks
 of this size and streamed out. Incomning streams are
 processed in the background using compositing threads
 </source>
-<translation type="guess">Définit la taille de bloc utilisée pour la communication en streaming
+        <translation>Définit la taille de bloc utilisée pour la communication en streaming
 pendant la composition en profondeur. Les images sont divisées en blocs
 de cette taille et diffusées en continu. Les flux entrants sont
 traités en arrière-plan à l&apos;aide de threads de composition
@@ -15339,19 +15526,19 @@ traités en arrière-plan à l&apos;aide de threads de composition
     </message>
     <message>
         <source>Alpha Compositer Threads</source>
-        <translation type="unfinished">Nombre de threads du compositeur Alpha</translation>
+        <translation>Nombre de threads du compositeur Alpha</translation>
     </message>
     <message>
         <source>Sets the number of threads that process communication streams
 during alpha compositing.
 </source>
-<translation type="guess">Définit le nombre de threads qui traitent les flux de communication
+        <translation>Définit le nombre de threads qui traitent les flux de communication
 pendant la composition alpha.
 </translation>
     </message>
     <message>
         <source>Alpha Compositer Blocking</source>
-        <translation type="unfinished">Blocage du compositeur Alpha</translation>
+        <translation>Blocage du compositeur Alpha</translation>
     </message>
     <message>
         <source>Sets the block size used for streaming communication
@@ -15359,7 +15546,7 @@ during alpha compositing. Images are split into blocks
 of this size and streamed out. Incomning streams are
 processed in the background using compositing threads
 </source>
-<translation type="guess">Définit la taille de bloc utilisée pour la communication en streaming
+        <translation>Définit la taille de bloc utilisée pour la communication en streaming
 pendant la composition alpha. Les images sont divisées en blocs
 de cette taille et diffusées en continu. Les flux entrants sont
 traités en arrière-plan à l&apos;aide de threads de composition
@@ -15367,7 +15554,7 @@ traités en arrière-plan à l&apos;aide de threads de composition
     </message>
     <message>
         <source>Depth Peeling</source>
-        <translation type="guess">Profondeur d&apos;épluchage</translation>
+        <translation>Profondeur d&apos;épluchage</translation>
     </message>
     <message>
         <source>Enable depth peeling for order independent rendering of
@@ -15376,7 +15563,7 @@ order sort is used. If you have a GPU this is usualy a win
 with OSMesa it will depend on the version and build options
 with VisIt&apos;s current Mesa 7.10 it is *very* slow.
 </source>
-<translation type="guess">Activez l&apos;épluchage en profondeur pour un rendu indépendant de l&apos;ordre de
+        <translation>Activez l&apos;épluchage en profondeur pour un rendu indépendant de l&apos;ordre de
 la géométrie transparente. Lorsque vous n&apos;utilisez pas l&apos;épluchage en profondeur,
 un tri par ordre de caméra est utilisé. Si vous avez un GPU, c&apos;est généralement gagnant
 avec OSMesa, cela dépendra de la version et des options de construction
@@ -15385,7 +15572,7 @@ avec le Mesa 7.10 actuel de VisIt, c&apos;est *très* lent.
     </message>
     <message>
         <source>Occlusion ratio</source>
-        <translation type="unfinished">Taux d'occlusion</translation>
+        <translation>Taux d&apos;occlusion</translation>
     </message>
     <message>
         <source>When greater than zero early terminations is enabled and
@@ -15394,7 +15581,7 @@ fraction of pixels changed in the last peel. Thus one sacrifices
 accuracy for speed. When set to zero the maximum number of peels
 will be made which, when enough peels are requested, ensures a
 correct result.</source>
-<translation type="guess">Lorsque supérieur à zéro, les terminaisons anticipées sont activées et
+        <translation>Lorsque supérieur à zéro, les terminaisons anticipées sont activées et
 l&apos;algorithme arrête d&apos;effectuer des épluchures lorsque moins de cette
 fraction de pixels a changé au cours du dernier épluchage. Ainsi, on sacrifie
 la précision pour la vitesse. Lorsqu&apos;il est mis à zéro, le nombre maximum de pelures
@@ -15403,174 +15590,178 @@ résultat correct.</translation>
     </message>
     <message>
         <source>Max number of Peels</source>
-        <translation type="guess">Nombre maximal de pelures</translation>
+        <translation>Nombre maximal de pelures</translation>
     </message>
     <message>
         <source>Sets the maximum number of peels to use. Each peel renders the
 next nearest surface for a given fragment. You may need to
 increase the number of peels for very complex scenes.</source>
-<translation type="guess">Définit le nombre maximum de pelures à utiliser. Chaque pelure fait le rendu de la
+        <translation>Définit le nombre maximum de pelures à utiliser. Chaque pelure fait le rendu de la
 surface la plus proche suivante pour un fragment donné. Vous aurez peut-être besoin
 d&apos;augmenter le nombre de pelures pour les scènes très complexes.</translation>
     </message>
     <message>
         <source>OSPRay rendering</source>
-        <translation type="guess">Rensu OSPRay</translation>
+        <translation>Rensu OSPRay</translation>
     </message>
     <message>
         <source>Samples per pixel</source>
-        <translation type="guess">Nombre d&apos;échantillons par pixel</translation>
+        <translation>Nombre d&apos;échantillons par pixel</translation>
     </message>
     <message>
         <source>Ambient occlusion samples</source>
-        <translation type="unfinished">Échantillons d'occlusion ambiante</translation>
+        <translation>Échantillons d&apos;occlusion ambiante</translation>
     </message>
     <message>
         <source>Shadows</source>
-        <translation type="guess">Ombres</translation>
+        <translation>Ombres</translation>
+    </message>
+    <message>
+        <source>OSPRay Rendering</source>
+        <translation>Rendu OSPRay</translation>
     </message>
 </context>
 <context>
     <name>QvisReplicateWindow</name>
     <message>
         <source>Use provided unit cell vectors</source>
-        <translation type="guess">Utiliser les vecteurs de cellules unitaires fournis</translation>
+        <translation>Utiliser les vecteurs de cellules unitaires fournis</translation>
     </message>
     <message>
         <source>Vector for X</source>
-        <translation type="guess">Vecteur pour X</translation>
+        <translation>Vecteur pour X</translation>
     </message>
     <message>
         <source>Vector for Y</source>
-        <translation type="guess">Vecteur pour Y</translation>
+        <translation>Vecteur pour Y</translation>
     </message>
     <message>
         <source>Vector for Z</source>
-        <translation type="guess">Vecteur pour Z</translation>
+        <translation>Vecteur pour Z</translation>
     </message>
     <message>
         <source>Replications in X</source>
-        <translation type="guess">Réplications en X</translation>
+        <translation>Réplications en X</translation>
     </message>
     <message>
         <source>Replications in Y</source>
-        <translation type="guess">Réplications en Y</translation>
+        <translation>Réplications en Y</translation>
     </message>
     <message>
         <source>Replications in Z</source>
-        <translation type="guess">Réplications en Z</translation>
+        <translation>Réplications en Z</translation>
     </message>
     <message>
         <source>Merge into one block when possible</source>
-        <translation type="guess">Fusionner en un seul bloc lorsque c&apos;est possible</translation>
+        <translation>Fusionner en un seul bloc lorsque c&apos;est possible</translation>
     </message>
     <message>
         <source>For molecular data, periodically replicate
 atoms at unit cell boundaries.</source>
-        <translation type="guess">Pour les données moléculaires, répliquez périodiquement
+        <translation>Pour les données moléculaires, répliquez périodiquement
 les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Shift atoms to new periodic origin</source>
-        <translation type="guess">Décaler les atomes vers une nouvelle origine périodique</translation>
+        <translation>Décaler les atomes vers une nouvelle origine périodique</translation>
     </message>
     <message>
         <source>New periodic atom origin</source>
-        <translation type="guess">Nouvelle origine des atomes périodiques</translation>
+        <translation>Nouvelle origine des atomes périodiques</translation>
     </message>
     <message>
         <source>New periodic origin</source>
-        <translation type="guess">Nouvelle origine des atomes périodiques</translation>
+        <translation>Nouvelle origine des atomes périodiques</translation>
     </message>
 </context>
 <context>
     <name>QvisResampleWindow</name>
     <message>
         <source>Resample Entire Extents</source>
-        <translation type="guess">Rééchantillonner entièrement les étendues</translation>
+        <translation>Rééchantillonner entièrement les étendues</translation>
     </message>
     <message>
         <source>Start X</source>
-        <translation type="guess">Début X</translation>
+        <translation>Début X</translation>
     </message>
     <message>
         <source>End X</source>
-        <translation type="guess">Fin X</translation>
+        <translation>Fin X</translation>
     </message>
     <message>
         <source>Samples in X</source>
-        <translation type="guess">Echantillons selon X</translation>
+        <translation>Echantillons selon X</translation>
     </message>
     <message>
         <source>Start Y</source>
-        <translation type="guess">Début Y</translation>
+        <translation>Début Y</translation>
     </message>
     <message>
         <source>End Y</source>
-        <translation type="guess">Fin Y</translation>
+        <translation>Fin Y</translation>
     </message>
     <message>
         <source>Samples in Y</source>
-        <translation type="guess">Echantillons selon Y</translation>
+        <translation>Echantillons selon Y</translation>
     </message>
     <message>
         <source>3D resampling</source>
-        <translation type="guess">Rééchantillonnage 3D</translation>
+        <translation>Rééchantillonnage 3D</translation>
     </message>
     <message>
         <source>Start Z</source>
-        <translation type="guess">Début Z</translation>
+        <translation>Début Z</translation>
     </message>
     <message>
         <source>End Z</source>
-        <translation type="guess">Fin Z</translation>
+        <translation>Fin Z</translation>
     </message>
     <message>
         <source>Samples in Z</source>
-        <translation type="guess">Echantillons selon Z</translation>
+        <translation>Echantillons selon Z</translation>
     </message>
     <message>
         <source>Resolve ties</source>
-        <translation type="guess">Résoudre les liens</translation>
+        <translation>Résoudre les liens</translation>
     </message>
     <message>
         <source>random</source>
-        <translation type="guess">aléatoire</translation>
+        <translation>aléatoire</translation>
     </message>
     <message>
         <source>largest</source>
-        <translation type="guess">le plus grand</translation>
+        <translation>le plus grand</translation>
     </message>
     <message>
         <source>smallest</source>
-        <translation type="guess">le plus petit</translation>
+        <translation>le plus petit</translation>
     </message>
     <message>
         <source>Variable to resolve ties</source>
-        <translation type="guess">Variable pour résoudre les liens</translation>
+        <translation>Variable pour résoudre les liens</translation>
     </message>
     <message>
         <source>Value for uncovered regions</source>
-        <translation type="guess">Valeur pour les régions non couvertes</translation>
+        <translation>Valeur pour les régions non couvertes</translation>
     </message>
     <message>
         <source>Distribute resampled data set across all processors (parallel only)?</source>
-        <translation type="guess">Répartir les données rééchantillonnées sur tous les processeurs (en parallèle uniquement) ?</translation>
+        <translation>Répartir les données rééchantillonnées sur tous les processeurs (en parallèle uniquement) ?</translation>
     </message>
     <message>
         <source>Make output cell centered</source>
-        <translation type="guess">Rendre centrée la cellule de sortie</translation>
+        <translation>Rendre centrée la cellule de sortie</translation>
     </message>
 </context>
 <context>
     <name>QvisRevolveWindow</name>
     <message>
         <source>Type of Mesh?</source>
-        <translation type="guess">Type de maillage ?</translation>
+        <translation>Type de maillage ?</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="guess">Auto</translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>XY</source>
@@ -15586,100 +15777,100 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Choose axis based on mesh type?</source>
-        <translation type="guess">Choisir l&apos;axe en fonction du type de maillage ?</translation>
+        <translation>Choisir l&apos;axe en fonction du type de maillage ?</translation>
     </message>
     <message>
         <source>Axis of revolution</source>
-        <translation type="guess">Axe de revolution</translation>
+        <translation>Axe de revolution</translation>
     </message>
     <message>
         <source>Start angle</source>
-        <translation type="guess">Angle de départ</translation>
+        <translation>Angle de départ</translation>
     </message>
     <message>
         <source>Stop angle</source>
-        <translation type="guess">Angle de fin</translation>
+        <translation>Angle de fin</translation>
     </message>
     <message>
         <source>Number of steps</source>
-        <translation type="correct">Nombre de pas</translation>
+        <translation>Nombre de pas</translation>
     </message>
 </context>
 <context>
     <name>QvisRotationTransition</name>
     <message>
         <source>Start angle</source>
-        <translation type="guess">Angle de début</translation>
+        <translation>Angle de début</translation>
     </message>
     <message>
         <source>End angle</source>
-        <translation type="guess">Angle de fin</translation>
+        <translation>Angle de fin</translation>
     </message>
     <message>
         <source>Number of steps</source>
-        <translation type="correct">Nombre de pas</translation>
+        <translation>Nombre de pas</translation>
     </message>
 </context>
 <context>
     <name>QvisSILSetSelector</name>
     <message>
         <source>Category</source>
-        <translation type="correct">Catégorie</translation>
+        <translation>Catégorie</translation>
     </message>
     <message>
         <source>Set</source>
-        <translation type="guess">Ensemble</translation>
+        <translation>Ensemble</translation>
     </message>
 </context>
 <context>
     <name>QvisSPHResampleWindow</name>
     <message>
         <source>Minimum X</source>
-        <translation type="guess">X minimum</translation>
+        <translation>X minimum</translation>
     </message>
     <message>
         <source>Maximum X</source>
-        <translation type="guess">X maximum</translation>
+        <translation>X maximum</translation>
     </message>
     <message>
         <source>X Grid Cells</source>
-        <translation type="guess">Nombre de cellules en X</translation>
+        <translation>Nombre de cellules en X</translation>
     </message>
     <message>
         <source>Minimum Y</source>
-        <translation type="guess">Y minimum</translation>
+        <translation>Y minimum</translation>
     </message>
     <message>
         <source>Maximum Y</source>
-        <translation type="guess">Y maximum</translation>
+        <translation>Y maximum</translation>
     </message>
     <message>
         <source>Y Grid Cells</source>
-        <translation type="guess">Nombre de cellules en Y</translation>
+        <translation>Nombre de cellules en Y</translation>
     </message>
     <message>
         <source>Minimum Z</source>
-        <translation type="guess">Z minimum</translation>
+        <translation>Z minimum</translation>
     </message>
     <message>
         <source>Maximum Z</source>
-        <translation type="guess">Z maximum</translation>
+        <translation>Z maximum</translation>
     </message>
     <message>
         <source>Z Grid Cells</source>
-        <translation type="guess">Nombre de cellules en Z</translation>
+        <translation>Nombre de cellules en Z</translation>
     </message>
     <message>
         <source>Tensor Support</source>
-        <translation type="guess">Tenseur support</translation>
+        <translation>Tenseur support</translation>
     </message>
     <message>
         <source>Weight</source>
-        <translation type="guess">Poids</translation>
+        <translation>Poids</translation>
     </message>
     <message>
         <source>Enable first order (more accurate) corrective kernel interpolations</source>
-        <translation type="guess">Activer les interpolations noyau correctives au premier ordre (plus précises)</translation>
+        <translation>Activer les interpolations noyau correctives au premier ordre (plus précises)</translation>
     </message>
 </context>
 <context>
@@ -15698,7 +15889,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Choose template</source>
-        <translation type="alterlegacy">Choisir un modèle (&quot;template&quot;)</translation>
+        <translation>Choisir un modèle (&quot;template&quot;)</translation>
     </message>
     <message>
         <source>Choose a movie template.</source>
@@ -15706,7 +15897,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Update sources</source>
-        <translation type="guess">Mettre à jour les sources</translation>
+        <translation>Mettre à jour les sources</translation>
     </message>
     <message>
         <source>Make sure that the sources used in this template are up to date. You can change the sources here to make a movie using a template that was created with other data.</source>
@@ -15714,7 +15905,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Viewports</source>
-        <translation type="new">Fenêtres de visualisation</translation>
+        <translation>Fenêtres de visualisation</translation>
     </message>
     <message>
         <source>Change the movie template&apos;s viewports. Viewports are regions of the final movie image to which VisIt&apos;s visualization windows can be mapped.</source>
@@ -15722,7 +15913,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Sequences</source>
-        <translation type="correct">Séquences</translation>
+        <translation>Séquences</translation>
     </message>
     <message>
         <source>Create new sequences of frames and map them to movie template viewports.</source>
@@ -15730,7 +15921,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Save new template</source>
-        <translation type="gues">Enregistrer un nouveau modèle</translation>
+        <translation>Enregistrer un nouveau modèle</translation>
     </message>
     <message>
         <source>Save this movie as a new template?</source>
@@ -15738,7 +15929,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Save new template as</source>
-        <translation type="guess">Enregistrer le nouveau modèle sous</translation>
+        <translation>Enregistrer le nouveau modèle sous</translation>
     </message>
     <message>
         <source>Enter the information that will be saved with your template.</source>
@@ -15746,31 +15937,31 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Settings check</source>
-        <translation type="guess">Contrôle des réglages</translation>
+        <translation>Contrôle des réglages</translation>
     </message>
     <message>
         <source>Do these movie settings look okay?</source>
-        <translation type="guess">Ces paramètres de film semblent-ils corrects ?</translation>
+        <translation>Ces paramètres de film semblent-ils corrects ?</translation>
     </message>
     <message>
         <source>Choose format</source>
-        <translation type="guess">Choisir le format</translation>
+        <translation>Choisir le format</translation>
     </message>
     <message>
         <source>Choose movie formats and resolutions.</source>
-        <translation type="guess">Choisir formats et résolutions des films</translation>
+        <translation>Choisir formats et résolutions des films</translation>
     </message>
     <message>
         <source>Choose length</source>
-        <translation type="guess">Choisir la longueur</translation>
+        <translation>Choisir la longueur</translation>
     </message>
     <message>
         <source>Choose movie start/end time and frames per second.</source>
-        <translation type="new">Choisir le temps de début/fin du film et le nombre d&apos;images par seconde.</translation>
+        <translation>Choisir le temps de début/fin du film et le nombre d&apos;images par seconde.</translation>
     </message>
     <message>
         <source>Choose filename</source>
-        <translation type="guess">Choisir le nom de fichier</translation>
+        <translation>Choisir le nom de fichier</translation>
     </message>
     <message>
         <source>Choose the output directory and base filename for your movie(s).</source>
@@ -15778,11 +15969,11 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>E-mail notification</source>
-        <translation type="alterlegacy">Notification par courriel (E-mail)</translation>
+        <translation>Notification par courriel (E-mail)</translation>
     </message>
     <message>
         <source>Do you want to be notified by E-mail when your movie completes?</source>
-        <translation type="alterlegacy">Voulez-vous être informé par courriel (E-mail) de la fin du traitement ?</translation>
+        <translation>Voulez-vous être informé par courriel (E-mail) de la fin du traitement ?</translation>
     </message>
     <message>
         <source>Choose method</source>
@@ -15790,11 +15981,11 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Choose when and how you would like VisIt to create your movies.</source>
-        <translation type="guess">Choisissez quand et comment vous souhaitez que VisIt crée vos films.</translation>
+        <translation>Choisissez quand et comment vous souhaitez que VisIt crée vos films.</translation>
     </message>
     <message>
         <source>Save movie wizard</source>
-        <translation type="guess">Assistant d&apos;enregistrement de film</translation>
+        <translation>Assistant d&apos;enregistrement de film</translation>
     </message>
     <message>
         <source>VisIt could not save the new movie template&apos;s Python script.</source>
@@ -15826,27 +16017,27 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>No preview</source>
-        <translation type="guess">Pas de prévisualisation</translation>
+        <translation>Pas de prévisualisation</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="guess">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="guess">Supprimer</translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Viewport properties</source>
-        <translation type="new">Propriétes de la fenêtre de visualisation</translation>
+        <translation>Propriétes de la fenêtre de visualisation</translation>
     </message>
     <message>
         <source>Lower left</source>
-        <translation type="guess">En bas à gauche</translation>
+        <translation>En bas à gauche</translation>
     </message>
     <message>
         <source>Upper right</source>
-        <translation type="guess">En haut à droite</translation>
+        <translation>En haut à droite</translation>
     </message>
     <message>
         <source>Compositing</source>
@@ -15854,31 +16045,31 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Overlay</source>
-        <translation type="unfinished">Surcouche</translation>
+        <translation>Surcouche</translation>
     </message>
     <message>
         <source>Blend</source>
-        <translation type="guess">Mélange</translation>
+        <translation>Mélange</translation>
     </message>
     <message>
         <source>Replace color</source>
-        <translation type="guess">Remplacer la couleur</translation>
+        <translation>Remplacer la couleur</translation>
     </message>
     <message>
         <source>Replace background color</source>
-        <translation type="guess">Remplacer la couleur d&apos;arrière-plan</translation>
+        <translation>Remplacer la couleur d&apos;arrière-plan</translation>
     </message>
     <message>
         <source>Add drop shadow</source>
-        <translation type="guess">Ajouter une ombre portée</translation>
+        <translation>Ajouter une ombre portée</translation>
     </message>
     <message>
         <source>Sequence properties</source>
-        <translation type="guess">Propriétés de la séquence</translation>
+        <translation>Propriétés de la séquence</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="correct">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Map to viewport</source>
@@ -15886,15 +16077,15 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>User interface (*.ui)</source>
-        <translation type="guess">Interface utilisateur (*.ui)</translation>
+        <translation>Interface utilisateur (*.ui)</translation>
     </message>
     <message>
         <source>Get User Interface filename</source>
-        <translation type="guess">Obtenir le nom de fichier de l&apos;interface utilisateur</translation>
+        <translation>Obtenir le nom de fichier de l&apos;interface utilisateur</translation>
     </message>
     <message>
         <source>User interface definition file.</source>
-        <translation type="guess">Fichier de définition de l&apos;interface utilisateur</translation>
+        <translation>Fichier de définition de l&apos;interface utilisateur</translation>
     </message>
     <message>
         <source>Sequence to viewport mapping</source>
@@ -15902,23 +16093,23 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Title</source>
-        <translation type="guess">Titre</translation>
+        <translation>Titre</translation>
     </message>
     <message>
         <source>Description</source>
-        <translation type="guess">Description</translation>
+        <translation>Description</translation>
     </message>
     <message>
         <source>Template filename</source>
-        <translation type="alterlegacy">Nom de fichier du modèle</translation>
+        <translation>Nom de fichier du modèle</translation>
     </message>
     <message>
         <source>Choose template filename</source>
-        <translation type="alterlegacy">Choisir le nom fichier du modèle</translation>
+        <translation>Choisir le nom fichier du modèle</translation>
     </message>
     <message>
         <source>Choose preview image filename</source>
-        <translation type="guess">Choisir le nom de fichier de l&apos;image d&apos;aperçu</translation>
+        <translation>Choisir le nom de fichier de l&apos;image d&apos;aperçu</translation>
     </message>
     <message>
         <source>Yes</source>
@@ -15930,15 +16121,15 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Settings</source>
-        <translation type="correct">Paramètres</translation>
+        <translation>Paramètres</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation type="correct">Valeurs</translation>
+        <translation>Valeurs</translation>
     </message>
     <message>
         <source>Format and resolution</source>
-        <translation type="guess">Format et résolution</translation>
+        <translation>Format et résolution</translation>
     </message>
     <message>
         <source>Format</source>
@@ -15986,7 +16177,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Stereo type</source>
-        <translation type="guess">Type de stéréo</translation>
+        <translation>Type de stéréo</translation>
     </message>
     <message>
         <source>Output</source>
@@ -16014,7 +16205,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Output directory</source>
-        <translation type="guess">Répertoire d&apos;écriture</translation>
+        <translation>Répertoire d&apos;écriture</translation>
     </message>
     <message>
         <source>Base filename</source>
@@ -16022,7 +16213,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>E-mail address</source>
-        <translation type="alterlegacy">Adresse courriel (E-mail)</translation>
+        <translation>Adresse courriel (E-mail)</translation>
     </message>
     <message>
         <source>Now, use currently allocated processors</source>
@@ -16038,19 +16229,19 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>[User defined] </source>
-        <translation type="guess">[Défini par l&apos;utilisateur]</translation>
+        <translation>[Défini par l&apos;utilisateur]</translation>
     </message>
     <message>
         <source>VisIt was able to read the session file that is used by the current movie template but the session file might be from before VisIt 1.5.5</source>
-        <translation type="guess">VisIt a pu lire le fichier de session utilisé par le modèle de film actuel, mais le fichier de session peut être antérieur à VisIt 1.5.5</translation>
+        <translation>VisIt a pu lire le fichier de session utilisé par le modèle de film actuel, mais le fichier de session peut être antérieur à VisIt 1.5.5</translation>
     </message>
     <message>
         <source>(none)</source>
-        <translation type="guess">(aucun)</translation>
+        <translation>(aucun)</translation>
     </message>
     <message>
         <source>Generation method</source>
-        <translation type="guess">Méthode de génération</translation>
+        <translation>Méthode de génération</translation>
     </message>
     <message>
         <source>Use movie template</source>
@@ -16058,83 +16249,83 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Movie template</source>
-        <translation type="guess">Modèle d&apos;animation</translation>
+        <translation>Modèle d&apos;animation</translation>
     </message>
     <message>
         <source>Formats</source>
-        <translation type="format">Formats</translation>
+        <translation>Formats</translation>
     </message>
     <message>
         <source>Current</source>
-        <translation type="guess">Courant</translation>
+        <translation>Courant</translation>
     </message>
     <message>
         <source> Left/Right stereo</source>
-        <translation type="guess">Stéréo Gauche/Droite</translation>
+        <translation>Stéréo Gauche/Droite</translation>
     </message>
     <message>
         <source> Red/Blue stereo</source>
-        <translation type="guess">Stéréo Rouge/Bleue</translation>
+        <translation>Stéréo Rouge/Bleue</translation>
     </message>
     <message>
         <source> Red/Green stereo</source>
-        <translation type="guess">Stéréo Rouge/Verte</translation>
+        <translation>Stéréo Rouge/Verte</translation>
     </message>
     <message>
         <source>none</source>
-        <translation type="guess">aucune</translation>
+        <translation>aucune</translation>
     </message>
     <message>
         <source>off</source>
-        <translation type="guess">éteint</translation>
+        <translation>éteint</translation>
     </message>
     <message>
         <source>set in template</source>
-        <translation type="guess">définir dans le modèle</translation>
+        <translation>définir dans le modèle</translation>
     </message>
     <message>
         <source>No description available</source>
-        <translation type="guess">Aucune description disponible</translation>
+        <translation>Aucune description disponible</translation>
     </message>
     <message>
         <source>Select output directory</source>
-        <translation type="guess">Choisir le répertoire d&apos;écriture</translation>
+        <translation>Choisir le répertoire d&apos;écriture</translation>
     </message>
     <message>
         <source>VisIt could not read the session file: %1.</source>
-        <translation type="guess">VisIt n&apos;a pas pu lire le fichier de session : %1.</translation>
+        <translation>VisIt n&apos;a pas pu lire le fichier de session : %1.</translation>
     </message>
     <message>
         <source>The user interface file %1 could not be loaded.</source>
-        <translation type="correct">Le fichier d&apos;interface utilisateur %1 n&apos;a pas pu être chargé.</translation>
+        <translation>Le fichier d&apos;interface utilisateur %1 n&apos;a pas pu être chargé.</translation>
     </message>
     <message>
         <source>The user interface files %1 could not be loaded.</source>
-        <translation type="correct">Les fichiers d&apos;interface utilisateur %1 n&apos;ont pas pu être chargés</translation>
+        <translation>Les fichiers d&apos;interface utilisateur %1 n&apos;ont pas pu être chargés</translation>
     </message>
     <message>
         <source>Template usage</source>
-        <translation type="guess">Usage du modèle</translation>
+        <translation>Usage du modèle</translation>
     </message>
     <message>
         <source>User interface</source>
-        <translation type="guess">Interface utilisateur</translation>
+        <translation>Interface utilisateur</translation>
     </message>
     <message>
         <source>%1 sequence</source>
-        <translation type="guess">%1 séquence</translation>
+        <translation>%1 séquence</translation>
     </message>
     <message>
         <source>Frame stride</source>
-        <translation type="new">Ecrire une image sur (1=toutes) :</translation>
+        <translation>Ecrire une image sur (1=toutes) :</translation>
     </message>
     <message>
         <source>Use screen capture</source>
-        <translation type="guess">Utiliser la capture d&apos;écran</translation>
+        <translation>Utiliser la capture d&apos;écran</translation>
     </message>
     <message>
         <source>Screen Capture</source>
-        <translation type="guess">Capture d&apos;écran</translation>
+        <translation>Capture d&apos;écran</translation>
     </message>
     <message>
         <source>yes</source>
@@ -16146,22 +16337,22 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Initial frame value</source>
-        <translation type="guess">Numéro d&apos;image de départ</translation>
+        <translation>Numéro d&apos;image de départ</translation>
     </message>
     <message>
         <source>Use Screen Capture</source>
-        <translation type="guess">Utiliser la capture d&apos;écran</translation>
+        <translation>Utiliser la capture d&apos;écran</translation>
     </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
     <message>
         <source>Output files to current directory</source>
-        <translation type="guess">Enregistrer dans le répertoire courant</translation>
+        <translation>Enregistrer dans le répertoire courant</translation>
     </message>
     <message>
         <source>Output directory</source>
-        <translation type="guess">Répertoire d&apos;écriture</translation>
+        <translation>Répertoire d&apos;écriture</translation>
     </message>
     <message>
         <source>Filename</source>
@@ -16181,7 +16372,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Compression type</source>
-        <translation type="guess">Type de compression</translation>
+        <translation>Type de compression</translation>
     </message>
     <message>
         <source>None</source>
@@ -16209,7 +16400,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>1:1 aspect ratio</source>
-        <translation type="vanished">1:1</translation>
+        <translation>1:1</translation>
     </message>
     <message>
         <source>No resolution constraint</source>
@@ -16241,7 +16432,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Force parallel merge</source>
-        <translation type="guess">Forcer la fusion parallèle</translation>
+        <translation>Forcer la fusion parallèle</translation>
     </message>
     <message>
         <source>Save</source>
@@ -16325,7 +16516,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Format options</source>
-        <translation type="guess">Options de format</translation>
+        <translation>Options de format</translation>
     </message>
     <message>
         <source>Gzip</source>
@@ -16333,11 +16524,11 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Aspect ratio and resolution</source>
-        <translation type="guess">Rapport d&apos;aspect et résolution</translation>
+        <translation>Rapport d&apos;aspect et résolution</translation>
     </message>
     <message>
         <source>Aspect ratio</source>
-        <translation type="guess">Rapport d&apos;aspect</translation>
+        <translation>Rapport d&apos;aspect</translation>
     </message>
     <message>
         <source>Pixel data</source>
@@ -16349,7 +16540,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Color data.</source>
-        <translation type="guess">Données de couleur</translation>
+        <translation>Données de couleur</translation>
     </message>
     <message>
         <source>Alpha</source>
@@ -16357,114 +16548,114 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Add transparency to the output image.</source>
-        <translation type="guess"> Ajouter de la transparence à l&apos;image de sortie.</translation>
+        <translation> Ajouter de la transparence à l&apos;image de sortie.</translation>
     </message>
     <message>
         <source>Depth</source>
-        <translation type="guess">Profondeur</translation>
+        <translation>Profondeur</translation>
     </message>
     <message>
         <source>Float32 depth data are saved to a zlib-compressed file.</source>
-        <translation type="guess">Les données de profondeur Float32 sont enregistrées dans un fichier compressé par zlib.</translation>
+        <translation>Les données de profondeur Float32 sont enregistrées dans un fichier compressé par zlib.</translation>
     </message>
     <message>
         <source>Luminance</source>
-        <translation type="guess">Luminance</translation>
+        <translation>Luminance</translation>
     </message>
     <message>
         <source>Luminance indicates how plots are lit.</source>
-        <translation type="guess">La luminance indique comment les tracés sont éclairés.</translation>
+        <translation>La luminance indique comment les tracés sont éclairés.</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="guess">Valeur</translation>
+        <translation>Valeur</translation>
     </message>
     <message>
         <source>Float32 value data are saved to a zlib-compressed file.</source>
-        <translation type="guess">Les valeurs Float32 sont enregistrées dans un fichier compressé par zlib.</translation>
+        <translation>Les valeurs Float32 sont enregistrées dans un fichier compressé par zlib.</translation>
     </message>
     <message>
         <source>Multi-window save</source>
-        <translation type="guess">Sauvegarde multi-fenêtres</translation>
+        <translation>Sauvegarde multi-fenêtres</translation>
     </message>
     <message>
         <source>Tiled</source>
-        <translation type="guess">Carrelée (tiled)</translation>
+        <translation>Carrelée (tiled)</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="correct">Avancé</translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <source>Omit window</source>
-        <translation type="guess">Omettre la fenêtre</translation>
+        <translation>Omettre la fenêtre</translation>
     </message>
     <message>
         <source>Save and Dismiss</source>
-        <translation type="guess">Enregistrer et Rejeter</translation>
+        <translation>Enregistrer et Rejeter</translation>
     </message>
     <message>
         <source>Save options for %1</source>
-        <translation type="guess">Enregistrer les options pour %1</translation>
+        <translation>Enregistrer les options pour %1</translation>
     </message>
     <message>
         <source>screen ratio</source>
-        <translation type="new">Même qu&apos;à l&apos;écran</translation>
+        <translation>Même qu&apos;à l&apos;écran</translation>
     </message>
     <message>
         <source>no constraint</source>
-        <translation type="new">pas de contrainte</translation>
+        <translation>pas de contrainte</translation>
     </message>
 </context>
 <context>
     <name>QvisScatterPlotWindow</name>
     <message>
         <source>Inputs</source>
-        <translation type="correct">Entrées</translation>
+        <translation>Entrées</translation>
     </message>
     <message>
         <source>Input 1</source>
-        <translation type="guess">Entrée 1</translation>
+        <translation>Entrée 1</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Role</source>
-        <translation type="guess">Rôle</translation>
+        <translation>Rôle</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="guess">Echelle</translation>
+        <translation>Echelle</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="correct">Linéaire</translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="correct">Logarithmique</translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="guess">Biaiser (skew)</translation>
+        <translation>Biaiser (skew)</translation>
     </message>
     <message>
         <source>Input 2</source>
-        <translation type="guess">Entrée 2</translation>
+        <translation>Entrée 2</translation>
     </message>
     <message>
         <source>Input 3</source>
-        <translation type="guess">Entrée 3</translation>
+        <translation>Entrée 3</translation>
     </message>
     <message>
         <source>Input 4</source>
-        <translation type="guess">Entrée 4</translation>
+        <translation>Entrée 4</translation>
     </message>
     <message>
         <source>Appearance</source>
-        <translation type="correct">Apparence</translation>
+        <translation>Apparence</translation>
     </message>
     <message>
         <source>Box</source>
@@ -16472,301 +16663,301 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="guess">Table de couleur</translation>
+        <translation>Table de couleur</translation>
     </message>
     <message>
         <source>Roles</source>
-        <translation type="guess">Rôles</translation>
+        <translation>Rôles</translation>
     </message>
     <message>
         <source>X coordinate:    </source>
-        <translation type="guess">Coordonnée en X : </translation>
+        <translation>Coordonnée en X : </translation>
     </message>
     <message>
         <source>Y coordinate:    </source>
-        <translation type="guess">Coordonnée en Y : </translation>
+        <translation>Coordonnée en Y : </translation>
     </message>
     <message>
         <source>Z coordinate:    </source>
-        <translation type="guess">Coordonnée en Z : </translation>
+        <translation>Coordonnée en Z : </translation>
     </message>
     <message>
         <source>Color:    </source>
-        <translation type="guess">Couleur :</translation>
+        <translation>Couleur :</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>The %1 role was being fulfilled by another input variable. To ensure that the %2 role is fulfilled by the %3 variable, the other variable&apos;s role has been set to None.</source>
-        <translation type="guess">Le rôle %1 était rempli par une autre variable d&apos;entrée. Pour garantir que le rôle %2 est rempli par la variable %3, le rôle de l&apos;autre variable a été défini sur Aucun.</translation>
+        <translation>Le rôle %1 était rempli par une autre variable d&apos;entrée. Pour garantir que le rôle %2 est rempli par la variable %3, le rôle de l&apos;autre variable a été défini sur Aucun.</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Scaling</source>
-        <translation type="guess">Mise à l&apos;échelle</translation>
+        <translation>Mise à l&apos;échelle</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Foreground Color</source>
-        <translation type="guess">Couleur de premier plan</translation>
+        <translation>Couleur de premier plan</translation>
     </message>
     <message>
         <source>Point Style</source>
-        <translation type="guess">Style de point</translation>
+        <translation>Style de point</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>Variable 1 minimum</source>
-        <translation type="guess">Variable 1 minimum</translation>
+        <translation>Variable 1 minimum</translation>
     </message>
     <message>
         <source>Variable 1 max</source>
-        <translation type="guess">Variable 1 maximum</translation>
+        <translation>Variable 1 maximum</translation>
     </message>
     <message>
         <source>Variable 1 skew factor</source>
-        <translation type="guess">Variable 1 facteur de pente</translation>
+        <translation>Variable 1 facteur de pente</translation>
     </message>
     <message>
         <source>Variable 2 minimum</source>
-        <translation type="guess">Variable 2 minimum</translation>
+        <translation>Variable 2 minimum</translation>
     </message>
     <message>
         <source>Variable 2 maximum</source>
-        <translation type="guess">Variable 2 maximum</translation>
+        <translation>Variable 2 maximum</translation>
     </message>
     <message>
         <source>Variable 2 skew factor</source>
-        <translation type="guess">Variable 2 facteur de pente</translation>
+        <translation>Variable 2 facteur de pente</translation>
     </message>
     <message>
         <source>Variable 3 minimum</source>
-        <translation type="guess">Variable 3 minimum</translation>
+        <translation>Variable 3 minimum</translation>
     </message>
     <message>
         <source>Variable 3 maximum</source>
-        <translation type="guess">Variable 3 maximum</translation>
+        <translation>Variable 3 maximum</translation>
     </message>
     <message>
         <source>Variable 3 skew factor</source>
-        <translation type="guess">Variable 3 facteur de pente</translation>
+        <translation>Variable 3 facteur de pente</translation>
     </message>
     <message>
         <source>Variable 4 minimum</source>
-        <translation type="guess">Variable 4 minimum</translation>
+        <translation>Variable 4 minimum</translation>
     </message>
     <message>
         <source>Variable 4 maximum</source>
-        <translation type="guess">Variable 4 maximum</translation>
+        <translation>Variable 4 maximum</translation>
     </message>
     <message>
         <source>Variable 4 skew factor</source>
-        <translation type="guess">Variable 4 facteur de pente</translation>
+        <translation>Variable 4 facteur de pente</translation>
     </message>
     <message>
         <source>Single color</source>
-        <translation type="new">Couleur unique</translation>
+        <translation>Couleur unique</translation>
     </message>
     <message>
         <source>Normalize the axes to a cube</source>
-        <translation type="guess">Normaliser les axes à un cube</translation>
+        <translation>Normaliser les axes à un cube</translation>
     </message>
 </context>
 <context>
     <name>QvisScatterPlotWizard</name>
     <message>
         <source>Scatter Plot Setup</source>
-        <translation type="guess">Configuration du tracé nuage de points</translation>
+        <translation>Configuration du tracé nuage de points</translation>
     </message>
 </context>
 <context>
     <name>QvisScatterPlotWizardPage</name>
     <message>
         <source>&lt;Select&gt;</source>
-        <translation type="correct">&lt;Sélectionner&gt;</translation>
+        <translation>&lt;Sélectionner&gt;</translation>
     </message>
     <message>
         <source>Select variables for a new Scatter Plot.</source>
-        <translation type="guess">Sélectionner les variables pour un nouveau tracé de nuage de points</translation>
+        <translation>Sélectionner les variables pour un nouveau tracé de nuage de points</translation>
     </message>
     <message>
         <source>X Variable</source>
-        <translation type="guess">Variable X</translation>
+        <translation>Variable X</translation>
     </message>
     <message>
         <source>Y Variable</source>
-        <translation type="guess">Variable Y</translation>
+        <translation>Variable Y</translation>
     </message>
     <message>
         <source>Z Variable</source>
-        <translation type="guess">Variable Z</translation>
+        <translation>Variable Z</translation>
     </message>
     <message>
         <source>Color Variable</source>
-        <translation type="guess">Variable Couleur</translation>
+        <translation>Variable Couleur</translation>
     </message>
 </context>
 <context>
     <name>QvisSelectionsDialog</name>
     <message>
         <source>Selection Name and Source</source>
-        <translation type="guess">Nom et source de la sélection</translation>
+        <translation>Nom et source de la sélection</translation>
     </message>
     <message>
         <source>Selection name</source>
-        <translation type="guess">Nom de la sélection</translation>
+        <translation>Nom de la sélection</translation>
     </message>
     <message>
         <source>Database</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Plot</source>
-        <translation type="guess">Tracé</translation>
+        <translation>Tracé</translation>
     </message>
     <message>
         <source>Relate cells using</source>
-        <translation type="guess">Relier les cellules en utilisant</translation>
+        <translation>Relier les cellules en utilisant</translation>
     </message>
     <message>
         <source>Domain and cell numbers</source>
-        <translation type="guess">Numéros de domaine et de cellule</translation>
+        <translation>Numéros de domaine et de cellule</translation>
     </message>
     <message>
         <source>Global cell numbers</source>
-        <translation type="guess">Numéros de cellule globaux</translation>
+        <translation>Numéros de cellule globaux</translation>
     </message>
     <message>
         <source>Locations</source>
-        <translation type="guess">Emplacement</translation>
+        <translation>Emplacement</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
 </context>
 <context>
     <name>QvisSelectionsWindow</name>
     <message>
         <source>Automatically apply updated selections</source>
-        <translation type="guess">Appliquer automatiquement les sélections mises à jour</translation>
+        <translation>Appliquer automatiquement les sélections mises à jour</translation>
     </message>
     <message>
         <source>Selections</source>
-        <translation type="correct">Sélections</translation>
+        <translation>Sélections</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="guess">Nouvelle</translation>
+        <translation>Nouvelle</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="guess">Supprimer</translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="guess">Enregistrer</translation>
+        <translation>Enregistrer</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="correct">Charger</translation>
+        <translation>Charger</translation>
     </message>
     <message>
         <source>Properties</source>
-        <translation type="correct">Propriétés</translation>
+        <translation>Propriétés</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="guess">Intervalle</translation>
+        <translation>Intervalle</translation>
     </message>
     <message>
         <source>Histogram</source>
-        <translation type="correct">Histogramme</translation>
+        <translation>Histogramme</translation>
     </message>
     <message>
         <source>Statistics</source>
-        <translation type="guess">Statistiques</translation>
+        <translation>Statistiques</translation>
     </message>
     <message>
         <source>none</source>
-        <translation type="guess">aucun</translation>
+        <translation>aucun</translation>
     </message>
     <message>
         <source>VisIt can&apos;t determine the host for the compute engine to use for loading the selection</source>
-        <translation type="guess">VisIt ne peut pas déterminer l&apos;hôte que le moteur de calcul utilisera pour charger la sélection</translation>
+        <translation>VisIt ne peut pas déterminer l&apos;hôte que le moteur de calcul utilisera pour charger la sélection</translation>
     </message>
     <message>
         <source>Load selection from file</source>
-        <translation type="guess">Charger la sélection à partir du fichier</translation>
+        <translation>Charger la sélection à partir du fichier</translation>
     </message>
     <message>
         <source>Selection source</source>
-        <translation type="new">Source de sélection</translation>
+        <translation>Source de sélection</translation>
     </message>
     <message>
         <source>The data source that defines the selection</source>
-        <translation type="guess">La source de données qui définit la sélection</translation>
+        <translation>La source de données qui définit la sélection</translation>
     </message>
     <message>
         <source>Cumulative Query</source>
-        <translation type="guess">Requête cumulative</translation>
+        <translation>Requête cumulative</translation>
     </message>
     <message>
         <source>Update Selection</source>
-        <translation type="guess">Mettre à jour la sélection</translation>
+        <translation>Mettre à jour la sélection</translation>
     </message>
     <message>
         <source>Add variable</source>
-        <translation type="correct">Ajouter une variable</translation>
+        <translation>Ajouter une variable</translation>
     </message>
     <message>
         <source>Get variable ranges</source>
-        <translation type="correct">Obtenez les intervalles des variables</translation>
+        <translation>Obtenez les intervalles des variables</translation>
     </message>
     <message>
         <source>Populate the list of variables used for the cumulative query
 selection from the list of variables used in the selection&apos;s
 originating plot. The originating plot must be a Parallel
 Coordinates plot.</source>
-<translation type="guess">Renseignez la liste des variables utilisées pour la sélection de requête cumulative
+        <translation>Renseignez la liste des variables utilisées pour la sélection de requête cumulative
 à partir de la liste des variables utilisées dans le tracé d&apos;origine de la sélection.
 Le tracé d&apos;origine doit être un tracé de
 coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Update Query</source>
-        <translation type="guess">Mettre à jour la requête</translation>
+        <translation>Mettre à jour la requête</translation>
     </message>
     <message>
         <source>Query over time</source>
-        <translation type="guess">Requête au fil du temps</translation>
+        <translation>Requête au fil du temps</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="correct">Début</translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>End</source>
-        <translation type="correct">Fin</translation>
+        <translation>Fin</translation>
     </message>
     <message>
         <source>Stride</source>
@@ -16774,59 +16965,59 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Axis</source>
-        <translation type="guess">Axe</translation>
+        <translation>Axe</translation>
     </message>
     <message>
         <source>Display axis type</source>
-        <translation type="guess">Afficher le type d&apos;axe</translation>
+        <translation>Afficher le type d&apos;axe</translation>
     </message>
     <message>
         <source>Time slice</source>
-        <translation type="guess">Découpe temporelle</translation>
+        <translation>Découpe temporelle</translation>
     </message>
     <message>
         <source>ID</source>
-        <translation type="guess">ID</translation>
+        <translation>ID</translation>
     </message>
     <message>
         <source>Matches</source>
-        <translation type="guess">Correspondances</translation>
+        <translation>Correspondances</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Number of bins</source>
-        <translation type="guess">Nombre de barres</translation>
+        <translation>Nombre de barres</translation>
     </message>
     <message>
         <source>Summation</source>
-        <translation type="guess">Somme</translation>
+        <translation>Somme</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="correct">Type</translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>Include cells matching in any time step</source>
-        <translation type="guess">Inclure les cellules qui correspondent pour n&apos;importe quel pas de temps</translation>
+        <translation>Inclure les cellules qui correspondent pour n&apos;importe quel pas de temps</translation>
     </message>
     <message>
         <source>Include cells matching in all time steps</source>
-        <translation type="guess">Inclure les cellules qui correspondent pour tous les pas de temps</translation>
+        <translation>Inclure les cellules qui correspondent pour tous les pas de temps</translation>
     </message>
     <message>
         <source>Minimum bin</source>
-        <translation type="guess">Barre Minimum</translation>
+        <translation>Barre Minimum</translation>
     </message>
     <message>
         <source>Maximum bin</source>
-        <translation type="guess">Barre Maximum</translation>
+        <translation>Barre Maximum</translation>
     </message>
     <message>
         <source>Cells in selection:</source>
-        <translation type="guess">Cellules dans la sélection :</translation>
+        <translation>Cellules dans la sélection :</translation>
     </message>
     <message>
         <source>Cells in dataset:</source>
@@ -16846,220 +17037,220 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Number of Cells vs. Time</source>
-        <translation type="guess">Nombre de cellules versus temps</translation>
+        <translation>Nombre de cellules versus temps</translation>
     </message>
     <message>
         <source>Frequency vs. Matches</source>
-        <translation type="guess">Fréquence versus correspondances</translation>
+        <translation>Fréquence versus correspondances</translation>
     </message>
     <message>
         <source>Frequency vs. Variable</source>
-        <translation type="guess">Fréquence versus variable</translation>
+        <translation>Fréquence versus variable</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Relate cells using</source>
-        <translation type="guess">Relier les cellules en utilisant</translation>
+        <translation>Relier les cellules en utilisant</translation>
     </message>
     <message>
         <source>Domain and cell numbers</source>
-        <translation type="guess">Numéros de domaine et de cellule</translation>
+        <translation>Numéros de domaine et de cellule</translation>
     </message>
     <message>
         <source>Global cell numbers</source>
-        <translation type="guess">Numéros de cellule globaux</translation>
+        <translation>Numéros de cellule globaux</translation>
     </message>
     <message>
         <source>Location</source>
-        <translation type="guess">Emplacement</translation>
+        <translation>Emplacement</translation>
     </message>
     <message>
         <source>The selection was not created because the id variable was not set.</source>
-        <translation type="guess">La sélection n&apos;a pas été créée car la variable id n&apos;a pas été définie</translation>
+        <translation>La sélection n&apos;a pas été créée car la variable id n&apos;a pas été définie</translation>
     </message>
     <message>
         <source>Bin 0 (0)</source>
-        <translation type="guess">Barre 0 (0)</translation>
+        <translation>Barre 0 (0)</translation>
     </message>
     <message>
         <source>Bin 9 (0)</source>
-        <translation type="guess">Barre 9 (0)</translation>
+        <translation>Barre 9 (0)</translation>
     </message>
     <message>
         <source>Average frequency vs. ID</source>
-        <translation type="guess">Fréquence moyenne versus ID</translation>
+        <translation>Fréquence moyenne versus ID</translation>
     </message>
     <message>
         <source>Automatically scale</source>
-        <translation type="guess">Mettre à l&apos;échelle automatiquement</translation>
+        <translation>Mettre à l&apos;échelle automatiquement</translation>
     </message>
     <message>
         <source>No histogram variable has been selected for the display axis.</source>
-        <translation type="guess">Aucune variable d&apos;histogramme n&apos;a été sélectionnée pour l&apos;axe affiché</translation>
+        <translation>Aucune variable d&apos;histogramme n&apos;a été sélectionnée pour l&apos;axe affiché</translation>
     </message>
 </context>
 <context>
     <name>QvisSequenceButton</name>
     <message>
         <source>New sequence</source>
-        <translation type="correct">Nouvelle séquence</translation>
+        <translation>Nouvelle séquence</translation>
     </message>
     <message>
         <source>Compositing</source>
-        <translation type="guess">Composition</translation>
+        <translation>Composition</translation>
     </message>
     <message>
         <source>Transitions</source>
-        <translation type="guess">Transitions</translation>
+        <translation>Transitions</translation>
     </message>
     <message>
         <source>Rotations</source>
-        <translation type="correct">Rotations</translation>
+        <translation>Rotations</translation>
     </message>
 </context>
 <context>
     <name>QvisSequenceTransition</name>
     <message>
         <source>Transition from</source>
-        <translation type="guess">Transition à partir de</translation>
+        <translation>Transition à partir de</translation>
     </message>
     <message>
         <source>Frames</source>
-        <translation type="guess">Cadres</translation>
+        <translation>Cadres</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Transition to</source>
-        <translation type="guess">Transition vers</translation>
+        <translation>Transition vers</translation>
     </message>
     <message>
         <source>Number of transition frames</source>
-        <translation type="unfinished">Nombre de cadres/images de transitions</translation>
+        <translation>Nombre de cadres/images de transitions</translation>
     </message>
 </context>
 <context>
     <name>QvisSessionFileDatabaseLoader</name>
     <message>
         <source>The launch of a metadata server for accessing data files relevant to the requested session file was cancelled so the session file will not be opened.</source>
-        <translation type="guess">Le lancement d&apos;un serveur de métadonnées pour accéder aux fichiers de données relatifs au fichier de session demandé a été annulé, le fichier de session ne sera donc pas ouvert</translation>
+        <translation>Le lancement d&apos;un serveur de métadonnées pour accéder aux fichiers de données relatifs au fichier de session demandé a été annulé, le fichier de session ne sera donc pas ouvert</translation>
     </message>
 </context>
 <context>
     <name>QvisSessionSourceChanger</name>
     <message>
         <source>Source identifiers</source>
-        <translation type="guess">Identifiants source</translation>
+        <translation>Identifiants source</translation>
     </message>
     <message>
         <source>Source</source>
-        <translation type="guess">Source</translation>
+        <translation>Source</translation>
     </message>
     <message>
         <source>Source used in</source>
-        <translation type="guess">Source utilisée dans</translation>
+        <translation>Source utilisée dans</translation>
     </message>
 </context>
 <context>
     <name>QvisSessionSourceChangerDialog</name>
     <message>
         <source>Update sources</source>
-        <translation type="guess">Mise à jour des sources</translation>
+        <translation>Mise à jour des sources</translation>
     </message>
     <message>
         <source>Make sure that the sources used in this session are up to date. You can change the sources here to restore your session using different sources, making your session file a helpful visualization template.</source>
-        <translation type="guess">Assurez-vous que les sources utilisées dans cette session sont à jour. Vous pouvez modifier les sources ici pour restaurer votre session à l&apos;aide de différentes sources, faisant de votre fichier de session un modèle de visualisation utile</translation>
+        <translation>Assurez-vous que les sources utilisées dans cette session sont à jour. Vous pouvez modifier les sources ici pour restaurer votre session à l&apos;aide de différentes sources, faisant de votre fichier de session un modèle de visualisation utile</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="guess">&amp;OK</translation>
+        <translation>&amp;OK</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="correct">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
 </context>
 <context>
     <name>QvisSetupHostProfilesAndConfigWindow</name>
     <message>
         <source>Select computing centers used</source>
-        <translation type="guess">Sélectionnez les centres de calcul utilisés</translation>
+        <translation>Sélectionnez les centres de calcul utilisés</translation>
     </message>
     <message>
         <source>Select default configuration</source>
-        <translation type="guess">Sélectionnez la configuration par défaut</translation>
+        <translation>Sélectionnez la configuration par défaut</translation>
     </message>
     <message>
         <source>None (use VisIt&apos;s standard defaults)</source>
-        <translation type="guess">Aucun (utiliser les valeurs par défaut standard de VisIt)></translation>
+        <translation>Aucun (utiliser les valeurs par défaut standard de VisIt)&gt;</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="correct">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Install</source>
-        <translation type="guess">Installer</translation>
+        <translation>Installer</translation>
     </message>
     <message>
         <source>The configuration file </source>
-        <translation type="guess">Le fichier de configuration</translation>
+        <translation>Le fichier de configuration</translation>
     </message>
     <message>
         <source> already exists.</source>
-        <translation type="correct"> existe déjà.</translation>
+        <translation> existe déjà.</translation>
     </message>
     <message>
         <source>Replace existing configuration file?</source>
-        <translation type="guess">Remplacer le fichier de configuration existant ?</translation>
+        <translation>Remplacer le fichier de configuration existant ?</translation>
     </message>
     <message>
         <source>Host profiles and configuration files have been installed and will be available after VisIt is restarted.</source>
-        <translation type="guess">Les profils d&apos;hôte et les fichiers de configuration ont été installés et seront disponibles après le redémarrage de VisIt.</translation>
+        <translation>Les profils d&apos;hôte et les fichiers de configuration ont été installés et seront disponibles après le redémarrage de VisIt.</translation>
     </message>
     <message>
         <source>To finish the VisIt install on this computer select any computing centers whose resources you are using to configure host profiles automatically for their machines.</source>
-        <translation type="guess">Pour terminer l&apos;installation de VisIt sur cet ordinateur, sélectionnez les centres de calcul dont vous utilisez les ressources pour configurer automatiquement les profils d&apos;hôtes pour leurs machines</translation>
+        <translation>Pour terminer l&apos;installation de VisIt sur cet ordinateur, sélectionnez les centres de calcul dont vous utilisez les ressources pour configurer automatiquement les profils d&apos;hôtes pour leurs machines</translation>
     </message>
     <message>
         <source>Error: Host profiles and configuration files have not been installed. See debug logs for more information.</source>
-        <translation type="guess">Erreur : les profils d&apos;hôte et les fichiers de configuration n&apos;ont pas été installés. Voir les journaux de débogage pour plus d&apos;informations</translation>
+        <translation>Erreur : les profils d&apos;hôte et les fichiers de configuration n&apos;ont pas été installés. Voir les journaux de débogage pour plus d&apos;informations</translation>
     </message>
 </context>
 <context>
     <name>QvisSimulationCommandWindow</name>
     <message>
         <source>Commands</source>
-        <translation type="correct">Commandes</translation>
+        <translation>Commandes</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="correct">Début</translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>Step</source>
-        <translation type="correct">Pas</translation>
+        <translation>Pas</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation type="correct">Stop</translation>
+        <translation>Stop</translation>
     </message>
     <message>
         <source>Activate Custom UI . . .</source>
-        <translation type="guess">Activer l&apos;interface utilisateur (UI) personnalisée...</translation>
+        <translation>Activer l&apos;interface utilisateur (UI) personnalisée...</translation>
     </message>
     <message>
         <source>Enable time cycle ranging</source>
-        <translation type="guess">Activer la plage de cycle de temps</translation>
+        <translation>Activer la plage de cycle de temps</translation>
     </message>
     <message>
         <source>0</source>
@@ -17078,7 +17269,7 @@ coordonnées parallèles.</translation>
     <name>QvisSimulationMessageWindow</name>
     <message>
         <source>Clear</source>
-        <translation type="correct">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
 </context>
 <context>
@@ -17109,25 +17300,25 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="correct">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Date</source>
-        <translation type="guess">Date</translation>
+        <translation>Date</translation>
     </message>
     <message>
         <source>Num Processors</source>
-        <translation type="guess">Nombre de processeurs</translation>
+        <translation>Nombre de processeurs</translation>
     </message>
     <message>
         <source>VisIt could not locate the simulation&apos;s user interface creation file at: %1. The custom user interface for this simulation will be unavailable.</source>
-        <translation type="guess">VisIt n&apos;a pas pu localiser le fichier de création de l&apos;interface utilisateur de la simulation à l&apos;emplacement : %1. L&apos;interface utilisateur personnalisée pour cette simulation ne sera pas disponible.</translation>
+        <translation>VisIt n&apos;a pas pu localiser le fichier de création de l&apos;interface utilisateur de la simulation à l&apos;emplacement : %1. L&apos;interface utilisateur personnalisée pour cette simulation ne sera pas disponible.</translation>
     </message>
     <message>
         <source>Really close the compute engine on host &quot;%1&quot;?
 
 </source>
-        <translation type="correct">Vraiment fermer le moteur sur l&apos;hôte &quot;%1&quot; ?
+        <translation>Vraiment fermer le moteur sur l&apos;hôte &quot;%1&quot; ?
 
 </translation>
     </message>
@@ -17135,57 +17326,57 @@ coordonnées parallèles.</translation>
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
-        <translation type="correct">Vraiment déconnecter de la simulation &quot;%1&quot; sur l&apos;hôte&quot;%2&quot; ?
+        <translation>Vraiment déconnecter de la simulation &quot;%1&quot; sur l&apos;hôte&quot;%2&quot; ?
 
 </translation>
     </message>
     <message>
         <source>Simulation</source>
-        <translation type="guess">Simulation</translation>
+        <translation>Simulation</translation>
     </message>
     <message>
         <source>Not connected</source>
-        <translation type="correct">Non connecté</translation>
+        <translation>Non connecté</translation>
     </message>
     <message>
         <source>Simulation status</source>
-        <translation type="guess">État de la simulation</translation>
+        <translation>État de la simulation</translation>
     </message>
     <message>
         <source>VisIt status</source>
-        <translation type="guess">État de VisIt</translation>
+        <translation>État de VisIt</translation>
     </message>
     <message>
         <source>Simulation controls</source>
-        <translation type="guess">Commandes de simulation</translation>
+        <translation>Commandes de simulation</translation>
     </message>
     <message>
         <source>Controls</source>
-        <translation type="guess">Commandes</translation>
+        <translation>Commandes</translation>
     </message>
     <message>
         <source>Simulation messages</source>
-        <translation type="guess">Messages de la simulation</translation>
+        <translation>Messages de la simulation</translation>
     </message>
     <message>
         <source>Messages</source>
-        <translation type="guess">Messages</translation>
+        <translation>Messages</translation>
     </message>
     <message>
         <source>Unknown</source>
-        <translation type="guess">Inconnu</translation>
+        <translation>Inconnu</translation>
     </message>
     <message>
         <source>Running</source>
-        <translation type="guess">En cours</translation>
+        <translation>En cours</translation>
     </message>
     <message>
         <source>Stopped</source>
-        <translation type="guess">Arrêté</translation>
+        <translation>Arrêté</translation>
     </message>
     <message>
         <source>%1 on %2</source>
-        <translation type="guess">%1 sur %2</translation>
+        <translation>%1 sur %2</translation>
     </message>
     <message>
         <source>%1</source>
@@ -17195,7 +17386,7 @@ coordonnées parallèles.</translation>
         <source>Really %1 the simulation on host &quot;%2&quot;?
 
 </source>
-        <translation type="guess">Vraiment %1 la simulation sur l&apos;hôte &quot;%2&quot; ?
+        <translation>Vraiment %1 la simulation sur l&apos;hôte &quot;%2&quot; ?
 
 </translation>
     </message>
@@ -17203,7 +17394,7 @@ coordonnées parallèles.</translation>
         <source>Really %1 the simulation &quot;%2&quot; on host &quot;%3&quot;?
 
 </source>
-        <translation type="guess">Vraiment %1 la simulation &quot;%2&quot; sur l&apos;hôte &quot;%3&quot; ?
+        <translation>Vraiment %1 la simulation &quot;%2&quot; sur l&apos;hôte &quot;%3&quot; ?
 
 </translation>
     </message>
@@ -17212,31 +17403,31 @@ coordonnées parallèles.</translation>
     <name>QvisSliceWindow</name>
     <message>
         <source>Normal</source>
-        <translation type="guess">Normal</translation>
+        <translation>Normal</translation>
     </message>
     <message>
         <source>Orthogonal</source>
-        <translation type="guess">Orthogonal</translation>
+        <translation>Orthogonal</translation>
     </message>
     <message>
         <source>X Axis</source>
-        <translation type="guess">Axe X</translation>
+        <translation>Axe X</translation>
     </message>
     <message>
         <source>Y Axis</source>
-        <translation type="guess">Axe Y</translation>
+        <translation>Axe Y</translation>
     </message>
     <message>
         <source>Z Axis</source>
-        <translation type="guess">Axe Z</translation>
+        <translation>Axe Z</translation>
     </message>
     <message>
         <source>flip</source>
-        <translation type="guess">retourner</translation>
+        <translation>retourner</translation>
     </message>
     <message>
         <source>Arbitrary</source>
-        <translation type="guess">Arbitraire</translation>
+        <translation>Arbitraire</translation>
     </message>
     <message>
         <source>Theta-Phi</source>
@@ -17244,55 +17435,55 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="correct">Origine</translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation type="correct">Point</translation>
+        <translation>Point</translation>
     </message>
     <message>
         <source>Intercept</source>
-        <translation type="guess">Interception</translation>
+        <translation>Interception</translation>
     </message>
     <message>
         <source>Percent</source>
-        <translation type="correct">Pourcentage</translation>
+        <translation>Pourcentage</translation>
     </message>
     <message>
         <source>Zone</source>
-        <translation type="guess">Zone/Cellule</translation>
+        <translation>Zone/Cellule</translation>
     </message>
     <message>
         <source>Node</source>
-        <translation type="guess">Nœud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>Domain</source>
-        <translation type="correct">Domaine</translation>
+        <translation>Domaine</translation>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="guess">Maillage</translation>
+        <translation>Maillage</translation>
     </message>
     <message>
         <source>Up Axis</source>
-        <translation type="correct">Axe vertical</translation>
+        <translation>Axe vertical</translation>
     </message>
     <message>
         <source>Project to 2D</source>
-        <translation type="guess">Projeter en 2D</translation>
+        <translation>Projeter en 2D</translation>
     </message>
     <message>
         <source>Direction</source>
-        <translation type="correct">Direction</translation>
+        <translation>Direction</translation>
     </message>
     <message>
         <source>Interactive</source>
-        <translation type="correct">Interactif</translation>
+        <translation>Interactif</translation>
     </message>
     <message>
         <source>normal vector</source>
-        <translation type="guess">vecteur normal</translation>
+        <translation>vecteur normal</translation>
     </message>
     <message>
         <source>upAxis vector</source>
@@ -17300,66 +17491,66 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>origin point vector</source>
-        <translation type="unfinished">vecteur de point d'origine</translation>
+        <translation type="unfinished">vecteur de point d&apos;origine</translation>
     </message>
     <message>
         <source>origin intercept</source>
-        <translation type="unfinished">interception d'origine</translation>
+        <translation type="unfinished">interception d&apos;origine</translation>
     </message>
     <message>
         <source>origin percent</source>
-        <translation type="unfinished">pourcentage d'origine</translation>
+        <translation type="unfinished">pourcentage d&apos;origine</translation>
     </message>
     <message>
         <source>origin zone</source>
-        <translation type="unfinished">zone d'origine</translation>
+        <translation type="unfinished">zone d&apos;origine</translation>
     </message>
     <message>
         <source>origin node</source>
-        <translation type="unfinished">nœud d'origine</translation>
+        <translation type="unfinished">nœud d&apos;origine</translation>
     </message>
     <message>
         <source>origin domain</source>
-        <translation type="unfinished">domaine d'origine</translation>
+        <translation type="unfinished">domaine d&apos;origine</translation>
     </message>
     <message>
         <source>mesh name</source>
-        <translation type="guess">nom de maillage</translation>
+        <translation>nom de maillage</translation>
     </message>
     <message>
         <source>theta-phi angles</source>
-        <translation type="guess">angles theta-phi</translation>
+        <translation>angles theta-phi</translation>
     </message>
 </context>
 <context>
     <name>QvisSmoothWindow</name>
     <message>
         <source>Maximum Number of Iterations</source>
-        <translation type="guess">Nombre maximum d&apos;itérations</translation>
+        <translation>Nombre maximum d&apos;itérations</translation>
     </message>
     <message>
         <source>Relaxation Factor</source>
-        <translation type="guess">Facteur de Relaxation</translation>
+        <translation>Facteur de Relaxation</translation>
     </message>
     <message>
         <source>Convergence</source>
-        <translation type="guess">Convergence</translation>
+        <translation>Convergence</translation>
     </message>
     <message>
         <source>Maintain Features</source>
-        <translation type="guess">Maintenir les fonctionnalités</translation>
+        <translation>Maintenir les fonctionnalités</translation>
     </message>
     <message>
         <source>Feature Angle</source>
-        <translation type="new">Angle caractéristique</translation>
+        <translation>Angle caractéristique</translation>
     </message>
     <message>
         <source>Max Edge Angle</source>
-        <translation type="new">Angle de bord max</translation>
+        <translation>Angle de bord max</translation>
     </message>
     <message>
         <source>Smooth Along Boundaries</source>
-        <translation type="guess">Lisser le long des frontières</translation>
+        <translation>Lisser le long des frontières</translation>
     </message>
 </context>
 <context>
@@ -17397,22 +17588,22 @@ coordonnées parallèles.</translation>
     <name>QvisSphereSliceWindow</name>
     <message>
         <source>Origin</source>
-        <translation type="correct">Origine</translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="correct">Rayon</translation>
+        <translation>Rayon</translation>
     </message>
 </context>
 <context>
     <name>QvisSpreadsheetPlotWindow</name>
     <message>
         <source>Subset name</source>
-        <translation type="guess">Nom du sous ensemble</translation>
+        <translation>Nom du sous ensemble</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation type="guess">Normale</translation>
+        <translation>Normale</translation>
     </message>
     <message>
         <source>X</source>
@@ -17428,141 +17619,141 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Format string</source>
-        <translation type="guess">Chaîne de format d&apos;affichage</translation>
+        <translation>Chaîne de format d&apos;affichage</translation>
     </message>
     <message>
         <source>Spreadsheet font</source>
-        <translation type="guess">Police de la feuille de calcul</translation>
+        <translation>Police de la feuille de calcul</translation>
     </message>
     <message>
         <source>Use color table</source>
-        <translation type="guess">Utiliser la table des couleurs</translation>
+        <translation>Utiliser la table des couleurs</translation>
     </message>
     <message>
         <source>Show patch outline</source>
-        <translation type="guess">Afficher le contour du patch</translation>
+        <translation>Afficher le contour du patch</translation>
     </message>
     <message>
         <source>Show current cell outline</source>
-        <translation type="guess">Afficher le contour de la cellule actuelle</translation>
+        <translation>Afficher le contour de la cellule actuelle</translation>
     </message>
     <message>
         <source>Show tracer plane</source>
-        <translation type="guess">Afficher le plan du traceur</translation>
+        <translation>Afficher le plan du traceur</translation>
     </message>
     <message>
         <source>Tracer color</source>
-        <translation type="guess">Couleur du traceur</translation>
+        <translation>Couleur du traceur</translation>
     </message>
     <message>
         <source>The value of formatString was invalid. Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur de formatString n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de formatString n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
 </context>
 <context>
     <name>QvisStaggerWindow</name>
     <message>
         <source>X offset</source>
-        <translation type="guess">Décallage en X</translation>
+        <translation>Décallage en X</translation>
     </message>
     <message>
         <source>Y offset</source>
-        <translation type="guess">Décallage en Y</translation>
+        <translation>Décallage en Y</translation>
     </message>
     <message>
         <source>Z offset</source>
-        <translation type="guess">Décallage en Z</translation>
+        <translation>Décallage en Z</translation>
     </message>
 </context>
 <context>
     <name>QvisStatisticalTrendsWindow</name>
     <message>
         <source>Time Slices</source>
-        <translation type="new">Tranches de temps</translation>
+        <translation>Tranches de temps</translation>
     </message>
     <message>
         <source>Type of sampling</source>
-        <translation type="correct">Type d&apos;échantillonnage</translation>
+        <translation>Type d&apos;échantillonnage</translation>
     </message>
     <message>
         <source>Absolute</source>
-        <translation type="correct">Absolue</translation>
+        <translation>Absolue</translation>
     </message>
     <message>
         <source>Relative</source>
-        <translation type="correct">Relatif</translation>
+        <translation>Relatif</translation>
     </message>
     <message>
         <source>Index of first time slice</source>
-        <translation type="correct">Indice du début de l&apos;interval de temps</translation>
+        <translation>Indice du début de l&apos;interval de temps</translation>
     </message>
     <message>
         <source>Index of last time slice</source>
-        <translation type="correct">Indice de la fin de l&apos;interval de temps</translation>
+        <translation>Indice de la fin de l&apos;interval de temps</translation>
     </message>
     <message>
         <source>Skip rate between time slices</source>
-        <translation type="guess">Taux de saut entre les tranches de temps</translation>
+        <translation>Taux de saut entre les tranches de temps</translation>
     </message>
     <message>
         <source>Statistic Type</source>
-        <translation type="guess">Type de statistique</translation>
+        <translation>Type de statistique</translation>
     </message>
     <message>
         <source>Sum</source>
-        <translation type="guess">Somme</translation>
+        <translation>Somme</translation>
     </message>
     <message>
         <source>Mean</source>
-        <translation type="guess">Moyenne</translation>
+        <translation>Moyenne</translation>
     </message>
     <message>
         <source>Variance</source>
-        <translation type="guess">Variance</translation>
+        <translation>Variance</translation>
     </message>
     <message>
         <source>Slope</source>
-        <translation type="guess">Pente</translation>
+        <translation>Pente</translation>
     </message>
     <message>
         <source>Residuals</source>
-        <translation type="guess">Résidus</translation>
+        <translation>Résidus</translation>
     </message>
     <message>
         <source>Std. Dev.</source>
-        <translation type="guess">Ecart Type</translation>
+        <translation>Ecart Type</translation>
     </message>
     <message>
         <source>Trend axis</source>
-        <translation type="guess">Axe de tendance</translation>
+        <translation>Axe de tendance</translation>
     </message>
     <message>
         <source>Step</source>
-        <translation type="correct">Pas</translation>
+        <translation>Pas</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="correct">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Cycle</source>
-        <translation type="correct">Cycle</translation>
+        <translation>Cycle</translation>
     </message>
     <message>
         <source>Index of the first time slice</source>
-        <translation type="correct">Indice du début de l&apos;interval de temps</translation>
+        <translation>Indice du début de l&apos;interval de temps</translation>
     </message>
     <message>
         <source>Number of slices backwards in time</source>
-        <translation type="guess">Nombre de tranches en arrière en temps</translation>
+        <translation>Nombre de tranches en arrière en temps</translation>
     </message>
     <message>
         <source>Index of the last time slice</source>
-        <translation type="correct">Indice du début de l&apos;interval de temps</translation>
+        <translation>Indice du début de l&apos;interval de temps</translation>
     </message>
     <message>
         <source>Number of slices forward in time</source>
-        <translation type="guess">Nombre de tranches en avant en temp</translation>
+        <translation>Nombre de tranches en avant en temp</translation>
     </message>
 </context>
 <context>
@@ -17588,27 +17779,27 @@ coordonnées parallèles.</translation>
     <name>QvisStripChartMgr</name>
     <message>
         <source>Strip Chart Information and Controls</source>
-        <translation type="guess">Information et contrôles de la bande</translation>
+        <translation>Information et contrôles de la bande</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation type="guess">Réinitialiser</translation>
+        <translation>Réinitialiser</translation>
     </message>
     <message>
         <source>Strip charts</source>
-        <translation type="guess">Bandes</translation>
+        <translation>Bandes</translation>
     </message>
     <message>
         <source>Pick</source>
-        <translation type="guess">Piocher</translation>
+        <translation>Piocher</translation>
     </message>
     <message>
         <source>Pan/Zoom</source>
-        <translation type="guess">Faire un panoramique / Zoom</translation>
+        <translation>Faire un panoramique / Zoom</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="correct">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Var0</source>
@@ -17635,371 +17826,371 @@ coordonnées parallèles.</translation>
     <name>QvisSubdivideQuadsWindow</name>
     <message>
         <source>Biggest change allowed in a zone?</source>
-        <translation type="guess">Le changement le plus grand autorisé dans une zone ?</translation>
+        <translation>Le changement le plus grand autorisé dans une zone ?</translation>
     </message>
     <message>
         <source>Maximum number of subdivisions</source>
-        <translation type="guess">Nombre maximum de sous-divisions</translation>
+        <translation>Nombre maximum de sous-divisions</translation>
     </message>
     <message>
         <source>Fan out points to cover up T-intersections?</source>
-        <translation type="guess">Déployer des points pour couvrir les intersections en T ?</translation>
+        <translation>Déployer des points pour couvrir les intersections en T ?</translation>
     </message>
     <message>
         <source>Subdivide triangles</source>
-        <translation type="guess">Sous diviser les triangles</translation>
+        <translation>Sous diviser les triangles</translation>
     </message>
     <message>
         <source>Variable to base subdivision on</source>
-        <translation type="correct">Variable sur laquelle baser la sous-division</translation>
+        <translation>Variable sur laquelle baser la sous-division</translation>
     </message>
 </context>
 <context>
     <name>QvisSubsetPanelWidget</name>
     <message>
         <source>All Sets:</source>
-        <translation type="guess">Tous les ensembles :</translation>
+        <translation>Tous les ensembles :</translation>
     </message>
     <message>
         <source>Reverse</source>
-        <translation type="guess">Inverser</translation>
+        <translation>Inverser</translation>
     </message>
     <message>
         <source>Turn On</source>
-        <translation type="guess">Allumer</translation>
+        <translation>Allumer</translation>
     </message>
     <message>
         <source>Turn Off</source>
-        <translation type="guess">Éteindre</translation>
+        <translation>Éteindre</translation>
     </message>
     <message>
         <source>Selected Sets:</source>
-        <translation type="guess">Ensembles sélectionnés :</translation>
+        <translation>Ensembles sélectionnés :</translation>
     </message>
 </context>
 <context>
     <name>QvisSubsetPlotWindow</name>
     <message>
         <source>Line width</source>
-        <translation type="guess">Epaisseur du trait</translation>
+        <translation>Epaisseur du trait</translation>
     </message>
     <message>
         <source>Subset colors</source>
-        <translation type="guess">Couleurs de sous-ensemble</translation>
+        <translation>Couleurs de sous-ensemble</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="guess">Table de couleur</translation>
+        <translation>Table de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation type="guess">Simple</translation>
+        <translation>Simple</translation>
     </message>
     <message>
         <source>Multiple</source>
-        <translation type="correct">Multiple</translation>
+        <translation>Multiple</translation>
     </message>
     <message>
         <source>Subsets</source>
-        <translation type="guess">Sous ensembles</translation>
+        <translation>Sous ensembles</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="correct">Opacité</translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="guess">Filaire</translation>
+        <translation>Filaire</translation>
     </message>
     <message>
         <source>Draw internal surfaces</source>
-        <translation type="guess">Dessiner les surfaces internes</translation>
+        <translation>Dessiner les surfaces internes</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Fast</source>
-        <translation type="guess">Rapide</translation>
+        <translation>Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Elevé</translation>
+        <translation>Elevé</translation>
     </message>
     <message>
         <source>Options</source>
-        <translation type="correct">Options</translation>
+        <translation>Options</translation>
     </message>
     <message>
         <source>Point / Line Style</source>
-        <translation type="guess">Style de Point / Ligne</translation>
+        <translation>Style de Point / Ligne</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="correct">Géométrie</translation>
+        <translation>Géométrie</translation>
     </message>
     <message>
         <source>Smoothing</source>
-        <translation type="guess">Lissage</translation>
+        <translation>Lissage</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
 </context>
 <context>
     <name>QvisSubsetWindow</name>
     <message>
         <source>Whole</source>
-        <translation type="guess">Entier</translation>
+        <translation>Entier</translation>
     </message>
     <message>
         <source>Applied selection</source>
-        <translation type="guess">Sélection appliquée</translation>
+        <translation>Sélection appliquée</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Rien</translation>
+        <translation>Rien</translation>
     </message>
 </context>
 <context>
     <name>QvisSurfCompPrepWindow</name>
     <message>
         <source>Method for inferring surface</source>
-        <translation type="guess">Méthode pour déduire la surface</translation>
+        <translation>Méthode pour déduire la surface</translation>
     </message>
     <message>
         <source>Closest</source>
-        <translation type="guess">Le plus proche</translation>
+        <translation>Le plus proche</translation>
     </message>
     <message>
         <source>Farthest</source>
-        <translation type="guess">Le plus éloigné</translation>
+        <translation>Le plus éloigné</translation>
     </message>
     <message>
         <source>Average</source>
-        <translation type="guess">Moyen</translation>
+        <translation>Moyen</translation>
     </message>
     <message>
         <source>Coordinate System</source>
-        <translation type="correct">Système de coordonnées </translation>
+        <translation>Système de coordonnées </translation>
     </message>
     <message>
         <source>Cartesian</source>
-        <translation type="correct">Cartésien</translation>
+        <translation>Cartésien</translation>
     </message>
     <message>
         <source>Cylindrical</source>
-        <translation type="correct">Cylindrique</translation>
+        <translation>Cylindrique</translation>
     </message>
     <message>
         <source>Spherical</source>
-        <translation type="guess">Sphérique</translation>
+        <translation>Sphérique</translation>
     </message>
     <message>
         <source>Start for Theta (degrees)</source>
-        <translation type="guess">Début pour Theta (degrés)</translation>
+        <translation>Début pour Theta (degrés)</translation>
     </message>
     <message>
         <source>Stop for Theta (degrees)</source>
-        <translation type="guess">Fin pour Theta (degrés)</translation>
+        <translation>Fin pour Theta (degrés)</translation>
     </message>
     <message>
         <source>Number of samples in Theta</source>
-        <translation type="guess">Nombre d&apos;échantillons pour Theta</translation>
+        <translation>Nombre d&apos;échantillons pour Theta</translation>
     </message>
     <message>
         <source>Start for Phi (degrees)</source>
-        <translation type="guess">Début pour Phi (degrés)</translation>
+        <translation>Début pour Phi (degrés)</translation>
     </message>
     <message>
         <source>Stop for Phi (degrees)</source>
-        <translation type="guess">in pour Phi (degrés)</translation>
+        <translation>in pour Phi (degrés)</translation>
     </message>
     <message>
         <source>Number of samples in Phi</source>
-        <translation type="guess">Nombre d&apos;échantillons pour Phi</translation>
+        <translation>Nombre d&apos;échantillons pour Phi</translation>
     </message>
     <message>
         <source>First radius to sample</source>
-        <translation type="guess">Premier rayon à échantillonner</translation>
+        <translation>Premier rayon à échantillonner</translation>
     </message>
     <message>
         <source>Last radius to sample</source>
-        <translation type="guess">Dernier rayon à échantillonner</translation>
+        <translation>Dernier rayon à échantillonner</translation>
     </message>
     <message>
         <source>Number of guess in radius</source>
-        <translation type="guess">ombre d&apos;échantillons dans le rayon</translation>
+        <translation type="vanished">ombre d&apos;échantillons dans le rayon</translation>
     </message>
     <message>
         <source>Starting point for X</source>
-        <translation type="guess">Point de départ pour X</translation>
+        <translation>Point de départ pour X</translation>
     </message>
     <message>
         <source>Ending point for X</source>
-        <translation type="guess">Point d&apos;arrivée pour X</translation>
+        <translation>Point d&apos;arrivée pour X</translation>
     </message>
     <message>
         <source>Number of steps in X</source>
-        <translation type="guess">Nombre de pas en X</translation>
+        <translation>Nombre de pas en X</translation>
     </message>
     <message>
         <source>Starting point for Y</source>
-        <translation type="guess">Point de départ pour Y</translation>
+        <translation>Point de départ pour Y</translation>
     </message>
     <message>
         <source>Ending point for Y</source>
-        <translation type="guess">Point d&apos;arrivée pour Y</translation>
+        <translation>Point d&apos;arrivée pour Y</translation>
     </message>
     <message>
         <source>Number of steps in Y</source>
-        <translation type="guess">Nombre de pas en Y</translation>
+        <translation>Nombre de pas en Y</translation>
     </message>
     <message>
         <source>Starting point for Z</source>
-        <translation type="guess">Point de départ pour Z</translation>
+        <translation>Point de départ pour Z</translation>
     </message>
     <message>
         <source>Ending point for Z</source>
-        <translation type="guess">Point d&apos;arrivée pour Z</translation>
+        <translation>Point d&apos;arrivée pour Z</translation>
     </message>
     <message>
         <source>Number of steps in Z</source>
-        <translation type="guess">Nombre de pas en Z</translation>
+        <translation>Nombre de pas en Z</translation>
     </message>
     <message>
         <source>Number of samples in radius</source>
-        <translation type="new">Nombre d'échantillons dans le rayon</translation>
+        <translation>Nombre d&apos;échantillons dans le rayon</translation>
     </message>
 </context>
 <context>
     <name>QvisSurfaceNormalWindow</name>
     <message>
         <source>Centering</source>
-        <translation type="guess">Centrage</translation>
+        <translation>Centrage</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation type="guess">Point</translation>
+        <translation>Point</translation>
     </message>
     <message>
         <source>Cell</source>
-        <translation type="guess">Cellule</translation>
+        <translation>Cellule</translation>
     </message>
 </context>
 <context>
     <name>QvisSurfacePlotWindow</name>
     <message>
         <source>Surface</source>
-        <translation type="correct">Surface</translation>
+        <translation>Surface</translation>
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="guess">Filaire</translation>
+        <translation>Filaire</translation>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="guess">Epaisseur du trait</translation>
+        <translation>Epaisseur du trait</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="correct">Linéaire</translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="guess">Logarithmique</translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Skew factor</source>
-        <translation type="guess">Facteur d&apos;inclinaison (skew)</translation>
+        <translation>Facteur d&apos;inclinaison (skew)</translation>
     </message>
     <message>
         <source>Use Original Data</source>
-         <translation type="guess">Utiliser les données d&apos;origine</translation>
+        <translation>Utiliser les données d&apos;origine</translation>
     </message>
     <message>
         <source>Use Current Plot</source>
-        <translation type="guess">Utiliser les données du tracé en cours</translation>
+        <translation>Utiliser les données du tracé en cours</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Lighting</source>
-        <translation type="new">Lumière/Eclairage</translation>
+        <translation>Lumière/Eclairage</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="unfinished">Echelle</translation>
+        <translation>Echelle</translation>
     </message>
     <message>
         <source>Limits</source>
-        <translation type="correct">Limites</translation>
+        <translation>Limites</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Color by Z value</source>
-        <translation type="guess">Couleur en fonction de la valeur en Z</translation>
+        <translation>Couleur en fonction de la valeur en Z</translation>
     </message>
     <message>
         <source>Constant color</source>
-        <translation type="guess">Couleur constante</translation>
+        <translation>Couleur constante</translation>
     </message>
     <message>
         <source>Wire color</source>
-        <translation type="guess">Couleur du fil</translation>
+        <translation>Couleur du fil</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
 </context>
 <context>
     <name>QvisTabBar</name>
     <message>
         <source>Change Name</source>
-        <translation type="guess">Changer le nom</translation>
+        <translation>Changer le nom</translation>
     </message>
     <message>
         <source>Insert New Tab Name</source>
-        <translation type="guess">Insérer un nouveau nom d&apos;onglet</translation>
+        <translation>Insérer un nouveau nom d&apos;onglet</translation>
     </message>
 </context>
 <context>
     <name>QvisTensorPlotWindow</name>
     <message>
         <source>Constant</source>
-        <translation type="correct">Constante</translation>
+        <translation>Constante</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="unfinished">Mettre à l&apos;échelle</translation>
+        <translation>Mettre à l&apos;échelle</translation>
     </message>
     <message>
         <source>Scale by magnitude</source>
-        <translation type="guess">Mise à l&apos;échelle en fonction de la norme</translation>
+        <translation>Mise à l&apos;échelle en fonction de la norme</translation>
     </message>
     <message>
         <source>Auto scale</source>
-        <translation type="guess">Echelle automatique</translation>
+        <translation>Echelle automatique</translation>
     </message>
     <message>
         <source>Stride</source>
@@ -18007,79 +18198,79 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>Sampling</source>
-        <translation type="guess">Échantillonnage</translation>
+        <translation>Échantillonnage</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="correct">Géométrie</translation>
+        <translation>Géométrie</translation>
     </message>
     <message>
         <source>Where to place the tensors and how many of them</source>
-        <translation type="guess">Où placer les tenseurs et combien</translation>
+        <translation>Où placer les tenseurs et combien</translation>
     </message>
     <message>
         <source>Placement</source>
-        <translation type="guess">Emplacement</translation>
+        <translation>Emplacement</translation>
     </message>
     <message>
         <source>Adapt to the mesh resolution</source>
-        <translation type="guess">Adapter à la résolution de maillage</translation>
+        <translation>Adapter à la résolution de maillage</translation>
     </message>
     <message>
         <source>Uniformly located throughout mesh</source>
-        <translation type="guess">Uniformément répartis dans tout le maillage</translation>
+        <translation>Uniformément répartis dans tout le maillage</translation>
     </message>
     <message>
         <source>Fixed number</source>
-        <translation type="guess">Nombre fixe</translation>
+        <translation>Nombre fixe</translation>
     </message>
     <message>
         <source>Only show tensors on original nodes/cells</source>
-        <translation type="guess">Afficher uniquement les tenseurs sur les nœuds/cellules d&apos;origine</translation>
+        <translation>Afficher uniquement les tenseurs sur les nœuds/cellules d&apos;origine</translation>
     </message>
     <message>
         <source>Limits</source>
-        <translation type="correct">Limites</translation>
+        <translation>Limites</translation>
     </message>
     <message>
         <source>Use Original Data</source>
-        <translation type="guess">Utiliser les données d&apos;origine</translation>
+        <translation>Utiliser les données d&apos;origine</translation>
     </message>
     <message>
         <source>Use Current Plot</source>
-        <translation type="guess">Utiliser les données du tracé en cours</translation>
+        <translation>Utiliser les données du tracé en cours</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Eigen values</source>
-        <translation type="correct">Valeurs propres</translation>
+        <translation>Valeurs propres</translation>
     </message>
     <message>
         <source>number of tensors</source>
-        <translation type="guess">Nombre de tenseurs</translation>
+        <translation>Nombre de tenseurs</translation>
     </message>
     <message>
         <source>stride</source>
@@ -18087,37 +18278,37 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>minimum value</source>
-        <translation type="correct">valeur minimale</translation>
+        <translation>valeur minimale</translation>
     </message>
     <message>
         <source>maximum value</source>
-        <translation type="correct">valeur maximale</translation>
+        <translation>valeur maximale</translation>
     </message>
     <message>
         <source>scale value</source>
-        <translation type="gues">facteur d&apos;échelle</translation>
+        <translation>facteur d&apos;échelle</translation>
     </message>
 </context>
 <context>
     <name>QvisTessellateWindow</name>
     <message>
         <source>Chord error</source>
-        <translation type="new">Erreur de corde</translation>
+        <translation>Erreur de corde</translation>
     </message>
     <message>
         <source>Field criterion</source>
-        <translation type="guess">Critère de champ</translation>
+        <translation>Critère de champ</translation>
     </message>
     <message>
         <source>Merge points</source>
-        <translation type="guess">Fusionner des points</translation>
+        <translation>Fusionner des points</translation>
     </message>
 </context>
 <context>
     <name>QvisText2DInterface</name>
     <message>
         <source>Lower left</source>
-        <translation type="guess">En bas à gauche</translation>
+        <translation>En bas à gauche</translation>
     </message>
     <message>
         <source>Height</source>
@@ -18133,7 +18324,7 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="guess">Utiliser la couleur de premier plan</translation>
+        <translation>Utiliser la couleur de premier plan</translation>
     </message>
     <message>
         <source>Font family</source>
@@ -18153,7 +18344,7 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Visible</source>
-        <translation type="correct">Visible</translation>
+        <translation>Visible</translation>
     </message>
     <message>
         <source>Arial</source>
@@ -18172,39 +18363,39 @@ coordonnées parallèles.</translation>
     <name>QvisText3DInterface</name>
     <message>
         <source>Text</source>
-        <translation type="correct">Texte</translation>
+        <translation>Texte</translation>
     </message>
     <message>
         <source>Position</source>
-        <translation type="correct">Position</translation>
+        <translation>Position</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation type="correct">Hauteur</translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>Relative</source>
-        <translation type="correct">Relatif</translation>
+        <translation>Relatif</translation>
     </message>
     <message>
         <source>Fixed</source>
-        <translation type="guess">Fixe</translation>
+        <translation>Fixe</translation>
     </message>
     <message>
         <source>Preserve orientation when view changes</source>
-        <translation type="guess">Conserver l&apos;orientation lorsque la vue change</translation>
+        <translation>Conserver l&apos;orientation lorsque la vue change</translation>
     </message>
     <message>
         <source>Rotate Z</source>
-        <translation type="correct">Rotation Z</translation>
+        <translation>Rotation Z</translation>
     </message>
     <message>
         <source>Rotate X</source>
-        <translation type="correct">Rotation X</translation>
+        <translation>Rotation X</translation>
     </message>
     <message>
         <source>Rotate Y</source>
-        <translation type="correct">Rotation Y</translation>
+        <translation>Rotation Y</translation>
     </message>
     <message>
         <source>Text color</source>
@@ -18212,19 +18403,19 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="guess">Utiliser la couleur de premier plan</translation>
+        <translation>Utiliser la couleur de premier plan</translation>
     </message>
     <message>
         <source>Visible</source>
-        <translation type="correct">Visible</translation>
+        <translation>Visible</translation>
     </message>
     <message>
         <source>The position must be specified as a 3D coordinate. Resetting to the last good value of %1.</source>
-        <translation type="guess">La position doit être spécifiée en tant que coordonnée 3D. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La position doit être spécifiée en tant que coordonnée 3D. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The fixed height is a floating point number greater than zero. Resetting to the last good value of %1.</source>
-        <translation type="guess">La hauteur fixe est un nombre réel supérieur à zéro. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La hauteur fixe est un nombre réel supérieur à zéro. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
 </context>
 <context>
@@ -18243,7 +18434,7 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Interactive</source>
-        <translation type="correct">Interactif</translation>
+        <translation>Interactif</translation>
     </message>
     <message>
         <source>x</source>
@@ -18262,91 +18453,91 @@ coordonnées parallèles.</translation>
     <name>QvisThresholdWindow</name>
     <message>
         <source>For individual threshold variables</source>
-        <translation type="guess">Pour les variables de seuil individuelles</translation>
+        <translation>Pour les variables de seuil individuelles</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Lower bound</source>
-        <translation type="uesss"> Borne inférieure</translation>
+        <translation> Borne inférieure</translation>
     </message>
     <message>
         <source>Upper bound</source>
-        <translation type="guess">Borne supérieure</translation>
+        <translation>Borne supérieure</translation>
     </message>
     <message>
         <source>Show zone if</source>
-        <translation type="guess">Montre la zone si</translation>
+        <translation>Montre la zone si</translation>
     </message>
     <message>
         <source>Add variable</source>
-        <translation type="guess">Ajouter une variable</translation>
+        <translation>Ajouter une variable</translation>
     </message>
     <message>
         <source>Delete selected variable</source>
-        <translation type="guess">Supprimer la variable sélectionnée</translation>
+        <translation>Supprimer la variable sélectionnée</translation>
     </message>
     <message>
         <source>For all threshold variables</source>
-        <translation type="guess">Pour toutes les variables de seuil</translation>
+        <translation>Pour toutes les variables de seuil</translation>
     </message>
     <message>
         <source>Zones from input</source>
-        <translation type="guess">Zones (cellules) depuis l&apos;entrée</translation>
+        <translation>Zones (cellules) depuis l&apos;entrée</translation>
     </message>
     <message>
         <source>Point mesh</source>
-        <translation type="guess">Maillage de points</translation>
+        <translation>Maillage de points</translation>
     </message>
     <message>
         <source>Invalid lower bound; will reset to min.</source>
-        <translation type="guess">Borne inférieure invalide ; sera réinitialisée au min.</translation>
+        <translation>Borne inférieure invalide ; sera réinitialisée au min.</translation>
     </message>
     <message>
         <source>Invalid upper bound; will reset to max.</source>
-        <translation type="guess">Borne supérieure invalide ; sera réinitialisée au max.</translation>
+        <translation>Borne supérieure invalide ; sera réinitialisée au max.</translation>
     </message>
     <message>
         <source>Lower bound exceeds upper bound; will reverse them.</source>
-        <translation type="guess">La borne inférieure dépasse la borne supérieure ; on les inversera.</translation>
+        <translation>La borne inférieure dépasse la borne supérieure ; on les inversera.</translation>
     </message>
     <message>
         <source>All in range</source>
-        <translation type="new">Entièrement dans l&apos;intervalle</translation>
+        <translation>Entièrement dans l&apos;intervalle</translation>
     </message>
     <message>
         <source>Part in range</source>
-        <translation type="new">Une partie dans l&apos;intervalle</translation>
+        <translation>Une partie dans l&apos;intervalle</translation>
     </message>
     <message>
         <source>min</source>
-        <translation type="guess">min</translation>
+        <translation>min</translation>
     </message>
     <message>
         <source>max</source>
-        <translation type="guess">max</translation>
+        <translation>max</translation>
     </message>
     <message>
         <source>Bounds Input:</source>
-        <translation type="guess">Entré de l&apos;intervale :</translation>
+        <translation>Entré de l&apos;intervale :</translation>
     </message>
     <message>
         <source>Default</source>
-        <translation type="guess">Valeur par défaut</translation>
+        <translation>Valeur par défaut</translation>
     </message>
     <message>
         <source>Custom</source>
-        <translation type="correct">Personnaliser</translation>
+        <translation>Personnaliser</translation>
     </message>
     <message>
         <source>Output Mesh Is:</source>
-        <translation type="guess">Maillage à écrire est :</translation>
+        <translation>Maillage à écrire est :</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="guess">Intervalle</translation>
+        <translation>Intervalle</translation>
     </message>
     <message>
         <source>min:max</source>
@@ -18357,12 +18548,12 @@ coordonnées parallèles.</translation>
     <name>QvisTimeQueryOptionsWidget</name>
     <message>
         <source>Do time curve</source>
-        <translation type="guess">Faire la courbe en temps</translation>
+        <translation>Faire la courbe en temps</translation>
     </message>
     <message>
         <source>Start and end are time steps,
 not cycles or times.</source>
-<translation type="guess">Le début et la fin sont des pas de temps,
+        <translation>Le début et la fin sont des pas de temps,
 pas des cycles ou des temps</translation>
     </message>
     <message>
@@ -18375,162 +18566,162 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Stride</source>
-        <translation type="correct">Arpent</translation>
+        <translation>Arpent</translation>
     </message>
     <message>
         <source>Do Time Query</source>
-        <translation type="guess">Réaliser la requête en temps</translation>
+        <translation>Réaliser la requête en temps</translation>
     </message>
     <message>
         <source>Time Query Options</source>
-        <translation type="guess">Options de la requête en temps</translation>
+        <translation>Options de la requête en temps</translation>
     </message>
 </context>
 <context>
     <name>QvisTimeSliderControlWidget</name>
     <message>
         <source>Time</source>
-        <translation type="correct">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Active time slider</source>
-        <translation type="new">Curseur temporel actif</translation>
+        <translation>Curseur temporel actif</translation>
     </message>
     <message>
         <source>The active time slider is already at state</source>
-        <translation type="new">Le curseur temporel actif est déjà au temps voulu</translation>
+        <translation>Le curseur temporel actif est déjà au temps voulu</translation>
     </message>
 </context>
 <context>
     <name>QvisTimeSliderInterface</name>
     <message>
         <source>Lower left</source>
-        <translation type="guess">En bas à gauche</translation>
+        <translation>En bas à gauche</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="correct">Largeur</translation>
+        <translation>Largeur</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation type="correct">Hauteur</translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>Text label</source>
-        <translation type="guess">Texte</translation>
+        <translation>Texte</translation>
     </message>
     <message>
         <source>Time format</source>
-        <translation type="guess">Format des temps</translation>
+        <translation>Format des temps</translation>
     </message>
     <message>
         <source>Start color</source>
-        <translation type="guess">Couleur de début</translation>
+        <translation>Couleur de début</translation>
     </message>
     <message>
         <source>End color</source>
-        <translation type="guess">Couleur de fin</translation>
+        <translation>Couleur de fin</translation>
     </message>
     <message>
         <source>Text color</source>
-        <translation type="guess">Couleur du texte</translation>
+        <translation>Couleur du texte</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="guess">Utiliser la couleur de premier plan</translation>
+        <translation>Utiliser la couleur de premier plan</translation>
     </message>
     <message>
         <source>All frames</source>
-        <translation type="guess">Toutes les images</translation>
+        <translation>Toutes les images</translation>
     </message>
     <message>
         <source>Frames for plot</source>
-        <translation type="guess">Images pour le tracé</translation>
+        <translation>Images pour le tracé</translation>
     </message>
     <message>
         <source>States for plot</source>
-        <translation type="guess">Etats temporels pour le tracé</translation>
+        <translation>Etats temporels pour le tracé</translation>
     </message>
     <message>
         <source>Time source</source>
-        <translation type="guess">Source du temps</translation>
+        <translation>Source du temps</translation>
     </message>
     <message>
         <source>Visible</source>
-        <translation type="correct">Visible</translation>
+        <translation>Visible</translation>
     </message>
     <message>
         <source>Rounded</source>
-        <translation type="guess">Arrondi</translation>
+        <translation>Arrondi</translation>
     </message>
     <message>
         <source>Shaded</source>
-        <translation type="guess">Ombré</translation>
+        <translation>Ombré</translation>
     </message>
 </context>
 <context>
     <name>QvisTopologyPlotWindow</name>
     <message>
         <source>Line width</source>
-        <translation type="guess">Epaisseur du trait</translation>
+        <translation>Epaisseur du trait</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="correct">Opacité</translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <source>tolerance</source>
-        <translation type="guess">tolérance</translation>
+        <translation>tolérance</translation>
     </message>
     <message>
         <source>hitpercent</source>
-        <translation type="guess">pourcentage de succès</translation>
+        <translation>pourcentage de succès</translation>
     </message>
 </context>
 <context>
     <name>QvisToroidalPoloidalProjectionWindow</name>
     <message>
         <source>Centroid Source</source>
-        <translation type="guess">Barycentre de la source</translation>
+        <translation>Barycentre de la source</translation>
     </message>
     <message>
         <source>Manual</source>
-        <translation type="guess">Manuel</translation>
+        <translation>Manuel</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="guess">Auto</translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>Centroid (R,phi,Z)</source>
-        <translation type="guess">Centroïded (R,phi,Z)</translation>
+        <translation>Centroïded (R,phi,Z)</translation>
     </message>
     <message>
         <source>Project to XY plane</source>
-        <translation type="guess">Projeter sur le plan XY</translation>
+        <translation>Projeter sur le plan XY</translation>
     </message>
 </context>
 <context>
     <name>QvisTransformWindow</name>
     <message>
         <source>Arbitrary</source>
-        <translation type="guess">Arbitraire</translation>
+        <translation>Arbitraire</translation>
     </message>
     <message>
         <source>Rotate</source>
-        <translation type="guess">Pivoter</translation>
+        <translation>Pivoter</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="correct">Origine</translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Axis</source>
-        <translation type="guess">Axe</translation>
+        <translation>Axe</translation>
     </message>
     <message>
         <source>Amount</source>
-        <translation type="guess">Quantité</translation>
+        <translation>Quantité</translation>
     </message>
     <message>
         <source>Deg</source>
@@ -18558,123 +18749,123 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Translate</source>
-        <translation type="guess">Translater</translation>
+        <translation>Translater</translation>
     </message>
     <message>
         <source>Input coordinates</source>
-        <translation type="guess">Coordonnées en entrée</translation>
+        <translation>Coordonnées en entrée</translation>
     </message>
     <message>
         <source>Cartesian (x,y,z)</source>
-        <translation type="guess">Cartésien (x,y,z)</translation>
+        <translation>Cartésien (x,y,z)</translation>
     </message>
     <message>
         <source>Cylindrical (r,phi,z)</source>
-        <translation type="guess">Cylindrique (r,phi,z)</translation>
+        <translation>Cylindrique (r,phi,z)</translation>
     </message>
     <message>
         <source>Output coordinates</source>
-        <translation type="guess">Coordonnées en sortie</translation>
+        <translation>Coordonnées en sortie</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="correct">Linéaire</translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Matrix elements</source>
-        <translation type="guess">Eléments de la matrice</translation>
+        <translation>Eléments de la matrice</translation>
     </message>
     <message>
         <source>Invert linear transform</source>
-        <translation type="guess">Inverser la transformation linéaire</translation>
+        <translation>Inverser la transformation linéaire</translation>
     </message>
     <message>
         <source>Transform vectors</source>
-        <translation type="guess">Transformer les vecteurs</translation>
+        <translation>Transformer les vecteurs</translation>
     </message>
     <message>
         <source>Spherical (r,theta,phi)</source>
-        <translation type="guess">Sphérique (r,theta,phi)</translation>
+        <translation>Sphérique (r,theta,phi)</translation>
     </message>
     <message>
         <source>Vector transform method:</source>
-        <translation type="guess">Méthode de transformation vectorielle :</translation>
+        <translation>Méthode de transformation vectorielle :</translation>
     </message>
     <message>
         <source>No transformation</source>
-        <translation type="guess">Pas de transformation</translation>
+        <translation>Pas de transformation</translation>
     </message>
     <message>
         <source>Treat as point coordinates</source>
-        <translation type="guess">Considérer comme des coordonnées de point</translation>
+        <translation>Considérer comme des coordonnées de point</translation>
     </message>
     <message>
         <source>Treat as coordinate displacements</source>
-        <translation type="guess">Considérer comme des déplacements de coordonnées</translation>
+        <translation>Considérer comme des déplacements de coordonnées</translation>
     </message>
     <message>
         <source>Treat as instantaneous directions</source>
-        <translation type="guess">Considérer comme des directions instantanées</translation>
+        <translation>Considérer comme des directions instantanées</translation>
     </message>
     <message>
         <source>rotate origin</source>
-        <translation type="guess">faire tourner origine</translation>
+        <translation>faire tourner origine</translation>
     </message>
     <message>
         <source>rotate axis</source>
-        <translation type="guess">faire tourner axe</translation>
+        <translation>faire tourner axe</translation>
     </message>
     <message>
         <source>rotate amount</source>
-        <translation type="guess">valeur de la rotation</translation>
+        <translation>valeur de la rotation</translation>
     </message>
     <message>
         <source>scale origin</source>
-        <translation type="guess">appliquer un facteur d&apos;échelle à l&apos;origine</translation>
+        <translation>appliquer un facteur d&apos;échelle à l&apos;origine</translation>
     </message>
     <message>
         <source>X scale</source>
-        <translation type="correct">Échelle X</translation>
+        <translation>Échelle X</translation>
     </message>
     <message>
         <source>Y scale</source>
-        <translation type="correct">Échelle Y</translation>
+        <translation>Échelle Y</translation>
     </message>
     <message>
         <source>Z scale</source>
-        <translation type="correct"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>translation in X</source>
-        <translation type="guess">translation en X</translation>
+        <translation>translation en X</translation>
     </message>
     <message>
         <source>translation in Y</source>
-        <translation type="guess">translation en Y</translation>
+        <translation>translation en Y</translation>
     </message>
     <message>
         <source>translation in Z</source>
-        <translation type="guess">translation en Y</translation>
+        <translation>translation en Y</translation>
     </message>
     <message>
         <source>phi on a semi-infinite domain</source>
-        <translation type="guess">phi sur un domaine semi-infini</translation>
+        <translation>phi sur un domaine semi-infini</translation>
     </message>
     <message>
         <source>     (lines only)</source>
-        <translation type="guess">     (lignes seulement)</translation>
+        <translation>     (lignes seulement)</translation>
     </message>
     <message>
         <source>Matrix 00</source>
-        <translation type="guess">Matrice 00</translation>
+        <translation>Matrice 00</translation>
     </message>
     <message>
         <source>Matrix 01</source>
-        <translation type="guess">Matrice 01</translation>
+        <translation>Matrice 01</translation>
     </message>
     <message>
         <source>Matrix 02</source>
-        <translation type="alterlegacy">Matrice 02</translation>
+        <translation>Matrice 02</translation>
     </message>
     <message>
         <source>Matrix 03</source>
@@ -18686,11 +18877,11 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Matrix 11</source>
-        <translation type="alterlegacy">Matrice 11</translation>
+        <translation>Matrice 11</translation>
     </message>
     <message>
         <source>Matrix 12</source>
-        <translation type="alterlegacy">Matrice 12</translation>
+        <translation>Matrice 12</translation>
     </message>
     <message>
         <source>Matrix 13</source>
@@ -18733,77 +18924,77 @@ pas des cycles ou des temps</translation>
     <name>QvisTriangulateRegularPointsWindow</name>
     <message>
         <source>Use X grid spacing</source>
-        <translation type="guess">Utiliser l&apos;espacement de la grille en X</translation>
+        <translation>Utiliser l&apos;espacement de la grille en X</translation>
     </message>
     <message>
         <source>X grid spacing</source>
-        <translation type="guess">Espacement de la grille en X</translation>
+        <translation>Espacement de la grille en X</translation>
     </message>
     <message>
         <source>Use Y grid spacing</source>
-        <translation type="guess">Utiliser l&apos;espacement de la grille en Y</translation>
+        <translation>Utiliser l&apos;espacement de la grille en Y</translation>
     </message>
     <message>
         <source>Y grid spacing</source>
-        <translation type="guess">Espacement de la grille en Y</translation>
+        <translation>Espacement de la grille en Y</translation>
     </message>
 </context>
 <context>
     <name>QvisTruecolorPlotWindow</name>
     <message>
         <source>Opacity</source>
-        <translation type="correct">Opacité</translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <source>Lighting</source>
-        <translation type="new">Lumière/Eclairage</translation>
+        <translation>Lumière/Eclairage</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
 </context>
 <context>
     <name>QvisTubeWindow</name>
     <message>
         <source>Fineness of tube</source>
-        <translation type="guess">Finesse de tube (tuyau)</translation>
+        <translation>Finesse de tube (tuyau)</translation>
     </message>
     <message>
         <source>Cap ends of the tubes</source>
-        <translation type="guess">Boucher les extrémités des tubes (tuyaux)</translation>
+        <translation>Boucher les extrémités des tubes (tuyaux)</translation>
     </message>
     <message>
         <source>Tube radius</source>
-        <translation type="guess">Rayon de tube</translation>
+        <translation>Rayon de tube</translation>
     </message>
     <message>
         <source>Scale width by variable?  (Nodal variables work best)</source>
-        <translation type="guess">Echelle par variable ? (Les variables nodales fonctionnent le mieux)</translation>
+        <translation>Echelle par variable ? (Les variables nodales fonctionnent le mieux)</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="correct">Rayon</translation>
+        <translation>Rayon</translation>
     </message>
     <message>
         <source>Tube form</source>
-        <translation type="guess">Forme de tube</translation>
+        <translation>Forme de tube</translation>
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation type="new">Fraction de la boîte englobante</translation>
+        <translation>Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Absolute</source>
-        <translation type="new"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -18814,147 +19005,147 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Style</source>
-        <translation type="correct">Style</translation>
+        <translation>Style</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="correct">Largeur</translation>
+        <translation>Largeur</translation>
     </message>
     <message>
         <source>Size</source>
-        <translation type="guess">Taille</translation>
+        <translation>Taille</translation>
     </message>
     <message>
         <source>Vector origin</source>
-        <translation type="guess">Vecteur origine</translation>
+        <translation>Vecteur origine</translation>
     </message>
     <message>
         <source>Head</source>
-        <translation type="guess">Tête (avant)</translation>
+        <translation>Tête (avant)</translation>
     </message>
     <message>
         <source>Middle</source>
-        <translation type="guess">Milieu</translation>
+        <translation>Milieu</translation>
     </message>
     <message>
         <source>Tail</source>
-        <translation type="guess">Queue (arrière)</translation>
+        <translation>Queue (arrière)</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Magnitude</source>
-        <translation type="guess">Magnitude</translation>
+        <translation>Magnitude</translation>
     </message>
     <message>
         <source>Constant</source>
-        <translation type="correct">Constante</translation>
+        <translation>Constante</translation>
     </message>
     <message>
         <source>Use Original Data</source>
-        <translation type="guess">Utilise les données d&apos;origine</translation>
+        <translation>Utilise les données d&apos;origine</translation>
     </message>
     <message>
         <source>Use Current Plot</source>
-        <translation type="guess">Utiliser les données du tracé en cours</translation>
+        <translation>Utiliser les données du tracé en cours</translation>
     </message>
     <message>
         <source>Limits</source>
-        <translation type="correct">Limites</translation>
+        <translation>Limites</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="guess">Mettre à l&apos;échelle</translation>
+        <translation>Mettre à l&apos;échelle</translation>
     </message>
     <message>
         <source>Scale by magnitude</source>
-        <translation type="guess">Mettre à l&apos;échelle en fonction de la taille</translation>
+        <translation>Mettre à l&apos;échelle en fonction de la taille</translation>
     </message>
     <message>
         <source>Auto scale</source>
-        <translation type="guess">Echelle automatique</translation>
+        <translation>Echelle automatique</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Where to place the vectors and how many of them</source>
-        <translation type="guess">Où placer les vecteurs et combien d&apos;entre eux</translation>
+        <translation>Où placer les vecteurs et combien d&apos;entre eux</translation>
     </message>
     <message>
         <source>Uniformly located throughout mesh</source>
-        <translation type="guess">Uniformément répartis dans tout le maillage</translation>
+        <translation>Uniformément répartis dans tout le maillage</translation>
     </message>
     <message>
         <source>Fixed number</source>
-        <translation type="guess">Nombre fixe</translation>
+        <translation>Nombre fixe</translation>
     </message>
     <message>
         <source>Only show vectors on original nodes/cells</source>
-        <translation type="guess">Afficher uniquement les vecteurs sur les nœuds/cellules d&apos;origine</translation>
+        <translation>Afficher uniquement les vecteurs sur les nœuds/cellules d&apos;origine</translation>
     </message>
     <message>
         <source>Glyph type</source>
-        <translation type="guess">Type de glyphe</translation>
+        <translation>Type de glyphe</translation>
     </message>
     <message>
         <source>Arrow</source>
-        <translation type="guess">Flèche</translation>
+        <translation>Flèche</translation>
     </message>
     <message>
         <source>Ellipsoid</source>
-        <translation type="guess">Ellipsoïde</translation>
+        <translation>Ellipsoïde</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="correct">Ligne</translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Cylinder</source>
-        <translation type="correct">Cylindre</translation>
+        <translation>Cylindre</translation>
     </message>
     <message>
         <source>Draw head</source>
-        <translation type="guess">Dessiner la tête de flèche</translation>
+        <translation>Dessiner la tête de flèche</translation>
     </message>
     <message>
         <source>Fast</source>
-        <translation type="guess">Rapide</translation>
+        <translation>Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Elevée</translation>
+        <translation>Elevée</translation>
     </message>
     <message>
         <source>Rendering</source>
-        <translation type="correct">Rendu</translation>
+        <translation>Rendu</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>scale value</source>
-        <translation type="guess">facteur d&apos;échelle</translation>
+        <translation>facteur d&apos;échelle</translation>
     </message>
     <message>
         <source>head size</source>
-        <translation type="guess">taille de la têt de flèche</translation>
+        <translation>taille de la têt de flèche</translation>
     </message>
     <message>
         <source>number of vectors</source>
-        <translation type="guess">nombre de vecteurs</translation>
+        <translation>nombre de vecteurs</translation>
     </message>
     <message>
         <source>stride</source>
@@ -18962,146 +19153,146 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>minimum value</source>
-        <translation type="correct">valeur minimale</translation>
+        <translation>valeur minimale</translation>
     </message>
     <message>
         <source>maximum value</source>
-        <translation type="correct">valeur maximale</translation>
+        <translation>valeur maximale</translation>
     </message>
     <message>
         <source>stem width</source>
-        <translation type="guess">largeur de tige</translation>
+        <translation>largeur de tige</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Arrow body</source>
-        <translation type="guess">Corps de flèche</translation>
+        <translation>Corps de flèche</translation>
     </message>
     <message>
         <source>Geometry Quality</source>
-        <translation type="guess">Qualité de la géométrie</translation>
+        <translation>Qualité de la géométrie</translation>
     </message>
     <message>
         <source>Sampling</source>
-        <translation type="guess">Échantillonnage</translation>
+        <translation>Échantillonnage</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="correct">Géométrie</translation>
+        <translation>Géométrie</translation>
     </message>
     <message>
         <source>Placement</source>
-        <translation type="guess">Emplacement</translation>
+        <translation>Emplacement</translation>
     </message>
     <message>
         <source>Adapt to the mesh resolution</source>
-        <translation type="guess">Adapter à la résolution du maillage</translation>
+        <translation>Adapter à la résolution du maillage</translation>
     </message>
 </context>
 <context>
     <name>QvisViewWindow</name>
     <message>
         <source>Curve view</source>
-        <translation type="guess">Vue courbe</translation>
+        <translation>Vue courbe</translation>
     </message>
     <message>
         <source>Viewport</source>
-        <translation type="new">Fenêtre de visualisation</translation>
+        <translation>Fenêtre de visualisation</translation>
     </message>
     <message>
         <source>Domain</source>
-        <translation type="correct">Domaine</translation>
+        <translation>Domaine</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="guess">Intervalle</translation>
+        <translation>Intervalle</translation>
     </message>
     <message>
         <source>Domain Scale</source>
-        <translation type="guess">Échelle du domaine</translation>
+        <translation>Échelle du domaine</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="correct">Linéaire</translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="guess">Logarithmique</translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Range Scale</source>
-        <translation type="guess">Échelle de l&apos;intervalle</translation>
+        <translation>Échelle de l&apos;intervalle</translation>
     </message>
     <message>
         <source>2D view</source>
-        <translation type="guess">Vue 2D</translation>
+        <translation>Vue 2D</translation>
     </message>
     <message>
         <source>Window</source>
-        <translation type="correct">Fenêtre</translation>
+        <translation>Fenêtre</translation>
     </message>
     <message>
         <source>Full Frame</source>
-        <translation type="guess">Plein cadre</translation>
+        <translation>Plein cadre</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="guess">Auto</translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="guess">Actif</translation>
+        <translation>Actif</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="guess">Inactif</translation>
+        <translation>Inactif</translation>
     </message>
     <message>
         <source>X Scale</source>
-        <translation type="guess">Echelle X</translation>
+        <translation>Echelle X</translation>
     </message>
     <message>
         <source>Y Scale</source>
-        <translation type="guess">Echelle Y</translation>
+        <translation>Echelle Y</translation>
     </message>
     <message>
         <source>3D view</source>
-        <translation type="guess">Vue 3D</translation>
+        <translation>Vue 3D</translation>
     </message>
     <message>
         <source>View normal</source>
-        <translation type="guess">Vue perpendiculaire</translation>
+        <translation>Vue perpendiculaire</translation>
     </message>
     <message>
         <source>Focus</source>
-        <translation type="guess">Mise au point</translation>
+        <translation>Mise au point</translation>
     </message>
     <message>
         <source>Up Vector</source>
-        <translation type="guess">Vecteur vertical</translation>
+        <translation>Vecteur vertical</translation>
     </message>
     <message>
         <source>Angle of view</source>
-        <translation type="guess">Angle de vue</translation>
+        <translation>Angle de vue</translation>
     </message>
     <message>
         <source>Parallel scale</source>
-        <translation type="guess">Échelle parallèle</translation>
+        <translation>Échelle parallèle</translation>
     </message>
     <message>
         <source>Near clipping</source>
-        <translation type="guess">Extraction proche</translation>
+        <translation>Extraction proche</translation>
     </message>
     <message>
         <source>Far clipping</source>
-        <translation type="guess">Extraction lointaine</translation>
+        <translation>Extraction lointaine</translation>
     </message>
     <message>
         <source>Image pan</source>
-        <translation type="guess">Image panoramique</translation>
+        <translation>Image panoramique</translation>
     </message>
     <message>
         <source>Image zoom</source>
@@ -19109,15 +19300,15 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Eye Angle (stereo)</source>
-        <translation type="unfinished">Angle de l'œil (stéréo)</translation>
+        <translation type="unfinished">Angle de l&apos;œil (stéréo)</translation>
     </message>
     <message>
         <source>Perspective</source>
-        <translation type="guess">Perspective</translation>
+        <translation>Perspective</translation>
     </message>
     <message>
         <source>Align to axis</source>
-        <translation type="guess">Aligner à l&apos;axe</translation>
+        <translation>Aligner à l&apos;axe</translation>
     </message>
     <message>
         <source>AxisArray view</source>
@@ -19125,173 +19316,173 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="correct">Avancé</translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <source>Original spatial extents</source>
-        <translation type="guess">Etendues spatiales d&apos;origine</translation>
+        <translation>Etendues spatiales d&apos;origine</translation>
     </message>
     <message>
         <source>Actual spatial extents</source>
-        <translation type="guess">Étendues spatiales réelles (courantes)</translation>
+        <translation>Étendues spatiales réelles (courantes)</translation>
     </message>
     <message>
         <source>View based on</source>
-        <translation type="guess">Vue basée sur</translation>
+        <translation>Vue basée sur</translation>
     </message>
     <message>
         <source>Locked view</source>
-        <translation type="guess">Vue verrouillée</translation>
+        <translation>Vue verrouillée</translation>
     </message>
     <message>
         <source>Reset view</source>
-        <translation type="guess">Réinitialiser la vue</translation>
+        <translation>Réinitialiser la vue</translation>
     </message>
     <message>
         <source>Recenter view</source>
-        <translation type="correct">Recentrer la vue</translation>
+        <translation>Recentrer la vue</translation>
     </message>
     <message>
         <source>Undo view</source>
-        <translation type="guess">Défaire (annuler) la vue</translation>
+        <translation>Défaire (annuler) la vue</translation>
     </message>
     <message>
         <source>Copy view from camera</source>
-        <translation type="guess">Copier la vue depuis la caméra</translation>
+        <translation>Copier la vue depuis la caméra</translation>
     </message>
     <message>
         <source>Make camera keyframe from view</source>
-        <translation type="unfinished">Réaliser une transition (keyframe) à partir de la vue</translation>
+        <translation>Réaliser une transition (keyframe) à partir de la vue</translation>
     </message>
     <message>
         <source>User defined center of rotation</source>
-        <translation type="guess">Centre de rotation défini par l&apos;utilisateur</translation>
+        <translation>Centre de rotation défini par l&apos;utilisateur</translation>
     </message>
     <message>
         <source>Center</source>
-        <translation type="correct">Centre</translation>
+        <translation>Centre</translation>
     </message>
     <message>
         <source>Commands</source>
-        <translation type="unfinished">Commandes</translation>
+        <translation>Commandes</translation>
     </message>
     <message>
         <source>Shear</source>
-        <translation type="guess">Cisaillement</translation>
+        <translation>Cisaillement</translation>
     </message>
     <message>
         <source>Scale 3D axes</source>
-        <translation type="guess"> Mettre à l&apos;échelle les axes 3D</translation>
+        <translation> Mettre à l&apos;échelle les axes 3D</translation>
     </message>
     <message>
         <source>Maintain view limits</source>
-        <translation type="unfinished">Maintenir les limites de vue</translation>
+        <translation>Maintenir les limites de vue</translation>
     </message>
     <message>
         <source>viewport</source>
-        <translation type="new">Fenêtre de visualisation</translation>
+        <translation>Fenêtre de visualisation</translation>
     </message>
     <message>
         <source>domain</source>
-        <translation type="correct">Domaine</translation>
+        <translation>Domaine</translation>
     </message>
     <message>
         <source>range</source>
-        <translation type="guess">intervalle</translation>
+        <translation>intervalle</translation>
     </message>
     <message>
         <source>window</source>
-        <translation type="guess">fenêtre</translation>
+        <translation>fenêtre</translation>
     </message>
     <message>
         <source>normal</source>
-        <translation type="guess">normale</translation>
+        <translation>normale</translation>
     </message>
     <message>
         <source>focus</source>
-        <translation type="guess">foyer</translation>
+        <translation>foyer</translation>
     </message>
     <message>
         <source>up vector</source>
-        <translation type="guess">vecteur vertical</translation>
+        <translation>vecteur vertical</translation>
     </message>
     <message>
         <source>viewangle</source>
-        <translation type="guess">angle de vue</translation>
+        <translation>angle de vue</translation>
     </message>
     <message>
         <source>parallel scale</source>
-        <translation type="guess">échelle parallèle</translation>
+        <translation>échelle parallèle</translation>
     </message>
     <message>
         <source>near clipping</source>
-        <translation type="guess">extraction proche</translation>
+        <translation>extraction proche</translation>
     </message>
     <message>
         <source>far clipping</source>
-        <translation type="guess">extraction lointaine</translation>
+        <translation>extraction lointaine</translation>
     </message>
     <message>
         <source>image pan</source>
-        <translation type="guess">image panoramique</translation>
+        <translation>image panoramique</translation>
     </message>
     <message>
         <source>image zoom</source>
-        <translation type="guess">image zoom</translation>
+        <translation>image zoom</translation>
     </message>
     <message>
         <source>eye angle</source>
-        <translation type="guess">angle d&apos;oeil</translation>
+        <translation>angle d&apos;oeil</translation>
     </message>
     <message>
         <source>center of rotation</source>
-        <translation type="guess">centre de rotation</translation>
+        <translation>centre de rotation</translation>
     </message>
     <message>
         <source>axis3DScales</source>
-        <translation type="unfinished">Echelles des axes 3D</translation>
+        <translation>Echelles des axes 3D</translation>
     </message>
     <message>
         <source>shear</source>
-        <translation type="guess">cisaillement</translation>
+        <translation>cisaillement</translation>
     </message>
 </context>
 <context>
     <name>QvisViewportWidget</name>
     <message>
         <source>Viewport</source>
-        <translation type="new">Fenêtre de visualisation</translation>
+        <translation>Fenêtre de visualisation</translation>
     </message>
 </context>
 <context>
     <name>QvisVisItUpdate</name>
     <message>
         <source>Installing...</source>
-        <translation type="guess">Installation en cours...</translation>
+        <translation>Installation en cours...</translation>
     </message>
     <message>
         <source>Installation complete.</source>
-        <translation type="guess">Installation terminée.</translation>
+        <translation>Installation terminée.</translation>
     </message>
     <message>
         <source>Your version of VisIt is up to date.</source>
-        <translation type="guess">Votre version de VisIt est à jour</translation>
+        <translation>Votre version de VisIt est à jour</translation>
     </message>
     <message>
         <source>VisIt determined that you do not have write permission to the %1 directory where VisIt is installed. You must have group %2 write access to update VisIt.</source>
-        <translation type="guess">VisIt a déterminé que vous n&apos;avez pas l&apos;autorisation d&apos;écrire sur le répertoire %1 où VisIt est installé. Vous devez disposer d&apos;un accès en écriture au groupe %2 pour mettre à jour VisIt</translation>
+        <translation>VisIt a déterminé que vous n&apos;avez pas l&apos;autorisation d&apos;écrire sur le répertoire %1 où VisIt est installé. Vous devez disposer d&apos;un accès en écriture au groupe %2 pour mettre à jour VisIt</translation>
     </message>
     <message>
         <source>The new version of VisIt could not be located in %1.</source>
-        <translation type="guess">La nouvelle version de VisIt n&apos;a pas pu être localisée dans %1.</translation>
+        <translation>La nouvelle version de VisIt n&apos;a pas pu être localisée dans %1.</translation>
     </message>
     <message>
         <source>VisIt %1 is available for download. Would you like to install it?</source>
-        <translation type="guess">VisIt %1 est disponible en téléchargement. Souhaitez-vous l&apos;installer ?</translation>
+        <translation>VisIt %1 est disponible en téléchargement. Souhaitez-vous l&apos;installer ?</translation>
     </message>
     <message>
         <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to %1 and download the latest binary distribution for your platform.</source>
-        <translation type="guess">VisIt n&apos;a pas pu déterminer la plate-forme sur laquelle vous tournez, donc VisIt ne peut pas se mettre à jour automatiquement. Vous devez accéder à %1 et télécharger la dernière distribution binaire pour votre plate-forme.</translation>
+        <translation>VisIt n&apos;a pas pu déterminer la plate-forme sur laquelle vous tournez, donc VisIt ne peut pas se mettre à jour automatiquement. Vous devez accéder à %1 et télécharger la dernière distribution binaire pour votre plate-forme.</translation>
     </message>
     <message>
         <source>VisIt</source>
@@ -19299,26 +19490,26 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>There is a newer version of VisIt available (version %1) but your distribution type: %2 was not found in the new version. There is likely another distribution type that will work for you but you will need to determine that and install VisIt yourself. Alternatively, you can build VisIt for your platform using the build_visit script.</source>
-        <translation type="guess">Une version plus récente de VisIt est disponible (version %1) mais votre type de distribution : %2 n&apos;a pas été trouvé dans la nouvelle version. Il existe probablement un autre type de distribution qui fonctionnera pour vous, mais vous devrez le déterminer et installer VisIt vous-même. Vous pouvez également créer VisIt pour votre plate-forme à l&apos;aide du script build_visit.</translation>
+        <translation>Une version plus récente de VisIt est disponible (version %1) mais votre type de distribution&#xa0;: %2 n&apos;a pas été trouvé dans la nouvelle version. Il existe probablement un autre type de distribution qui fonctionnera pour vous, mais vous devrez le déterminer et installer VisIt vous-même. Vous pouvez également créer VisIt pour votre plate-forme à l&apos;aide du script build_visit.</translation>
     </message>
     <message>
         <source>VisIt was not able to check for updates.</source>
-        <translation type="guess">VisIt n&apos;a pas pu vérifier les mises à jour.</translation>
+        <translation>VisIt n&apos;a pas pu vérifier les mises à jour.</translation>
     </message>
     <message>
         <source>VisIt was not able to download %1 so the update will not proceed. Try again later.</source>
-        <translation type="guess">VisIt n&apos;a pas pu télécharger %1 donc la mise à jour ne se poursuivra pas. Réessayez plus tard.</translation>
+        <translation>VisIt n&apos;a pas pu télécharger %1 donc la mise à jour ne se poursuivra pas. Réessayez plus tard.</translation>
     </message>
     <message>
         <source>Downloaded %1 / %2 bytes.</source>
-        <translation type="guess">%1 / %2 octets téléchargés.</translation>
+        <translation>%1 / %2 octets téléchargés.</translation>
     </message>
 </context>
 <context>
     <name>QvisVolumePlotWindow</name>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>+</source>
@@ -19330,75 +19521,75 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Align</source>
-        <translation type="correct">Aligner</translation>
+        <translation>Aligner</translation>
     </message>
     <message>
         <source>Smooth</source>
-        <translation type="correct">Lisser</translation>
+        <translation>Lisser</translation>
     </message>
     <message>
         <source>Equal</source>
-        <translation type="guess">Égaliser</translation>
+        <translation>Égaliser</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="guess">Mettre à l&apos;échelle</translation>
+        <translation>Mettre à l&apos;échelle</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="correct">Linéaire</translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="guess">Biais (skew)</translation>
+        <translation>Biais (skew)</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="correct">Opacité</translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <source>Interaction mode</source>
-        <translation type="guess">Mode d&apos;interaction</translation>
+        <translation>Mode d&apos;interaction</translation>
     </message>
     <message>
         <source>Freeform</source>
-        <translation type="guess">Forme libre</translation>
+        <translation>Forme libre</translation>
     </message>
     <message>
         <source>Gaussian</source>
-        <translation type="correct">Gaussien</translation>
+        <translation>Gaussien</translation>
     </message>
     <message>
         <source>Attenuation</source>
-        <translation type="guess">Atténuation</translation>
+        <translation>Atténuation</translation>
     </message>
     <message>
         <source>Opacity variable</source>
-        <translation type="guess">Variable opacité</translation>
+        <translation>Variable opacité</translation>
     </message>
     <message>
         <source>Ray casting: compositing</source>
-        <translation type="guess">Lancer de rayon : composition</translation>
+        <translation>Lancer de rayon : composition</translation>
     </message>
     <message>
         <source>Ray casting: integration (grey scale)</source>
-        <translation type="guess">Lancer de rayon : intégration (échelle de gris)</translation>
+        <translation>Lancer de rayon : intégration (échelle de gris)</translation>
     </message>
     <message>
         <source>Number of samples</source>
-        <translation type="guess">Nombre d&apos;échantillons</translation>
+        <translation>Nombre d&apos;échantillons</translation>
     </message>
     <message>
         <source>Samples per ray</source>
-        <translation type="guess">Nombre d&apos;échantillons par rayon</translation>
+        <translation>Nombre d&apos;échantillons par rayon</translation>
     </message>
     <message>
         <source>Sampling rate</source>
-        <translation type="guess">Taux d&apos;échantillonnage</translation>
+        <translation>Taux d&apos;échantillonnage</translation>
     </message>
     <message>
         <source>Gradient method</source>
-        <translation type="guess">Méthode de gradient</translation>
+        <translation>Méthode de gradient</translation>
     </message>
     <message>
         <source>Sobel</source>
@@ -19406,171 +19597,171 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Sampling method</source>
-        <translation type="guess">Méthode d&apos;échantillonnage</translation>
+        <translation>Méthode d&apos;échantillonnage</translation>
     </message>
     <message>
         <source>Rasterization</source>
-        <translation type="guess">Rastérisation</translation>
+        <translation>Rastérisation</translation>
     </message>
     <message>
         <source>Kernel Based</source>
-        <translation type="guess">Basée sur le noyau</translation>
+        <translation>Basée sur le noyau</translation>
     </message>
     <message>
         <source>Lighting</source>
-        <translation type="new">Lumière/Eclairage</translation>
+        <translation>Lumière/Eclairage</translation>
     </message>
     <message>
         <source>Smooth Data</source>
-        <translation type="guess">Lisser les données</translation>
+        <translation>Lisser les données</translation>
     </message>
     <message>
         <source>The minimum value for the color variable was invalid.Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur minimale de la variable de couleur n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur minimale de la variable de couleur n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The maximum value for the color variable was invalid.Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur maximale de la variable de couleur n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur maximale de la variable de couleur n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The maximum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur maximale de la variable d&apos;opacité n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur maximale de la variable d&apos;opacité n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="guess">Le facteur d&apos;asymétrie (skew) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>Le facteur d&apos;asymétrie (skew) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The range set for indexing colors will also be used when indexing opacities</source>
-        <translation type="guess">La plage définie pour l&apos;indexation des couleurs sera également utilisée lors de l&apos;indexation des opacités</translation>
+        <translation>La plage définie pour l&apos;indexation des couleurs sera également utilisée lors de l&apos;indexation des opacités</translation>
     </message>
     <message>
         <source>Renderer Options</source>
-        <translation type="guess">Options du moteur de rendu</translation>
+        <translation>Options du moteur de rendu</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="guess">Table de couleur</translation>
+        <translation>Table de couleur</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="correct">Données</translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="guess">Logarithmique</translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="correct">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="correct">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>From Color Table</source>
-        <translation type="guess">Issu de la table de couleur</translation>
+        <translation>Issu de la table de couleur</translation>
     </message>
     <message>
         <source>Show colors</source>
-        <translation type="guess">Afficher les couleurs</translation>
+        <translation>Afficher les couleurs</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Rendering Method</source>
-        <translation type="guess">Méthode de rendu</translation>
+        <translation>Méthode de rendu</translation>
     </message>
     <message>
         <source>Transfer function</source>
-        <translation type="guess">Fonction de transfert</translation>
+        <translation>Fonction de transfert</translation>
     </message>
     <message>
         <source>Methods</source>
-        <translation type="guess">Méthodes</translation>
+        <translation>Méthodes</translation>
     </message>
     <message>
         <source>Centered differences</source>
-        <translation type="guess">Différences centrées</translation>
+        <translation>Différences centrées</translation>
     </message>
     <message>
         <source>Smoothing</source>
-        <translation type="guess">Lissage</translation>
+        <translation>Lissage</translation>
     </message>
     <message>
         <source>Low gradient lighting</source>
-        <translation type="guess">Éclairage faible gradient</translation>
+        <translation>Éclairage faible gradient</translation>
     </message>
     <message>
         <source>Reduction factor</source>
-        <translation type="guess">Facteur de réduction</translation>
+        <translation>Facteur de réduction</translation>
     </message>
     <message>
         <source>Reduction maximum value</source>
-        <translation type="guess">Valeur maximale de réduction</translation>
+        <translation>Valeur maximale de réduction</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="correct">Divers</translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>The minimum value for the opacity variable was invalid.Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur minimale de la variable d&apos;opacité n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur minimale de la variable d&apos;opacité n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
-        <translation type="guess">La valeur de la pince (clamp) max d&apos;éclairage à faible gradient n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
+        <translation>La valeur de la pince (clamp) max d&apos;éclairage à faible gradient n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Cubic Spline</source>
-        <translation type="correct">Spline cubique</translation>
+        <translation>Spline cubique</translation>
     </message>
     <message>
         <source>Sample data onto regular grid</source>
-        <translation type="guess">Echantillonner les données sur une grille régulière</translation>
+        <translation>Echantillonner les données sur une grille régulière</translation>
     </message>
     <message>
         <source>Lighting and Material Properties</source>
-        <translation type="guess">Éclairage et propriétés des matériaux</translation>
+        <translation>Éclairage et propriétés des matériaux</translation>
     </message>
     <message>
         <source>Ambient:</source>
-        <translation type="guess">Ambient :</translation>
+        <translation>Ambient :</translation>
     </message>
     <message>
         <source>Diffuse:</source>
-        <translation type="guess">Diffus :</translation>
+        <translation>Diffus :</translation>
     </message>
     <message>
         <source>Specular:</source>
-        <translation type="guess">Spéculaire :</translation>
+        <translation>Spéculaire :</translation>
     </message>
     <message>
         <source>Shininess:</source>
-        <translation type="guess">Brillance :</translation>
+        <translation>Brillance :</translation>
     </message>
     <message>
         <source>Ray Casting Options</source>
-        <translation type="guess">Options de lancer de rayons</translation>
+        <translation>Options de lancer de rayons</translation>
     </message>
     <message>
         <source>Trilinear</source>
-        <translation type="guess">Tri-linéaire</translation>
+        <translation>Tri-linéaire</translation>
     </message>
     <message>
         <source>Ray casting: SLIVR</source>
-        <translation type="guess">Lancer de rayons : SLIVR</translation>
+        <translation>Lancer de rayons : SLIVR</translation>
     </message>
     <message>
         <source>Show Legend</source>
-        <translation type="guess">Afficher la légende</translation>
+        <translation>Afficher la légende</translation>
     </message>
     <message>
         <source>&lt;-</source>
@@ -19618,182 +19809,290 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Default Rendering Options</source>
-        <translation type="guess">Options de rendu par défaut</translation>
+        <translation>Options de rendu par défaut</translation>
     </message>
     <message>
         <source>Default Rendering</source>
-        <translation type="guess">Rendu par défaut</translation>
+        <translation>Rendu par défaut</translation>
     </message>
     <message>
         <source>Ray casting: OSPRay</source>
-        <translation type="guess">Lancer de rayon : OSPRay</translation>
+        <translation>Lancer de rayon : OSPRay</translation>
     </message>
     <message>
         <source>OSPRay Options</source>
-        <translation type="guess">Options OSPRay</translation>
+        <translation>Options OSPRay</translation>
     </message>
     <message>
         <source>Shadow</source>
-        <translation type="correct">Ombre</translation>
+        <translation>Ombre</translation>
     </message>
     <message>
         <source>Grid Accelerator</source>
-        <translation type="guess">Accélérateur grille</translation>
+        <translation>Accélérateur grille</translation>
     </message>
     <message>
         <source>Transfer Function Pre-Integration</source>
-        <translation type="guess">Pré-Intégration de la Fonction de Transfert</translation>
+        <translation>Pré-Intégration de la Fonction de Transfert</translation>
     </message>
     <message>
         <source>Single Shade</source>
-        <translation type="guess">Une seule teinte</translation>
+        <translation>Une seule teinte</translation>
     </message>
     <message>
         <source>One-Sided Lighting</source>
-        <translation type="guess">Éclairage unilatéral</translation>
+        <translation>Éclairage unilatéral</translation>
     </message>
     <message>
         <source>Ambient Occlusion (AO) Transparency</source>
-        <translation type="unfinished">Transparence de l'occlusion ambiante (AO)</translation>
+        <translation>Transparence de l&apos;occlusion ambiante (AO)</translation>
     </message>
     <message>
         <source>Samples Per Pixel</source>
-        <translation type="guess">Échantillons par pixel</translation>
+        <translation>Échantillons par pixel</translation>
     </message>
     <message>
         <source>AO Samples</source>
-        <translation type="unfinished">Echantillons AO</translation>
+        <translation>Echantillons AO</translation>
     </message>
     <message>
         <source>AO Distance</source>
-        <translation type="unfinished">Distance AO</translation>
+        <translation>Distance AO</translation>
     </message>
     <message>
         <source>Minimum Contribution</source>
-        <translation type="correct">Contribution Minimale</translation>
+        <translation>Contribution Minimale</translation>
+    </message>
+    <message>
+        <source>Render Mode</source>
+        <translation type="unfinished">Mode de rendu</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Défaut</translation>
+    </message>
+    <message>
+        <source>Ray Cast</source>
+        <translation type="unfinished">Stars du Cinéma</translation>
+    </message>
+    <message>
+        <source>GPU</source>
+        <translation type="unfinished">GPU</translation>
+    </message>
+    <message>
+        <source>OSPRay</source>
+        <translation type="unfinished">OSPRay</translation>
+    </message>
+    <message>
+        <source>Resampling Options</source>
+        <translation type="unfinished">Options de rééchantillonnage</translation>
+    </message>
+    <message>
+        <source>Resample:</source>
+        <translation type="unfinished">Rééchantillonner :</translation>
+    </message>
+    <message>
+        <source>No resampling</source>
+        <translation type="unfinished">Pas de rééchantillonnage</translation>
+    </message>
+    <message>
+        <source>Only if required</source>
+        <translation type="unfinished">Seulement si nécessaire</translation>
+    </message>
+    <message>
+        <source>Single Domain</source>
+        <translation type="unfinished">Domaine unique</translation>
+    </message>
+    <message>
+        <source>Parallel Redistribute</source>
+        <translation type="unfinished">Redistribution parallèle</translation>
+    </message>
+    <message>
+        <source>Parallel Per Rank</source>
+        <translation type="unfinished">Parallèle par rang</translation>
+    </message>
+    <message>
+        <source>Centering:</source>
+        <translation type="unfinished">Centrage :</translation>
+    </message>
+    <message>
+        <source>Native</source>
+        <translation>Natif</translation>
+    </message>
+    <message>
+        <source>Nodal</source>
+        <translation>Nodal</translation>
+    </message>
+    <message>
+        <source>Zonal</source>
+        <translation>Cellulaire</translation>
+    </message>
+    <message>
+        <source>Serial Rendering</source>
+        <translation type="unfinished">Rendu séquentiel</translation>
+    </message>
+    <message>
+        <source>Parallel Rendering</source>
+        <translation type="unfinished">Rendu parallèle</translation>
+    </message>
+    <message>
+        <source>Compositing</source>
+        <translation>Composition</translation>
+    </message>
+    <message>
+        <source>Integration (grey scale)</source>
+        <translation type="unfinished">Intégration (échelle en niveau de gris)</translation>
+    </message>
+    <message>
+        <source>SLIVR</source>
+        <translation type="unfinished">SLIVR</translation>
+    </message>
+    <message>
+        <source>OSPRay Rendering</source>
+        <translation type="unfinished">Rendu OSPRay</translation>
+    </message>
+    <message>
+        <source>Render Type</source>
+        <translation type="unfinished">Type de rendu</translation>
+    </message>
+    <message>
+        <source>Sci Vis</source>
+        <translation type="unfinished">Sci Vis</translation>
+    </message>
+    <message>
+        <source>Path Tracer</source>
+        <translation type="unfinished">Traceur de chemin</translation>
+    </message>
+    <message>
+        <source>Maximum Contribution</source>
+        <translation type="unfinished">Contribution maximale</translation>
+    </message>
+    <message>
+        <source>OSPRay rendering is not available locally but may be remotely. </source>
+        <translation type="unfinished">Le rendu OSPRay n'est pas disponible localement mais peut l'être à distance.</translation>
     </message>
 </context>
 <context>
     <name>QvisWellBorePlotWindow</name>
     <message>
         <source>Read well bores...</source>
-        <translation type="guess">Lire les puits de forage...</translation>
+        <translation>Lire les puits de forage...</translation>
     </message>
     <message>
         <source>Write well bores...</source>
-        <translation type="guess">Ecrire les puits de forage...</translation>
+        <translation>Ecrire les puits de forage...</translation>
     </message>
     <message>
         <source>Well list</source>
-        <translation type="guess">Liste des puits</translation>
+        <translation>Liste des puits</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="guess">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="guess">Supprimer</translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Definition</source>
-        <translation type="correct">Définition</translation>
+        <translation>Définition</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="correct">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Well colors</source>
-        <translation type="guess">Couleurs du puits</translation>
+        <translation>Couleurs du puits</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="guess">Table de couleur</translation>
+        <translation>Table de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation type="guess">Simple</translation>
+        <translation>Simple</translation>
     </message>
     <message>
         <source>Multiple</source>
-        <translation type="correct">Multiple</translation>
+        <translation>Multiple</translation>
     </message>
     <message>
         <source>Well</source>
-        <translation type="guess">Puits</translation>
+        <translation>Puits</translation>
     </message>
     <message>
         <source>Draw wells as</source>
-        <translation type="guess">Dessiner les puits comme</translation>
+        <translation>Dessiner les puits comme</translation>
     </message>
     <message>
         <source>Lines</source>
-        <translation type="correct">Lignes</translation>
+        <translation>Lignes</translation>
     </message>
     <message>
         <source>Cylinders</source>
-        <translation type="correct">Cylindres</translation>
+        <translation>Cylindres</translation>
     </message>
     <message>
         <source>Well cylinder quality</source>
-        <translation type="guess">Qualité du cylindre de puits</translation>
+        <translation>Qualité du cylindre de puits</translation>
     </message>
     <message>
         <source>Low</source>
-        <translation type="guess">Bas</translation>
+        <translation>Bas</translation>
     </message>
     <message>
         <source>Medium</source>
-        <translation type="correct">Moyen</translation>
+        <translation>Moyen</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="correct">Haut</translation>
+        <translation>Haut</translation>
     </message>
     <message>
         <source>Super</source>
-        <translation type="correct">Super</translation>
+        <translation>Super</translation>
     </message>
     <message>
         <source>Well radius</source>
-        <translation type="guess">Rayon du puits</translation>
+        <translation>Rayon du puits</translation>
     </message>
     <message>
         <source>Well line width</source>
-        <translation type="guess">Epaisseur du trait du puits</translation>
+        <translation>Epaisseur du trait du puits</translation>
     </message>
     <message>
         <source>Well annotation</source>
-        <translation type="guess">Annotatrion du puits</translation>
+        <translation>Annotatrion du puits</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Stem only</source>
-        <translation type="guess">Tige seulement</translation>
+        <translation>Tige seulement</translation>
     </message>
     <message>
         <source>Name only</source>
-        <translation type="guess">Nom seulement</translation>
+        <translation>Nom seulement</translation>
     </message>
     <message>
         <source>Stem and name</source>
-        <translation type="guess">Tige et nom</translation>
+        <translation>Tige et nom</translation>
     </message>
     <message>
         <source>Well stem height</source>
-        <translation type="guess">Hauteur de la tige</translation>
+        <translation>Hauteur de la tige</translation>
     </message>
     <message>
         <source>Well name scale</source>
-        <translation type="guess">Mise à l&apos;échelle du nom du puits</translation>
+        <translation>Mise à l&apos;échelle du nom du puits</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="correct">Légende</translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>VisIt</source>
@@ -19804,11 +20103,11 @@ pas des cycles ou des temps</translation>
     <name>QvisXRayImageQueryWidget</name>
     <message>
         <source>Output Image Format</source>
-        <translation type="guess">Format d&apos;image de sortie</translation>
+        <translation>Format d&apos;image de sortie</translation>
     </message>
     <message>
         <source>bmp</source>
-        <translation>bmp</translation>
+        <translation type="vanished">bmp</translation>
     </message>
     <message>
         <source>jpeg</source>
@@ -19824,7 +20123,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>rawfloats</source>
-        <translation type="guess">nombres réels bruts</translation>
+        <translation>nombres réels bruts</translation>
     </message>
     <message>
         <source>Divide Emis by Absorb</source>
@@ -19836,90 +20135,118 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>background intensities</source>
-        <translation type="guess">intensités de fond</translation>
+        <translation>intensités de fond</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation type="guess">Normale</translation>
+        <translation>Normale</translation>
     </message>
     <message>
         <source>Focus</source>
-        <translation type="guess">Foyer</translation>
+        <translation>Foyer</translation>
     </message>
     <message>
         <source>View up</source>
-        <translation type="guess">Vue de dessus</translation>
+        <translation>Vue de dessus</translation>
     </message>
     <message>
         <source>View angle</source>
-        <translation type="guess">Angle de vue</translation>
+        <translation>Angle de vue</translation>
     </message>
     <message>
         <source>Parallel scale</source>
-        <translation type="guess">Échelle parallèle</translation>
+        <translation>Échelle parallèle</translation>
     </message>
     <message>
         <source>Near plane</source>
-        <translation type="guess">Plan proche</translation>
+        <translation>Plan proche</translation>
     </message>
     <message>
         <source>Far plane</source>
-        <translation type="guess">Plan lointain</translation>
+        <translation>Plan lointain</translation>
     </message>
     <message>
         <source>Image pan</source>
-        <translation type="guess">Image panoramique</translation>
+        <translation>Image panoramique</translation>
     </message>
     <message>
         <source>Image zoom</source>
-        <translation type="guess">Image zoom</translation>
+        <translation>Image zoom</translation>
     </message>
     <message>
         <source>Perspective</source>
-        <translation type="guess">Perspective</translation>
+        <translation>Perspective</translation>
     </message>
     <message>
         <source>Family output files</source>
-        <translation type="guess">Famille de fichiers de sortie</translation>
+        <translation type="vanished">Famille de fichiers de sortie</translation>
     </message>
     <message>
         <source>Output ray bounds</source>
-        <translation type="guess">Sortie des bornes de rayon</translation>
+        <translation>Sortie des bornes de rayon</translation>
     </message>
     <message>
         <source>Image Size</source>
-        <translation type="guess">Taille d&apos;image</translation>
+        <translation>Taille d&apos;image</translation>
+    </message>
+    <message>
+        <source>json</source>
+        <translation>json</translation>
+    </message>
+    <message>
+        <source>hdf5</source>
+        <translation>hdf5</translation>
+    </message>
+    <message>
+        <source>yaml</source>
+        <translation>yaml</translation>
+    </message>
+    <message>
+        <source>Output Directory</source>
+        <translation type="unfinished">Répertoire de sortie</translation>
+    </message>
+    <message>
+        <source>Non-Square Pixels</source>
+        <translation type="unfinished">Pixels non carrés</translation>
+    </message>
+    <message>
+        <source>View width override</source>
+        <translation type="unfinished">Remplacement de la largeur de la vue</translation>
+    </message>
+    <message>
+        <source>Filenaming scheme</source>
+        <translation type="unfinished">Schéma de nomage de fichier</translation>
     </message>
 </context>
 <context>
     <name>QvisZoneDumpWindow</name>
     <message>
         <source>Dump Variable</source>
-        <translation type="guess">Variable de vidage</translation>
+        <translation>Variable de vidage</translation>
     </message>
     <message>
         <source>Dump Zones in Range:</source>
-        <translation type="guess">Déverser les cellules dans l&apos;Intervalle :</translation>
+        <translation>Déverser les cellules dans l&apos;Intervalle :</translation>
     </message>
     <message>
         <source>Lower Bound</source>
-        <translation type="guess">Borne inférieure</translation>
+        <translation>Borne inférieure</translation>
     </message>
     <message>
         <source>Upper Bound</source>
-        <translation type="guess">Borne supérieure</translation>
+        <translation>Borne supérieure</translation>
     </message>
     <message>
         <source>Output File</source>
-        <translation type="guess">Fichier de sortie</translation>
+        <translation>Fichier de sortie</translation>
     </message>
     <message>
         <source>Dump Enabled</source>
-        <translation type="guess">Vidage activé</translation>
+        <translation>Vidage activé</translation>
     </message>
     <message>
         <source>Output File </source>
-        <translation type="guess">Fichier de sortie</translation>
+        <translation>Fichier de sortie</translation>
     </message>
 </context>
 <context>
@@ -19961,40 +20288,40 @@ pas des cycles ou des temps</translation>
     <name>RemoveLastOperatorActionUI</name>
     <message>
         <source>Remove last operator</source>
-        <translation type="unfinished">Enlever le dernier filtre</translation>
+        <translation>Enlever le dernier filtre</translation>
     </message>
 </context>
 <context>
     <name>RemovePicksActionUI</name>
     <message>
         <source>Remove picks</source>
-        <translation type="unfinished">Supprimer les pioches</translation>
+        <translation>Supprimer les pioches</translation>
     </message>
 </context>
 <context>
     <name>ResetViewActionUI</name>
     <message>
         <source>Reset view</source>
-        <translation type="unfinished">Réinitialiser la vue</translation>
+        <translation>Réinitialiser la vue</translation>
     </message>
 </context>
 <context>
     <name>SaveViewActionUI</name>
     <message>
         <source>Clear saved views</source>
-        <translation type="unfinished">Effacer les vues sauvegardées</translation>
+        <translation>Effacer les vues sauvegardées</translation>
     </message>
     <message>
         <source>Save view</source>
-        <translation type="unfinished">Sauvegarder la vue</translation>
+        <translation>Sauvegarder la vue</translation>
     </message>
     <message>
         <source>Save current view</source>
-        <translation type="unfinished">Sauvegarder la vue courante</translation>
+        <translation>Sauvegarder la vue courante</translation>
     </message>
     <message>
         <source>Use saved view %1</source>
-        <translation type="unfinished">Utiliser la vue %1</translation>
+        <translation>Utiliser la vue %1</translation>
     </message>
 </context>
 <context>
@@ -20005,37 +20332,37 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Y coordinate</source>
-        <translation type="guess">Coordonnée en Y</translation>
+        <translation>Coordonnée en Y</translation>
     </message>
     <message>
         <source>Z coordinate</source>
-        <translation type="guess">Coordonnée en Z</translation>
+        <translation>Coordonnée en Z</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="correct">Couleur</translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="guess">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
 </context>
 <context>
     <name>SetActiveWindowActionUI</name>
     <message>
         <source>Make active</source>
-        <translation type="unfinished">Rendre active</translation>
+        <translation>Rendre active</translation>
     </message>
     <message>
         <source>Make this window active</source>
-        <translation type="unfinished">Rendre cette fenêtre active</translation>
+        <translation>Rendre cette fenêtre active</translation>
     </message>
 </context>
 <context>
     <name>SetPlotFollowsTimeActionUI</name>
     <message>
         <source>Plot follows time slider</source>
-        <translation type="unfinished">Tracé suit le curseur de temps</translation>
+        <translation>Tracé suit le curseur de temps</translation>
     </message>
 </context>
 <context>
@@ -20046,148 +20373,148 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Set tool update frequency</source>
-        <translation type="unfinished">Régler la fréquence de mise à jour outil</translation>
+        <translation>Régler la fréquence de mise à jour outil</translation>
     </message>
     <message>
         <source>Continuously</source>
-        <translation type="unfinished">En continu</translation>
+        <translation>En continu</translation>
     </message>
     <message>
         <source>On Mouse Release</source>
-        <translation type="unfinished">Au relâché de la souris</translation>
+        <translation>Au relâché de la souris</translation>
     </message>
     <message>
         <source>On Tool Close</source>
-        <translation type="unfinished">A la fermeture de l&apos;outil</translation>
+        <translation>A la fermeture de l&apos;outil</translation>
     </message>
 </context>
 <context>
     <name>SetToolbarIconSizeActionUI</name>
     <message>
         <source>Use large icons (all windows)</source>
-        <translation type="unfinished">Utiliser des grandes icônes (toutes les fenêtres)</translation>
+        <translation>Utiliser des grandes icônes (toutes les fenêtres)</translation>
     </message>
 </context>
 <context>
     <name>SetWindowLayoutActionUI</name>
     <message>
         <source>Layout</source>
-        <translation type="unfinished">Disposition</translation>
+        <translation>Disposition</translation>
     </message>
     <message>
         <source>Set window layout</source>
-        <translation type="unfinished">Définir la disposition des fenêtres</translation>
+        <translation>Définir la disposition des fenêtres</translation>
     </message>
     <message>
         <source>1x1</source>
-        <translation type="unfinished">1x1</translation>
+        <translation>1x1</translation>
     </message>
     <message>
         <source>1 x 1 window layout</source>
-        <translation type="unfinished">disposition 1 x 1 </translation>
+        <translation>disposition 1 x 1 </translation>
     </message>
     <message>
         <source>1x2</source>
-        <translation type="unfinished">1x2</translation>
+        <translation>1x2</translation>
     </message>
     <message>
         <source>1 x 2 window layout</source>
-        <translation type="unfinished">disposition 1 x 2</translation>
+        <translation>disposition 1 x 2</translation>
     </message>
     <message>
         <source>2x2</source>
-        <translation type="unfinished">2x2</translation>
+        <translation>2x2</translation>
     </message>
     <message>
         <source>2 x 2 window layout</source>
-        <translation type="unfinished">disposition 2 x 2</translation>
+        <translation>disposition 2 x 2</translation>
     </message>
     <message>
         <source>2x3</source>
-        <translation type="unfinished">2x3</translation>
+        <translation>2x3</translation>
     </message>
     <message>
         <source>2 x 3 window layout</source>
-        <translation type="unfinished">disposition 2 x 3</translation>
+        <translation>disposition 2 x 3</translation>
     </message>
     <message>
         <source>2x4</source>
-        <translation type="unfinished">2x4</translation>
+        <translation>2x4</translation>
     </message>
     <message>
         <source>2 x 4 window layout</source>
-        <translation type="unfinished">disposition 2 x 4</translation>
+        <translation>disposition 2 x 4</translation>
     </message>
     <message>
         <source>3x3</source>
-        <translation type="unfinished">3x3</translation>
+        <translation>3x3</translation>
     </message>
     <message>
         <source>3 x 3 window layout</source>
-        <translation type="unfinished">disposition 3 x 3</translation>
+        <translation>disposition 3 x 3</translation>
     </message>
 </context>
 <context>
     <name>SetWindowModeActionUI</name>
     <message>
         <source>Mode</source>
-        <translation type="unfinished">Mode</translation>
+        <translation>Mode</translation>
     </message>
     <message>
         <source>Set window mode</source>
-        <translation type="unfinished">Définir le mode de fenêtre</translation>
+        <translation>Définir le mode de fenêtre</translation>
     </message>
     <message>
         <source>Navigate</source>
-        <translation type="unfinished">Naviguer</translation>
+        <translation>Naviguer</translation>
     </message>
     <message>
         <source>Navigate mode</source>
-        <translation type="unfinished">Mode navigation</translation>
+        <translation>Mode navigation</translation>
     </message>
     <message>
         <source>Zoom</source>
-        <translation type="unfinished">Zoomer</translation>
+        <translation>Zoomer</translation>
     </message>
     <message>
         <source>Zoom mode</source>
-        <translation type="unfinished">Mode zoom</translation>
+        <translation>Mode zoom</translation>
     </message>
     <message>
         <source>Zone Pick</source>
-        <translation type="unfinished">Piocher zone/cellule</translation>
+        <translation>Piocher zone/cellule</translation>
     </message>
     <message>
         <source>Zone Pick mode</source>
-        <translation type="unfinished">Mode de pioche de zone/cellule</translation>
+        <translation>Mode de pioche de zone/cellule</translation>
     </message>
     <message>
         <source>Node Pick</source>
-        <translation type="unfinished">Piocher Nœud</translation>
+        <translation>Piocher Nœud</translation>
     </message>
     <message>
         <source>Node Pick mode</source>
-        <translation type="unfinished">Mode de pioche de nœud</translation>
+        <translation>Mode de pioche de nœud</translation>
     </message>
     <message>
         <source>Spreadsheet Pick</source>
-        <translation type="unfinished">Pioche pour tableur</translation>
+        <translation>Pioche pour tableur</translation>
     </message>
     <message>
         <source>Spreadsheet Pick mode</source>
-        <translation type="unfinished">Mode de pioche pour tableur</translation>
+        <translation>Mode de pioche pour tableur</translation>
     </message>
     <message>
         <source>Add DDT Pick</source>
-        <translation type="unfinished">Ajouter pioche DDT</translation>
+        <translation>Ajouter pioche DDT</translation>
     </message>
     <message>
         <source>DDT Pick mode</source>
-        <translation type="unfinished">Mode de pioche DDT</translation>
+        <translation>Mode de pioche DDT</translation>
     </message>
     <message>
         <source>Lineout</source>
-        <translation type="unfinished">Alignement</translation>
+        <translation>Alignement/Lineout</translation>
     </message>
     <message>
         <source>Lineout mode</source>
@@ -20198,22 +20525,29 @@ pas des cycles ou des temps</translation>
     <name>ShowToolbarsActionUI</name>
     <message>
         <source>Show toolbars</source>
-        <translation type="unfinished">Montrer les barres d&apos;outil</translation>
+        <translation>Montrer les barres d&apos;outil</translation>
+    </message>
+</context>
+<context>
+    <name>ShowToolbarsForAllWindowsActionUI</name>
+    <message>
+        <source>Show toolbars (all windows)</source>
+        <translation type="unfinished">Afficher les barres d'outils (toutes les fenêtres)</translation>
     </message>
 </context>
 <context>
     <name>SimCommandSlots</name>
     <message>
         <source>Invalid ui component</source>
-        <translation type="guess">Composant d&apos;interface utilisateur non valide</translation>
+        <translation>Composant d&apos;interface utilisateur non valide</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="guess">Ok</translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Invalid index encountered for Sim engine access</source>
-        <translation type="guess">Index non valide rencontré pour l&apos;accès au moteur de simulation</translation>
+        <translation>Index non valide rencontré pour l&apos;accès au moteur de simulation</translation>
     </message>
 </context>
 <context>
@@ -20347,19 +20681,19 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Tracer plane</source>
-        <translation type="guess">Plan Traceur</translation>
+        <translation>Plan Traceur</translation>
     </message>
     <message>
         <source>Patch outline</source>
-        <translation type="guess">Contour de patch</translation>
+        <translation>Contour de patch</translation>
     </message>
     <message>
         <source>Current cell outline</source>
-        <translation type="guess">Contour de la cellule actuelle</translation>
+        <translation>Contour de la cellule actuelle</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="correct">Variable</translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Min = </source>
@@ -20371,47 +20705,47 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="correct">&amp;Fichier</translation>
+        <translation>&amp;Fichier</translation>
     </message>
     <message>
         <source>Save as text . . .</source>
-        <translation type="guess">Enregistrer en texte . . .</translation>
+        <translation>Enregistrer en texte . . .</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
-        <translation type="guess">&amp;Editer</translation>
+        <translation>&amp;Editer</translation>
     </message>
     <message>
         <source>&amp;Copy</source>
-        <translation type="guess">&amp;Copier</translation>
+        <translation>&amp;Copier</translation>
     </message>
     <message>
         <source>Select &amp;All</source>
-        <translation type="guess">Sélectionner Tout</translation>
+        <translation>Sélectionner Tout</translation>
     </message>
     <message>
         <source>Select &amp;None</source>
-        <translation type="guess">Sélectionner Rien</translation>
+        <translation>Sélectionner Rien</translation>
     </message>
     <message>
         <source>&amp;Operations</source>
-        <translation type="guess">&amp;Opérations</translation>
+        <translation>&amp;Opérations</translation>
     </message>
     <message>
         <source>Sum</source>
-        <translation type="guess">Somme</translation>
+        <translation>Somme</translation>
     </message>
     <message>
         <source>Average</source>
-        <translation type="guess">Moyenne</translation>
+        <translation>Moyenne</translation>
     </message>
     <message>
         <source>Spreadsheet - %1: %2</source>
-        <translation type="guess">Feuille de calcul - %1 : %2</translation>
+        <translation>Feuille de calcul - %1 : %2</translation>
     </message>
     <message>
         <source>Unstructured</source>
-        <translation type="guess">Non structuré</translation>
+        <translation>Non structuré</translation>
     </message>
     <message>
         <source>selection.txt</source>
@@ -20423,48 +20757,48 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Could not write %1.</source>
-        <translation type="guess">Impossible d&apos;écrire %1.</translation>
+        <translation>Impossible d&apos;écrire %1.</translation>
     </message>
     <message>
         <source>The sum of the selected cells is: %1.</source>
-        <translation type="guess">La somme des cellules sélectionnées est : %1.</translation>
+        <translation>La somme des cellules sélectionnées est : %1.</translation>
     </message>
     <message>
         <source>Sum results</source>
-        <translation type="guess">Somme des résultats</translation>
+        <translation>Somme des résultats</translation>
     </message>
     <message>
         <source>The average value of the selected cells is: %1.</source>
-        <translation type="guess">La valeur moyenne des cellules sélectionnées est : %1.</translation>
+        <translation>La valeur moyenne des cellules sélectionnées est :&#xa0;%1.</translation>
     </message>
     <message>
         <source>Show in visualization window</source>
-        <translation type="guess">Afficher dans la fenêtre de visualisation</translation>
+        <translation>Afficher dans la fenêtre de visualisation</translation>
     </message>
     <message>
         <source>Create curve: row vs. coordinate 0</source>
-        <translation type="guess">Créer une courbe : ligne vs. coordonnée 0</translation>
+        <translation>Créer une courbe : ligne vs. coordonnée 0</translation>
     </message>
     <message>
         <source>Create curve: row vs. coordinate 1</source>
-        <translation type="guess">Créer une courbe : ligne vs. coordonnée 1</translation>
+        <translation>Créer une courbe : ligne vs. coordonnée 1</translation>
     </message>
     <message>
         <source>Create curve: column vs. coordinate 0</source>
-        <translation type="guess">Créer une courbe : colonne vs. coordonnée 0</translation>
+        <translation>Créer une courbe : colonne vs. coordonnée 0</translation>
     </message>
     <message>
         <source>Create curve: column vs. coordinate 1</source>
-        <translation type="guess">Créer une courbe : colonne vs. coordonnée 1</translation>
+        <translation>Créer une courbe : colonne vs. coordonnée 1</translation>
     </message>
     <message>
         <source>Save as</source>
-        <translation type="guess">Enregistrer sous</translation>
+        <translation>Enregistrer sous</translation>
     </message>
     <message>
         <source>* Note that the vertical ordering of this file&apos;s contents is opposite from what you would see in the Spreadsheet window.
 </source>
-        <translation type="guess">* Notez que l&apos;ordre vertical du contenu de ce fichier est le contraire de ce que vous verriez dans la fenêtre du tableur.
+        <translation>* Notez que l&apos;ordre vertical du contenu de ce fichier est le contraire de ce que vous verriez dans la fenêtre du tableur.
 </translation>
     </message>
 </context>
@@ -20476,7 +20810,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Step forward one frame</source>
-        <translation type="unfinished">Avancer d&apos;une image</translation>
+        <translation>Avancer d&apos;une image</translation>
     </message>
 </context>
 <context>
@@ -20487,7 +20821,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Step back one frame</source>
-        <translation type="unfinished">Reculer d&apos;une image</translation>
+        <translation>Reculer d&apos;une image</translation>
     </message>
 </context>
 <context>
@@ -20505,114 +20839,114 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Toggle full frame</source>
-        <translation type="unfinished">Basculer en plein écran</translation>
+        <translation>Basculer en plein écran</translation>
     </message>
 </context>
 <context>
     <name>ToggleLockTimeActionUI</name>
     <message>
         <source>Lock time</source>
-        <translation type="unfinished">Verrouiller le temps</translation>
+        <translation>Verrouiller le temps</translation>
     </message>
 </context>
 <context>
     <name>ToggleLockToolActionUI</name>
     <message>
         <source>Lock tools</source>
-        <translation type="unfinished">Verrouiller les outils</translation>
+        <translation>Outils de verrouillage</translation>
     </message>
 </context>
 <context>
     <name>ToggleLockViewActionUI</name>
     <message>
         <source>Lock view</source>
-        <translation type="unfinished">Verrouiller la vue</translation>
+        <translation>Verrouiller la vue</translation>
     </message>
 </context>
 <context>
     <name>TogglePerspectiveViewActionUI</name>
     <message>
         <source>Perspective</source>
-        <translation type="unfinished">Perspective</translation>
+        <translation>Perspective</translation>
     </message>
     <message>
         <source>Toggle perspective view</source>
-        <translation type="unfinished">Basculer la vue en perspective</translation>
+        <translation>Basculer la vue en perspective</translation>
     </message>
 </context>
 <context>
     <name>ToggleSpinModeActionUI</name>
     <message>
         <source>Spin</source>
-        <translation type="unfinished">Faire tourner (spin)</translation>
+        <translation>Faire tourner (spin)</translation>
     </message>
     <message>
         <source>Toggle spin mode</source>
-        <translation type="unfinished">Basculer le mode spin</translation>
+        <translation>Basculer le mode spin</translation>
     </message>
 </context>
 <context>
     <name>TurnOffAllLocksActionUI</name>
     <message>
         <source>Unlock everything</source>
-        <translation type="unfinished">Tout délier</translation>
+        <translation>Tout délier</translation>
     </message>
 </context>
 <context>
     <name>UndoViewActionUI</name>
     <message>
         <source>Undo view</source>
-        <translation type="unfinished">Défaire (annuler) la vue</translation>
+        <translation>Défaire (annuler) la vue</translation>
     </message>
 </context>
 <context>
     <name>ViewerConnectionProgressDialog</name>
     <message>
         <source>Cancel</source>
-        <translation type="vanished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>VisIt is waiting for a parallel %1 to launch on %2.</source>
-        <translation type="vanished">En attente d&apos;un %1 parallèle lancé sur %2.</translation>
+        <translation>En attente d&apos;un %1 parallèle lancé sur %2.</translation>
     </message>
     <message>
         <source>VisIt is waiting for a %1 to launch on %2.</source>
-        <translation type="vanished">En attente d&apos;un %1 lancé sur %2.</translation>
+        <translation>En attente d&apos;un %1 lancé sur %2.</translation>
     </message>
 </context>
 <context>
     <name>ViewerHostProfileSelectorWithWin</name>
     <message>
         <source>Num procs</source>
-        <translation type="unfinished">Nombre de processeurs</translation>
+        <translation>Nombre de processeurs</translation>
     </message>
     <message>
         <source>Num nodes</source>
-        <translation type="unfinished">Nombre de nœuds</translation>
+        <translation>Nombre de nœuds</translation>
     </message>
     <message>
         <source>Bank</source>
-        <translation type="unfinished">Banc</translation>
+        <translation>Banc</translation>
     </message>
     <message>
         <source>Time limit</source>
-        <translation type="unfinished">Temps limite</translation>
+        <translation>Temps limite</translation>
     </message>
     <message>
         <source>Machine file</source>
-        <translation type="unfinished">Fichier machine</translation>
+        <translation>Fichier machine</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Select options for &apos;%1&apos;</source>
-        <translation type="unfinished">Choisir les options pour &apos;%1&apos;</translation>
+        <translation>Choisir les options pour &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
@@ -20665,46 +20999,46 @@ pas des cycles ou des temps</translation>
     <name>VisItChangeUsernameWindow</name>
     <message>
         <source>Choose new username</source>
-        <translation type="vanished">Choisir un nouveau nom d&apos;utilisateur</translation>
+        <translation>Choisir un nouveau nom d&apos;utilisateur</translation>
     </message>
     <message>
         <source>Username for localhost: </source>
-        <translation type="vanished">Nom d&apos;utilisateur pour localhost : </translation>
+        <translation>Nom d&apos;utilisateur pour localhost : </translation>
     </message>
     <message>
         <source>Confirm username</source>
-        <translation type="vanished">Confirmer le nom d&apos;utilisateur</translation>
+        <translation>Confirmer le nom d&apos;utilisateur</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="vanished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>New username for %1: </source>
-        <translation type="vanished">Nouveau nom d&apos;utilisateur pour %1 : </translation>
+        <translation>Nouveau nom d&apos;utilisateur pour %1 : </translation>
     </message>
 </context>
 <context>
     <name>VisItPasswordWindow</name>
     <message>
         <source>Password for localhost: </source>
-        <translation type="vanished">Mot de passe pour localhost : </translation>
+        <translation>Mot de passe pour localhost : </translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="vanished">Ok</translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Change username</source>
-        <translation type="vanished">Changer le nom d&apos;utilisateur</translation>
+        <translation>Changer le nom d&apos;utilisateur</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="vanished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Enter password</source>
-        <translation type="vanished">Entrer le mot de passe</translation>
+        <translation>Entrer le mot de passe</translation>
     </message>
     <message>
         <source>Enter passphrase</source>
@@ -20715,292 +21049,292 @@ pas des cycles ou des temps</translation>
     <name>XMLEdit</name>
     <message>
         <source>&amp;File</source>
-        <translation type="obsolete">&amp;Fichier</translation>
+        <translation>&amp;Fichier</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
-        <translation type="obsolete">Quitter</translation>
+        <translation>Quitter</translation>
     </message>
     <message>
         <source>XMLEdit: %1</source>
-        <translation type="unfinished">XMLEdit: %1</translation>
+        <translation>XMLEdit: %1</translation>
     </message>
     <message>
         <source>&amp;New</source>
-        <translation type="unfinished">&amp;Nouveau</translation>
+        <translation>&amp;Nouveau</translation>
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation type="unfinished">&amp;Ouvrir</translation>
+        <translation>&amp;Ouvrir</translation>
     </message>
     <message>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Sauvegarder</translation>
+        <translation>&amp;Sauvegarder</translation>
     </message>
     <message>
         <source>Save &amp;as</source>
-        <translation type="unfinished">Sauvegarder sous</translation>
+        <translation>Sauvegarder sous</translation>
     </message>
     <message>
         <source>&amp;Generate code</source>
-        <translation type="unfinished">&amp;Générer le code</translation>
+        <translation>&amp;Générer le code</translation>
     </message>
     <message>
         <source>Plugin</source>
-        <translation type="unfinished">Plugin</translation>
+        <translation>Plugin</translation>
     </message>
     <message>
         <source>CMake</source>
-        <translation type="unfinished">CMake</translation>
+        <translation>CMake</translation>
     </message>
     <message>
         <source>Attribute</source>
-        <translation type="unfinished">Attribut</translation>
+        <translation>Attribut</translation>
     </message>
     <message>
         <source>Enums</source>
-        <translation type="unfinished">Énumérations</translation>
+        <translation>Énumérations</translation>
     </message>
     <message>
         <source>Fields</source>
-        <translation type="unfinished">Champs</translation>
+        <translation>Champs</translation>
     </message>
     <message>
         <source>Functions</source>
-        <translation type="unfinished">Fonctions</translation>
+        <translation>Fonctions</translation>
     </message>
     <message>
         <source>Constants</source>
-        <translation type="unfinished">Constantes</translation>
+        <translation>Constantes</translation>
     </message>
     <message>
         <source>Includes</source>
-        <translation type="unfinished">Includes</translation>
+        <translation>Includes</translation>
     </message>
     <message>
         <source>Code</source>
-        <translation type="unfinished">Code</translation>
+        <translation>Code</translation>
     </message>
     <message>
         <source>untitled.xml</source>
-        <translation type="unfinished">sans titre.xml</translation>
+        <translation>sans titre.xml</translation>
     </message>
     <message>
         <source>Open file...</source>
-        <translation type="unfinished">Ouvrir fichier...</translation>
+        <translation>Ouvrir fichier...</translation>
     </message>
     <message>
         <source>XML files (*.xml)</source>
-        <translation type="unfinished">Fichiers XML (*.xml)</translation>
+        <translation>Fichiers XML (*.xml)</translation>
     </message>
     <message>
         <source>Save file...</source>
-        <translation type="unfinished">Enregistrer le fichier...</translation>
+        <translation>Enregistrer le fichier...</translation>
     </message>
     <message>
         <source>XMLEdit: </source>
-        <translation type="unfinished">XMLEdit: </translation>
+        <translation>XMLEdit: </translation>
     </message>
     <message>
         <source>Select items to generate</source>
-        <translation type="unfinished">Sélectionnez les éléments à générer</translation>
+        <translation>Sélectionnez les éléments à générer</translation>
     </message>
     <message>
         <source>Generate code for %1</source>
-        <translation type="unfinished">Générer le code pour %1</translation>
+        <translation>Générer le code pour %1</translation>
     </message>
 </context>
 <context>
     <name>XMLEditAttribute</name>
     <message>
         <source>Base Class</source>
-        <translation type="unfinished">Classe de base</translation>
+        <translation>Classe de base</translation>
     </message>
 </context>
 <context>
     <name>XMLEditCode</name>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Target</source>
-        <translation type="unfinished">Cible</translation>
+        <translation>Cible</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Prefix</source>
-        <translation type="unfinished">Préfixe</translation>
+        <translation>Préfixe</translation>
     </message>
     <message>
         <source>Postfix</source>
-        <translation type="unfinished">Suffixe</translation>
+        <translation>Suffixe</translation>
     </message>
     <message>
         <source>unnamed%1</source>
-        <translation type="unfinished">SansNom%1</translation>
+        <translation>SansNom%1</translation>
     </message>
 </context>
 <context>
     <name>XMLEditCodeGeneratorWindow</name>
     <message>
         <source>Dismiss</source>
-        <translation type="vanished">Fermer</translation>
+        <translation>Fermer</translation>
     </message>
 </context>
 <context>
     <name>XMLEditCodeSelectionDialog</name>
     <message>
         <source>Attributes</source>
-        <translation type="unfinished">Attributs</translation>
+        <translation>Attributs</translation>
     </message>
     <message>
         <source>C++</source>
-        <translation type="unfinished">C++</translation>
+        <translation>C++</translation>
     </message>
     <message>
         <source>Java</source>
-        <translation type="unfinished">Java</translation>
+        <translation>Java</translation>
     </message>
     <message>
         <source>Python</source>
-        <translation type="unfinished">Python</translation>
+        <translation>Python</translation>
     </message>
     <message>
         <source>Plugin</source>
-        <translation type="unfinished">Plugin</translation>
+        <translation>Plugin</translation>
     </message>
     <message>
         <source>Window</source>
-        <translation type="unfinished">Fenêtre</translation>
+        <translation>Fenêtre</translation>
     </message>
     <message>
         <source>CMake</source>
-        <translation type="unfinished">CMake</translation>
+        <translation>CMake</translation>
     </message>
     <message>
         <source>Plugin information</source>
-        <translation type="unfinished">Informations sur les plugins</translation>
+        <translation>Informations sur le plugin</translation>
     </message>
     <message>
         <source>AVT code skeleton</source>
-        <translation type="unfinished">Squelette de code AVT</translation>
+        <translation>Squelette de code AVT</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished">Ok</translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
 </context>
 <context>
     <name>XMLEditConstants</name>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Target</source>
-        <translation type="unfinished">Cible</translation>
+        <translation>Cible</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Class member</source>
-        <translation type="unfinished">Membre du groupe</translation>
+        <translation>Membre du groupe</translation>
     </message>
     <message>
         <source>Declaration</source>
-        <translation type="unfinished">Déclaration</translation>
+        <translation>Déclaration</translation>
     </message>
     <message>
         <source>Definition</source>
-        <translation type="unfinished">Définition</translation>
+        <translation>Définition</translation>
     </message>
     <message>
         <source>unnamed%1</source>
-        <translation type="unfinished">SansNom%1</translation>
+        <translation>SansNom%1</translation>
     </message>
 </context>
 <context>
     <name>XMLEditEnums</name>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation type="unfinished">Valeurs</translation>
+        <translation>Valeurs</translation>
     </message>
     <message>
         <source>unnamed%1</source>
-        <translation type="unfinished">SansNom%1</translation>
+        <translation>SansNom%1</translation>
     </message>
 </context>
 <context>
     <name>XMLEditFields</name>
     <message>
         <source>Label</source>
-        <translation type="obsolete">étiquette</translation>
+        <translation>étiquette</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation type="unfinished">Haut</translation>
+        <translation>Haut</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="unfinished">Bas</translation>
+        <translation>Bas</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished">Type</translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>Length</source>
-        <translation type="unfinished">Longueur</translation>
+        <translation>Longueur</translation>
     </message>
     <message>
         <source>Subtype</source>
-        <translation type="unfinished">Sous-type</translation>
+        <translation>Sous-type</translation>
     </message>
     <message>
         <source>(none)</source>
-        <translation type="unfinished">(aucun)</translation>
+        <translation>(aucun)</translation>
     </message>
     <message>
         <source>Enabler</source>
@@ -21008,120 +21342,120 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation type="unfinished">Valeurs</translation>
+        <translation>Valeurs</translation>
     </message>
     <message>
         <source>Internal use only</source>
-        <translation type="unfinished">Usage interne uniquement</translation>
+        <translation>Usage interne uniquement</translation>
     </message>
     <message>
         <source>Persistent</source>
-        <translation type="unfinished">Persistant</translation>
+        <translation>Persistant</translation>
     </message>
     <message>
         <source>Accepted variable types</source>
-        <translation type="unfinished">Types de variables acceptés</translation>
+        <translation>Types de variables acceptés</translation>
     </message>
     <message>
         <source>Meshes</source>
-        <translation type="unfinished">Maillages</translation>
+        <translation>Maillages</translation>
     </message>
     <message>
         <source>Scalars</source>
-        <translation type="unfinished">Scalaires</translation>
+        <translation>Scalaires</translation>
     </message>
     <message>
         <source>Materials</source>
-        <translation type="unfinished">Matériaux</translation>
+        <translation>Matériaux</translation>
     </message>
     <message>
         <source>Labels</source>
-        <translation type="unfinished">Étiquettes</translation>
+        <translation>Étiquettes</translation>
     </message>
     <message>
         <source>Vectors</source>
-        <translation type="unfinished">Vecteurs</translation>
+        <translation>Vecteurs</translation>
     </message>
     <message>
         <source>Subsets</source>
-        <translation type="unfinished">Sous ensembles</translation>
+        <translation>Sous ensembles</translation>
     </message>
     <message>
         <source>Species</source>
-        <translation type="unfinished">Espèces</translation>
+        <translation>Espèces</translation>
     </message>
     <message>
         <source>Arrays</source>
-        <translation type="unfinished">Tableaux</translation>
+        <translation>Tableaux</translation>
     </message>
     <message>
         <source>Curves</source>
-        <translation type="unfinished">Courbes</translation>
+        <translation>Courbes</translation>
     </message>
     <message>
         <source>Tensors</source>
-        <translation type="unfinished">Tenseurs</translation>
+        <translation>Tenseurs</translation>
     </message>
     <message>
         <source>Symmetric Tensors</source>
-        <translation type="unfinished">Tenseur symmétrique</translation>
+        <translation>Tenseurs symmétriques</translation>
     </message>
     <message>
         <source>Ignore field for attribute
 equality calculations</source>
-        <translation type="unfinished">Ignorer le champ pour
-les calculs d'égalité des attributs</translation>
+        <translation>Ignorer le champ pour
+les calculs d&apos;égalité des attributs</translation>
     </message>
     <message>
         <source>Access</source>
-        <translation type="unfinished">Accès</translation>
+        <translation>Accès</translation>
     </message>
     <message>
         <source>private</source>
-        <translation type="unfinished">privé</translation>
+        <translation>privé</translation>
     </message>
     <message>
         <source>protected</source>
-        <translation type="unfinished">protégé</translation>
+        <translation>protégé</translation>
     </message>
     <message>
         <source>public</source>
-        <translation type="unfinished">Publique</translation>
+        <translation>publique</translation>
     </message>
     <message>
         <source>Special initialization code</source>
-        <translation type="unfinished">Code d'initialisation spécial</translation>
+        <translation>Code d&apos;initialisation spécial</translation>
     </message>
     <message>
         <source>Initialization Values / Code</source>
-        <translation type="unfinished">Valeurs d'initialisation / Code</translation>
+        <translation>Valeurs d&apos;initialisation / Code</translation>
     </message>
 </context>
 <context>
     <name>XMLEditFunctions</name>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Target</source>
-        <translation type="unfinished">Cible</translation>
+        <translation>Cible</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>New function</source>
-        <translation type="unfinished">Nouvelle fonction</translation>
+        <translation>Nouvelle fonction</translation>
     </message>
     <message>
         <source>Replaces builtin</source>
-        <translation type="unfinished">Replaces builtin</translation>
+        <translation>Remplace ce qui est intégré en dur</translation>
     </message>
     <message>
         <source>Class member</source>
@@ -21129,117 +21463,117 @@ les calculs d'égalité des attributs</translation>
     </message>
     <message>
         <source>Access</source>
-        <translation type="unfinished">Accès</translation>
+        <translation>Accès</translation>
     </message>
     <message>
         <source>private</source>
-        <translation type="unfinished">privé</translation>
+        <translation>privé</translation>
     </message>
     <message>
         <source>protected</source>
-        <translation type="unfinished">protégé</translation>
+        <translation>protégé</translation>
     </message>
     <message>
         <source>public</source>
-        <translation type="unfinished">Publique</translation>
+        <translation>publique</translation>
     </message>
     <message>
         <source>Declaration</source>
-        <translation type="unfinished">Déclaration</translation>
+        <translation>Déclaration</translation>
     </message>
     <message>
         <source>unnamed%1</source>
-        <translation type="unfinished">SansNom%1</translation>
+        <translation>SansNom%1</translation>
     </message>
 </context>
 <context>
     <name>XMLEditIncludes</name>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Source (.C) file</source>
-        <translation type="unfinished">Fichier source (.C)</translation>
+        <translation>Fichier source (.C)</translation>
     </message>
     <message>
         <source>Header (.h) file</source>
-        <translation type="unfinished">Fichier d'en-tête (.h)</translation>
+        <translation>Fichier d&apos;en-tête (.h)</translation>
     </message>
     <message>
         <source>Use quotes &quot;&quot;</source>
-        <translation type="unfinished">Utilisez des guillemets &quot;&quot;</translation>
+        <translation>Utilisez des guillemets &quot;&quot;</translation>
     </message>
     <message>
         <source>Use angle brackets &lt;&gt;</source>
-        <translation type="unfinished">Utilisez des équerres &lt;&gt;</translation>
+        <translation>Utilisez des équerres &lt;&gt;</translation>
     </message>
     <message>
         <source>Target</source>
-        <translation type="unfinished">Cible</translation>
+        <translation>Cible</translation>
     </message>
     <message>
         <source>Include file</source>
-        <translation type="unfinished">Fichier à include</translation>
+        <translation type="unfinished">Fichier à inclure</translation>
     </message>
 </context>
 <context>
     <name>XMLEditMakefile</name>
     <message>
         <source>CXXFLAGS</source>
-        <translation type="unfinished">CXXFLAGS</translation>
+        <translation>CXXFLAGS</translation>
     </message>
     <message>
         <source>LDFLAGS</source>
-        <translation type="unfinished">LDFLAG</translation>
+        <translation>LDFLAG</translation>
     </message>
     <message>
         <source>LIBS</source>
-        <translation type="unfinished">LIBS</translation>
+        <translation>LIBS</translation>
     </message>
     <message>
         <source>DEFINES</source>
-        <translation type="unfinished">DÉFINIT</translation>
+        <translation>DÉFINIT</translation>
     </message>
     <message>
         <source>GUI Files</source>
-        <translation type="unfinished">Fichiers d'interface graphique</translation>
+        <translation>Fichiers d&apos;interface graphique</translation>
     </message>
     <message>
         <source>GUI Libs</source>
-        <translation type="unfinished">Bibliothèques d'interface graphique</translation>
+        <translation>Bibliothèques d&apos;interface graphique</translation>
     </message>
     <message>
         <source>GUI Widget Files</source>
-        <translation type="unfinished">Fichiers de widgets d'interface graphique</translation>
+        <translation>Fichiers de widgets d&apos;interface graphique</translation>
     </message>
     <message>
         <source>Scripting Files</source>
-        <translation type="unfinished">Fichiers de script</translation>
+        <translation>Fichiers de script</translation>
     </message>
     <message>
         <source>Viewer Files</source>
-        <translation type="unfinished">Fichiers de la visionneuse (viewer)</translation>
+        <translation>Fichiers de la visionneuse (viewer)</translation>
     </message>
     <message>
         <source>Viewer Libs</source>
-        <translation type="unfinished">Bibliothèques de la visionneuse (viewer)</translation>
+        <translation>Bibliothèques de la visionneuse (viewer)</translation>
     </message>
     <message>
         <source>Viewer Widget Files</source>
-        <translation type="unfinished">Fichiers de widget de visionneuse (viewer)</translation>
+        <translation>Fichiers de widget de visionneuse (viewer)</translation>
     </message>
     <message>
         <source>MDServer Files</source>
-        <translation type="unfinished">Fichiers MDServer</translation>
+        <translation>Fichiers MDServer</translation>
     </message>
     <message>
         <source>MDServer Libs</source>
-        <translation type="unfinished">Bibliothèques MDServer</translation>
+        <translation>Bibliothèques MDServer</translation>
     </message>
     <message>
         <source>Engine Files</source>
@@ -21255,174 +21589,210 @@ les calculs d'égalité des attributs</translation>
     </message>
     <message>
         <source>Plugin has code specific to the Engine</source>
-        <translation type="unfinished">Le plugin a un code spécifique au moteur</translation>
+        <translation type="unfinished">Le plugin a un code spécifique au Moteur</translation>
     </message>
     <message>
         <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
-        <translation type="unfinished">Plugin has code specific to the MDServer (Database Plugins only)</translation>
+        <translation type="unfinished">Le Plugin a du code spécifique pour le server de méta-données (Database Plugins seulement)</translation>
+    </message>
+    <message>
+        <source>MDServer DEFINES</source>
+        <translation>Serveur Méta-données DEFINES</translation>
+    </message>
+    <message>
+        <source>MDServer CXXFLAGS</source>
+        <translation>Serveur Méta-données CXXFLAGS</translation>
+    </message>
+    <message>
+        <source>MDServer LDFLAGS</source>
+        <translation>Serveur Méta-données LDFLAGS</translation>
+    </message>
+    <message>
+        <source>Engine DEFINES (ser)</source>
+        <translation>Moteur DEFINES (ser)</translation>
+    </message>
+    <message>
+        <source>Engine CXXFLAGS (ser)</source>
+        <translation>Moteur CXXFLAGS (ser)</translation>
+    </message>
+    <message>
+        <source>Engine LDFLAGS (ser)</source>
+        <translation>Moteur LDFLAGS (ser)</translation>
+    </message>
+    <message>
+        <source>Engine DEFINES (par)</source>
+        <translation>Moteur DEFINES (par)</translation>
+    </message>
+    <message>
+        <source>Engine CXXFLAGS (par)</source>
+        <translation>Moteur CXXFLAGS (par)</translation>
+    </message>
+    <message>
+        <source>Engine LDFLAGS (par)</source>
+        <translation>Moteur LDFLAGS (par)</translation>
     </message>
 </context>
 <context>
     <name>XMLEditPlugin</name>
     <message>
         <source>Operator</source>
-        <translation type="obsolete">Filtre</translation>
+        <translation>Filtre</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation type="obsolete">étiquette</translation>
+        <translation>étiquette</translation>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="obsolete">Maille/Maillage</translation>
+        <translation>Maille/Maillage</translation>
     </message>
     <message>
         <source>Vector</source>
-        <translation type="obsolete">Vecteur</translation>
+        <translation>Vecteur</translation>
     </message>
     <message>
         <source>Curve</source>
-        <translation type="obsolete">Courbe</translation>
+        <translation>Courbe</translation>
     </message>
     <message>
         <source>Tensor</source>
-        <translation type="obsolete">Tenseur</translation>
+        <translation>Tenseur</translation>
     </message>
     <message>
         <source>Operator Plugin attributes</source>
-        <translation type="vanished">Attributs du plugin de filtre</translation>
+        <translation>Attributs du plugin de filtre</translation>
     </message>
     <message>
         <source>Plugin</source>
-        <translation type="unfinished">Plugin</translation>
+        <translation>Plugin</translation>
     </message>
     <message>
         <source>Attribute only</source>
-        <translation type="unfinished">Attribut uniquement</translation>
+        <translation>Attribut uniquement</translation>
     </message>
     <message>
         <source>General Plugin attributes</source>
-        <translation type="unfinished">Attributs généraux du plugin</translation>
+        <translation>Attributs généraux du plugin</translation>
     </message>
     <message>
         <source>Plot</source>
-        <translation type="unfinished">Tracé</translation>
+        <translation>Tracé</translation>
     </message>
     <message>
         <source>Database</source>
-        <translation type="unfinished">Base de données</translation>
+        <translation>Base de données</translation>
     </message>
     <message>
         <source>Plugin type</source>
-        <translation type="unfinished">Type de plug-in</translation>
+        <translation>Type de plug-in</translation>
     </message>
     <message>
         <source>Plugin is enabled by default</source>
-        <translation type="unfinished">Le plugin est activé par défaut</translation>
+        <translation>Le plugin est activé par défaut</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Version</source>
-        <translation type="unfinished">Version</translation>
+        <translation>Version</translation>
     </message>
     <message>
         <source>Has icon</source>
-        <translation type="unfinished">A une icône</translation>
+        <translation>A une icône</translation>
     </message>
     <message>
         <source>Plot Plugin attributes</source>
-        <translation type="unfinished">Tracer les attributs du plug-in</translation>
+        <translation>Tracer les attributs du plug-in</translation>
     </message>
     <message>
         <source>Variable types accepted by the plot</source>
-        <translation type="unfinished">Types de variables acceptés par la parcelle</translation>
+        <translation>Types de variables acceptés par le tracé</translation>
     </message>
     <message>
         <source>Scalar</source>
-        <translation type="unfinished">Scalaire</translation>
+        <translation>Scalaire</translation>
     </message>
     <message>
         <source>Material</source>
-        <translation type="unfinished">Matériau</translation>
+        <translation>Matériau</translation>
     </message>
     <message>
         <source>Subset</source>
-        <translation type="unfinished">Sous ensemble</translation>
+        <translation>Sous ensemble</translation>
     </message>
     <message>
         <source>Species</source>
-        <translation type="unfinished">Espèces</translation>
+        <translation>Espèces</translation>
     </message>
     <message>
         <source>Symmetric Tensor</source>
-        <translation type="unfinished">Tenseur Symétrique</translation>
+        <translation>Tenseur Symétrique</translation>
     </message>
     <message>
         <source>Array</source>
-        <translation type="unfinished">Tableau</translation>
+        <translation>Tableau</translation>
     </message>
     <message>
         <source>Operator creates new variable via expressions</source>
-        <translation type="unfinished">L'opérateur crée une nouvelle variable via des expressions</translation>
+        <translation>L&apos;opérateur crée une nouvelle variable via des expressions</translation>
     </message>
     <message>
         <source>Variable type inputted by the operator</source>
-        <translation type="unfinished">Type de variable saisi par l'opérateur</translation>
+        <translation>Type de variable saisi par l&apos;opérateur</translation>
     </message>
     <message>
         <source>Variable type created by the operator</source>
-        <translation type="unfinished">Type de variable créé par l'opérateur</translation>
+        <translation>Type de variable créé par l&apos;opérateur</translation>
     </message>
     <message>
         <source>Database Plugin attributes</source>
-        <translation type="unfinished">Attributs du plug-in de base de données</translation>
+        <translation>Attributs du plug-in de base de données</translation>
     </message>
     <message>
         <source>STSD - Generic single time single domain</source>
-        <translation type="unfinished">STSD - Domaine unique générique</translation>
+        <translation>STSD - générique temps unique domaine unique</translation>
     </message>
     <message>
         <source>MTSD - Generic multi  time single domain</source>
-        <translation type="unfinished">MTSD - Domaine unique générique multi-temps</translation>
+        <translation>MTSD - générique multi-temps domaine unique</translation>
     </message>
     <message>
         <source>STMD - Generic single time multi  domain</source>
-        <translation type="unfinished">STMD - Générique multi-domaine temporel unique</translation>
+        <translation>STMD - générique temps unique multi-domaine</translation>
     </message>
     <message>
         <source>MTMD - Generic multi  time multi  domain</source>
-        <translation type="unfinished">MTMD - Multi-domaine générique multi-temps</translation>
+        <translation>MTMD - générique multi-temps multi-domaine</translation>
     </message>
     <message>
         <source>Custom - Fully customized database type</source>
-        <translation type="unfinished">Personnalisé - Type de base de données entièrement personnalisé</translation>
+        <translation>Personnalisé - Type de base de données entièrement personnalisé</translation>
     </message>
     <message>
         <source>Default file name patterns</source>
-        <translation type="unfinished">Modèles de nom de fichier par défaut</translation>
+        <translation>Modèles de nom de fichier par défaut</translation>
     </message>
     <message>
         <source>File name patterns are strict by default</source>
-        <translation type="unfinished">Les modèles de nom de fichier sont stricts par défaut</translation>
+        <translation>Les modèles de nom de fichier sont stricts par défaut</translation>
     </message>
     <message>
         <source>File format opens a whole directory (not a single file)</source>
-        <translation type="unfinished">Le format de fichier ouvre un répertoire entier (pas un seul fichier)</translation>
+        <translation>Le format de fichier ouvre un répertoire entier (pas un seul fichier)</translation>
     </message>
     <message>
         <source>File format can also write data</source>
-        <translation type="unfinished">Le format de fichier peut également écrire des données</translation>
+        <translation>Le format de fichier peut également écrire des données</translation>
     </message>
     <message>
         <source>File format provides options for reading or writing data.</source>
-        <translation type="unfinished">Le format de fichier offre des options de lecture ou d'écriture de données.</translation>
+        <translation>Le format de fichier offre des options de lecture ou d&apos;écriture de données.</translation>
     </message>
     <message>
         <source>File format provides license.</source>
-        <translation type="unfinished">Le format de fichier fournit une licence.</translation>
+        <translation>Le format de fichier fournit une licence.</translation>
     </message>
 </context>
 </TS>
