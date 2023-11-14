@@ -33,6 +33,9 @@ bool                          avtCallback::safeMode = false;
 #if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
 bool                          avtCallback::useOSPRay = false;
 #endif
+#ifdef VISIT_ANARI
+bool                          avtCallback::useAnari = false;
+#endif
 
 GlobalAttributes::BackendType avtCallback::backendType = GlobalAttributes::VTK;
 
@@ -310,5 +313,3 @@ avtCallback::GetDatabase(const string &filename, int time, const char *format)
 
     return getDatabaseCallback(getDatabaseCallbackArgs, filename, time,format);
 }
-
-

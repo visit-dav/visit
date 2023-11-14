@@ -114,6 +114,9 @@
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+//    Added ANARI support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -259,6 +262,28 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                              { return ProxiedGetOsprayAO(); }
     bool                GetOsprayShadows()
                              { return ProxiedGetOsprayShadows(); }
+#endif
+#ifdef VISIT_ANARI
+    bool        GetAnariRendering()         { return ProxiedGetAnariRendering(); }
+    int         GetAnariSPP()               { return ProxiedGetAnariSPP(); }
+    int         GetAnariAO()                { return ProxiedGetAnariAO(); }
+    std::string GetAnariLibraryName()       { return ProxiedGetAnariLibraryName(); }
+    std::string GetAnariLibrarySubtype()    { return ProxiedGetAnariLibrarySubtype(); }
+    std::string GetAnariRendererSubtype()   { return ProxiedGetAnariRendererSubtype(); }
+    bool        GetUseAnariDenoiser()       { return ProxiedGetUseAnariDenoiser(); }
+    float       GetAnariLightFalloff()      { return ProxiedGetAnariLightFalloff(); }
+    float       GetAnariAmbientIntensity()  { return ProxiedGetAnariAmbientIntensity(); }
+    int         GetAnariMaxDepth()          { return ProxiedGetAnariMaxDepth(); }
+    float       GetAnariRValue()            { return ProxiedGetAnariRValue(); }
+    std::string GetAnariDebugMethod()       { return ProxiedGetAnariDebugMethod(); }
+    std::string GetUsdDir()                 { return ProxiedGetUsdDir(); }
+    bool        GetUsdAtCommit()            { return ProxiedGetUsdAtCommit(); }
+    bool        GetUsdOutputBinary()        { return ProxiedGetUsdOutputBinary(); }
+    bool        GetUsdOutputMaterial()      { return ProxiedGetUsdOutputMaterial(); }
+    bool        GetUsdOutputPreviewSurface()    { return ProxiedGetUsdOutputPreviewSurface(); }
+    bool        GetUsdOutputMDL()               { return ProxiedGetUsdOutputMDL(); }
+    bool        GetUsdOutputMDLColors()         { return ProxiedGetUsdOutputMDLColors(); }
+    bool        GetUsdOutputDisplayColors()     { return ProxiedGetUsdOutputDisplayColors(); }
 #endif
 };
 

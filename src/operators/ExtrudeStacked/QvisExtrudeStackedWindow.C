@@ -81,8 +81,6 @@ QvisExtrudeStackedWindow::~QvisExtrudeStackedWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   Kathleen Biagas, Mon Oct 16 14:05:19 PDT 2023
-//   Qt6 support: setMargin->setContentsMargins.
 //
 // ****************************************************************************
 
@@ -282,8 +280,6 @@ QvisExtrudeStackedWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
-//   Kathleen Biagas, Mon Oct 16 14:05:19 PDT 2023
-//   Qt6 support: sprintf->asprintf.
 //
 // ****************************************************************************
 

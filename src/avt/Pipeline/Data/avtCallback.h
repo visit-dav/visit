@@ -82,6 +82,9 @@ typedef   void  (*ResetTimeoutCallback)(void *, int);
 //    HAVE_OSPRAY is defined instead of VISIT_OSPRAY.
 //    Add Set/GetUseOSPRay.
 //
+//    Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+//    Added support for ANARI
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -126,6 +129,14 @@ class PIPELINE_API avtCallback
     static bool                  GetUseOSPRay(void)
                                      { return useOSPRay; }
 #endif
+
+#ifdef VISIT_ANARI
+    static void                 SetUseAnari(const bool b)
+                                      { useAnari = b; }
+    static bool                 GetUseAnari()
+                                      { return useAnari; }
+#endif
+
     static void                  RegisterGetDatabaseCallback(
                                                   GetDatabaseCallback, void *);
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
@@ -170,6 +181,11 @@ class PIPELINE_API avtCallback
 #if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     static bool                  useOSPRay;
 #endif
+
+#ifdef VISIT_ANARI
+    static bool                  useAnari;
+#endif
+
     static bool                  safeMode;
 
     static GlobalAttributes::BackendType backendType;
@@ -188,5 +204,3 @@ class PIPELINE_API avtCallback
 
 
 #endif
-
-

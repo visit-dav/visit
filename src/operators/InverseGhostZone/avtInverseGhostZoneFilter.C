@@ -130,7 +130,7 @@ avtInverseGhostZoneFilter::Equivalent(const AttributeGroup *a)
 //    When there are no ghost zones, the inverse is a NULL mesh.
 //
 //    Hank Childs, Wed Dec 29 18:04:21 PST 2010
-//    Reimplement routine to allow for selecting individual types of ghost 
+//    Reimplement routine to allow for selecting individual types of ghost
 //    cells.
 //
 //    Eric Brugger, Wed Jul 30 18:29:34 PDT 2014
@@ -221,9 +221,11 @@ avtInverseGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
         temp_ds->GetFieldData()->RemoveArray("avtRealDims");
     temp_ds->GetCellData()->AddArray(retainThese);
     temp_ds->GetCellData()->SetActiveScalars("avtRetainThese");
-    
+
     vtkThreshold *t = vtkThreshold::New();
-    t->ThresholdBetween(0.5, 1.5);
+    // t->ThresholdBetween(0.5, 1.5);
+    t->SetLowerThreshold(0.5);
+    t->SetUpperThreshold(1.5);
     t->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS,
                               "avtRetainThese");
     t->SetInputData(temp_ds);
@@ -317,4 +319,3 @@ avtInverseGhostZoneFilter::ModifyContract(avtContract_p in_spec)
 
     return contract;
 }
-

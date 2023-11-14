@@ -11,6 +11,7 @@
 option(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 option(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
 option(VISIT_OSPRAY   "Build VisIt with support for the OSPRay volume rendering library." OFF)
+option(VISIT_ANARI    "Build VisIt with support for the ANARI rendering SDK." OFF)
 option(VISIT_STATIC   "Build VisIt statically." OFF)
 if(VISIT_STATIC)
     add_definitions(-DVISIT_STATIC)
@@ -95,5 +96,3 @@ set(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating 
 
 # flag to turn on preprocessor errors related to obsolete code.
 option(VISIT_REMOVE_OBSOLETE_CODE "Enable compiler errors for removal of oboslete code." OFF)
-
-

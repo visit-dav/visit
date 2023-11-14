@@ -22,7 +22,7 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
-    private static int RenderingAttributes_numAdditionalAtts = 35;
+    private static int RenderingAttributes_numAdditionalAtts = 55;
 
     // Enum values
     public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
@@ -93,6 +93,26 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         ospraySPP = 1;
         osprayAO = 0;
         osprayShadows = false;
+        anariRendering = false;
+        anariSPP = 1;
+        anariAO = 0;
+        anariLibrary = new String("");
+        anariLibrarySubtype = new String("default");
+        anariRendererSubtype = new String("default");
+        useAnariDenoiser = false;
+        anariLightFalloff = 1f;
+        anariAmbientIntensity = 1f;
+        anariMaxDepth = 0;
+        anariRValue = 1f;
+        anariDebugMethod = new String("");
+        usdDir = new String("");
+        usdAtCommit = false;
+        usdOutputBinary = true;
+        usdOutputMaterial = true;
+        usdOutputPreviewSurface = true;
+        usdOutputMDL = true;
+        usdOutputMDLColors = true;
+        usdOutputDisplayColors = true;
     }
 
     public RenderingAttributes(int nMoreFields)
@@ -140,6 +160,26 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         ospraySPP = 1;
         osprayAO = 0;
         osprayShadows = false;
+        anariRendering = false;
+        anariSPP = 1;
+        anariAO = 0;
+        anariLibrary = new String("");
+        anariLibrarySubtype = new String("default");
+        anariRendererSubtype = new String("default");
+        useAnariDenoiser = false;
+        anariLightFalloff = 1f;
+        anariAmbientIntensity = 1f;
+        anariMaxDepth = 0;
+        anariRValue = 1f;
+        anariDebugMethod = new String("");
+        usdDir = new String("");
+        usdAtCommit = false;
+        usdOutputBinary = true;
+        usdOutputMaterial = true;
+        usdOutputPreviewSurface = true;
+        usdOutputMDL = true;
+        usdOutputMDLColors = true;
+        usdOutputDisplayColors = true;
     }
 
     public RenderingAttributes(RenderingAttributes obj)
@@ -191,6 +231,26 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         ospraySPP = obj.ospraySPP;
         osprayAO = obj.osprayAO;
         osprayShadows = obj.osprayShadows;
+        anariRendering = obj.anariRendering;
+        anariSPP = obj.anariSPP;
+        anariAO = obj.anariAO;
+        anariLibrary = new String(obj.anariLibrary);
+        anariLibrarySubtype = new String(obj.anariLibrarySubtype);
+        anariRendererSubtype = new String(obj.anariRendererSubtype);
+        useAnariDenoiser = obj.useAnariDenoiser;
+        anariLightFalloff = obj.anariLightFalloff;
+        anariAmbientIntensity = obj.anariAmbientIntensity;
+        anariMaxDepth = obj.anariMaxDepth;
+        anariRValue = obj.anariRValue;
+        anariDebugMethod = new String(obj.anariDebugMethod);
+        usdDir = new String(obj.usdDir);
+        usdAtCommit = obj.usdAtCommit;
+        usdOutputBinary = obj.usdOutputBinary;
+        usdOutputMaterial = obj.usdOutputMaterial;
+        usdOutputPreviewSurface = obj.usdOutputPreviewSurface;
+        usdOutputMDL = obj.usdOutputMDL;
+        usdOutputMDLColors = obj.usdOutputMDLColors;
+        usdOutputDisplayColors = obj.usdOutputDisplayColors;
 
         SelectAll();
     }
@@ -254,7 +314,27 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
                 (osprayRendering == obj.osprayRendering) &&
                 (ospraySPP == obj.ospraySPP) &&
                 (osprayAO == obj.osprayAO) &&
-                (osprayShadows == obj.osprayShadows));
+                (osprayShadows == obj.osprayShadows) &&
+                (anariRendering == obj.anariRendering) &&
+                (anariSPP == obj.anariSPP) &&
+                (anariAO == obj.anariAO) &&
+                (anariLibrary.equals(obj.anariLibrary)) &&
+                (anariLibrarySubtype.equals(obj.anariLibrarySubtype)) &&
+                (anariRendererSubtype.equals(obj.anariRendererSubtype)) &&
+                (useAnariDenoiser == obj.useAnariDenoiser) &&
+                (anariLightFalloff == obj.anariLightFalloff) &&
+                (anariAmbientIntensity == obj.anariAmbientIntensity) &&
+                (anariMaxDepth == obj.anariMaxDepth) &&
+                (anariRValue == obj.anariRValue) &&
+                (anariDebugMethod.equals(obj.anariDebugMethod)) &&
+                (usdDir.equals(obj.usdDir)) &&
+                (usdAtCommit == obj.usdAtCommit) &&
+                (usdOutputBinary == obj.usdOutputBinary) &&
+                (usdOutputMaterial == obj.usdOutputMaterial) &&
+                (usdOutputPreviewSurface == obj.usdOutputPreviewSurface) &&
+                (usdOutputMDL == obj.usdOutputMDL) &&
+                (usdOutputMDLColors == obj.usdOutputMDLColors) &&
+                (usdOutputDisplayColors == obj.usdOutputDisplayColors));
     }
 
     // Property setting methods
@@ -488,6 +568,126 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         Select(34);
     }
 
+    public void SetAnariRendering(boolean anariRendering_)
+    {
+        anariRendering = anariRendering_;
+        Select(35);
+    }
+
+    public void SetAnariSPP(int anariSPP_)
+    {
+        anariSPP = anariSPP_;
+        Select(36);
+    }
+
+    public void SetAnariAO(int anariAO_)
+    {
+        anariAO = anariAO_;
+        Select(37);
+    }
+
+    public void SetAnariLibrary(String anariLibrary_)
+    {
+        anariLibrary = anariLibrary_;
+        Select(38);
+    }
+
+    public void SetAnariLibrarySubtype(String anariLibrarySubtype_)
+    {
+        anariLibrarySubtype = anariLibrarySubtype_;
+        Select(39);
+    }
+
+    public void SetAnariRendererSubtype(String anariRendererSubtype_)
+    {
+        anariRendererSubtype = anariRendererSubtype_;
+        Select(40);
+    }
+
+    public void SetUseAnariDenoiser(boolean useAnariDenoiser_)
+    {
+        useAnariDenoiser = useAnariDenoiser_;
+        Select(41);
+    }
+
+    public void SetAnariLightFalloff(float anariLightFalloff_)
+    {
+        anariLightFalloff = anariLightFalloff_;
+        Select(42);
+    }
+
+    public void SetAnariAmbientIntensity(float anariAmbientIntensity_)
+    {
+        anariAmbientIntensity = anariAmbientIntensity_;
+        Select(43);
+    }
+
+    public void SetAnariMaxDepth(int anariMaxDepth_)
+    {
+        anariMaxDepth = anariMaxDepth_;
+        Select(44);
+    }
+
+    public void SetAnariRValue(float anariRValue_)
+    {
+        anariRValue = anariRValue_;
+        Select(45);
+    }
+
+    public void SetAnariDebugMethod(String anariDebugMethod_)
+    {
+        anariDebugMethod = anariDebugMethod_;
+        Select(46);
+    }
+
+    public void SetUsdDir(String usdDir_)
+    {
+        usdDir = usdDir_;
+        Select(47);
+    }
+
+    public void SetUsdAtCommit(boolean usdAtCommit_)
+    {
+        usdAtCommit = usdAtCommit_;
+        Select(48);
+    }
+
+    public void SetUsdOutputBinary(boolean usdOutputBinary_)
+    {
+        usdOutputBinary = usdOutputBinary_;
+        Select(49);
+    }
+
+    public void SetUsdOutputMaterial(boolean usdOutputMaterial_)
+    {
+        usdOutputMaterial = usdOutputMaterial_;
+        Select(50);
+    }
+
+    public void SetUsdOutputPreviewSurface(boolean usdOutputPreviewSurface_)
+    {
+        usdOutputPreviewSurface = usdOutputPreviewSurface_;
+        Select(51);
+    }
+
+    public void SetUsdOutputMDL(boolean usdOutputMDL_)
+    {
+        usdOutputMDL = usdOutputMDL_;
+        Select(52);
+    }
+
+    public void SetUsdOutputMDLColors(boolean usdOutputMDLColors_)
+    {
+        usdOutputMDLColors = usdOutputMDLColors_;
+        Select(53);
+    }
+
+    public void SetUsdOutputDisplayColors(boolean usdOutputDisplayColors_)
+    {
+        usdOutputDisplayColors = usdOutputDisplayColors_;
+        Select(54);
+    }
+
     // Property getting methods
     public boolean        GetAntialiasing() { return antialiasing; }
     public boolean        GetOrderComposite() { return orderComposite; }
@@ -524,6 +724,26 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public int            GetOspraySPP() { return ospraySPP; }
     public int            GetOsprayAO() { return osprayAO; }
     public boolean        GetOsprayShadows() { return osprayShadows; }
+    public boolean        GetAnariRendering() { return anariRendering; }
+    public int            GetAnariSPP() { return anariSPP; }
+    public int            GetAnariAO() { return anariAO; }
+    public String         GetAnariLibrary() { return anariLibrary; }
+    public String         GetAnariLibrarySubtype() { return anariLibrarySubtype; }
+    public String         GetAnariRendererSubtype() { return anariRendererSubtype; }
+    public boolean        GetUseAnariDenoiser() { return useAnariDenoiser; }
+    public float          GetAnariLightFalloff() { return anariLightFalloff; }
+    public float          GetAnariAmbientIntensity() { return anariAmbientIntensity; }
+    public int            GetAnariMaxDepth() { return anariMaxDepth; }
+    public float          GetAnariRValue() { return anariRValue; }
+    public String         GetAnariDebugMethod() { return anariDebugMethod; }
+    public String         GetUsdDir() { return usdDir; }
+    public boolean        GetUsdAtCommit() { return usdAtCommit; }
+    public boolean        GetUsdOutputBinary() { return usdOutputBinary; }
+    public boolean        GetUsdOutputMaterial() { return usdOutputMaterial; }
+    public boolean        GetUsdOutputPreviewSurface() { return usdOutputPreviewSurface; }
+    public boolean        GetUsdOutputMDL() { return usdOutputMDL; }
+    public boolean        GetUsdOutputMDLColors() { return usdOutputMDLColors; }
+    public boolean        GetUsdOutputDisplayColors() { return usdOutputDisplayColors; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -598,6 +818,46 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             buf.WriteInt(osprayAO);
         if(WriteSelect(34, buf))
             buf.WriteBool(osprayShadows);
+        if(WriteSelect(35, buf))
+            buf.WriteBool(anariRendering);
+        if(WriteSelect(36, buf))
+            buf.WriteInt(anariSPP);
+        if(WriteSelect(37, buf))
+            buf.WriteInt(anariAO);
+        if(WriteSelect(38, buf))
+            buf.WriteString(anariLibrary);
+        if(WriteSelect(39, buf))
+            buf.WriteString(anariLibrarySubtype);
+        if(WriteSelect(40, buf))
+            buf.WriteString(anariRendererSubtype);
+        if(WriteSelect(41, buf))
+            buf.WriteBool(useAnariDenoiser);
+        if(WriteSelect(42, buf))
+            buf.WriteFloat(anariLightFalloff);
+        if(WriteSelect(43, buf))
+            buf.WriteFloat(anariAmbientIntensity);
+        if(WriteSelect(44, buf))
+            buf.WriteInt(anariMaxDepth);
+        if(WriteSelect(45, buf))
+            buf.WriteFloat(anariRValue);
+        if(WriteSelect(46, buf))
+            buf.WriteString(anariDebugMethod);
+        if(WriteSelect(47, buf))
+            buf.WriteString(usdDir);
+        if(WriteSelect(48, buf))
+            buf.WriteBool(usdAtCommit);
+        if(WriteSelect(49, buf))
+            buf.WriteBool(usdOutputBinary);
+        if(WriteSelect(50, buf))
+            buf.WriteBool(usdOutputMaterial);
+        if(WriteSelect(51, buf))
+            buf.WriteBool(usdOutputPreviewSurface);
+        if(WriteSelect(52, buf))
+            buf.WriteBool(usdOutputMDL);
+        if(WriteSelect(53, buf))
+            buf.WriteBool(usdOutputMDLColors);
+        if(WriteSelect(54, buf))
+            buf.WriteBool(usdOutputDisplayColors);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -710,6 +970,66 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         case 34:
             SetOsprayShadows(buf.ReadBool());
             break;
+        case 35:
+            SetAnariRendering(buf.ReadBool());
+            break;
+        case 36:
+            SetAnariSPP(buf.ReadInt());
+            break;
+        case 37:
+            SetAnariAO(buf.ReadInt());
+            break;
+        case 38:
+            SetAnariLibrary(buf.ReadString());
+            break;
+        case 39:
+            SetAnariLibrarySubtype(buf.ReadString());
+            break;
+        case 40:
+            SetAnariRendererSubtype(buf.ReadString());
+            break;
+        case 41:
+            SetUseAnariDenoiser(buf.ReadBool());
+            break;
+        case 42:
+            SetAnariLightFalloff(buf.ReadFloat());
+            break;
+        case 43:
+            SetAnariAmbientIntensity(buf.ReadFloat());
+            break;
+        case 44:
+            SetAnariMaxDepth(buf.ReadInt());
+            break;
+        case 45:
+            SetAnariRValue(buf.ReadFloat());
+            break;
+        case 46:
+            SetAnariDebugMethod(buf.ReadString());
+            break;
+        case 47:
+            SetUsdDir(buf.ReadString());
+            break;
+        case 48:
+            SetUsdAtCommit(buf.ReadBool());
+            break;
+        case 49:
+            SetUsdOutputBinary(buf.ReadBool());
+            break;
+        case 50:
+            SetUsdOutputMaterial(buf.ReadBool());
+            break;
+        case 51:
+            SetUsdOutputPreviewSurface(buf.ReadBool());
+            break;
+        case 52:
+            SetUsdOutputMDL(buf.ReadBool());
+            break;
+        case 53:
+            SetUsdOutputMDLColors(buf.ReadBool());
+            break;
+        case 54:
+            SetUsdOutputDisplayColors(buf.ReadBool());
+            break;
         }
     }
 
@@ -788,6 +1108,26 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         str = str + intToString("ospraySPP", ospraySPP, indent) + "\n";
         str = str + intToString("osprayAO", osprayAO, indent) + "\n";
         str = str + boolToString("osprayShadows", osprayShadows, indent) + "\n";
+        str = str + boolToString("anariRendering", anariRendering, indent) + "\n";
+        str = str + intToString("anariSPP", anariSPP, indent) + "\n";
+        str = str + intToString("anariAO", anariAO, indent) + "\n";
+        str = str + stringToString("anariLibrary", anariLibrary, indent) + "\n";
+        str = str + stringToString("anariLibrarySubtype", anariLibrarySubtype, indent) + "\n";
+        str = str + stringToString("anariRendererSubtype", anariRendererSubtype, indent) + "\n";
+        str = str + boolToString("useAnariDenoiser", useAnariDenoiser, indent) + "\n";
+        str = str + floatToString("anariLightFalloff", anariLightFalloff, indent) + "\n";
+        str = str + floatToString("anariAmbientIntensity", anariAmbientIntensity, indent) + "\n";
+        str = str + intToString("anariMaxDepth", anariMaxDepth, indent) + "\n";
+        str = str + floatToString("anariRValue", anariRValue, indent) + "\n";
+        str = str + stringToString("anariDebugMethod", anariDebugMethod, indent) + "\n";
+        str = str + stringToString("usdDir", usdDir, indent) + "\n";
+        str = str + boolToString("usdAtCommit", usdAtCommit, indent) + "\n";
+        str = str + boolToString("usdOutputBinary", usdOutputBinary, indent) + "\n";
+        str = str + boolToString("usdOutputMaterial", usdOutputMaterial, indent) + "\n";
+        str = str + boolToString("usdOutputPreviewSurface", usdOutputPreviewSurface, indent) + "\n";
+        str = str + boolToString("usdOutputMDL", usdOutputMDL, indent) + "\n";
+        str = str + boolToString("usdOutputMDLColors", usdOutputMDLColors, indent) + "\n";
+        str = str + boolToString("usdOutputDisplayColors", usdOutputDisplayColors, indent) + "\n";
         return str;
     }
 
@@ -828,5 +1168,25 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     private int            ospraySPP;
     private int            osprayAO;
     private boolean        osprayShadows;
+    private boolean        anariRendering;
+    private int            anariSPP;
+    private int            anariAO;
+    private String         anariLibrary;
+    private String         anariLibrarySubtype;
+    private String         anariRendererSubtype;
+    private boolean        useAnariDenoiser;
+    private float          anariLightFalloff;
+    private float          anariAmbientIntensity;
+    private int            anariMaxDepth;
+    private float          anariRValue;
+    private String         anariDebugMethod;
+    private String         usdDir;
+    private boolean        usdAtCommit;
+    private boolean        usdOutputBinary;
+    private boolean        usdOutputMaterial;
+    private boolean        usdOutputPreviewSurface;
+    private boolean        usdOutputMDL;
+    private boolean        usdOutputMDLColors;
+    private boolean        usdOutputDisplayColors;
 }
 

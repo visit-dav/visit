@@ -2633,6 +2633,14 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
             GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(true);
         }
 #endif
+#ifdef VISIT_ANARI
+        else if(strcmp(argv[i], "-anari") == 0)
+        {
+            debug5 << "Viewer launching with ANARI" << std::endl;
+            avtCallback::SetUseAnari(true);
+            GetViewerState()->GetRenderingAttributes()->SetAnariRendering(true);
+        }
+#endif
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {
             GetViewerProperties()->SetWindowFullScreen(true);
@@ -5091,15 +5099,15 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
 //   Added `setColorTableAttributes` call for the QvisColorTableButton and
 //   QvisNoDefaultColorTableButton.
-// 
+//
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//   Added the missing logic from the ctObserver. Now we check if a CT is 
+//   Added the missing logic from the ctObserver. Now we check if a CT is
 //   "active" before trying to put it in the buttons.
-// 
+//
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-// 
+//
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Use the same if-statement as the color table observer.
 // ****************************************************************************

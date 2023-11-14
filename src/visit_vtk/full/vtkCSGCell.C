@@ -15,13 +15,13 @@ vtkStandardNewMacro(vtkCSGCell);
 
 // Project point on line. If it lies between 0<=t<=1 and distance off line
 // is less than tolerance, intersection detected.
-#if LIB_VERSION_LE(VTK, 8,1,0)
-int vtkCSGCell::IntersectWithLine(double vtkNotUsed(p1)[3],
-                                   double vtkNotUsed(p2)[3],
-#else
+// #if LIB_VERSION_LE(VTK, 8,1,0)
+// int vtkCSGCell::IntersectWithLine(double vtkNotUsed(p1)[3],
+//                                    double vtkNotUsed(p2)[3],
+// #else
 int vtkCSGCell::IntersectWithLine(const double vtkNotUsed(p1)[3],
                                   const double vtkNotUsed(p2)[3],
-#endif
+// #endif
                                    double vtkNotUsed(tol),
                                    double& vtkNotUsed(t),
                                    double vtkNotUsed(x)[3],
@@ -40,4 +40,3 @@ int vtkCSGCell::Triangulate(int vtkNotUsed(index),
 
   return 1;
 }
-

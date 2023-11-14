@@ -6,6 +6,9 @@
 # Modifications:
 #   Kathleen Biagas, Mon Dec 12, 2022
 #   Moved from ../CMakeLists.txt
+#
+#   Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+#   Added support for ANARI
 #****************************************************************************
 
 
@@ -46,6 +49,13 @@ elseif(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0" AND HAVE_LIBOSPRAY)
          vtkVisItViewNodeFactory.C)
 endif()
 
+if(VISIT_ANARI)
+    list(APPEND AVTPLOTTER_VTK_SOURCES
+         vtkAnariVisItCubeAxesActorNode.C
+         vtkAnariVisItAxisActorNode.C
+         vtkAnariVisItViewNodeFactory.C)
+endif()
+
 target_sources(avtplotter_ser PRIVATE ${AVTPLOTTER_VTK_SOURCES})
 target_include_directories(avtplotter_ser PUBLIC .)
 
@@ -55,4 +65,3 @@ if(VISIT_PARALLEL)
 endif()
 
 unset(AVTPLOTTER_VTK_SOURCES)
-

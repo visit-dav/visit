@@ -136,6 +136,9 @@ class     VisitInteractor;
 //    Brad Whitlock, Fri Oct 14 16:28:24 PDT 2011
 //    Create mappers vis proxy.
 //
+//    Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+//    Added ANARI methods
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -229,6 +232,28 @@ class VISWINDOW_API VisWindowProtectionProxy
     int                 ProxiedGetOspraySPP();
     int                 ProxiedGetOsprayAO();
     bool                ProxiedGetOsprayShadows();
+#endif
+#ifdef VISIT_ANARI
+    bool                ProxiedGetAnariRendering();
+    int                 ProxiedGetAnariSPP();
+    int                 ProxiedGetAnariAO();
+    std::string         ProxiedGetAnariLibraryName();
+    std::string         ProxiedGetAnariLibrarySubtype();
+    std::string         ProxiedGetAnariRendererSubtype();
+    bool                ProxiedGetUseAnariDenoiser();
+    float               ProxiedGetAnariLightFalloff();
+    float               ProxiedGetAnariAmbientIntensity();
+    int                 ProxiedGetAnariMaxDepth();
+    float               ProxiedGetAnariRValue();
+    std::string         ProxiedGetAnariDebugMethod();
+    std::string         ProxiedGetUsdDir();
+    bool                ProxiedGetUsdAtCommit();
+    bool                ProxiedGetUsdOutputBinary();
+    bool                ProxiedGetUsdOutputMaterial();
+    bool                ProxiedGetUsdOutputPreviewSurface();
+    bool                ProxiedGetUsdOutputMDL();
+    bool                ProxiedGetUsdOutputMDLColors();
+    bool                ProxiedGetUsdOutputDisplayColors();
 #endif
 };
 

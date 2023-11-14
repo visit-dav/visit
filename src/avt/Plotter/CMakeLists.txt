@@ -153,7 +153,8 @@ endif()
 add_library(avtplotter_ser ${AVTPLOTTER_SOURCES})
 target_link_libraries(avtplotter_ser
     visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk
-    lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
+    lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES}
+    $<$<BOOL:${VISIT_ANARI}>:VTK::RenderingAnari>)
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
 #********************************* PARALLEL **********************************
@@ -161,9 +162,9 @@ if(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
     target_link_libraries(avtplotter_par
         visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk
-        lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
+        lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES}
+        $<$<BOOL:${VISIT_ANARI}>:VTK::RenderingAnari>)
     VISIT_INSTALL_TARGETS(avtplotter_par)
 endif()
 
 add_subdirectory(vtk)
-

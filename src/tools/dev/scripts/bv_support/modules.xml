@@ -41,6 +41,7 @@
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="qt6"/>
@@ -88,6 +89,7 @@
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
@@ -169,6 +171,7 @@
             <lib name="ispc"/>
             <lib name="tbb"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
         </group>
 
         <!--

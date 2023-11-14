@@ -100,6 +100,13 @@ VisItViewer::Initialize(int *argc, char ***argv)
             avtCallback::SetUseOSPRay(true);
         }
 #endif
+#ifdef VISIT_ANARI
+        else if (strcmp((*argv)[i], "-anari") == 0)
+        {
+            debug5 << "Viewer launching with ANARI" << std::endl;
+            avtCallback::SetUseAnari(true);
+        }
+#endif
     }
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
     if (!nowin)
@@ -1038,4 +1045,3 @@ LogGlxAndXdpyInfo()
     }
 #endif
 }
-

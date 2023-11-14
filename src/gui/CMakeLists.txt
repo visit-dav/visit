@@ -41,6 +41,9 @@
 #   Kathleen Biagas, Tue May 5, 2023
 #   Disable qt6 forcing of defines for UNICODE.
 #
+#   Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+#   Added anari/AnariRenderingWidget
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -208,6 +211,11 @@ WidgetDataNode.C
 mini3D.C
 )
 
+if(VISIT_ANARI)
+    list(APPEND GUILIB_SOURCES
+            anari/AnariRenderingWidget.C)
+endif(VISIT_ANARI)
+
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -215,6 +223,7 @@ ENDIF (NOT WIN32)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/anari
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
@@ -231,21 +240,21 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 SET(GUI_QT_LIBS
 ${QT_QTUITOOLS_LIBRARY}
-${QT_QTOPENGL_LIBRARY} 
-${QT_QTGUI_LIBRARY} 
-${QT_QTNETWORK_LIBRARY} 
-${QT_QTXML_LIBRARY} 
+${QT_QTOPENGL_LIBRARY}
+${QT_QTGUI_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
+${QT_QTXML_LIBRARY}
 ${QT_QTCORE_LIBRARY}
 ${QT_QTPRINTSUPPORT_LIBRARY}
 )
 IF(VISIT_STATIC)
     SET(GUI_QT_LIBS
         ${GUI_QT_LIBS}
-        ${QT_QTCORE_LIB_DEPENDENCIES} 
-        ${QT_QTGUI_LIB_DEPENDENCIES} 
-        ${QT_QTOPENGL_LIB_DEPENDENCIES} 
-        ${QT_QTNETWORK_LIB_DEPENDENCIES} 
-        ${QT_QTXML_LIB_DEPENDENCIES} 
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTOPENGL_LIB_DEPENDENCIES}
+        ${QT_QTNETWORK_LIB_DEPENDENCIES}
+        ${QT_QTXML_LIB_DEPENDENCIES}
         ${QT_QTUITOOLS_LIB_DEPENDENCIES}
     )
 ENDIF(VISIT_STATIC)
@@ -263,7 +272,7 @@ IF (WIN32)
     SET_TARGET_PROPERTIES(gui PROPERTIES OUTPUT_NAME guilib)
     SET_TARGET_PROPERTIES(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
 ENDIF (WIN32)
-TARGET_LINK_LIBRARIES(gui 
+TARGET_LINK_LIBRARIES(gui
 viewerrpc
 viewerproxy
 visitcommon
@@ -273,10 +282,11 @@ avtdbatts
 winutil
 ${GUI_QT_LIBS}
 ${QWT_LIBRARY}
+$<$<BOOL:${VISIT_ANARI}>:anari::anari>
 )
 
 IF(APPLE)
-    SET_TARGET_PROPERTIES(gui 
+    SET_TARGET_PROPERTIES(gui
         PROPERTIES
         LINK_FLAGS "-framework Carbon"
     )

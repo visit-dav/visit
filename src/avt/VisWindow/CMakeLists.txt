@@ -75,4 +75,3 @@ if(VISIT_PARALLEL)
        avtplotter_par visit_vtk lightweight_visit_vtk ${vtklibs} ${OBJC_LIBS})
     VISIT_INSTALL_TARGETS(avtviswindow_par)
 endif()
-

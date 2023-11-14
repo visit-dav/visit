@@ -269,6 +269,73 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         snprintf(tmpStr, 1000, "%sosprayShadows = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetAnariRendering())
+        snprintf(tmpStr, 1000, "%sanariRendering = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sanariRendering = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariSPP = %d\n", prefix, atts->GetAnariSPP());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariAO = %d\n", prefix, atts->GetAnariAO());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariLibrary = \"%s\"\n", prefix, atts->GetAnariLibrary().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariLibrarySubtype = \"%s\"\n", prefix, atts->GetAnariLibrarySubtype().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariRendererSubtype = \"%s\"\n", prefix, atts->GetAnariRendererSubtype().c_str());
+    str += tmpStr;
+    if(atts->GetUseAnariDenoiser())
+        snprintf(tmpStr, 1000, "%suseAnariDenoiser = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%suseAnariDenoiser = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariLightFalloff = %g\n", prefix, atts->GetAnariLightFalloff());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariAmbientIntensity = %g\n", prefix, atts->GetAnariAmbientIntensity());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariMaxDepth = %d\n", prefix, atts->GetAnariMaxDepth());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariRValue = %g\n", prefix, atts->GetAnariRValue());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sanariDebugMethod = \"%s\"\n", prefix, atts->GetAnariDebugMethod().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%susdDir = \"%s\"\n", prefix, atts->GetUsdDir().c_str());
+    str += tmpStr;
+    if(atts->GetUsdAtCommit())
+        snprintf(tmpStr, 1000, "%susdAtCommit = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdAtCommit = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUsdOutputBinary())
+        snprintf(tmpStr, 1000, "%susdOutputBinary = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdOutputBinary = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUsdOutputMaterial())
+        snprintf(tmpStr, 1000, "%susdOutputMaterial = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdOutputMaterial = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUsdOutputPreviewSurface())
+        snprintf(tmpStr, 1000, "%susdOutputPreviewSurface = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdOutputPreviewSurface = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUsdOutputMDL())
+        snprintf(tmpStr, 1000, "%susdOutputMDL = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdOutputMDL = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUsdOutputMDLColors())
+        snprintf(tmpStr, 1000, "%susdOutputMDLColors = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdOutputMDLColors = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUsdOutputDisplayColors())
+        snprintf(tmpStr, 1000, "%susdOutputDisplayColors = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susdOutputDisplayColors = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -2472,6 +2539,1151 @@ RenderingAttributes_GetOsprayShadows(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+RenderingAttributes_SetAnariRendering(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariRendering in the object.
+    obj->data->SetAnariRendering(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariRendering(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetAnariRendering()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariSPP(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariSPP in the object.
+    obj->data->SetAnariSPP(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariSPP(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAnariSPP()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariAO(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariAO in the object.
+    obj->data->SetAnariAO(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariAO(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAnariAO()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariLibrary(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariLibrary in the object.
+    obj->data->SetAnariLibrary(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariLibrary(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetAnariLibrary().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariLibrarySubtype(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariLibrarySubtype in the object.
+    obj->data->SetAnariLibrarySubtype(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariLibrarySubtype(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetAnariLibrarySubtype().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariRendererSubtype(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariRendererSubtype in the object.
+    obj->data->SetAnariRendererSubtype(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariRendererSubtype(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetAnariRendererSubtype().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUseAnariDenoiser(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the useAnariDenoiser in the object.
+    obj->data->SetUseAnariDenoiser(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUseAnariDenoiser(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseAnariDenoiser()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariLightFalloff(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariLightFalloff in the object.
+    obj->data->SetAnariLightFalloff(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariLightFalloff(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetAnariLightFalloff()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariAmbientIntensity(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariAmbientIntensity in the object.
+    obj->data->SetAnariAmbientIntensity(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariAmbientIntensity(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetAnariAmbientIntensity()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariMaxDepth(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariMaxDepth in the object.
+    obj->data->SetAnariMaxDepth(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariMaxDepth(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAnariMaxDepth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariRValue(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariRValue in the object.
+    obj->data->SetAnariRValue(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariRValue(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetAnariRValue()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAnariDebugMethod(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the anariDebugMethod in the object.
+    obj->data->SetAnariDebugMethod(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAnariDebugMethod(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetAnariDebugMethod().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdDir(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdDir in the object.
+    obj->data->SetUsdDir(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdDir(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetUsdDir().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdAtCommit(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdAtCommit in the object.
+    obj->data->SetUsdAtCommit(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdAtCommit(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdAtCommit()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdOutputBinary(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdOutputBinary in the object.
+    obj->data->SetUsdOutputBinary(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdOutputBinary(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdOutputBinary()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdOutputMaterial(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdOutputMaterial in the object.
+    obj->data->SetUsdOutputMaterial(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdOutputMaterial(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdOutputMaterial()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdOutputPreviewSurface(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdOutputPreviewSurface in the object.
+    obj->data->SetUsdOutputPreviewSurface(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdOutputPreviewSurface(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdOutputPreviewSurface()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdOutputMDL(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdOutputMDL in the object.
+    obj->data->SetUsdOutputMDL(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdOutputMDL(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdOutputMDL()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdOutputMDLColors(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdOutputMDLColors in the object.
+    obj->data->SetUsdOutputMDLColors(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdOutputMDLColors(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdOutputMDLColors()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetUsdOutputDisplayColors(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usdOutputDisplayColors in the object.
+    obj->data->SetUsdOutputDisplayColors(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsdOutputDisplayColors(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsdOutputDisplayColors()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
@@ -2546,6 +3758,46 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetOsprayAO", RenderingAttributes_GetOsprayAO, METH_VARARGS},
     {"SetOsprayShadows", RenderingAttributes_SetOsprayShadows, METH_VARARGS},
     {"GetOsprayShadows", RenderingAttributes_GetOsprayShadows, METH_VARARGS},
+    {"SetAnariRendering", RenderingAttributes_SetAnariRendering, METH_VARARGS},
+    {"GetAnariRendering", RenderingAttributes_GetAnariRendering, METH_VARARGS},
+    {"SetAnariSPP", RenderingAttributes_SetAnariSPP, METH_VARARGS},
+    {"GetAnariSPP", RenderingAttributes_GetAnariSPP, METH_VARARGS},
+    {"SetAnariAO", RenderingAttributes_SetAnariAO, METH_VARARGS},
+    {"GetAnariAO", RenderingAttributes_GetAnariAO, METH_VARARGS},
+    {"SetAnariLibrary", RenderingAttributes_SetAnariLibrary, METH_VARARGS},
+    {"GetAnariLibrary", RenderingAttributes_GetAnariLibrary, METH_VARARGS},
+    {"SetAnariLibrarySubtype", RenderingAttributes_SetAnariLibrarySubtype, METH_VARARGS},
+    {"GetAnariLibrarySubtype", RenderingAttributes_GetAnariLibrarySubtype, METH_VARARGS},
+    {"SetAnariRendererSubtype", RenderingAttributes_SetAnariRendererSubtype, METH_VARARGS},
+    {"GetAnariRendererSubtype", RenderingAttributes_GetAnariRendererSubtype, METH_VARARGS},
+    {"SetUseAnariDenoiser", RenderingAttributes_SetUseAnariDenoiser, METH_VARARGS},
+    {"GetUseAnariDenoiser", RenderingAttributes_GetUseAnariDenoiser, METH_VARARGS},
+    {"SetAnariLightFalloff", RenderingAttributes_SetAnariLightFalloff, METH_VARARGS},
+    {"GetAnariLightFalloff", RenderingAttributes_GetAnariLightFalloff, METH_VARARGS},
+    {"SetAnariAmbientIntensity", RenderingAttributes_SetAnariAmbientIntensity, METH_VARARGS},
+    {"GetAnariAmbientIntensity", RenderingAttributes_GetAnariAmbientIntensity, METH_VARARGS},
+    {"SetAnariMaxDepth", RenderingAttributes_SetAnariMaxDepth, METH_VARARGS},
+    {"GetAnariMaxDepth", RenderingAttributes_GetAnariMaxDepth, METH_VARARGS},
+    {"SetAnariRValue", RenderingAttributes_SetAnariRValue, METH_VARARGS},
+    {"GetAnariRValue", RenderingAttributes_GetAnariRValue, METH_VARARGS},
+    {"SetAnariDebugMethod", RenderingAttributes_SetAnariDebugMethod, METH_VARARGS},
+    {"GetAnariDebugMethod", RenderingAttributes_GetAnariDebugMethod, METH_VARARGS},
+    {"SetUsdDir", RenderingAttributes_SetUsdDir, METH_VARARGS},
+    {"GetUsdDir", RenderingAttributes_GetUsdDir, METH_VARARGS},
+    {"SetUsdAtCommit", RenderingAttributes_SetUsdAtCommit, METH_VARARGS},
+    {"GetUsdAtCommit", RenderingAttributes_GetUsdAtCommit, METH_VARARGS},
+    {"SetUsdOutputBinary", RenderingAttributes_SetUsdOutputBinary, METH_VARARGS},
+    {"GetUsdOutputBinary", RenderingAttributes_GetUsdOutputBinary, METH_VARARGS},
+    {"SetUsdOutputMaterial", RenderingAttributes_SetUsdOutputMaterial, METH_VARARGS},
+    {"GetUsdOutputMaterial", RenderingAttributes_GetUsdOutputMaterial, METH_VARARGS},
+    {"SetUsdOutputPreviewSurface", RenderingAttributes_SetUsdOutputPreviewSurface, METH_VARARGS},
+    {"GetUsdOutputPreviewSurface", RenderingAttributes_GetUsdOutputPreviewSurface, METH_VARARGS},
+    {"SetUsdOutputMDL", RenderingAttributes_SetUsdOutputMDL, METH_VARARGS},
+    {"GetUsdOutputMDL", RenderingAttributes_GetUsdOutputMDL, METH_VARARGS},
+    {"SetUsdOutputMDLColors", RenderingAttributes_SetUsdOutputMDLColors, METH_VARARGS},
+    {"GetUsdOutputMDLColors", RenderingAttributes_GetUsdOutputMDLColors, METH_VARARGS},
+    {"SetUsdOutputDisplayColors", RenderingAttributes_SetUsdOutputDisplayColors, METH_VARARGS},
+    {"GetUsdOutputDisplayColors", RenderingAttributes_GetUsdOutputDisplayColors, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2674,6 +3926,46 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
         return RenderingAttributes_GetOsprayAO(self, NULL);
     if(strcmp(name, "osprayShadows") == 0)
         return RenderingAttributes_GetOsprayShadows(self, NULL);
+    if(strcmp(name, "anariRendering") == 0)
+        return RenderingAttributes_GetAnariRendering(self, NULL);
+    if(strcmp(name, "anariSPP") == 0)
+        return RenderingAttributes_GetAnariSPP(self, NULL);
+    if(strcmp(name, "anariAO") == 0)
+        return RenderingAttributes_GetAnariAO(self, NULL);
+    if(strcmp(name, "anariLibrary") == 0)
+        return RenderingAttributes_GetAnariLibrary(self, NULL);
+    if(strcmp(name, "anariLibrarySubtype") == 0)
+        return RenderingAttributes_GetAnariLibrarySubtype(self, NULL);
+    if(strcmp(name, "anariRendererSubtype") == 0)
+        return RenderingAttributes_GetAnariRendererSubtype(self, NULL);
+    if(strcmp(name, "useAnariDenoiser") == 0)
+        return RenderingAttributes_GetUseAnariDenoiser(self, NULL);
+    if(strcmp(name, "anariLightFalloff") == 0)
+        return RenderingAttributes_GetAnariLightFalloff(self, NULL);
+    if(strcmp(name, "anariAmbientIntensity") == 0)
+        return RenderingAttributes_GetAnariAmbientIntensity(self, NULL);
+    if(strcmp(name, "anariMaxDepth") == 0)
+        return RenderingAttributes_GetAnariMaxDepth(self, NULL);
+    if(strcmp(name, "anariRValue") == 0)
+        return RenderingAttributes_GetAnariRValue(self, NULL);
+    if(strcmp(name, "anariDebugMethod") == 0)
+        return RenderingAttributes_GetAnariDebugMethod(self, NULL);
+    if(strcmp(name, "usdDir") == 0)
+        return RenderingAttributes_GetUsdDir(self, NULL);
+    if(strcmp(name, "usdAtCommit") == 0)
+        return RenderingAttributes_GetUsdAtCommit(self, NULL);
+    if(strcmp(name, "usdOutputBinary") == 0)
+        return RenderingAttributes_GetUsdOutputBinary(self, NULL);
+    if(strcmp(name, "usdOutputMaterial") == 0)
+        return RenderingAttributes_GetUsdOutputMaterial(self, NULL);
+    if(strcmp(name, "usdOutputPreviewSurface") == 0)
+        return RenderingAttributes_GetUsdOutputPreviewSurface(self, NULL);
+    if(strcmp(name, "usdOutputMDL") == 0)
+        return RenderingAttributes_GetUsdOutputMDL(self, NULL);
+    if(strcmp(name, "usdOutputMDLColors") == 0)
+        return RenderingAttributes_GetUsdOutputMDLColors(self, NULL);
+    if(strcmp(name, "usdOutputDisplayColors") == 0)
+        return RenderingAttributes_GetUsdOutputDisplayColors(self, NULL);
 
 
     // Add a __dict__ answer so that dir() works
@@ -2766,6 +4058,46 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RenderingAttributes_SetOsprayAO(self, args);
     else if(strcmp(name, "osprayShadows") == 0)
         obj = RenderingAttributes_SetOsprayShadows(self, args);
+    else if(strcmp(name, "anariRendering") == 0)
+        obj = RenderingAttributes_SetAnariRendering(self, args);
+    else if(strcmp(name, "anariSPP") == 0)
+        obj = RenderingAttributes_SetAnariSPP(self, args);
+    else if(strcmp(name, "anariAO") == 0)
+        obj = RenderingAttributes_SetAnariAO(self, args);
+    else if(strcmp(name, "anariLibrary") == 0)
+        obj = RenderingAttributes_SetAnariLibrary(self, args);
+    else if(strcmp(name, "anariLibrarySubtype") == 0)
+        obj = RenderingAttributes_SetAnariLibrarySubtype(self, args);
+    else if(strcmp(name, "anariRendererSubtype") == 0)
+        obj = RenderingAttributes_SetAnariRendererSubtype(self, args);
+    else if(strcmp(name, "useAnariDenoiser") == 0)
+        obj = RenderingAttributes_SetUseAnariDenoiser(self, args);
+    else if(strcmp(name, "anariLightFalloff") == 0)
+        obj = RenderingAttributes_SetAnariLightFalloff(self, args);
+    else if(strcmp(name, "anariAmbientIntensity") == 0)
+        obj = RenderingAttributes_SetAnariAmbientIntensity(self, args);
+    else if(strcmp(name, "anariMaxDepth") == 0)
+        obj = RenderingAttributes_SetAnariMaxDepth(self, args);
+    else if(strcmp(name, "anariRValue") == 0)
+        obj = RenderingAttributes_SetAnariRValue(self, args);
+    else if(strcmp(name, "anariDebugMethod") == 0)
+        obj = RenderingAttributes_SetAnariDebugMethod(self, args);
+    else if(strcmp(name, "usdDir") == 0)
+        obj = RenderingAttributes_SetUsdDir(self, args);
+    else if(strcmp(name, "usdAtCommit") == 0)
+        obj = RenderingAttributes_SetUsdAtCommit(self, args);
+    else if(strcmp(name, "usdOutputBinary") == 0)
+        obj = RenderingAttributes_SetUsdOutputBinary(self, args);
+    else if(strcmp(name, "usdOutputMaterial") == 0)
+        obj = RenderingAttributes_SetUsdOutputMaterial(self, args);
+    else if(strcmp(name, "usdOutputPreviewSurface") == 0)
+        obj = RenderingAttributes_SetUsdOutputPreviewSurface(self, args);
+    else if(strcmp(name, "usdOutputMDL") == 0)
+        obj = RenderingAttributes_SetUsdOutputMDL(self, args);
+    else if(strcmp(name, "usdOutputMDLColors") == 0)
+        obj = RenderingAttributes_SetUsdOutputMDLColors(self, args);
+    else if(strcmp(name, "usdOutputDisplayColors") == 0)
+        obj = RenderingAttributes_SetUsdOutputDisplayColors(self, args);
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

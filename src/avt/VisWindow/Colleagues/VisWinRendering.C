@@ -52,118 +52,20 @@
   #include <vtkVisItViewNodeFactory.h>
 #endif
 
+#ifdef VISIT_ANARI
+    #include <vtkLogger.h>
+    #include <vtkAnariRendererNode.h>
+    #include <vtkAnariPass.h>
+    #include <vtkAnariVisItViewNodeFactory.h>
+    #include <vtkViewNodeFactory.h>
+#endif
+
 #include <limits>
 using std::numeric_limits;
 
 static void RemoveCullers(vtkRenderer *);
 
 bool VisWinRendering::stereoEnabled = false;
-
-// For debugging post process screen capture
-//#define POST_PROCESS_SCREEN_CAPTURE_DEBUG
-#ifdef POST_PROCESS_SCREEN_CAPTURE_DEBUG
-#include <vtkPNGWriter.h>
-#include <vtkFloatArray.h>
-#endif
-
-#if LIB_VERSION_LE(VTK,8,1,0)
-#else
-// For vtkBackgroundPass
-#include <vtkOpenGLQuadHelper.h>
-#include <vtkOpenGLRenderUtilities.h>
-#include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGLState.h>
-#include <vtkRenderPass.h>
-#include <vtkRenderState.h>
-#include <vtkShaderProgram.h>
-#include <vtkTextureObject.h>
-
-class vtkBackgroundPass : public vtkRenderPass
-{
-public:
-  static vtkBackgroundPass* New();
-  vtkTypeMacro(vtkBackgroundPass, vtkRenderPass);
-
-  vtkBackgroundPass() = default;
-
-  ~vtkBackgroundPass() override {};
-
-  void SetBackground(const int nChannels_, const int c0_, const int r0_,
-                     const int w_, const int h_, unsigned char *pixels_)
-  {
-    nChannels = nChannels_;
-    c0 = c0_;
-    r0 = r0_;
-    w = w_;
-    h = h_;
-    pixels = pixels_;
-  };
-
-  void Render(const vtkRenderState* s) override
-  {
-    vtkRenderer* ren = s->GetRenderer();
-
-    // copy the result to the window
-    vtkRenderWindow* rwin = vtkRenderWindow::SafeDownCast(ren->GetVTKWindow());
-
-    vtkOpenGLRenderWindow* windowOpenGL = vtkOpenGLRenderWindow::SafeDownCast(rwin);
-
-    // create the shader.
-    std::string FSSource = vtkOpenGLRenderUtilities::GetFullScreenQuadFragmentShaderTemplate();
-
-    vtkShaderProgram::Substitute(FSSource, "//VTK::FSQ::Decl",
-      "uniform sampler2D colorTexture;\n");
-
-    std::stringstream ss;
-    ss << "vec4 color = texture(colorTexture, texCoord);\n";
-    ss << "gl_FragData[0] = color;\n";
-
-    vtkShaderProgram::Substitute(FSSource, "//VTK::FSQ::Impl", ss.str());
-
-    vtkOpenGLQuadHelper* QuadHelper = new vtkOpenGLQuadHelper(windowOpenGL,
-      vtkOpenGLRenderUtilities::GetFullScreenQuadVertexShader().c_str(), FSSource.c_str(), "");
-
-    if (!QuadHelper->Program || !QuadHelper->Program->GetCompiled())
-    {
-      vtkErrorMacro("Couldn't build the shader program.");
-      return;
-    }
-
-    vtkTextureObject* ColorTexture = vtkTextureObject::New();
-    ColorTexture->SetContext(windowOpenGL);
-    ColorTexture->AutoParametersOff();
-    ColorTexture->Create2DFromRaw(w, h, nChannels, VTK_UNSIGNED_CHAR, pixels);
-    ColorTexture->Activate();
-
-    QuadHelper->Program->SetUniformi(
-      "colorTexture", ColorTexture->GetTextureUnit());
-
-    vtkOpenGLState* ostate = windowOpenGL->GetState();
-
-    vtkOpenGLState::ScopedglEnableDisable dsaver(ostate, GL_DEPTH_TEST);
-    vtkOpenGLState::ScopedglEnableDisable bsaver(ostate, GL_BLEND);
-    vtkOpenGLState::ScopedglDepthFunc dfsaver(ostate);
-    vtkOpenGLState::ScopedglBlendFuncSeparate bfsaver(ostate);
-
-    ostate->vtkglViewport(c0, r0, w, h);
-    ostate->vtkglScissor(c0, r0, w, h);
-
-    ostate->vtkglDisable(GL_DEPTH_TEST);
-
-    QuadHelper->Render();
-
-    ColorTexture->Deactivate();
-  };
-
-private:
-  int nChannels;
-  int c0, r0;
-  int w, h;
-  unsigned char *pixels;
-};
-
-vtkStandardNewMacro(vtkBackgroundPass);
-#endif
 
 // ****************************************************************************
 //  Method: VisWinRendering constructor
@@ -355,6 +257,32 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     factory->RegisterOverride("vtkVisItAxisActor",
                               vtkVisItViewNodeFactory::axis_act_maker);
 #endif
+
+#ifdef VISIT_ANARI
+    vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_WARNING);
+
+    anariRendering = false;
+    anariSPP = 1;
+    anariAO = 0;
+    anariLibraryName = "environment";
+    anariLibrarySubtype = "default";
+    anariRendererSubtype = "default";
+    useAnariDenoiser  = false;
+    anariLightFalloff = 1.f;
+    anariAmbientIntensity = 1.f;
+    anariMaxDepth = 0;
+    anariRValue = 1.f;
+    usdAtCommit = false;
+    usdOutputBinary = true;
+    usdOutputMaterial = true;
+    usdOutputPreviewSurface = true;
+    usdOutputMDL = true;
+    usdOutputMDLColors = true;
+    usdOutputDisplayColors = true;
+
+    anariPass = CreateAnariPass();
+    anariPassValid = true;
+#endif
 }
 
 
@@ -399,6 +327,13 @@ VisWinRendering::~VisWinRendering()
     {
         osprayPass->Delete();
         osprayPass = nullptr;
+    }
+#endif
+#ifdef VISIT_ANARI
+    if(anariPass != nullptr)
+    {
+        anariPass->Delete();
+        anariPass = nullptr;
     }
 #endif
 }
@@ -1311,6 +1246,9 @@ VisWinRendering::Realize(void)
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+//    Added ANARI
+//
 // ****************************************************************************
 
 void
@@ -1331,6 +1269,28 @@ VisWinRendering::RenderRenderWindow(void)
     {
         canvas->SetUseShadows(osprayShadows);
         canvas->SetPass(osprayPass);
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
+    }
+#endif
+
+#ifdef VISIT_ANARI
+    if(GetAnariRendering())
+    {
+        if(!anariPassValid)
+        {
+            if(anariPass != nullptr)
+            {
+                anariPass->Delete();
+            }
+
+            anariPass = CreateAnariPass();
+            canvas->SetPass(anariPass);
+            anariPassValid = true;
+        }
     }
     else
     {
@@ -1930,22 +1890,17 @@ VisWinRendering::BackgroundReadback(bool doViewportOnly)
 //    Brad Whitlock, Thu Sep 21 17:17:11 PDT 2017
 //    If we get 4 channel data, output 4 channel data.
 //
-//    Eric Brugger, Fri Oct 27 13:32:48 PDT 2023
-//    Switch to using a texture shader to set the pixel data. This uses
-//    the vtkBackgroundPass render pass (at the top of this file) to
-//    accomplish this. The old mechanism no longer worked with VTK9.
-//
 // ****************************************************************************
 
 avtImage_p
 VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     bool doViewportOnly, bool keepZBuffer)
 {
-    // Compute the size of region we'll be writing back to the frame buffer.
+    // compute size of region we'll be writing back to the frame buffer
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
 
-    // Confirm the image passed in is the correct size.
+    // confirm image passed in is the correct size
     int iw, ih;
     input->GetSize(&iw, &ih);
     if ((iw != w) || (ih != h))
@@ -1957,15 +1912,6 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
             "PostProcessScreenCapture does not match vtkRenderWindow size");
     }
 
-#ifdef POST_PROCESS_SCREEN_CAPTURE_DEBUG
-    vtkPNGWriter *writer = vtkPNGWriter::New();
-    writer->SetFileName("composited_image.png");
-    writer->SetInputData(input->GetImage().GetImageVTK());
-    writer->Write();
-    writer->Delete();
-#endif
-
-#if LIB_VERSION_LE(VTK,8,1,0)
     // temporarily remove canvas and background renderers
     vtkRenderWindow *renWin = GetRenderWindow();
     renWin->RemoveRenderer(canvas);
@@ -1981,38 +1927,8 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     // render (foreground layer only)
     RenderRenderWindow();
-#else
-    // Get the render window.
-    vtkRenderWindow *renWin = GetRenderWindow();
 
-    // Create a renderer that uses the vtkBackgroundPass to render the
-    // composited image.
-    vtkRenderer *imageRenderer = vtkRenderer::New();
-    vtkBackgroundPass *imagePass = vtkBackgroundPass::New();
-    unsigned char *pixels = input->GetImage().GetRGBBuffer();
-    int nChannels = input->GetImage().GetNumberOfColorChannels();
-    imagePass->SetBackground(nChannels, c0, r0, w, h, pixels);
-    imageRenderer->SetPass(imagePass);
-    imageRenderer->SetLayer(1);
-    imageRenderer->SetBackground(1., 1., 1.);
-
-    // Replace the canvas with the image.
-    renWin->RemoveRenderer(canvas);
-    renWin->AddRenderer(imageRenderer);
-
-    // Render.
-    renWin->Render();
-
-    // Restore the canvas.
-    renWin->RemoveRenderer(imageRenderer);
-    renWin->AddRenderer(canvas);
-
-    // Clean up the image renderer.
-    imagePass->Delete();
-    imageRenderer->Delete();
-#endif
-
-    // Capture the whole image now.
+    // capture the whole image now
     GetCaptureRegion(r0, c0, w, h, false);
 
     size_t npix = w*h;
@@ -2027,7 +1943,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     else
         renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
 
-    // Construct the output image.
+    // construct the output image
     vtkImageData *im = vtkImageData::New();
     im->SetDimensions(w, h, 1);
     im->GetPointData()->SetScalars(pix);
@@ -2035,24 +1951,15 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     avtImage_p output = new avtImage(NULL);
 
-#ifdef POST_PROCESS_SCREEN_CAPTURE_DEBUG
-    writer = vtkPNGWriter::New();
-    writer->SetFileName("composited_image_with_foreground.png");
-    writer->SetInputData(im);
-    writer->Write();
-    writer->Delete();
-#endif
-
     output->SetImage(avtImageRepresentation(im,
             keepZBuffer ? input->GetImage().GetZBufferVTK() : 0));
 
     im->Delete();
 
-#if LIB_VERSION_LE(VTK,8,1,0)
     // add canvas and background renderers back in
     renWin->AddRenderer(background);
     renWin->AddRenderer(canvas);
-#endif
+
     return output;
 }
 
@@ -3245,5 +3152,548 @@ VisWinRendering::SetOsprayShadows(bool enabled)
     {
         canvas->SetUseShadows(false);
     }
+}
+#endif
+
+#ifdef VISIT_ANARI
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariRendering
+//
+// Purpose:
+//   Sets the ANARI rendering flag
+//
+// Arguments:
+//   enabled : true if ANARI rendering is enabled, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariRendering(const bool enabled)
+{
+    if(enabled != anariRendering)
+    {
+        anariRendering = enabled;
+
+        if (enabled)
+        {
+            canvas->SetPass(anariPass);
+        }
+        else
+        {
+            canvas->SetPass(0);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUseAnariDenoiser
+//
+// Purpose:
+//   Sets the ANARI denoiser flag
+//
+// Arguments:
+//   enabled : true if the denoiser is enabled for rendering
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetUseAnariDenoiser(const bool enabled)
+{
+    if(enabled != useAnariDenoiser)
+    {
+        useAnariDenoiser = enabled;
+        int value = enabled ? 1 : 0;
+        vtkAnariRendererNode::SetUseDenoiser(value, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariSPP
+//
+// Purpose:
+//   Sets the ANARI samples per pixel
+//
+// Arguments:
+//   val : The new number of samples per pixel
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariSPP(const int val)
+{
+    if(val != anariSPP)
+    {
+        anariSPP = val;
+        vtkAnariRendererNode::SetSamplesPerPixel(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariAO
+//
+// Purpose:
+//   Sets the ANARI ambient occlusion samples
+//
+// Arguments:
+//   val : the new number of ambient occlusion samples
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariAO(const int val)
+{
+    if(val != anariAO)
+    {
+        anariAO = val;
+        vtkAnariRendererNode::SetAmbientSamples(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariLibraryName
+//
+// Purpose:
+//   Sets the ANARI library name
+//
+// Arguments:
+//   name : The ANARI back-end library name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariLibraryName(const std::string name)
+{
+    if(anariLibraryName != name)
+    {
+        anariLibraryName = name;
+        vtkAnariRendererNode::SetLibraryName(name.c_str(), canvas);
+        // TODO: change to debug5
+        std::cout << "Back-end Name: " << name.c_str() << std::endl;
+        anariPassValid = false;
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariLibrarySubtype
+//
+// Purpose:
+//   Sets the ANARI Library subtype
+//
+// Arguments:
+//   subtype : back-end device subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariLibrarySubtype(const std::string subtype)
+{
+    if(anariLibrarySubtype != subtype)
+    {
+        anariLibrarySubtype = subtype;
+        vtkAnariRendererNode::SetDeviceSubtype(subtype.c_str(), canvas);
+        std::cout << "Back-end subtype: " << subtype.c_str() << std::endl;
+        anariPassValid = false;
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariRendererSubtype
+//
+// Purpose:
+//   Sets the ANARI renderer subtype name
+//
+// Arguments:
+//   subtype : The ANARI renderer subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariRendererSubtype(const std::string subtype)
+{
+    if(anariRendererSubtype != subtype)
+    {
+        anariRendererSubtype = subtype;
+        vtkAnariRendererNode::SetRendererSubtype(subtype.c_str(), canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariLightFalloff
+//
+// Purpose:
+//   Sets the light falloff value used by the back-end renderer
+//
+// Arguments:
+//   val    the light falloff value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariLightFalloff(const float val)
+{
+    if(val != anariLightFalloff)
+    {
+        anariLightFalloff = val;
+        vtkAnariRendererNode::SetLightFalloff(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariAmbientIntensity
+//
+// Purpose:
+//   Sets the ambient intensity value used by the back-end renderer.
+//
+// Arguments:
+//   val    the ambient intensity value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariAmbientIntensity(const float val)
+{
+    if(val != anariAmbientIntensity)
+    {
+        anariAmbientIntensity = val;
+        vtkAnariRendererNode::SetAmbientIntensity(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariMaxDepth
+//
+// Purpose:
+//   Sets the max depth value used by the back-end renderer.
+//
+// Arguments:
+//   val    the max depth value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariMaxDepth(const int val)
+{
+    if(val != anariMaxDepth)
+    {
+        anariMaxDepth = val;
+        vtkAnariRendererNode::SetMaxDepth(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariRValue
+//
+// Purpose:
+//   Sets the R value used by the back-end renderer.
+//
+// Arguments:
+//   val    the R value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetAnariRValue(const float val)
+ {
+    if(val != anariRValue)
+    {
+        anariRValue = val;
+        vtkAnariRendererNode::SetROptionValue(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariDebugMethod
+//
+// Purpose:
+//   Sets the debug method to use by the back-end debug renderer.
+//
+// Arguments:
+//   method     the debug method
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariDebugMethod(const std::string method)
+{
+    if(anariDebugMethod != method)
+    {
+        anariDebugMethod = method;
+        vtkAnariRendererNode::SetDebugMethod(method.c_str(), canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdDir
+//
+// Purpose:
+//   Sets the directory for saving USD output from the USD back-end.
+//
+// Arguments:
+//   dir        the output directory
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetUsdDir(const std::string dir)
+{
+    if(usdDir != dir)
+    {
+        usdDir = dir;
+        vtkAnariRendererNode::SetUsdDirectory(usdDir.c_str(), canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdAtCommit
+//
+// Purpose:
+//   Sets the output USD at anariCommit flag for the USD back-end.
+//
+// Arguments:
+//   val    true if USD output is created when anariCommit is called,
+//          otherwise USD output is created when anariRenderFrame is called
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdAtCommit(const bool val)
+ {
+    if(val != usdAtCommit)
+    {
+        usdAtCommit = val;
+        vtkAnariRendererNode::SetUsdAtCommit(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdOutputBinary
+//
+// Purpose:
+//   Sets the output USD in binary format flag for the USD back-end.
+//
+// Arguments:
+//   val    true if USD output will be binary, otherwise USD output is text.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdOutputBinary(const bool val)
+ {
+    if(val != usdOutputBinary)
+    {
+        usdOutputBinary = val;
+        vtkAnariRendererNode::SetUsdOutputBinary(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdOutputMaterial
+//
+// Purpose:
+//   Sets the output USD material objects flag for the USD back-end.
+//
+// Arguments:
+//   val    true if USD material objects should be output, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdOutputMaterial(const bool val)
+ {
+    if(val != usdOutputMaterial)
+    {
+        usdOutputMaterial = val;
+        vtkAnariRendererNode::SetUsdOutputMaterial(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdOutputPreviewSurface
+//
+// Purpose:
+//   Sets the output USD preview surface prims for material objects flag for
+//   the USD back-end.
+//
+// Arguments:
+//   val    true if USD previewsurface shader prims should be output for material
+//          objects, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdOutputPreviewSurface(const bool val)
+ {
+    if(val != usdOutputPreviewSurface)
+    {
+        usdOutputPreviewSurface = val;
+        vtkAnariRendererNode::SetUsdOutputPreviewSurface(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdOutputMDL
+//
+// Purpose:
+//   Sets the output USD mdl shader prims for material objects flag for the USD
+//   back-end.
+//
+// Arguments:
+//   val    true if USD mdl shader prims should be output for material objects,
+//          otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdOutputMDL(const bool val)
+ {
+    if(val != usdOutputMDL)
+    {
+        usdOutputMDL = val;
+        vtkAnariRendererNode::SetUsdOutputMDL(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdOutputMDLColors
+//
+// Purpose:
+//   Sets the output USD mdl colors for material objects flag for the USD
+//   back-end.
+//
+// Arguments:
+//   val    true if USD mdl colors should be included in the output for
+//          material objects, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdOutputMDLColors(const bool val)
+ {
+    if(val != usdOutputMDLColors)
+    {
+        usdOutputMDLColors = val;
+        vtkAnariRendererNode::SetUsdOutputMDLColors(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsdOutputDisplayColors
+//
+// Purpose:
+//   Sets the output USD display colors flag for the USD back-end.
+//
+// Arguments:
+//   val    true if USD display colors should be included in the output,
+//          otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsdOutputDisplayColors(const bool val)
+ {
+    if(val != usdOutputDisplayColors)
+    {
+        usdOutputDisplayColors = val;
+        vtkAnariRendererNode::SetUsdOutputDisplayColors(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::CreateAnariPass
+//
+// Purpose:
+//   Creates the ANARI rendering pass that can be put into a vtkRenderWindow
+//   which forces it use the back-end loaded with ANARI instead of OpenGL to
+//   render. Adding or removing the pass will swap back and forth between the
+//   two.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+vtkAnariPass *
+VisWinRendering::CreateAnariPass()
+{
+    vtkAnariPass *anariPass = vtkAnariPass::New();
+    vtkViewNodeFactory *factory = anariPass->GetViewNodeFactory();
+
+    factory->RegisterOverride("vtkVisItDataSetMapper",
+                            vtkAnariVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkPointGlyphMapper",
+                            vtkAnariVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkMultiRepMapper",
+                            vtkAnariVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkMeshPlotMapper",
+                            vtkAnariVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkOpenGLMeshPlotMapper",
+                            vtkAnariVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkVisItCubeAxesActor",
+                            vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
+    factory->RegisterOverride("vtkVisItAxisActor",
+                            vtkAnariVisItViewNodeFactory::axis_act_maker);
+
+    return anariPass;
 }
 #endif

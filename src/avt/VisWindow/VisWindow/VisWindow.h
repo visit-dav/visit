@@ -721,6 +721,48 @@ public:
     void                 SetOsprayShadows(bool enabled);
     bool                 GetOsprayShadows() const;
 #endif
+#ifdef VISIT_ANARI
+    void                SetAnariRendering(const bool);
+    bool                GetAnariRendering() const;
+    void                SetAnariSPP(const int);
+    int                 GetAnariSPP() const;
+    void                SetAnariAO(const int);
+    int                 GetAnariAO() const;
+    void                SetAnariLibraryName(const std::string);
+    std::string         GetAnariLibraryName() const;
+    void                SetAnariLibrarySubtype(const std::string);
+    std::string         GetAnariLibrarySubtype() const;
+    void                SetAnariRendererSubtype(const std::string);
+    std::string         GetAnariRendererSubtype() const;
+    void                SetUseAnariDenoiser(const bool);
+    bool                GetUseAnariDenoiser() const;
+    void                SetAnariLightFalloff(const float);
+    float               GetAnariLightFalloff() const;
+    void                SetAnariAmbientIntensity(const float);
+    float               GetAnariAmbientIntensity() const;
+    void                SetAnariMaxDepth(const int);
+    int                 GetAnariMaxDepth() const;
+    void                SetAnariRValue(const float);
+    float               GetAnariRValue() const;
+    void                SetAnariDebugMethod(const std::string);
+    std::string         GetAnariDebugMethod() const;
+    void                SetUsdDir(const std::string);
+    std::string         GetUsdDir() const;
+    void                SetUsdAtCommit(const bool);
+    bool                GetUsdAtCommit() const;
+    void                SetUsdOutputBinary(const bool);
+    bool                GetUsdOutputBinary() const;
+    void                SetUsdOutputMaterial(const bool);
+    bool                GetUsdOutputMaterial() const;
+    void                SetUsdOutputPreviewSurface(const bool);
+    bool                GetUsdOutputPreviewSurface() const;
+    void                SetUsdOutputMDL(const bool);
+    bool                GetUsdOutputMDL() const;
+    void                SetUsdOutputMDLColors(const bool);
+    bool                GetUsdOutputMDLColors() const;
+    void                SetUsdOutputDisplayColors(const bool);
+    bool                GetUsdOutputDisplayColors() const;
+#endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);
     bool                 GetSpecularFlag();

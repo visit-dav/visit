@@ -22,6 +22,10 @@
 #include <WindowInformation.h>
 #include <QvisOpacitySlider.h>
 
+#ifdef VISIT_ANARI
+    #include <AnariRenderingWidget.h>
+#endif
+
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -592,6 +596,22 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
 
+#ifdef VISIT_ANARI
+    // Divider
+    QFrame *separator = new QFrame(advancedOptions);
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    separator->setFixedHeight(2);
+    separator->setLineWidth(1);
+    advLayout->addWidget(separator, row, 0, 2, 4); // row, col, rowspan, colspan
+    row += 2;
+
+    anariRenderingWidget = new AnariRenderingWidget(this, renderAtts, advancedOptions);
+    int anariRowCount = anariRenderingWidget->GetRowCount();
+    advLayout->addWidget(anariRenderingWidget, row, 0, anariRowCount, 4);
+    row += anariRowCount;
+#endif
+
 #ifdef VISIT_OSPRAY
     // Create the OSPRay rendering toggle
     osprayRenderingToggle = new QCheckBox(tr("OSPRay rendering"),
@@ -926,6 +946,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //   (bracketed by #elif defined(HAVE_OSPRAY).
 //
+//   Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+//   ANARI 1.0
+//
 // ****************************************************************************
 
 void
@@ -1054,6 +1077,62 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             osprayShadowsToggle->blockSignals(true);
             osprayShadowsToggle->setChecked(renderAtts->GetOsprayShadows());
             osprayShadowsToggle->blockSignals(false);
+            break;
+#endif
+#ifdef VISIT_ANARI
+        case RenderingAttributes::ID_anariRendering:
+            anariRenderingWidget->SetChecked(renderAtts->GetAnariRendering());
+            break;
+        case RenderingAttributes::ID_anariSPP:
+            anariRenderingWidget->UpdateDenoiserSelection(renderAtts->GetUseAnariDenoiser());
+            break;
+        case RenderingAttributes::ID_anariLibrary:
+            anariRenderingWidget->UpdateLibraryName(renderAtts->GetAnariLibrary());
+            break;
+        case RenderingAttributes::ID_anariLibrarySubtype:
+            anariRenderingWidget->UpdateLibrarySubtypes(renderAtts->GetAnariLibrarySubtype());
+            break;
+        case RenderingAttributes::ID_anariRendererSubtype:
+            anariRenderingWidget->UpdateRendererSubtypes(renderAtts->GetAnariRendererSubtype());
+            break;
+        case RenderingAttributes::ID_anariLightFalloff:
+            anariRenderingWidget->UpdateLightFalloff(renderAtts->GetAnariLightFalloff());
+            break;
+        case RenderingAttributes::ID_anariAmbientIntensity:
+            anariRenderingWidget->UpdateAmbientIntensity(renderAtts->GetAnariAmbientIntensity());
+            break;
+        case RenderingAttributes::ID_anariMaxDepth:
+            anariRenderingWidget->UpdateMaxDepth(renderAtts->GetAnariMaxDepth());
+            break;
+        case RenderingAttributes::ID_anariRValue:
+            anariRenderingWidget->UpdateRValue(renderAtts->GetAnariRValue());
+            break;
+        case RenderingAttributes::ID_anariDebugMethod:
+            anariRenderingWidget->UpdateDebugMethod(renderAtts->GetAnariDebugMethod());
+            break;
+        case RenderingAttributes::ID_usdDir:
+            anariRenderingWidget->UpdateUSDOutputLocation(renderAtts->GetUsdDir());
+            break;
+        case RenderingAttributes::ID_usdAtCommit:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::COMMIT, renderAtts->GetUsdAtCommit());
+            break;
+        case RenderingAttributes::ID_usdOutputBinary:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::BINARY, renderAtts->GetUsdOutputBinary());
+            break;
+        case RenderingAttributes::ID_usdOutputMaterial:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::MATERIAL, renderAtts->GetUsdOutputMaterial());
+            break;
+        case RenderingAttributes::ID_usdOutputPreviewSurface:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::PREVIEW, renderAtts->GetUsdOutputPreviewSurface());
+            break;
+        case RenderingAttributes::ID_usdOutputMDL:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::MDL, renderAtts->GetUsdOutputMDL());
+            break;
+        case RenderingAttributes::ID_usdOutputMDLColors:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::MDLCOLORS, renderAtts->GetUsdOutputMDLColors());
+            break;
+        case RenderingAttributes::ID_usdOutputDisplayColors:
+            anariRenderingWidget->UpdateUSDParameter(USDParameter::DISPLAY, renderAtts->GetUsdOutputDisplayColors());
             break;
 #endif
         case RenderingAttributes::ID_scalableActivationMode:

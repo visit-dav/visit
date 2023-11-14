@@ -128,6 +128,64 @@
     <Field name="osprayShadows" label="OSPRay shadows" type="bool">
       false
     </Field>
+    <Field name="anariRendering" label="ANARI Rendering" type="bool">
+      false
+    </Field>
+    <Field name="anariSPP" label="ANARI Samples Per Pixel" type="int">
+      1
+    </Field>
+    <Field name="anariAO" label="ANARI Ambient Occlusion Samples" type="int">
+      0
+    </Field>
+    <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
+      environment
+    </Field>
+    <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
+      default
+    </Field>
+    <Field name="anariRendererSubtype" label="ANARI Renderer Subtype" type="string">
+      default
+    </Field>
+    <Field name="useAnariDenoiser" label="ANARI Denoiser" type="bool">
+      false
+    </Field>
+    <Field name="anariLightFalloff" label="ANARI Light Falloff" type="float">
+      1.000000
+    </Field>
+    <Field name="anariAmbientIntensity" label="ANARI Ambient Intensity" type="float">
+      1.000000
+    </Field>
+    <Field name="anariMaxDepth" label="ANARI Max Depth" type="int">
+      0
+    </Field>
+    <Field name="anariRValue" label="ANARI R Value" type="float">
+      1.000000
+    </Field>
+    <Field name="anariDebugMethod" label="ANARI Debug Method" type="string">
+    </Field>
+    <Field name="usdDir" label="USD Output Directory" type="string">
+    </Field>
+    <Field name="usdAtCommit" label="USD At Commit" type="bool">
+      false
+    </Field>
+    <Field name="usdOutputBinary" label="USD Output Binary" type="bool">
+      true
+    </Field>
+    <Field name="usdOutputMaterial" label="USD Output Material" type="bool">
+      true
+    </Field>
+    <Field name="usdOutputPreviewSurface" label="USD Output Preview Surface" type="bool">
+      true
+    </Field>
+    <Field name="usdOutputMDL" label="USD Output MDL" type="bool">
+      true
+    </Field>
+    <Field name="usdOutputMDLColors" label="USD Output MDL Colors" type="bool">
+      true
+    </Field>
+    <Field name="usdOutputDisplayColors" label="USD Output Display Colors" type="bool">
+      true
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">

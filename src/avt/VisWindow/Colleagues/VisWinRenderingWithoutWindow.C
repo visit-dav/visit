@@ -140,6 +140,9 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Kevin Griffin, Thu 26 Oct 2023 09:51:22 AM PDT
+//    Added ANARI
+//
 // ****************************************************************************
 
 void
@@ -165,6 +168,28 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
         {
             canvas->SetUseShadows(osprayShadows);
             canvas->SetPass(osprayPass);
+        }
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
+    }
+#endif
+
+#ifdef VISIT_ANARI
+    if(GetAnariRendering())
+    {
+        if(!anariPassValid)
+        {
+            if(anariPass != nullptr)
+            {
+                anariPass->Delete();
+            }
+
+            anariPass = CreateAnariPass();
+            canvas->SetPass(anariPass);
+            anariPassValid = true;
         }
     }
     else
@@ -269,4 +294,3 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
     // vtkOpenGLRenderWindow::ReportCapabilities()
 
 }
-

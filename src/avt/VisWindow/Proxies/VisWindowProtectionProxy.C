@@ -1236,3 +1236,362 @@ VisWindowProtectionProxy::ProxiedGetOsprayShadows()
     return viswin->GetOsprayShadows();
 }
 #endif
+
+#ifdef VISIT_ANARI
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariRendering
+//
+// Purpose:     Get the ANARI rendering flag
+//
+// Returns:     true if ANARI rendering is selected, false otherwise
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetAnariRendering()
+{
+    return viswin->GetAnariRendering();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariSPP
+//
+// Purpose:     Get the ANARI samples per pixel
+//
+// Returns:     samples per pixel
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetAnariSPP()
+{
+    return viswin->GetAnariSPP();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariAO
+//
+// Purpose:     Get the ambient occlusion samples
+//
+// Returns:     AO samples
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetAnariAO()
+{
+    return viswin->GetAnariAO();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariLibraryName
+//
+// Purpose:     Get ANARI back-end library name
+//
+// Returns:     back-end library name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+std::string
+VisWindowProtectionProxy::ProxiedGetAnariLibraryName()
+{
+    return viswin->GetAnariLibraryName();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariLibrarySubtype
+//
+// Purpose:     Get ANARI back-end library subtype name
+//
+// Returns:     back-end library subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+std::string
+VisWindowProtectionProxy::ProxiedGetAnariLibrarySubtype()
+{
+    return viswin->GetAnariLibrarySubtype();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariRendererSubtype
+//
+// Purpose:     Get ANARI back-end renderer subtype name
+//
+// Returns:     back-end renderer subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+std::string
+VisWindowProtectionProxy::ProxiedGetAnariRendererSubtype()
+{
+    return viswin->GetAnariRendererSubtype();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUseAnariDenoiser
+//
+// Purpose:     Get the denoiser flag
+//
+// Returns:     true if the denoiser should be used when rendering the image,
+//              otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUseAnariDenoiser()
+{
+    return viswin->GetUseAnariDenoiser();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariLightFalloff
+//
+// Purpose:     Get the light falloff value
+//
+// Returns:     light falloff value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+float
+VisWindowProtectionProxy::ProxiedGetAnariLightFalloff()
+{
+    return viswin->GetAnariLightFalloff();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariAmbientIntensity
+//
+// Purpose:     Get the ambient intensity value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+float
+VisWindowProtectionProxy::ProxiedGetAnariAmbientIntensity()
+{
+    return viswin->GetAnariAmbientIntensity();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariMaxDepth
+//
+// Purpose:     Get the max depth
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetAnariMaxDepth()
+{
+    return viswin->GetAnariMaxDepth();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariRValue
+//
+// Purpose:     Get the R value
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+float
+VisWindowProtectionProxy::ProxiedGetAnariRValue()
+{
+    return viswin->GetAnariRValue();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetAnariDebugMethod
+//
+// Purpose:     Get the debug method to use by the debug renderer.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+std::string
+VisWindowProtectionProxy::ProxiedGetAnariDebugMethod()
+{
+    return viswin->GetAnariDebugMethod();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdDir
+//
+// Purpose:     Get the directory for saving USD output.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+std::string
+VisWindowProtectionProxy::ProxiedGetUsdDir()
+{
+    return viswin->GetUsdDir();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdAtCommit
+//
+// Purpose:     Get the output USD at anariCommit flag.
+//
+// Returns:     true if USD output is created when anariCommit is called,
+//              otherwise USD output is created when anariRenderFrame is called
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdAtCommit()
+{
+    return viswin->GetUsdAtCommit();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdOutputBinary
+//
+// Purpose:     Get the output USD in binary format flag.
+//
+// Returns:     true if USD output is binary, otherwise USD output is text.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdOutputBinary()
+{
+    return viswin->GetUsdOutputBinary();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdOutputMaterial
+//
+// Purpose:     Get the output USD material objects flag.
+//
+// Returns:     true if USD material objects should be output, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdOutputMaterial()
+{
+    return viswin->GetUsdOutputMaterial();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdOutputPreviewSurface
+//
+// Purpose:     Get the output USD previewsurface shader prims for material
+//              objects flag.
+//
+// Returns:     true if USD previewsurface shader prims should be output for
+//              material objects, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdOutputPreviewSurface()
+{
+    return viswin->GetUsdOutputPreviewSurface();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdOutputMDL
+//
+// Purpose:     Get the output USD mdl shader prims for material objects flag.
+//
+// Returns:     true if USD mdl shader prims should be output for material
+//              objects, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdOutputMDL()
+{
+    return viswin->GetUsdOutputMDL();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdOutputMDLColors
+//
+// Purpose:     Get the output USD mdl colors for material objects flag.
+//
+// Returns:     true if USD mdl colors should be included in the output for
+//              material objects, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdOutputMDLColors()
+{
+    return viswin->GetUsdOutputMDLColors();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsdOutputDisplayColors
+//
+// Purpose:     Get the output USD display colors flag.
+//
+// Returns:     true if USD display colors should be included in the output,
+//              otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsdOutputDisplayColors()
+{
+    return viswin->GetUsdOutputDisplayColors();
+}
+#endif

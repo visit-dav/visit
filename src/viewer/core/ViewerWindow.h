@@ -738,6 +738,48 @@ public:
     void SetOsprayShadows(bool);
     bool GetOsprayShadows() const;
 #endif
+#ifdef VISIT_ANARI
+    void                SetAnariRendering(const bool enabled);
+    bool                GetAnariRendering() const;
+    void                SetAnariSPP(const int val);
+    int                 GetAnariSPP() const;
+    void                SetAnariAO(const int val);
+    int                 GetAnariAO() const;
+    void                SetAnariLibraryName(const std::string name);
+    std::string         GetAnariLibraryName() const;
+    void                SetAnariLibrarySubtype(const std::string subtype);
+    std::string         GetAnariLibrarySubtype() const;
+    void                SetAnariRendererSubtype(const std::string subtype);
+    std::string         GetAnariRendererSubtype() const;
+    void                SetUseAnariDenoiser(const bool enabled);
+    bool                GetUseAnariDenoiser() const;
+    void                SetAnariLightFalloff(const float val);
+    float               GetAnariLightFalloff() const;
+    void                SetAnariAmbientIntensity(const float val);
+    float               GetAnariAmbientIntensity() const;
+    void                SetAnariMaxDepth(const int val);
+    int                 GetAnariMaxDepth() const;
+    void                SetAnariRValue(const float val);
+    float               GetAnariRValue() const;
+    void                SetAnariDebugMethod(const std::string method);
+    std::string         GetAnariDebugMethod() const;
+    void                SetUsdDir(const std::string usdDir);
+    std::string         GetUsdDir() const;
+    void                SetUsdAtCommit(const bool val);
+    bool                GetUsdAtCommit() const;
+    void                SetUsdOutputBinary(const bool val);
+    bool                GetUsdOutputBinary() const;
+    void                SetUsdOutputMaterial(const bool val);
+    bool                GetUsdOutputMaterial() const;
+    void                SetUsdOutputPreviewSurface(const bool val);
+    bool                GetUsdOutputPreviewSurface() const;
+    void                SetUsdOutputMDL(const bool val);
+    bool                GetUsdOutputMDL() const;
+    void                SetUsdOutputMDLColors(const bool val);
+    bool                GetUsdOutputMDLColors() const;
+    void                SetUsdOutputDisplayColors(const bool val);
+    bool                GetUsdOutputDisplayColors() const;
+#endif
 
     void Lineout(const bool);
 

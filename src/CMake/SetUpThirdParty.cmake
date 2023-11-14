@@ -553,6 +553,7 @@ endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/FindANARI.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
 if(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0")
@@ -637,4 +638,3 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 endif()
 
 unset(VISIT_TP_PERMS)
-

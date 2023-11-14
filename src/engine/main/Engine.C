@@ -775,7 +775,7 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
-// 
+//
 //   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
@@ -1548,7 +1548,7 @@ Engine::ConnectViewer(int *argc, char **argv[])
 // Function: PAR_EventLoop
 //
 // Purpose:
-//   This is the main event loop for the engine. The manager process executes
+//   This is the main event loop for the engine. The master process executes
 //   the serial event loop and its xfer object broadcasts the viewer's control
 //   data to the xfer objects on the other processors.
 //
@@ -1568,7 +1568,7 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    Note that this is a small hack.
 //
 //    Brad Whitlock, Thu Mar 15 14:32:33 PST 2001
-//    Rewrote it so the manager process uses the new & improved serial
+//    Rewrote it so the master process uses the new & improved serial
 //    event loop. It is also set up to tell the other processes to die if
 //    we lost the connection to the viewer.
 //
@@ -1622,7 +1622,7 @@ Engine::PAR_EventLoop()
 {
     if (PAR_UIProcess())
     {
-        // The manager process executes the serial event loop since it
+        // The master process executes the serial event loop since it
         // communicates with the viewer.
         bool errFlag = EventLoop();
 
@@ -2354,7 +2354,14 @@ Engine::ProcessCommandLine(int argc, char **argv)
             avtCallback::SetUseOSPRay(true);
         }
 #endif
+#ifdef VISIT_ANARI
+        else if (strcmp(argv[i], "-anari") == 0)
+        {
+            debug5 << "Engine found ANARI flag" << endl;
+            avtCallback::SetUseAnari(true);
+        }
     }
+#endif
     avtCallback::SetSoftwareRendering(!haveHWAccel);
 }
 
@@ -3340,9 +3347,9 @@ Engine::SendKeepAliveReply()
 // ****************************************************************************
 
 bool
-Engine::EngineAbortCallbackParallel(void *data, bool informWorkers)
+Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 {
-    (void)informWorkers;
+    (void)informSlaves;
 
     // If the viewer is not connected, return.
     if(data == NULL)
@@ -3384,7 +3391,7 @@ Engine::EngineAbortCallbackParallel(void *data, bool informWorkers)
 
 #ifdef PARALLEL
     // If needed, tell the non-ui processes to abort as well
-    if (abort && informWorkers)
+    if (abort && informSlaves)
         xfer->SendInterruption(INTERRUPT_MESSAGE_TAG);
 #endif
     return abort;

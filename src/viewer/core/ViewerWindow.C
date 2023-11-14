@@ -6167,8 +6167,8 @@ ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
 //   Set the imagePan to zero so that plot is centered on the pick point
 //   even if the image is panned. Added a call to UpdateViewAtts so that
 //   the view attributes displayed in the GUI are updated as well as
-//   handling locked views. 
-//   
+//   handling locked views.
+//
 // ****************************************************************************
 
 void
@@ -8699,6 +8699,651 @@ bool
 ViewerWindow::GetOsprayShadows() const
 {
     return visWindow->GetOsprayShadows();
+}
+#endif
+
+#ifdef VISIT_ANARI
+// ****************************************************************************
+// Method:  ViewerWindow::SetAnariRendering
+//
+// Purpose: Set/Get ANARI rendering flag
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariRendering(const bool enabled)
+{
+    visWindow->SetAnariRendering(enabled);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetAnariRendering
+//
+// Purpose: Set/Get ANARI rendering flag
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetAnariRendering() const
+{
+    return visWindow->GetAnariRendering();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetUseAnariDenoiser
+//
+// Purpose: Set/Get ANARI denoiser flag
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUseAnariDenoiser(const bool enabled)
+{
+    visWindow->SetUseAnariDenoiser(enabled);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetUseAnariDenoiser
+//
+// Purpose: Set/Get ANARI denoiser flag
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUseAnariDenoiser() const
+{
+    return visWindow->GetUseAnariDenoiser();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetAnariSPP
+//
+// Purpose: Set ANARI samples per pixel
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariSPP(const int val)
+{
+    visWindow->SetAnariSPP(val);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetAnariSPP
+//
+// Purpose: Get ANARI samples per pixel
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetAnariSPP() const
+{
+    return visWindow->GetAnariSPP();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetAnariAO
+//
+// Purpose: Set ANARI ambient occlusion samples per pixel
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariAO(const int val)
+{
+    visWindow->SetAnariAO(val);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetAnariAO
+//
+// Purpose: Get ANARI ambient occlusion samples per pixel
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetAnariAO() const
+{
+    return visWindow->GetAnariAO();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetAnariLibraryName
+//
+// Purpose: Set ANARI back-end device library name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariLibraryName(const std::string name)
+{
+    visWindow->SetAnariLibraryName(name);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetAnariLibraryName
+//
+// Purpose: Get ANARI back-end device library name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+std::string
+ViewerWindow::GetAnariLibraryName() const
+{
+    return visWindow->GetAnariLibraryName();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetAnariLibrarySubtype
+//
+// Purpose: Set ANARI back-end device library subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariLibrarySubtype(const std::string subtype)
+{
+    visWindow->SetAnariLibrarySubtype(subtype);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetAnariLibrarySubtype
+//
+// Purpose: Get ANARI back-end device library subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+std::string
+ViewerWindow::GetAnariLibrarySubtype() const
+{
+    return visWindow->GetAnariLibrarySubtype();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetAnariRendererSubtype
+//
+// Purpose: Set ANARI back-end device renderer subtype
+//
+// Arguments:
+//   subtype the renderer subtype name
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariRendererSubtype(const std::string subtype)
+{
+    visWindow->SetAnariRendererSubtype(subtype);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetAnariRendererSubtype
+//
+// Purpose: Get ANARI back-end renderer subtype
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+std::string
+ViewerWindow::GetAnariRendererSubtype() const
+{
+    return visWindow->GetAnariRendererSubtype();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetAnariLightFalloff
+//
+// @see VisWindow::SetAnariLightFalloff
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariLightFalloff(const float val)
+{
+    visWindow->SetAnariLightFalloff(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetAnariLightFalloff
+//
+// @see VisWindow::GetAnariLightFalloff
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+float
+ViewerWindow::GetAnariLightFalloff() const
+{
+    return visWindow->GetAnariLightFalloff();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetAnariAmbientIntensity
+//
+// @see VisWindow::SetAnariAmbientIntensity
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariAmbientIntensity(const float val)
+{
+    visWindow->SetAnariAmbientIntensity(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetAnariAmbientIntensity
+//
+// @see VisWindow::GetAnariAmbientIntensity
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+float
+ViewerWindow::GetAnariAmbientIntensity() const
+{
+    return visWindow->GetAnariAmbientIntensity();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetAnariMaxDepth
+//
+// @see VisWindow::SetAnariMaxDepth
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariMaxDepth(const int val)
+{
+    visWindow->SetAnariMaxDepth(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetAnariMaxDepth
+//
+// @see VisWindow::GetAnariMaxDepth
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetAnariMaxDepth() const
+{
+    return visWindow->GetAnariMaxDepth();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetAnariRValue
+//
+// @see VisWindow::SetAnariRValue
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariRValue(const float val)
+{
+    visWindow->SetAnariRValue(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetAnariRValue
+//
+// @see VisWindow::GetAnariRValue
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+float
+ViewerWindow::GetAnariRValue() const
+{
+    return visWindow->GetAnariRValue();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetAnariDebugMethod
+//
+// @see VisWindow::SetAnariDebugMethod
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnariDebugMethod(const std::string method)
+{
+    visWindow->SetAnariDebugMethod(method);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetAnariDebugMethod
+//
+// @see VisWindow::GetAnariDebugMethod
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+std::string
+ViewerWindow::GetAnariDebugMethod() const
+{
+    return visWindow->GetAnariDebugMethod();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdDir
+//
+// @see VisWindow::SetUsdDir
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdDir(const std::string usdDir)
+{
+     visWindow->SetUsdDir(usdDir);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdDir
+//
+// @see VisWindow::GetUsdDir
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+std::string
+ViewerWindow::GetUsdDir() const
+{
+    return visWindow->GetUsdDir();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdAtCommit
+//
+// @see VisWindow::SetUsdAtCommit
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdAtCommit(const bool val)
+{
+    visWindow->SetUsdAtCommit(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdAtCommit
+//
+// @see VisWindow::GetUsdAtCommit
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdAtCommit() const
+{
+    return visWindow->GetUsdAtCommit();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdOutputBinary
+//
+// @see VisWindow::SetUsdOutputBinary
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdOutputBinary(const bool val)
+{
+    visWindow->SetUsdOutputBinary(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdOutputBinary
+//
+// @see VisWindow::GetUsdOutputBinary
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdOutputBinary() const
+{
+    return visWindow->GetUsdOutputBinary();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdOutputMaterial
+//
+// @see VisWindow::SetUsdOutputMaterial
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdOutputMaterial(const bool val)
+{
+    visWindow->SetUsdOutputMaterial(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdOutputMaterial
+//
+// @see VisWindow::GetUsdOutputMaterial
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdOutputMaterial() const
+{
+    return visWindow->GetUsdOutputMaterial();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdOutputPreviewSurface
+//
+// @see VisWindow::SetUsdOutputPreviewSurface
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdOutputPreviewSurface(const bool val)
+{
+    visWindow->SetUsdOutputPreviewSurface(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdOutputPreviewSurface
+//
+// @see VisWindow::GetUsdOutputPreviewSurface
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdOutputPreviewSurface() const
+{
+    return visWindow->GetUsdOutputPreviewSurface();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdOutputMDL
+//
+// @see VisWindow::SetUsdOutputMDL
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdOutputMDL(const bool val)
+{
+    visWindow->SetUsdOutputMDL(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdOutputMDL
+//
+// @see VisWindow::GetUsdOutputMDL
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdOutputMDL() const
+{
+    return visWindow->GetUsdOutputMDL();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdOutputMDLColors
+//
+// @see VisWindow::SetUsdOutputMDLColors
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdOutputMDLColors(const bool val)
+{
+    visWindow->SetUsdOutputMDLColors(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdOutputMDLColors
+//
+// @see VisWindow::GetUsdOutputMDLColors
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdOutputMDLColors() const
+{
+    return visWindow->GetUsdOutputMDLColors();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsdOutputDisplayColors
+//
+// @see VisWindow::SetUsdOutputDisplayColors
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsdOutputDisplayColors(const bool val)
+{
+    visWindow->SetUsdOutputDisplayColors(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsdOutputDisplayColors
+//
+// @see VisWindow::GetUsdOutputDisplayColors
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsdOutputDisplayColors() const
+{
+    return visWindow->GetUsdOutputDisplayColors();
 }
 #endif
 
