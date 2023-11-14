@@ -5084,7 +5084,7 @@ y expresiones generadas automáticamente</translation>
     <message>
         <location filename="../../operators/ExtrudeStacked/QvisExtrudeStackedWindow.C" line="195"/>
         <source>Reset all</source>
-        <translation type="unfinished">Resetear todo</translation>
+        <translation type="unfinished">Reiniciar todo</translation>
     </message>
     <message>
         <location filename="../../operators/ExtrudeStacked/QvisExtrudeStackedWindow.C" line="202"/>
@@ -10910,7 +10910,7 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="790"/>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2871"/>
         <source>Sample toroidally</source>
-        <translation type="unfinished">Muestra toroidal</translation>
+        <translation type="unfinished">Muestrear toroidalmente</translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2848"/>
@@ -22118,7 +22118,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1249"/>
         <source>Ray Cast</source>
-        <translation type="unfinished">Rayo Elenco</translation>
+        <translation type="unfinished">Rayo trazado</translation>
     </message>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1253"/>
@@ -22330,7 +22330,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="940"/>
         <source>Parallel Per Rank</source>
-        <translation type="unfinished">Paralelo por rango</translation>
+        <translation type="unfinished">Paralelo por fila</translation>
     </message>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="955"/>
@@ -22355,7 +22355,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="1240"/>
         <source>Serial Rendering</source>
-        <translation type="unfinished">Representación en serie</translation>
+        <translation type="unfinished">Renderizado secuencial</translation>
     </message>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="1241"/>
@@ -22370,7 +22370,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="1243"/>
         <source>Integration (grey scale)</source>
-        <translation type="unfinished">Integration (grey scale)</translation>
+        <translation type="unfinished">Integración (escala de grises)</translation>
     </message>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="1245"/>
@@ -22390,7 +22390,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="1372"/>
         <source>Sci Vis</source>
-        <translation type="unfinished">ciencia ficción</translation>
+        <translation type="unfinished">Sci Vis</translation>
     </message>
     <message>
         <location filename="../../plots/VolumeVTK9/QvisVolumePlotWindow.C" line="1373"/>
@@ -22699,7 +22699,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../gui/QvisXRayImageQueryWidget.C" line="216"/>
         <source>Filenaming scheme</source>
-        <translation type="unfinished">Filenaming scheme</translation>
+        <translation type="unfinished">Esquema de nombres de archivos</translation>
     </message>
     <message>
         <source>Family output files</source>
@@ -24309,7 +24309,7 @@ equality calculations</source>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="130"/>
         <source>MDServer DEFINES</source>
-        <translation type="unfinished">MDServer DEFINE</translation>
+        <translation type="unfinished">MDServidor DEFINES</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="135"/>
@@ -24319,7 +24319,7 @@ equality calculations</source>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="140"/>
         <source>MDServer LDFLAGS</source>
-        <translation type="unfinished">MDServer LDFLAGS</translation>
+        <translation type="unfinished">MDServidor LDFLAGS</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="145"/>
@@ -24354,17 +24354,17 @@ equality calculations</source>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="178"/>
         <source>Engine DEFINES (par)</source>
-        <translation type="unfinished">Motor DEFINE (par)</translation>
+        <translation type="unfinished">Engine DEFINES (par)</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="183"/>
         <source>Engine CXXFLAGS (par)</source>
-        <translation type="unfinished">Motor CXXFLAGS (par)</translation>
+        <translation type="unfinished">Engine CXXFLAGS (par)</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="188"/>
         <source>Engine LDFLAGS (par)</source>
-        <translation type="unfinished">Motor LDFLAGS (par)</translation>
+        <translation type="unfinished">Engine LDFLAGS (par)</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="193"/>
