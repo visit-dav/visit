@@ -46,14 +46,13 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     set(errmsgtail "To remove this warning, either install sphinx or set VISIT_ENABLE_MANUALS to false.")
     if(WIN32)
         # Need a different sphinx build command for windows
-        if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py)
+        if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build.exe)
             message(WARNING "Manuals are enabled but"
-                   " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py"
+                   " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build.exe"
                    " does not exist so manuals will not be built. ${errmsgtail}")
             return()
         endif()
-        set(sphinx_build_cmd "${VISIT_PYTHON_DIR}/python.exe \ "
-              "${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py")
+        set(sphinx_build_cmd ${VISIT_PYTHON_DIR}/Scripts/sphinx-build.exe)
     else()
         if(NOT EXISTS ${VISIT_PYTHON_DIR}/bin/sphinx-build)
             message(WARNING "Manuals are enabled but"
