@@ -131,8 +131,8 @@ IF(VISIT_PYTHON_FILTERS)
                 COMMAND ${CMAKE_COMMAND} -E copy_directory
                         ${VTK_PY_WRAPPERS_DIR}
                         ${VISIT_LIBRARY_DIR}/site-packages
-                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules"
-      )
+                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules")
+      visit_add_to_util_builds(vtk_python_modules)
   endif()
 ENDIF(VISIT_PYTHON_FILTERS)
 
