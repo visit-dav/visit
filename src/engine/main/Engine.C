@@ -2360,8 +2360,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
             debug5 << "Engine found ANARI flag" << endl;
             avtCallback::SetUseAnari(true);
         }
-    }
 #endif
+    }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
 }
 
