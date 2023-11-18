@@ -55,7 +55,7 @@ AnariRenderingWidget::AnariRenderingWidget(QvisRenderingWindow *qrw,
     renderingWindow(qrw),
     renderingAttributes(ra),
     backendStackedLayout(nullptr),
-    rendererParams(),
+    rendererParams(new std::vector<std::string>()),
     totalRows(0),
     renderingGroup(nullptr),
     libraryName(nullptr),
@@ -138,7 +138,7 @@ AnariRenderingWidget::CreateGeneralWidget(int &rows)
     gridLayout->setColumnStretch(3, 2);
     gridLayout->setColumnStretch(4, 5);
 
-    libraryName = new QLineEdit("environment", generalOptionsWidget);
+    libraryName = new QLineEdit("", generalOptionsWidget);
     connect(libraryName, &QLineEdit::editingFinished,
             this, &AnariRenderingWidget::libraryChanged);
 
@@ -176,7 +176,6 @@ AnariRenderingWidget::CreateGeneralWidget(int &rows)
 
     gridLayout->addItem(new QSpacerItem(10, 10), rows++, 3, 1, 3);
 
-    libraryChanged();
     return generalOptionsWidget;
 }
 
@@ -362,7 +361,7 @@ AnariRenderingWidget::CreateUSDWidget(int &rows)
     QLabel *locationLabel = new QLabel("Directory");
     locationLabel->setToolTip(tr("Output location for saving the USD files"));
 
-    dirLineEdit = new QLineEdit(* outputDir);
+    dirLineEdit = new QLineEdit(*outputDir);
     connect(dirLineEdit, &QLineEdit::editingFinished, this, &AnariRenderingWidget::outputLocationChanged);
     outputLocationChanged();
 
@@ -707,14 +706,7 @@ AnariRenderingWidget::UpdateLibraryName(const std::string libname)
 {
     libraryName->blockSignals(true);
     libraryName->setText(QString::fromStdString(libname));
-    // int index =  libraryNames->findText(textItem);
-
-    // if(index == -1)
-    // {
-    //     libraryNames->addItem(textItem);
-    // }
-
-     libraryName->blockSignals(false);
+    libraryName->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -1209,6 +1201,33 @@ AnariRenderingWidget::libraryChanged()
 
         QMessageBox::critical(this, tr("ANARI"), message);
         debug1 << "Could not load the ANARI library (" << libname << ") to update the Rendering UI." << std::endl;
+
+        // Reset Back-end Subtype and Renderer to "default"
+        librarySubtypes->blockSignals(true);
+        librarySubtypes->clear();
+        librarySubtypes->addItem("default");
+        librarySubtypes->blockSignals(false);
+        auto libSubtype =  librarySubtypes->currentText().toStdString();
+        renderingAttributes->SetAnariLibrarySubtype(libSubtype);
+
+        rendererSubtypes->blockSignals(true);
+        rendererSubtypes->clear();
+        rendererSubtypes->addItem("default");
+        rendererSubtypes->blockSignals(false);
+        auto rendererSubtype = rendererSubtypes->currentText().toStdString();
+        renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
+
+        // Clear/Disable all options
+        if(debugMethod != nullptr)
+        {
+            debugMethod->blockSignals(true);
+            debugMethod->clear();
+            debugMethod->setEnabled(false);
+            debugMethod->blockSignals(false);
+        }
+
+        rendererParams.reset(new std::vector<std::string>());
+        UpdateUI();
     }
 }
 
@@ -1535,12 +1554,12 @@ AnariRenderingWidget::outputLocationChanged()
 
     if(directory.exists())
     {
-        renderingAttributes->SetUsdDir( outputDir->toStdString());
+        renderingAttributes->SetUsdDir(outputDir->toStdString());
         renderingWindow->SetUpdateApply(false);
     }
     else
     {
-        QString message = tr("%1 doesn't exist").arg(* outputDir);
+        QString message = tr("%1 doesn't exist").arg(*outputDir);
         QMessageBox::critical(this, tr("USD Output Directory"), message);
     }
 }

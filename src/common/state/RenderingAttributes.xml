@@ -138,7 +138,6 @@
       0
     </Field>
     <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
-      environment
     </Field>
     <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
       default

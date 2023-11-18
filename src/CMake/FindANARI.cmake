@@ -66,7 +66,7 @@ if(EXISTS ${VISIT_ANARI_DIR})
     find_package(anari)
 endif()
 
-if(ANARI_FOUND)
+if(anari_FOUND)
     add_definitions(-DVISIT_ANARI)
 
     # Include directories
@@ -130,4 +130,4 @@ if(ANARI_FOUND)
                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                    WORLD_READ WORLD_EXECUTE
       FOLLOW_SYMLINK_CHAIN)
-endif(ANARI_FOUND)
+endif(anari_FOUND)

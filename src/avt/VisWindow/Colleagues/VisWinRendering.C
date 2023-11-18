@@ -264,7 +264,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     anariRendering = false;
     anariSPP = 1;
     anariAO = 0;
-    anariLibraryName = "environment";
+    anariLibraryName = "";
     anariLibrarySubtype = "default";
     anariRendererSubtype = "default";
     useAnariDenoiser  = false;
@@ -3283,8 +3283,7 @@ VisWinRendering::SetAnariLibraryName(const std::string name)
     {
         anariLibraryName = name;
         vtkAnariRendererNode::SetLibraryName(name.c_str(), canvas);
-        // TODO: change to debug5
-        std::cout << "Back-end Name: " << name.c_str() << std::endl;
+        debug5 << "Back-end Name: " << name.c_str() << std::endl;
         anariPassValid = false;
     }
 }
