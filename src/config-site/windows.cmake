@@ -34,7 +34,11 @@ option(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
 ## BOOST
 ##
 # headers only, MSVC version doesn't matter
+if(MSVC_TOOLSET_VERSION LESS "143")
 VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISIT_WINDOWS_DIR}/MSVC2017/boost_minimal_headers/1.67.0)
+else()
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISIT_WINDOWS_DIR}/MSVC2022/boost_minimal_headers/1.67.0)
+endif()
 
 if(MSVC_TOOLSET_VERSION LESS "143")
 ##
