@@ -111,7 +111,6 @@ function(visit_setup_windows_resources)
     set(VISIT_VCL_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/vcl.rc)
     set(VISIT_CLI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/cli.rc)
     message(STATUS "VISIT_VISIT_RESOURCE_FILE = ${VISIT_VISIT_RESOURCE_FILE}")
-    message("VISIT_VIEWER_RESOURCE_FILE = ${VISIT_VIEWER_RESOURCE_FILE}")
 
     #-------------------------------------------------------------------
     # Create versionvars.rc to include version info into resource files.
