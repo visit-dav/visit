@@ -19,7 +19,7 @@ function(visit_create_windows_installer)
             #
             file(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
             file(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
-            file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
+            file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} CIP_NATIVE)
             file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
             if(CODESIGN_HASH)
                set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
@@ -67,7 +67,7 @@ function(visit_create_windows_installer)
                     COMMAND "${ARCHIVER_NATIVE}" a -m0=LZMA -mx=9
                         ${CBD_NATIVE}/${zipname}
                         windowsbuild/distribution
-                        windowsbuild/MSVC2017
+                        windowsbuild/MSVC2022
                         windowsbuild/thirdparty-projects
                     COMMAND cd ${CBD_NATIVE}
                     WORKING_DIRECTORY ${DEP_NATIVE})
