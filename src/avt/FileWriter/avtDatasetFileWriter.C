@@ -375,6 +375,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    The new arguments (writeMTL, MTLHasTex, and texFilename) are used to
 //    setup needed parameters for the upgraded vtkOBJWriter.
+// 
+//    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
+//    I added some logic to adjust the texture coordinates slightly so that
+//    they do not fall off the ends.
 //
 // ****************************************************************************
 
@@ -437,6 +441,11 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
 
+        // What is going on here?
+        // We want to add a pixel to either end of the color table.
+        // This is to prevent unwanted behavior with the max and min texture coordinates
+        // wrapping around. If we're going to add pixels, we must adjust the texture
+        // coords. We add two pixels and scale appropriately.
         const double ncolors = 256.0; // this must match the GetColors() function
         const double fudge_factor = 1.0 / ncolors;
         const double new_divisor = 1.0 + fudge_factor * 2.0;
