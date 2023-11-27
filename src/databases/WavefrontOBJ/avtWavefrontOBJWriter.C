@@ -243,13 +243,25 @@ avtWavefrontOBJWriter::GetColorTable()
 
         vtkImageData *imageData = vtkImageData::New();
 
-        // x: [0, ncolors - 1], y: [0, 0], z: [0, 0]
-        imageData->SetExtent(0, ncolors - 1, 0, 0, 0, 0);
+        // we need two extra colors, so (ncolors - 1 + 2) -> (ncolors + 1)
+        // x: [0, ncolors + 1], y: [0, 0], z: [0, 0]
+        // these pixels will sit on the ends and act as padding so the texture coords
+        // don't lead to strange behavior with max and min values wrapping around
+        imageData->SetExtent(0, ncolors + 1, 0, 0, 0, 0);
         imageData->SetSpacing(1., 1., 1.);
         imageData->SetOrigin(0., 0., 0.);
         imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
         unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
         unsigned char *ipixel = pixels;
+        
+        // color first one twice
+        *ipixel = rgb[0];
+        ipixel ++;
+        *ipixel = rgb[1];
+        ipixel ++;
+        *ipixel = rgb[2];
+        ipixel ++;
+
         for (int i = 0; i < ncolors * 3; i += 3)
         {
             *ipixel = rgb[i];
@@ -259,6 +271,16 @@ avtWavefrontOBJWriter::GetColorTable()
             *ipixel = rgb[i + 2];
             ipixel ++;
         }
+
+        int last_index = ncolors * 3 - 3;
+
+        // color last one twice
+        *ipixel = rgb[last_index];
+        ipixel ++;
+        *ipixel = rgb[last_index + 1];
+        ipixel ++;
+        *ipixel = rgb[last_index + 2];
+        ipixel ++;
 
         return imageData;
     }

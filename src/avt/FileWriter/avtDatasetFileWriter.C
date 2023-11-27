@@ -436,11 +436,17 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         vtkDataArray *tcoords = scalars->NewInstance();
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
+
+        const double ncolors = 256.0; // this must match the GetColors() function
+        const double fudge_factor = 1.0 / ncolors;
+        const double new_divisor = 1.0 + fudge_factor * 2.0;
+
         for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
         {
             double *p = scalars->GetTuple(i);
             double s[2];
-            s[0] = (*p - range[0]) / gap;
+            // assuming we have ncolors colors and want to add a duplicate to either end
+            s[0] = (((*p - range[0]) / gap) + fudge_factor) / new_divisor;
             s[1] = 0.;
             tcoords->SetTuple(i, s);
         }
