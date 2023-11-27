@@ -132,7 +132,9 @@ IF(VISIT_PYTHON_FILTERS)
                         ${VTK_PY_WRAPPERS_DIR}
                         ${VISIT_LIBRARY_DIR}/site-packages
                 COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules")
-      visit_add_to_util_builds(vtk_python_modules)
+      if(WIN32)
+          visit_add_to_util_builds(vtk_python_modules)
+      endif()
   endif()
 ENDIF(VISIT_PYTHON_FILTERS)
 
