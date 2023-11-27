@@ -49,14 +49,14 @@ function bv_anari_depends_on
 #add information about how to get library..
 function bv_anari_info
 {
-    export ANARI_VERSION=${ANARI_VERSION:-"0.7.2"}
-    export ANARI_SHORT_VERSION=${ANARI_SHORT_VERSION:-"0.7"}
+    export ANARI_VERSION=${ANARI_VERSION:-"0.8.0"}
+    export ANARI_SHORT_VERSION=${ANARI_SHORT_VERSION:-"0.8"}
     export ANARI_FILE=${ANARI_FILE:-"ANARI-SDK-${ANARI_VERSION}.tar.gz"}
     export ANARI_COMPATIBILITY_VERSION=${ANARI_SHORT_VERSION}
-    export ANARI_URL=${ANARI_URL:-"https://github.com/KhronosGroup/ANARI-SDK/archive/refs/tags/v0.7.2.tar.gz"}
+    export ANARI_URL=${ANARI_URL:-"https://github.com/KhronosGroup/ANARI-SDK/archive/refs/tags/v0.8.0.tar.gz"}
     export ANARI_SRC_DIR=${ANARI_SRC_DIR:-"ANARI-SDK-${ANARI_VERSION}"}
     export ANARI_INSTALL_DIR=${ANARI_INSTALL_DIR:-"anari"}
-    export ANARI_MD5_CHECKSUM="e2588bb32c2a6082e9634c4d043b183d"
+    export ANARI_MD5_CHECKSUM="36d994429928b9e8136f3334257544ff"
 }
 
 #print variables used by this module

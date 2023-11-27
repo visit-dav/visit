@@ -32,7 +32,7 @@ Result Variables
 
 This will define the following variables:
 
-``ANARI_FOUND``
+``anari_FOUND``
   True if the system has the ANARI library.
 ``HAVE_ANARI_EXAMPLE``
   True if the ANARI example back-end library (helide) was found.
