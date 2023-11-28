@@ -120,6 +120,7 @@ WavefrontOBJGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.obj");
+    defaultPatterns.push_back("*.mtl");
 
     return defaultPatterns;
 }

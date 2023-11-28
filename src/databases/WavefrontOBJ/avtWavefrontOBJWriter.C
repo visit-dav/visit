@@ -57,6 +57,7 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
 {
     doColor = atts->GetBool("Output colors");
     colorTable = atts->GetString("Color table");
+    invertCT = atts->GetBool("Invert color table");
 }
 
 // ****************************************************************************
@@ -250,14 +251,30 @@ avtWavefrontOBJWriter::GetColorTable()
         imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
         unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
         unsigned char *ipixel = pixels;
-        for (int i = 0; i < ncolors * 3; i += 3)
+
+        if (invertCT)
         {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
+            for (int i = ncolors * 3 - 3; i >= 0; i -= 3)
+            {
+                *ipixel = rgb[i];
+                ipixel ++;
+                *ipixel = rgb[i + 1];
+                ipixel ++;
+                *ipixel = rgb[i + 2];
+                ipixel ++;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < ncolors * 3; i += 3)
+            {
+                *ipixel = rgb[i];
+                ipixel ++;
+                *ipixel = rgb[i + 1];
+                ipixel ++;
+                *ipixel = rgb[i + 2];
+                ipixel ++;
+            }
         }
 
         return imageData;

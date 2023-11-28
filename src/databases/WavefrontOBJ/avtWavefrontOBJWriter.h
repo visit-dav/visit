@@ -61,6 +61,7 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     
     bool                       doColor;
     std::string                colorTable;
+    bool                       invertCT;
 };
 
 
