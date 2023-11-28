@@ -377,8 +377,12 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    setup needed parameters for the upgraded vtkOBJWriter.
 // 
 //    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
-//    I added some logic to adjust the texture coordinates slightly so that
-//    they do not fall off the ends.
+//    Most downstream tools expect to *wrap* textures. This means that textur
+//    coordinate 0.0 is treated identically to texture coordinate 1.0 (e.g. circular
+//    wrapping). However, this means that most downstream tools will *average*
+//    the colors associated with these two texture coordinates, producing a color
+//    that may not be in the table. To work-around this behavior, we *pad* the color
+//    texture duplicating the minimum and maximum color pixels on each end.
 //
 // ****************************************************************************
 
