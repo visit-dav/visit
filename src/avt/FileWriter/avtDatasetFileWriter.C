@@ -377,7 +377,7 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    setup needed parameters for the upgraded vtkOBJWriter.
 // 
 //    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
-//    Most downstream tools expect to *wrap* textures. This means that textur
+//    Most downstream tools expect to *wrap* textures. This means that texture
 //    coordinate 0.0 is treated identically to texture coordinate 1.0 (e.g. circular
 //    wrapping). However, this means that most downstream tools will *average*
 //    the colors associated with these two texture coordinates, producing a color
