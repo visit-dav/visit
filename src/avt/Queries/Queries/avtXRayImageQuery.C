@@ -1484,7 +1484,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 std::stringstream fileName;
                 if (outputDir != ".")
-#ifdef WINDOWS
+#ifdef _WIN32
                     fileName << outputDir.c_str() << "\\" << baseName.str();
 #else
                     fileName << outputDir.c_str() << "/" << baseName.str();
@@ -1505,7 +1505,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             baseName << "output";
 
         // does NOT contain the file extension
-#ifdef WINDOWS
+#ifdef _WIN32
         std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "\\") + baseName.str()};
 #else
         std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "/") + baseName.str()};
