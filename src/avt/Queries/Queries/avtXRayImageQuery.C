@@ -1484,7 +1484,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 std::stringstream fileName;
                 if (outputDir != ".")
+#ifdef WINDOWS
+                    fileName << outputDir.c_str() << "\\" << baseName.str();
+#else
                     fileName << outputDir.c_str() << "/" << baseName.str();
+#endif
                 if (multipleOutputFiles(outputType, numBins))
                     fileName << ".00." << file_extensions[outputType];
                 else
@@ -1501,7 +1505,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             baseName << "output";
 
         // does NOT contain the file extension
+#ifdef WINDOWS
+        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "\\") + baseName.str()};
+#else
         std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "/") + baseName.str()};
+#endif
 
         //
         // Write out the intensity and path length. The path length is only
