@@ -1599,6 +1599,8 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 // Returns:    The new y value.
 //
 // Note:
+//    This function is very similar to ColorControlPointList::EvalCubicSpline.
+//    It would be wise to make changes in both places.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 27 14:02:56 PDT 2012
@@ -1655,6 +1657,8 @@ QvisSpectrumBar::evalCubicSpline(float t, const float *allX, const float *allY, 
 // Returns:
 //
 // Note:
+//    This function is very similar to ColorControlPointList::GetColorsCubicSpline.
+//    It would be wise to make changes in both places.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 27 14:02:56 PDT 2012
