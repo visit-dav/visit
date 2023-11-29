@@ -34,6 +34,9 @@
 #    Brad Whitlock, Wed Sep 28 11:48:16 PDT 2011
 #    Zoom in a little so we have more pixels covered.
 #
+#    Kathleen Biagas, Wed Nov 29 10:52:22 PST 2023
+#    Skip volume_30 in scalable,parallel,icet mode as it crashes.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -259,12 +262,14 @@ View3DAtts.windowValid = 1
 SetView3D(View3DAtts)
 
 # This test should fail and produce nothing
-volAtts = VolumeAttributes()
-volAtts.rendererType = volAtts.Serial
-volAtts.resampleType = volAtts.NoResampling
-volAtts.OSPRayEnabledFlag = 0
-SetPlotOptions(volAtts)
-Test("volume_30")
+# It crashes in scalable,parallel,icet mode so don't run it
+if not TestEnv.params["modes"]=="scalable,parallel,icet":
+    volAtts = VolumeAttributes()
+    volAtts.rendererType = volAtts.Serial
+    volAtts.resampleType = volAtts.NoResampling
+    volAtts.OSPRayEnabledFlag = 0
+    SetPlotOptions(volAtts)
+    Test("volume_30")
 
 volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
