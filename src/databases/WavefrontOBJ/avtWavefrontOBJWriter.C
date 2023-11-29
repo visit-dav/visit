@@ -225,6 +225,9 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 // Creation:    11/03/23
 //
 // Modifications:
+//    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
+//    I added extra pixels on either end of the color table to act as padding
+//    so that texture coordinates do not fall off the ends (and wrap around).
 //
 //****************************************************************************
 
@@ -235,7 +238,8 @@ avtWavefrontOBJWriter::GetColorTable()
     const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
     if (table)
     {
-        // We don't have color tables that have this many control points:
+        // We don't have color tables that have this many control points,
+        // so this should be a good choice for the number of colors.
         const int ncolors = 256;
         unsigned char rgb[ncolors * 3];
         
@@ -243,13 +247,25 @@ avtWavefrontOBJWriter::GetColorTable()
 
         vtkImageData *imageData = vtkImageData::New();
 
-        // x: [0, ncolors - 1], y: [0, 0], z: [0, 0]
-        imageData->SetExtent(0, ncolors - 1, 0, 0, 0, 0);
+        // We need two extra colors, so (ncolors - 1 + 2) -> (ncolors + 1)
+        // hence x: [0, ncolors + 1], y: [0, 0], z: [0, 0]
+        // These pixels will sit on the ends and act as padding so the texture coords
+        // don't lead to strange behavior with max and min values wrapping around
+        imageData->SetExtent(0, ncolors + 1, 0, 0, 0, 0);
         imageData->SetSpacing(1., 1., 1.);
         imageData->SetOrigin(0., 0., 0.);
         imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
         unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
         unsigned char *ipixel = pixels;
+        
+        // the first extra pixel will get the same color as the first real pixel
+        *ipixel = rgb[0];
+        ipixel ++;
+        *ipixel = rgb[1];
+        ipixel ++;
+        *ipixel = rgb[2];
+        ipixel ++;
+
         for (int i = 0; i < ncolors * 3; i += 3)
         {
             *ipixel = rgb[i];
@@ -259,6 +275,15 @@ avtWavefrontOBJWriter::GetColorTable()
             *ipixel = rgb[i + 2];
             ipixel ++;
         }
+
+        // the second (and last) extra pixel will get the same color as the last real pixel
+        int last_index = ncolors * 3 - 3;
+        *ipixel = rgb[last_index];
+        ipixel ++;
+        *ipixel = rgb[last_index + 1];
+        ipixel ++;
+        *ipixel = rgb[last_index + 2];
+        ipixel ++;
 
         return imageData;
     }
