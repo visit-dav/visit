@@ -129,6 +129,7 @@
 
 import os
 import conduit
+import numpy
 
 if not os.path.isdir(out_path("current","queries")):
     os.mkdir(out_path("current","queries"))
@@ -504,7 +505,7 @@ def teardown_bp_test(lite = False):
 # So the diff fails unless we take the int32 type and 
 # cast it to int64.
 def cast_to_wide_int_type_conduit(node, leafname):
-    val = int(node[leafname])
+    val = numpy.int64(node[leafname])
     node.remove_child(leafname)
     node[leafname] = val
 
