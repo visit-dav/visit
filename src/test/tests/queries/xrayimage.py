@@ -125,6 +125,9 @@
 #    images.
 #    Use the python dictionary returned by the query to tell if the query was
 #    successful or not.
+# 
+#    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
+#    Use numpy.int64 to cast to wide types for diff.
 # ----------------------------------------------------------------------------
 
 import os

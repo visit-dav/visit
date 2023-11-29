@@ -1327,6 +1327,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    query xml result.
 //    BOV and rawfloats output logic has been simplified.
 // 
+//    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
+//    Handle windows-style file paths.
+// 
 // ****************************************************************************
 
 void
