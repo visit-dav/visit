@@ -32,6 +32,9 @@ class vtkImageData;
 // 
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    Added doColor, colorTable, and GetColorTable().
+// 
+//    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
+//    Added invert color table option.
 //
 // ****************************************************************************
 

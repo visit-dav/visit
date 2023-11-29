@@ -50,6 +50,9 @@ using     std::vector;
 //  Modifications:
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    Now takes options.
+// 
+//    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
+//    Grab whether or not we want the color table inverted.
 //
 // ****************************************************************************
 
@@ -229,6 +232,9 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 //    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
 //    I added extra pixels on either end of the color table to act as padding
 //    so that texture coordinates do not fall off the ends (and wrap around).
+// 
+//    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
+//    We now handle the inverted color table case.
 //
 //****************************************************************************
 

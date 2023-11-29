@@ -47,6 +47,8 @@ GetWavefrontOBJReadOptions(void)
 //  Creation:   11/03/23
 //
 //  Modifications:
+//    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
+//    Added "Invert color table" option.
 //
 // ****************************************************************************
 
