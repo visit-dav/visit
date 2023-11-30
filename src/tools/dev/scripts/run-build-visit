@@ -146,7 +146,7 @@ then
    export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
    export PATH=/usr/gapps/gcc/gcc-9.1/bin:$PATH
    env CC=/usr/gapps/gcc/gcc-9.1/bin/gcc CXX=/usr/gapps/gcc/gcc-9.1/bin/g++ \
-   ./$build_visit_script --required --optional --parallel --mpich --mesagl --uintah --no-adios2 --no-visit --thirdparty-path /usr/gapps/visit/thirdparty_shared/$version/mesagl --makeflags -j4
+   ./$build_visit_script --required --optional --parallel --mpich --mesagl --uintah --vtk9 --no-adios2 --no-moab --no-visit --thirdparty-path /usr/gapps/visit/thirdparty_shared/$version/mesagl --makeflags -j4
    mv ${build_visit_script}_log ${build_visit_script}_log.mesagl
 fi
 
@@ -174,7 +174,7 @@ then
    export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
    export PATH=/usr/gapps/gcc/gcc-9.1/bin:$PATH
    env CC=/usr/gapps/gcc/gcc-9.1/bin/gcc CXX=/usr/gapps/gcc/gcc-9.1/bin/g++ \
-   ./$build_visit_script --skip-opengl-context-check --required --optional --parallel --mpich --osmesa --uintah --no-adios2 --no-visit --thirdparty-path /usr/gapps/visit/thirdparty_shared/$version/opengl --makeflags -j4
+   ./$build_visit_script --skip-opengl-context-check --required --optional --parallel --mpich --osmesa --uintah --vtk9 --no-adios2 --no-moab --no-visit --thirdparty-path /usr/gapps/visit/thirdparty_shared/$version/opengl --makeflags -j4
    mv ${build_visit_script}_log ${build_visit_script}_log.opengl
 fi
 
