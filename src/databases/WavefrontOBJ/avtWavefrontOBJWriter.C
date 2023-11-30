@@ -254,8 +254,9 @@ avtWavefrontOBJWriter::GetColorTable()
     // so this should be a good choice for the number of colors.
     const int ncolors = 256;
     unsigned char rgb[ncolors * 3];
+    unsigned char alpha[ncolors];
     
-    table->GetColors(rgb, ncolors);
+    table->GetColors(rgb, ncolors, alpha);
 
     vtkImageData *imageData = vtkImageData::New();
 
@@ -266,69 +267,46 @@ avtWavefrontOBJWriter::GetColorTable()
     imageData->SetExtent(0, ncolors + 1, 0, 0, 0, 0);
     imageData->SetSpacing(1., 1., 1.);
     imageData->SetOrigin(0., 0., 0.);
-    imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+    imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 4); // rgba
     unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
     unsigned char *ipixel = pixels;
+
+    auto write_rgba = [&](int index)
+    {
+        int index_times_3 = index * 3;
+        *ipixel = rgb[index_times_3]; // r
+        ipixel ++;
+        *ipixel = rgb[index_times_3 + 1]; // g
+        ipixel ++;
+        *ipixel = rgb[index_times_3 + 2]; // b
+        ipixel ++;
+        *ipixel = alpha[index]; // a
+        ipixel ++;
+    };
 
     if (invertCT)
     {
         // the first extra pixel will get the same color as the first real pixel
-        int last_index = ncolors * 3 - 3;
-        *ipixel = rgb[last_index];
-        ipixel ++;
-        *ipixel = rgb[last_index + 1];
-        ipixel ++;
-        *ipixel = rgb[last_index + 2];
-        ipixel ++;
+        write_rgba(ncolors - 1);
 
         // iterate through the colors in reverse
-        for (int i = ncolors * 3 - 3; i >= 0; i -= 3)
-        {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
-        }
+        for (int i = ncolors - 1; i >= 0; i --)
+            write_rgba(i);
 
         // the second (and last) extra pixel will get the same color as the last real pixel
-        *ipixel = rgb[0];
-        ipixel ++;
-        *ipixel = rgb[1];
-        ipixel ++;
-        *ipixel = rgb[2];
-        ipixel ++;
+        write_rgba(0);
     }
     else
     {
         // the first extra pixel will get the same color as the first real pixel
-        *ipixel = rgb[0];
-        ipixel ++;
-        *ipixel = rgb[1];
-        ipixel ++;
-        *ipixel = rgb[2];
-        ipixel ++;
+        write_rgba(0);
 
         // iterate through the colors
-        for (int i = 0; i < ncolors * 3; i += 3)
-        {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
-        }
+        for (int i = 0; i < ncolors; i ++)
+            write_rgba(i);
 
         // the second (and last) extra pixel will get the same color as the last real pixel
-        int last_index = ncolors * 3 - 3;
-        *ipixel = rgb[last_index];
-        ipixel ++;
-        *ipixel = rgb[last_index + 1];
-        ipixel ++;
-        *ipixel = rgb[last_index + 2];
-        ipixel ++;
+        write_rgba(ncolors - 1);
     }
 
     return imageData;
