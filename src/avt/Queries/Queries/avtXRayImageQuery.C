@@ -25,6 +25,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <QueryArgumentException.h>
+#include <FileFunctions.h>
 
 #include <float.h>
 #include <stdio.h>
@@ -1117,7 +1118,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
 void
 avtXRayImageQuery::SetOutputDir(const std::string &dir)
 {
-    outputDir = Absname("", dir);
+    outputDir = FileFunctions::Absname("", dir);
 }
 
 // ****************************************************************************
