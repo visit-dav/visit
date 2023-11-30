@@ -25,7 +25,6 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <QueryArgumentException.h>
-#include <FileFunctions.h>
 
 #include <float.h>
 #include <stdio.h>
@@ -1118,7 +1117,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
 void
 avtXRayImageQuery::SetOutputDir(const std::string &dir)
 {
-    outputDir = FileFunctions::Absname("", dir);
+    outputDir = (dir == "" ? "." : dir);
 }
 
 // ****************************************************************************
@@ -1487,11 +1486,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 std::stringstream fileName;
-                fileName << outputDir.c_str() << VISIT_SLASH_STRING << baseName.str();
+                if (outputDir != ".")
+                    fileName << outputDir.c_str() << VISIT_SLASH_STRING;
                 if (multipleOutputFiles(outputType, numBins))
-                    fileName << ".00." << file_extensions[outputType];
+                    fileName << baseName.str() << ".00." << file_extensions[outputType];
                 else
-                    fileName << "." << file_extensions[outputType];
+                    fileName << baseName.str() << "." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < NUMFAMILYFILES)
@@ -1504,7 +1504,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             baseName << "output";
 
         // does NOT contain the file extension
-        std::string out_filename_w_path{outputDir + VISIT_SLASH_STRING + baseName.str()};
+        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + VISIT_SLASH_STRING) + baseName.str()};
 
         //
         // Write out the intensity and path length. The path length is only
