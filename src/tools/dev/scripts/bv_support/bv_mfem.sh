@@ -32,13 +32,12 @@ function bv_mfem_depends_on
 
 function bv_mfem_info
 {
-    # NOTE: we are using a special version of MFEM that has not yet been in an MFEM release.
-    export MFEM_VERSION=${MFEM_VERSION:-"4.4"}
+    export MFEM_VERSION=${MFEM_VERSION:-"4.6"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-4"}
-    export MFEM_MD5_CHECKSUM="9c6ca0e2bee45851b49f4a0cda1cacb6"
-    export MFEM_SHA256_CHECKSUM="37250dbef6e97b16dc9ab50973e8d68bc165bb4afcdaf91b3b72c8972c87deef"
+    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-6"}
+    export MFEM_MD5_CHECKSUM="467f246903078e10cf52242ecf3ed1e9"
+    export MFEM_SHA256_CHECKSUM="5fa9465b5bec56bfb777a4d2826fba48d85fbace4aed8b64a2fd4059bf075b15"
 }
 
 function bv_mfem_print
