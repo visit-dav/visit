@@ -146,7 +146,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     if (arr == NULL)
     {
         n->Delete();
-        geom->Delete();
+        if(geom != NULL)
+            geom->Delete();
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "An internal error occurred where "
                    "the surface normals could not be calculated.  Please "
@@ -155,7 +156,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
 
     arr->Register(NULL);
     n->Delete();
-    geom->Delete();
+    if(geom != NULL)
+        geom->Delete();
 
     return arr;
 }
