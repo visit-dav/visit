@@ -3166,6 +3166,9 @@ AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 //   Hank Childs, Thu Jul  9 08:09:26 PDT 2009
 //   Add support for polygons.
 //
+//   Brad Whitlock, Wed Dec  6 15:12:07 PST 2023
+//   Treat 3,4 node polygons as tri,quad.
+//
 // ****************************************************************************
 
 void
@@ -3176,14 +3179,17 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
     for (int i = 0 ; i < nFaces ; i++)
     {
         vtkCell *face = cell->GetFace(i);
-        if (face->GetCellType() == VTK_TRIANGLE)
+        auto nPts = face->GetNumberOfPoints();
+        if (face->GetCellType() == VTK_TRIANGLE
+            || (face->GetCellType() == VTK_POLYGON && nPts == 3))
         {
             nodes[0] = face->GetPointId(0);
             nodes[1] = face->GetPointId(1);
             nodes[2] = face->GetPointId(2);
             list.AddTri(nodes, cellId);
         }
-        else if (face->GetCellType() == VTK_QUAD)
+        else if (face->GetCellType() == VTK_QUAD
+                 || (face->GetCellType() == VTK_POLYGON && nPts == 4))
         {
             nodes[0] = face->GetPointId(0);
             nodes[1] = face->GetPointId(1);
