@@ -1,14 +1,14 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
 ##
 ## ./build_visit3_4_0 generated host.cmake
-## created: Wed Aug  2 13:58:21 PDT 2023
-## system: Linux rztopaz188 4.18.0-425.19.2.1toss.t4.x86_64 #1 SMP Mon Apr 17 14:05:57 PDT 2023 x86_64 x86_64 x86_64 GNU/Linux
-## by: brugger
+## created: Tue Dec  5 14:34:03 PST 2023
+## system: Linux rztopaz572 4.18.0-477.27.1.1toss.t4.x86_64 #1 SMP Tue Sep 19 15:17:56 PDT 2023 x86_64 x86_64 x86_64 GNU/Linux
+## by: justin
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -78,13 +78,13 @@ VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
 ##
 ## Qt
 ##
-SETUP_APP_VERSION(QT 5.10.1)
+SETUP_APP_VERSION(QT 6.4.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/${QT_VERSION}/${VISITARCH})
 
 ##
 ## QWT
 ##
-SETUP_APP_VERSION(QWT 6.1.2)
+SETUP_APP_VERSION(QWT 6.3.0)
 VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
@@ -115,7 +115,7 @@ VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR ${VISITHOME}/ospray/${OSPRAY_VERSION}/${VI
 ##
 ## VTK
 ##
-SETUP_APP_VERSION(VTK 8.1.0)
+SETUP_APP_VERSION(VTK 9.2.6)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)
 VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)
