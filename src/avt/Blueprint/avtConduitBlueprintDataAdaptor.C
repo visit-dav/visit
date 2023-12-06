@@ -1086,72 +1086,138 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 //
+//    Brad Whitlock, Wed Dec  6 11:36:10 PST 2023
+//    Return actual polyhedral and polygonal zones.
+//
 // ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                                           const Node &n_coords,
                                           const Node &n_topo)
 {
-    const Node *coords_ptr = &n_coords;
-    const Node *topo_ptr = &n_topo;
-
-    Node res; // Used as a destination for the generate sides call
-
+    // Make output mesh and add points.
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    vtkUnsignedIntArray *oca = NULL;
-
-    if (n_topo.has_path("elements/shape"))
-    {
-        if (n_topo["elements/shape"].as_string() == "polyhedral" || 
-            n_topo["elements/shape"].as_string() == "polygonal")
-        {
-            Node s2dmap, d2smap, options;
-            blueprint::mesh::topology::unstructured::generate_sides(
-                n_topo,
-                res["topologies/" + n_topo.name()],
-                res["coordsets/" + n_topo["coordset"].as_string()],
-                s2dmap,
-                d2smap);
-
-            unsigned_int_accessor values = d2smap["values"].value();
-
-            oca = vtkUnsignedIntArray::New();
-            oca->SetName("avtOriginalCellNumbers");
-            oca->SetNumberOfComponents(2);
-
-            for (int i = 0; i < values.number_of_elements(); i ++)
-            {
-                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(values[i])};
-                oca->InsertNextTypedTuple(ocdata);
-            }
-
-            coords_ptr = res.fetch_ptr(
-                "coordsets/" + n_topo["coordset"].as_string());
-            topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
-        }
-    }
-
-    // The coords could be changed in the call above, so this must happen
-    // after the conditionals
-    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr,*topo_ptr);
-
+    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords, n_topo);
     ugrid->SetPoints(points);
+    points->Delete();
 
-    if (oca != NULL)
+    std::string element_shape;
+    if (n_topo.has_path("elements/shape"))
+        element_shape = n_topo["elements/shape"].as_string();
+
+    if(element_shape == "polyhedral")
     {
+        // Cell definitions
+        const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
+        const auto elements_sizes = n_topo["elements/sizes"].as_index_t_accessor();
+        const auto nZones = elements_sizes.number_of_elements();
+
+        // Face definitions
+        const auto subelements_connectivity = n_topo["subelements/connectivity"].as_index_t_accessor();
+        const auto subelements_sizes = n_topo["subelements/sizes"].as_index_t_accessor();
+        const auto subelements_offsets = n_topo["subelements/offsets"].as_index_t_accessor();
+
+        // Original cell numbers
+        auto oca = vtkUnsignedIntArray::New();
+        oca->SetName("avtOriginalCellNumbers");
+        oca->SetNumberOfComponents(2);
+
+        // Iterate the connectivity and add zones/faces.
+        conduit::index_t elem_conn_index = 0;
+        vtkNew<vtkIdList> faces;
+        for(conduit::index_t zi = 0; zi < nZones; zi++)
+        {
+            conduit::index_t nZoneFaces = elements_sizes[zi];
+            for(conduit::index_t zfi = 0; zfi < nZoneFaces; zfi++)
+            {
+                auto currentFaceId = elements_connectivity[elem_conn_index++];
+
+                // Now, add the face to the zone.
+                auto faceSize = subelements_sizes[currentFaceId];
+                auto faceOffset = subelements_offsets[currentFaceId];
+                faces->InsertNextId(faceSize);
+                for(conduit::index_t fi = 0; fi < faceSize; fi++)
+                {
+                    faces->InsertNextId(subelements_connectivity[faceOffset + fi]);
+                }
+            }
+            ugrid->InsertNextCell(VTK_POLYHEDRON, nZoneFaces, faces->GetPointer(0));
+            faces->Reset();
+
+            // Add a tuple to the original cell numbers.
+            unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                      static_cast<unsigned int>(zi)};
+            oca->InsertNextTypedTuple(ocdata);
+        }
+
+        // Add original cell numbers zones to see if that cleans up mesh plot.
         ugrid->GetCellData()->AddArray(oca);
         ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
         oca->Delete();
     }
-    
-    //
-    // Now, add explicit topology
-    //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
-    points->Delete();
-    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
-    ca->Delete();
+    else if(element_shape == "polygonal")
+    {
+        const auto elements_sizes = n_topo["elements/sizes"].as_index_t_accessor();
+        const auto emin = elements_sizes.min();
+        const auto emax = elements_sizes.max();
+        if(emin == emax && emin == 3)
+        {
+            // Add as triangles.
+            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
+            ugrid->SetCells(ElementShapeNameToVTKCellType("triangles"), ca);
+            ca->Delete();
+        }
+        else if(emin == emax && emin == 4)
+        {
+            // Add as quads
+            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
+            ugrid->SetCells(ElementShapeNameToVTKCellType("quads"), ca);
+            ca->Delete();
+        }
+        else
+        {
+            // Add as polygons.
+
+            // Original cell numbers
+            auto oca = vtkUnsignedIntArray::New();
+            oca->SetName("avtOriginalCellNumbers");
+            oca->SetNumberOfComponents(2);
+
+            const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
+            const auto nZones = elements_sizes.number_of_elements();
+            conduit::index_t elem_conn_index = 0;
+            vtkNew<vtkIdList> pts;
+            for(conduit::index_t zi = 0; zi < nZones; zi++)
+            {
+                conduit::index_t nZonePoints = elements_sizes[zi];
+                for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
+                {
+                    pts->InsertNextId(elements_connectivity[elem_conn_index++]);
+                }
+                ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
+                pts->Reset();
+
+                // Add a tuple to the original cell numbers.
+                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                          static_cast<unsigned int>(zi)};
+                oca->InsertNextTypedTuple(ocdata);
+            }
+
+            // Add original cell numbers zones to see if that cleans up mesh plot.
+            ugrid->GetCellData()->AddArray(oca);
+            ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+            oca->Delete();
+        }
+    }
+    else
+    {
+        //
+        // Now, add explicit topology
+        //
+        vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
+        ugrid->SetCells(ElementShapeNameToVTKCellType(element_shape), ca);
+        ca->Delete();
+    }
 
     return ugrid;
 }
