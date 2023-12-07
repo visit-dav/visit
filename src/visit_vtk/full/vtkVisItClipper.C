@@ -505,6 +505,8 @@ vtkVisItClipper::GetOtherOutput()
 //  Creation:   Thu Mar 29 14:35:21 PDT 2012
 //
 //  Modifications:
+//    Brad Whitlock, Thu Dec  7 14:37:16 PST 2023
+//    Added GetCellStream.
 //
 // ****************************************************************************
 
@@ -560,7 +562,15 @@ public:
         nCellPoints = nCellPts;
         return ids;
     }
-
+    inline void GetCellStream(vtkIdType cellid, vtkIdList *out)
+    {
+        vtkIdType nCellPts = 0;
+        const auto ptIds = GetCellPoints(cellid, nCellPts);
+        out->Reset();
+        out->Resize(nCellPts);
+        for(vtkIdType i = 0; i < nCellPts; i++)
+            out->SetId(i, ptIds[i]);
+    }
     inline const int *GetDimensions() const { return pt_dims; }
     inline int GetCellType(vtkIdType) const { return cellType; }
 private:
@@ -648,6 +658,15 @@ public:
         pd->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
+    inline void GetCellStream(vtkIdType cellid, vtkIdList *out)
+    {
+        vtkIdType nCellPts = 0;
+        const auto ptIds = GetCellPoints(cellid, nCellPts);
+        out->Reset();
+        out->Resize(nCellPts);
+        for(vtkIdType i = 0; i < nCellPts; i++)
+            out->SetId(i, ptIds[i]);
+    }
 private:
     vtkPolyData *pd;
 };
@@ -676,6 +695,20 @@ public:
 #endif
         ug->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
+    }
+    inline void GetCellStream(vtkIdType cellid, vtkIdList *out)
+    {
+        if(ug->GetCellType(cellid) == VTK_POLYHEDRON)
+            ug->GetFaceStream(cellid, out);
+        else
+        {
+            vtkIdType nCellPts = 0;
+            const auto ptIds = GetCellPoints(cellid, nCellPts);
+            out->Reset();
+            out->Resize(nCellPts);
+            for(vtkIdType i = 0; i < nCellPts; i++)
+                out->SetId(i, ptIds[i]);
+        }
     }
 private:
     vtkUnstructuredGrid *ug;
@@ -707,6 +740,15 @@ public:
     {
         return cellPoints.GetCellPoints(cellId, nCellPts);
     }
+    inline void GetCellStream(vtkIdType cellid, vtkIdList *out)
+    {
+        vtkIdType nCellPts = 0;
+        const auto ptIds = GetCellPoints(cellid, nCellPts);
+        out->Reset();
+        out->Resize(nCellPts);
+        for(vtkIdType i = 0; i < nCellPts; i++)
+            out->SetId(i, ptIds[i]);
+    }
 private:
     vtkStructuredGrid *sg;
     CellPointsGetter   cellPoints;
@@ -726,6 +768,8 @@ private:
 //  Creation:   Mon Mar 26 13:38:48 PDT 2012
 //
 //  Modifications:
+//    Brad Whitlock, Thu Dec  7 14:37:16 PST 2023
+//    Added GetCellStream.
 //
 // ****************************************************************************
 
@@ -756,6 +800,11 @@ public:
 #endif
     {
         return cellPoints.GetCellPoints(cellId, nCellPoints);
+    }
+
+    inline void GetCellStream(vtkIdType cellid, vtkIdList *out)
+    {
+        cellPoints.GetCellStream(cellid, out);
     }
 
     inline void GetPoint(vtkIdType index, double pt[3]) const
@@ -818,6 +867,9 @@ private:
 //    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
 //    Updated to clip cells based on the cellClipStrategy.
 //
+//    Brad Whitlock, Thu Dec  7 14:38:10 PST 2023
+//    Added some polyhedral support.
+//
 // ****************************************************************************
 
 template <typename Bridge, typename ScalarAccess>
@@ -847,7 +899,7 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
 
     vtkIdType nToProcess = (state.CellList != NULL ? state.CellListSize : nCells);
     vtkIdType numIcantClip = 0;
-
+    vtkNew<vtkIdList> stream;
     for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
         // Get the cell details
@@ -856,9 +908,9 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
         int cellType = bridge.GetCellType(cellId);
         vtkIdType nCellPts = 0;
 #if LIB_VERSION_LE(VTK, 8,1,0)
-        vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
+        vtkIdType *cellPts = nullptr;
 #else
-        const vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
+        const vtkIdType *cellPts = nullptr;
 #endif
 
         // If it's something we can't clip, save it for later
@@ -874,6 +926,7 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
           case VTK_PIXEL:
           case VTK_LINE:
           case VTK_VERTEX:
+            cellPts = bridge.GetCellPoints(cellId, nCellPts);
             break;
 
           default:
@@ -881,16 +934,28 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
             if (cellType == VTK_POLYGON &&
                 nCellPts >= 5 && nCellPts <= 8)
             {
+                cellPts = bridge.GetCellPoints(cellId, nCellPts);
                 break;
             }
 
             // everything else; defer for other clipper algorithm
             {
                 if (numIcantClip == 0)
+                {
                     stuff_I_cant_clip->GetCellData()->
                                        CopyAllocate(bridge.GetCellData(), nCells);
+                }
 
-                stuff_I_cant_clip->InsertNextCell(cellType, nCellPts, cellPts);
+                if(cellType == VTK_POLYHEDRON)
+                {
+                    bridge.GetCellStream(cellId, stream);
+                    stuff_I_cant_clip->InsertNextCell(cellType, stream);
+                }
+                else
+                {
+                    cellPts = bridge.GetCellPoints(cellId, nCellPts);
+                    stuff_I_cant_clip->InsertNextCell(cellType, nCellPts, cellPts);
+                }
                 stuff_I_cant_clip->GetCellData()->
                             CopyData(bridge.GetCellData(), cellId, numIcantClip);
                 numIcantClip++;

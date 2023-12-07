@@ -10,6 +10,7 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkClipDataSet.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
 #include <vtkImplicitBoolean.h>
@@ -197,6 +198,9 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Changed nodesCritical to keepCellsWhole, and updated setting the
 //    clipper based on this variable.
 //
+//    Brad Whitlock, Thu Dec  7 14:36:26 PST 2023
+//    Explore using vtkClipDataSet.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -219,15 +223,18 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
         funcs3->AddFunction(p3);
     }
 
-    // Set up and apply the clipping filters.
-    vtkVisItClipper *clipper1 = NULL, *clipper2 = NULL,
-                    *clipper3 = NULL, *last = NULL;
+    //using ClipClass = vtkVisItClipper;
+    using ClipClass = vtkClipDataSet;
 
-    clipper1 = vtkVisItClipper::New();
+    // Set up and apply the clipping filters.
+    ClipClass *clipper1 = NULL, *clipper2 = NULL,
+              *clipper3 = NULL, *last = NULL;
+
+    clipper1 = ClipClass::New();
     clipper1->SetInputData(in);
     clipper1->SetClipFunction(funcs1);
     clipper1->SetInsideOut(true);
-
+/*
     if (keepCellsWhole)
     {
         clipper1->SetCellClipStrategyToKeepWhole();
@@ -236,16 +243,16 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
     {
         clipper1->SetCellClipStrategyToRemovePartial();
     }
-
+*/
     last = clipper1;
 
     if (p2 != NULL)
     {
-        clipper2 = vtkVisItClipper::New();
+        clipper2 = ClipClass::New();
         clipper2->SetInputConnection(last->GetOutputPort());
         clipper2->SetClipFunction(funcs2);
         clipper2->SetInsideOut(true);
-
+/*
         if (keepCellsWhole)
         {
             clipper2->SetCellClipStrategyToKeepWhole();
@@ -254,16 +261,16 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
         {
             clipper2->SetCellClipStrategyToRemovePartial();
         }
-
+*/
         last = clipper2;
     }
     if (p3 != NULL)
     {
-        clipper3 = vtkVisItClipper::New();
+        clipper3 = ClipClass::New();
         clipper3->SetInputConnection(last->GetOutputPort());
         clipper3->SetClipFunction(funcs3);
         clipper3->SetInsideOut(true);
-
+/*
         if (keepCellsWhole)
         {
             clipper3->SetCellClipStrategyToKeepWhole();
@@ -272,7 +279,7 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
         {
             clipper3->SetCellClipStrategyToRemovePartial();
         }
-
+*/
         last = clipper3;
     }
     last->Update();
