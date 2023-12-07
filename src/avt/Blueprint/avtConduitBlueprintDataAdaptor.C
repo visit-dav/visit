@@ -1102,11 +1102,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         const auto subelements_sizes = n_topo["subelements/sizes"].as_index_t_accessor();
         const auto subelements_offsets = n_topo["subelements/offsets"].as_index_t_accessor();
 
-        // Original cell numbers
-        auto oca = vtkUnsignedIntArray::New();
-        oca->SetName("avtOriginalCellNumbers");
-        oca->SetNumberOfComponents(2);
-
         // Iterate the connectivity and add zones/faces.
         conduit::index_t elem_conn_index = 0;
         vtkNew<vtkIdList> faces;
@@ -1128,17 +1123,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             }
             ugrid->InsertNextCell(VTK_POLYHEDRON, nZoneFaces, faces->GetPointer(0));
             faces->Reset();
-
-            // Add a tuple to the original cell numbers.
-            unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                      static_cast<unsigned int>(zi)};
-            oca->InsertNextTypedTuple(ocdata);
         }
-
-        // Add original cell numbers zones to see if that cleans up mesh plot.
-        ugrid->GetCellData()->AddArray(oca);
-        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
-        oca->Delete();
     }
     else if(element_shape == "polygonal")
     {
@@ -1163,12 +1148,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         else
         {
             // Add as polygons.
-
-            // Original cell numbers
-            auto oca = vtkUnsignedIntArray::New();
-            oca->SetName("avtOriginalCellNumbers");
-            oca->SetNumberOfComponents(2);
-
             const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
             const auto nZones = elements_sizes.number_of_elements();
             conduit::index_t elem_conn_index = 0;
@@ -1182,17 +1161,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 }
                 ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
                 pts->Reset();
-
-                // Add a tuple to the original cell numbers.
-                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(zi)};
-                oca->InsertNextTypedTuple(ocdata);
             }
-
-            // Add original cell numbers zones to see if that cleans up mesh plot.
-            ugrid->GetCellData()->AddArray(oca);
-            ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
-            oca->Delete();
         }
     }
     else
