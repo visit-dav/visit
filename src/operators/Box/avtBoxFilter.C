@@ -115,6 +115,9 @@ vtkBoxFilter::~vtkBoxFilter()
 //    Akira Haddox, Fri Aug  8 13:48:22 PDT 2003
 //    Rewrote algorithm so that 'SomeOfCell' selection would be accurate.
 //
+//    Brad Whitlock, Thu Dec  7 11:09:20 PST 2023
+//    Added polyhedron support.
+//
 // ****************************************************************************
 
 int
@@ -147,9 +150,10 @@ vtkBoxFilter::RequestData(
     vtkPointData *inputPD = input->GetPointData();
     vtkCellData  *inputCD = input->GetCellData();
     int *pointMap = new int[nPts];
+    const int InvalidPoint = -1;
     for (i = 0 ; i < nPts ; i++)
     {
-        pointMap[i] = -1;
+        pointMap[i] = InvalidPoint;
     }
     bool *isInBox = NULL;
     char *relativeToBox[3] = {NULL, NULL, NULL};
@@ -241,6 +245,7 @@ vtkBoxFilter::RequestData(
     //
     vtkPoints *pts = vtkVisItUtility::NewPoints(input);
     pts->Allocate(nPts/4,nPts);
+    output->SetPoints(pts);
     output->Allocate(nCells);
     vtkPointData *outputPD = output->GetPointData();
     vtkCellData  *outputCD = output->GetCellData();
@@ -414,14 +419,12 @@ vtkBoxFilter::RequestData(
         {
             //
             // We must re-map the point ids from the input mesh to the
-            // point ids of the output mesh.  This piece is in here to insure
+            // point ids of the output mesh.  This piece is in here to ensure
             // that we don't make multiple copies of points.
             //
-            newCellPts->Reset();
-            for (j = 0 ; j < nCellPts ; j++)
+            auto oldToNew = [&](vtkIdType ptId) -> vtkIdType
             {
-                int ptId = cellPts->GetId(j);
-                if (pointMap[ptId] == -1)
+                if (pointMap[ptId] == InvalidPoint)
                 {
                     pointMap[ptId] = nextPointIndex;
                     double pt[3];
@@ -430,15 +433,46 @@ vtkBoxFilter::RequestData(
                     outputPD->CopyData(inputPD, ptId, nextPointIndex);
                     nextPointIndex++;
                 }
-                newCellPts->InsertId(j, pointMap[ptId]);
-            }
+                return pointMap[ptId];
+            };
 
-            //
-            // Now add the cell to our output mesh.
-            //
-            int cellType  = cell->GetCellType();
-            int newCellId = output->InsertNextCell(cellType, newCellPts);
-            outputCD->CopyData(inputCD, i, newCellId);
+            newCellPts->Reset();
+            if(cell->GetCellType() == VTK_POLYHEDRON)
+            {
+                const int nFaces = cell->GetNumberOfFaces();
+                for (int fi = 0 ; fi < nFaces ; fi++)
+                {
+                    vtkCell *face = cell->GetFace(fi);
+                    const auto nFacePts = face->GetNumberOfPoints();
+                    newCellPts->InsertNextId(nFacePts);
+                    for(vtkIdType j = 0; j < nFacePts; j++)
+                    {
+                        auto ptId = face->GetPointId(j);
+                        newCellPts->InsertNextId(oldToNew(ptId));
+                    }
+                }
+
+                //
+                // Now add the cell to our output mesh.
+                //
+                int newCellId = output->InsertNextCell(VTK_POLYHEDRON, nFaces, newCellPts->GetPointer(0));
+                outputCD->CopyData(inputCD, i, newCellId);
+            }
+            else
+            {
+                for (j = 0 ; j < nCellPts ; j++)
+                {
+                    int ptId = cellPts->GetId(j);
+                    newCellPts->InsertId(j, oldToNew(ptId));
+                }
+
+                //
+                // Now add the cell to our output mesh.
+                //
+                int cellType  = cell->GetCellType();
+                int newCellId = output->InsertNextCell(cellType, newCellPts);
+                outputCD->CopyData(inputCD, i, newCellId);
+            }
         }
     }
 
@@ -454,9 +488,8 @@ vtkBoxFilter::RequestData(
         delete [] relativeToBox[1];
         delete [] relativeToBox[2];
     }
-    newCellPts->Delete();
-    output->SetPoints(pts);
     pts->Delete();
+    newCellPts->Delete();
     output->Squeeze(); // Squeeze dataset will squeeze points, vars too.
 
     return 1;
