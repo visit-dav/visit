@@ -19,7 +19,7 @@
                     {"category":"operators","file":"dual_mesh.py","cases":["ops_dualmesh_mesh_plot_2d_01"]},
                     {"category":"plots","file":"volumePlot.py","cases":["volumeOpacity_05"]},
                     {"category":"queries","file":"avg_value.py","cases":["avg_value_02"]},
-                    {"category":"queries","file":"pick.py","cases":["Pick2D","Pick3DTo2D","PickAMR","PickBox","PickIndexSelect","PickSamrai_01","PickSamrai_05"]},
+                    {"category":"queries","file":"pick.py","cases":["Pick3DTo2D"]},
                     {"category":"rendering","file":"bigdata.py","cases":["bigdata_01"]},
                     {"category":"rendering","file":"legends.py","cases":["legends_07"]},
                     {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_05","pixeldata_0_07","pixeldata_0_08","pixeldata_0_09","pixeldata_0_10","pixeldata_0_11"]},
