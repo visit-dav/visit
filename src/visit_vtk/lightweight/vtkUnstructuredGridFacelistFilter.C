@@ -249,6 +249,10 @@ class HashEntryMemoryManager
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Dec  6 15:38:56 PST 2023
+//    Add optional polygon to AddTri.
+//
 // ****************************************************************************
 
 class HashEntryList
@@ -257,7 +261,7 @@ class HashEntryList
                 HashEntryList(int npts);
     virtual    ~HashEntryList();
 
-    void        AddTri(const vtkIdType *, vtkIdType orig_zone);
+    void        AddTri(const vtkIdType *, vtkIdType orig_zone, vtkPolygon *p = NULL);
     void        AddQuad(const vtkIdType *, vtkIdType orig_zone);
 
     inline void RemoveFace(void) { nfaces--; };
@@ -376,6 +380,12 @@ static vtkIdType quad_map_back_list[24][3] =
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Dec  6 15:41:00 PST 2023
+//    Added a vtkPolygon in case we need the triangle to act like a polygon.
+//    We can use triangles for PH faces but we want to output a polygon instead
+//    of a bunch of triangles. This only matters when we go to output cells.
+//
 // ****************************************************************************
 
 class Tri
@@ -383,7 +393,24 @@ class Tri
     friend class   Quad;
 
   public:
-                   Tri() { ordering_case = 255; };
+                   Tri()
+                   {
+                       ordering_case = 255;
+                       nodes[0] = nodes[1] = 0;
+                       orig_zone = 0;
+                       polygon = NULL;
+                       npts = 0;
+                       hashEntryList = NULL;
+                   }
+
+                   ~Tri()
+                   {
+                       if(polygon != NULL)
+                       {
+                           polygon->Delete();
+                           polygon = NULL;
+                       }
+                   }
 
     vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(Tri *&t)
@@ -405,6 +432,13 @@ class Tri
     inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
     inline int     GetOriginalZone(void) { return orig_zone; };
 
+    void           SetPolygon(vtkPolygon *p)
+                   {
+                       if(polygon != NULL)
+                           polygon->Delete();
+                       polygon = p;
+                   }
+
     void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     inline void    RegisterHashEntryList(HashEntryList *hel)
@@ -416,7 +450,7 @@ class Tri
     unsigned char  ordering_case;
     vtkIdType      nodes[2];
     vtkIdType      orig_zone;
-
+    vtkPolygon    *polygon;
     int            npts;
     HashEntryList *hashEntryList;
 };
@@ -1029,19 +1063,36 @@ Tri::AssignNodes(const vtkIdType *n)
 //  Programmer: Hank Childs
 //  Creation:   October 23, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Dec  6 15:49:35 PST 2023
+//    If the triangle is carrying a polygon payload with points then emit that
+//    polygon instead of a triangle.
+//
 // ****************************************************************************
 
 void
 Tri::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
-    vtkIdType n[3];
-    int *list = tri_reorder_list[ordering_case];
-    n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
-    n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
-    n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
-    int newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
-    out_cd->CopyData(in_cd, orig_zone, newId);
+    if(polygon == NULL)
+    {
+        // Normal case.
+        vtkIdType n[3];
+        int *list = tri_reorder_list[ordering_case];
+        n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
+        n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
+        n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
+        auto newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
+        out_cd->CopyData(in_cd, orig_zone, newId);
+    }
+    else if(polygon->GetNumberOfPoints() > 0)
+    {
+        // The triangle was carrying a polygon payload. Emit the polygon if it
+        // has points. Complex PH faces are split into triangles and the first
+        // polygon in the split face carries the polygon.
+        auto newId = pd->InsertNextCell(VTK_POLYGON, polygon->GetPointIds());
+        out_cd->CopyData(in_cd, orig_zone, newId);
+    }
 }
 
 
@@ -1583,15 +1634,20 @@ HashEntryList::~HashEntryList()
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Dec  6 15:36:59 PST 2023
+//    Add an optional polygon to the triangle.
+//
 // ****************************************************************************
 
 void
-HashEntryList::AddTri(const vtkIdType *node_list, vtkIdType orig_zone)
+HashEntryList::AddTri(const vtkIdType *node_list, vtkIdType orig_zone, vtkPolygon *p)
 {
     nfaces++;
     Tri *tri = tmm.GetFreeTri(this);
     vtkIdType hash_index = tri->AssignNodes(node_list);
     tri->SetOriginalZone(orig_zone);
+    tri->SetPolygon(p);
     if (list[hash_index] == NULL)
     {
         list[hash_index] = hemm.GetHashEntry(this);
@@ -3167,7 +3223,10 @@ AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 //   Add support for polygons.
 //
 //   Brad Whitlock, Wed Dec  6 15:12:07 PST 2023
-//   Treat 3,4 node polygons as tri,quad.
+//   Treat 3,4 node polygons as tri,quad. Attach polygons to the case where
+//   we split a polygonal face to triangles. Passing along the polygon lets
+//   the face get compared/cancelled using triangles and we still get to emit
+//   the polygonal face.
 //
 // ****************************************************************************
 
@@ -3181,7 +3240,7 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
         vtkCell *face = cell->GetFace(i);
         auto nPts = face->GetNumberOfPoints();
         if (face->GetCellType() == VTK_TRIANGLE
-            || (face->GetCellType() == VTK_POLYGON && nPts == 3))
+            || (face->GetCellType() == VTK_POLYGON && nPts == 3)*/)
         {
             nodes[0] = face->GetPointId(0);
             nodes[1] = face->GetPointId(1);
@@ -3189,7 +3248,7 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
             list.AddTri(nodes, cellId);
         }
         else if (face->GetCellType() == VTK_QUAD
-                 || (face->GetCellType() == VTK_POLYGON && nPts == 4))
+                 || (face->GetCellType() == VTK_POLYGON && nPts == 4)*/)
         {
             nodes[0] = face->GetPointId(0);
             nodes[1] = face->GetPointId(1);
@@ -3208,7 +3267,12 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
                 nodes[0] = polygon->GetPointId(tris->GetId(3*i+0));
                 nodes[1] = polygon->GetPointId(tris->GetId(3*i+1));
                 nodes[2] = polygon->GetPointId(tris->GetId(3*i+2));
-                list.AddTri(nodes, cellId);
+                // For the first triangle, add a deep copy of the polygonal face
+                // as a payload.
+                vtkPolygon *p = vtkPolygon::New();
+                if(i == 0)
+                    p->DeepCopy(polygon);
+                list.AddTri(nodes, cellId, p);
             }
             tris->Delete();
         }
