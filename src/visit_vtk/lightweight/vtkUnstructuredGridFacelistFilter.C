@@ -393,6 +393,8 @@ class Tri
     friend class   Quad;
 
   public:
+    static vtkPolygon *INVALID_POLYGON;
+
                    Tri()
                    {
                        ordering_case = 255;
@@ -405,7 +407,7 @@ class Tri
 
                    ~Tri()
                    {
-                       if(polygon != NULL)
+                       if(polygon != NULL && polygon != INVALID_POLYGON)
                        {
                            polygon->Delete();
                            polygon = NULL;
@@ -434,7 +436,7 @@ class Tri
 
     void           SetPolygon(vtkPolygon *p)
                    {
-                       if(polygon != NULL)
+                       if(polygon != NULL && polygon != INVALID_POLYGON)
                            polygon->Delete();
                        polygon = p;
                    }
@@ -454,6 +456,15 @@ class Tri
     int            npts;
     HashEntryList *hashEntryList;
 };
+
+constexpr vtkPolygon *InvalidPolygon()
+{
+    vtkPolygon *rv = 0;
+    rv++;
+    return rv;
+}
+
+vtkPolygon *Tri::INVALID_POLYGON = InvalidPolygon();
 
 //
 // We will be re-ordering the nodes into numerical order.  This enumerated
@@ -1085,7 +1096,7 @@ Tri::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
         auto newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
         out_cd->CopyData(in_cd, orig_zone, newId);
     }
-    else if(polygon->GetNumberOfPoints() > 0)
+    else if(polygon != INVALID_POLYGON && polygon->GetNumberOfPoints() > 0)
     {
         // The triangle was carrying a polygon payload. Emit the polygon if it
         // has points. Complex PH faces are split into triangles and the first
@@ -3269,9 +3280,12 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
                 nodes[2] = polygon->GetPointId(tris->GetId(3*i+2));
                 // For the first triangle, add a deep copy of the polygonal face
                 // as a payload.
-                vtkPolygon *p = vtkPolygon::New();
+                vtkPolygon *p = Tri::INVALID_POLYGON;
                 if(i == 0)
+                {
+                    p = vtkPolygon::New();
                     p->DeepCopy(polygon);
+                }
                 list.AddTri(nodes, cellId, p);
             }
             tris->Delete();
