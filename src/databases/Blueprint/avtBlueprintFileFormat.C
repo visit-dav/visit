@@ -2200,36 +2200,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             const Node &n_topo = n_mesh["topologies/" + topo_name];
 
-            if (n_topo.has_path("elements/shape"))
-            {
-                if (n_topo["elements/shape"].as_string() == "polyhedral" || 
-                    n_topo["elements/shape"].as_string() == "polygonal")
-                {
-                    string field_name, coords_name;
-                    // get name of coordset from topology
-                    coords_name = n_topo["coordset"].as_string();
-
-                    Node s2dmap, d2smap, options;
-                    Node &side_coords = side_mesh["coordsets/" + coords_name];
-                    Node &side_topo = side_mesh["topologies/" + topo_name];
-                    Node &side_fields = side_mesh["fields"];
-
-                    field_name = FileFunctions::Basename(abs_varname_str);
-                    n_mesh["fields/" + field_name].set_external(*field_ptr);
-
-                    blueprint::mesh::topology::unstructured::generate_sides(
-                      n_mesh["topologies/" + topo_name],
-                      side_topo,
-                      side_coords,
-                      side_fields,
-                      s2dmap,
-                      d2smap,
-                      options);
-
-                    field_ptr = side_fields.fetch_ptr(field_name);
-                }
-            }
-
             // low-order case, use vtk
             res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
                                                                              *field_ptr);
