@@ -708,6 +708,7 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 //
 //  Arguments:
 //   n_topo:    Blueprint Topology
+//   element_shape: The name of the element shape.
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
@@ -723,63 +724,47 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
+//    Brad Whitlock, Wed Dec  6 17:21:22 PST 2023
+//    Pass in the element shape so we do not have to necessarily use the one listed.
+//
 // ****************************************************************************
 
-vtkCellArray *
+static vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
-                                       int /* npts -- UNUSED */)
+                                       const std::string &element_shape)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    // TODO, I don't think we need this logic any more
-    // // Handle empty and point topology
-    // if (!n_topo.has_path("elements/connectivity") ||
-    //     (n_topo.has_path("elements/shape") &&
-    //      n_topo["elements/shape"].as_string() == "point"))
-    // {
-    //     // TODO, why is this 2 * npts?
-    //     ida->SetNumberOfTuples(2*npts);
-    //     for (int i = 0 ; i < npts; i++)
-    //     {
-    //         ida->SetComponent(2*i  , 0, 1);
-    //         ida->SetComponent(2*i+1, 0, i);
-    //     }
-    //     ca->SetCells(npts, ida);
-    //     ida->Delete();
-    // }
-    // else
-    // {
+    int ctype = ElementShapeNameToVTKCellType(element_shape);
+    int csize = VTKCellTypeSize(ctype);
+    int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
+    ida->SetNumberOfTuples(ncells * (csize + 1));
 
-        int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
-        int csize = VTKCellTypeSize(ctype);
-        int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
-        ida->SetNumberOfTuples(ncells * (csize + 1));
+    // Extract connectivity as int array, using 'to_int_array' if needed.
+    int_array topo_conn;
+    Node n_tmp;
+    if(n_topo["elements/connectivity"].dtype().is_int())
+    {
+        topo_conn = n_topo["elements/connectivity"].as_int_array();
+    }
+    else
+    {
+        n_topo["elements/connectivity"].to_int_array(n_tmp);
+        topo_conn = n_tmp.as_int_array();
+    }
 
-        // Extract connectivity as int array, using 'to_int_array' if needed.
-        int_array topo_conn;
-        Node n_tmp;
-        if(n_topo["elements/connectivity"].dtype().is_int())
+    for (int i = 0 ; i < ncells; i++)
+    {
+        ida->SetComponent((csize+1)*i, 0, csize);
+        for (int j = 0; j < csize; j++)
         {
-            topo_conn = n_topo["elements/connectivity"].as_int_array();
+            ida->SetComponent((csize+1)*i+j+1, 0,topo_conn[i*csize+j]);
         }
-        else
-        {
-            n_topo["elements/connectivity"].to_int_array(n_tmp);
-            topo_conn = n_tmp.as_int_array();
-        }
+    }
+    ca->SetCells(ncells, ida);
+    ida->Delete();
 
-        for (int i = 0 ; i < ncells; i++)
-        {
-            ida->SetComponent((csize+1)*i, 0, csize);
-            for (int j = 0; j < csize; j++)
-            {
-                ida->SetComponent((csize+1)*i+j+1, 0,topo_conn[i*csize+j]);
-            }
-        }
-        ca->SetCells(ncells, ida);
-        ida->Delete();
-    // }
     return ca;
 }
 
@@ -1160,18 +1145,19 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         const auto elements_sizes = n_topo["elements/sizes"].as_index_t_accessor();
         const auto emin = elements_sizes.min();
         const auto emax = elements_sizes.max();
+
         if(emin == emax && emin == 3)
         {
             // Add as triangles.
-            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
-            ugrid->SetCells(ElementShapeNameToVTKCellType("triangles"), ca);
+            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, "tri");
+            ugrid->SetCells(ElementShapeNameToVTKCellType("tri"), ca);
             ca->Delete();
         }
         else if(emin == emax && emin == 4)
         {
             // Add as quads
-            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
-            ugrid->SetCells(ElementShapeNameToVTKCellType("quads"), ca);
+            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, "quad");
+            ugrid->SetCells(ElementShapeNameToVTKCellType("quad"), ca);
             ca->Delete();
         }
         else
@@ -1214,7 +1200,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         //
         // Now, add explicit topology
         //
-        vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
+        vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, element_shape);
         ugrid->SetCells(ElementShapeNameToVTKCellType(element_shape), ca);
         ca->Delete();
     }
