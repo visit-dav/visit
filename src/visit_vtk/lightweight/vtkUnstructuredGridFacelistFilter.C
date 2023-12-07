@@ -3240,7 +3240,7 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
         vtkCell *face = cell->GetFace(i);
         auto nPts = face->GetNumberOfPoints();
         if (face->GetCellType() == VTK_TRIANGLE
-            || (face->GetCellType() == VTK_POLYGON && nPts == 3)*/)
+            || (face->GetCellType() == VTK_POLYGON && nPts == 3))
         {
             nodes[0] = face->GetPointId(0);
             nodes[1] = face->GetPointId(1);
@@ -3248,7 +3248,7 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
             list.AddTri(nodes, cellId);
         }
         else if (face->GetCellType() == VTK_QUAD
-                 || (face->GetCellType() == VTK_POLYGON && nPts == 4)*/)
+                 || (face->GetCellType() == VTK_POLYGON && nPts == 4))
         {
             nodes[0] = face->GetPointId(0);
             nodes[1] = face->GetPointId(1);
