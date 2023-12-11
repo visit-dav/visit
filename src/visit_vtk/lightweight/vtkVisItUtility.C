@@ -442,7 +442,6 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
   int i, j;
   double xPrev, xNext, tmp;
   vtkDataArray *scalars[3];
- 
   scalars[0] = rgrid->GetXCoordinates();
   scalars[1] = rgrid->GetYCoordinates();
   scalars[2] = rgrid->GetZCoordinates();
@@ -1524,3 +1523,121 @@ float vtkVisItUtility::SafeDoubleToFloat(double v)
     }
     return (float) v;
 }
+
+// ****************************************************************************
+//  Function: IntersectBox
+//
+//  Purpose: Determines if ray specified by origin and dir intersects the box
+//           specified by bounds. If true, sets coordinate of intersection and
+//           distance (t) along ray. Returns true or false.
+//
+//  Note:  Taken from VTK 8 version of vtkBox::IntersectBox.
+//         VTK 9 version uses a tolerance to adjust the bounds that interferes
+//         with this function's use by avtLocateQuery. Especially in 2D.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 7, 2023
+//
+// ****************************************************************************
+
+bool
+vtkVisItUtility::IntersectBox(double bounds[6], double origin[3],
+                              double dir[3], double coord[3], double& t)
+{
+    int VTK_RIGHT  = 0;
+    int VTK_LEFT   = 1;
+    int VTK_MIDDLE = 2;
+    bool    inside=true;
+    char    quadrant[3];
+    int     i, whichPlane=0;
+    double  maxT[3], candidatePlane[3];
+
+    //  First find closest planes
+    //
+    for (i=0; i<3; i++)
+    {
+        if ( origin[i] < bounds[2*i] )
+        {
+            quadrant[i] = VTK_LEFT;
+            candidatePlane[i] = bounds[2*i];
+            inside = false;
+        }
+        else if ( origin[i] > bounds[2*i+1] )
+        {
+            quadrant[i] = VTK_RIGHT;
+            candidatePlane[i] = bounds[2*i+1];
+            inside = false;
+        }
+        else
+        {
+            quadrant[i] = VTK_MIDDLE;
+        }
+    }
+
+    //  Check whether origin of ray is inside bbox
+    //
+    if (inside)
+    {
+        coord[0] = origin[0];
+        coord[1] = origin[1];
+        coord[2] = origin[2];
+        t = 0;
+        return true;
+    }
+
+    //  Calculate parametric distances to plane
+    //
+    for (i=0; i<3; i++)
+    {
+        if ( quadrant[i] != VTK_MIDDLE && dir[i] != 0.0 )
+        {
+            maxT[i] = (candidatePlane[i]-origin[i]) / dir[i];
+        }
+        else
+        {
+            maxT[i] = -1.0;
+        }
+    }
+
+    //  Find the largest parametric value of intersection
+    //
+    for (i=0; i<3; i++)
+    {
+        if ( maxT[whichPlane] < maxT[i] )
+        {
+            whichPlane = i;
+        }
+    }
+
+    //  Check for valid intersection along line
+    //
+    if ( maxT[whichPlane] > 1.0 || maxT[whichPlane] < 0.0 )
+    {
+        return false;
+    }
+    else
+    {
+        t = maxT[whichPlane];
+    }
+
+    //  Intersection point along line is okay.  Check bbox.
+    //
+    for (i=0; i<3; i++)
+    {
+        if (whichPlane != i)
+        {
+            coord[i] = origin[i] + maxT[whichPlane]*dir[i];
+            if ( coord[i] < bounds[2*i] || coord[i] > bounds[2*i+1] )
+            {
+                return false;
+            }
+        }
+        else
+        {
+            coord[i] = candidatePlane[i];
+        }
+    }
+
+    return true;
+}
+
