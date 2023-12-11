@@ -26,12 +26,14 @@
 
 #include <DebugStream.h>
 
+using std::string;
+
 #define RESAMPLE_IMAGE
 
 // ****************************************************************************
 // Method: avtImageColleague::avtImageColleague
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the avtImageColleague class.
 //
 // Arguments:
@@ -64,14 +66,14 @@ avtImageColleague::avtImageColleague(VisWindowColleagueProxy &m):
 // ****************************************************************************
 // Method: avtImageColleague::~avtImageColleague
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the avtImageColleague class.
 //
 // Programmer: John C. Anderson
 // Creation:   Mon Jul 12 16:24:34 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 avtImageColleague::~avtImageColleague()
 {
@@ -85,14 +87,14 @@ avtImageColleague::~avtImageColleague()
 // ****************************************************************************
 // Method: avtImageColleague::CreateActorAndMapper
 //
-// Purpose: 
+// Purpose:
 //   Creates the actor and the mapper.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 28 17:15:47 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -123,16 +125,16 @@ avtImageColleague::CreateActorAndMapper()
 // ****************************************************************************
 // Method: avtImageColleague::AddToRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method adds the text actor to the renderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
-void 
+void
 avtImageColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
@@ -145,14 +147,14 @@ avtImageColleague::AddToRenderer()
 // ****************************************************************************
 // Method: avtImageColleague::RemoveFromRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method removes the text actor from the renderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 avtImageColleague::RemoveFromRenderer()
@@ -167,7 +169,7 @@ avtImageColleague::RemoveFromRenderer()
 // ****************************************************************************
 // Method: avtImageColleague::Hide
 //
-// Purpose: 
+// Purpose:
 //   This method toggles the visible flag and either adds or removes the text
 //   actor to/from the renderer.
 //
@@ -175,7 +177,7 @@ avtImageColleague::RemoveFromRenderer()
 // Creation:   Thu Nov 6 15:52:57 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 avtImageColleague::Hide()
@@ -191,7 +193,7 @@ avtImageColleague::Hide()
 // ****************************************************************************
 // Method: avtImageColleague::ShouldBeAddedToRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method returns whether or not the text actor should be added to the
 //   renderer.
 //
@@ -199,7 +201,7 @@ avtImageColleague::Hide()
 // Creation:   Thu Nov 6 15:53:36 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 bool
 avtImageColleague::ShouldBeAddedToRenderer() const
@@ -210,7 +212,7 @@ avtImageColleague::ShouldBeAddedToRenderer() const
 // ****************************************************************************
 // Method: avtImageColleague::SetOptions
 //
-// Purpose: 
+// Purpose:
 //   This method sets the text actor's properties from the values in the
 //   annotation object.
 //
@@ -315,7 +317,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
         if(!maintainAspectRatio)
         {
             width = (int) annot.GetPosition2()[0];
-            height = (int) annot.GetPosition2()[1];    
+            height = (int) annot.GetPosition2()[1];
         }
         else if(width != (int) annot.GetPosition2()[0])
         {
@@ -344,7 +346,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
     actor->SetPosition2(0.2,
                         0.2);
 #endif
-    
+
 #if 0 // This doesn't work right now.
     actor->GetProperty()->SetOpacity(annot.GetColor1().Alpha() / 255.0F);
 #endif
@@ -387,7 +389,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 //
 // Purpose: Updates the image if the filename can be read, does nothing
 //          if the image filename cannot be used.
-//   
+//
 //
 // Arguments:
 //
@@ -413,19 +415,39 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 //   No need to ExpandPath if filename is empty. This change prevents
 //   unnecessary warning message.
 //
+//   Kathleen Biagas, Mon Dec 11, 2023
+//   Try to create the image reader from extension first. Some of the vtk
+//   readers attempted by the filename approach print an error message to the
+//   terminal when they cannot read the file.
+//   Also, do not attempt to create a reader if the filename is empty.
+//
 // ****************************************************************************
 
 bool
-avtImageColleague::UpdateImage(std::string filename)
+avtImageColleague::UpdateImage(string filename)
 {
     bool retval = true;
 
+    vtkImageReader2 *r = nullptr;
+
     if (!filename.empty())
+    {
         filename = FileFunctions::ExpandPath(filename);
 
-    // Get a reader for filename if possible.
-    vtkImageReader2 *r =
-        vtkImageReader2Factory::CreateImageReader2(filename.c_str());
+        size_t i = filename.rfind('.', filename.length());
+        if(i != string::npos)
+        {
+            string ext = filename.substr(i+1, filename.length() -i );
+            // Get a reader for extension if possible.
+            r = vtkImageReader2Factory::CreateImageReader2FromExtension(ext.c_str());
+        }
+
+        if(!r)
+        {
+            // Get a reader for filename if possible.
+            r = vtkImageReader2Factory::CreateImageReader2(filename.c_str());
+        }
+    }
 
     // If we got a valid reader:
     if(r && r->CanReadFile(filename.c_str()) == 3)
@@ -450,11 +472,11 @@ avtImageColleague::UpdateImage(std::string filename)
         {
             iData = NULL;
         }
-        
+
         if(iData != 0)
         {
             iData->Register(NULL);
-            
+
             // Set the height and width.
             width = height = 100;
 
@@ -482,8 +504,8 @@ avtImageColleague::UpdateImage(std::string filename)
         currentImage = "";
         if (filename != "")
         {
-            std::string msg = "Could not open file " + filename 
-                            + " to create image annotation object";
+            string msg = "Could not open file " + filename
+                        + " to create image annotation object";
             avtCallback::IssueWarning(msg.c_str());
         }
 
@@ -500,7 +522,7 @@ avtImageColleague::UpdateImage(std::string filename)
 // ****************************************************************************
 // Method: avtImageColleague::GetOptions
 //
-// Purpose: 
+// Purpose:
 //   This method stores the text label's attributes in an object that can
 //   be passed back to the client.
 //
@@ -511,7 +533,7 @@ avtImageColleague::UpdateImage(std::string filename)
 // Creation:   Fri Sep 03 08:59:53 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 avtImageColleague::GetOptions(AnnotationObject &annot)
@@ -540,7 +562,7 @@ avtImageColleague::GetOptions(AnnotationObject &annot)
 // ****************************************************************************
 // Method: avtImageColleague::HasPlots
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the vis window gets some plots. We use this
 //   signal to add the text actor to the renderer.
 //
@@ -548,7 +570,7 @@ avtImageColleague::GetOptions(AnnotationObject &annot)
 // Creation:   Thu Nov 6 15:56:06 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 avtImageColleague::HasPlots(void)
@@ -559,7 +581,7 @@ avtImageColleague::HasPlots(void)
 // ****************************************************************************
 // Method: avtImageColleague::NoPlots
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the vis window has no plots. We use this signal
 //   to remove the text actor from the renderer.
 //
@@ -567,7 +589,7 @@ avtImageColleague::HasPlots(void)
 // Creation:   Thu Nov 6 15:56:42 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 avtImageColleague::NoPlots(void)
