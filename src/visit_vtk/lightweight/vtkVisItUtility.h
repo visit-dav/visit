@@ -47,6 +47,9 @@ class vtkRectilinearGrid;
 //    I made the default data type for Create1DRGrid and CreateEmptyRGrid
 //    be VTK_DOUBLE instead of VTK_FLOAT.
 //
+//    Kathleen Biagas, Thu Dec 7, 2023
+//    Added IntersectBox.
+//
 // ****************************************************************************
 
 namespace vtkVisItUtility
@@ -95,5 +98,11 @@ namespace vtkVisItUtility
     VISIT_VTK_LIGHT_API void       RegisterStaticVTKObject(vtkObject*);
     VISIT_VTK_LIGHT_API void       CleanupStaticVTKObjects();
     VISIT_VTK_LIGHT_API float      SafeDoubleToFloat(double);
+    VISIT_VTK_LIGHT_API bool       IntersectBox(double bounds[6],
+                                                double origin[3],
+                                                double dir[3],
+                                                double coord[3],
+                                                double& t);
+
 }
 #endif
