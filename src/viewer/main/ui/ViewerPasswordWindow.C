@@ -166,6 +166,10 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password,
         pbuf += nread;
         *pbuf = '\0';
 
+        std::string buffer_str = buffer;
+        std::transform(buffer_str.begin(), buffer_str.end(), buffer_str.begin(),
+            [](unsigned char c){ return std::tolower(c); });
+
         if (strstr(buffer, "continue connecting (yes/no)?") ||
             strstr(buffer, "continue connecting(yes/no)?"))
         {
@@ -182,27 +186,31 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password,
         {
             // Skip this message. We'll get a "Password:" prompt soon.
         }
-        else if (strstr(buffer, "assword") || strstr(buffer, "ASSWORD") ||
-                 strstr(buffer, "asscode") || strstr(buffer, "ASSCODE") ||
-                 strstr(buffer, "assphrase") || strstr(buffer, "ASSPHRASE") ||
-                 strstr(buffer, "Token_Response:") ||
-                 strstr(buffer, "Token Code:"))
+        // it's case insensitive already
+        else if (strstr(buffer_str.c_str(), "password") ||
+                 strstr(buffer_str.c_str(), "passcode") ||
+                 strstr(buffer_str.c_str(), "passphrase") ||
+                 strstr(buffer_str.c_str(), "Token_Response:") ||
+                 strstr(buffer_str.c_str(), "Token Code:") ||
+                 strstr(buffer_str.c_str(), "token") ||
+                 strstr(buffer_str.c_str(), "otp") ||
+                 strstr(buffer_str.c_str(), "2fa") ||
+                 strstr(buffer_str.c_str(), "mfa") ||
+                 strstr(buffer_str.c_str(), "authentication"))
         {
             std::string phrase;
-            if (strstr(buffer, "assword") || strstr(buffer, "ASSWORD") )
-              phrase = std::string("Password");
-            
-            else if (strstr(buffer, "asscode") || strstr(buffer, "ASSCODE") )
-              phrase = std::string("Passcode");
-            
-            else if (strstr(buffer, "assphrase") || strstr(buffer, "ASSPHRASE") )
-              phrase = std::string("Passphrase");
-            
-            else if (strstr(buffer, "Token Code:") )
-              phrase = std::string("Token Code");
-            
-            else if (strstr(buffer, "Token_Response:") )
-              phrase = std::string("Token Response");
+            if (strstr(buffer_str.c_str(), "password"))
+                phrase = std::string("Password");
+            else if (strstr(buffer_str.c_str(), "passcode"))
+                phrase = std::string("Passcode");
+            else if (strstr(buffer_str.c_str(), "passphrase"))
+                phrase = std::string("Passphrase");
+            else if (strstr(buffer_str.c_str(), "Token Code:"))
+                phrase = std::string("Token Code");
+            else if (strstr(buffer_str.c_str(), "Token_Response:"))
+                phrase = std::string("Token Response");
+            else
+                phrase = std::string("MFA Token OTP");
             
             // Password needed. Prompt for it and write it to the FD.
             VisItPasswordWindow::ReturnCode ret =
