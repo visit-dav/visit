@@ -479,8 +479,8 @@ fi
 #
 # Install on cooley
 #
-rm -f cooley
-cat <<EOF > cooley
+rm -f cooley_install
+cat <<EOF > cooley_install
 #!/bin/sh
 ./visit-install -private -c anl -l $ver linux-cooley /soft/visualization/visit > installlog 2>&1
 rm -f resultlog
@@ -507,7 +507,6 @@ then
    if [ $test = no ]
    then
       cp /home/ebrugger/cooley/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-cooley.tar.gz
-      cp cooley cooley_install
       chmod 750 cooley_install;./cooley_install
    fi
 fi

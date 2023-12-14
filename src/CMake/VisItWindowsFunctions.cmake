@@ -19,7 +19,7 @@ function(visit_create_windows_installer)
             #
             file(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
             file(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
-            file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
+            file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} CIP_NATIVE)
             file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
             if(CODESIGN_HASH)
                set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
@@ -67,7 +67,7 @@ function(visit_create_windows_installer)
                     COMMAND "${ARCHIVER_NATIVE}" a -m0=LZMA -mx=9
                         ${CBD_NATIVE}/${zipname}
                         windowsbuild/distribution
-                        windowsbuild/MSVC2017
+                        windowsbuild/MSVC2022
                         windowsbuild/thirdparty-projects
                     COMMAND cd ${CBD_NATIVE}
                     WORKING_DIRECTORY ${DEP_NATIVE})
@@ -102,14 +102,14 @@ function(visit_setup_windows_resources)
         message(FATAL_ERROR "Cannot find visit.rc in either ${VISIT_WINDOWS_DIR}/distribution/resources or ${VISIT_WINDOWS_DIR}/visitresources")
     endif()
 
-    set(VISIT_VISIT_RESOURCE_FILE      ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/visit.rc)
-    set(VISIT_GUI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/gui.rc)
-    set(VISIT_VIEWER_RESOURCE_FILE     ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/viewer.rc)
-    set(VISIT_MDSERVER_RESOURCE_FILE   ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/mdserver.rc)
-    set(VISIT_ENGINE_SER_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_ser.rc)
-    set(VISIT_ENGINE_PAR_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_par.rc)
-    set(VISIT_VCL_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/vcl.rc)
-    set(VISIT_CLI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/cli.rc)
+    set(VISIT_VISIT_RESOURCE_FILE      ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/visit.rc CACHE INTERNAL "VisIt resource file" )
+    set(VISIT_GUI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/gui.rc CACHE INTERNAL "VisIt gui resource file")
+    set(VISIT_VIEWER_RESOURCE_FILE     ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/viewer.rc CACHE INTERNAL "VisIt viewer resource file")
+    set(VISIT_MDSERVER_RESOURCE_FILE   ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/mdserver.rc CACHE INTERNAL "VisIt mdserver resource file")
+    set(VISIT_ENGINE_SER_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_ser.rc CACHE INTERNAL "VisIt engine_ser resource file")
+    set(VISIT_ENGINE_PAR_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_par.rc CACHE INTERNAL "VisIt engine_par resource file")
+    set(VISIT_VCL_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/vcl.rc CACHE INTERNAL "VisIt vcl resource file")
+    set(VISIT_CLI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/cli.rc CACHE INTERNAL "VisIt cli resource file")
     message(STATUS "VISIT_VISIT_RESOURCE_FILE = ${VISIT_VISIT_RESOURCE_FILE}")
 
     #-------------------------------------------------------------------

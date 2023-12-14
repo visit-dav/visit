@@ -43,15 +43,12 @@ GetWavefrontOBJReadOptions(void)
 //  Purpose:
 //      Creates the options for WavefrontOBJ writers.
 //
-//  Important Note:
-//      The code below sets up empty options.  If your format 
-//      does not require write options, no modifications are 
-//      necessary.
-//
 //  Programmer: Justin Privitera
 //  Creation:   11/03/23
 //
 //  Modifications:
+//    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
+//    Added "Invert color table" option.
 //
 // ****************************************************************************
 
@@ -61,5 +58,6 @@ GetWavefrontOBJWriteOptions(void)
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Output colors", false);
     rv->SetString("Color table", "hot");
+    rv->SetBool("Invert color table", false);
     return rv;
 }
