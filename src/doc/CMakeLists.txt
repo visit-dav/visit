@@ -42,6 +42,13 @@
 #   Kathleen Biagas, Wed Nov 15, 2023
 #   Use sphinx-build.exe on Windows, due to newer python and sphinx.
 #
+#   Kathleen Biagas, Thue Dec 14, 2023
+#   Revert back to using sphinx-build-script.py on Windows.  Though sphinx
+#   didn't provide the script, the previous version works, with the version
+#   number updated to current.  The sphinx-build executable doesn't work
+#   on other machines, as it attempts to run python from the location where
+#   sphinx/python was built.
+#
 #****************************************************************************
 
 if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
@@ -49,13 +56,14 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     set(errmsgtail "To remove this warning, either install sphinx or set VISIT_ENABLE_MANUALS to false.")
     if(WIN32)
         # Need a different sphinx build command for windows
-        if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build.exe)
+        if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py)
             message(WARNING "Manuals are enabled but"
-                   " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build.exe"
+                   " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py"
                    " does not exist so manuals will not be built. ${errmsgtail}")
             return()
         endif()
-        set(sphinx_build_cmd ${VISIT_PYTHON_DIR}/Scripts/sphinx-build.exe)
+        set(sphinx_build_cmd "${VISIT_PYTHON_DIR}/python.exe \ "
+              "${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py")
     else()
         if(NOT EXISTS ${VISIT_PYTHON_DIR}/bin/sphinx-build)
             message(WARNING "Manuals are enabled but"
