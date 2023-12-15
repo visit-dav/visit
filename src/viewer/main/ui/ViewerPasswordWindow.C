@@ -128,6 +128,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //
 //    Brad Whitlock, Tue Jun 12 14:22:23 PST 2012
 //    I changed how the password is obtained.
+// 
+//    Justin Privitera, Thu Dec 14 16:25:38 PST 2023
+//    Added more options that cause a password to be needed.
 //
 // ****************************************************************************
 
@@ -166,6 +169,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password,
         pbuf += nread;
         *pbuf = '\0';
 
+        // make the string lowercase to aid in comparisons
         std::string buffer_str = buffer;
         std::transform(buffer_str.begin(), buffer_str.end(), buffer_str.begin(),
             [](unsigned char c){ return std::tolower(c); });
