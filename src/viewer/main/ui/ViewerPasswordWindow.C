@@ -190,8 +190,6 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password,
         else if (strstr(buffer_str.c_str(), "password") ||
                  strstr(buffer_str.c_str(), "passcode") ||
                  strstr(buffer_str.c_str(), "passphrase") ||
-                 strstr(buffer_str.c_str(), "Token_Response:") ||
-                 strstr(buffer_str.c_str(), "Token Code:") ||
                  strstr(buffer_str.c_str(), "token") ||
                  strstr(buffer_str.c_str(), "otp") ||
                  strstr(buffer_str.c_str(), "2fa") ||
@@ -205,9 +203,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password,
                 phrase = std::string("Passcode");
             else if (strstr(buffer_str.c_str(), "passphrase"))
                 phrase = std::string("Passphrase");
-            else if (strstr(buffer_str.c_str(), "Token Code:"))
+            else if (strstr(buffer_str.c_str(), "token code:"))
                 phrase = std::string("Token Code");
-            else if (strstr(buffer_str.c_str(), "Token_Response:"))
+            else if (strstr(buffer_str.c_str(), "token_response:"))
                 phrase = std::string("Token Response");
             else
                 phrase = std::string("MFA Token OTP");
