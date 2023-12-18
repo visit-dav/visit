@@ -15,9 +15,7 @@ function bv_osmesa_disable
 
 function bv_osmesa_depends_on
 {
-    depends_on="llvm"
-
-    echo ${depends_on}
+    echo "llvm"
 }
 
 function bv_osmesa_info
@@ -317,12 +315,29 @@ function build_osmesa
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         OSMESA_DEBUG_BUILD="--enable-debug"
     fi
+    if [[ "$(uname -m)" == "x86_64" ]] ; then
+        OSMESA_GALLIUM_DRIVERS="swrast,swr"
+    else
+        OSMESA_GALLIUM_DRIVERS="swrast"
+    fi
 
     info "Configuring OSMesa . . ."
+    # add -fcommon if gcc >=10 to work around changes in compiler behavior
+    # see: https://wiki.gentoo.org/wiki/Project:Toolchain/Gcc_10_porting_notes/fno_common
+    # otherwise we would need to patch mesa to fix build problems
+
+    osmesa_c_opt_flags=""
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
+        if [[ ${VERSION} -ge 10 ]] ; then
+            osmesa_c_opt_flags="-fcommon"
+        fi
+    fi
+
     set -x
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${osmesa_c_opt_flags}" \
         CC=${C_COMPILER} \
         ./autogen.sh \
         --prefix=${VISITDIR}/osmesa/${OSMESA_VERSION}/${VISITARCH} \
@@ -338,7 +353,8 @@ function build_osmesa
         --disable-vdpau \
         --disable-va \
         --with-platforms= \
-        --with-gallium-drivers=swrast,swr \
+        --enable-llvm \
+        --with-gallium-drivers=${OSMESA_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC $OSMESA_DEBUG_BUILD \
         --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
