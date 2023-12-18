@@ -266,12 +266,11 @@ EOF
     # Patch to address VTK texture buffer error.
     #
     patch -p0 << \EOF
-diff -c src/gallium/drivers/llvmpipe/lp_scene.c.orig src/gallium/drivers/llvmpipe/lp_scene.c
-*** src/gallium/drivers/llvmpipe/lp_scene.c.orig        Fri Dec 15 14:33:53 PST 2023
---- src/gallium/drivers/llvmpipe/lp_scene.c     Fri Dec 15 14:33:53 PST 2023
+diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpipe/lp_screen.c
+*** src/gallium/drivers/llvmpipe/lp_screen.c.orig        Fri Dec 15 14:33:53 PST 2023
+--- src/gallium/drivers/llvmpipe/lp_screen.c     Fri Dec 15 14:33:53 PST 2023
 ***************
-*** 235,242 ****
-        return 64;
+*** 236,242 ****
      case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
         return 1;
      case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
@@ -279,8 +278,7 @@ diff -c src/gallium/drivers/llvmpipe/lp_scene.c.orig src/gallium/drivers/llvmpip
      case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
         return 1;
      case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
---- 235,242 ----
-        return 64;
+--- 236,242 ----
      case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
         return 1;
      case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
