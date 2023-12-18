@@ -150,7 +150,11 @@ function build_gdal
             EXTRA_FLAGS="F77=\"\" --enable-static --without-ld-shared  --without-libtool --without-expat"
         fi
     else
-        EXTRA_FLAGS="--enable-static --disable-shared --with-hide-internal-symbols"
+        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+            EXTRA_FLAGS="--enable-shared --disable-static --with-hide-internal-symbols"
+        else
+            EXTRA_FLAGS="--enable-static --disable-shared --with-hide-internal-symbols"
+        fi
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
