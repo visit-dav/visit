@@ -49,6 +49,7 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mesh_utils.hpp"
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -1144,8 +1145,10 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                                                       const Node &n_mesh_info)
 {
     if (!n_mesh_info.has_child("matsets"))
+    {
+        BP_PLUGIN_INFO("Input data file has no matsets.");
         return;
-
+    }
     BP_PLUGIN_INFO("adding materials for " <<  mesh_name);
 
     NodeConstIterator msets_itr = n_mesh_info["matsets"].children();
@@ -2006,12 +2009,17 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    `m_new_refine` is passed to `RefineGridFunctionToVTK` so it can choose
 //    the appropriate MFEM LOR scheme.
 // 
-//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-//     Encased in try-catch block.
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Encased in try-catch block.
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 // 
+//    Brad Whitlock, Tue Dec 19 14:45:13 PST 2023
+//    Add MFEM refinement for certain fields that are low-order but live on a
+//    mesh that has been refined. This prevents the field from having too few
+//    values for the refined mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2076,6 +2084,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         Node *field_ptr = &n_field;
 
         ReadBlueprintField(domain,abs_varname_str,*field_ptr);
+
         // check for empty field case
         if(field_ptr->dtype().is_empty())
         {
@@ -2132,40 +2141,72 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("topo name: " << topo_name);
 
             const Node &n_topo = n_mesh["topologies/" + topo_name];
+            conduit::blueprint::mesh::utils::ShapeType shape(n_topo);
 
-            if (n_topo.has_path("elements/shape"))
+            if (shape.is_poly())
             {
-                if (n_topo["elements/shape"].as_string() == "polyhedral" || 
-                    n_topo["elements/shape"].as_string() == "polygonal")
-                {
-                    string field_name, coords_name;
-                    // get name of coordset from topology
-                    coords_name = n_topo["coordset"].as_string();
+                string field_name, coords_name;
+                // get name of coordset from topology
+                coords_name = n_topo["coordset"].as_string();
 
-                    Node s2dmap, d2smap, options;
-                    Node &side_coords = side_mesh["coordsets/" + coords_name];
-                    Node &side_topo = side_mesh["topologies/" + topo_name];
-                    Node &side_fields = side_mesh["fields"];
+                Node s2dmap, d2smap, options;
+                Node &side_coords = side_mesh["coordsets/" + coords_name];
+                Node &side_topo = side_mesh["topologies/" + topo_name];
+                Node &side_fields = side_mesh["fields"];
 
-                    field_name = FileFunctions::Basename(abs_varname_str);
-                    n_mesh["fields/" + field_name].set_external(*field_ptr);
+                field_name = FileFunctions::Basename(abs_varname_str);
+                n_mesh["fields/" + field_name].set_external(*field_ptr);
 
-                    blueprint::mesh::topology::unstructured::generate_sides(
-                      n_mesh["topologies/" + topo_name],
-                      side_topo,
-                      side_coords,
-                      side_fields,
-                      s2dmap,
-                      d2smap,
-                      options);
+                blueprint::mesh::topology::unstructured::generate_sides(
+                  n_mesh["topologies/" + topo_name],
+                  side_topo,
+                  side_coords,
+                  side_fields,
+                  s2dmap,
+                  d2smap,
+                  options);
 
-                    field_ptr = side_fields.fetch_ptr(field_name);
-                }
+                field_ptr = side_fields.fetch_ptr(field_name);
             }
 
-            // low-order case, use vtk
-            res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
-                                                                             *field_ptr);
+            // Check whether the data need to be refined anyway.
+            const bool meshIsHO = n_mesh.has_path("topologies/" + topo_name + "/grid_function");
+            if(meshIsHO && (shape.dim >= 2) && ((m_selected_lod+1) > 1))
+            {
+                // The field data are low-order but need to be refined anyway since
+                // the mesh got refined.
+
+                // Wrap as HO-compatible field.
+                conduit::Node fieldHO;
+                fieldHO["topology"] = topo_name;
+                if(field_ptr->fetch_existing("association").as_string() == "element")
+                    fieldHO["basis"] = (shape.dim == 2) ? "L2_T2_2D_P0" : "L2_T2_3D_P0";
+                else
+                    fieldHO["basis"] = (shape.dim == 2) ? "H1_2D_P1" : "H1_3D_P1";
+                fieldHO["values"].set_external(field_ptr->fetch_existing("values"));
+
+                // create an mfem mesh
+                mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(n_mesh);
+
+                // create the grid fuction
+                mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
+                                                                                                       fieldHO);
+                // refine the grid function into a vtk data array
+                res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
+                                                                  gf,
+                                                                  m_selected_lod+1,
+                                                                  m_new_refine);
+
+                // cleanup mfem data
+                delete gf;
+                delete mesh;
+            }
+            else
+            {
+                // low-order case, use vtk
+                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
+                                                                                 *field_ptr);
+            }
         }
         // if we have a basis, this field is actually an mfem grid function
         else if(field_ptr->has_child("basis"))
