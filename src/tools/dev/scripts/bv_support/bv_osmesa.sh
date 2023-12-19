@@ -265,6 +265,37 @@ EOF
         return 1
     fi
 
+    #
+    # Patch to address VTK texture buffer error.
+    # Taken from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/9750
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpipe/lp_screen.c
+*** src/gallium/drivers/llvmpipe/lp_screen.c.orig        Fri Dec 15 14:33:53 PST 2023
+--- src/gallium/drivers/llvmpipe/lp_screen.c     Fri Dec 15 14:33:53 PST 2023
+***************
+*** 236,242 ****
+     case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
+        return 1;
+     case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
+!       return 65536;
+     case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
+        return 1;
+     case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
+--- 236,242 ----
+     case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
+        return 1;
+     case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
+!       return 134217728;
+     case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
+        return 1;
+     case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "OSMesa patch 6 failed."
+        return 1
+    fi
+
     return 0;
 }
 
