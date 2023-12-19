@@ -264,6 +264,7 @@ EOF
 
     #
     # Patch to address VTK texture buffer error.
+    # Taken from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/9750
     #
     patch -p0 << \EOF
 diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpipe/lp_screen.c
