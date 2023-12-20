@@ -29,9 +29,10 @@ function bv_openpmd_api_depends_on
         depends_on="$depends_on adios2"
     fi
 
-    if [[ "$DO_MPICH" == "yes" ]] ; then
-        depends_on="$depends_on mpich"
-    fi
+    # requires a parallel version of hdf5 to use this
+    # if [[ "$DO_MPICH" == "yes" ]] ; then
+    #     depends_on="$depends_on mpich"
+    # fi
 
     echo $depends_on
 }
@@ -41,9 +42,10 @@ function bv_openpmd_api_info
 {
     export OPENPMD_API_VERSION=${OPENPMD_API_VERSION:-"0.15.2"}
     export OPENPMD_API_FILE=${OPENPMD_API_FILE:-"openpmd_api-${OPENPMD_API_VERSION}.tar.gz"}
-    export OPENPMD_API_URL=${OPENPMD_API_URL:-"https://github.com/openPMD/openPMD-api/archive/refs/tags/${OPENPMD_API_VERSION}"}
+    # export OPENPMD_API_URL=${OPENPMD_API_URL:-"https://github.com/openPMD/openPMD-api/archive/refs/tags/${OPENPMD_API_VERSION}"}
     export OPENPMD_API_COMPATIBILITY_VERSION=${OPENPMD_API_COMPATIBILITY_VERSION:-"${OPENPMD_API_VERSION}"}
-    export OPENPMD_API_BUILD_DIR=${OPENPMD_API_BUILD_DIR:-"openPMD-api-build"}
+    export OPENPMD_API_SRC_DIR=${OPENPMD_API_SRC_DIR:-"openPMD-api-${OPENPMD_API_VERSION}"}
+    export OPENPMD_API_BUILD_DIR=${OPENPMD_API_BUILD_DIR:-"openPMD-api-${OPENPMD_API_VERSION}-build"}
     export OPENPMD_API_MD5_CHECKSUM="3314027b23db98f57684d334af8bc6d3"
     export OPENPMD_API_SHA256_CHECKSUM="fbe3b356fe6f4589c659027c8056844692c62382e3ec53b953bed1c87e58ba13"
 }
@@ -117,17 +119,25 @@ function build_openpmd_api
         return 1
     fi
 
+    # Make a build directory for an out-of-source build.
+    if [[ ! -d $OPENPMD_API_BUILD_DIR ]] ; then
+        echo "Making build directory $OPENPMD_API_BUILD_DIR"
+        mkdir $OPENPMD_API_BUILD_DIR
+    fi
+
     cd $OPENPMD_API_BUILD_DIR || error "Can't cd to openPMD-api build dir."
 
     openpmd_api_install_path="${VISITDIR}/openpmd_api/${OPENPMD_API_VERSION}/${VISITARCH}"
+    adios2_install_path="${VISITDIR}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH}"
 
     cfg_opts=""
     cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${openpmd_api_install_path}"
-    if [[ "$DO_MPICH" == "yes" ]] ; then
-        cfg_opts="${cfg_opts} -DopenPMD_USE_MPI=ON"
-    else
-        cfg_opts="${cfg_opts} -DopenPMD_USE_MPI=OFF"
-    fi
+    # if [[ "$DO_MPICH" == "yes" ]] ; then
+    #     cfg_opts="${cfg_opts} -DopenPMD_USE_MPI=ON"
+    # else
+    #     cfg_opts="${cfg_opts} -DopenPMD_USE_MPI=OFF"
+    # fi
+    cfg_opts="${cfg_opts} -DopenPMD_USE_MPI=OFF"
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DopenPMD_USE_HDF5=ON"
     else
@@ -135,6 +145,7 @@ function build_openpmd_api
     fi
     if [[ "$DO_ADIOS2" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DopenPMD_USE_ADIOS2=ON"
+        cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH=${adios2_install_path}"
     else
         cfg_opts="${cfg_opts} -DopenPMD_USE_ADIOS2=OFF"
     fi
@@ -145,7 +156,7 @@ function build_openpmd_api
         rm -f bv_run_cmake.sh
     fi
 
-    echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../openPMD-api > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../${OPENPMD_API_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh
 
@@ -157,7 +168,7 @@ function build_openpmd_api
     # 
     # Build openPMD-api
     # 
-    info "Building openPMD-api . . . (~5 minutes)"
+    info "Building openPMD-api . . . (~15 minutes)"
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
@@ -214,7 +225,7 @@ function bv_openpmd_api_build
         if [[ $? == 0 ]] ; then
             info "Skipping OPENPMD_API build.  OPENPMD_API is already installed."
         else
-            info "Building OPENPMD_API (~5 minutes)"
+            info "Building OPENPMD_API (~15 minutes)"
 
             #Build the Module 
             build_openpmd_api
