@@ -341,7 +341,7 @@ public:
     int GetSuppressLevel() const { return suppressLevel; }
     int ErrorFlag() const { return errorFlag; }
     const std::string &GetLastError() const { return lastError; }
-    const std::vector<std::string> GetLastMessage() const { return lastMessage; }
+    const std::vector<std::string> &GetLastMessage() const { return lastMessage; }
 
     virtual void Update(Subject *s)
     {
@@ -1876,8 +1876,11 @@ visit_GetLastMessage(PyObject *self, PyObject *args)
     if (messageObserver)
     {
         const auto &lm = messageObserver->GetLastMessage();
-        msg = lm[0];
-        severity = lm[1];
+        if(lm.size() == 2)
+        {
+            msg = lm[0];
+            severity = lm[1];
+        }
         if (clear != 0)
             messageObserver->ClearLastMessage();
     }
