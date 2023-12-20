@@ -29,6 +29,12 @@
 #  Kathleen Biagas, Tue May 5, 2023
 #  Disable qt6 forcing of defines for UNICODE.
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -152,7 +158,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 
-if(HAVE_OSMESA OR HAVE_EGL)
+if(HAVE_OSMESA)
     include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
 endif()
 
@@ -216,11 +222,11 @@ avtwriter_ser
 avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${vtkqtlib}
 )
 
-if(HAVE_OSMESA OR HAVE_EGL)
+if(HAVE_OSMESA)
     target_link_libraries(viewer visit_vtk_offscreen)
 endif()
 

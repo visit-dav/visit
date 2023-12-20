@@ -2317,6 +2317,9 @@ def DecompressDatabase(abs_dbname, zip_ext):
 # Modifications:
 #   Mark C. Miller, Thu Mar 24 14:29:45 PDT 2016
 #   Added support for gzip'd compressed variants of the file.
+#
+#   Kathleen Biagas, Fri July 28, 2023 
+#   Added location for file on Windows.
 # ----------------------------------------------------------------------------
 def FindAndOpenDatabase(dbname, extraPaths=()):
     """
@@ -2329,6 +2332,10 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
                      "/project/projectdirs/visit/data",
                       "/usr/gapps/visit/data",
                       "/home/visit/data")
+
+    if sys.platform.startswith("win"):
+        externalDbPaths=(data_path(), "C:\\A_VisIt")
+
     for p in externalDbPaths + extraPaths:
         abs_dbname = "%s/%s"%(p,dbname)
         if os.path.isfile(abs_dbname):

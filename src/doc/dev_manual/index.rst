@@ -27,6 +27,9 @@ VisIt_ Developer Manual
     ContributingHostProfiles
     LaunchProcess
     UpdatingPlugins
+    DebuggingTips
+    CreatingABuildVisItModule
+    AddingFindModule
 
 .. Indices and tables
 .. ==================

@@ -16,10 +16,8 @@
     <Field name="resultsMessage" label="resultsMessage" type="string">
     </Field>
     <Field name="resultsValue" label="resultsValue" type="doubleVector">
-      0.000000
     </Field>
     <Field name="floatResultsValue" label="floatResultsValue" type="floatVector">
-      0.000000
     </Field>
     <Field name="timeStep" label="timeStep" type="int">
       0

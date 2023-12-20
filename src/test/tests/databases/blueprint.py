@@ -35,6 +35,12 @@
 #    Justin Privitera, Fri Mar 24 17:47:26 PDT 2023
 #    Fixed view issue for mfem lor vector field tests.
 #    Fixed an issue where test names had two consecutive underscores.
+# 
+#    Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
+#    Added a test for material numbers not in the range [0, N)
+# 
+#    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
+#    Added a test for a polygonal mesh with no offsets.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -51,6 +57,8 @@ bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
 bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
 bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
+bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
+bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -92,6 +100,12 @@ venn_s_by_e_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 
 venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
                                "venn_small_example_sparse_by_material_yaml.root"))
+
+venn_modded_matnos_root = data_path(pjoin(bp_venn_modded_matnos_dir,
+                                "venn_w_modded_matnos.root"))
+
+polytopal_mesh_no_offsets_root = data_path(pjoin(bp_poly_no_offsets_dir,
+                                "polytopal_mesh_no_offsets.root"))
 
 bp_part_map_root = data_path(pjoin(bp_part_map_test_dir,
                              "tout_custom_part_map_index_hdf5.root"))
@@ -570,6 +584,15 @@ test_venn("venn_small_full_yaml", venn_full_yaml_root)
 test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
 test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
 
+TestSection("Venn With Modded Material Numbers, 0.8.7")
+OpenDatabase(venn_modded_matnos_root)
+AddPlot("FilledBoundary", "mesh_topo_matset")
+DrawPlots()
+ResetView()
+Test("Venn_with_modded_matnos")
+DeleteAllPlots()
+ResetView()
+
 TestSection("2D Example HDF5 Mesh Files, 0.8.2")
 OpenDatabase(braid_2d_0_8_2_hdf5_root)
 for mesh_name in braid_2d_meshes_0_8_2:
@@ -723,5 +746,15 @@ for db in bp_1d_curve_examples:
     DrawPlots()
     Test("blueprint_1d_curve_element_assoc")
     DeleteAllPlots()
+
+TestSection("Blueprint Polytopal Mesh Missing Offsets, 0.8.7")
+OpenDatabase(polytopal_mesh_no_offsets_root)
+AddPlot("Mesh", "mesh_test")
+AddPlot("Pseudocolor", "mesh_test/field")
+DrawPlots()
+ResetView()
+Test("Polytopal_mesh_missing_offsets")
+DeleteAllPlots()
+ResetView()
 
 Exit()

@@ -265,7 +265,7 @@ X:  ucd2d.silo
 ucdmesh2d 
 Point: <2.5, 2.5>
 Node:  11
-Incident Zones:  3  6  7  11  
+Incident Zones:  11  7  6  3  
 d:  <nodal> = 0.707107
 
 
@@ -273,7 +273,7 @@ Y:  ucd2d.silo
 ucdmesh2d 
 Point: <2.5, 2.5>
 Node:  11
-Incident Zones:  3  6  7  11  
+Incident Zones:  11  7  6  3  
 d:  <nodal> = 0.707107
 
 
@@ -281,7 +281,7 @@ Z:  ucd2d.silo
 ucdmesh2d 
 Point: <2.5, 2.5>
 Node:  11
-Incident Zones:  3  6  7  11  
+Incident Zones:  11  7  6  3  
 d:  <nodal> = 0.707107
 
 
@@ -291,7 +291,7 @@ a:  ucd2d.silo
 ucdmesh2d 
 Point: <4, 2>
 Node:  4
-Incident Zones:  1  3  6  
+Incident Zones:  6  3  1  
 d:  <nodal> = 2
 
 
@@ -299,7 +299,7 @@ b:  ucd2d.silo
 ucdmesh2d 
 Point: <4, 2>
 Node:  4
-Incident Zones:  1  3  6  
+Incident Zones:  6  3  1  
 d:  <nodal> = 2
 
 
@@ -307,6 +307,6 @@ c:  ucd2d.silo
 ucdmesh2d 
 Point: <4, 2>
 Node:  4
-Incident Zones:  1  3  6  
+Incident Zones:  6  3  1  
 d:  <nodal> = 2
 

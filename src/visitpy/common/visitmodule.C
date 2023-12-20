@@ -9732,6 +9732,9 @@ visit_GetQueryOutputString(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Wed Nov 12 17:55:14 PST 2003
 //   If the query returned multiple values, return them in a python tuple.
 //
+//   Eric Brugger, Wed Aug  2 14:40:31 PDT 2023
+//   If the query returned no values, return Py_None.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9742,7 +9745,12 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     doubleVector vals = qa->GetResultsValue();
     PyObject *retval;
-    if (vals.size() == 1)
+    if (vals.size() == 0)
+    {
+        Py_INCREF(Py_None);
+        retval = Py_None;
+    }
+    else if (vals.size() == 1)
         retval = PyFloat_FromDouble(vals[0]);
     else
     {
@@ -10475,7 +10483,8 @@ visit_GetDomains(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
-//
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10487,7 +10496,7 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
     MUTEX_LOCK();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
-    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
+    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetColorTableNames();
     PyObject *retval = PyTuple_New(ctNames.size());
 
     for(size_t i = 0; i < ctNames.size(); ++i)
@@ -10514,7 +10523,8 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
-//
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10523,7 +10533,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
+    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetColorTableNames();
     PyObject *retval = PyLong_FromLong(ctNames.size());
 
     return retval;

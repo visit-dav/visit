@@ -371,12 +371,28 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //
 //    Kathleen Biagas, Fri Feb 22 15:39:02 PST 2013
 //    If using cd2pd, use it's ouput port as input to the geometry filter.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    The new arguments (writeMTL, MTLHasTex, and texFilename) are used to
+//    setup needed parameters for the upgraded vtkOBJWriter.
+// 
+//    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
+//    Most downstream tools expect to *wrap* textures. This means that texture
+//    coordinate 0.0 is treated identically to texture coordinate 1.0 (e.g. circular
+//    wrapping). However, this means that most downstream tools will *average*
+//    the colors associated with these two texture coordinates, producing a color
+//    that may not be in the table. To work-around this behavior, we *pad* the color
+//    texture duplicating the minimum and maximum color pixels on each end.
 //
 // ****************************************************************************
 
 void
-avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
-                                   const char *label)
+avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
+                                   const char *fname,
+                                   const char *label,
+                                   bool writeMTL, 
+                                   bool MTLHasTex,
+                                   std::string texFilename)
 {
     vtkDataSet *activeDS = ds;
 
@@ -428,11 +444,22 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         vtkDataArray *tcoords = scalars->NewInstance();
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
+
+        // What is going on here?
+        // We want to add a pixel to either end of the color table.
+        // This is to prevent unwanted behavior with the max and min texture coordinates
+        // wrapping around. If we're going to add pixels, we must adjust the texture
+        // coords. We add two pixels and scale appropriately.
+        const double ncolors = 256.0; // this must match the GetColors() function
+        const double fudge_factor = 1.0 / ncolors;
+        const double new_divisor = 1.0 + fudge_factor * 2.0;
+
         for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
         {
             double *p = scalars->GetTuple(i);
             double s[2];
-            s[0] = (*p - range[0]) / gap;
+            // assuming we have ncolors colors and want to add a duplicate to either end
+            s[0] = (((*p - range[0]) / gap) + fudge_factor) / new_divisor;
             s[1] = 0.;
             tcoords->SetTuple(i, s);
         }
@@ -440,13 +467,24 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         tcoords->Delete();
     }
 
+    std::string filename = fname;
+    std::string basename;
+    auto pos = filename.find_last_of(".");
+    if (filename.substr(pos + 1) == "obj")
+        basename = filename.substr(0, pos);
+    else
+        basename = filename;
+
     vtkOBJWriter *writer = vtkOBJWriter::New();
     if (label != NULL && strlen(label) > 0)
     {
         writer->SetLabel(label);
     }
     writer->SetInputData((vtkPolyData *) toBeWritten);
-    writer->SetFileName(fname);
+    writer->SetBasename(basename);
+    writer->SetWriteMTL(writeMTL);
+    writer->SetMTLHasTexture(MTLHasTex);
+    writer->SetTexFilename(texFilename);
     writer->Write();
     writer->Delete();
 
@@ -1276,6 +1314,9 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Removed the sprintfs for color table control point positions.  A user
 //    reported that other locales will insert commas instead of periods,
 //    causing problems for POV-Ray attempts to parse them.
+// 
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 
@@ -1339,7 +1380,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     for (int i=0; i<num; i++)
     {
         ctfile << "#declare "
-               << "ct_" << colortables->GetNames()[i]
+               << "ct_" << colortables->GetColorTableNames()[i]
                << " = color_map {" << endl;
         const ColorControlPointList &ct = colortables->GetColorTables(i);
         for (int j=0; j<ct.GetNumControlPoints(); j++)
@@ -2446,6 +2487,10 @@ avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
 //
 // Programmer:  Dave Pugmire
 // Creation:    March  2, 2011
+// 
+// Modifications:
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 
@@ -2465,7 +2510,7 @@ static vtkScalarsToColors * GetColorTableFromEnv()
     int nCT = colorTables->GetNumColorTables();
     for (int i=0; i<nCT; i++)
     {
-        if (colorTables->GetNames()[i] == ctName)
+        if (colorTables->GetColorTableNames()[i] == ctName)
         {
             const ColorControlPointList &table = colorTables->GetColorTables(i);
             vtkColorTransferFunction *lut = vtkColorTransferFunction::New();

@@ -45,12 +45,14 @@ class     DBOptionsAttributes;
 //    Added `m_new_refine`, a boolean to toggle between using new MFEM LOR or 
 //    legacy MFEM LOR. When true, the new scheme is enabled.
 // 
-//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-//     Added includes for new avtmfem and avtblueprint libs.
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Added includes for new avtmfem and avtblueprint libs.
 // 
 //    Justin Privitera, Wed Mar 22 15:48:01 PDT 2023
 //    Included set and added a set called m_curve_names.
 //
+//    Cyrus Harrison, Thu Nov  2 11:25:15 PDT 2023
+//    Added AugmentBlueprintIndex helper.
 // ****************************************************************************
 
 class avtBlueprintTreeCache;
@@ -117,6 +119,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     void                   ReadRootIndexItems(const std::string &root_fname,
                                               const std::string &root_protocol,
                                               conduit::Node &root_info);
+
+    void AugmentBlueprintIndex(conduit::Node &blueprint_index);
 
     void                   ReadBlueprintMesh(int domain,
                                              const std::string &abs_meshname,

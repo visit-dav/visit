@@ -90,10 +90,10 @@ function bv_vtk_info
     fi
     if [[ "$DO_VTK9" == "yes" ]] ; then
         info "setting up vtk for version 9"
-        export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
-        export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
-        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
-        export VTK_SHA256_CHECKSUM="8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96"
+        export VTK_FILE=${VTK_FILE:-"VTK-9.2.6.tar.gz"}
+        export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
+        export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
     else
         export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
@@ -158,6 +158,68 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_allow_onscreen_and_osmesa_patch
+{
+  # patch that allows VTK9 to be built with onscreen and osmesa support.
+   patch -p0 << \EOF
+--- CMake/vtkOpenGLOptions.cmake.orig	2023-10-26 15:53:06.351818000 -0700
++++ CMake/vtkOpenGLOptions.cmake	2023-10-26 16:09:34.984852000 -0700
+@@ -112,15 +112,6 @@
+     "Please set to `OFF` any of these two.")
+ endif ()
+
+-if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
+-  message(FATAL_ERROR
+-    "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
+-    "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
+-    "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
+-    "rendering and VTK's OpenGL selection is at build time, so the current "
+-    "build configuration is not satisfiable.")
+-endif ()
+-
+ cmake_dependent_option(
+   VTK_USE_OPENGL_DELAYED_LOAD
+   "Use delay loading for OpenGL"
+EOF
+
+   patch -p0 << \EOF
+--- Utilities/OpenGL/CMakeLists.txt.orig	2023-10-26 15:56:37.290225000 -0700
++++ Utilities/OpenGL/CMakeLists.txt	2023-10-26 16:12:18.817101000 -0700
+@@ -45,7 +45,7 @@
+   list(APPEND opengl_targets OpenGL::EGL)
+ endif ()
+
+-if (VTK_OPENGL_HAS_OSMESA AND NOT VTK_CAN_DO_ONSCREEN)
++if (VTK_OPENGL_HAS_OSMESA)
+   vtk_module_third_party_external(
+     PACKAGE OSMesa
+     TARGETS OSMesa::OSMesa)
+EOF
+
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/CMakeLists.txt.orig	2023-10-26 15:57:15.850399000 -0700
++++ Rendering/OpenGL2/CMakeLists.txt	2023-10-26 15:57:31.520455000 -0700
+@@ -350,8 +350,11 @@
+     PUBLIC SDL2::SDL2)
+ endif ()
+
++# Not sure if find_package is necessary, should it be vtk_module_find_package?
++find_package(OpenGL REQUIRED)
+ if (VTK_USE_X)
+   vtk_module_find_package(PACKAGE X11)
++  vtk_module_link(VTK::RenderingOpenGL2 PRIVATE ${OPENGL_gl_LIBRARY})
+   vtk_module_link(VTK::RenderingOpenGL2 PUBLIC X11::X11)
+   if (TARGET X11::Xcursor)
+     vtk_module_link(VTK::RenderingOpenGL2 PRIVATE X11::Xcursor)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch allowing onscreen and osmesa failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtk9_vtkdatawriter_patch
 {
   # patch vtkDataWriter to fix a bug when writing a vtkBitArray
@@ -496,7 +558,7 @@ function apply_vtk9_vtkopenfoamreader_patch
 
 function apply_vtk9_vtkospray_patches
 {
-    count_patches=3
+    count_patches=4
     # patch vtkOSPRay files:
 
     # 1) expose vtkViewNodeFactory via vtkOSPRayPass.h
@@ -583,42 +645,407 @@ EOF
         warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
         return 1
     fi
-}
 
-function apply_vtk9_libxmlversionheader_patch
-{
-  # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
-   patch -p0 << \EOF
-*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
---- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
-***************
-*** 771,779 ****
-  endif ()
-  
-  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
-! if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
-! endif ()
-  
-  if(MSVC)
-  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
---- 771,779 ----
-  endif ()
-  
-  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
-! #if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vtk-9.1/vtklibxml2/include/libxml)
-! #endif ()
-  
-  if(MSVC)
-  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+    # 4) Bump to OSPRay 3
+    ((current_patch++))
+    patch -p1 << \EOF
+From ba568f70bb36cbe9535268a63f5efc0eddc71c8a Mon Sep 17 00:00:00 2001
+From: "David E. DeMarle" <david.demarle@intel.com>
+Date: Sat, 21 Oct 2023 17:18:40 -0400
+Subject: [PATCH] bump VTK 9.1.0 to OSPRay 3.0.0
+
+---
+ Rendering/RayTracing/CMakeLists.txt           |  2 +-
+ Rendering/RayTracing/RTWrapper/Backend.h      |  5 ++-
+ .../RTWrapper/OSPRay/OSPRayBackend.h          | 25 +++++++++-----
+ Rendering/RayTracing/RTWrapper/RTWrapper.h    |  3 ++
+ .../RayTracing/vtkOSPRayMaterialHelpers.cxx   |  9 +++--
+ .../vtkOSPRayMoleculeMapperNode.cxx           |  8 ++---
+ .../vtkOSPRayPolyDataMapperNode.cxx           | 34 ++++++++++---------
+ .../vtkOSPRayUnstructuredVolumeMapperNode.cxx |  2 +-
+ .../RayTracing/vtkOSPRayVolumeMapperNode.cxx  | 24 +++++++++++--
+ .../RayTracing/vtkOSPRayVolumeMapperNode.h    |  1 +
+ 10 files changed, 74 insertions(+), 39 deletions(-)
+
+diff --git a/Rendering/RayTracing/CMakeLists.txt b/Rendering/RayTracing/CMakeLists.txt
+index fdaccd6e56..6b5edc264b 100644
+--- a/Rendering/RayTracing/CMakeLists.txt
++++ b/Rendering/RayTracing/CMakeLists.txt
+@@ -56,7 +56,7 @@ vtk_module_add_module(VTK::RenderingRayTracing
+ if (VTK_ENABLE_OSPRAY)
+   vtk_module_find_package(
+     PACKAGE ospray
+-    VERSION 2.1)
++    VERSION 3.0)
+
+   vtk_module_link(VTK::RenderingRayTracing
+     PUBLIC
+diff --git a/Rendering/RayTracing/RTWrapper/Backend.h b/Rendering/RayTracing/RTWrapper/Backend.h
+index ec0a9779f6..3dbea9350b 100644
+--- a/Rendering/RayTracing/RTWrapper/Backend.h
++++ b/Rendering/RayTracing/RTWrapper/Backend.h
+@@ -27,7 +27,7 @@ namespace RTW
+         virtual RTWGroup NewGroup() = 0;
+         virtual RTWTexture NewTexture(const char* type) = 0;
+         virtual RTWLight NewLight(const char *light_type) = 0;
+-        virtual RTWMaterial NewMaterial(const char *renderer_type, const char *material_type) = 0;
++        virtual RTWMaterial NewMaterial(const char *material_type) = 0;
+         virtual RTWVolume NewVolume(const char *type) = 0;
+         virtual RTWVolumetricModel NewVolumetricModel(RTWVolume volume) = 0;
+         virtual RTWTransferFunction NewTransferFunction(const char *type) = 0;
+@@ -46,13 +46,16 @@ namespace RTW
+         virtual void SetObjectAsData(RTWObject target, const char *id, RTWDataType type, RTWObject obj) = 0;
+         virtual void SetParam(RTWObject, const char *id, RTWDataType type, const void* mem) = 0;
+         virtual void SetBool(RTWObject, const char *id, bool x) = 0;
++        virtual void SetBox1f(RTWObject, const char *id, float x, float y) = 0;
+         virtual void SetInt(RTWObject, const char *id, int32_t x) = 0;
++        virtual void SetUInt(RTWObject, const char *id, uint32_t x) = 0;
+         virtual void SetVec2i(RTWObject, const char *id, int32_t x, int32_t y) = 0;
+         virtual void SetFloat(RTWObject, const char *id, float x) = 0;
+         virtual void SetVec2f(RTWObject, const char *id, float x, float y) = 0;
+         virtual void SetVec3i(RTWObject, const char *id, int x, int y, int z) = 0;
+         virtual void SetVec3f(RTWObject, const char *id, float x, float y, float z) = 0;
+         virtual void SetVec4f(RTWObject, const char *id, float x, float y, float z, float w) = 0;
++        virtual void SetLinear2f(RTWObject, const char *id, float x, float y, float z, float w) = 0;
+
+         virtual void RemoveParam(RTWObject, const char *id) = 0;
+
+diff --git a/Rendering/RayTracing/RTWrapper/OSPRay/OSPRayBackend.h b/Rendering/RayTracing/RTWrapper/OSPRay/OSPRayBackend.h
+index 11e97c06ed..03d2622c0a 100644
+--- a/Rendering/RayTracing/RTWrapper/OSPRay/OSPRayBackend.h
++++ b/Rendering/RayTracing/RTWrapper/OSPRay/OSPRayBackend.h
+@@ -81,15 +81,9 @@ namespace RTW
+         {
+           std::runtime_error("OSPRay device could not be fetched!");
+         }
+-#if OSPRAY_VERSION_MINOR > 1
+         ospDeviceSetErrorCallback(device, [](void *, OSPError, const char *errorDetails) {
+           std::cerr << "OSPRay ERROR: " << errorDetails << std::endl;
+         }, nullptr);
+-#else
+-        ospDeviceSetErrorFunc(device, [](OSPError, const char *errorDetails) {
+-          std::cerr << "OSPRay ERROR: " << errorDetails << std::endl;
+-        });
+-#endif
+         once = true;
+       }
+       return ret;
+@@ -196,9 +190,9 @@ namespace RTW
+       return reinterpret_cast<RTWLight>(ospNewLight(light_type));
+     }
+
+-    RTWMaterial NewMaterial(const char *renderer_type, const char *material_type) override
++    RTWMaterial NewMaterial(const char *material_type) override
+     {
+-      return reinterpret_cast<RTWMaterial>(ospNewMaterial(renderer_type, material_type));
++      return reinterpret_cast<RTWMaterial>(ospNewMaterial(material_type));
+     }
+
+     RTWVolume NewVolume(const char *type) override
+@@ -277,6 +271,11 @@ namespace RTW
+       ospSetInt(reinterpret_cast<OSPObject>(object), id, x);
+     }
+
++    void SetUInt(RTWObject object, const char *id, uint32_t x) override
++    {
++      ospSetUInt(reinterpret_cast<OSPObject>(object), id, x);
++    }
++
+     void SetBool(RTWObject object, const char *id, bool x) override
+     {
+       ospSetBool(reinterpret_cast<OSPObject>(object), id, x);
+@@ -287,6 +286,16 @@ namespace RTW
+       ospSetFloat(reinterpret_cast<OSPObject>(object), id, x);
+     }
+
++    void SetLinear2f(RTWObject object, const char *id, float x, float y, float z, float w) override
++    {
++      ospSetLinear2f(reinterpret_cast<OSPObject>(object), id, x, y, z, w);
++    }
++
++    void SetBox1f(RTWObject object, const char *id, float x, float y) override
++    {
++      ospSetBox1f(reinterpret_cast<OSPObject>(object), id, x, y);
++    }
++
+     void SetVec2f(RTWObject object, const char *id, float x, float y) override
+     {
+       ospSetVec2f(reinterpret_cast<OSPObject>(object), id, x, y);
+diff --git a/Rendering/RayTracing/RTWrapper/RTWrapper.h b/Rendering/RayTracing/RTWrapper/RTWrapper.h
+index 1310a6b7ec..877fea3e93 100644
+--- a/Rendering/RayTracing/RTWrapper/RTWrapper.h
++++ b/Rendering/RayTracing/RTWrapper/RTWrapper.h
+@@ -137,7 +137,10 @@ std::set<RTWBackendType> rtwGetAvailableBackends();
+
+ #define ospSetFloat backend->SetFloat
+ #define ospSetBool backend->SetBool
++#define ospSetBox1f backend->SetBox1f
+ #define ospSetInt backend->SetInt
++#define ospSetLinear2f backend->SetLinear2f
++#define ospSetUInt backend->SetUInt
+ #define ospSetVec2i backend->SetVec2i
+ #define ospSetVec3i backend->SetVec3i
+ #define ospSetVec2f backend->SetVec2f
+diff --git a/Rendering/RayTracing/vtkOSPRayMaterialHelpers.cxx b/Rendering/RayTracing/vtkOSPRayMaterialHelpers.cxx
+index 5988720713..883a15beca 100644
+--- a/Rendering/RayTracing/vtkOSPRayMaterialHelpers.cxx
++++ b/Rendering/RayTracing/vtkOSPRayMaterialHelpers.cxx
+@@ -79,10 +79,10 @@ OSPTexture vtkOSPRayMaterialHelpers::NewTexture2D(RTW::Backend* backend, const o
+   ospSetObject(texture, "data", data_handle);
+   ospRelease(data_handle);
+
+-  ospSetInt(texture, "format", static_cast<int>(type));
++  ospSetUInt(texture, "format", type);
+   if (flags & OSP_TEXTURE_FILTER_NEAREST)
+   {
+-    ospSetInt(texture, "filter", OSP_TEXTURE_FILTER_NEAREST);
++    ospSetUInt(texture, "filter", OSP_TEXTURE_FILTER_NEAREST);
+   }
+   ospCommit(texture);
+
+@@ -374,14 +374,13 @@ OSPMaterial vtkOSPRayMaterialHelpers::NewMaterial(
+     return result;
+
+   (void)oRenderer;
+-  const std::string rendererType = vtkOSPRayRendererNode::GetRendererType(orn->GetRenderer());
+-  result = ospNewMaterial(rendererType.c_str(), ospMatName.c_str());
++  result = ospNewMaterial(ospMatName.c_str());
+
+   if (!result)
+   {
+     vtkGenericWarningMacro(
+       "OSPRay failed to create material: " << ospMatName << ". Trying obj instead.");
+-    result = ospNewMaterial(rendererType.c_str(), "obj");
++    result = ospNewMaterial("obj");
+   }
+
+   ospCommit(result);
+diff --git a/Rendering/RayTracing/vtkOSPRayMoleculeMapperNode.cxx b/Rendering/RayTracing/vtkOSPRayMoleculeMapperNode.cxx
+index ade942af43..eee3da5460 100644
+--- a/Rendering/RayTracing/vtkOSPRayMoleculeMapperNode.cxx
++++ b/Rendering/RayTracing/vtkOSPRayMoleculeMapperNode.cxx
+@@ -303,8 +303,8 @@ void vtkOSPRayMoleculeMapperNode::Render(bool prepass)
+         ospRelease(oMaterial);
+       }
+
+-      ospSetInt(bonds, "type", OSP_ROUND);
+-      ospSetInt(bonds, "basis", OSP_BEZIER);
++      ospSetUInt(bonds, "type", OSP_ROUND);
++      ospSetUInt(bonds, "basis", OSP_BEZIER);
+
+       this->GeometricModels.emplace_back(bondsModel);
+       ospCommit(bonds);
+@@ -405,8 +405,8 @@ void vtkOSPRayMoleculeMapperNode::Render(bool prepass)
+       ocolor[3] = opacity;
+       ospSetVec3f(latticeModel, "color", ocolor[0], ocolor[1], ocolor[2]);
+
+-      ospSetInt(lattice, "type", OSP_ROUND);
+-      ospSetInt(lattice, "basis", OSP_LINEAR);
++      ospSetUInt(lattice, "type", OSP_ROUND);
++      ospSetUInt(lattice, "basis", OSP_LINEAR);
+
+       this->GeometricModels.emplace_back(latticeModel);
+       ospCommit(lattice);
+diff --git a/Rendering/RayTracing/vtkOSPRayPolyDataMapperNode.cxx b/Rendering/RayTracing/vtkOSPRayPolyDataMapperNode.cxx
+index 4d6e0333de..616460940f 100644
+--- a/Rendering/RayTracing/vtkOSPRayPolyDataMapperNode.cxx
++++ b/Rendering/RayTracing/vtkOSPRayPolyDataMapperNode.cxx
+@@ -315,8 +315,8 @@ OSPGeometricModel RenderAsCylinders(std::vector<osp::vec3f>& vertices,
+     _mdata = ospNewCopyData1D(mdata.data(), OSP_VEC4F, mdata.size());
+     ospCommit(_mdata);
+     ospSetObject(ospMesh, "vertex.position_radius", _mdata);
+-    ospSetInt(ospMesh, "type", OSP_ROUND);
+-    ospSetInt(ospMesh, "basis", OSP_BEZIER);
++    ospSetUInt(ospMesh, "type", OSP_ROUND);
++    ospSetUInt(ospMesh, "basis", OSP_BEZIER);
+   }
+   else
+   {
+@@ -330,8 +330,8 @@ OSPGeometricModel RenderAsCylinders(std::vector<osp::vec3f>& vertices,
+     ospCommit(_mdata);
+     ospSetObject(ospMesh, "vertex.position", _mdata);
+     ospSetFloat(ospMesh, "radius", lineWidth);
+-    ospSetInt(ospMesh, "type", OSP_ROUND);
+-    ospSetInt(ospMesh, "basis", OSP_LINEAR);
++    ospSetUInt(ospMesh, "type", OSP_ROUND);
++    ospSetUInt(ospMesh, "basis", OSP_LINEAR);
+   }
+
+   std::vector<unsigned int> indices;
+@@ -541,13 +541,13 @@ OSPGeometricModel RenderAsTriangles(OSPData vertices, std::vector<unsigned int>&
+       if (interpolationType == VTK_PBR)
+       {
+         ospSetObject(actorMaterial, "map_normal", t2d);
+-        ospSetVec4f(actorMaterial, "map_normal.transform", textureTransform.x, textureTransform.y,
+-          textureTransform.z, textureTransform.w);
++        ospSetLinear2f(actorMaterial, "map_normal.transform", textureTransform.x,
++          textureTransform.y, textureTransform.z, textureTransform.w);
+       }
+       else
+       {
+         ospSetObject(actorMaterial, "map_Bump", t2d);
+-        ospSetVec4f(actorMaterial, "map_Bump.transform", textureTransform.x, textureTransform.y,
++        ospSetLinear2f(actorMaterial, "map_Bump.transform", textureTransform.x, textureTransform.y,
+           textureTransform.z, textureTransform.w);
+       }
+       ospCommit(actorMaterial);
+@@ -573,13 +573,13 @@ OSPGeometricModel RenderAsTriangles(OSPData vertices, std::vector<unsigned int>&
+
+         OSPTexture t2dR = vtkOSPRayMaterialHelpers::VTKToOSPTexture(backend, vRoughnessTextureMap);
+         ospSetObject(actorMaterial, "map_roughness", t2dR);
+-        ospSetVec4f(actorMaterial, "map_roughness.transform", textureTransform.x,
++        ospSetLinear2f(actorMaterial, "map_roughness.transform", textureTransform.x,
+           textureTransform.y, textureTransform.z, textureTransform.w);
+
+         OSPTexture t2dM = vtkOSPRayMaterialHelpers::VTKToOSPTexture(backend, vMetallicTextureMap);
+         ospSetObject(actorMaterial, "map_metallic", t2dM);
+-        ospSetVec4f(actorMaterial, "map_metallic.transform", textureTransform.x, textureTransform.y,
+-          textureTransform.z, textureTransform.w);
++        ospSetLinear2f(actorMaterial, "map_metallic.transform", textureTransform.x,
++          textureTransform.y, textureTransform.z, textureTransform.w);
+
+         ospCommit(actorMaterial);
+         ospRelease(t2dR);
+@@ -604,14 +604,14 @@ OSPGeometricModel RenderAsTriangles(OSPData vertices, std::vector<unsigned int>&
+         OSPTexture t2dA =
+           vtkOSPRayMaterialHelpers::VTKToOSPTexture(backend, vAnisotropyValueTextureMap);
+         ospSetObject(actorMaterial, "map_anisotropy", t2dA);
+-        ospSetVec4f(actorMaterial, "map_anisotropy.transform", textureTransform.x,
++        ospSetLinear2f(actorMaterial, "map_anisotropy.transform", textureTransform.x,
+           textureTransform.y, textureTransform.z, textureTransform.w);
+
+         OSPTexture t2dR =
+           vtkOSPRayMaterialHelpers::VTKToOSPTexture(backend, vAnisotropyRotationTextureMap);
+         ospSetObject(actorMaterial, "map_rotation", t2dR);
+-        ospSetVec4f(actorMaterial, "map_rotation.transform", textureTransform.x, textureTransform.y,
+-          textureTransform.z, textureTransform.w);
++        ospSetLinear2f(actorMaterial, "map_rotation.transform", textureTransform.x,
++          textureTransform.y, textureTransform.z, textureTransform.w);
+         ospCommit(actorMaterial);
+         ospRelease(t2dA);
+         ospRelease(t2dR);
+@@ -621,7 +621,7 @@ OSPGeometricModel RenderAsTriangles(OSPData vertices, std::vector<unsigned int>&
+       {
+         OSPTexture t2d = vtkOSPRayMaterialHelpers::VTKToOSPTexture(backend, vCoatNormalTextureMap);
+         ospSetObject(actorMaterial, "map_coatNormal", t2d);
+-        ospSetVec4f(actorMaterial, "map_coatNormal.transform", textureTransform.x,
++        ospSetLinear2f(actorMaterial, "map_coatNormal.transform", textureTransform.x,
+           textureTransform.y, textureTransform.z, textureTransform.w);
+         ospCommit(actorMaterial);
+         ospRelease(t2d);
+@@ -635,13 +635,13 @@ OSPGeometricModel RenderAsTriangles(OSPData vertices, std::vector<unsigned int>&
+       if (interpolationType == VTK_PBR)
+       {
+         ospSetObject(actorMaterial, "map_baseColor", ((OSPTexture)(t2d)));
+-        ospSetVec4f(actorMaterial, "map_baseColor.transform", textureTransform.x,
++        ospSetLinear2f(actorMaterial, "map_baseColor.transform", textureTransform.x,
+           textureTransform.y, textureTransform.z, textureTransform.w);
+       }
+       else
+       {
+         ospSetObject(actorMaterial, "map_kd", ((OSPTexture)(t2d)));
+-        ospSetVec4f(actorMaterial, "map_kd.transform", textureTransform.x, textureTransform.y,
++        ospSetLinear2f(actorMaterial, "map_kd.transform", textureTransform.x, textureTransform.y,
+           textureTransform.z, textureTransform.w);
+       }
+       ospCommit(actorMaterial);
+diff --git a/Rendering/RayTracing/vtkOSPRayUnstructuredVolumeMapperNode.cxx b/Rendering/RayTracing/vtkOSPRayUnstructuredVolumeMapperNode.cxx
+index ae552773d4..d9dd14029d 100644
+--- a/Rendering/RayTracing/vtkOSPRayUnstructuredVolumeMapperNode.cxx
++++ b/Rendering/RayTracing/vtkOSPRayUnstructuredVolumeMapperNode.cxx
+@@ -344,7 +344,7 @@ void vtkOSPRayUnstructuredVolumeMapperNode::Render(bool prepass)
+       ospSetObject(oTF, "color", colorData);
+       OSPData tfAlphaData = ospNewCopyData1D(&tfOVals[0], OSP_FLOAT, NumColors);
+       ospSetObject(oTF, "opacity", tfAlphaData);
+-      ospSetVec2f(oTF, "valueRange", range[0], range[1]);
++      ospSetBox1f(oTF, "value", (float)range[0], (float)range[1]);
+       ospCommit(oTF);
+
+       ospRelease(colorData);
+diff --git a/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.cxx b/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.cxx
+index 354fb4e096..018ad907a7 100644
+--- a/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.cxx
++++ b/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.cxx
+@@ -311,7 +311,7 @@ void vtkOSPRayVolumeMapperNode::Render(bool prepass)
+         ospCommit(isosurfaces);
+
+         ospSetObject(OSPRayIsosurface, "isovalue", isosurfaces);
+-        ospSetObject(OSPRayIsosurface, "volume", this->OSPRayVolumeModel);
++        ospSetObject(OSPRayIsosurface, "volume", this->OSPRayVolume);
+         ospCommit(OSPRayIsosurface);
+         ospRelease(isosurfaces);
+
+@@ -319,12 +319,15 @@ void vtkOSPRayVolumeMapperNode::Render(bool prepass)
+         OSPInstance instance = ospNewInstance(group);
+
+         OSPGeometricModel OSPRayGeometricModel = ospNewGeometricModel(OSPRayIsosurface);
+-
++        OSPData ospIsoColors = ospNewCopyData1D(this->IsoColors.data(), OSP_VEC4F, nbContours);
++        ospCommit(ospIsoColors);
++        ospSetObject(OSPRayGeometricModel, "color", ospIsoColors);
+         OSPMaterial material =
+           vtkOSPRayMaterialHelpers::NewMaterial(orn, orn->GetORenderer(), "obj");
+         ospCommit(material);
+         ospSetObjectAsData(OSPRayGeometricModel, "material", OSP_MATERIAL, material);
+         ospCommit(OSPRayGeometricModel);
++        ospRelease(ospIsoColors);
+         ospRelease(material);
+         ospRelease(OSPRayIsosurface);
+
+@@ -406,7 +409,7 @@ void vtkOSPRayVolumeMapperNode::UpdateTransferFunction(
+   ospCommit(colorData);
+   ospSetObject(this->TransferFunction, "color", colorData);
+
+-  ospSetVec2f(this->TransferFunction, "valueRange", tfRange.x, tfRange.y);
++  ospSetBox1f(this->TransferFunction, "value", tfRange.x, tfRange.y);
+
+   OSPData tfAlphaData = ospNewCopyData1D(&this->TFOVals[0], OSP_FLOAT, this->NumColors);
+   ospCommit(tfAlphaData);
+@@ -416,5 +419,20 @@ void vtkOSPRayVolumeMapperNode::UpdateTransferFunction(
+   ospRelease(colorData);
+   ospRelease(tfAlphaData);
+
++  vtkContourValues* contours = volProperty->GetIsoSurfaceValues();
++  this->IsoColors.clear();
++  if (contours)
++  {
++    double* p = contours->GetValues();
++    for (auto i = 0; i < contours->GetNumberOfContours(); ++i)
++    {
++      double* ncol = colorTF->GetColor(p[i]);
++      this->IsoColors.push_back(ncol[0]);
++      this->IsoColors.push_back(ncol[1]);
++      this->IsoColors.push_back(ncol[2]);
++      this->IsoColors.push_back(scalarTF->GetValue(p[i]));
++    }
++  }
++
+   this->PropertyTime.Modified();
+ }
+diff --git a/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.h b/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.h
+index 78b1d5fb66..e71c72716b 100644
+--- a/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.h
++++ b/Rendering/RayTracing/vtkOSPRayVolumeMapperNode.h
+@@ -79,6 +79,7 @@ protected:
+
+   std::vector<float> TFVals;
+   std::vector<float> TFOVals;
++  std::vector<float> IsoColors;
+
+   vtkOSPRayCache<vtkOSPRayCacheItemObject>* Cache;
+
+--
+2.25.1
+
 
 EOF
     if [[ $? != 0 ]] ; then
-        warn "vtk patch for xml_version.h installation failed."
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
         return 1
     fi
+
 }
+
 
 function apply_vtk9_vtkRectilinearGridReader_patch
 {
@@ -1987,7 +2414,47 @@ EOF
     return 0;
 }
 
-function apply_vtk_osmesa_render_patch
+function apply_vtk9_osmesa_render_patch
+{
+    # I updated this patch for VTK 9.2.6, but not really sure it is still needed
+    # VTK modified the Resize method ... perhaps that change fixes what this
+    # patch was trying to fix?
+
+    # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
+    # wrong window size for the buffer.
+    patch -p0 << \EOF
+diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx
+--- Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig    2023-09-11 08:28:50.273945000 -0700
++++ Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx 2023-09-11 08:37:20.796870000 -0700
+@@ -187,7 +187,6 @@
+   {
+     this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
+   }
+-  this->MakeCurrent();
+ 
+   this->Mapped = 0;
+   this->Size[0] = width;
+@@ -301,8 +300,8 @@
+ {
+   if ((this->Size[0] != width) || (this->Size[1] != height))
+   {
+-    this->Superclass::SetSize(width, height);
+     this->ResizeOffScreenWindow(width, height);
++    this->Superclass::SetSize(width, height);
+     this->Modified();
+   }
+ }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for osmesa render window failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtk8_osmesa_render_patch
 {
     # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
     # wrong window size for the buffer.
@@ -2016,7 +2483,7 @@ diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtk
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtk patch for compiler version check failed."
+      warn "vtk patch for osmesa render window failed."
       return 1
     fi
 
@@ -2028,6 +2495,11 @@ function apply_vtk_patch
 {
 
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        apply_vtk9_allow_onscreen_and_osmesa_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
         # vtk8 version needs to be reworked for 9.1.0
         #apply_vtk9_vtkopenfoamreader_patch
         #if [[ $? != 0 ]] ; then
@@ -2051,11 +2523,6 @@ function apply_vtk_patch
             return 1
         fi
 
-        apply_vtk9_libxmlversionheader_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-
         apply_vtk9_vtkRectilinearGridReader_patch
         if [[ $? != 0 ]] ; then
             return 1
@@ -2069,6 +2536,11 @@ function apply_vtk_patch
         apply_vtk9_vtkdatawriter_patch
         if [[ $? != 0 ]] ; then
            return 1
+        fi
+
+        apply_vtk9_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
         fi
 
     else
@@ -2119,12 +2591,13 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        apply_vtk8_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
-    apply_vtk_osmesa_render_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
     return 0
 }
 
@@ -2245,7 +2718,7 @@ function build_vtk
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
     if [[ "$DO_VTK9" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
+        vopts="${vopts} -DVTK_BUILD_TESTING:STRING=OFF"
         vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
         # setting this to true causes errors when building debug versions of
         # visit, so set it to false
@@ -2346,11 +2819,11 @@ function build_vtk
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 if [[ "$DO_VTK9" == "yes" ]]; then
-                    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:BOOL:STRING=YES"
+                    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES"
                     if [[ "$DO_QT6" == "yes" ]]; then
                         vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
                     else
-                        vopts="${vopts} -DQt6_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                        vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                     fi
                 else
                     vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
@@ -2407,10 +2880,9 @@ function build_vtk
             vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
             # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
             vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-            # Cannot build onscreen and offscreen this way anymore
-            #vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-            #vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
-            #vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+            vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+            vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+            vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
             if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
                 if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then

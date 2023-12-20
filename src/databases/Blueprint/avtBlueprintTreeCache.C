@@ -46,6 +46,11 @@ using namespace mfem;
 ///
 /// avtBlueprintTreeCache::CacheMap Interface
 ///
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  7 15:35:20 PST 2023
+//    Add logic to limit max number of file handles held open
+//
 //----------------------------------------------------------------------------/
 class avtBlueprintTreeCache::CacheMap
 {
@@ -60,13 +65,17 @@ class avtBlueprintTreeCache::CacheMap
 
         uint64   TotalSize() const;
         uint64   TotalHDF5Ids() const;
+
+        void     CloseHDF5FileHandle(hid_t h5_file_id);
         
         void     Release();
 
   private:
       std::map<int,Node>          m_nodes;
       std::map<int,Node>          m_sidre_nodes;
+      int                         m_max_file_handles;
       std::map<std::string,hid_t> m_h5_ids;
+      std::vector<std::string>    m_h5_path_open_order;
 
 };
 
@@ -80,6 +89,7 @@ class avtBlueprintTreeCache::CacheMap
 avtBlueprintTreeCache::CacheMap::CacheMap()
 : m_nodes(),
   m_sidre_nodes(),
+  m_max_file_handles(256),
   m_h5_ids()
 {}
 
@@ -105,12 +115,11 @@ avtBlueprintTreeCache::CacheMap::Release()
     {
      
          hid_t h5_file_id = (*itr).second;
-         // close the hdf5 file
-         CHECK_HDF5_ERROR(H5Fclose(h5_file_id),
-                           "Error closing HDF5 file handle: " << h5_file_id);
+         CloseHDF5FileHandle(h5_file_id);
     }
 
     m_h5_ids.clear();
+    m_h5_path_open_order.clear();
 
 }
 
@@ -133,8 +142,21 @@ hid_t
 avtBlueprintTreeCache::CacheMap::FetchHDF5Id(const std::string &file_path)
 {
     hid_t h5_file_id = -1;
+
+    // check if handle is open
     if ( m_h5_ids.find(file_path) == m_h5_ids.end() )
     {
+        // handle is not open, check if we are at max number of handles
+        if( TotalHDF5Ids() > m_max_file_handles )
+        {
+            // take the first entry and close it
+            std::string h5_file_path_to_close = m_h5_path_open_order[0];
+            hid_t h5_id_to_close = m_h5_ids[h5_file_path_to_close];
+            CloseHDF5FileHandle(h5_id_to_close);
+            m_h5_path_open_order.erase(m_h5_path_open_order.begin());
+            m_h5_ids.erase(h5_file_path_to_close);
+        }
+
         // assume fetch_path points to a hdf5 dataset
         // open the hdf5 file for reading
         h5_file_id = H5Fopen(file_path.c_str(),
@@ -143,6 +165,7 @@ avtBlueprintTreeCache::CacheMap::FetchHDF5Id(const std::string &file_path)
         CHECK_HDF5_ERROR(h5_file_id,
                          "Error opening HDF5 file for reading: "  << file_path);
         BP_PLUGIN_INFO("opened " << file_path << "  hdf5 id = " << h5_file_id);
+        m_h5_path_open_order.push_back(file_path);
         m_h5_ids[file_path] = h5_file_id;
     }
     else
@@ -153,6 +176,13 @@ avtBlueprintTreeCache::CacheMap::FetchHDF5Id(const std::string &file_path)
     return h5_file_id;
 }
 
+//----------------------------------------------------------------------------/
+void avtBlueprintTreeCache::CacheMap::CloseHDF5FileHandle(hid_t h5_file_id)
+{
+    // close the hdf5 file
+    CHECK_HDF5_ERROR(H5Fclose(h5_file_id),
+                      "Error closing HDF5 file handle: " << h5_file_id);
+}
 
 //----------------------------------------------------------------------------/
 uint64

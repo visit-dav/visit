@@ -42,14 +42,14 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    {   const stringVector &names = atts->GetNames();
-        snprintf(tmpStr, 1000, "%snames = (", prefix);
+    {   const stringVector &colorTableNames = atts->GetColorTableNames();
+        snprintf(tmpStr, 1000, "%scolorTableNames = (", prefix);
         str += tmpStr;
-        for(size_t i = 0; i < names.size(); ++i)
+        for(size_t i = 0; i < colorTableNames.size(); ++i)
         {
-            snprintf(tmpStr, 1000, "\"%s\"", names[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", colorTableNames[i].c_str());
             str += tmpStr;
-            if(i < names.size() - 1)
+            if(i < colorTableNames.size() - 1)
             {
                 snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -58,14 +58,14 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    {   const intVector &active = atts->GetActive();
-        snprintf(tmpStr, 1000, "%sactive = (", prefix);
+    {   const intVector &colorTableActiveFlags = atts->GetColorTableActiveFlags();
+        snprintf(tmpStr, 1000, "%scolorTableActiveFlags = (", prefix);
         str += tmpStr;
-        for(size_t i = 0; i < active.size(); ++i)
+        for(size_t i = 0; i < colorTableActiveFlags.size(); ++i)
         {
-            snprintf(tmpStr, 1000, "%d", active[i]);
+            snprintf(tmpStr, 1000, "%d", colorTableActiveFlags[i]);
             str += tmpStr;
-            if(i < active.size() - 1)
+            if(i < colorTableActiveFlags.size() - 1)
             {
                 snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -91,11 +91,6 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sdefaultDiscrete = \"%s\"\n", prefix, atts->GetDefaultDiscrete().c_str());
     str += tmpStr;
-    if(atts->GetChangesMade())
-        snprintf(tmpStr, 1000, "%schangesMade = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%schangesMade = 0\n", prefix);
-    str += tmpStr;
     return str;
 }
 
@@ -109,7 +104,7 @@ ColorTableAttributes_Notify(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_SetNames(PyObject *self, PyObject *args)
+ColorTableAttributes_SetColorTableNames(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
 
@@ -157,28 +152,28 @@ ColorTableAttributes_SetNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
-    obj->data->GetNames() = vec;
-    // Mark the names in the object as modified.
-    obj->data->SelectNames();
+    obj->data->GetColorTableNames() = vec;
+    // Mark the colorTableNames in the object as modified.
+    obj->data->SelectColorTableNames();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_GetNames(PyObject *self, PyObject *args)
+ColorTableAttributes_GetColorTableNames(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the names.
-    const stringVector &names = obj->data->GetNames();
-    PyObject *retval = PyTuple_New(names.size());
-    for(size_t i = 0; i < names.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(names[i].c_str()));
+    // Allocate a tuple the with enough entries to hold the colorTableNames.
+    const stringVector &colorTableNames = obj->data->GetColorTableNames();
+    PyObject *retval = PyTuple_New(colorTableNames.size());
+    for(size_t i = 0; i < colorTableNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(colorTableNames[i].c_str()));
     return retval;
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_SetActive(PyObject *self, PyObject *args)
+ColorTableAttributes_SetColorTableActiveFlags(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
 
@@ -233,23 +228,23 @@ ColorTableAttributes_SetActive(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
-    obj->data->GetActive() = vec;
-    // Mark the active in the object as modified.
-    obj->data->SelectActive();
+    obj->data->GetColorTableActiveFlags() = vec;
+    // Mark the colorTableActiveFlags in the object as modified.
+    obj->data->SelectColorTableActiveFlags();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_GetActive(PyObject *self, PyObject *args)
+ColorTableAttributes_GetColorTableActiveFlags(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the active.
-    const intVector &active = obj->data->GetActive();
-    PyObject *retval = PyTuple_New(active.size());
-    for(size_t i = 0; i < active.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(active[i])));
+    // Allocate a tuple the with enough entries to hold the colorTableActiveFlags.
+    const intVector &colorTableActiveFlags = obj->data->GetColorTableActiveFlags();
+    PyObject *retval = PyTuple_New(colorTableActiveFlags.size());
+    for(size_t i = 0; i < colorTableActiveFlags.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(colorTableActiveFlags[i])));
     return retval;
 }
 
@@ -452,74 +447,14 @@ ColorTableAttributes_GetDefaultDiscrete(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-ColorTableAttributes_SetChangesMade(PyObject *self, PyObject *args)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the changesMade in the object.
-    obj->data->SetChangesMade(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ColorTableAttributes_GetChangesMade(PyObject *self, PyObject *args)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetChangesMade()?1L:0L);
-    return retval;
-}
-
 
 
 PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"Notify", ColorTableAttributes_Notify, METH_VARARGS},
-    {"SetNames", ColorTableAttributes_SetNames, METH_VARARGS},
-    {"GetNames", ColorTableAttributes_GetNames, METH_VARARGS},
-    {"SetActive", ColorTableAttributes_SetActive, METH_VARARGS},
-    {"GetActive", ColorTableAttributes_GetActive, METH_VARARGS},
+    {"SetColorTableNames", ColorTableAttributes_SetColorTableNames, METH_VARARGS},
+    {"GetColorTableNames", ColorTableAttributes_GetColorTableNames, METH_VARARGS},
+    {"SetColorTableActiveFlags", ColorTableAttributes_SetColorTableActiveFlags, METH_VARARGS},
+    {"GetColorTableActiveFlags", ColorTableAttributes_GetColorTableActiveFlags, METH_VARARGS},
     {"GetColorTables", ColorTableAttributes_GetColorTables, METH_VARARGS},
     {"GetNumColorTables", ColorTableAttributes_GetNumColorTables, METH_VARARGS},
     {"AddColorTables", ColorTableAttributes_AddColorTables, METH_VARARGS},
@@ -529,8 +464,6 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetDefaultContinuous", ColorTableAttributes_GetDefaultContinuous, METH_VARARGS},
     {"SetDefaultDiscrete", ColorTableAttributes_SetDefaultDiscrete, METH_VARARGS},
     {"GetDefaultDiscrete", ColorTableAttributes_GetDefaultDiscrete, METH_VARARGS},
-    {"SetChangesMade", ColorTableAttributes_SetChangesMade, METH_VARARGS},
-    {"GetChangesMade", ColorTableAttributes_GetChangesMade, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -553,18 +486,16 @@ PyObject *
 PyColorTableAttributes_getattr(PyObject *self, char *name)
 {
 #include <visit-config.h>
-    if(strcmp(name, "names") == 0)
-        return ColorTableAttributes_GetNames(self, NULL);
-    if(strcmp(name, "active") == 0)
-        return ColorTableAttributes_GetActive(self, NULL);
+    if(strcmp(name, "colorTableNames") == 0)
+        return ColorTableAttributes_GetColorTableNames(self, NULL);
+    if(strcmp(name, "colorTableActiveFlags") == 0)
+        return ColorTableAttributes_GetColorTableActiveFlags(self, NULL);
     if(strcmp(name, "colorTables") == 0)
         return ColorTableAttributes_GetColorTables(self, NULL);
     if(strcmp(name, "defaultContinuous") == 0)
         return ColorTableAttributes_GetDefaultContinuous(self, NULL);
     if(strcmp(name, "defaultDiscrete") == 0)
         return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
-    if(strcmp(name, "changesMade") == 0)
-        return ColorTableAttributes_GetChangesMade(self, NULL);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
@@ -626,16 +557,14 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
 
-    if(strcmp(name, "names") == 0)
-        obj = ColorTableAttributes_SetNames(self, args);
-    else if(strcmp(name, "active") == 0)
-        obj = ColorTableAttributes_SetActive(self, args);
+    if(strcmp(name, "colorTableNames") == 0)
+        obj = ColorTableAttributes_SetColorTableNames(self, args);
+    else if(strcmp(name, "colorTableActiveFlags") == 0)
+        obj = ColorTableAttributes_SetColorTableActiveFlags(self, args);
     else if(strcmp(name, "defaultContinuous") == 0)
         obj = ColorTableAttributes_SetDefaultContinuous(self, args);
     else if(strcmp(name, "defaultDiscrete") == 0)
         obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
-    else if(strcmp(name, "changesMade") == 0)
-        obj = ColorTableAttributes_SetChangesMade(self, args);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.

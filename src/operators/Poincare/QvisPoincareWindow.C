@@ -2159,7 +2159,7 @@ QvisPoincareWindow::UpdateAlgorithmAttributes()
         maxSLCount->show();
         break;
 
-    case PoincareAttributes::MasterSlave:
+    case PoincareAttributes::ManagerWorker:
         maxDomainCacheLabel->show();
         maxDomainCache->show();
         maxSLCountLabel->show();

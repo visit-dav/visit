@@ -22,6 +22,12 @@
 #   Kathleen Biagas, Tue May 5, 2023
 #   Disable qt6 forcing of defines for UNICODE.
 #
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -91,14 +97,12 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
     target_link_libraries(avtFilterExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtFilterExample ${EGL_LIBRARIES})
 endif()
 
 ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
@@ -121,14 +125,12 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
     target_link_libraries(avtRenderExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtRenderExample ${EGL_LIBRARIES})
 endif()
 
 
@@ -148,14 +150,12 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
     target_link_libraries(avtPluginExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtPluginExample ${EGL_LIBRARIES})
 endif()
 
 ADD_EXECUTABLE(avtPlotPluginExample avtPlotPluginExample.C)
@@ -178,14 +178,12 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
     target_link_libraries(avtPlotPluginExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtPlotPluginExample ${EGL_LIBRARIES})
 endif()
 
 ADD_EXECUTABLE(networkManagerExample networkManagerExample.C)
@@ -209,7 +207,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 

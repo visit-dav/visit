@@ -59,6 +59,112 @@ static void RemoveCullers(vtkRenderer *);
 
 bool VisWinRendering::stereoEnabled = false;
 
+// For debugging post process screen capture
+//#define POST_PROCESS_SCREEN_CAPTURE_DEBUG
+#ifdef POST_PROCESS_SCREEN_CAPTURE_DEBUG
+#include <vtkPNGWriter.h>
+#include <vtkFloatArray.h>
+#endif
+
+#if LIB_VERSION_LE(VTK,8,1,0)
+#else
+// For vtkBackgroundPass
+#include <vtkOpenGLQuadHelper.h>
+#include <vtkOpenGLRenderUtilities.h>
+#include <vtkOpenGLRenderWindow.h>
+#include <vtkOpenGLState.h>
+#include <vtkRenderPass.h>
+#include <vtkRenderState.h>
+#include <vtkShaderProgram.h>
+#include <vtkTextureObject.h>
+
+class vtkBackgroundPass : public vtkRenderPass
+{
+public:
+  static vtkBackgroundPass* New();
+  vtkTypeMacro(vtkBackgroundPass, vtkRenderPass);
+
+  vtkBackgroundPass() = default;
+
+  ~vtkBackgroundPass() override {};
+
+  void SetBackground(const int nChannels_, const int c0_, const int r0_,
+                     const int w_, const int h_, unsigned char *pixels_)
+  {
+    nChannels = nChannels_;
+    c0 = c0_;
+    r0 = r0_;
+    w = w_;
+    h = h_;
+    pixels = pixels_;
+  };
+
+  void Render(const vtkRenderState* s) override
+  {
+    vtkRenderer* ren = s->GetRenderer();
+
+    // copy the result to the window
+    vtkRenderWindow* rwin = vtkRenderWindow::SafeDownCast(ren->GetVTKWindow());
+
+    vtkOpenGLRenderWindow* windowOpenGL = vtkOpenGLRenderWindow::SafeDownCast(rwin);
+
+    // create the shader.
+    std::string FSSource = vtkOpenGLRenderUtilities::GetFullScreenQuadFragmentShaderTemplate();
+
+    vtkShaderProgram::Substitute(FSSource, "//VTK::FSQ::Decl",
+      "uniform sampler2D colorTexture;\n");
+
+    std::stringstream ss;
+    ss << "vec4 color = texture(colorTexture, texCoord);\n";
+    ss << "gl_FragData[0] = color;\n";
+
+    vtkShaderProgram::Substitute(FSSource, "//VTK::FSQ::Impl", ss.str());
+
+    vtkOpenGLQuadHelper* QuadHelper = new vtkOpenGLQuadHelper(windowOpenGL,
+      vtkOpenGLRenderUtilities::GetFullScreenQuadVertexShader().c_str(), FSSource.c_str(), "");
+
+    if (!QuadHelper->Program || !QuadHelper->Program->GetCompiled())
+    {
+      vtkErrorMacro("Couldn't build the shader program.");
+      return;
+    }
+
+    vtkTextureObject* ColorTexture = vtkTextureObject::New();
+    ColorTexture->SetContext(windowOpenGL);
+    ColorTexture->AutoParametersOff();
+    ColorTexture->Create2DFromRaw(w, h, nChannels, VTK_UNSIGNED_CHAR, pixels);
+    ColorTexture->Activate();
+
+    QuadHelper->Program->SetUniformi(
+      "colorTexture", ColorTexture->GetTextureUnit());
+
+    vtkOpenGLState* ostate = windowOpenGL->GetState();
+
+    vtkOpenGLState::ScopedglEnableDisable dsaver(ostate, GL_DEPTH_TEST);
+    vtkOpenGLState::ScopedglEnableDisable bsaver(ostate, GL_BLEND);
+    vtkOpenGLState::ScopedglDepthFunc dfsaver(ostate);
+    vtkOpenGLState::ScopedglBlendFuncSeparate bfsaver(ostate);
+
+    ostate->vtkglViewport(c0, r0, w, h);
+    ostate->vtkglScissor(c0, r0, w, h);
+
+    ostate->vtkglDisable(GL_DEPTH_TEST);
+
+    QuadHelper->Render();
+
+    ColorTexture->Deactivate();
+  };
+
+private:
+  int nChannels;
+  int c0, r0;
+  int w, h;
+  unsigned char *pixels;
+};
+
+vtkStandardNewMacro(vtkBackgroundPass);
+#endif
+
 // ****************************************************************************
 //  Method: VisWinRendering constructor
 //
@@ -1824,17 +1930,22 @@ VisWinRendering::BackgroundReadback(bool doViewportOnly)
 //    Brad Whitlock, Thu Sep 21 17:17:11 PDT 2017
 //    If we get 4 channel data, output 4 channel data.
 //
+//    Eric Brugger, Fri Oct 27 13:32:48 PDT 2023
+//    Switch to using a texture shader to set the pixel data. This uses
+//    the vtkBackgroundPass render pass (at the top of this file) to
+//    accomplish this. The old mechanism no longer worked with VTK9.
+//
 // ****************************************************************************
 
 avtImage_p
 VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     bool doViewportOnly, bool keepZBuffer)
 {
-    // compute size of region we'll be writing back to the frame buffer
+    // Compute the size of region we'll be writing back to the frame buffer.
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
 
-    // confirm image passed in is the correct size
+    // Confirm the image passed in is the correct size.
     int iw, ih;
     input->GetSize(&iw, &ih);
     if ((iw != w) || (ih != h))
@@ -1846,6 +1957,15 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
             "PostProcessScreenCapture does not match vtkRenderWindow size");
     }
 
+#ifdef POST_PROCESS_SCREEN_CAPTURE_DEBUG
+    vtkPNGWriter *writer = vtkPNGWriter::New();
+    writer->SetFileName("composited_image.png");
+    writer->SetInputData(input->GetImage().GetImageVTK());
+    writer->Write();
+    writer->Delete();
+#endif
+
+#if LIB_VERSION_LE(VTK,8,1,0)
     // temporarily remove canvas and background renderers
     vtkRenderWindow *renWin = GetRenderWindow();
     renWin->RemoveRenderer(canvas);
@@ -1861,8 +1981,38 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     // render (foreground layer only)
     RenderRenderWindow();
+#else
+    // Get the render window.
+    vtkRenderWindow *renWin = GetRenderWindow();
 
-    // capture the whole image now
+    // Create a renderer that uses the vtkBackgroundPass to render the
+    // composited image.
+    vtkRenderer *imageRenderer = vtkRenderer::New();
+    vtkBackgroundPass *imagePass = vtkBackgroundPass::New();
+    unsigned char *pixels = input->GetImage().GetRGBBuffer();
+    int nChannels = input->GetImage().GetNumberOfColorChannels();
+    imagePass->SetBackground(nChannels, c0, r0, w, h, pixels);
+    imageRenderer->SetPass(imagePass);
+    imageRenderer->SetLayer(1);
+    imageRenderer->SetBackground(1., 1., 1.);
+
+    // Replace the canvas with the image.
+    renWin->RemoveRenderer(canvas);
+    renWin->AddRenderer(imageRenderer);
+
+    // Render.
+    renWin->Render();
+
+    // Restore the canvas.
+    renWin->RemoveRenderer(imageRenderer);
+    renWin->AddRenderer(canvas);
+
+    // Clean up the image renderer.
+    imagePass->Delete();
+    imageRenderer->Delete();
+#endif
+
+    // Capture the whole image now.
     GetCaptureRegion(r0, c0, w, h, false);
 
     size_t npix = w*h;
@@ -1877,7 +2027,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     else
         renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
 
-    // construct the output image
+    // Construct the output image.
     vtkImageData *im = vtkImageData::New();
     im->SetDimensions(w, h, 1);
     im->GetPointData()->SetScalars(pix);
@@ -1885,15 +2035,24 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     avtImage_p output = new avtImage(NULL);
 
+#ifdef POST_PROCESS_SCREEN_CAPTURE_DEBUG
+    writer = vtkPNGWriter::New();
+    writer->SetFileName("composited_image_with_foreground.png");
+    writer->SetInputData(im);
+    writer->Write();
+    writer->Delete();
+#endif
+
     output->SetImage(avtImageRepresentation(im,
             keepZBuffer ? input->GetImage().GetZBufferVTK() : 0));
 
     im->Delete();
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     // add canvas and background renderers back in
     renWin->AddRenderer(background);
     renWin->AddRenderer(canvas);
-
+#endif
     return output;
 }
 

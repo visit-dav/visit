@@ -15,52 +15,24 @@
 #   problems so that this script can be improved in the future.
 #
 
-# To create your own modular file these 12 functions need to be implemented...
-#filename: bv_<module>.sh
-#bv_<module>_initialize : Initialize any variables you may want to export
-#bv_<module>_enable : Enables the module
-#bv_<module>_disable : Disables the module
-#bv_<module>_info : Where to get the module, the version, etc...
-#bv_<module>_ensure : Ensure the module has been downloaded and extracted properly. Set and check variables here..
-#bv_<module>_depends_on : What other modules does this module depend on. Example "adios" returns string "mxml"
-#bv_<module>_build : build the module
-#bv_<module>_print : prints info about the module
-#bv_<module>_print_usage : prints how to enable the module and any other relevant cmd line args
-#bv_<module>_host_profile : adds to config-site host profile cmake file
-#bv_<module>_is_installed : returns true if the module is installed, and false otherwise
-#bv_<module>_is_enabled : returns true if the module is enabled, and false otherwise
+# To create your own modular file, see the docs at
+# //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
 
-# Then add the module name to bv_support/modules.xml under the appropriate
-# categories
-
-#order of execution
-#1. bv_<module>_initialize anything to intialize the module
-#2. bv_<module>_info runs to setup download locations,directories,etc...
-#3. bv_<module>_[enable|disable] runs next to enable or disable the module
-#4. bv_<module>_ensure runs to ensure module is setup properly and variables are initialized
-#5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
-#6. bv_<module>_build builds the module
-#7. bv_<module>_print prints info about the module
-#8. bv_<module>_print_usage prints how to enable the module and any other relevant cmd line args
-#9. bv_<module>_host_profile adds to config-site host profile cmake file
-#10. bv_<module>_is_installed check if the module is properly installed
-#11. bv_<module>_is_enabled and finally check if it is enabled
-
-export VISIT_VERSION=${VISIT_VERSION:-"3.3.2"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.4.0"}
 
 ####
 # Trunk:
 ####
-export TRUNK_BUILD="yes"
-export RC_BUILD="no"
-export TAGGED_BUILD="no"
+#export TRUNK_BUILD="yes"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="yes"
-#export TAGGED_BUILD="no"
+export TRUNK_BUILD="no"
+export RC_BUILD="yes"
+export TAGGED_BUILD="no"
 
 
 ###

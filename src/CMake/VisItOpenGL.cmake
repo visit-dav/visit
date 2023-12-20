@@ -5,12 +5,10 @@
 if(VISIT_MESAGL_DIR)
     # MesaGL, GLU, LLVM libs
     include(${VISIT_SOURCE_DIR}/CMake/FindMesaGL.cmake)
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        # OSMesa, LLVM libs
-        set(VISIT_OSMESA_DIR ${VISIT_MESAGL_DIR})
-        include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
-        unset(VISIT_OSMESA_DIR)
-    endif()
+    # OSMesa, LLVM libs
+    set(VISIT_OSMESA_DIR ${VISIT_MESAGL_DIR})
+    include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
+    unset(VISIT_OSMESA_DIR)
 elseif(VISIT_OSMESA_DIR)
     # OSMesa, LLVM libs
     include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
@@ -79,7 +77,5 @@ message(STATUS "**** OPENGL_XMESA_FOUND=${OPENGL_XMESA_FOUND}")
 message(STATUS "**** OPENGL_GLU_FOUND=${OPENGL_GLU_FOUND}")
 message(STATUS "**** OpenGL_OpenGL_FOUND=${OpenGL_OpenGL_FOUND}")
 message(STATUS "**** OpenGL_GLX_FOUND=${OpenGL_GLX_FOUND}")
-message(STATUS "**** OpenGL_EGL_FOUND=${OpenGL_EGL_FOUND}")
 message(STATUS "**** OPENGL_INCLUDE_DIR=${OPENGL_INCLUDE_DIR}")
-message(STATUS "**** OPENGL_EGL_INCLUDE_DIRS=${OPENGL_EGL_INCLUDE_DIRS}")
 message(STATUS "**** OPENGL_LIBRARIES=${OPENGL_LIBRARIES}")
