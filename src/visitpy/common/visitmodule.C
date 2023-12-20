@@ -365,10 +365,10 @@ public:
         }
         else if(m->GetSeverity() == MessageAttributes::ErrorClear)
             errorFlag = 0;
-        else if(m->GetSeverity() == MessageAttributes::Warning &&
-            suppressLevel > 2)
+        else if(m->GetSeverity() == MessageAttributes::Warning)
         {
-            fprintf(stderr, "VisIt: Warning - %s\n", m->GetText().c_str());
+            if(suppressLevel > 2)
+                fprintf(stderr, "VisIt: Warning - %s\n", m->GetText().c_str());
         }
         else if (suppressLevel > 3)
         {
