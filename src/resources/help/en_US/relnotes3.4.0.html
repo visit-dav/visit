@@ -78,7 +78,6 @@ enhancements and bug-fixes that were added to this release.</p>
   </li>
   <li>Added the MFEM LOR setting to the MFEM Reader. Users may now choose between the new LOR scheme and the legacy LOR scheme. The new scheme is the default.</li>
   <li>VisIt's Blueprint reader has been enhanced so related high order volume fraction fields from a <i>matset</i> are grouped into a material that can be used with the FilledBoundary plot. The high order material data fields are refined through MFEM LOR, whose refinement level can be controlled with the <i>MultiresControl</i> operator.</li>
-  <li>VisIt's Blueprint reader was enhanced so fields in Blueprint index files can supply a <i>display_name</i> hint that specifies the name used to expose the field in VisIt. This feature enables the index file to group related variables under sub-menus if the names in include slash characters.</li>
   <li>Removed the HDF 4 based readers, which include the Cosmos, RAGE, and ZeusMP readers.</li>
   <li>Removed the HDF 4 support in the Enzo reader.</li>
   <li>VisIt's Blueprint reader now supports materials with material numbers that do NOT fall in the range [0, N), where N is the number of materials.</li>
