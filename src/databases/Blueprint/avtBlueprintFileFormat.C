@@ -2282,37 +2282,43 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("topo name: " << topo_name);
 
             const Node &n_topo = n_mesh["topologies/" + topo_name];
-            conduit::blueprint::mesh::utils::ShapeType shape(n_topo);
-
-            if (shape.is_poly())
+            int tdims = -1;
+            if (n_topo.has_path("elements/shape"))
             {
-                string field_name, coords_name;
-                // get name of coordset from topology
-                coords_name = n_topo["coordset"].as_string();
+                // Get the shape's topological dimension.
+                conduit::blueprint::mesh::utils::ShapeType shape(n_topo);
+                tdims = shape.dim;
 
-                Node s2dmap, d2smap, options;
-                Node &side_coords = side_mesh["coordsets/" + coords_name];
-                Node &side_topo = side_mesh["topologies/" + topo_name];
-                Node &side_fields = side_mesh["fields"];
+                if (shape.is_polygonal() || shape.is_polyhedral())
+                {
+                    string field_name, coords_name;
+                    // get name of coordset from topology
+                    coords_name = n_topo["coordset"].as_string();
 
-                field_name = FileFunctions::Basename(abs_varname_str);
-                n_mesh["fields/" + field_name].set_external(*field_ptr);
+                    Node s2dmap, d2smap, options;
+                    Node &side_coords = side_mesh["coordsets/" + coords_name];
+                    Node &side_topo = side_mesh["topologies/" + topo_name];
+                    Node &side_fields = side_mesh["fields"];
 
-                blueprint::mesh::topology::unstructured::generate_sides(
-                  n_mesh["topologies/" + topo_name],
-                  side_topo,
-                  side_coords,
-                  side_fields,
-                  s2dmap,
-                  d2smap,
-                  options);
+                    field_name = FileFunctions::Basename(abs_varname_str);
+                    n_mesh["fields/" + field_name].set_external(*field_ptr);
 
-                field_ptr = side_fields.fetch_ptr(field_name);
+                    blueprint::mesh::topology::unstructured::generate_sides(
+                      n_mesh["topologies/" + topo_name],
+                      side_topo,
+                      side_coords,
+                      side_fields,
+                      s2dmap,
+                      d2smap,
+                      options);
+
+                    field_ptr = side_fields.fetch_ptr(field_name);
+                }
             }
 
             // Check whether the data need to be refined anyway.
             const bool meshIsHO = n_mesh.has_path("topologies/" + topo_name + "/grid_function");
-            if(meshIsHO && (shape.dim >= 2) && ((m_selected_lod+1) > 1))
+            if(meshIsHO && (tdims >= 2) && ((m_selected_lod+1) > 1))
             {
                 // The field data are low-order but need to be refined anyway since
                 // the mesh got refined.
@@ -2321,9 +2327,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 conduit::Node fieldHO;
                 fieldHO["topology"] = topo_name;
                 if(field_ptr->fetch_existing("association").as_string() == "element")
-                    fieldHO["basis"] = (shape.dim == 2) ? "L2_T2_2D_P0" : "L2_T2_3D_P0";
+                    fieldHO["basis"] = (tdims == 2) ? "L2_T2_2D_P0" : "L2_T2_3D_P0";
                 else
-                    fieldHO["basis"] = (shape.dim == 2) ? "H1_2D_P1" : "H1_3D_P1";
+                    fieldHO["basis"] = (tdims == 2) ? "H1_2D_P1" : "H1_3D_P1";
                 fieldHO["values"].set_external(field_ptr->fetch_existing("values"));
 
                 // create an mfem mesh
