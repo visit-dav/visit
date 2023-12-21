@@ -445,7 +445,7 @@ avtMultiCurveFilter::Execute(void)
                 xLine[1] = (double)i + 0.5 + var->GetTuple1(i*nx+j) * scale;
                 points->InsertNextPoint(xLine);
                 outputArray.push_back(xLine[0]);
-                outputArray.push_back(xLine[1]);
+                outputArray.push_back(var->GetTuple1(i*nx+j));
 
                 // curve markers
                 if (var2 == NULL)
