@@ -51,6 +51,15 @@ def TimePick():
     PickByNode(element=8837, vars=vars, do_time=1, preserve_coord=0,curve_plot_type=0)
     SetActiveWindow(2);
     Test("TimePick_NamedArgs_00")
+
+    # this test and NamedArgs_03 using curve type 1 should return same values
+    PFirstYVal =  0.019999999552965164
+    VFirstYVal =  0.0010749432258307394
+
+    firstYVal=GetPlotInformation()["Curves"]["pressure"][1]
+    TestValueEQ("Curve type 0, pressure first value", firstYVal, PFirstYVal, 14)
+    firstYVal=GetPlotInformation()["Curves"]["v"][1]
+    TestValueEQ("Curve type 0, v first value", firstYVal,  VFirstYVal, 14)
     DeleteAllPlots()
 
     c.curveColor = (0, 255, 0, 255)
@@ -77,6 +86,12 @@ def TimePick():
     PickByNode(element=8837, vars=vars, do_time=1, preserve_coord=0,curve_plot_type=1)
     SetActiveWindow(2);
     Test("TimePick_NamedArgs_03")
+
+    # these should be the same as TimePick_NamedArgs_00
+    firstYVal=GetPlotInformation()["Curves"]["pressure"][1]
+    TestValueEQ("Curve type 1, pressure first value", firstYVal, PFirstYVal, 14)
+    firstYVal=GetPlotInformation()["Curves"]["v"][1]
+    TestValueEQ("Curve type 1, v first value", firstYVal,  VFirstYVal, 14)
     DeleteAllPlots()
 
     SetActiveWindow(1);
