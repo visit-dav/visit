@@ -87,7 +87,7 @@ def TimePick():
     SetActiveWindow(2);
     Test("TimePick_NamedArgs_03")
 
-    # these should be the same as TimePick_NamedArgs_01
+    # these should be the same as TimePick_NamedArgs_00
     firstYVal=GetPlotInformation()["Curves"]["pressure"][1]
     TestValueEQ("Curve type 1, pressure first value", firstYVal, PFirstYVal, 14)
     firstYVal=GetPlotInformation()["Curves"]["v"][1]
