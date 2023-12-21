@@ -12,6 +12,7 @@
 
 #include <avtDatasetToDatasetFilter.h>
 #include <MultiCurveAttributes.h>
+#include <MapNode.h>
 
 
 // ****************************************************************************
@@ -33,6 +34,9 @@
 //    I modified the filter could would also accept as input a collection
 //    of poly data data sets representing the individual curves to display.
 //
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Add outputInfo, for storing curves in PlotInformation.
+//
 // ****************************************************************************
 
 class avtMultiCurveFilter : public avtDatasetToDatasetFilter
@@ -41,9 +45,9 @@ class avtMultiCurveFilter : public avtDatasetToDatasetFilter
                               avtMultiCurveFilter(MultiCurveAttributes &);
     virtual                  ~avtMultiCurveFilter();
 
-    virtual const char       *GetType(void)   { return "avtMultiCurveFilter"; };
+    virtual const char       *GetType(void)   { return "avtMultiCurveFilter"; }
     virtual const char       *GetDescription(void)
-                                  { return "Performing MultiCurve"; };
+                                  { return "Performing MultiCurve"; }
 
     void                      SetAttributes(const MultiCurveAttributes &);
 
@@ -51,6 +55,7 @@ class avtMultiCurveFilter : public avtDatasetToDatasetFilter
     MultiCurveAttributes      atts;
     bool                      setYAxisTickSpacing;
     double                    yAxisTickSpacing;
+    MapNode                   outputInfo;
 
     virtual void              Execute(void);
 
