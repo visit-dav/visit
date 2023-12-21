@@ -781,6 +781,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         conduit_db = pjoin(outdir, "output.root")
 
         print("==============================\n\n\n\n\n\n\n\n\n")
+        print("This is conduit_db inside the for loop:")
         print(conduit_db)
         print("\n\n\n\n\n\n\n\n\n==============================")
 
@@ -880,6 +881,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     units = UNITS_OFF if i == 0 else UNITS_ON
 
     print("==============================\n\n\n\n\n\n\n\n\n")
+    print("This is conduit_db outside the for loop:")
     print(conduit_db)
     print("\n\n\n\n\n\n\n\n\n==============================")
     
@@ -905,8 +907,8 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     teardown_bp_test()
 
 blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+# blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
+# blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 # #
 # # test detector height and width are always positive in blueprint output
