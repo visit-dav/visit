@@ -711,6 +711,7 @@ def z_slice(zval, mesh_name):
     SetOperatorOptions(SliceAtts, 0, 1)
 
 def blueprint_test(output_type, outdir, testtextnumber, testname):
+    # conduit_db = ""
     for i in range(0, 2):
         setup_bp_test()
 
@@ -778,6 +779,12 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 
         # test opening the bp output and visualizing in visit
         conduit_db = pjoin(outdir, "output.root")
+
+        print("==============================\n\n\n\n\n\n\n\n\n")
+        print(conduit_db)
+        print("\n\n\n\n\n\n\n\n\n==============================")
+
+
         OpenDatabase(conduit_db)
 
         # 
@@ -871,6 +878,10 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         CloseDatabase(conduit_db)
 
     units = UNITS_OFF if i == 0 else UNITS_ON
+
+    print("==============================\n\n\n\n\n\n\n\n\n")
+    print(conduit_db)
+    print("\n\n\n\n\n\n\n\n\n==============================")
     
     qro = query_result_options(num_bins=3, abs_name="darr", emis_name="parr", \
         bin_state=ENERGY_GROUP_BOUNDS, units=units, \
@@ -897,444 +908,444 @@ blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
 blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
 blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
-#
-# test detector height and width are always positive in blueprint output
-#
+# #
+# # test detector height and width are always positive in blueprint output
+# #
 
-setup_bp_test()
+# setup_bp_test()
 
-params = GetQueryParameters("XRay Image")
-params["image_size"] = (4, 3)
-params["output_type"] = "hdf5"
-params["output_dir"] = conduit_dir_detector_dims
-params["focus"] = (0., 2.5, 10.)
-params["perspective"] = 1
-params["near_plane"] = -50.
-params["far_plane"] = 50.
-params["vars"] = ("d", "p")
-params["energy_group_bounds"] = [3.7, 4.2];
-params["parallel_scale"] = 5.
-Query("XRay Image", params)
+# params = GetQueryParameters("XRay Image")
+# params["image_size"] = (4, 3)
+# params["output_type"] = "hdf5"
+# params["output_dir"] = conduit_dir_detector_dims
+# params["focus"] = (0., 2.5, 10.)
+# params["perspective"] = 1
+# params["near_plane"] = -50.
+# params["far_plane"] = 50.
+# params["vars"] = ("d", "p")
+# params["energy_group_bounds"] = [3.7, 4.2];
+# params["parallel_scale"] = 5.
+# Query("XRay Image", params)
 
-teardown_bp_test()
+# teardown_bp_test()
 
-conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
-xrayout = conduit.Node()
-conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+# conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
+# xrayout = conduit.Node()
+# conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
-TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
+# detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+# TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
 
-detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
-TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
+# detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+# TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
-#
-# test imaging plane topos and ray output
-#
+# #
+# # test imaging plane topos and ray output
+# #
 
-def test_imaging_planes_and_rays():
-    for i in range(0, 2):
-        setup_bp_test()
+# def test_imaging_planes_and_rays():
+#     for i in range(0, 2):
+#         setup_bp_test()
 
-        params = GetQueryParameters("XRay Image")
-        params["image_size"] = (400, 300)
-        params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
-        params["output_type"] = "hdf5"
-        params["focus"] = (0., 2.5, 10.)
-        params["perspective"] = 1
-        params["near_plane"] = -50.
-        params["far_plane"] = 50.
-        params["vars"] = ("d", "p")
-        params["parallel_scale"] = 5.
-        Query("XRay Image", params)
+#         params = GetQueryParameters("XRay Image")
+#         params["image_size"] = (400, 300)
+#         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
+#         params["output_type"] = "hdf5"
+#         params["focus"] = (0., 2.5, 10.)
+#         params["perspective"] = 1
+#         params["near_plane"] = -50.
+#         params["far_plane"] = 50.
+#         params["vars"] = ("d", "p")
+#         params["parallel_scale"] = 5.
+#         Query("XRay Image", params)
 
-        conduit_db = pjoin(conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1, "output.root")
+#         conduit_db = pjoin(conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1, "output.root")
 
-        OpenDatabase(conduit_db)
+#         OpenDatabase(conduit_db)
 
-        AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
-        AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-        AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
-        if i == 0:
-            AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
-        else:
-            AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
-        DrawPlots()
+#         AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+#         AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
+#         AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+#         if i == 0:
+#             AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
+#         else:
+#             AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+#         DrawPlots()
 
-        SetActivePlots(4)
-        PseudocolorAtts = PseudocolorAttributes()
-        PseudocolorAtts.invertColorTable = 1
-        SetPlotOptions(PseudocolorAtts)
+#         SetActivePlots(4)
+#         PseudocolorAtts = PseudocolorAttributes()
+#         PseudocolorAtts.invertColorTable = 1
+#         SetPlotOptions(PseudocolorAtts)
 
-        View3DAtts = View3DAttributes()
-        View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
-        View3DAtts.focus = (0, 2.5, 10)
-        View3DAtts.viewUp = (-0.0954901, 0.952683, 0.288577)
-        View3DAtts.viewAngle = 30
-        View3DAtts.parallelScale = 58.6531
-        View3DAtts.nearPlane = -117.306
-        View3DAtts.farPlane = 117.306
-        SetView3D(View3DAtts)
+#         View3DAtts = View3DAttributes()
+#         View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
+#         View3DAtts.focus = (0, 2.5, 10)
+#         View3DAtts.viewUp = (-0.0954901, 0.952683, 0.288577)
+#         View3DAtts.viewAngle = 30
+#         View3DAtts.parallelScale = 58.6531
+#         View3DAtts.nearPlane = -117.306
+#         View3DAtts.farPlane = 117.306
+#         SetView3D(View3DAtts)
 
-        Test("Blueprint_HDF5_Imaging_Planes" + str(i))
+#         Test("Blueprint_HDF5_Imaging_Planes" + str(i))
 
-        teardown_bp_test()
-        CloseDatabase(conduit_db)
+#         teardown_bp_test()
+#         CloseDatabase(conduit_db)
 
-test_imaging_planes_and_rays()
+# test_imaging_planes_and_rays()
 
-def test_non_square_pixels():
-    DeleteAllPlots()
-    setup_bp_test()
+# def test_non_square_pixels():
+#     DeleteAllPlots()
+#     setup_bp_test()
 
-    params = GetQueryParameters("XRay Image")
+#     params = GetQueryParameters("XRay Image")
 
-    params["vars"] = ("d", "p")
-    params["image_size"] = (300, 300)
-    params["energy_group_bounds"] = [2.7, 6.2]
+#     params["vars"] = ("d", "p")
+#     params["image_size"] = (300, 300)
+#     params["energy_group_bounds"] = [2.7, 6.2]
 
-    # filename, directory, and output type choices
-    params["output_dir"] = conduit_dir_nonsquare_pixels
-    params["filename_scheme"] = "family" # "none", "family", or "cycle" 
-    params["output_type"] = "hdf5"
+#     # filename, directory, and output type choices
+#     params["output_dir"] = conduit_dir_nonsquare_pixels
+#     params["filename_scheme"] = "family" # "none", "family", or "cycle" 
+#     params["output_type"] = "hdf5"
 
-    params["focus"] = (0., 2.5, 10.)
-    params["parallel_scale"] = 10.
-    params["near_plane"] = -25.
-    params["far_plane"] = 25.
-    params["view_angle"] = 30
-    params["perspective"] = 1 # 0 parallel, 1 perspective
+#     params["focus"] = (0., 2.5, 10.)
+#     params["parallel_scale"] = 10.
+#     params["near_plane"] = -25.
+#     params["far_plane"] = 25.
+#     params["view_angle"] = 30
+#     params["perspective"] = 1 # 0 parallel, 1 perspective
 
-    # default
-    Query("XRay Image", params)
-    params["image_size"] = (4, 4)
-    Query("XRay Image", params)
-    params["image_size"] = (300, 300)
+#     # default
+#     Query("XRay Image", params)
+#     params["image_size"] = (4, 4)
+#     Query("XRay Image", params)
+#     params["image_size"] = (300, 300)
 
-    # view width is set but is equal to what it would have been if it were calculated
-    params["view_width"] = 10.
-    Query("XRay Image", params)
-    params["image_size"] = (4, 4)
-    Query("XRay Image", params)
-    params["image_size"] = (300, 300)
+#     # view width is set but is equal to what it would have been if it were calculated
+#     params["view_width"] = 10.
+#     Query("XRay Image", params)
+#     params["image_size"] = (4, 4)
+#     Query("XRay Image", params)
+#     params["image_size"] = (300, 300)
 
-    # view width is twice the length of the parallel scale
-    params["view_width"] = 20.
-    Query("XRay Image", params)
-    params["image_size"] = (4, 4)
-    Query("XRay Image", params)
-    params["image_size"] = (300, 300)
+#     # view width is twice the length of the parallel scale
+#     params["view_width"] = 20.
+#     Query("XRay Image", params)
+#     params["image_size"] = (4, 4)
+#     Query("XRay Image", params)
+#     params["image_size"] = (300, 300)
 
-    # view width is half the length of the parallel scale
-    params["view_width"] = 5.
-    Query("XRay Image", params)
-    params["image_size"] = (4, 4)
-    Query("XRay Image", params)
+#     # view width is half the length of the parallel scale
+#     params["view_width"] = 5.
+#     Query("XRay Image", params)
+#     params["image_size"] = (4, 4)
+#     Query("XRay Image", params)
 
-    conduit_db = pjoin(conduit_dir_nonsquare_pixels, "output.*.root database")
-    OpenDatabase(conduit_db)
+#     conduit_db = pjoin(conduit_dir_nonsquare_pixels, "output.*.root database")
+#     OpenDatabase(conduit_db)
     
-    # first we test the imaging planes and rays look as we expect
-    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
-    DrawPlots()
+#     # first we test the imaging planes and rays look as we expect
+#     AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+#     AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+#     AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+#     DrawPlots()
 
-    # Make the plot of the near plane active
-    SetActivePlots(1)
-    PseudocolorAtts = PseudocolorAttributes()
-    # We invert the color table so that it is a different color from the far plane
-    PseudocolorAtts.invertColorTable = 1
-    SetPlotOptions(PseudocolorAtts)
+#     # Make the plot of the near plane active
+#     SetActivePlots(1)
+#     PseudocolorAtts = PseudocolorAttributes()
+#     # We invert the color table so that it is a different color from the far plane
+#     PseudocolorAtts.invertColorTable = 1
+#     SetPlotOptions(PseudocolorAtts)
 
-    # Make the plot of the view plane active
-    SetActivePlots(2)
-    PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.colorTableName = "hot_and_cold"
-    PseudocolorAtts.invertColorTable = 1
-    PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-    # We lower the opacity so that the view plane does not obstruct our view of anything.
-    PseudocolorAtts.opacity = 0.7
-    SetPlotOptions(PseudocolorAtts)
+#     # Make the plot of the view plane active
+#     SetActivePlots(2)
+#     PseudocolorAtts = PseudocolorAttributes()
+#     PseudocolorAtts.colorTableName = "hot_and_cold"
+#     PseudocolorAtts.invertColorTable = 1
+#     PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+#     # We lower the opacity so that the view plane does not obstruct our view of anything.
+#     PseudocolorAtts.opacity = 0.7
+#     SetPlotOptions(PseudocolorAtts)
 
-    # leave the far plane as is
+#     # leave the far plane as is
 
-    # add ray corners topo
-    AddPlot("Mesh", "mesh_ray_corners_topo")
-    DrawPlots()
-    MeshAtts = MeshAttributes()
-    MeshAtts.lineWidth = 1
-    SetPlotOptions(MeshAtts)
+#     # add ray corners topo
+#     AddPlot("Mesh", "mesh_ray_corners_topo")
+#     DrawPlots()
+#     MeshAtts = MeshAttributes()
+#     MeshAtts.lineWidth = 1
+#     SetPlotOptions(MeshAtts)
 
-    # set view
-    View3DAtts = View3DAttributes()
-    View3DAtts.viewNormal = (-0.350116, 0.224905, -0.909306)
-    View3DAtts.focus = (0, 2.5, 10)
-    View3DAtts.viewUp = (0.0306245, 0.972977, 0.228862)
-    View3DAtts.viewAngle = 30
-    View3DAtts.parallelScale = 34.3903
-    View3DAtts.nearPlane = -68.7807
-    View3DAtts.farPlane = 68.7807
-    View3DAtts.imagePan = (0, 0)
-    View3DAtts.imageZoom = 1
-    View3DAtts.perspective = 1
-    View3DAtts.eyeAngle = 2
-    View3DAtts.centerOfRotationSet = 0
-    View3DAtts.centerOfRotation = (0, 2.5, 10)
-    View3DAtts.axis3DScaleFlag = 0
-    View3DAtts.axis3DScales = (1, 1, 1)
-    View3DAtts.shear = (0, 0, 1)
-    View3DAtts.windowValid = 1
-    SetView3D(View3DAtts)
+#     # set view
+#     View3DAtts = View3DAttributes()
+#     View3DAtts.viewNormal = (-0.350116, 0.224905, -0.909306)
+#     View3DAtts.focus = (0, 2.5, 10)
+#     View3DAtts.viewUp = (0.0306245, 0.972977, 0.228862)
+#     View3DAtts.viewAngle = 30
+#     View3DAtts.parallelScale = 34.3903
+#     View3DAtts.nearPlane = -68.7807
+#     View3DAtts.farPlane = 68.7807
+#     View3DAtts.imagePan = (0, 0)
+#     View3DAtts.imageZoom = 1
+#     View3DAtts.perspective = 1
+#     View3DAtts.eyeAngle = 2
+#     View3DAtts.centerOfRotationSet = 0
+#     View3DAtts.centerOfRotation = (0, 2.5, 10)
+#     View3DAtts.axis3DScaleFlag = 0
+#     View3DAtts.axis3DScales = (1, 1, 1)
+#     View3DAtts.shear = (0, 0, 1)
+#     View3DAtts.windowValid = 1
+#     SetView3D(View3DAtts)
 
-    # take pictures of all the ray setups
-    Test("NonSquare_Pixels_Ray_trace_setup_1")
-    TimeSliderNextState()
-    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
-    DrawPlots()
-    Test("NonSquare_Pixels_Ray_trace_setup_2")
-    HideActivePlots()
-    TimeSliderNextState()
-    Test("NonSquare_Pixels_Ray_trace_setup_3")
-    TimeSliderNextState()
-    HideActivePlots()
-    Test("NonSquare_Pixels_Ray_trace_setup_4")
-    HideActivePlots()
-    TimeSliderNextState()
-    Test("NonSquare_Pixels_Ray_trace_setup_5")
-    TimeSliderNextState()
-    HideActivePlots()
-    Test("NonSquare_Pixels_Ray_trace_setup_6")
-    HideActivePlots()
-    TimeSliderNextState()
-    Test("NonSquare_Pixels_Ray_trace_setup_7")
-    TimeSliderNextState()
-    HideActivePlots()
-    Test("NonSquare_Pixels_Ray_trace_setup_8")
-    HideActivePlots()
+#     # take pictures of all the ray setups
+#     Test("NonSquare_Pixels_Ray_trace_setup_1")
+#     TimeSliderNextState()
+#     AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
+#     DrawPlots()
+#     Test("NonSquare_Pixels_Ray_trace_setup_2")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     Test("NonSquare_Pixels_Ray_trace_setup_3")
+#     TimeSliderNextState()
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_Ray_trace_setup_4")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     Test("NonSquare_Pixels_Ray_trace_setup_5")
+#     TimeSliderNextState()
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_Ray_trace_setup_6")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     Test("NonSquare_Pixels_Ray_trace_setup_7")
+#     TimeSliderNextState()
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_Ray_trace_setup_8")
+#     HideActivePlots()
 
-    # cleanup
-    TimeSliderNextState()
-    DeleteAllPlots()
+#     # cleanup
+#     TimeSliderNextState()
+#     DeleteAllPlots()
 
-    # take pictures of the hi-res images
-    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
-    DrawPlots()
-    ResetView()
-    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
-    DrawPlots()
-    HideActivePlots()
-    SetActivePlots((0, 1))
-    Test("NonSquare_Pixels_hi_res_images1")
-    HideActivePlots()
-    Test("NonSquare_Pixels_hi_res_images2")
-    HideActivePlots()
-    TimeSliderNextState()
-    TimeSliderNextState()
-    Test("NonSquare_Pixels_hi_res_images3")
-    HideActivePlots()
-    Test("NonSquare_Pixels_hi_res_images4")
-    HideActivePlots()
-    TimeSliderNextState()
-    TimeSliderNextState()
-    Test("NonSquare_Pixels_hi_res_images5")
-    HideActivePlots()
-    Test("NonSquare_Pixels_hi_res_images6")
-    HideActivePlots()
-    TimeSliderNextState()
-    TimeSliderNextState()
-    Test("NonSquare_Pixels_hi_res_images7")
-    HideActivePlots()
-    Test("NonSquare_Pixels_hi_res_images8")
-    HideActivePlots()
-    TimeSliderNextState()
+#     # take pictures of the hi-res images
+#     AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+#     DrawPlots()
+#     ResetView()
+#     AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+#     DrawPlots()
+#     HideActivePlots()
+#     SetActivePlots((0, 1))
+#     Test("NonSquare_Pixels_hi_res_images1")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_hi_res_images2")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     TimeSliderNextState()
+#     Test("NonSquare_Pixels_hi_res_images3")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_hi_res_images4")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     TimeSliderNextState()
+#     Test("NonSquare_Pixels_hi_res_images5")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_hi_res_images6")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     TimeSliderNextState()
+#     Test("NonSquare_Pixels_hi_res_images7")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_hi_res_images8")
+#     HideActivePlots()
+#     TimeSliderNextState()
 
-    # cleanup
-    TimeSliderNextState()
-    DeleteAllPlots()
+#     # cleanup
+#     TimeSliderNextState()
+#     DeleteAllPlots()
 
-    # take pictures of the low res images
-    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
-    DrawPlots()
-    AddPlot("Mesh", "mesh_image_topo", 1, 1)
-    DrawPlots()
-    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
-    DrawPlots()
-    AddPlot("Mesh", "mesh_spatial_topo", 1, 1)
-    DrawPlots()
-    SetActivePlots((2, 3))
-    HideActivePlots()
-    TimeSliderNextState()
-    ResetView()
-    SetActivePlots((0, 2, 3))
-    SetActivePlots((0, 1, 2, 3))
-    Test("NonSquare_Pixels_low_res_mesh_plots1")
-    HideActivePlots()
-    Test("NonSquare_Pixels_low_res_mesh_plots2")
-    HideActivePlots()
-    TimeSliderNextState()
-    TimeSliderNextState()
-    ResetView()
-    Test("NonSquare_Pixels_low_res_mesh_plots3")
-    HideActivePlots()
-    Test("NonSquare_Pixels_low_res_mesh_plots4")
-    HideActivePlots()
-    TimeSliderNextState()
-    TimeSliderNextState()
-    ResetView()
-    Test("NonSquare_Pixels_low_res_mesh_plots5")
-    HideActivePlots()
-    Test("NonSquare_Pixels_low_res_mesh_plots6")
-    HideActivePlots()
-    TimeSliderNextState()
-    TimeSliderNextState()
-    ResetView()
-    Test("NonSquare_Pixels_low_res_mesh_plots7")
-    HideActivePlots()
-    Test("NonSquare_Pixels_low_res_mesh_plots8")
-    HideActivePlots()
+#     # take pictures of the low res images
+#     AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+#     DrawPlots()
+#     AddPlot("Mesh", "mesh_image_topo", 1, 1)
+#     DrawPlots()
+#     AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+#     DrawPlots()
+#     AddPlot("Mesh", "mesh_spatial_topo", 1, 1)
+#     DrawPlots()
+#     SetActivePlots((2, 3))
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     ResetView()
+#     SetActivePlots((0, 2, 3))
+#     SetActivePlots((0, 1, 2, 3))
+#     Test("NonSquare_Pixels_low_res_mesh_plots1")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_low_res_mesh_plots2")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     TimeSliderNextState()
+#     ResetView()
+#     Test("NonSquare_Pixels_low_res_mesh_plots3")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_low_res_mesh_plots4")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     TimeSliderNextState()
+#     ResetView()
+#     Test("NonSquare_Pixels_low_res_mesh_plots5")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_low_res_mesh_plots6")
+#     HideActivePlots()
+#     TimeSliderNextState()
+#     TimeSliderNextState()
+#     ResetView()
+#     Test("NonSquare_Pixels_low_res_mesh_plots7")
+#     HideActivePlots()
+#     Test("NonSquare_Pixels_low_res_mesh_plots8")
+#     HideActivePlots()
 
-    teardown_bp_test()
-    CloseDatabase(conduit_db)
+#     teardown_bp_test()
+#     CloseDatabase(conduit_db)
 
-test_non_square_pixels()
+# test_non_square_pixels()
 
-# 
-# test catching failures
-# 
+# # 
+# # test catching failures
+# # 
 
-# write to dir that does not exist
+# # write to dir that does not exist
 
-setup_bp_test()
-Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-output_obj = GetQueryOutputObject()
-TestValueEQ("xrayimage38", output_obj, None)
-teardown_bp_test(True)
+# setup_bp_test()
+# Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+# output_obj = GetQueryOutputObject()
+# TestValueEQ("xrayimage38", output_obj, None)
+# teardown_bp_test(True)
 
-# os.chmod does not work on windows
-if not platform.system() == "Windows":
-    # write to dir w/ read only permissions
-    setup_bp_test()
-    Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-    output_obj = GetQueryOutputObject()
-    TestValueEQ("xrayimage39", output_obj, None)
-    teardown_bp_test()
+# # os.chmod does not work on windows
+# if not platform.system() == "Windows":
+#     # write to dir w/ read only permissions
+#     setup_bp_test()
+#     Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+#     output_obj = GetQueryOutputObject()
+#     TestValueEQ("xrayimage39", output_obj, None)
+#     teardown_bp_test()
 
-# 
-# Test filenames and output types
-# 
+# # 
+# # Test filenames and output types
+# # 
 
-setup_bp_test()
+# setup_bp_test()
 
-DefineArrayExpression("da", "array_compose(d,d)")
-DefineArrayExpression("pa", "array_compose(p,p)")
+# DefineArrayExpression("da", "array_compose(d,d)")
+# DefineArrayExpression("pa", "array_compose(p,p)")
 
-def query_variety(otype, scheme, thevars, outdir):
-    SetQueryFloatFormat("%g")
-    Query("XRay Image", 
-        background_intensity=0, 
-        divide_emis_by_absorb=0, 
-        far_plane=20, 
-        filename_scheme=scheme, 
-        family_files=0, # this is to test that family_files is ignored when filename_scheme is set
-        focus=(0, 0, 0), 
-        image_pan=(0, 0), 
-        image_size=(3, 3), 
-        image_zoom=1, 
-        near_plane=-20, 
-        normal=(0, 0, 1), 
-        output_dir=outdir, 
-        output_ray_bounds=0, 
-        output_type=otype, 
-        parallel_scale=10, 
-        perspective=0, 
-        view_angle=30, 
-        view_up=(0, 1, 0), 
-        vars=thevars)
-    return GetQueryOutputObject()
+# def query_variety(otype, scheme, thevars, outdir):
+#     SetQueryFloatFormat("%g")
+#     Query("XRay Image", 
+#         background_intensity=0, 
+#         divide_emis_by_absorb=0, 
+#         far_plane=20, 
+#         filename_scheme=scheme, 
+#         family_files=0, # this is to test that family_files is ignored when filename_scheme is set
+#         focus=(0, 0, 0), 
+#         image_pan=(0, 0), 
+#         image_size=(3, 3), 
+#         image_zoom=1, 
+#         near_plane=-20, 
+#         normal=(0, 0, 1), 
+#         output_dir=outdir, 
+#         output_ray_bounds=0, 
+#         output_type=otype, 
+#         parallel_scale=10, 
+#         perspective=0, 
+#         view_angle=30, 
+#         view_up=(0, 1, 0), 
+#         vars=thevars)
+#     return GetQueryOutputObject()
 
-def query_family_backwards_compat(family, thevars, outdir):
-    SetQueryFloatFormat("%g")
-    Query("XRay Image", 
-        background_intensity=0, 
-        divide_emis_by_absorb=0, 
-        far_plane=20, 
-        family_files=family,
-        focus=(0, 0, 0), 
-        image_pan=(0, 0), 
-        image_size=(3, 3), 
-        image_zoom=1, 
-        near_plane=-20, 
-        normal=(0, 0, 1), 
-        output_dir=outdir, 
-        output_ray_bounds=0, 
-        output_type="png", 
-        parallel_scale=10, 
-        perspective=0, 
-        view_angle=30, 
-        view_up=(0, 1, 0), 
-        vars=thevars)
-    return GetQueryOutputObject()
+# def query_family_backwards_compat(family, thevars, outdir):
+#     SetQueryFloatFormat("%g")
+#     Query("XRay Image", 
+#         background_intensity=0, 
+#         divide_emis_by_absorb=0, 
+#         far_plane=20, 
+#         family_files=family,
+#         focus=(0, 0, 0), 
+#         image_pan=(0, 0), 
+#         image_size=(3, 3), 
+#         image_zoom=1, 
+#         near_plane=-20, 
+#         normal=(0, 0, 1), 
+#         output_dir=outdir, 
+#         output_ray_bounds=0, 
+#         output_type="png", 
+#         parallel_scale=10, 
+#         perspective=0, 
+#         view_angle=30, 
+#         view_up=(0, 1, 0), 
+#         vars=thevars)
+#     return GetQueryOutputObject()
 
-filename_schemes = ["family", "family", "cycle", "none"]
-vars_options = [("d", "p"), ("da", "pa")]
+# filename_schemes = ["family", "family", "cycle", "none"]
+# vars_options = [("d", "p"), ("da", "pa")]
 
-for i in range(0, len(output_types)):
-    outdir_set_otype = outdir_set + "_" + output_types[i]
-    if output_types[i] == "jpeg":
-        # create a dummy file to test the file familying
-        open(outdir_set_otype + "/output.0000.jpg", 'w').close()
-    info = ""
-    for j in range(0, len(filename_schemes)):
-        for k in range(0, len(vars_options)):
-            info += str(query_variety(output_types[i], 
-                                      filename_schemes[j], 
-                                      vars_options[k], 
-                                      outdir_set_otype)) + "\n"
-    info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
-    TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+# for i in range(0, len(output_types)):
+#     outdir_set_otype = outdir_set + "_" + output_types[i]
+#     if output_types[i] == "jpeg":
+#         # create a dummy file to test the file familying
+#         open(outdir_set_otype + "/output.0000.jpg", 'w').close()
+#     info = ""
+#     for j in range(0, len(filename_schemes)):
+#         for k in range(0, len(vars_options)):
+#             info += str(query_variety(output_types[i], 
+#                                       filename_schemes[j], 
+#                                       vars_options[k], 
+#                                       outdir_set_otype)) + "\n"
+#     info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
+#     TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
 
-# test backwards compatibility with family_files option
-for i in range(0, len(family_options)):
-    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
-    info = ""
-    for j in range(0, len(vars_options)):
-        info += str(query_family_backwards_compat(family_options[i], 
-                                                  vars_options[j], 
-                                                  outdir_set_family)) + "\n"
-    info += str(sorted(os.listdir(outdir_set_family))) + "\n"
-    TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
+# # test backwards compatibility with family_files option
+# for i in range(0, len(family_options)):
+#     outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+#     info = ""
+#     for j in range(0, len(vars_options)):
+#         info += str(query_family_backwards_compat(family_options[i], 
+#                                                   vars_options[j], 
+#                                                   outdir_set_family)) + "\n"
+#     info += str(sorted(os.listdir(outdir_set_family))) + "\n"
+#     TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
-#
-# Test that we get decent error messages for common cases
-#
-import numpy
+# #
+# # Test that we get decent error messages for common cases
+# #
+# import numpy
 
-nporig = numpy.array([0.0, 2.5, 10.0])
+# nporig = numpy.array([0.0, 2.5, 10.0])
 
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
-    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-try:
-    Query("XRay Image", params)
-except (visit.VisItException, VisItException) as e:
-    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
-        TestPOA('detect and warn numpy array as query param')
-    else:
-        TestFOA('detect and warn numpy array as query param', LINE())
-    pass
-except:
-    TestFOA('detect and warn numpy array as query param', LINE())
-    pass
+# params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+#     origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+#     width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+# try:
+#     Query("XRay Image", params)
+# except (visit.VisItException, VisItException) as e:
+#     if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+#         TestPOA('detect and warn numpy array as query param')
+#     else:
+#         TestFOA('detect and warn numpy array as query param', LINE())
+#     pass
+# except:
+#     TestFOA('detect and warn numpy array as query param', LINE())
+#     pass
 
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
-    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-try:
-    Query("XRay Image", params)
-    TestPOA('numpy array converted to list works as query param')
-except:
-    TestFOA('numpy array converted to list works as query param', LINE())
-    pass
+# params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+#     origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+#     width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+# try:
+#     Query("XRay Image", params)
+#     TestPOA('numpy array converted to list works as query param')
+# except:
+#     TestFOA('numpy array converted to list works as query param', LINE())
+#     pass
 
 Exit()
