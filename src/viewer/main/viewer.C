@@ -12,6 +12,7 @@
 
 #include <qapplication.h>
 #include <QStringList>
+#include <QSurfaceFormat>
 
 #include <VisItViewer.h>
 #include <AppearanceAttributes.h>
