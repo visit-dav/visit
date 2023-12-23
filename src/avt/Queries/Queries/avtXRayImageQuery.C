@@ -1504,7 +1504,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             baseName << "output";
 
         // does NOT contain the file extension
-        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + VISIT_SLASH_STRING) + baseName.str()};
+        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "/") + baseName.str()};
 
         //
         // Write out the intensity and path length. The path length is only
