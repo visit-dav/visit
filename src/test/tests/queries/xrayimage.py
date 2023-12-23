@@ -711,7 +711,6 @@ def z_slice(zval, mesh_name):
     SetOperatorOptions(SliceAtts, 0, 1)
 
 def blueprint_test(output_type, outdir, testtextnumber, testname):
-    # conduit_db = ""
     for i in range(0, 2):
         setup_bp_test()
 
@@ -779,7 +778,6 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 
         # test opening the bp output and visualizing in visit
         conduit_db = pjoin(outdir, "output.root")
-
         OpenDatabase(conduit_db)
 
         # 
