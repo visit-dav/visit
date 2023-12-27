@@ -48,9 +48,8 @@ function bv_adios2_depends_on
             depends_on="$depends_on hdf5"
         fi
 
-        if [[ "$DO_BLOSC" == "yes" ]] ; then
-            # note that at the time of writing (may 2022) ADIOS2 only supports c-blosc1, NOT c-blosc2.
-            depends_on="$depends_on blosc"
+        if [[ "$DO_BLOSC2" == "yes" ]] ; then
+            depends_on="$depends_on blosc2"
         fi
 
         echo $depends_on
@@ -205,11 +204,11 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
 
-        # Use Blosc?
-        if [[ "$DO_BLOSC" == "yes" ]] ; then
+        # Use Blosc2?
+        if [[ "$DO_BLOSC2" == "yes" ]] ; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
-            cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC_LIBRARY}"
+            cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
+            cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC2_LIBRARY}"
         fi
 
         if [[ "$bt" == "ser" ]]; then
