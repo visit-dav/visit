@@ -85,7 +85,7 @@ avtADIOS2SSTFileFormat::CreateInterface(const char *const *list,
 // ****************************************************************************
 
 avtADIOS2SSTFileFormat::avtADIOS2SSTFileFormat(const char *filename)
-    : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+    : adios(std::make_shared<adios2::ADIOS>()),
       io(adios->DeclareIO("sstIO")),
       numTimeSteps(1),
       avtMTSDFileFormat(&filename, 1)

@@ -30,7 +30,7 @@ using namespace std;
 bool
 avtLAMMPSFileFormat::Identify(const char *fname)
 {
-    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
+    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>();
     adios2::IO io = adios2::IO(adios->DeclareIO("ReadBPLAMMPS"));
     io.SetEngine("BP");
     adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
@@ -127,7 +127,7 @@ avtLAMMPSFileFormat::CreateInterfaceADIOS2(
 // ****************************************************************************
 
 avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
-    : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+    : adios(std::make_shared<adios2::ADIOS>()),
       numTimeSteps(1),
       currentTimestep(-1),
       numAtoms(-1),

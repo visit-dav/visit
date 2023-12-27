@@ -128,7 +128,7 @@ avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
 
 
 avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
-    : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+    : adios(std::make_shared<adios2::ADIOS>()),
       numTimeSteps(1),
       isClosed(false),
       avtMTSDFileFormat(&filename, 1)
