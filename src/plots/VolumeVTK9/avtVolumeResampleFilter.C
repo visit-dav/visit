@@ -258,6 +258,10 @@ avtVolumeResampleFilter::Execute(void)
 //    Catch the exception that can occur when using an operator that produces
 //    a variable that doesn't exist in the database.
 //
+//    Kathleen Biagas, Wed Jan  3 13:26:29 PST 2024
+//    Retreive value returned by UnifyBitwiseOrValue, and moved the call to
+//    the end of the method.
+//
 // ****************************************************************************
 
 int
@@ -289,12 +293,6 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
     vtkDataSet **leaves = tree->GetAllLeaves(nsets);
     if( nsets > 1 )
         resampling |= MultipleDatasets;
-
-    // When there are more domains than ranks, it is possible for some
-    // ranks to have one data set while others have more than one. As
-    // such, when this case occurs the resampling must be acorss all
-    // ranks so unify the resampling.
-    UnifyBitwiseOrValue(resampling);
 
     for (int i = 0; i < nsets; ++i)
     {
@@ -334,6 +332,13 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
             resampling |= DifferentCentering;
         }
     }
+
+    // When there are more domains than ranks, it is possible for some
+    // ranks to have one data set while others have more than one. As
+    // such, when this case occurs the resampling must be acorss all
+    // ranks so unify the resampling.
+    resampling = UnifyBitwiseOrValue(resampling);
+
     return resampling;
 }
 
