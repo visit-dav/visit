@@ -55,7 +55,7 @@ function build_blosc2
     # for use externally once installed
     export BLOSC2_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
     export BLOSC2_INCLUDE_DIR="${BLOSC2_DIR}/include"
-    export BLOSC2_LIBRARY="${BLOSC2_DIR}/lib/libblosc2.so"
+    export BLOSC2_LIBRARY="${BLOSC2_DIR}/lib64/libblosc2.so"
 
     #
     # Blosc2 uses CMake  -- make sure we have it built.
