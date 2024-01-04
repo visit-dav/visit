@@ -246,17 +246,15 @@ AddOperator("Reflect")
 DrawPlots()
 Test("ops_refl13")
 
-# This test hangs in parallel.
-if TestEnv.params["serial"]:
-    # The "mass volume extractor" of the volume renderer depends on the
-    # rectilinear grid not being inverted.  Test that here ('6321).
-    DeleteAllPlots()
-    OpenDatabase(silo_data_path("rect3d.silo"))
+# The "mass volume extractor" of the volume renderer depends on the
+# rectilinear grid not being inverted.  Test that here ('6321).
+DeleteAllPlots()
+OpenDatabase(silo_data_path("rect3d.silo"))
 
-    AddPlot("Volume", "d")
-    AddOperator("Reflect")
-    DrawPlots()
-    Test("ops_refl14")
+AddPlot("Volume", "d")
+AddOperator("Reflect")
+DrawPlots()
+Test("ops_refl14")
 
 #
 # Now test reflecting different datasets over arbitrary planes.
