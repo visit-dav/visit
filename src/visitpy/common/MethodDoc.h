@@ -98,6 +98,7 @@ extern const char *visit_GetGlobalLineoutAttributes_doc;
 extern const char *visit_GetInteractorAttributes_doc;
 extern const char *visit_GetKeyframeAttributes_doc;
 extern const char *visit_GetLastError_doc;
+extern const char *visit_GetLastMessage_doc;
 extern const char *visit_GetLight_doc;
 extern const char *visit_GetLocalHostName_doc;
 extern const char *visit_GetLocalUserName_doc;

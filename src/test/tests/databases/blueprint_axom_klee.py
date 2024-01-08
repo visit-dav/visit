@@ -9,14 +9,20 @@
 #  Date:       Wed May 31 15:59:22 PDT 2023
 #
 #  Modifications:
+#    Brad Whitlock, Wed Jul 19 15:11:35 PDT 2023
+#    I added some tests for an index file that has display_name entries in it.
+#
+#    Brad Whitlock, Tue Dec 19 17:29:53 PST 2023
+#    I added a new test to make sure refining a low-order field happens by
+#    making sure there is no message about adding extra 0's.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 from os.path import join as pjoin
 
-def bj_test_helper(datadir, prefix, sectionText):
+def bj_test_helper_mats(rootName, prefix, sectionText, extraPlots = None):
     TestSection(sectionText)
-    db = data_path(pjoin("axom_klee_test_data", datadir, "shaping.root"))
+    db = data_path(pjoin("axom_klee_test_data", rootName))
     OpenDatabase(db)
     AddPlot("FilledBoundary", "shaping_mesh_material")
     fb = FilledBoundaryAttributes(1)
@@ -50,16 +56,24 @@ def bj_test_helper(datadir, prefix, sectionText):
     SetView2D(v2)
     Test(prefix + "_02")
 
-    # Look at one of the volume fractions. It should be refined
     SetActivePlots(0)
     DeleteActivePlots()
-    AddPlot("Pseudocolor", "shaping_mesh/vol_frac_steel", 1, 1)
-    DrawPlots()
-    SetView2D(v)
-    Test(prefix + "_03")
+
+    # Possibly make some extra plots
+    if extraPlots is not None:
+        extraPlots(prefix, v)
 
     DeleteAllPlots()
     CloseDatabase(db)
+
+def bj_test_helper(datadir, prefix, sectionText):
+    def pc_plots(prefix, v):
+        # Look at one of the volume fractions. It should be refined
+        AddPlot("Pseudocolor", "shaping_mesh/vol_frac_steel", 1, 1)
+        DrawPlots()
+        SetView2D(v)
+        Test(prefix + "_03")
+    bj_test_helper_mats(datadir, prefix, sectionText, pc_plots)
 
 def test0():
     TestSection("P0 Material")
@@ -86,10 +100,10 @@ def test0():
     CloseDatabase(db)
 
 def test1():
-    bj_test_helper("balls_and_jacks_q7o2", "blueprint_axom_klee_1", "P2 Material")
+    bj_test_helper("balls_and_jacks_q7o2/shaping.root", "blueprint_axom_klee_1", "P2 Material")
 
 def test2():
-    bj_test_helper("balls_and_jacks_q7o5", "blueprint_axom_klee_2", "P5 Material")
+    bj_test_helper("balls_and_jacks_q7o5/shaping.root", "blueprint_axom_klee_2", "P5 Material")
 
 def test3():
     TestSection("matvf on HO materials")
@@ -140,11 +154,59 @@ def test3():
     DeleteAllPlots()
     CloseDatabase(db)
 
+def test4():
+    def pc_plots(prefix, v):
+        # Look at the volume fraction fields, whose names were changed
+        # in the index using display_name.
+        SetActivePlots(0)
+        DeleteActivePlots()
+        AddPlot("Pseudocolor", "volume_fractions/air", 1, 1)
+        DrawPlots()
+        ResetView()
+        Test(prefix + "_03")
+        ChangeActivePlotsVar("volume_fractions/rubber")
+        Test(prefix + "_04")
+        ChangeActivePlotsVar("volume_fractions/steel")
+        Test(prefix + "_05")
+    # Make sure the material still plots, even though its constituent volume
+    # fraction arrays have been renamed in the index file using display_name.
+    bj_test_helper_mats("balls_and_jacks_q7o2/shaping_mod.root", "blueprint_axom_klee_4", "Testing display_name", pc_plots)
+
+def test5():
+    TestSection("Refine low order field")
+    db = data_path(pjoin("axom_klee_test_data", "balls_and_jacks_q7o5", "shaping.root"))
+    OpenDatabase(db)
+
+    # Plot a low-order field that would normally *not* refine with MultiresControl.
+    AddPlot("Pseudocolor", "shaping_mesh/mesh_material_attribute")
+    AddOperator("MultiresControl")
+    m = MultiresControlAttributes()
+    m.maxResolution = 10
+    m.resolution = 2
+    SetOperatorOptions(m)
+    msg, severity = GetLastMessage(1)
+    DrawPlots()
+
+    # Executing the plot would have issued a warning about VisIt having to add
+    # 0's. Make sure that message no longer happens.
+    msg, severity = GetLastMessage(1)
+    if msg.find("Extra 0.\'s were added") != -1:
+        txt = msg
+    else:
+        txt = "Padding the field was not necessary."
+    TestText("blueprint_axom_klee_5_00", txt)
+    Test("blueprint_axom_klee_5_01")
+
+    DeleteAllPlots()
+    CloseDatabase(db)
+
 def main():
     test0()
     test1()
     test2()
     test3()
+    test4()
+    test5()
 
 main()
 Exit()
