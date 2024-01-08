@@ -14,6 +14,7 @@
 // //-----------------------------------------------------------------------------
 #include <StringHelpers.h>
 #include <TimingsManager.h>
+#include <InvalidFilesException.h>
 #include "FileFunctions.h"
 //-----------------------------------------------------------------------------
 // std lib includes
@@ -1014,42 +1015,23 @@ std::string
 avtBlueprintTreeCache::Expand(const std::string pattern,
                               int idx) const
 {
-    //
-    // Note: This currently only handles format strings :
-    // "%05d" "%06d" "%07d"
-    //
-
-    std::size_t idx_pattern = pattern.find("%05d");
-
-    if(idx_pattern != std::string::npos)
+    const std::vector<std::string> patterns{"%08d", "%07d", "%06d", "%05d",
+                                            "%04d", "%03d", "%02d", "%d"};
+    for(const auto &p : patterns)
     {
-        char buff[16];
-        snprintf(buff,16,"%05d",idx);
-        return StringHelpers::Replace(pattern,
-                                      "%05d",
-                                      std::string(buff));
+        if(pattern.find(p) != std::string::npos)
+        {
+            char buff[16];
+            snprintf(buff, 16, p.c_str(), idx);
+            return StringHelpers::Replace(pattern,
+                                          p,
+                                          std::string(buff));
+        }
     }
-
-    idx_pattern = pattern.find("%06d");
-
-    if(idx_pattern != std::string::npos)
+    if(pattern.find("%") != std::string::npos)
     {
-        char buff[16];
-        snprintf(buff,16,"%06d",idx);    
-        return StringHelpers::Replace(pattern,
-                                      "%06d",
-                                      std::string(buff));
-    }
-
-    idx_pattern = pattern.find("%07d");
-
-    if(idx_pattern != std::string::npos)
-    {
-        char buff[16];
-        snprintf(buff,16,"%07d",idx);    
-        return StringHelpers::Replace(pattern,
-                                      "%07d",
-                                      std::string(buff));
+        BP_PLUGIN_EXCEPTION1(InvalidFilesException,
+            "Unsupported pattern in \"" << pattern << "\".");
     }
     return pattern;
 }

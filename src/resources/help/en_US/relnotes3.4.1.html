@@ -38,6 +38,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Upgraded MFEM library version to 4.6.0.</li>
   <li>The <i>surface_normal</i> expression now accepts mesh types other than polydata, allowing it to be used more easily as an operator-created variable.</li>
   <li>Added more keywords ("MFA", "2fa", "Autentication", and "OTP") that cause VisIt clients to open a second popup for a password.</li>
+  <li>VisIt's Blueprint reader was enhanced so fields in Blueprint index files can supply a <i>display_name</i> hint that specifies the name used to expose the field in VisIt. This feature enables the index file to group related variables under sub-menus if the names in include slash characters.</li>
+  <li>VisIt's Blueprint reader was enhanced so fields that are low-order but are associated with a high-order mesh can be refined when the mesh is refined, as when the user applies a <i>MultiresControl</i> operator. This enables VisIt to correctly view such fields.</li>
+  <li>VisIt's CLI has a new <i>GetLastMessage()</i> function that returns the last message that VisIt issued, regardless of its type.</li>
   <li>GetPlotInformation() can now contain entries for multiple-curves when Query-over-time is performed on multiple variables. For example, if a pick-through-time was performed for variables 'u' and 'v', the curve for 'v' would be retrieved via 'GetPlotInformation()['Curves']['v']. Single variable results will still be retrieved via 'GetPlotInformation()['Curve'].
 </ul>
 
