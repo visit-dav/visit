@@ -57,33 +57,6 @@ avtNodeDegreeExpression::~avtNodeDegreeExpression()
     ;
 }
 
-
-// ****************************************************************************
-//  Function: VIntFint
-//
-//  Purpose:
-//      Find a value in a vector of ints.
-//
-//  Arguments:
-//    v    input vector
-//    val  the value to look for
-// 
-//  Returns:      The first index, or -1 if not found.
-//
-//  Programmer:   Akira Haddox
-//  Creation:     June 27, 2002
-//
-// ****************************************************************************
-
-inline int
-VIntFind(const std::vector<int>&v, int val)
-{
-    for (size_t i = 0; i < v.size(); i++)
-        if (v[i] == val)
-            return (int)i;
-    return -1;
-}
-
 // ****************************************************************************
 //  Function: GlobalPointAssign
 //
@@ -99,11 +72,14 @@ VIntFind(const std::vector<int>&v, int val)
 //  Programmer:   Akira Haddox
 //  Creation:     June 27, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jan  8 16:52:41 PST 2024
+//    Use vtkIdType for adj. Added 3 arg override.
+//
 // ****************************************************************************
 
-inline
-void GlobalPointAssign(vtkCell *cell, int adj[], int _a, int _b, int _c,
-                       int _d=0)
+inline void
+GlobalPointAssign(vtkCell *cell, vtkIdType adj[], int _a, int _b, int _c, int _d)
 {
     adj[0] = cell->GetPointId(_a);
     adj[1] = cell->GetPointId(_b);
@@ -111,8 +87,17 @@ void GlobalPointAssign(vtkCell *cell, int adj[], int _a, int _b, int _c,
     adj[3] = cell->GetPointId(_d);
 }
 
-inline
-void GlobalPointAssign2(vtkCell *cell, int adj[], int _a, int _b)
+inline void
+GlobalPointAssign(vtkCell *cell, vtkIdType adj[], int _a, int _b, int _c)
+{
+    adj[0] = cell->GetPointId(_a);
+    adj[1] = cell->GetPointId(_b);
+    adj[2] = cell->GetPointId(_c);
+    adj[3] = -1;
+}
+
+inline void
+GlobalPointAssign(vtkCell *cell, vtkIdType adj[], int _a, int _b)
 {
     adj[0] = cell->GetPointId(_a);
     adj[1] = cell->GetPointId(_b);
@@ -139,34 +124,77 @@ void GlobalPointAssign2(vtkCell *cell, int adj[], int _a, int _b)
 //    Brad Whitlock, Wed Feb 23 23:36:56 PST 2011
 //    I added support for triangles, quads, lines.
 //
+//    Brad Whitlock, Mon Jan  8 17:04:39 PST 2024
+//    I added support for polyhedra.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
-    vtkIdType nPoints = in_ds->GetNumberOfPoints();
+    const vtkIdType nPoints = in_ds->GetNumberOfPoints();
     
     // This is our connectivity list. It says that point P is connected to
     // the points in connectivity[P]. A point is not connected to itself.
     // Therefore, the degree of that node is connectivity[P].size().
     // But first we have to construct the list.
-    std::vector<std::vector<int> > connectivity(nPoints); 
+    std::vector<std::vector<vtkIdType> > connectivity(nPoints); 
 
-    vtkIdType nCells = in_ds->GetNumberOfCells();
+    const vtkIdType nCells = in_ds->GetNumberOfCells();
     for (vtkIdType i = 0 ; i < nCells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        vtkIdType numPointsForThisCell = cell->GetNumberOfPoints();
-        for (int localId = 0 ; localId < numPointsForThisCell ; localId++)
+        // Handle polyhedra specially.
+        if(cell->GetCellType() == VTK_POLYHEDRON)
         {
-            vtkIdType id = cell->GetPointId(localId);
+            // For polyhedra, we walk around each face and for the current
+            // point, add the next point to its connectivity list if it has
+            // not already been added. Do the other direction too. After walking
+            // all of the faces for a cell, each point should know all of its
+            // neighbor points. This should work for most cell types but we limit
+            // it to polyhedra for now.
+            const vtkIdType nFaces = cell->GetNumberOfFaces();
+            for(vtkIdType faceId = 0; faceId < nFaces; faceId++)
+            {
+                vtkCell *face = cell->GetFace(faceId);
+                const vtkIdType nFacePts = face->GetNumberOfPoints();
+                for(vtkIdType p = 0; p < nFacePts; p++)
+                {
+                    const vtkIdType next_p = (p + 1) % nFacePts;
+                    const vtkIdType pid = face->GetPointId(p);
+                    const vtkIdType next_pid = face->GetPointId(next_p);
+
+                    // Forward
+                    if(std::find(connectivity[pid].begin(),
+                                 connectivity[pid].end(),
+                                 next_pid) == connectivity[pid].end())
+                    {
+                        connectivity[pid].push_back(next_pid);
+                    }
+                    // Backward
+                    if(std::find(connectivity[next_pid].begin(),
+                                 connectivity[next_pid].end(),
+                                 pid) == connectivity[next_pid].end())
+                    {
+                        connectivity[next_pid].push_back(pid);
+                    }
+                }
+            }
+            continue;
+        }
+
+        const vtkIdType numPointsForThisCell = cell->GetNumberOfPoints();
+        for (vtkIdType localId = 0 ; localId < numPointsForThisCell ; localId++)
+        {
+            const vtkIdType id = cell->GetPointId(localId);
 
             // Most nodes have 3 adjacent nodes in that cell.
             // One pryamid node has 4, and is treated as a special case.
             // But we will store in adj[] the global ID of the points
             // that this point is adjacent to.
 
-            int adj[4], nadj = 3;
+            vtkIdType adj[4];
+            int nadj = 3;
             switch (cell->GetCellType())
             {
                 case VTK_TETRA:
@@ -227,10 +255,10 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
                 case VTK_PYRAMID:
                     switch (localId)
                     {
-                        case 0: GlobalPointAssign(cell,adj,1,3,4,-1); break;
-                        case 1: GlobalPointAssign(cell,adj,0,2,4,-1); break;
-                        case 2: GlobalPointAssign(cell,adj,1,3,4,-1); break;
-                        case 3: GlobalPointAssign(cell,adj,0,2,4,-1); break;
+                        case 0: GlobalPointAssign(cell,adj,1,3,4); break;
+                        case 1: GlobalPointAssign(cell,adj,0,2,4); break;
+                        case 2: GlobalPointAssign(cell,adj,1,3,4); break;
+                        case 3: GlobalPointAssign(cell,adj,0,2,4); break;
                         case 4: GlobalPointAssign(cell,adj,0,1,2,3); nadj = 4; break;
                     }
                     break;
@@ -239,10 +267,10 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
                     nadj = 2;
                     switch (localId)
                     {
-                        case 0: GlobalPointAssign2(cell,adj,1,3); break;
-                        case 1: GlobalPointAssign2(cell,adj,0,2); break;
-                        case 2: GlobalPointAssign2(cell,adj,1,3); break;
-                        case 3: GlobalPointAssign2(cell,adj,0,2); break;
+                        case 0: GlobalPointAssign(cell,adj,1,3); break;
+                        case 1: GlobalPointAssign(cell,adj,0,2); break;
+                        case 2: GlobalPointAssign(cell,adj,1,3); break;
+                        case 3: GlobalPointAssign(cell,adj,0,2); break;
                     }
                     break;
 
@@ -250,9 +278,9 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
                     nadj = 2;
                     switch (localId)
                     {
-                        case 0: GlobalPointAssign2(cell,adj,1,2); break;
-                        case 1: GlobalPointAssign2(cell,adj,0,2); break;
-                        case 2: GlobalPointAssign2(cell,adj,0,1); break;
+                        case 0: GlobalPointAssign(cell,adj,1,2); break;
+                        case 1: GlobalPointAssign(cell,adj,0,2); break;
+                        case 2: GlobalPointAssign(cell,adj,0,1); break;
                     }
                     break;
 
@@ -274,8 +302,11 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
             // and if they're not already in the connectivity list, add them.
             for (int j = 0; j < nadj; j++)
             {
-                if (VIntFind(connectivity[id],adj[j]) == -1)
-                    connectivity[id].push_back(adj[j]);
+                auto &conn = connectivity[id];
+                if(std::find(conn.begin(), conn.end(), adj[j]) == conn.end())
+                {
+                    conn.push_back(adj[j]);
+                }
             }
         }
     }
