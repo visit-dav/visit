@@ -22,21 +22,21 @@ set(STRICT OFF CACHE INTERNAL
 
 set(GENERATED_SOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY})
 
-set(GENERATED_LICENCE_H ${GENERATED_SOURCES_DIR}/licence.h)
-set(INTERMEDIATE_LICENCE_H ${GENERATED_LICENCE_H}.tmp)
-add_custom_command(OUTPUT ${INTERMEDIATE_LICENCE_H}
-  COMMAND ${CMAKE_COMMAND}
-    -DLICENCE_FILE=${putty_SOURCE_DIR}/LICENCE
-    -DOUTPUT_FILE=${INTERMEDIATE_LICENCE_H}
-    -P ${putty_SOURCE_DIR}/cmake/licence.cmake
-  DEPENDS ${putty_SOURCE_DIR}/cmake/licence.cmake ${putty_SOURCE_DIR}/LICENCE)
-add_custom_target(generated_licence_h
-  BYPRODUCTS ${GENERATED_LICENCE_H}
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${INTERMEDIATE_LICENCE_H} ${GENERATED_LICENCE_H}
-  DEPENDS ${INTERMEDIATE_LICENCE_H}
-  COMMENT "Updating licence.h")
-VISIT_TOOLS_ADD_FOLDER(qtssh generated_licence_h)
+#set(GENERATED_LICENCE_H ${GENERATED_SOURCES_DIR}/licence.h)
+#set(INTERMEDIATE_LICENCE_H ${GENERATED_LICENCE_H}.tmp)
+#add_custom_command(OUTPUT ${INTERMEDIATE_LICENCE_H}
+#  COMMAND ${CMAKE_COMMAND}
+#    -DLICENCE_FILE=${putty_SOURCE_DIR}/LICENCE
+#    -DOUTPUT_FILE=${INTERMEDIATE_LICENCE_H}
+#    -P ${putty_SOURCE_DIR}/cmake/licence.cmake
+#  DEPENDS ${putty_SOURCE_DIR}/cmake/licence.cmake ${putty_SOURCE_DIR}/LICENCE)
+#add_custom_target(generated_licence_h
+#  BYPRODUCTS ${GENERATED_LICENCE_H}
+#  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#    ${INTERMEDIATE_LICENCE_H} ${GENERATED_LICENCE_H}
+#  DEPENDS ${INTERMEDIATE_LICENCE_H}
+#  COMMENT "Updating licence.h")
+#VISIT_TOOLS_ADD_FOLDER(qtssh generated_licence_h)
 
 function(add_sources_from_current_dir target)
   set(sources)

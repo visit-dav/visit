@@ -112,6 +112,10 @@
 #   Kathleen Biagas, Mon Sep 26, 2022
 #   Remove HDF4 support.
 #
+#   Kathleen Biagas, Wed Nov  8 10:08:50 PST 2023
+#   Added definitions for VTK_VERSION_HEX, needed for LIB_VERSION comparisons
+#   in source code.
+#
 #****************************************************************************/
 
 ##
@@ -189,6 +193,8 @@ set(VISIT_OSPRAY                 @VISIT_OSPRAY@)
 
 # Set up VTK
 set(VTK_VERSION @VTK_VERSION@)
+# VTK_VERSION_HEX is needed for LIB_VERSION comparisons in source code
+add_definitions(-DVTK_VERSION_HEX=@VTK_VERSION_HEX@)
 set(VTK_INCLUDE_DIRS ${VISIT_ROOT_INCLUDE_DIR}@vtk_include_relative_path@)
 set(VTK_LIBRARY_DIRS ${VISIT_LIBRARY_DIR})
 

@@ -10,6 +10,9 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Change PTHREAD to Threads::Threads.
 #
+#   Kathleen Biagas, Tue Oct 31 10:27:56 PDT 2023
+#   Add support for VTK 9.
+#
 #****************************************************************************
 
 SET(TARGETS osmesatest_ser osmesavtktest_ser)
@@ -27,19 +30,33 @@ LINK_DIRECTORIES(
 ${LIBRARY_OUTPUT_DIRECTORY}
 )
 
-SET(REQUIRED_VTK_LIBS
-vtkCommonCore 
-vtkCommonDataModel
-vtkCommonExecutionModel
-vtkFiltersGeometry 
-vtkFiltersHybrid
-vtkFiltersSources
-vtkIOImage
-vtkRenderingCore
-vtkRenderingOpenGL2
-vtkRenderingFreeType 
-vtkInteractionStyle 
-)
+if(VTK_VERSION VERSION_LESS_EQUAL "8.1.0")
+    set(REQUIRED_VTK_LIBS
+        vtkCommonCore
+        vtkCommonDataModel
+        vtkCommonExecutionModel
+        vtkFiltersGeometry
+        vtkFiltersHybrid
+        vtkFiltersSources
+        vtkIOImage
+        vtkRenderingCore
+        vtkRenderingOpenGL2
+        vtkRenderingFreeType
+        vtkInteractionStyle)
+else()
+    set(REQUIRED_VTK_LIBS
+        VTK::CommonCore
+        VTK::CommonDataModel
+        VTK::CommonExecutionModel
+        VTK::FiltersGeometry
+        VTK::FiltersHybrid
+        VTK::FiltersSources
+        VTK::IOImage
+        VTK::RenderingCore
+        VTK::RenderingOpenGL2
+        VTK::RenderingFreeType
+        VTK::InteractionStyle)
+endif()
 
 IF(NOT WIN32)
     SET(LIBDL dl)

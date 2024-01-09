@@ -13,6 +13,10 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 #include <DebugStream.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
+
 
 // ************************************************************************* //
 //  File: avtCartographicProjectionFilter.C
@@ -130,6 +134,10 @@ avtCartographicProjectionFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Wed Jul 23 08:30:25 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Wed Nov  8 10:12:54 PST 2023
+//    Fix a couple of issue with VTK 9: numPts should be vtkIdType, not int.
+//    Use CellArrayIterator with VTK 9 intead of GetNextCell.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -148,9 +156,9 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
   vtkDataSet *in_ds = in_dr->GetDataVTK();
 
   int do_type = in_ds->GetDataObjectType();
-  int dims[3], numPts = in_ds->GetNumberOfPoints();
+  int dims[3];
+  vtkIdType numPts = in_ds->GetNumberOfPoints();
   vtkPointSet *ds;
-  vtkCellArray *ca;
   double in_bounds[6], out_bounds[6], tol = 10., p_pt[3], c_pt[3];
 
   vtkPoints *inPts = vtkVisItUtility::NewPoints(in_ds);
@@ -178,7 +186,7 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
 
 // Here we could have as many of the 100+ projections available.
 // I'm not sure people want to see a pull-down list with 100+ items
-  
+
   proj->SetName(atts.ProjectionID_ToString(atts.GetProjectionID()).c_str());
   debug4 << "setting name of projection " << atts.ProjectionID_ToString(atts.GetProjectionID()) <<   endl;
   geoXform->SetDestinationProjection(proj);
@@ -237,30 +245,36 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
       // long length and split.
       ds = vtkPolyData::New();
       ca_n = vtkCellArray::New();
-      static_cast<vtkPolyData *>(ds)->SetPolys(ca_n);
+      vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+      pd->SetPolys(ca_n);
       ca_n->Delete();
 
-      ca = static_cast<vtkPolyData *>(in_ds)->GetPolys();
       vtkIdType npts;
+
 #if LIB_VERSION_LE(VTK,8,1,0)
+      vtkCellArray *ca = pd->GetPolys();
       vtkIdType *pts=nullptr;
+      ca->InitTraversal();
+      while (ca->GetNextCell(numPts, pts))
+      {
 #else
       const vtkIdType *pts=nullptr;
+
+      auto ca = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
+      for (ca->GoToFirstCell(); !ca->IsDoneWithTraversal(); ca->GoToNextCell())
+      {
+          ca->GetCurrentCell(numPts, pts);
 #endif
 
-      ca->InitTraversal();
-      // for each polygon, change for big changes in coordinates and split lines
-      for(int i =0; i < ca->GetNumberOfCells (); i++)
-         {
+         // for each polygon, change for big changes in coordinates and split lines
          changeOfSigns = 0;
-         ca->GetNextCell(npts, pts);
          k = npts-1;
          // start from end and split if necessary
          for(int j =npts-1; j >0; j--)
            {
            newPoints->GetPoint(pts[j-1], p_pt); // previous pt
            newPoints->GetPoint(pts[j], c_pt);    // current pt
-           // compute a 2d distance 
+           // compute a 2d distance
            if(sqrt((p_pt[0] - c_pt[0])*(p_pt[0] - c_pt[0]) + (p_pt[1] - c_pt[1])*(p_pt[1] - c_pt[1])) > tol )
              {
              changeOfSigns++;

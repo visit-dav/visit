@@ -1,0 +1,47 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <title>VisIt 3.4.1 Release Notes</title>
+</head>
+<body>
+<center><b><font size="6">VisIt 3.4.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 3.4.1</font></b></p>
+<ul>
+  <li>Fixed a bug in the Wavefront OBJ Writer that would result in incorrect coloring for minimum or maximum values in downstream tools such as PowerPoint.</li>
+  <li>Fixed a bug with Pick unable to return results for 2D datasets.</li>
+  <li>Fixed a bug where vtk error messages were printed to the terminal when adding an Image Annotation Object to the viewer window.</li>
+  <li>Changed default logic for guessing cycles from file names to not consider any digits in the file name extension if present. This fixed the guessing logic for cases where a file extension includes a digit (e.g. <code>.h5m</code>)</li>
+  <li>Fixed a bug where glyphed line endpoints could be colored incorrectly in the Pseudocolor plot.</li>
+  <li>Fixed a VTK Texture Buffer error that caused error messages to be printed to the command line.</li>
+  <li>Fixed a Mesh plot bug where transparency would not be honored.</li>
+  <li>Fixed compile error where some executable targets were missing QSurfaceFormat include.</li>
+  <li>Fixed a Volume plot but that would cause the parallel engine to crash when certain operators were used in conjunction with the plot.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 3.4.1</font></b></p>
+<ul>
+  <li>Added the ability to invert the color table for the Wavefront OBJ writer.</li>
+  <li>Upgraded MFEM library version to 4.6.0.</li>
+  <li>The <i>surface_normal</i> expression now accepts mesh types other than polydata, allowing it to be used more easily as an operator-created variable.</li>
+  <li>Added more keywords ("MFA", "2fa", "Autentication", and "OTP") that cause VisIt clients to open a second popup for a password.</li>
+  <li>GetPlotInformation() can now contain entries for multiple-curves when Query-over-time is performed on multiple variables. For example, if a pick-through-time was performed for variables 'u' and 'v', the curve for 'v' would be retrieved via 'GetPlotInformation()['Curves']['v']. Single variable results will still be retrieved via 'GetPlotInformation()['Curve'].
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.4.0.html>3.4.0</a>.</p>
+</body>
+</html>

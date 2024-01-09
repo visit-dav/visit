@@ -411,17 +411,17 @@ void simv2_disconnect()
 }
 
 // ****************************************************************************
-// Method: simv2_set_slave_process_callback
+// Method: simv2_set_worker_process_callback
 //
 // Purpose:
-//   SimV2 runtime function called when we want to install a slave process callback.
+//   SimV2 runtime function called when we want to install a worker process callback.
 //
 // Arguments:
 //   spic : The new callback function.
 //
 // Returns:    
 //
-// Note:       The slave process callback helps broadcast commands from the
+// Note:       The worker process callback helps broadcast commands from the
 //             viewer to other ranks.
 //
 // Programmer: Brad Whitlock
@@ -431,10 +431,10 @@ void simv2_disconnect()
 //
 // ****************************************************************************
 
-void simv2_set_slave_process_callback(void(*spic)())
+void simv2_set_worker_process_callback(void(*spic)())
 {
 #ifdef PARALLEL
-    MPIXfer::SetSlaveProcessInstructionCallback(spic);
+    MPIXfer::SetWorkerProcessInstructionCallback(spic);
 #endif
 }
 

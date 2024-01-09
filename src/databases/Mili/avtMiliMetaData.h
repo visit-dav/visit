@@ -492,14 +492,17 @@ class MiliMaterialMetaData
 //      Added support for retrieving all variable meta data associated with
 //      a shortname.
 //
+//      Eric Brugger, Mon Oct 23 11:34:17 PDT 2023
+//      Added M_PARTICLE to MiliCellTypes.
+//
 // ****************************************************************************
 
 class avtMiliMetaData
 {
   public:
 
-    const int MiliCellTypes[8] =
-      { M_TRUSS, M_BEAM, M_TRI, M_QUAD, M_TET, M_PYRAMID, M_WEDGE, M_HEX };
+    const int MiliCellTypes[9] =
+      { M_PARTICLE, M_TRUSS, M_BEAM, M_TRI, M_QUAD, M_TET, M_PYRAMID, M_WEDGE, M_HEX };
 
                                         avtMiliMetaData(int);
                                        ~avtMiliMetaData(void);
@@ -620,7 +623,7 @@ class avtMiliMetaData
     //
     // The number of available mili cell types.
     //
-    const int                         numMiliCellTypes = 8;
+    const int                         numMiliCellTypes = 9;
 };
 
 #endif

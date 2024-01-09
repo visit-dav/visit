@@ -3,7 +3,7 @@ A:  globe.silo
 mesh1 
 Point: <5.59017, 7.69421, -3.09017>
 Node:  225
-Incident Zones:  882  883  982  983  
+Incident Zones:  983  982  883  882  
 vel:  <nodal> = (7.69421,-5.59017,0) mag = 9.51057
 
 
@@ -11,7 +11,7 @@ B:  globe.silo
 mesh1 
 Point: <4.75528, 6.54508, 5.87785>
 Node:  222
-Incident Zones:  582  583  682  683  
+Incident Zones:  683  682  583  582  
 vel:  <nodal> = (6.54508,-4.75528,0) mag = 8.09016
 
 
@@ -19,7 +19,7 @@ C:  globe.silo
 mesh1 
 Point: <-2.08333, -6.41184, 4.89821>
 Node:  807
-Incident Zones:  573  574  593  594  673  674  693  694  
+Incident Zones:  694  693  674  673  594  593  574  573  
 vel:  <nodal> = (-6.41184,2.08333,0) mag = 6.74181
 
 
@@ -27,7 +27,7 @@ D:  globe.silo
 mesh1 
 Point: <-2.44911, -7.53757, -2.57514>
 Node:  810
-Incident Zones:  873  874  893  894  973  974  993  994  
+Incident Zones:  994  993  974  973  894  893  874  873  
 vel:  <nodal> = (-7.53757,2.44911,0) mag = 7.92547
 
 
@@ -35,7 +35,7 @@ E:  globe.silo
 mesh1 
 Point: <-8.09017, 5.87785, 7.10543e-14>
 Node:  494
-Incident Zones:  787  788  887  888  
+Incident Zones:  888  887  788  787  
 vel:  <nodal> = (5.87785,8.09017,0) mag = 10
 
 
@@ -43,7 +43,7 @@ F:  globe.silo
 mesh1 
 Point: <3.91857, -5.39345, 4.88877e-05>
 Node:  962
-Incident Zones:  756  757  776  777  856  857  876  877  
+Incident Zones:  877  876  857  856  777  776  757  756  
 vel:  <nodal> = (-5.39345,-3.91857,0) mag = 6.66667
 
 
@@ -99,7 +99,7 @@ M:  globe.silo
 mesh1 
 Point: <2.5, 1.81636, -9.51057>
 Node:  174
-Incident Zones:  221  222  1181  1182  
+Incident Zones:  1182  1181  222  221  
 polarVector:  <nodal> = (10,0.628319,2.82743) mag = 10.411
 
 
@@ -107,7 +107,7 @@ N:  globe.silo
 mesh1 
 Point: <2.37764, -3.27254, 2.93893>
 Node:  951
-Incident Zones:  536  537  556  557  636  637  656  657  
+Incident Zones:  657  656  637  636  557  556  537  536  
 polarVector:  <nodal> = (5,-0.942478,0.942477) mag = 5.1746
 
 
@@ -115,7 +115,7 @@ O:  globe.silo
 mesh1 
 Point: <-0.795763, 2.44911, -7.92547>
 Node:  381
-Incident Zones:  205  206  225  226  1165  1166  1185  1186  
+Incident Zones:  1186  1185  1166  1165  226  225  206  205  
 xyzVector:  <nodal> = (-0.795763,2.44911,-7.92547) mag = 8.33333
 
 
@@ -123,6 +123,6 @@ P:  globe.silo
 mesh1 
 Point: <-3.53601e-33, 5.11837e-31, 8.33333>
 Node:  9
-Incident Zones:  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  
+Incident Zones:  139  138  137  136  135  134  133  132  131  130  129  128  127  126  125  124  123  122  121  120  119  118  117  116  115  114  113  112  111  110  109  108  107  106  105  104  103  102  101  100  
 xyzVector:  <nodal> = (-3.53601e-33,5.11837e-31,8.33333) mag = 8.33333
 

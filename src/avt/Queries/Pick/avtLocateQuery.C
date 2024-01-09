@@ -10,7 +10,6 @@
 
 #include <float.h>
 
-#include <vtkBox.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkIdList.h>
@@ -245,6 +244,11 @@ avtLocateQuery::GetPickAtts()
 //    Hank Childs, Tue Sep 11 13:11:17 PDT 2007
 //    Code around VTK bug with ComputeCellId.
 //
+//    Kathleen Biagas, The Dec 7, 2023
+//    Swap vtkBox::IntersectBox with vtkVisItUtility::IntersectBox. The VTK 9
+//    version of the former utilizes a tolerance that adjusts the bounds and
+//    interferes with results (especially for 2D).
+//
 // ****************************************************************************
 
 int
@@ -281,7 +285,7 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
         {
            rayDir[i] = rayPt2[i] - rayPt1[i];
         }
-        if (vtkBox::IntersectBox(dsBounds, rayPt1, rayDir, isect, t))
+        if (vtkVisItUtility::IntersectBox(dsBounds, rayPt1, rayDir, isect, t))
         {
             success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid,
                           isect, ijk);
@@ -417,6 +421,10 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
 //  Creation:   October 6, 2004
 //
 //  Modifications:
+//    Kathleen Biagas, The Dec 7, 2023
+//    Swap vtkBox::IntersectBox with vtkVisItUtility::IntersectBox. The VTK 9
+//    version of the former utilizes a tolerance that adjusts the bounds and
+//    interferes with results (especially for 2D).
 //
 // ****************************************************************************
 
@@ -432,7 +440,7 @@ avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
         dir[i] = pt2[i] - pt1[i];
     }
     double dummy1[3], dummy2;
-    return (vtkBox::IntersectBox(bnds, pt1, dir, dummy1, dummy2));
+    return (vtkVisItUtility::IntersectBox(bnds, pt1, dir, dummy1, dummy2));
 }
 
 

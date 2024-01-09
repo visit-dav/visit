@@ -2976,6 +2976,10 @@ Variant::TokenizeQuotedString(const string &val,stringVector &tokens)
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 17, 2007
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Dec 1 2023
+//    If on Windows, also escape path separators and convert unix-style.
+//
 // ****************************************************************************
 string
 Variant::EscapeQuotedString(const string &val)
@@ -2989,6 +2993,18 @@ Variant::EscapeQuotedString(const string &val)
             res.push_back('\\');
             res.push_back('"');
         }
+#ifdef _WIN32
+        else if(val[i] == '\\')
+        {
+            res.push_back('\\');
+            res.push_back('\\');
+        }
+        else if(val[i] == '/')
+        {
+            res.push_back('\\');
+            res.push_back('\\');
+        }
+#endif
         else
         {
             res.push_back(val[i]);
