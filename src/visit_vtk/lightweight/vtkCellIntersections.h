@@ -16,6 +16,7 @@ class vtkPolyLine;
 class vtkTriangle;
 class vtkTriangleStrip;
 class vtkPolygon;
+class vtkPolyhedron;
 class vtkPixel;
 class vtkQuad;
 class vtkTetra;
@@ -101,6 +102,9 @@ private:
 
   int QuadraticHexahedronIntersectWithLine(vtkQuadraticHexahedron *, 
                                 double [3], double [3], double&, double [3]);
+
+  int PolyhedronIntersectWithLine(vtkPolyhedron *, 
+                                  double [3], double [3], double&, double [3]);
 
   vtkTriangle *triangle;
   vtkQuad *quad;

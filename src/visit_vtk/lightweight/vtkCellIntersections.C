@@ -19,6 +19,7 @@
 #include <vtkPlane.h>
 #include <vtkPoints.h>
 #include <vtkPolygon.h>
+#include <vtkPolyhedron.h>
 #include <vtkPolyLine.h>
 #include <vtkPolyVertex.h>
 #include <vtkPyramid.h>
@@ -106,6 +107,9 @@ void vtkCellIntersections::PrintSelf(ostream& os, vtkIndent indent)
 //    macros don't get put into the VisIt debug logs and error macros do ...and 
 //    I believe the debug statement *should* be in the VisIt debug logs.
 //
+//    Brad Whitlock, Mon Jan  8 17:59:46 PST 2024
+//    Added polyhedron support.
+//
 // ****************************************************************************
 
 int
@@ -145,6 +149,9 @@ vtkCellIntersections::CellIntersectWithLine(vtkCell *cell,
       return PyramidIntersectWithLine((vtkPyramid*)cell, p1, p2, t, x);
     case VTK_QUADRATIC_HEXAHEDRON : 
       return QuadraticHexahedronIntersectWithLine((vtkQuadraticHexahedron*)cell,
+                                                  p1, p2, t, x);
+    case VTK_POLYHEDRON : 
+      return PolyhedronIntersectWithLine((vtkPolyhedron*)cell,
                                                   p1, p2, t, x);
     default:
       vtkErrorMacro( << "CellType  " << cell->GetCellType() 
@@ -916,6 +923,46 @@ vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3],
   return intersection; 
 }
 
+int
+vtkCellIntersections::PolyhedronIntersectWithLine(vtkPolyhedron *cell, double p1[3], 
+    double p2[3], double& t, double x[3])
+{
+  int  intersection = 0;
+  t = VTK_DOUBLE_MAX;
+
+  const vtkIdType nFaces = cell->GetNumberOfFaces();
+  for (vtkIdType faceNum = 0; faceNum < nFaces; faceNum++)
+    {
+    double tTemp = VTK_DOUBLE_MAX, xTemp[3];
+    double pt0[3], pt1[3];
+    vtkCell *face = cell->GetFace(faceNum);
+    int hit = 0;
+    if(face->GetCellType() == VTK_TRIANGLE)
+    {
+      hit = this->TriangleIntersectWithLine(reinterpret_cast<vtkTriangle*>(face), p1, p2, tTemp, xTemp);
+    }
+    else if(face->GetCellType() == VTK_QUAD)
+    {
+      hit = this->QuadIntersectWithLine(reinterpret_cast<vtkQuad*>(face), p1, p2, tTemp, xTemp);
+    }
+    else if(face->GetCellType() == VTK_POLYGON)
+    {
+      hit = this->PolygonIntersectWithLine(reinterpret_cast<vtkPolygon*>(face), p1, p2, tTemp, xTemp);
+    }
+
+    if(hit && (tTemp < t))
+    {
+      intersection = 1;
+      t = tTemp;
+      for (int i = 0; i < 3; i++)
+        {
+        x[i] = xTemp[i];
+        }
+      }
+    }
+
+  return intersection;  
+}
 
 // ****************************************************************************
 // Method:    LineLineIsect
