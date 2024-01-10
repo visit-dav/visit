@@ -62,7 +62,7 @@ function bv_adios2_initialize_vars
         ADIOS2_INSTALL_DIR="${VISITDIR}/adios2/$ADIOS2_VERSION/$VISITARCH"
     fi
 }
-https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.10.0-rc1.tar.gz
+
 function bv_adios2_info
 {
     export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.10.0-rc1"}
