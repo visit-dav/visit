@@ -1197,7 +1197,8 @@ function build_hdf5
     fi 
     
     # avoid issue on m1 mac
-    extra_flags="-fsigned-char -D_FILE_OFFSET_BITS=64"
+    # note: -fsigned-char failed for me on M2 mac
+    extra_flags="-D_FILE_OFFSET_BITS=64"
     
     
     for bt in $par_build_types; do

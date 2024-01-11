@@ -126,7 +126,7 @@ function bv_python_initialize
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
     add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
     add_extra_commandline_args "python" "no-sphinx" 0 "Disable building sphinx"
-    add_extra_commandline_args "python" "use-python39" 0 "Use Python 3.9 insterad of Python 3.7"
+    add_extra_commandline_args "python" "use-python39" 0 "Use Python 3.9 instead of Python 3.7"
 }
 
 function bv_python_enable
@@ -299,14 +299,14 @@ function bv_python_info
     
     # if python 3.9
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PYTHON_URL="https://www.python.org/ftp/python/3.9.17"
+        export PYTHON_URL="https://www.python.org/ftp/python/3.9.18"
         export PYTHON_FILE_SUFFIX="tgz"
-        export PYTHON_VERSION="3.9.17"
+        export PYTHON_VERSION="3.9.18"
         export PYTHON_COMPATIBILITY_VERSION="3.9"
         export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
         export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-        export PYTHON_MD5_CHECKSUM=""
-        export PYTHON_SHA256_CHECKSUM=""
+        export PYTHON_MD5_CHECKSUM="c3a3e67e35838cadca247237a5a279a7"
+        export PYTHON_SHA256_CHECKSUM="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354"
     else
         export PYTHON_URL="https://www.python.org/ftp/python/3.7.7"
         export PYTHON_FILE_SUFFIX="tgz"
@@ -362,19 +362,19 @@ function bv_python_info
         export REQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SETUPTOOLS_URL=""
-        export SETUPTOOLS_FILE="setuptools-68.0.0.tar.gz"
-        export SETUPTOOLS_BUILD_DIR="setuptools-68.0.0"
-        export SETUPTOOLS_MD5_CHECKSUM=""
-        export SETUPTOOLS_SHA256_CHECKSUM=""
-    else
-        export SETUPTOOLS_URL=""
-        export SETUPTOOLS_FILE="setuptools-44.0.0.zip"
-        export SETUPTOOLS_BUILD_DIR="setuptools-44.0.0"
-        export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
-        export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #     export SETUPTOOLS_URL=""
+    #     export SETUPTOOLS_FILE="setuptools-68.0.0.tar.gz"
+    #     export SETUPTOOLS_BUILD_DIR="setuptools-68.0.0"
+    #     export SETUPTOOLS_MD5_CHECKSUM=""
+    #     export SETUPTOOLS_SHA256_CHECKSUM=""
+    # else
+    #     export SETUPTOOLS_URL=""
+    #     export SETUPTOOLS_FILE="setuptools-44.0.0.zip"
+    #     export SETUPTOOLS_BUILD_DIR="setuptools-44.0.0"
+    #     export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
+    #     export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
         export CYTHON_URL=""
@@ -911,6 +911,7 @@ function bv_python_ensure
     fi
 }
 
+# TODO: CAN WE REMOVE?
 function apply_python_osx104_patch
 {
     info "Patching Python: fix _environ issue for OS X 10.4"
@@ -1365,12 +1366,12 @@ function build_requests
         fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${WHEEL_FILE} ${WHEEL_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #   download_py_module ${WHEEL_FILE} ${WHEEL_URL}
+    #   if test $? -ne 0 ; then
+    #       return 1
+    #     fi
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       download_py_module ${CALVER_FILE} ${TCALVER_URL}
@@ -1441,12 +1442,12 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE} "flit_core"
-      if test $? -ne 0 ; then
-        return 1
-      fi
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #   extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE} "flit_core"
+    #   if test $? -ne 0 ; then
+    #     return 1
+    #   fi
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       extract_py_module ${TOML_BUILD_DIR} ${TOML_FILE} "toml"
@@ -1469,12 +1470,12 @@ function build_requests
       fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
-      if test $? -ne 0 ; then
-        return 1
-      fi
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #   extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
+    #   if test $? -ne 0 ; then
+    #     return 1
+    #   fi
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       extract_py_module ${CALVER_BUILD_DIR} ${CALVER_FILE} "calver"
@@ -1545,12 +1546,12 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
-      if test $? -ne 0 ; then
-          return 1
-      fi
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #   install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
+    #   if test $? -ne 0 ; then
+    #       return 1
+    #   fi
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       install_py_module ${TOML_BUILD_DIR} "toml"
@@ -1573,12 +1574,12 @@ function build_requests
       fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${WHEEL_BUILD_DIR} "wheel"
-      if test $? -ne 0 ; then
-          return 1
-      fi
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #   install_py_module ${WHEEL_BUILD_DIR} "wheel"
+    #   if test $? -ne 0 ; then
+    #       return 1
+    #   fi
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       install_py_module ${CALVER_BUILD_DIR} "calver"
@@ -1695,14 +1696,54 @@ function build_mpi4py
 }
 
 # *************************************************************************** #
+#                                  build_wheel                                #
+# *************************************************************************** #
+function build_wheel
+{
+    download_py_module ${FLITCORE_FILE} ${FLITCORE_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+  
+    download_py_module ${WHEEL_FILE} ${WHEEL_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE}  "flit_core"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${WHEEL_BUILD_DIR} "wheel"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    fix_py_permissions
+
+    return 0
+}
+
+# *************************************************************************** #
 #                                  build_numpy                                #
 # *************************************************************************** #
 function build_numpy
 {
-    download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL}
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    # download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL}
+    # if [[ $? != 0 ]] ; then
+    #     return 1
+    # fi
 
     download_py_module ${CYTHON_FILE} ${CYTHON_URL}
     if [[ $? != 0 ]] ; then
@@ -1714,10 +1755,10 @@ function build_numpy
         return 1
     fi
 
-    extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    # extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
+    # if [[ $? != 0 ]] ; then
+    #     return 1
+    # fi
 
     extract_py_module ${CYTHON_BUILD_DIR} ${CYTHON_FILE} "cython"
     if [[ $? != 0 ]] ; then
@@ -1729,37 +1770,42 @@ function build_numpy
         return 1
     fi
 
-    install_py_module_with_setup ${SETUPTOOLS_BUILD_DIR} "setuptools"
+    # install_py_module_with_setup ${SETUPTOOLS_BUILD_DIR} "setuptools"
+    # if [[ $? != 0 ]] ; then
+    #     return 1
+    # fi
+
+    install_py_module ${CYTHON_BUILD_DIR} "cython"
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    install_py_module_with_setup ${CYTHON_BUILD_DIR} "cython"
+    install_py_module ${NUMPY_BUILD_DIR} "numpy"
     if [[ $? != 0 ]] ; then
         return 1
     fi
-
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-      install_py_module ${NUMPY_BUILD_DIR} "numpy"
-    else
-      pushd $NUMPY_BUILD_DIR > /dev/null
-
-      cat << \EOF > site.cfg
-[openblas]
-libraries =
-library_dirs =
-include_dirs =
-EOF
-      info "Installing numpy (~ 2 min)..."
-      sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-      CC=${C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-      if test $? -ne 0 ; then
-          popd > /dev/null
-          warn "Could not install numpy"
-          return 1
-        fi
-      popd > /dev/null
-    fi
+#
+#     if [[ "$DO_PYTHON39" == "no" ]] ; then
+#       install_py_module ${NUMPY_BUILD_DIR} "numpy"
+#     else
+#       pushd $NUMPY_BUILD_DIR > /dev/null
+#
+#       cat << \EOF > site.cfg
+# [openblas]
+# libraries =
+# library_dirs =
+# include_dirs =
+# EOF
+#       info "Installing numpy (~ 2 min)..."
+#       sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
+#       CC=${C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+#       if test $? -ne 0 ; then
+#           popd > /dev/null
+#           warn "Could not install numpy"
+#           return 1
+#         fi
+#       popd > /dev/null
+#     fi
 
     fix_py_permissions
 
@@ -1776,13 +1822,13 @@ function build_sphinx
         return 1
     fi
 
-    # handle the fact that this may have been installed by numpy?
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL} 
-        if test $? -ne 0 ; then
-            return 1
-        fi
-    fi
+    # # handle the fact that this may have been installed by numpy?
+    # if [[ "$DO_PYTHON39" == "no" ]] ; then
+    #     download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL}
+    #     if test $? -ne 0 ; then
+    #         return 1
+    #     fi
+    # fi
 
     download_py_module ${IMAGESIZE_FILE} ${IMAGESIZE_URL}
     if test $? -ne 0 ; then
@@ -1889,12 +1935,12 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
-        if test $? -ne 0 ; then
-            return 1
-        fi
-    fi
+    # if [[ "$DO_PYTHON39" == "no" ]] ; then
+    #     extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
+    #     if test $? -ne 0 ; then
+    #         return 1
+    #     fi
+    # fi
 
     extract_py_module ${IMAGESIZE_BUILD_DIR} ${IMAGESIZE_FILE} "imagesize"
     if test $? -ne 0 ; then
@@ -2032,16 +2078,16 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        # may have been installed with numpy
-        check_if_py_module_installed "setuptools"
-        if test $? -ne 0 ; then
-            install_py_module ${SETUPTOOLS_BUILD_DIR} "setuptools"
-            if test $? -ne 0 ; then
-                return 1
-            fi
-        fi
-    fi
+    # if [[ "$DO_PYTHON39" == "no" ]] ; then
+    #     # may have been installed with numpy
+    #     check_if_py_module_installed "setuptools"
+    #     if test $? -ne 0 ; then
+    #         install_py_module ${SETUPTOOLS_BUILD_DIR} "setuptools"
+    #         if test $? -ne 0 ; then
+    #             return 1
+    #         fi
+    #     fi
+    # fi
 
     install_py_module ${IMAGESIZE_BUILD_DIR} "imagesize"
     if test $? -ne 0 ; then
@@ -2358,6 +2404,17 @@ function bv_python_build
             # of these python modules
             export PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
             export PYTHON_COMMAND="${PYHOME}/bin/python3"
+
+            # most everything needs wheel
+            check_if_py_module_installed "wheel"
+            if [[ $? != 0 ]] ; then
+                info "Building the wheel module"
+                build_wheel
+                if [[ $? != 0 ]] ; then
+                    error "wheel build failed. Bailing out."
+                fi
+                info "Done building the wheel module."
+            fi
 
             check_if_py_module_installed "numpy"
             if [[ $? != 0 ]] ; then
