@@ -209,6 +209,7 @@ function build_adios2
             cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
+        fi
 
         if [[ "$bt" == "ser" ]]; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
