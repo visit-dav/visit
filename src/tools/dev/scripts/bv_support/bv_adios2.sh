@@ -209,12 +209,6 @@ function build_adios2
             cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
-        # Otherwise use Blosc?
-        elif [[ "$DO_BLOSC" == "yes" ]] ; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
-            cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC_LIBRARY}"
-        fi
 
         if [[ "$bt" == "ser" ]]; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
