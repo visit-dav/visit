@@ -189,7 +189,6 @@ function build_adios2
 
         cfg_opts=""
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
-        cfg_opts="${cfg_opts} -DADIOS2_BUILD_TESTING:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:BOOL=OFF"
 
@@ -206,9 +205,10 @@ function build_adios2
 
         # Use Blosc2?
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
-            cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC2_LIBRARY}"
+            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:BOOL=ON"
+            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_DIR}"
+            cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
+            cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
         # Otherwise use Blosc?
         elif [[ "$DO_BLOSC" == "yes" ]] ; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
