@@ -83,26 +83,6 @@ function install_py_module
     return 0
 }
 
-function install_py_module_with_setup
-{
-    MOD_DIR=$1
-    MOD_NAME=$2
-
-    pushd ${MOD_DIR} > /dev/null
-    info "Installing ${MOD_NAME} ..."
-
-    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install ${MOD_NAME}"
-        return 1
-    fi
-    popd > /dev/null
-
-    return 0
-}
-
 function fix_py_permissions
 {
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -1339,13 +1319,6 @@ function build_requests
     fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${FLITCORE_FILE} ${FLITCORE_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
       download_py_module ${TOML_FILE} ${TOML_URL}
       if test $? -ne 0 ; then
           return 1
@@ -1365,13 +1338,6 @@ function build_requests
           return 1
         fi
     fi
-
-    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
-    #   download_py_module ${WHEEL_FILE} ${WHEEL_URL}
-    #   if test $? -ne 0 ; then
-    #       return 1
-    #     fi
-    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       download_py_module ${CALVER_FILE} ${TCALVER_URL}
@@ -1442,13 +1408,6 @@ function build_requests
         return 1
     fi
 
-    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
-    #   extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE} "flit_core"
-    #   if test $? -ne 0 ; then
-    #     return 1
-    #   fi
-    # fi
-
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       extract_py_module ${TOML_BUILD_DIR} ${TOML_FILE} "toml"
       if test $? -ne 0 ; then
@@ -1469,13 +1428,6 @@ function build_requests
         return 1
       fi
     fi
-
-    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
-    #   extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
-    #   if test $? -ne 0 ; then
-    #     return 1
-    #   fi
-    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       extract_py_module ${CALVER_BUILD_DIR} ${CALVER_FILE} "calver"
@@ -1546,13 +1498,6 @@ function build_requests
         return 1
     fi
 
-    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
-    #   install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
-    #   if test $? -ne 0 ; then
-    #       return 1
-    #   fi
-    # fi
-
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       install_py_module ${TOML_BUILD_DIR} "toml"
       if test $? -ne 0 ; then
@@ -1573,13 +1518,6 @@ function build_requests
           return 1
       fi
     fi
-
-    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
-    #   install_py_module ${WHEEL_BUILD_DIR} "wheel"
-    #   if test $? -ne 0 ; then
-    #       return 1
-    #   fi
-    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
       install_py_module ${CALVER_BUILD_DIR} "calver"
@@ -1740,11 +1678,6 @@ function build_wheel
 # *************************************************************************** #
 function build_numpy
 {
-    # download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL}
-    # if [[ $? != 0 ]] ; then
-    #     return 1
-    # fi
-
     download_py_module ${CYTHON_FILE} ${CYTHON_URL}
     if [[ $? != 0 ]] ; then
         return 1
@@ -1754,11 +1687,6 @@ function build_numpy
     if [[ $? != 0 ]] ; then
         return 1
     fi
-
-    # extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
-    # if [[ $? != 0 ]] ; then
-    #     return 1
-    # fi
 
     extract_py_module ${CYTHON_BUILD_DIR} ${CYTHON_FILE} "cython"
     if [[ $? != 0 ]] ; then
@@ -1770,11 +1698,6 @@ function build_numpy
         return 1
     fi
 
-    # install_py_module_with_setup ${SETUPTOOLS_BUILD_DIR} "setuptools"
-    # if [[ $? != 0 ]] ; then
-    #     return 1
-    # fi
-
     install_py_module ${CYTHON_BUILD_DIR} "cython"
     if [[ $? != 0 ]] ; then
         return 1
@@ -1784,28 +1707,6 @@ function build_numpy
     if [[ $? != 0 ]] ; then
         return 1
     fi
-#
-#     if [[ "$DO_PYTHON39" == "no" ]] ; then
-#       install_py_module ${NUMPY_BUILD_DIR} "numpy"
-#     else
-#       pushd $NUMPY_BUILD_DIR > /dev/null
-#
-#       cat << \EOF > site.cfg
-# [openblas]
-# libraries =
-# library_dirs =
-# include_dirs =
-# EOF
-#       info "Installing numpy (~ 2 min)..."
-#       sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-#       CC=${C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-#       if test $? -ne 0 ; then
-#           popd > /dev/null
-#           warn "Could not install numpy"
-#           return 1
-#         fi
-#       popd > /dev/null
-#     fi
 
     fix_py_permissions
 
@@ -1822,14 +1723,6 @@ function build_sphinx
         return 1
     fi
 
-    # # handle the fact that this may have been installed by numpy?
-    # if [[ "$DO_PYTHON39" == "no" ]] ; then
-    #     download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL}
-    #     if test $? -ne 0 ; then
-    #         return 1
-    #     fi
-    # fi
-
     download_py_module ${IMAGESIZE_FILE} ${IMAGESIZE_URL}
     if test $? -ne 0 ; then
         return 1
@@ -1845,7 +1738,7 @@ function build_sphinx
         return 1
     fi
 
-    download_py_module ${SNOWBALLSTEMMER_FILE} ${SNOWBALLSTEMMER_URL} 
+    download_py_module ${SNOWBALLSTEMMER_FILE} ${SNOWBALLSTEMMER_URL}
     if test $? -ne 0 ; then
         return 1
     fi
@@ -1934,13 +1827,6 @@ function build_sphinx
     if test $? -ne 0 ; then
         return 1
     fi
-
-    # if [[ "$DO_PYTHON39" == "no" ]] ; then
-    #     extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
-    #     if test $? -ne 0 ; then
-    #         return 1
-    #     fi
-    # fi
 
     extract_py_module ${IMAGESIZE_BUILD_DIR} ${IMAGESIZE_FILE} "imagesize"
     if test $? -ne 0 ; then
@@ -2052,8 +1938,6 @@ function build_sphinx
     popd > /dev/null
 
 
-
-
     if [[ "$DO_PYTHON39" == "no" ]] ; then
         install_py_module ${SIX_BUILD_DIR} "six"
         if test $? -ne 0 ; then
@@ -2077,17 +1961,6 @@ function build_sphinx
     if test $? -ne 0 ; then
         return 1
     fi
-
-    # if [[ "$DO_PYTHON39" == "no" ]] ; then
-    #     # may have been installed with numpy
-    #     check_if_py_module_installed "setuptools"
-    #     if test $? -ne 0 ; then
-    #         install_py_module ${SETUPTOOLS_BUILD_DIR} "setuptools"
-    #         if test $? -ne 0 ; then
-    #             return 1
-    #         fi
-    #     fi
-    # fi
 
     install_py_module ${IMAGESIZE_BUILD_DIR} "imagesize"
     if test $? -ne 0 ; then
@@ -2227,7 +2100,6 @@ function build_sphinx_rtd
         fi
     fi
 
-
     download_py_module ${SPHINX_RTD_THEME_FILE} ${SPHINX_RTD_THEME_URL}
     if [[ $? != 0 ]] ; then
         return 1
@@ -2355,7 +2227,7 @@ function bv_python_is_installed
         fi
 
     fi
-    
+
     if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 
         check_if_py_module_installed "mpi4py"
@@ -2405,7 +2277,7 @@ function bv_python_build
             export PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
             export PYTHON_COMMAND="${PYHOME}/bin/python3"
 
-            # most everything needs wheel
+            # most every module needs wheel to build properly via pip
             check_if_py_module_installed "wheel"
             if [[ $? != 0 ]] ; then
                 info "Building the wheel module"
