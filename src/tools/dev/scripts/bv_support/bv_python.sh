@@ -46,7 +46,7 @@ function extract_py_module
     MOD_NAME=$3
 
     if ! test -d ${MOD_DIR} ; then
-        info "Extracting python ${MOD_NAME} module ..."
+        info "Extracting python ${MOD_NAME} module (file ${MOD_FILE} to dir ${MOD_DIR} ) ..."
         uncompress_untar ${MOD_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${MOD_FILE}"
@@ -1107,6 +1107,8 @@ function build_numpy
 # *************************************************************************** #
 function build_sphinx
 {
+    info "building sphinx"
+
     download_py_module ${PACKAGING_FILE} ${PACKAGING_URL}
     if test $? -ne 0 ; then
         return 1
@@ -1178,11 +1180,6 @@ function build_sphinx
     fi
 
     download_py_module ${SIX_FILE} ${SIX_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    download_py_module ${PYTZ_FILE} ${PYTZ_URL}
     if test $? -ne 0 ; then
         return 1
     fi
@@ -1275,11 +1272,6 @@ function build_sphinx
     extract_py_module ${SPHINXCONTRIB_APPLEHELP_BUILD_DIR} ${SPHINXCONTRIB_APPLEHELP_FILE} "sphinxcontrib-applehelp"
     if test $? -ne 0 ; then
         return 1
-    fi
-
-    extract_py_module ${PYTZ_BUILD_DIR} ${PYTZ_FILE} "pytz"
-    if test $? -ne 0 ; then
-            return 1
     fi
 
     extract_py_module ${MARKUPSAFE_BUILD_DIR} ${MARKUPSAFE_FILE} "markupsafe"
