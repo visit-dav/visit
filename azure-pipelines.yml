@@ -20,7 +20,7 @@ pr:
   branches:
     include:
     - develop
-    - *.*RC
+    - 3.4RC
 
 # fast fail sanity checks
 stages:
