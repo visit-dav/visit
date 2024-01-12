@@ -648,8 +648,7 @@ QvisExpressionsWindow::CreateWindowContents()
     // tab 2 -> python filter editor
     CreatePythonFilterEditor();
     editorTabs->addTab(pyEditorWidget, tr("Python expression editor"));
-
-
+    editorTabs->setCurrentIndex(0);
     definitionLayout->addWidget(editorTabs,row,0,1,2);
     definitionLayout->setColumnStretch(1, 10);
 
@@ -966,6 +965,13 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Added a call to update() to remove the visual artificats present during
 //    the first draw of the expressions window.
 //
+//    Kathleen Biagas, Thu Jan 11, 2024
+//    Fixed problem with stdEditor not being the default open tab when
+//    Expression window first opened.  Calling setEnabled with a value of
+//    on the tabs widget seems to be changing which tab is considered current.
+//    Capture currentIndex before setting enablement of the tabs, then reset
+//    it afterwards.
+//
 // ****************************************************************************
 
 void
@@ -990,8 +996,12 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     typeList->setEnabled(enable);
     notHidden->setEnabled(enable);
 
+    // calling setTableEnbled with a value of false seems to change the
+    // current index, so capture that information and reset it after.
+    int ci = editorTabs->currentIndex();
     editorTabs->setTabEnabled(0, enable && stdExprActive);
     editorTabs->setTabEnabled(1, enable && pyExprActive);
+    editorTabs->setCurrentIndex(ci);
     editorTabs->update();
     
     this->update();
