@@ -11,6 +11,7 @@
 #include <utility_exports.h>
 
 #include <iostream>
+#include <fstream>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,14 +20,6 @@
 #include <cstdlib>
 
 #include <maptypes.h>  // for CIStringSet, CIStringSetVector defs
-
-#if __GNUC__ >= 3
-#   define MUST_CHECK __attribute__ ((warn_unused_result))
-#else
-#   define MUST_CHECK /*nothing*/
-#endif
-
-
 
 namespace StringHelpers
 {
@@ -97,73 +90,111 @@ namespace StringHelpers
 
     std::string UTILITY_API  EscapeSpecialChars(const std::string &str);
 
-// ****************************************************************************
-//  Function: str_to_u_numeric
-//
-//  Purpose: Converts a string value into an unsigned numeric type as given by
-//           the template parameter.
-//           WARNING: This is likely to compile and silently fail if given a
-//                    signed type in the template parameter.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 11, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Fri Aug 29 16:15:17 EDT 2008
-//    Reorganized to propagate error upward.
-//
-//    Tom Fogal, Tue Sep 23 11:08:02 MDT 2008
-//    Removed a statically-false branch which was causing an annoying warning.
-//
-// ****************************************************************************
-    template<typename UT>
-    MUST_CHECK bool str_to_u_numeric(const char * const s, UT *retval)
+    // ****************************************************************************
+    //  Function: vstrtonum
+    //
+    //  Purpose: Replacement for strtoX() and atoX() methods.
+    //
+    //           Instead of any of these kinds of uses...
+    //
+    //               int k = atoi(numstr);
+    //               float f1 = atof(numstr);
+    //
+    //               unsigned u = (unsigned) strtoul(numstr, 0);
+    //               if (errno != 0) u = 0xFFFFFFFF; // set to default val
+    //
+    //               float f2 = (float) strtod(numstr, 0);
+    //               if (errno != 0) {
+    //                   f2 = -1.0; // set to default value
+    //                   debug5 << numstr << " bad value" << endl; // log error
+    //               }
+    //
+    //           ...do this...
+    //
+    //               int k = vstrtonum<int>(numstr);
+    //               float f1 = vstrtonum<float>(numstr);
+    //
+    //               unsigned u = vstrtonum<unsigned>(numstr, 0xFFFFFFFF);
+    //               float f = vstrtonum<float>(numstr, -1.0, debug5);
+    //
+    //           Templatized methods to convert strings to language-native typed
+    //           numeric values, perform some minimal error checking and optionally
+    //           emit error messages with potentially useful context when errors
+    //           are encountered.
+    //
+    //           This should always be used in place of strtoX() or atoX() when
+    //           reading ascii numerical data.
+    //
+    //           We do a minimal amount of error checking for a signed conversion
+    //           by checking if first non-whitespace character is a minus sign and
+    //           artificially setting errno to EDOM (not something strtoX/atoX
+    //           would ever do). We could add more error checking for different
+    //           cases too by, for example, checking value read for int type and
+    //           seeing if it is too big to fit in an int. We currently do not
+    //           do this but it would be easy to add. We could also easily add
+    //           logic for other, less frequently used types such as shorts or
+    //           maybe int64_t, etc.
+    //
+    //           The default method treats all ascii as long double for the strtoX
+    //           conversion and then casts it to correct type. We specialize some
+    //           cases for slightly better behavior.
+    //
+    //           I ran performance tests on macOS doing 1 million conversions with
+    //           these methods (including error checking) and 1 million directly
+    //           with strtoX and atoX methods and observed no significant diffs
+    //           in performance. In addition, keep in mind that these methods are
+    //           typically being used in conjunction with file I/O, which almost
+    //           certainly dominates performance. The only time this might not be
+    //           true is for memory resident "files", mmaps, and/or SSDs.
+    //
+    //  Mark C. Miller, Wed Jan 10 17:10:21 PST 2024
+    // ****************************************************************************
+    template<typename T> inline T _vstrtonum(char const *numstr, char **eptr) { return static_cast<T>(strtold(numstr, eptr)); }
+
+    // Specialize int/long cases to use int conversion strtol which with base of 0 can handle octal and hex also
+    #define _VSTRTONUMI(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr) { return static_cast<T>(F(numstr, eptr, 0)); }
+    _VSTRTONUMI(int,std::strtol)
+    _VSTRTONUMI(long,std::strtol)
+    _VSTRTONUMI(long long,std::strtoll)
+
+    // Specialize unsigned cases to use unsigned conversion strtoul and error checking passing negated arg
+    // Note that size_t is an alias almost certainly to one of these types and so we do not have to
+    // explicitly handle it here but any caller can still use it.
+    #define _VSTRTONUMU(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr) { char const *s=numstr; while (isspace(*s)) s++; T retval = static_cast<T>(F(numstr, eptr, 0)); if (*s=='-') errno = EDOM; return retval;}
+    _VSTRTONUMU(unsigned int,std::strtoul)
+    _VSTRTONUMU(unsigned long,std::strtoul)
+    _VSTRTONUMU(unsigned long long,std::strtoull)
+
+    // dummy ostream for default (no ostream) cases 
+    static std::ostream NO_OSTREAM(std::cerr.rdbuf());
+
+    template<typename T> T
+    inline vstrtonum(char const *numstr, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM)
     {
-        // strtoul() will happily convert a negative string into an unsigned
-        // integer.  Do a simple check and bail out if we're given a negative
-        // number.
-        if(s[0] == '-')
-        {
-            return false;
-        }
-
-        const char *str = s;
-        // get rid of leading 0's; they confuse strtoul.
-        if(str[0] == '0' && str[1] != '\0' && str[1] != 'x')
-        {
-            while(*str == '0') { ++str; }
-        }
-
-        // One might want to think about switching this to an `unsigned long
-        // long' and using `strtoull' below.  That will catch more cases, but
-        // this is more portable.
-        unsigned long ret;
-        char *end;
+        char *eptr = 0;
         errno = 0;
-        ret = strtoul(str, &end, 0);
-        *retval = static_cast<UT>(ret);
-        switch(errno)
+        T retval = _vstrtonum<T>(numstr, &eptr);
+        int errno_save = errno;
+    
+        // emit possible error messages
+        if (errno_save != 0)
         {
-            case 0: /* success */ break;
-            case ERANGE:
-                // Constant does not fit in sizeof(unsigned long) bytes.
-                return false;
-                break;
-            case EINVAL:
-                // Bad base (3rd arg) given; this should be impossible.
-                return false;
-                break;
-            default:
-                // Unknown error.
-                return false;
-                break;
+            retval = dfltval;
+            if (&errstrm != &NO_OSTREAM)
+            {
+                errstrm << "Problem converting \"" << numstr << "\" to a number (\"" << strerror(errno_save) << "\")" << std::endl;
+            }
         }
-        if(end == s) {
-            // junk characters start the string .. is this a number?
-            return false;
+        if (eptr == numstr)
+        {
+            retval = dfltval;
+            if (&errstrm != &NO_OSTREAM)
+            {
+                errstrm << "Problem converting \"" << numstr << "\" to a number (\"no digits to convert\")" << std::endl;
+            }
         }
-        return true;
+    
+        return retval;
     }
 }
 #endif
