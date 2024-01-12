@@ -2080,7 +2080,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-n-gpus-per-node") == 0 && i+1 < argc)
         {
             this->nDisplays = StringHelpers::vstrtonum<size_t>(argv[i+1], 99999);
-            printf("this->nDisplays = %zu\n", this->nDisplays);
             if (this->nDisplays == 99999)
             {
                 if (DebugStream::Level1())
