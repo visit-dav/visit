@@ -147,6 +147,18 @@ namespace StringHelpers
     //           certainly dominates performance. The only time this might not be
     //           true is for memory resident "files", mmaps, and/or SSDs.
     //
+    //           At some point, it would make sense to enhance this to use locale
+    //           so we can handle different character encodings as well as regional
+    //           specific interpretations (e.g. European 1.234.456,89). The idea
+    //           would be to set the locale VisIt is using (a pref. maybe) and then
+    //           these methods would just use that locale in calls to strtoX. That
+    //           could be achieved globally in VisIt with a call to setlocale().
+    //           However, when in the United States reading an ascii data file
+    //           formatted for human readability in Germany the desire would be
+    //           to specify "de_DE" for the locale during the read of just that
+    //           file suggesting something more complicated than just a global
+    //           setting.
+    //
     //  Mark C. Miller, Wed Jan 10 17:10:21 PST 2024
     // ****************************************************************************
     template<typename T> inline T _vstrtonum(char const *numstr, char **eptr) { return static_cast<T>(strtold(numstr, eptr)); }
