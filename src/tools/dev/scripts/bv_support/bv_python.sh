@@ -65,13 +65,8 @@ function install_py_module
     pushd ${MOD_DIR} > /dev/null
     info "Installing ${MOD_NAME} ..."
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        echo "Building in $PWD"
-        echo ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation .
-        ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation .
-    else
-        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-    fi
+    echo ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation .
+    ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation .
 
     if test $? -ne 0 ; then
         popd > /dev/null
@@ -96,7 +91,6 @@ function fix_py_permissions
 function bv_python_initialize
 {
     export DO_PYTHON="yes"
-    export DO_PYTHON39="no"
     export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
     export BUILD_MPI4PY="no"
@@ -106,7 +100,6 @@ function bv_python_initialize
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
     add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
     add_extra_commandline_args "python" "no-sphinx" 0 "Disable building sphinx"
-    add_extra_commandline_args "python" "use-python39" 0 "Use Python 3.9 instead of Python 3.7"
 }
 
 function bv_python_enable
@@ -213,13 +206,6 @@ function bv_python_mpi4py
     export BUILD_MPI4PY="yes"
 }
 
-function bv_python_use_python39
-{
-    echo "configuring to build python 3.9, (NOT python 3.7)"
-    export DO_PYTHON39="yes"
-    # call bv_python_info to update all vars
-    bv_python_info
-}
 
 function bv_python_no_sphinx
 {
@@ -263,294 +249,118 @@ function bv_python_depends_on
 function bv_python_info
 {
     info "bv_python_info"
-    info "  do py39? $DO_PYTHON39"
-    # force python 3.9 with VTK 9, which is also forced with Qt6
-    if [[ "$DO_VTK9" == "yes" ]] ; then
-        info "  setting py39 to true because doing vtk 9"
-        DO_PYTHON39="yes"
-    elif [[ "$DO_QT6" == "yes" ]] ; then
-        info "  setting py39 to true because doing qt 6"
-        DO_PYTHON39="yes"
-    fi
 
-    # IMPORANT NOTE: 
-    # We don't use export VAR={VAR:-"value"} style of init here b/c
-    # it undermines us choosing between python 2 and python 3
-    
-    # if python 3.9
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PYTHON_URL="https://www.python.org/ftp/python/3.9.18"
-        export PYTHON_FILE_SUFFIX="tgz"
-        export PYTHON_VERSION="3.9.18"
-        export PYTHON_COMPATIBILITY_VERSION="3.9"
-        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-        export PYTHON_MD5_CHECKSUM="c3a3e67e35838cadca247237a5a279a7"
-        export PYTHON_SHA256_CHECKSUM="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354"
-    else
-        export PYTHON_URL="https://www.python.org/ftp/python/3.7.7"
-        export PYTHON_FILE_SUFFIX="tgz"
-        export PYTHON_VERSION="3.7.7"
-        # TODO: May need logic for "m" suffix
-        export PYTHON_COMPATIBILITY_VERSION="3.7m"
-        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-        export PYTHON_MD5_CHECKSUM="d348d978a5387512fbc7d7d52dd3a5ef"
-        export PYTHON_SHA256_CHECKSUM="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a"
-    fi
+    # python 3.9
+    export PYTHON_URL="https://www.python.org/ftp/python/3.9.18"
+    export PYTHON_FILE_SUFFIX="tgz"
+    export PYTHON_VERSION="3.9.18"
+    export PYTHON_COMPATIBILITY_VERSION="3.9"
+    export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+    export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+    export PYTHON_MD5_CHECKSUM="c3a3e67e35838cadca247237a5a279a7"
+    export PYTHON_SHA256_CHECKSUM="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354"
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PILLOW_URL=${PILLOW_URL:-"https://github.com/python-pillow/Pillow/archive/refs/tags/"}
-        export PILLOW_FILE="Pillow-10.0.0.tar.gz"
-        export PILLOW_BUILD_DIR="Pillow-10.0.0"
-        export PILLOW_MD5_CHECKSUM=""
-        export PILLOW_SHA256_CHECKSUM=""
-    else
-        # python 3 Pillow, not PIL -- we need Pillow for Python 3 Support
-        export PILLOW_URL=${PIL_URL:-"https://files.pythonhosted.org/packages/ce/ef/e793f6ffe245c960c42492d0bb50f8d14e2ba223f1922a5c3c81569cec44/"}
-        export PILLOW_FILE="Pillow-7.1.2.tar.gz"
-        export PILLOW_BUILD_DIR="Pillow-7.1.2"
-        export PILLOW_MD5_CHECKSUM="f1f7592c51260e5080d3cd71781ea675"
-        export PILLOW_SHA256_CHECKSUM="a0b49960110bc6ff5fead46013bcb8825d101026d466f3a4de3476defe0fb0dd"
-    fi
+    export PILLOW_URL=${PILLOW_URL:-"https://github.com/python-pillow/Pillow/archive/refs/tags/"}
+    export PILLOW_FILE="Pillow-10.0.0.tar.gz"
+    export PILLOW_BUILD_DIR="Pillow-10.0.0"
+    export PILLOW_MD5_CHECKSUM=""
+    export PILLOW_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PYPARSING_URL=""
-        export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
-        export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
-        export PYPARSING_MD5_CHECKSUM=""
-        export PYPARSING_SHA256_CHECKSUM=""
-    else
-        export PYPARSING_URL=""
-        export PYPARSING_FILE="pyparsing-2.4.6.tar.gz"
-        export PYPARSING_BUILD_DIR="pyparsing-2.4.6"
-        export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
-        export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
-    fi
+    export PYPARSING_URL=""
+    export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
+    export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
+    export PYPARSING_MD5_CHECKSUM=""
+    export PYPARSING_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export REQUESTS_URL=""
-        export REQUESTS_FILE="requests-2.31.0.tar.gz"
-        export REQUESTS_BUILD_DIR="requests-2.31.0"
-        export REQUESTS_MD5_CHECKSUM=""
-        export REQUESTS_SHA256_CHECKSUM=""
-    else
-        export REQUESTS_URL=""
-        export REQUESTS_FILE="requests-2.22.0.tar.gz"
-        export REQUESTS_BUILD_DIR="requests-2.22.0"
-        export REQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
-        export REQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
-    fi
+    export REQUESTS_URL=""
+    export REQUESTS_FILE="requests-2.31.0.tar.gz"
+    export REQUESTS_BUILD_DIR="requests-2.31.0"
+    export REQUESTS_MD5_CHECKSUM=""
+    export REQUESTS_SHA256_CHECKSUM=""
 
-    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
-    #     export SETUPTOOLS_URL=""
-    #     export SETUPTOOLS_FILE="setuptools-68.0.0.tar.gz"
-    #     export SETUPTOOLS_BUILD_DIR="setuptools-68.0.0"
-    #     export SETUPTOOLS_MD5_CHECKSUM=""
-    #     export SETUPTOOLS_SHA256_CHECKSUM=""
-    # else
-    #     export SETUPTOOLS_URL=""
-    #     export SETUPTOOLS_FILE="setuptools-44.0.0.zip"
-    #     export SETUPTOOLS_BUILD_DIR="setuptools-44.0.0"
-    #     export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
-    #     export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
-    # fi
+    export CYTHON_URL=""
+    export CYTHON_FILE="Cython-3.0.0.tar.gz"
+    export CYTHON_BUILD_DIR="Cython-3.0.0"
+    export CYTHON_MD5_CHECKSUM=""
+    export CYTHON_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export CYTHON_URL=""
-        export CYTHON_FILE="Cython-3.0.0.tar.gz"
-        export CYTHON_BUILD_DIR="Cython-3.0.0"
-        export CYTHON_MD5_CHECKSUM=""
-        export CYTHON_SHA256_CHECKSUM=""
-    else
-        export CYTHON_URL="https://files.pythonhosted.org/packages/99/36/a3dc962cc6d08749aa4b9d85af08b6e354d09c5468a3e0edc610f44c856b/"
-        export CYTHON_FILE="Cython-0.29.17.tar.gz"
-        export CYTHON_BUILD_DIR="Cython-0.29.17"
-        export CYTHON_MD5_CHECKSUM="0936311ccd09f1164ab2f46ca5cd8c3b"
-        export CYTHON_SHA256_CHECKSUM="6361588cb1d82875bcfbad83d7dd66c442099759f895cf547995f00601f9caf2"
-    fi
+    export NUMPY_URL="https://github.com/numpy/numpy/releases/download/v1.25.1/"
+    export NUMPY_FILE="numpy-1.25.1.tar.gz"
+    export NUMPY_BUILD_DIR="numpy-1.25.1"
+    export NUMPY_MD5_CHECKSUM=""
+    export NUMPY_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export NUMPY_URL="https://github.com/numpy/numpy/releases/download/v1.25.1/"
-        export NUMPY_FILE="numpy-1.25.1.tar.gz"
-        export NUMPY_BUILD_DIR="numpy-1.25.1"
-        export NUMPY_MD5_CHECKSUM=""
-        export NUMPY_SHA256_CHECKSUM=""
-    else
-        export NUMPY_URL="https://github.com/numpy/numpy/releases/download/v1.16.6/"
-        export NUMPY_FILE="numpy-1.16.6.zip"
-        export NUMPY_BUILD_DIR="numpy-1.16.6"
-        export NUMPY_MD5_CHECKSUM="3dc21c84a295fe77eadf8f872685a7de"
-        export NUMPY_SHA256_CHECKSUM="e5cf3fdf13401885e8eea8170624ec96225e2174eb0c611c6f26dd33b489e3ff"
-    fi
+    export MPI4PY_URL="https://pypi.python.org/pypi/mpi4py"
+    export MPI4PY_FILE="mpi4py-3.1.4.tar.gz"
+    export MPI4PY_BUILD_DIR="mpi4py-3.1.4"
+    export MPI4PY_MD5_CHECKSUM=""
+    export MPI4PY_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export MPI4PY_URL="https://pypi.python.org/pypi/mpi4py"
-        export MPI4PY_FILE="mpi4py-3.1.4.tar.gz"
-        export MPI4PY_BUILD_DIR="mpi4py-3.1.4"
-        export MPI4PY_MD5_CHECKSUM=""
-        export MPI4PY_SHA256_CHECKSUM=""
-    else
-        export MPI4PY_URL="https://pypi.python.org/pypi/mpi4py"
-        export MPI4PY_FILE="mpi4py-2.0.0.tar.gz"
-        export MPI4PY_BUILD_DIR="mpi4py-2.0.0"
-        export MPI4PY_MD5_CHECKSUM="4f7d8126d7367c239fd67615680990e3"
-        export MPI4PY_SHA256_CHECKSUM="6543a05851a7aa1e6d165e673d422ba24e45c41e4221f0993fe1e5924a00cb81"
-    fi
+    export PACKAGING_URL=""
+    export PACKAGING_FILE="packaging-23.1.tar.gz"
+    export PACKAGING_BUILD_DIR="packaging-23.1"
+    export PACKAGING_MD5_CHECKSUM=""
+    export PACKAGING_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PACKAGING_URL=""
-        export PACKAGING_FILE="packaging-23.1.tar.gz"
-        export PACKAGING_BUILD_DIR="packaging-23.1"
-        export PACKAGING_MD5_CHECKSUM=""
-        export PACKAGING_SHA256_CHECKSUM=""
-    else
-        export PACKAGING_URL=""
-        export PACKAGING_FILE="packaging-19.2.tar.gz"
-        export PACKAGING_BUILD_DIR="packaging-19.2"
-        export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
-        export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
-    fi
+    export IMAGESIZE_URL=""
+    export IMAGESIZE_FILE="imagesize-1.4.1.tar.gz"
+    export IMAGESIZE_BUILD_DIR="imagesize-1.4.1"
+    export IMAGESIZE_MD5_CHECKSUM=""
+    export IMAGESIZE_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export IMAGESIZE_URL=""
-        export IMAGESIZE_FILE="imagesize-1.4.1.tar.gz"
-        export IMAGESIZE_BUILD_DIR="imagesize-1.4.1"
-        export IMAGESIZE_MD5_CHECKSUM=""
-        export IMAGESIZE_SHA256_CHECKSUM=""
-    else
-        export IMAGESIZE_URL=""
-        export IMAGESIZE_FILE="imagesize-1.1.0.tar.gz"
-        export IMAGESIZE_BUILD_DIR="imagesize-1.1.0"
-        export IMAGESIZE_MD5_CHECKSUM="2f89749b05e07c79c46330dbc62f1e02"
-        export IMAGESIZE_SHA256_CHECKSUM="f3832918bc3c66617f92e35f5d70729187676313caa60c187eb0f28b8fe5e3b5"
-    fi
+    export ALABASTER_URL=""
+    export ALABASTER_FILE="alabaster-0.7.13.tar.gz"
+    export ALABASTER_BUILD_DIR="alabaster-0.7.13"
+    export ALABASTER_MD5_CHECKSUM=""
+    export ALABASTER_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export ALABASTER_URL=""
-        export ALABASTER_FILE="alabaster-0.7.13.tar.gz"
-        export ALABASTER_BUILD_DIR="alabaster-0.7.13"
-        export ALABASTER_MD5_CHECKSUM=""
-        export ALABASTER_SHA256_CHECKSUM=""
-    else
-        export ALABASTER_URL=""
-        export ALABASTER_FILE="alabaster-0.7.12.tar.gz"
-        export ALABASTER_BUILD_DIR="alabaster-0.7.12"
-        export ALABASTER_MD5_CHECKSUM="3591827fde96d1dd23970fb05410ed04"
-        export ALABASTER_SHA256_CHECKSUM="a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"
-    fi
+    export BABEL_URL=""
+    export BABEL_FILE="Babel-2.12.1.tar.gz"
+    export BABEL_BUILD_DIR="Babel-2.12.1"
+    export BABEL_MD5_CHECKSUM=""
+    export BABEL_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export BABEL_URL=""
-        export BABEL_FILE="Babel-2.12.1.tar.gz"
-        export BABEL_BUILD_DIR="Babel-2.12.1"
-        export BABEL_MD5_CHECKSUM=""
-        export BABEL_SHA256_CHECKSUM=""
-    else
-        export BABEL_URL=""
-        export BABEL_FILE="Babel-2.7.0.tar.gz"
-        export BABEL_BUILD_DIR="Babel-2.7.0"
-        export BABEL_MD5_CHECKSUM="83c158b7dae9135750a7cf204e6e2eea"
-        export BABEL_SHA256_CHECKSUM="e86135ae101e31e2c8ec20a4e0c5220f4eed12487d5cf3f78be7e98d3a57fc28"
-    fi
+    export SNOWBALLSTEMMER_URL=""
+    export SNOWBALLSTEMMER_FILE="snowballstemmer-2.2.0.tar.gz"
+    export SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-2.2.0"
+    export SNOWBALLSTEMMER_MD5_CHECKSUM=""
+    export SNOWBALLSTEMMER_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SNOWBALLSTEMMER_URL=""
-        export SNOWBALLSTEMMER_FILE="snowballstemmer-2.2.0.tar.gz"
-        export SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-2.2.0"
-        export SNOWBALLSTEMMER_MD5_CHECKSUM=""
-        export SNOWBALLSTEMMER_SHA256_CHECKSUM=""
-    else
-        export SNOWBALLSTEMMER_URL=""
-        export SNOWBALLSTEMMER_FILE="snowballstemmer-2.0.0.tar.gz"
-        export SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-2.0.0"
-        export SNOWBALLSTEMMER_MD5_CHECKSUM="c05ec4a897be3c953c8b8b844c4241d4"
-        export SNOWBALLSTEMMER_SHA256_CHECKSUM="df3bac3df4c2c01363f3dd2cfa78cce2840a79b9f1c2d2de9ce8d31683992f52"
-   fi
+    export DOCUTILS_URL=""
+    export DOCUTILS_FILE="docutils-0.18.1.tar.gz"
+    export DOCUTILS_BUILD_DIR="docutils-0.18.1"
+    export DOCUTILS_MD5_CHECKSUM=""
+    export DOCUTILS_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export DOCUTILS_URL=""
-        export DOCUTILS_FILE="docutils-0.18.1.tar.gz"
-        export DOCUTILS_BUILD_DIR="docutils-0.18.1"
-        export DOCUTILS_MD5_CHECKSUM=""
-        export DOCUTILS_SHA256_CHECKSUM=""
-    else
-        export DOCUTILS_URL=""
-        export DOCUTILS_FILE="docutils-0.15.2.tar.gz"
-        export DOCUTILS_BUILD_DIR="docutils-0.15.2"
-        export DOCUTILS_MD5_CHECKSUM="e26a308d8000b0bed7416a633217c676"
-        export DOCUTILS_SHA256_CHECKSUM="a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"
-    fi
+    export PYGMENTS_URL=""
+    export PYGMENTS_FILE="Pygments-2.15.1.tar.gz"
+    export PYGMENTS_BUILD_DIR="Pygments-2.15.1"
+    export PYGMENTS_MD5_CHECKSUM=""
+    export PYGMENTS_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PYGMENTS_URL=""
-        export PYGMENTS_FILE="Pygments-2.15.1.tar.gz"
-        export PYGMENTS_BUILD_DIR="Pygments-2.15.1"
-        export PYGMENTS_MD5_CHECKSUM=""
-        export PYGMENTS_SHA256_CHECKSUM=""
-    else
-        export PYGMENTS_URL=""
-        export PYGMENTS_FILE="Pygments-2.5.2.tar.gz"
-        export PYGMENTS_BUILD_DIR="Pygments-2.5.2"
-        export PYGMENTS_MD5_CHECKSUM="465a35559863089d959d783a69f79b9f"
-        export PYGMENTS_SHA256_CHECKSUM="98c8aa5a9f778fcd1026a17361ddaf7330d1b7c62ae97c3bb0ae73e0b9b6b0fe"
-    fi
+    export JINJA2_URL=""
+    export JINJA2_FILE="Jinja2-3.1.2.tar.gz"
+    export JINJA2_BUILD_DIR="Jinja2-3.1.2"
+    export JINJA2_MD5_CHECKSUM=""
+    export JINJA2_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export JINJA2_URL=""
-        export JINJA2_FILE="Jinja2-3.1.2.tar.gz"
-        export JINJA2_BUILD_DIR="Jinja2-3.1.2"
-        export JINJA2_MD5_CHECKSUM=""
-        export JINJA2_SHA256_CHECKSUM=""
-    else
-        export JINJA2_URL=""
-        export JINJA2_FILE="Jinja2-2.10.3.tar.gz"
-        export JINJA2_BUILD_DIR="Jinja2-2.10.3"
-        export JINJA2_MD5_CHECKSUM="7883559bc5cc3e2781d94b4be61cfdcd"
-        export JINJA2_SHA256_CHECKSUM="9fe95f19286cfefaa917656583d020be14e7859c6b0252588391e47db34527de"
-    fi
+    export SPHINXCONTRIB_QTHELP_URL=""
+    export SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib-qthelp-1.0.3.tar.gz"
+    export SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib-qthelp-1.0.3"
+    export SPHINXCONTRIB_QTHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINXCONTRIB_QTHELP_URL=""
-        export SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib-qthelp-1.0.3.tar.gz"
-        export SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib-qthelp-1.0.3"
-        export SPHINXCONTRIB_QTHELP_MD5_CHECKSUM=""
-        export SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM=""
-    else
-        export SPHINXCONTRIB_QTHELP_URL=""
-        export SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib-qthelp-1.0.2.tar.gz"
-        export SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib-qthelp-1.0.2"
-        export SPHINXCONTRIB_QTHELP_MD5_CHECKSUM="3532d4643d0b1cc3806e43f59495c030"
-        export SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM="79465ce11ae5694ff165becda529a600c754f4bc459778778c7017374d4d406f"
-    fi
+    export SPHINXCONTRIB_SERIALIZINGHTML_URL=""
+    export SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib-serializinghtml-1.1.5.tar.gz"
+    export SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib-serializinghtml-1.1.5"
+    export SPHINXCONTRIB_SERIALIZINGHTML_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINXCONTRIB_SERIALIZINGHTML_URL=""
-        export SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib-serializinghtml-1.1.5.tar.gz"
-        export SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib-serializinghtml-1.1.5"
-        export SPHINXCONTRIB_SERIALIZINGHTML_MD5_CHECKSUM=""
-        export SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM=""
-    else
-        export SPHINXCONTRIB_SERIALIZINGHTML_URL=""
-        export SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib-serializinghtml-1.1.3.tar.gz"
-        export SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib-serializinghtml-1.1.3"
-        export SPHINXCONTRIB_SERIALIZINGHTML_MD5_CHECKSUM="6a4318d6d11c345fbc669e6a86f32766"
-        export SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM="c0efb33f8052c04fd7a26c0a07f1678e8512e0faec19f4aa8f2473a8b81d5227"
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINXCONTRIB_HTMLHELP_URL=""
-        export SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib-htmlhelp-2.0.1.tar.gz"
-        export SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib-htmlhelp-2.0.1"
-        export SPHINXCONTRIB_HTMLHELP_MD5_CHECKSUM=""
-        export SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM=""
-    else
-        export SPHINXCONTRIB_HTMLHELP_URL=""
-        export SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib-htmlhelp-1.0.2.tar.gz"
-        export SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib-htmlhelp-1.0.2"
-        export SPHINXCONTRIB_HTMLHELP_MD5_CHECKSUM="f72e4b26ec0f6387d855c74819500b66"
-        export SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM="4670f99f8951bd78cd4ad2ab962f798f5618b17675c35c5ac3b2132a14ea8422"
-    fi
+    export SPHINXCONTRIB_HTMLHELP_URL=""
+    export SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib-htmlhelp-2.0.1.tar.gz"
+    export SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib-htmlhelp-2.0.1"
+    export SPHINXCONTRIB_HTMLHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM=""
 
     export SPHINXCONTRIB_JSMATH_URL=""
     export SPHINXCONTRIB_JSMATH_FILE="sphinxcontrib-jsmath-1.0.1.tar.gz"
@@ -558,263 +368,136 @@ function bv_python_info
     export SPHINXCONTRIB_JSMATH_MD5_CHECKSUM="e45179f0a3608b6766862e0f34c23b62"
     export SPHINXCONTRIB_JSMATH_SHA256_CHECKSUM="a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8"
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINXCONTRIB_DEVHELP_URL=""
-        export SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib-devhelp-1.0.2.tar.gz"
-        export SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib-devhelp-1.0.2"
-        export SPHINXCONTRIB_DEVHELP_MD5_CHECKSUM=""
-        export SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM=""
-    else
-        export SPHINXCONTRIB_DEVHELP_URL=""
-        export SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib-devhelp-1.0.1.tar.gz"
-        export SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib-devhelp-1.0.1"
-        export SPHINXCONTRIB_DEVHELP_MD5_CHECKSUM="ecb33259e2e8300493d210140af7d957"
-        export SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM="6c64b077937330a9128a4da74586e8c2130262f014689b4b89e2d08ee7294a34"
-    fi
+    export SPHINXCONTRIB_DEVHELP_URL=""
+    export SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib-devhelp-1.0.2.tar.gz"
+    export SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib-devhelp-1.0.2"
+    export SPHINXCONTRIB_DEVHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINXCONTRIB_APPLEHELP_URL=""
-        export SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib-applehelp-1.0.4.tar.gz"
-        export SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib-applehelp-1.0.4"
-        export SPHINXCONTRIB_APPLEHELP_MD5_CHECKSUM=""
-        export SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM=""
-    else
-        export SPHINXCONTRIB_APPLEHELP_URL=""
-        export SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib-applehelp-1.0.1.tar.gz"
-        export SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib-applehelp-1.0.1"
-        export SPHINXCONTRIB_APPLEHELP_MD5_CHECKSUM="c3424507cc28291f8005081b6a96afb1"
-        export SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM="edaa0ab2b2bc74403149cb0209d6775c96de797dfd5b5e2a71981309efab3897"
-    fi
+    export SPHINXCONTRIB_APPLEHELP_URL=""
+    export SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib-applehelp-1.0.4.tar.gz"
+    export SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib-applehelp-1.0.4"
+    export SPHINXCONTRIB_APPLEHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        export SIX_URL=""
-        export SIX_FILE="six-1.13.0.tar.gz"
-        export SIX_BUILD_DIR="six-1.13.0"
-        export SIX_MD5_CHECKSUM="e92c23c882c7d5564ce5773fe31b2771"
-        export SIX_SHA256_CHECKSUM="30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
-    fi
+    export URLLIB3_URL=""
+    export URLLIB3_FILE="urllib3-2.0.3.tar.gz"
+    export URLLIB3_BUILD_DIR="urllib3-2.0.3"
+    export URLLIB3_MD5_CHECKSUM=""
+    export URLLIB3_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export URLLIB3_URL=""
-        export URLLIB3_FILE="urllib3-2.0.3.tar.gz"
-        export URLLIB3_BUILD_DIR="urllib3-2.0.3"
-        export URLLIB3_MD5_CHECKSUM=""
-        export URLLIB3_SHA256_CHECKSUM=""
-    else
-        export URLLIB3_URL=""
-        export URLLIB3_FILE="urllib3-1.25.7.tar.gz"
-        export URLLIB3_BUILD_DIR="urllib3-1.25.7"
-        export URLLIB3_MD5_CHECKSUM="85e1e3925f8c1095172bff343f3312ed"
-        export URLLIB3_SHA256_CHECKSUM="f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
-    fi
+    export IDNA_URL=""
+    export IDNA_FILE="idna-3.4.tar.gz"
+    export IDNA_BUILD_DIR="idna-3.4"
+    export IDNA_MD5_CHECKSUM=""
+    export IDNA_SHA256_CHECKSUM=""
+ 
+    export CHARSET_NORMALIZER_URL=""
+    export CHARSET_NORMALIZER_FILE="charset-normalizer-3.2.0.tar.gz"
+    export CHARSET_NORMALIZER_BUILD_DIR="charset-normalizer-3.2.0"
+    export CHARSET_NORMALIZER_MD5_CHECKSUM=""
+    export CHARSET_NORMALIZER_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export IDNA_URL=""
-        export IDNA_FILE="idna-3.4.tar.gz"
-        export IDNA_BUILD_DIR="idna-3.4"
-        export IDNA_MD5_CHECKSUM=""
-        export IDNA_SHA256_CHECKSUM=""
-    else
-        export IDNA_URL=""
-        export IDNA_FILE="idna-2.8.tar.gz"
-        export IDNA_BUILD_DIR="idna-2.8"
-        export IDNA_MD5_CHECKSUM="2e9ae0b4a0b26d1747c6127cdb060bc1"
-        export IDNA_SHA256_CHECKSUM="c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407"
-    fi
+    export CERTIFI_URL=""
+    export CERTIFI_FILE="certifi-2023.5.7.tar.gz"
+    export CERTIFI_BUILD_DIR="certifi-2023.5.7"
+    export CERTIFI_MD5_CHECKSUM=""
+    export CERTIFI_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export CHARSET_NORMALIZER_URL=""
-        export CHARSET_NORMALIZER_FILE="charset-normalizer-3.2.0.tar.gz"
-        export CHARSET_NORMALIZER_BUILD_DIR="charset-normalizer-3.2.0"
-        export CHARSET_NORMALIZER_MD5_CHECKSUM=""
-        export CHARSET_NORMALIZER_SHA256_CHECKSUM=""
-    else
-        export CHARDET_URL=""
-        export CHARDET_FILE="chardet-3.0.4.tar.gz"
-        export CHARDET_BUILD_DIR="chardet-3.0.4"
-        export CHARDET_MD5_CHECKSUM="7dd1ba7f9c77e32351b0a0cfacf4055c"
-        export CHARDET_SHA256_CHECKSUM="84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
-    fi
+    export FLITCORE_URL=""
+    export FLITCORE_FILE="flit_core-3.9.0.tar.gz"
+    export FLITCORE_BUILD_DIR="flit_core-3.9.0"
+    export FLITCORE_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export CERTIFI_URL=""
-        export CERTIFI_FILE="certifi-2023.5.7.tar.gz"
-        export CERTIFI_BUILD_DIR="certifi-2023.5.7"
-        export CERTIFI_MD5_CHECKSUM=""
-        export CERTIFI_SHA256_CHECKSUM=""
-    else
-        export CERTIFI_URL=""
-        export CERTIFI_FILE="certifi-2019.11.28.tar.gz"
-        export CERTIFI_BUILD_DIR="certifi-2019.11.28"
-        export CERTIFI_MD5_CHECKSUM="4d5229c4d9f0a4a79106f9e2c2cfd381"
-        export CERTIFI_SHA256_CHECKSUM="25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export FLITCORE_URL=""
-        export FLITCORE_FILE="flit_core-3.9.0.tar.gz"
-        export FLITCORE_BUILD_DIR="flit_core-3.9.0"
-        export FLITCORE_MD5_CHECKSUM=""
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export TOML_URL=""
-        export TOML_FILE="toml-0.10.2.tar.gz"
-        export TOML_BUILD_DIR="toml-0.10.2"
-        export TOML_MD5_CHECKSUM=""
-    fi
+    export TOML_URL=""
+    export TOML_FILE="toml-0.10.2.tar.gz"
+    export TOML_BUILD_DIR="toml-0.10.2"
+    export TOML_MD5_CHECKSUM=""
 
     # and yes, this is a different one from toml!
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export TOMLI_URL=""
-        export TOMLI_FILE="tomli-2.0.1.tar.gz"
-        export TOMLI_BUILD_DIR="tomli-2.0.1"
-        export TOMLI_MD5_CHECKSUM=""
-    fi
+    export TOMLI_URL=""
+    export TOMLI_FILE="tomli-2.0.1.tar.gz"
+    export TOMLI_BUILD_DIR="tomli-2.0.1"
+    export TOMLI_MD5_CHECKSUM=""
 
+    export PATHSPEC_URL=""
+    export PATHSPEC_FILE="pathspec-0.11.2.tar.gz"
+    export PATHSPEC_BUILD_DIR="pathspec-0.11.2"
+    export PATHSPEC_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PATHSPEC_URL=""
-        export PATHSPEC_FILE="pathspec-0.11.2.tar.gz"
-        export PATHSPEC_BUILD_DIR="pathspec-0.11.2"
-        export PATHSPEC_MD5_CHECKSUM=""
-    fi
+    export WHEEL_URL=""
+    export WHEEL_FILE="wheel-0.41.1.tar.gz"
+    export WHEEL_BUILD_DIR="wheel-0.41.1"
+    export WHEEL_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export WHEEL_URL=""
-        export WHEEL_FILE="wheel-0.41.1.tar.gz"
-        export WHEEL_BUILD_DIR="wheel-0.41.1"
-        export WHEEL_MD5_CHECKSUM=""
-    fi
+    export CALVER_URL=""
+    export CALVER_FILE="calver-2022.6.26.tar.gz"
+    export CALVER_BUILD_DIR="calver-2022.6.26"
+    export CALVER_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export CALVER_URL=""
-        export CALVER_FILE="calver-2022.6.26.tar.gz"
-        export CALVER_BUILD_DIR="calver-2022.6.26"
-        export CALVER_MD5_CHECKSUM=""
-    fi
+    export TROVECLASSIFIERS_URL=""
+    export TROVECLASSIFIERS_FILE="trove-classifiers-2023.8.7.tar.gz"
+    export TROVECLASSIFIERS_BUILD_DIR="trove-classifiers-2023.8.7"
+    export TROVECLASSIFIERS_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export TROVECLASSIFIERS_URL=""
-        export TROVECLASSIFIERS_FILE="trove-classifiers-2023.8.7.tar.gz"
-        export TROVECLASSIFIERS_BUILD_DIR="trove-classifiers-2023.8.7"
-        export TROVECLASSIFIERS_MD5_CHECKSUM=""
-    fi
+    export EDITABLES_URL=""
+    export EDITABLES_FILE="editables-0.5.tar.gz"
+    export EDITABLES_BUILD_DIR="editables-0.5"
+    export EDITABLES_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PACKAGING_URL=""
-        export PACKAGING_FILE="packaging-23.1.tar.gz "
-        export PACKAGING_BUILD_DIR="packaging-23.1"
-        export PACKAGING_MD5_CHECKSUM=""
-    fi
+    export PLUGGY_URL=""
+    export PLUGGY_FILE="pluggy-1.2.0.tar.gz "
+    export PLUGGY_BUILD_DIR="pluggy-1.2.0"
+    export PLUGGY_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export EDITABLES_URL=""
-        export EDITABLES_FILE="editables-0.5.tar.gz"
-        export EDITABLES_BUILD_DIR="editables-0.5"
-        export EDITABLES_MD5_CHECKSUM=""
-    fi
+    export HATCHLING_URL=""
+    export HATCHLING_FILE="hatchling-1.18.0.tar.gz"
+    export HATCHLING_BUILD_DIR="hatchling-1.18.0"
+    export HATCHLING_MD5_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PLUGGY_URL=""
-        export PLUGGY_FILE="pluggy-1.2.0.tar.gz "
-        export PLUGGY_BUILD_DIR="pluggy-1.2.0"
-        export PLUGGY_MD5_CHECKSUM=""
-    fi
+    export MARKUPSAFE_URL=""
+    export MARKUPSAFE_FILE="MarkupSafe-2.1.3.tar.gz"
+    export MARKUPSAFE_BUILD_DIR="MarkupSafe-2.1.3"
+    export MARKUPSAFE_MD5_CHECKSUM=""
+    export MARKUPSAFE_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export HATCHLING_URL=""
-        export HATCHLING_FILE="hatchling-1.18.0.tar.gz"
-        export HATCHLING_BUILD_DIR="hatchling-1.18.0"
-        export HATCHLING_MD5_CHECKSUM=""
-    fi
+    export ZIPP_URL=""
+    export ZIPP_FILE="zipp-3.16.2.tar.gz"
+    export ZIPP_BUILD_DIR="zipp-3.16.2"
+    export ZIPP_MD5_CHECKSUM=""
+    export ZIPP_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        export PYTZ_URL=""
-        export PYTZ_FILE="pytz-2019.3.tar.gz"
-        export PYTZ_BUILD_DIR="pytz-2019.3"
-        export PYTZ_MD5_CHECKSUM="c3d84a465fc56a4edd52cca8873ac0df"
-        export PYTZ_SHA256_CHECKSUM="b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"
-    fi
+    export IMPORTLIB_METADATA_URL=""
+    export IMPORTLIB_METADATA_FILE="importlib_metadata-6.8.0.tar.gz"
+    export IMPORTLIB_METADATA_BUILD_DIR="importlib_metadata-6.8.0"
+    export IMPORTLIB_METADATA_MD5_CHECKSUM=""
+    export IMPORTLIB_METADATA_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export MARKUPSAFE_URL=""
-        export MARKUPSAFE_FILE="MarkupSafe-2.1.3.tar.gz"
-        export MARKUPSAFE_BUILD_DIR="MarkupSafe-2.1.3"
-        export MARKUPSAFE_MD5_CHECKSUM=""
-        export MARKUPSAFE_SHA256_CHECKSUM=""
-    else
-        export MARKUPSAFE_URL=""
-        export MARKUPSAFE_FILE="MarkupSafe-1.1.1.tar.gz"
-        export MARKUPSAFE_BUILD_DIR="MarkupSafe-1.1.1"
-        export MARKUPSAFE_MD5_CHECKSUM="43fd756864fe42063068e092e220c57b"
-        export MARKUPSAFE_SHA256_CHECKSUM="29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b"
-    fi
+    export SPHINX_URL=""
+    export SPHINX_FILE="Sphinx-7.0.1.tar.gz"
+    export SPHINX_BUILD_DIR="Sphinx-7.0.1"
+    export SPHINX_MD5_CHECKSUM=""
+    export SPHINX_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export ZIPP_URL=""
-        export ZIPP_FILE="zipp-3.16.2.tar.gz"
-        export ZIPP_BUILD_DIR="zipp-3.16.2"
-        export ZIPP_MD5_CHECKSUM=""
-        export ZIPP_SHA256_CHECKSUM=""
+    export SPHINX_RTD_THEME_URL=""
+    export SPHINX_RTD_THEME_FILE="sphinx_rtd_theme-1.2.2.tar.gz"
+    export SPHINX_RTD_THEME_BUILD_DIR="sphinx_rtd_theme-1.2.2"
+    export SPHINX_RTD_THEME_MD5_CHECKSUM=""
+    export SPHINX_RTD_THEME_SHA256_CHECKSUM=""
 
-        export IMPORTLIB_METADATA_URL=""
-        export IMPORTLIB_METADATA_FILE="importlib_metadata-6.8.0.tar.gz"
-        export IMPORTLIB_METADATA_BUILD_DIR="importlib_metadata-6.8.0"
-        export IMPORTLIB_METADATA_MD5_CHECKSUM=""
-        export IMPORTLIB_METADATA_SHA256_CHECKSUM=""
-    fi
+    # needed by sphinx_rtd_theme
+    export SPHINXCONTRIB_JQUERY_URL=""
+    export SPHINXCONTRIB_JQUERY_FILE="sphinxcontrib-jquery-4.1.tar.gz"
+    export SPHINXCONTRIB_JQUERY_BUILD_DIR="sphinxcontrib-jquery-4.1"
+    export SPHINXCONTRIB_JQUERY_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_JQUERY_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINX_URL=""
-        export SPHINX_FILE="Sphinx-7.0.1.tar.gz"
-        export SPHINX_BUILD_DIR="Sphinx-7.0.1"
-        export SPHINX_MD5_CHECKSUM=""
-        export SPHINX_SHA256_CHECKSUM=""
-    else
-        export SPHINX_URL="https://files.pythonhosted.org/packages/f6/3a/c51fc285c0c5c30bcd9426bf096187840683d9383df716a6b6a4ca0a8bde"
-        export SPHINX_FILE="Sphinx-2.2.1.tar.gz"
-        export SPHINX_BUILD_DIR="Sphinx-2.2.1"
-        export SPHINX_MD5_CHECKSUM="60ea892a09b463e5ecb6ea26d2470f36"
-        export SPHINX_SHA256_CHECKSUM="31088dfb95359384b1005619827eaee3056243798c62724fd3fa4b84ee4d71bd"
-    fi
+    export SPHINX_TABS_URL=""
+    export SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
+    export SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
+    export SPHINX_TABS_MD5_CHECKSUM=""
+    export SPHINX_TABS_SHA256_CHECKSUM=""
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINX_RTD_THEME_URL=""
-        export SPHINX_RTD_THEME_FILE="sphinx_rtd_theme-1.2.2.tar.gz"
-        export SPHINX_RTD_THEME_BUILD_DIR="sphinx_rtd_theme-1.2.2"
-        export SPHINX_RTD_THEME_MD5_CHECKSUM=""
-        export SPHINX_RTD_THEME_SHA256_CHECKSUM=""
-    else
-        export SPHINX_RTD_THEME_URL="https://files.pythonhosted.org/packages/ed/73/7e550d6e4cf9f78a0e0b60b9d93dba295389c3d271c034bf2ea3463a79f9"
-        export SPHINX_RTD_THEME_FILE="sphinx_rtd_theme-0.4.3.tar.gz"
-        export SPHINX_RTD_THEME_BUILD_DIR="sphinx_rtd_theme-0.4.3"
-        export SPHINX_RTD_THEME_MD5_CHECKSUM="6c50f30bc39046f497d336039a0c13fa"
-        export SPHINX_RTD_THEME_SHA256_CHECKSUM="728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a"
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        # needed by sphinx_rtd_theme
-        export SPHINXCONTRIB_JQUERY_URL=""
-        export SPHINXCONTRIB_JQUERY_FILE="sphinxcontrib-jquery-4.1.tar.gz"
-        export SPHINXCONTRIB_JQUERY_BUILD_DIR="sphinxcontrib-jquery-4.1"
-        export SPHINXCONTRIB_JQUERY_MD5_CHECKSUM=""
-        export SPHINXCONTRIB_JQUERY_SHA256_CHECKSUM=""
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export SPHINX_TABS_URL=""
-        export SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
-        export SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
-        export SPHINX_TABS_MD5_CHECKSUM=""
-        export SPHINX_TABS_SHA256_CHECKSUM=""
-    else
-        export SPHINX_TABS_URL="https://github.com/executablebooks/sphinx-tabs/archive/refs/tags"
-        export SPHINX_TABS_FILE="v2.1.0.tar.gz"
-        export SPHINX_TABS_BUILD_DIR="sphinx-tabs-2.1.0"
-        export SPHINX_TABS_MD5_CHECKSUM="985650c490898ae674492b48f81ae497"
-        export SPHINX_TABS_SHA256_CHECKSUM="39bfc9e2051f2a048eaa9da2dbf1f56b0c03c17cc72192fc8b4357cb32a95765"
-    fi
 }
 
 function bv_python_print
@@ -832,8 +515,7 @@ function bv_python_print_usage
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
     printf "%-20s %s [%s]\n" "--no-sphinx" "Disable building sphinx"
-    printf "%-20s %s [%s]\n" "--use-python39" "Build Python 3.9 instead of Python 3.7"
-}
+  }
 
 function bv_python_host_profile
 {
@@ -891,198 +573,12 @@ function bv_python_ensure
     fi
 }
 
-# TODO: CAN WE REMOVE?
-function apply_python_osx104_patch
-{
-    info "Patching Python: fix _environ issue for OS X 10.4"
-    patch -f -p0 << \EOF
-diff -c Modules.orig/posixmodule.c Modules/posixmodule.c
-*** Modules.orig/posixmodule.c  Mon May  3 12:17:59 2010
---- Modules/posixmodule.c       Mon May  3 12:19:31 2010
-***************
-*** 360,365 ****
---- 360,369 ----
-  #endif
-  #endif
-
-+ /* On OS X 10.4, we need to use a function to get access to environ;
-+  * otherwise we get an unresolved "_environ" when linking shared libs */
-+ #define WITH_NEXT_FRAMEWORK
-+
-  /* Return a dictionary corresponding to the POSIX environment table */
-  #ifdef WITH_NEXT_FRAMEWORK
-  /* On Darwin/MacOSX a shared library or framework has no access to
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Python patch on OS X 10.4 failed."
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_python_macos11_configure_patch
-{
-    # These two patches come from python-3.7.12, to address build failures on MacOS11
-    info "Patching Python: applying configure patch for MacOS 11"
-    patch -f -p0 << \EOF
-*** configure.orig	Mon Mar  9 23:11:12 2020
---- configure	Fri Sep  3 20:49:21 2021
-***************
-*** 3374,3380 ****
-    # has no effect, don't bother defining them
-    Darwin/[6789].*)
-      define_xopen_source=no;;
-!   Darwin/1[0-9].*)
-      define_xopen_source=no;;
-    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
-    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
---- 3374,3380 ----
-    # has no effect, don't bother defining them
-    Darwin/[6789].*)
-      define_xopen_source=no;;
-!   Darwin/[12][0-9].*)
-      define_xopen_source=no;;
-    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
-    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
-***************
-*** 9251,9256 ****
---- 9251,9259 ----
-      	ppc)
-      		MACOSX_DEFAULT_ARCH="ppc64"
-      		;;
-+     	arm64)
-+     		MACOSX_DEFAULT_ARCH="arm64"
-+     		;;
-      	*)
-      		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
-      		;;
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Python patch to configure for MacOS 11  failed."
-        return 1
-    fi
-
-    info "Patching Python: applying configure.ac patch for MacOS 11"
-    patch -f -p0 << \EOF
-*** configure.ac.orig	Mon Mar  9 23:11:12 2020
---- configure.ac	Fri Sep  3 20:49:21 2021
-***************
-*** 490,496 ****
-    # has no effect, don't bother defining them
-    Darwin/@<:@6789@:>@.*)
-      define_xopen_source=no;;
-!   Darwin/1@<:@0-9@:>@.*)
-      define_xopen_source=no;;
-    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
-    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
---- 490,496 ----
-    # has no effect, don't bother defining them
-    Darwin/@<:@6789@:>@.*)
-      define_xopen_source=no;;
-!   Darwin/@<:@[12]@:>@@<:@0-9@:>@.*)
-      define_xopen_source=no;;
-    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
-    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
-***************
-*** 2456,2461 ****
---- 2456,2464 ----
-      	ppc)
-      		MACOSX_DEFAULT_ARCH="ppc64"
-      		;;
-+     	arm64)
-+     		MACOSX_DEFAULT_ARCH="arm64"
-+     		;;
-      	*)
-      		AC_MSG_ERROR([Unexpected output of 'arch' on OSX])
-      		;;
-
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Python patch to configure.ac for MacOS 11 failed."
-        return 1
-    fi
-
-    return 0
-}
 
 function apply_python_patch
 {
-    # not sure if these apply for 3.9
-
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            VER=$(uname -r)
-            if [[ ${VER%%.*} == 8 ]] ; then
-                apply_python_osx104_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-
-            # shouldn't do any harm applying this
-            # on all mac versions
-            apply_python_macos11_configure_patch
-            if [[ $? != 0 ]] ; then
-                return 1
-            fi
-        fi
-    fi
-
+    # no patches for 3.9
     return 0
 }
-
-function apply_python39_pillow_patch
-{
-#     info "Patching Python: fix setup.py in Pillow."
-#     patch -f -p0 << \EOF
-# --- setup.py.orig       2023-07-19 10:28:48.931905000 -0700
-# +++ setup.py    2023-07-19 10:45:27.500838000 -0700
-# @@ -989,7 +989,7 @@
-#          version=PILLOW_VERSION,
-#          cmdclass={"build_ext": pil_build_ext},
-#          ext_modules=ext_modules,
-# -        zip_safe=not (debug_build() or PLATFORM_MINGW),
-# +        zip_safe=False
-#      )
-#  except RequiredDependencyException as err:
-#      msg = f"""
-#
-# EOF
-#      if [[ $? != 0 ]] ; then
-#          warn "Python patch for setup.py in Pillow failed."
-#          return 1
-#      fi
-
-     return 0
-}
-
-function apply_python37_pillow_patch
-{
-    info "Patching Python: fix setup.py in Pillow."
-    patch -f -p1 << \EOF
-    diff --git a/setup.py b/setup.py
-    index 3e1a812..3520895 100755
-    --- a/setup.py
-    +++ b/setup.py
-    @@ -896,7 +896,7 @@ try:
-             packages=["PIL"],
-             package_dir={"": "src"},
-             keywords=["Imaging"],
-    -        zip_safe=not (debug_build() or PLATFORM_MINGW),
-    +        zip_safe=False,
-         )
-     except RequiredDependencyException as err:
-         msg = """
-EOF
-     if [[ $? != 0 ]] ; then
-         warn "Python patch for setup.py in Pillow failed."
-         return 1
-     fi
-
-     return 0
- }
 
 
 # *************************************************************************** #
@@ -1226,26 +722,6 @@ function build_pillow
 
     pushd $PILLOW_BUILD_DIR > /dev/null
 
-    #
-    # Apply patches
-    #
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        apply_python39_pillow_patch
-    else
-        apply_python37_pillow_patch
-    fi
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_python == 1 ]] ; then
-            warn "Giving up on pillow install."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-
     info "Building Pillow ...\n" \
     set -x
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
@@ -1303,82 +779,54 @@ function build_pyparsing
 # *************************************************************************** #
 function build_requests
 {
-    # python 3: Requests depends on certifi, urllib3, idna,
-    # and  chardet (3.7) or charset-normalizer (3.9).
-
     download_py_module ${CERTIFI_FILE} ${CERTIFIY_URL}
     if test $? -ne 0 ; then
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PLUGGY_URL=""
-        export PLUGGY_FILE="pluggy-1.2.0.tar.gz "
-        export PLUGGY_BUILD_DIR="pluggy-1.2.0"
-        export PLUGGY_MD5_CHECKSUM=""
+    download_py_module ${TOML_FILE} ${TOML_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${TOML_FILE} ${TOML_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${TOMLI_FILE} ${TOMLI_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${TOMLI_FILE} ${TOMLI_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${PATHSPEC_FILE} ${PATHSPEC_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${PATHSPEC_FILE} ${PATHSPEC_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${CALVER_FILE} ${TCALVER_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${CALVER_FILE} ${TCALVER_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${TROVECLASSIFIERS_FILE} ${TROVECLASSIFIERS_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${TROVECLASSIFIERS_FILE} ${TROVECLASSIFIERS_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${PACKAGING_FILE} ${PACKAGING_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${PACKAGING_FILE} ${PACKAGING_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${EDITABLES_FILE} ${EDITABLES_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${EDITABLES_FILE} ${EDITABLES_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${PLUGGY_FILE} ${PLUGGY_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${PLUGGY_FILE} ${PLUGGY_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
-    fi
-
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      download_py_module ${HATCHLING_FILE} ${HATCHLING_URL}
-      if test $? -ne 0 ; then
-          return 1
-        fi
+    download_py_module ${HATCHLING_FILE} ${HATCHLING_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     download_py_module ${URLLIB3_FILE} ${URLLIB3_URL}
@@ -1391,16 +839,9 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        download_py_module ${CHARSET_NORMALIZER_FILE} ${CHARSET_NORMALIZER_URL}
-        if test $? -ne 0 ; then
-            return 1
-        fi
-    else
-        download_py_module ${CHARDET_FILE} ${CHARDET_URL}
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    download_py_module ${CHARSET_NORMALIZER_FILE} ${CHARSET_NORMALIZER_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     extract_py_module ${CERTIFI_BUILD_DIR} ${CERTIFI_FILE} "certifi"
@@ -1408,67 +849,49 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${TOML_BUILD_DIR} ${TOML_FILE} "toml"
-      if test $? -ne 0 ; then
+    extract_py_module ${TOML_BUILD_DIR} ${TOML_FILE} "toml"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${TOMLI_BUILD_DIR} ${TOMLI_FILE} "tomli"
-      if test $? -ne 0 ; then
+    extract_py_module ${TOMLI_BUILD_DIR} ${TOMLI_FILE} "tomli"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${PATHSPEC_BUILD_DIR} ${PATHSPEC_FILE} "pathspec"
-      if test $? -ne 0 ; then
+    extract_py_module ${PATHSPEC_BUILD_DIR} ${PATHSPEC_FILE} "pathspec"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${CALVER_BUILD_DIR} ${CALVER_FILE} "calver"
-      if test $? -ne 0 ; then
+    extract_py_module ${CALVER_BUILD_DIR} ${CALVER_FILE} "calver"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${TROVECLASSIFIERS_BUILD_DIR} ${TROVECLASSIFIERS_FILE} "trove_classifiers"
-      if test $? -ne 0 ; then
+    extract_py_module ${TROVECLASSIFIERS_BUILD_DIR} ${TROVECLASSIFIERS_FILE} "trove_classifiers"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${PACKAGING_BUILD_DIR} ${PACKAGING_FILE} "packaging"
-      if test $? -ne 0 ; then
+    extract_py_module ${PACKAGING_BUILD_DIR} ${PACKAGING_FILE} "packaging"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${EDITABLES_BUILD_DIR} ${EDITABLES_FILE} "editables"
-      if test $? -ne 0 ; then
+    extract_py_module ${EDITABLES_BUILD_DIR} ${EDITABLES_FILE} "editables"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${PLUGGY_BUILD_DIR} ${PLUGGY_FILE} "pluggy"
-      if test $? -ne 0 ; then
+    extract_py_module ${PLUGGY_BUILD_DIR} ${PLUGGY_FILE} "pluggy"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      extract_py_module ${HATCHLING_BUILD_DIR} ${HATCHLING_FILE} "hatchling"
-      if test $? -ne 0 ; then
+    extract_py_module ${HATCHLING_BUILD_DIR} ${HATCHLING_FILE} "hatchling"
+    if test $? -ne 0 ; then
         return 1
-      fi
     fi
 
     extract_py_module ${URLLIB3_BUILD_DIR} ${URLLIB3_FILE} "urllib3"
@@ -1481,16 +904,9 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        extract_py_module ${CHARSET_NORMALIZER_BUILD_DIR} ${CHARSET_NORMALIZER_FILE} "charset-normalizer"
-        if test $? -ne 0 ; then
+    extract_py_module ${CHARSET_NORMALIZER_BUILD_DIR} ${CHARSET_NORMALIZER_FILE} "charset-normalizer"
+    if test $? -ne 0 ; then
             return 1
-        fi
-    else
-        extract_py_module ${CHARDET_BUILD_DIR} ${CHARDET_FILE} "chardet"
-        if test $? -ne 0 ; then
-            return 1
-        fi
     fi
 
     install_py_module ${CERTIFI_BUILD_DIR} "certifi"
@@ -1498,67 +914,49 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${TOML_BUILD_DIR} "toml"
-      if test $? -ne 0 ; then
+    install_py_module ${TOML_BUILD_DIR} "toml"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${TOMLI_BUILD_DIR} "tomlI"
-      if test $? -ne 0 ; then
+    install_py_module ${TOMLI_BUILD_DIR} "tomlI"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${PATHSPEC_BUILD_DIR} "pathspec"
-      if test $? -ne 0 ; then
+    install_py_module ${PATHSPEC_BUILD_DIR} "pathspec"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${CALVER_BUILD_DIR} "calver"
-      if test $? -ne 0 ; then
+    install_py_module ${CALVER_BUILD_DIR} "calver"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${TROVECLASSIFIERS_BUILD_DIR} "trove_classifiers"
-      if test $? -ne 0 ; then
+    install_py_module ${TROVECLASSIFIERS_BUILD_DIR} "trove_classifiers"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${PACKAGING_BUILD_DIR} "packaging"
-      if test $? -ne 0 ; then
+    install_py_module ${PACKAGING_BUILD_DIR} "packaging"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${EDITABLES_BUILD_DIR} "editables"
-      if test $? -ne 0 ; then
+    install_py_module ${EDITABLES_BUILD_DIR} "editables"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${PLUGGY_BUILD_DIR} "pluggy"
-      if test $? -ne 0 ; then
-          return 1
-      fi
+    install_py_module ${PLUGGY_BUILD_DIR} "pluggy"
+    if test $? -ne 0 ; then
+        return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-      install_py_module ${HATCHLING_BUILD_DIR} "hatchling"
-      if test $? -ne 0 ; then
+    install_py_module ${HATCHLING_BUILD_DIR} "hatchling"
+    if test $? -ne 0 ; then
           return 1
-      fi
     fi
 
     install_py_module ${URLLIB3_BUILD_DIR} "urllib3"
@@ -1571,16 +969,9 @@ function build_requests
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        install_py_module ${CHARSET_NORMALIZER_BUILD_DIR} "charset-normalizer"
-        if test $? -ne 0 ; then
-            return 1
-        fi
-    else
-        install_py_module ${CHARDET_BUILD_DIR} "chardet"
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    install_py_module ${CHARSET_NORMALIZER_BUILD_DIR} "charset-normalizer"
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     download_py_module ${REQUESTS_FILE} ${REQUESTS_URL}
@@ -1621,8 +1012,6 @@ function build_mpi4py
         return 1
     fi
 
-    # Not use install_py_module function because we need to use setup.py
-    # even for python 3.9 ??
     install_py_module ${MPI4PY_BUILD_DIR} "mpi4py"
     if test $? -ne 0 ; then
         return 1
@@ -1788,16 +1177,14 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        download_py_module ${SIX_FILE} ${SIX_URL}
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    download_py_module ${SIX_FILE} ${SIX_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
 
-        download_py_module ${PYTZ_FILE} ${PYTZ_URL}
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    download_py_module ${PYTZ_FILE} ${PYTZ_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     download_py_module ${MARKUPSAFE_FILE} ${MARKUPSAFE_URL}
@@ -1805,23 +1192,20 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        download_py_module ${ZIPP_FILE} ${ZIPP_URL}
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    download_py_module ${ZIPP_FILE} ${ZIPP_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
 
-        download_py_module ${IMPORTLIB_METADATA_FILE} ${IMPORTLIB_METADATA_URL}
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    download_py_module ${IMPORTLIB_METADATA_FILE} ${IMPORTLIB_METADATA_URL}
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     download_py_module ${SPHINX_FILE} ${SPHINX_URL}
     if test $? -ne 0 ; then
         return 1
     fi
-
 
     extract_py_module ${PACKAGING_BUILD_DIR} ${PACKAGING_FILE} "packaging"
     if test $? -ne 0 ; then
@@ -1893,16 +1277,9 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        extract_py_module ${SIX_BUILD_DIR} ${SIX_FILE} "six"
-        if test $? -ne 0 ; then
+    extract_py_module ${PYTZ_BUILD_DIR} ${PYTZ_FILE} "pytz"
+    if test $? -ne 0 ; then
             return 1
-        fi
-
-        extract_py_module ${PYTZ_BUILD_DIR} ${PYTZ_FILE} "pytz"
-        if test $? -ne 0 ; then
-            return 1
-        fi
     fi
 
     extract_py_module ${MARKUPSAFE_BUILD_DIR} ${MARKUPSAFE_FILE} "markupsafe"
@@ -1910,16 +1287,14 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        extract_py_module ${ZIPP_BUILD_DIR} ${ZIPP_FILE} "zipp"
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    extract_py_module ${ZIPP_BUILD_DIR} ${ZIPP_FILE} "zipp"
+    if test $? -ne 0 ; then
+        return 1
+    fi
 
-        extract_py_module ${IMPORTLIB_METADATA_BUILD_DIR} ${IMPORTLIB_METADATA_FILE} "importlib-metadata"
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    extract_py_module ${IMPORTLIB_METADATA_BUILD_DIR} ${IMPORTLIB_METADATA_FILE} "importlib-metadata"
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     extract_py_module ${SPHINX_BUILD_DIR} ${SPHINX_FILE} "sphinx"
@@ -1937,26 +1312,6 @@ function build_sphinx
     ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
     popd > /dev/null
 
-
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        install_py_module ${SIX_BUILD_DIR} "six"
-        if test $? -ne 0 ; then
-            return 1
-        fi
-
-        # pyparsing may already have been installed by function bv_python_build
-        check_if_py_module_installed "pyparsing"
-        if [[ $? != 0 ]] ; then
-            info "Building the pyparsing module"
-
-            build_pyparsing
-            if [[ $? != 0 ]] ; then
-                error "pyparsing build failed. Bailing out."
-            fi
-            info "Done building the pyparsing module."
-        fi
-    fi
-
     install_py_module ${PACKAGING_BUILD_DIR} "packaging"
     if test $? -ne 0 ; then
         return 1
@@ -1970,13 +1325,6 @@ function build_sphinx
     install_py_module ${ALABASTER_BUILD_DIR} "alabaster"
     if test $? -ne 0 ; then
         return 1
-    fi
-
-    if [[ "$DO_PYTHON39" == "no" ]] ; then
-        install_py_module ${PYTZ_BUILD_DIR} "pytz"
-        if test $? -ne 0 ; then
-            return 1
-        fi
     fi
 
     install_py_module ${BABEL_BUILD_DIR} "babel"
@@ -2039,16 +1387,14 @@ function build_sphinx
         return 1
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        install_py_module ${ZIPP_BUILD_DIR} "zipp"
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    install_py_module ${ZIPP_BUILD_DIR} "zipp"
+    if test $? -ne 0 ; then
+        return 1
+    fi
 
-        install_py_module ${IMPORTLIB_METADATA_BUILD_DIR} "importlib-metadata"
-        if test $? -ne 0 ; then
-            return 1
-        fi
+    install_py_module ${IMPORTLIB_METADATA_BUILD_DIR} "importlib-metadata"
+    if test $? -ne 0 ; then
+        return 1
     fi
 
     install_py_module ${SPHINX_BUILD_DIR} "sphinx"
@@ -2083,21 +1429,19 @@ function build_sphinx
 # *************************************************************************** #
 function build_sphinx_rtd
 {
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        download_py_module ${SPHINXCONTRIB_JQUERY_FILE} ${SPHINXCONTRIB_JQUERY_URL}
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    download_py_module ${SPHINXCONTRIB_JQUERY_FILE} ${SPHINXCONTRIB_JQUERY_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
-        extract_py_module ${SPHINXCONTRIB_JQUERY_BUILD_DIR} ${SPHINXCONTRIB_JQUERY_FILE} "sphinxcontrib-jquery"
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    extract_py_module ${SPHINXCONTRIB_JQUERY_BUILD_DIR} ${SPHINXCONTRIB_JQUERY_FILE} "sphinxcontrib-jquery"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
-        install_py_module ${SPHINXCONTRIB_JQUERY_BUILD_DIR} "sphinxcontrib-jquery"
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    install_py_module ${SPHINXCONTRIB_JQUERY_BUILD_DIR} "sphinxcontrib-jquery"
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     download_py_module ${SPHINX_RTD_THEME_FILE} ${SPHINX_RTD_THEME_URL}
