@@ -9,12 +9,18 @@
 #  Kathleen Biagas, Jun 29, 2023
 #  WrappingPythonCore needs special logic, has Python version as part of name.
 #
+#  Kathleen Biagas, Wed Nov  8 10:00:28 PST 2023
+#  Test for lib vs lib64.
+#  Use QT_MAJOR_VERSION instead of '5' or '6'.
+#
 #*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
 
 if(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
-    SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
+    set(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
+elseif(EXISTS ${VISIT_VTK_DIR}/lib64/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
+    set(VTK_DIR ${VISIT_VTK_DIR}/lib64/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
 endif()
 
 message(STATUS "Checking for VTK in ${VTK_DIR}")
@@ -38,7 +44,7 @@ set(REQ_VTK_MODS
 
 if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     list(APPEND REQ_VTK_MODS GUISupportQt)
-    set(Qt5_DIR ${VISIT_QT_DIR}/lib/cmake/Qt5)
+    set(Qt${QT_VERSION_MAJOR}_DIR ${VISIT_QT_DIR}/lib/cmake/Qt${QT_VERSION_MAJOR})
 endif()
 
 if(OSPRAY_FOUND)
@@ -93,7 +99,11 @@ if(VISIT_VTK_SKIP_INSTALL)
     message(STATUS "Skipping installation of VTK libraries")
 else(VISIT_VTK_SKIP_INSTALL)
     if(NOT WIN32)
-        set(pathnameandprefix "${VTK_PREFIX_PATH}/lib64/lib")
+        if(EXISTS "${VTK_PREFIX_PATH}/lib64")
+            set(pathnameandprefix "${VTK_PREFIX_PATH}/lib64/lib")
+        else()
+            set(pathnameandprefix "${VTK_PREFIX_PATH}/lib/lib")
+        endif()
     else()
         SET(pathnameandprefix "${VTK_PREFIX_PATH}/bin/")
         SET(pathnameandprefixlib "${VTK_PREFIX_PATH}/lib/")

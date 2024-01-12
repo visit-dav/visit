@@ -8,10 +8,10 @@ dictionary output:
   "domain_id": 55,
   "filename": "global_node.silo",
   "incident_zones": [
-    3162,
-    3163,
+    3178,
     3177,
-    3178
+    3163,
+    3162
   ],
   "node_id": 3869,
   "pick_letter": "A",
@@ -27,7 +27,7 @@ A:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  3869
-Incident Zones:  3162  3163  3177  3178  
+Incident Zones:  3178  3177  3163  3162  
 dist:  <nodal> = 0.592781
 
 
@@ -96,10 +96,10 @@ dictionary output:
   "domain_id": 55,
   "filename": "global_node.silo",
   "incident_zones": [
-    235158,
-    235159,
+    235222,
     235221,
-    235222
+    235159,
+    235158
   ],
   "node_id": 246827,
   "pick_letter": "C",
@@ -115,7 +115,7 @@ C:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  246827 (global)
-Incident Zones: (global)  235158  235159  235221  235222  
+Incident Zones: (global)  235222  235221  235159  235158  
 dist:  <nodal> = 0.592781
 
 
@@ -183,10 +183,10 @@ dictionary output:
   "domain_id": 55,
   "filename": "global_node.silo",
   "incident_zones": [
-    3162,
-    3163,
+    3178,
     3177,
-    3178
+    3163,
+    3162
   ],
   "node_id": 3869,
   "p": {
@@ -208,12 +208,12 @@ E:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  3869
-Incident Zones:  3162  3163  3177  3178  
+Incident Zones:  3178  3177  3163  3162  
 p:  <zonal> 
-    (3162) = 425.4
-    (3163) = 460.85
-    (3177) = 425.4
     (3178) = 460.85
+    (3177) = 425.4
+    (3163) = 460.85
+    (3162) = 425.4
 
 
 
@@ -263,10 +263,10 @@ dictionary output:
   "domain_id": 55,
   "filename": "global_node.silo",
   "incident_zones": [
-    235158,
-    235159,
+    235222,
     235221,
-    235222
+    235159,
+    235158
   ],
   "node_id": 246827,
   "p": {
@@ -288,12 +288,12 @@ G:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  246827 (global)
-Incident Zones: (global)  235158  235159  235221  235222  
+Incident Zones: (global)  235222  235221  235159  235158  
 p:  <zonal> 
-    (235158) = 425.4
-    (235159) = 460.85
-    (235221) = 425.4
     (235222) = 460.85
+    (235221) = 425.4
+    (235159) = 460.85
+    (235158) = 425.4
 
 
 

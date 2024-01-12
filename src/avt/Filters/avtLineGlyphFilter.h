@@ -6,8 +6,8 @@
 //  avtLineGlyphFilter.h
 // ****************************************************************************
 
-#ifndef AVT_LINE_GEOMETRY_FILTER_H
-#define AVT_LINE_GEOMETRY_FILTER_H
+#ifndef AVT_LINE_GLYPH_FILTER_H
+#define AVT_LINE_GLYPH_FILTER_H
 
 #include <avtSIMODataTreeIterator.h>
 
@@ -34,7 +34,7 @@ class vtkPolyData;
 //  Notes:    Pulled out from (now defunct) avtPseudocolorGeometryFilter.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   June 4, 2020 
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //

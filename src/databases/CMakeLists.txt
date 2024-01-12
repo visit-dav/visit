@@ -416,6 +416,7 @@ CMAT
 CTRL
 Cube
 Curve2D
+Curve3D
 DDCMD
 Dyna3D
 ExtrudedVol

@@ -67,5 +67,5 @@ target_include_directories(handle-io PRIVATE
 VISIT_TOOLS_ADD_FOLDER(qtssh handle-io)
 
 add_sources_from_current_dir(qtssh no-jump-list.c nohelp.c plink.rc)
-add_dependencies(qtssh generated_licence_h)
+#add_dependencies(qtssh generated_licence_h)
 
