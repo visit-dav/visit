@@ -161,10 +161,10 @@ namespace StringHelpers
     //
     //  Mark C. Miller, Wed Jan 10 17:10:21 PST 2024
     // ****************************************************************************
-    template<typename T> inline T _vstrtonum(char const *numstr, char **eptr) { return static_cast<T>(strtold(numstr, eptr)); }
+    template<typename T> inline T _vstrtonum(char const *numstr, char **eptr, int /* unused */) { return static_cast<T>(strtold(numstr, eptr)); }
 
     // Specialize int/long cases to use int conversion strtol which with base of 0 can handle octal and hex also
-    #define _VSTRTONUMI(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr) { return static_cast<T>(F(numstr, eptr, 0)); }
+    #define _VSTRTONUMI(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { return static_cast<T>(F(numstr, eptr, base)); }
     _VSTRTONUMI(int,std::strtol)
     _VSTRTONUMI(long,std::strtol)
     _VSTRTONUMI(long long,std::strtoll)
@@ -172,7 +172,7 @@ namespace StringHelpers
     // Specialize unsigned cases to use unsigned conversion strtoul and error checking passing negated arg
     // Note that size_t is an alias almost certainly to one of these types and so we do not have to
     // explicitly handle it here but any caller can still use it.
-    #define _VSTRTONUMU(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr) { char const *s=numstr; while (isspace(*s)) s++; T retval = static_cast<T>(F(numstr, eptr, 0)); if (*s=='-') errno = EDOM; return retval;}
+    #define _VSTRTONUMU(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; T retval = static_cast<T>(F(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
     _VSTRTONUMU(unsigned int,std::strtoul)
     _VSTRTONUMU(unsigned long,std::strtoul)
     _VSTRTONUMU(unsigned long long,std::strtoull)
@@ -181,11 +181,11 @@ namespace StringHelpers
     static std::ostream NO_OSTREAM(std::cerr.rdbuf());
 
     template<typename T> T
-    inline vstrtonum(char const *numstr, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM)
+    inline vstrtonum(char const *numstr, int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM)
     {
         char *eptr = 0;
         errno = 0;
-        T retval = _vstrtonum<T>(numstr, &eptr);
+        T retval = _vstrtonum<T>(numstr, &eptr, base);
         int errno_save = errno;
     
         // emit possible error messages

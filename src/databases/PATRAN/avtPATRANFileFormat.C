@@ -27,6 +27,8 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #define PATRAN_PACKET_NODE_DATA        1
 #define PATRAN_PACKET_ELEMENT_DATA     2
@@ -39,11 +41,6 @@
 #define LONG_FIELD_WIDTH               16
 
 #define MAX_CELL_PROPERTIES            5
-
-//#define DEBUG_PRINT_HEADER
-//#define DEBUG_PRINT_CELL_VERTS
-//#define DEBUG_PRINT_NODES
-//#define DEBUG_PRINT_MATERIAL_NAMES
 
 #define VARNAME_ELEMENTIDS  "elementIds"
 #define VARNAME_ELEMENTMATS "elementMats"
@@ -236,23 +233,21 @@ AddPoint(char *line, const int ptid, int &nPoints, vtkPoints *pts)
     char *valstart = line + 2 * LONG_FIELD_WIDTH;
     char *valend = valstart + LONG_FIELD_WIDTH;
     float pt[3];
-    pt[2] = atof(valstart);
+    pt[2] = vstrtonum<float>(valstart);
 
     valstart -= LONG_FIELD_WIDTH;
     valend -= LONG_FIELD_WIDTH;
     *valend = '\0';
-    pt[1] = atof(valstart);
+    pt[1] = vstrtonum<float>(valstart);
 
     valstart -= LONG_FIELD_WIDTH;
     valend -= LONG_FIELD_WIDTH;
     *valend = '\0';
-    pt[0] = atof(valstart);
+    pt[0] = vstrtonum<float>(valstart);
 
-#ifdef DEBUG_PRINT_NODES
     debug4 << "Node: " << pt[0]
            << ", " << pt[1]
            << ", " << pt[0] << endl;
-#endif
 
 #ifdef USE_POINT_INDICES_TO_INSERT
     if(ptid < nPoints)
@@ -320,16 +315,14 @@ AddCell(char *line, const int cellNumNodes, const int IV,
         for(int v = 0; v < cellNumNodes; ++v)
         {
             *valend = '\0';
-            verts[v] = atoi(valstart)-1;
+            verts[v] = vstrtonum<int>(valstart)-1;
             valstart -= SHORT_FIELD_WIDTH;
             valend -= SHORT_FIELD_WIDTH;
         }
-#ifdef DEBUG_PRINT_CELL_VERTS
         debug4 << "Cell verts: ";
         for(int i = 0; i < cellNumNodes; ++i)
             debug4 << ", " << verts[i];
         debug4 << endl;
-#endif
         ugrid->InsertNextCell(IVToVTKCell[IV], cellNumNodes,
                               verts);
     }
@@ -378,7 +371,7 @@ ProcessComponent(char *line, const int compno, const int ncomps,
     {
         // Get the cellid.
         *valend = '\0';
-        int cellid = atoi(valstart)-1;
+        int cellid = vstrtonum<int>(valstart)-1;
 
         // Try and map that cellid back to a cell index. If we can do the
         // mapping then save the cell index.
@@ -590,34 +583,32 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
             // Ignore N2,N3,N4,N5 for now.
 
             *valend = '\0';
-            N1 = atoi(valstart);
+            N1 = vstrtonum<int>(valstart);
 
             valstart -= SHORT_FIELD_WIDTH;
             valend -= SHORT_FIELD_WIDTH;
             *valend = '\0';
-            KC = atoi(valstart);
+            KC = vstrtonum<int>(valstart);
 
             valstart -= SHORT_FIELD_WIDTH;
             valend -= SHORT_FIELD_WIDTH;
             *valend = '\0';
-            IV = atoi(valstart);
+            IV = vstrtonum<int>(valstart);
 
             valstart -= SHORT_FIELD_WIDTH;
             valend -= SHORT_FIELD_WIDTH;
             *valend = '\0';
-            ID = atoi(valstart);
+            ID = vstrtonum<int>(valstart);
 
             line[2] = '\0';
-            IT = atoi(line);
+            IT = vstrtonum<int>(line);
 
-#ifdef DEBUG_PRINT_HEADER
             debug4 << "IT=" << IT
                    << ", ID=" << ID
                    << ", IV=" << IV
                    << ", KC=" << KC
                    << ", N1=" << N1
                    << endl;
-#endif
 
             // Read the values for IT, ID, IV, KC out of the line.
             ++card;
@@ -644,11 +635,11 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
                     char *valstart = line + 2 * SHORT_FIELD_WIDTH;
                     char *valend = valstart + SHORT_FIELD_WIDTH;
                     *valend = '\0';
-                    cellMatno = atof(valstart);
+                    cellMatno = vstrtonum<float>(valstart);
 
                     // Get the number of nodes in this cell.
                     line[SHORT_FIELD_WIDTH] = '\0';
-                    cellNumNodes = atoi(line);
+                    cellNumNodes = vstrtonum<int>(line);
                 }
                 else if(card == 2)
                 {
@@ -675,9 +666,7 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
                 if(card == 1)
                 {
                     componentNames.push_back(line);
-#ifdef DEBUG_PRINT_MATERIAL_NAMES
                     debug4 << "partName = " << line << endl;
-#endif
                 }
 #ifndef MDSERVER
                 // Don't process the material numbers in the mdserver.
@@ -705,7 +694,7 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
                 for(int col = MAX_CELL_PROPERTIES-1; col >= 0; col--)
                 {
                     *valend = '\0';
-                    double tmp = atof(valstart);
+                    double tmp = vstrtonum<double>(valstart);
                     valstart -= LONG_FIELD_WIDTH;
                     valend -= LONG_FIELD_WIDTH;
                     properties[col]->InsertNextTuple(&tmp);

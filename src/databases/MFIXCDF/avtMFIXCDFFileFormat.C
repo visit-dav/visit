@@ -41,6 +41,7 @@
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <Expression.h>
+#include <StringHelpers.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -777,8 +778,8 @@ avtMFIXCDFFileFormat::inferVectorVariableNames(avtDatabaseMetaData *md,
         }
         else if (!strncmp(s.c_str(),"U_s_",4))
         {
-            long index= strtol(s.c_str()+4, NULL, 10);
-            if (index==0 || index==LONG_MIN || index==LONG_MAX)
+            long index = StringHelpers::vstrtonum<long>(s.c_str()+4, 10, 0);
+            if (index==0)
                 EXCEPTION1(InvalidFilesException,filePath->c_str());
             char buf[100];
             snprintf(buf,sizeof(buf),"Vel_s_%03ld",index);
