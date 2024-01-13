@@ -16,6 +16,8 @@
 #include <avtParallel.h>
 #endif
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 #include <pvldReader.h>
 
 using std::set;
@@ -24,7 +26,7 @@ using std::string;
 
 static int STOI(const std::string &s)
 {
-    return atoi(s.c_str());
+    return vstrtonum<int>(s.c_str());
 }
 
 void OutputVectorInt( ostream& os, const string& cmt, const vector<int>& vec )
@@ -1947,7 +1949,7 @@ ReadInfo( hid_t file_id, const char* name,
             }
             else
             {
-                npart = atoi(spt);
+                npart = vstrtonum<int>(spt);
                 if( npart>0 )
                 {
                     part.resize( npart+1 );

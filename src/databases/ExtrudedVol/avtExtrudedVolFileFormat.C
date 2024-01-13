@@ -21,6 +21,8 @@
 #include <avtDatabaseMetaData.h>
 
 #include <Expression.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -53,7 +55,7 @@ avtExtrudedVolFileFormat::avtExtrudedVolFileFormat(const char *filename, const D
 
     ifile >> tmp; // "NUMCHUNKS: ";
     ifile >> tmp;
-    numChunks = atoi(tmp.c_str());
+    numChunks = vstrtonum<int>(tmp.c_str());
     if (numChunks <= 0)
     {
         EXCEPTION1(VisItException, "This does not appear to be a valid "
@@ -62,7 +64,7 @@ avtExtrudedVolFileFormat::avtExtrudedVolFileFormat(const char *filename, const D
 
     ifile >> tmp; // "NTIMES: ";
     ifile >> tmp;
-    nTimesteps = atoi(tmp.c_str());
+    nTimesteps = vstrtonum<int>(tmp.c_str());
     if (nTimesteps <= 0)
     {
         EXCEPTION1(VisItException, "This does not appear to be a valid "
@@ -71,7 +73,7 @@ avtExtrudedVolFileFormat::avtExtrudedVolFileFormat(const char *filename, const D
 
     ifile >> tmp; // "VARIABLES: ";
     ifile >> tmp;
-    int nVars = atoi(tmp.c_str());
+    int nVars = vstrtonum<int>(tmp.c_str());
     if (nVars <= 0)
     {
         EXCEPTION1(VisItException, "This does not appear to be a valid "
