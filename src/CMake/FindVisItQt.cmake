@@ -42,6 +42,9 @@
 #   Kathleen Biagas, Wed May 10, 2023
 #   Add support for Qt6. 
 #
+#   Kathleen Biagas, Wed Dec 16, 20223
+#   Add Concurrent to core list of qt modules to ensure it gets installed.
+#
 #*****************************************************************************
 
 #[====[
@@ -66,15 +69,13 @@ if(NOT DEFINED VISIT_QT_DIR)
     message(FATAL_ERROR "Qt installation directory not specified")
 endif()
 
-set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Svg Xml UiTools)
+set(visit_qt_modules Core Concurrent Gui Widgets OpenGL Network PrintSupport Svg Xml UiTools)
 
 if(${QT_MAJOR_VERSION} EQUAL 5)
     list(APPEND visit_qt_modules Qml)
 
     if(LINUX)
-        list(APPEND visit_qt_modules Concurrent X11Extras)
-    elseif(APPLE)
-        list(APPEND visit_qt_modules Concurrent)
+        list(APPEND visit_qt_modules X11Extras)
     endif()
 else()
     list(APPEND visit_qt_modules OpenGLWidgets)

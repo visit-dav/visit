@@ -14,6 +14,7 @@
 #       poodle (LC, Linux, x86_64, toss4),
 #       lassen (LC, Linux, power9),
 #       rzgenie (LC, Linux, x86_64, toss3),
+#       rztopaz (LC, Linux, x86_64, toss4),
 #       trinity (LANL, x86_64)
 #
 # Modifications:
@@ -47,6 +48,7 @@ kickit_opengl=false
 poodle=false
 lassen=false
 rzgenie=false
+rztopaz=false
 trinity=false
 
 version=undefined
@@ -82,6 +84,10 @@ do
          rzgenie=true
          shift
          ;;
+      +rztopaz)
+         rztopaz=true
+         shift
+         ;;
       +trinity)
          trinity=true
          shift
@@ -109,6 +115,7 @@ then
    echo "    poodle (LC, Linux, x86_64, toss4),"
    echo "    lassen (LC, Linux, power9),"
    echo "    rzgenie (LC, Linux, x86_64, toss3),"
+   echo "    rztopaz (LC, Linux, x86_64, toss4),"
    echo "    trinity (LANL, Linux, x86_64)"
    exit
 fi
@@ -270,6 +277,40 @@ then
 fi
 
 #
+# Build on rztopaz.
+#
+if [ $rztopaz = true ]
+then
+   echo "Building on rztopaz"
+   ran_build_visit=true
+   if [ -f ${build_visit_script}_log.rztopaz ]
+   then
+      mv ${build_visit_script}_log.rztopaz ${build_visit_script}_log
+   fi
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
+   fi
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+   fi
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack
+   fi
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
+       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt6 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
+   env FC_COMPILER=/usr/tce/bin/gfortran \
+       FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" \
+       STRIPACK_INSTALL_DIR=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack \
+       ./$build_visit_script --fortran --no-visit --no-thirdparty --no-zlib --stripack --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+   mv ${build_visit_script}_log ${build_visit_script}_log.rztopaz
+fi
+
+#
 # Build on trinity
 #
 if [ $trinity = true ]
@@ -313,6 +354,7 @@ then
    echo "    poodle (LC, Linux, x86_64, toss4),"
    echo "    lassen (LC, Linux, power9),"
    echo "    rzgenie (LC, Linux, x86_64, toss3),"
+   echo "    rztopaz (LC, Linux, x86_64, toss4),"
    echo "    trinity (LANL, Linux, x86_64)"
    exit
 fi

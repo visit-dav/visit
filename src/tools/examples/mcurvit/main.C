@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QApplication>
+#include <QSurfaceFormat>
 #include <QDir>
 
 #include <visit-config.h> // For LIB_VERSION_LE

@@ -77,11 +77,13 @@ def TestOsprayVolumeDomainBoundaries():
     SetActivePlots(0)
 
     VolumeAtts = VolumeAttributes()
-    VolumeAtts.lightingFlag = 0
+    VolumeAtts.lightingFlag = 1
     VolumeAtts.opacityMode = VolumeAtts.FreeformMode
     VolumeAtts.freeformOpacity = (255,) * 256
     VolumeAtts.samplesPerRay = 100
-    VolumeAtts.rendererType = VolumeAtts.RayCastingOSPRay
+    VolumeAtts.rendererType = VolumeAtts.Parallel
+    VolumeAtts.resampleType = VolumeAtts.OnlyIfRequired
+    VolumeAtts.OSPRayEnabledFlag = 1
     SetPlotOptions(VolumeAtts)
     DrawPlots()
 
