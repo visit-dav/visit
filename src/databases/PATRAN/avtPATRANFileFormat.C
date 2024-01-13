@@ -224,6 +224,8 @@ avtPATRANFileFormat::ActivateTimestep()
 //
 // Modifications:
 //   
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 inline void
@@ -294,6 +296,8 @@ AddPoint(char *line, const int ptid, int &nPoints, vtkPoints *pts)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 inline bool
@@ -356,6 +360,8 @@ AddCell(char *line, const int cellNumNodes, const int IV,
 //
 // Modifications:
 //   
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 inline void
@@ -457,6 +463,8 @@ ProcessComponent(char *line, const int compno, const int ncomps,
 //    Jeremy Meredith, Thu Jan 14 11:37:39 EST 2010
 //    Was slightly too aggressive with one of the new error checks.
 //
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 bool

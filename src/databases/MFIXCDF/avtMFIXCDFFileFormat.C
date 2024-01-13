@@ -712,6 +712,10 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
 // given a target number of domains.  Unfortunately VisIt doesn't seem to
 // support this unless the number of domains is exactly PAR_Rank.  I am
 // leaving it here out of optimism for the future.
+//
+// Modifications
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // void
 // avtMFIXCDFFileFormat::CalcDomainBreakdown2D(long targetDomains,
 //     int cellsX, int cellsY, int* nX, int* nY)
