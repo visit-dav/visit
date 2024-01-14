@@ -11,6 +11,9 @@
 #include <avtMTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 
 // ****************************************************************************
 //  Method: CGNSCommonPluginInfo constructor
@@ -103,7 +106,7 @@ CGNSCommonPluginInfo::SetupDatabase(const char *const *list,
                 break;
             }
             char *str2;
-            long int nBlocks = strtol(&str[5], &str2, 10);
+            long int nBlocks = vstrtonum<long int>(&str[5],10,LONG_MAX,NO_OSTREAM,&str2);
             if (nBlocks == 0 || nBlocks == LONG_MAX ||
                 nBlocks == LONG_MIN || nBlocks < 0 ||
                 nBlocks > nList ||
@@ -119,7 +122,7 @@ CGNSCommonPluginInfo::SetupDatabase(const char *const *list,
                 break;
             }
             char *str3;
-            long int iBlock = strtol(&str2[1], &str3, 10);
+            long int iBlock = vstrtonum<long int>(&str2[1],10,LONG_MAX,NO_OSTREAM,&str3);
             if (iBlock == LONG_MAX || iBlock == LONG_MIN ||
                 iBlock < 0 || iBlock >= nBlocks ||
                 iBlock != f % nBlocks || str3[0] != '\0')

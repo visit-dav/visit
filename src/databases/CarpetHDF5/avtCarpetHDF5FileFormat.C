@@ -36,6 +36,8 @@
 #include <vtkCellData.h>
 #include <vtkUnsignedCharArray.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <avtDatabaseMetaData.h>
 #include <avtStructuredDomainNesting.h>
@@ -1168,7 +1170,7 @@ static herr_t H5iter(hid_t group_id, const char *member_name, void *operator_dat
       int map = 0;
       if (strstr(member_name, "m="))
       {
-         map = atoi(strstr(member_name, "m=")+2);
+         map = vstrtonum<int>(strstr(member_name, "m=")+2);
       }
       
       // find out scalar type of variable

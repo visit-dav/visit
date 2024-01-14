@@ -25,6 +25,8 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 #include <sstream>
 
 #include <vtkTriangulationTables.h>
@@ -735,21 +737,21 @@ avtOUTCARFileFormat::ReadAllMetaData()
 
             in.getline(line, 4096);
             s = line;
-            unitCell[0][0] = atof(s.substr( 7,15).c_str());
-            unitCell[0][1] = atof(s.substr(23,15).c_str());
-            unitCell[0][2] = atof(s.substr(39,15).c_str());
+            unitCell[0][0] = vstrtonum<double>(s.substr( 7,15).c_str());
+            unitCell[0][1] = vstrtonum<double>(s.substr(23,15).c_str());
+            unitCell[0][2] = vstrtonum<double>(s.substr(39,15).c_str());
 
             in.getline(line, 4096);
             s = line;
-            unitCell[1][0] = atof(s.substr( 7,15).c_str());
-            unitCell[1][1] = atof(s.substr(23,15).c_str());
-            unitCell[1][2] = atof(s.substr(39,15).c_str());
+            unitCell[1][0] = vstrtonum<double>(s.substr( 7,15).c_str());
+            unitCell[1][1] = vstrtonum<double>(s.substr(23,15).c_str());
+            unitCell[1][2] = vstrtonum<double>(s.substr(39,15).c_str());
 
             in.getline(line, 4096);
             s = line;
-            unitCell[2][0] = atof(s.substr( 7,15).c_str());
-            unitCell[2][1] = atof(s.substr(23,15).c_str());
-            unitCell[2][2] = atof(s.substr(39,15).c_str());
+            unitCell[2][0] = vstrtonum<double>(s.substr( 7,15).c_str());
+            unitCell[2][1] = vstrtonum<double>(s.substr(23,15).c_str());
+            unitCell[2][2] = vstrtonum<double>(s.substr(39,15).c_str());
         }*/
         else if (!strncmp(line,"      direct lattice vectors",28))
         {
@@ -863,7 +865,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
             istringstream sin(line+65);
             string arg1;
             sin >> arg1;
-            nions_doublecheck = atoi(arg1.c_str());
+            nions_doublecheck = vstrtonum<int>(arg1.c_str());
         }
         else if (!all_ions_read && !strncmp(line,"   ions per type =",18))
         {
@@ -903,7 +905,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
                         index++;
                     }
                     tmp[j] = '\0';
-                    int n = atoi(tmp);
+                    int n = vstrtonum<int>(tmp);
                     natoms += n;
                     element_counts.push_back(n);
                 }
@@ -925,7 +927,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
             istringstream sin(line);
             string arg1,arg2,arg3;
             sin >> arg1 >> arg2 >> arg3;
-            potim = strtod(arg3.c_str(), NULL);
+            potim = vstrtonum<double>(arg3.c_str());
         }
 
 

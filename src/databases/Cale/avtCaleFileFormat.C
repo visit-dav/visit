@@ -34,6 +34,8 @@
 
 #include <Expression.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
@@ -1433,7 +1435,7 @@ avtCaleFileFormat::GetCycleFromFilename(const char *f) const
         cycstr = static_cast<char*>(malloc(j+1*sizeof(char)));
         cycstr[j] = '\0';
         strncpy(cycstr,f+i+1,j);
-        c = atoi(cycstr);
+        c = vstrtonum<int>(cycstr);
         debug4 << " cycle from name " << cycstr << endl;
         free(cycstr);
     }
