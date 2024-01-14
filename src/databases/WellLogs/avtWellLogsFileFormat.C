@@ -28,6 +28,9 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+
 
 using     std::string;
 
@@ -236,13 +239,13 @@ avtWellLogsFileFormat::ReadFile(void)
                     wellIds.push_back((int)wellNames.size()-1);
                 }
                 else if (utm83EId == idx)
-                    X.push_back(atof(s));
+                    X.push_back(vstrtonum<float>(s));
                 else if (utm83NId == idx)
-                    Y.push_back(atof(s));
+                    Y.push_back(vstrtonum<float>(s));
                 else if (wellBottomId == idx)
-                    Z1.push_back(atof(s));
+                    Z1.push_back(vstrtonum<float>(s));
                 else if (groundElevationId == idx || depenvId == idx)
-                    Z2.push_back(atof(s));
+                    Z2.push_back(vstrtonum<float>(s));
             }
             else
             {
@@ -250,13 +253,13 @@ avtWellLogsFileFormat::ReadFile(void)
                 if (wellId == idx)
                     twellName = s;
                 else if (utm83EId == idx)
-                    tX = (atof(s));
+                    tX = (vstrtonum<float>(s));
                 else if (utm83NId == idx)
-                    tY = (atof(s));
+                    tY = (vstrtonum<float>(s));
                 else if (wellBottomId == idx)
-                    tZ = (atof(s));
+                    tZ = (vstrtonum<float>(s));
                 else if (depenvId == idx)
-                    tD = (atof(s));
+                    tD = (vstrtonum<float>(s));
             }
             s = next;
             idx++;

@@ -34,6 +34,8 @@
 #include <LataFilter.h>
 #include <stdlib.h>
 #include <string.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 // lml files contain double precision values that can overflow or underflow
 //  if converted to float. Check for overflow, ignore underflow
 static inline float double_to_float(double x)
@@ -169,7 +171,7 @@ void lml_reader(const char * lmlfilename, const char * data_filename, LataDB & l
         elements.nb_comp_ = 6;
       } else if (motlu.debute_par("POLYEDRE_")) {
         lata_db.set_elemtype(tstep, elements.geometry_, motlu);
-        elements.nb_comp_ = atoi(((const char *)motlu) + strlen("polyedre_"));
+        elements.nb_comp_ = vstrtonum<int>(((const char *)motlu) + strlen("polyedre_"));
         borne_index_min=-1;
       } else {
         Journal() << "Error reading TOPOLOGIE: unknown element type" << endl;

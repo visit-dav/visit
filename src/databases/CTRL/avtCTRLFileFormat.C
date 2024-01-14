@@ -22,6 +22,8 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <map>
 
@@ -306,25 +308,25 @@ avtCTRLFileFormat::ReadAllMetaData()
         string n = s.substr(10,4);
         if (n == "ALAT")
         {
-            alat = atof(s.substr(15).c_str());
+            alat = vstrtonum<double>(s.substr(15).c_str());
         }
         else if (n == "PLAT")
         {
-            unitCell[0][0] = alat*atof(s.substr(15,10).c_str());
-            unitCell[0][1] = alat*atof(s.substr(26,10).c_str());
-            unitCell[0][2] = alat*atof(s.substr(37,10).c_str());
+            unitCell[0][0] = alat*vstrtonum<double>(s.substr(15,10).c_str());
+            unitCell[0][1] = alat*vstrtonum<double>(s.substr(26,10).c_str());
+            unitCell[0][2] = alat*vstrtonum<double>(s.substr(37,10).c_str());
 
             in.getline(line, 132);
             s = line;
-            unitCell[1][0] = alat*atof(s.substr(15,10).c_str());
-            unitCell[1][1] = alat*atof(s.substr(26,10).c_str());
-            unitCell[1][2] = alat*atof(s.substr(37,10).c_str());
+            unitCell[1][0] = alat*vstrtonum<double>(s.substr(15,10).c_str());
+            unitCell[1][1] = alat*vstrtonum<double>(s.substr(26,10).c_str());
+            unitCell[1][2] = alat*vstrtonum<double>(s.substr(37,10).c_str());
 
             in.getline(line, 132);
             s = line;
-            unitCell[2][0] = alat*atof(s.substr(15,10).c_str());
-            unitCell[2][1] = alat*atof(s.substr(26,10).c_str());
-            unitCell[2][2] = alat*atof(s.substr(37,10).c_str());
+            unitCell[2][0] = alat*vstrtonum<double>(s.substr(15,10).c_str());
+            unitCell[2][1] = alat*vstrtonum<double>(s.substr(26,10).c_str());
+            unitCell[2][2] = alat*vstrtonum<double>(s.substr(37,10).c_str());
         }
 
         in.getline(line, 132);
@@ -373,8 +375,8 @@ avtCTRLFileFormat::ReadAtoms()
         string s(line);
         string e = s.substr(15,2);
         string z = s.substr(20,2);
-        cerr << "'"<<e<<"' => '"<<atoi(z.c_str())<<"'\n";
-        atommap[e] = atoi(z.c_str());
+        cerr << "'"<<e<<"' => '"<<vstrtonum<int>(z.c_str())<<"'\n";
+        atommap[e] = vstrtonum<int>(z.c_str());
 
         in.getline(line, 132);
         if (line[0] != ' ')
@@ -406,9 +408,9 @@ avtCTRLFileFormat::ReadAtoms()
             a.element[0] = e[0];
             a.element[1] = e[1];
             a.element[2] = '\0';
-            a.x = atof(x.c_str()) * alat;
-            a.y = atof(y.c_str()) * alat;
-            a.z = atof(z.c_str()) * alat;
+            a.x = vstrtonum<float>(x.c_str()) * alat;
+            a.y = vstrtonum<float>(y.c_str()) * alat;
+            a.z = vstrtonum<float>(z.c_str()) * alat;
             atoms.push_back(a);
         }
 

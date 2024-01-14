@@ -171,7 +171,7 @@ namespace StringHelpers
 
     // Specialize unsigned cases to use unsigned conversion strtoul and error checking passing negated arg
     // Note that size_t is an alias almost certainly to one of these types and so we do not have to
-    // explicitly handle it here but any caller can still use it.
+    // explicitly handle it here but any caller can still use it as in vstrtonum<size_t>().
     #define _VSTRTONUMU(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; T retval = static_cast<T>(F(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
     _VSTRTONUMU(unsigned int,std::strtoul)
     _VSTRTONUMU(unsigned long,std::strtoul)
@@ -181,11 +181,12 @@ namespace StringHelpers
     static std::ostream NO_OSTREAM(std::cerr.rdbuf());
 
     template<typename T> T
-    inline vstrtonum(char const *numstr, int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM)
+    inline vstrtonum(char const *numstr, int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM, char **eptr = 0)
     {
-        char *eptr = 0;
+        char *_eptr;
+        char **eptrptr = eptr==0?&_eptr:eptr;
         errno = 0;
-        T retval = _vstrtonum<T>(numstr, &eptr, base);
+        T retval = _vstrtonum<T>(numstr, eptrptr, base);
         int errno_save = errno;
     
         // emit possible error messages
@@ -197,7 +198,7 @@ namespace StringHelpers
                 errstrm << "Problem converting \"" << numstr << "\" to a number (\"" << strerror(errno_save) << "\")" << std::endl;
             }
         }
-        if (eptr == numstr)
+        if (*eptrptr == numstr)
         {
             retval = dfltval;
             if (&errstrm != &NO_OSTREAM)
