@@ -978,19 +978,6 @@ QvisOpacitySlider::mouseMoveEvent(QMouseEvent *e)
     if(state != Dragging)
         return;
 
-    QRect r = rect();
-    int m = maximumSliderDragDistance();
-    if(m >= 0)
-    {
-        r.setRect(r.x() - m, r.y() - 2*m/3,
-                  r.width() + 2*m, r.height() + 3*m);
-        if(!r.contains(e->pos()))
-        {
-            moveSlider( positionFromValue( sliderStartVal) );
-            return;
-        }
-    }
-
     moveSlider(e->pos().x() - clickOffset );
 }
 
@@ -1449,7 +1436,7 @@ QvisOpacitySlider::subtractLine()
 // Modifications:
 //
 // ****************************************************************************
-
+#include <iostream>
 void
 QvisOpacitySlider::handle_valueChanged(int val)
 {
