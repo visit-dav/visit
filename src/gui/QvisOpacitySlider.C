@@ -1436,7 +1436,7 @@ QvisOpacitySlider::subtractLine()
 // Modifications:
 //
 // ****************************************************************************
-#include <iostream>
+
 void
 QvisOpacitySlider::handle_valueChanged(int val)
 {
