@@ -907,6 +907,7 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
 // Modifications:
 //   Brad Whitlock, Thu Jun  5 14:21:18 PDT 2008
 //   Qt 4.
+// 
 //
 // ****************************************************************************
 
@@ -969,6 +970,9 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
 // Creation:   Thu Dec 7 12:46:37 PDT 2000
 //
 // Modifications:
+//   Justin Privitera, Tue Jan 16 15:32:16 PST 2024
+//   Remove custom code snapping the slider value to zero when dragging it 
+//   outside the window.
 //
 // ****************************************************************************
 
