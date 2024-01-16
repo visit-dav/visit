@@ -282,7 +282,7 @@ then
    env FC_COMPILER=/usr/tce/bin/gfortran \
        FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" \
        STRIPACK_INSTALL_DIR=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack \
-       echo yes | ./$build_visit_script --fortran --no-visit --no-thirdparty --no-zlib --stripack --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+       ./$build_visit_script --fortran --no-visit --no-thirdparty --no-zlib --stripack --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
    mv ${build_visit_script}_log ${build_visit_script}_log.rzwhippet
 fi
 
