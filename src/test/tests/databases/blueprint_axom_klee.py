@@ -172,6 +172,7 @@ def test4():
     # fraction arrays have been renamed in the index file using display_name.
     bj_test_helper_mats("balls_and_jacks_q7o2/shaping_mod.root", "blueprint_axom_klee_4", "Testing display_name", pc_plots)
 
+<<<<<<< HEAD
 def test5():
     TestSection("Refine low order field")
     db = data_path(pjoin("axom_klee_test_data", "balls_and_jacks_q7o5", "shaping.root"))
@@ -200,13 +201,18 @@ def test5():
     DeleteAllPlots()
     CloseDatabase(db)
 
+=======
+>>>>>>> Added a new test that exercises display_name in a Blueprint index file.
 def main():
     test0()
     test1()
     test2()
     test3()
     test4()
+<<<<<<< HEAD
     test5()
+=======
+>>>>>>> Added a new test that exercises display_name in a Blueprint index file.
 
 main()
 Exit()
