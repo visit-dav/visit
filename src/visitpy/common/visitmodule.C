@@ -271,7 +271,7 @@ static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
 // When this number is too small, we show a runtime error
 // at cli startup.
 //
-int VISIT_METHODS_MAX_SIZE = 1024;
+size_t VISIT_METHODS_MAX_SIZE = 1024;
 
 //
 // Type definitions
@@ -306,25 +306,31 @@ struct AttributesObject
 //   allows the behavior to remain the same except when CLI caller really
 //   wants the last message cleared.
 //
+//   Brad Whitlock, Tue Dec 19 16:27:12 PST 2023
+//   Added lastMesage and related methods.
+//
 class VisItMessageObserver : public Observer
 {
 public:
-    VisItMessageObserver(Subject *s) : Observer(s), lastError("")
+    VisItMessageObserver(Subject *s) : Observer(s), errorFlag(0), suppressLevel(4),
+        lastError(""), lastMessage{"",""}
     {
-        errorFlag = 0;
-        suppressLevel = 4;
     };
 
-    virtual ~VisItMessageObserver() { };
+    virtual ~VisItMessageObserver() { }
 
     void ClearErrorFlag()
     {
         errorFlag = 0;
-    };
+    }
     void ClearErrorMessage()
     {
         lastError = "";
-    };
+    }
+    void ClearLastMessage()
+    {
+        lastMessage.clear();
+    }
     int SetSuppressLevel(int newLevel)
     {
         int oldLevel = suppressLevel;
@@ -332,13 +338,18 @@ public:
         return oldLevel;
     };
 
-    int GetSuppressLevel() const { return suppressLevel; };
-    int ErrorFlag() const { return errorFlag; };
-    const std::string &GetLastError() const { return lastError; };
+    int GetSuppressLevel() const { return suppressLevel; }
+    int ErrorFlag() const { return errorFlag; }
+    const std::string &GetLastError() const { return lastError; }
+    const std::vector<std::string> &GetLastMessage() const { return lastMessage; }
 
     virtual void Update(Subject *s)
     {
         MessageAttributes *m = (MessageAttributes *)s;
+
+        // Store the last message and its severity in lastMessage.
+        lastMessage = std::vector<std::string>{m->GetText(),
+                                               MessageAttributes::Severity_ToString(m->GetSeverity())};
 
         if(m->GetSeverity() == MessageAttributes::Error)
         {
@@ -356,7 +367,9 @@ public:
             errorFlag = 0;
         else if(m->GetSeverity() == MessageAttributes::Warning &&
             suppressLevel > 2)
+        {
             fprintf(stderr, "VisIt: Warning - %s\n", m->GetText().c_str());
+        }
         else if (suppressLevel > 3)
         {
             if(m->GetSeverity() == MessageAttributes::Message)
@@ -369,6 +382,7 @@ private:
     int         errorFlag;
     int         suppressLevel;
     std::string lastError;
+    std::vector<std::string> lastMessage;
 };
 
 //
@@ -1838,6 +1852,44 @@ visit_GetLastError(PyObject *self, PyObject *args)
             messageObserver->ClearErrorMessage();
     }
     return PyString_FromString(retval.c_str());
+}
+
+// ****************************************************************************
+// Function: visit_GetLastMessage
+//
+// Purpose:
+//   Returns the last message that VisIt sent back to the cli.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 19 16:00:43 PST 2023
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetLastMessage(PyObject *self, PyObject *args)
+{
+    int clear = 0;
+    std::string msg, severity;
+    if (!PyArg_ParseTuple(args, "|i", &clear)) return NULL;
+    if (messageObserver)
+    {
+        const auto &lm = messageObserver->GetLastMessage();
+        if(lm.size() == 2)
+        {
+            msg = lm[0];
+            severity = lm[1];
+        }
+        if (clear != 0)
+            messageObserver->ClearLastMessage();
+    }
+
+    PyObject *retval = PyTuple_New(2);
+    PyTuple_SET_ITEM(retval, 0, PyString_FromString(msg.c_str()));
+    PyTuple_SET_ITEM(retval, 1, PyString_FromString(severity.c_str()));
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -6817,7 +6869,7 @@ visit_DatabasePlugins(PyObject *self, PyObject *args)
 
     const stringVector &types = dbplugininfo->GetTypes();
     PyObject *plugins = PyTuple_New(types.size());
-    for(int i = 0; i < types.size(); ++i)
+    for(size_t i = 0; i < types.size(); ++i)
     {
         PyObject *dval = PyString_FromString(types[i].c_str());
         if(dval == NULL)
@@ -18169,6 +18221,9 @@ AddMethod(const char *methodName,
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //
+//   Brad Whitlock, Tue Dec 19 16:16:12 PST 2023
+//   Added GetLastMessage.
+//
 // ****************************************************************************
 
 static void
@@ -18186,6 +18241,7 @@ AddDefaultMethods()
     AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNameSpace_doc);
     AddMethod("GetDebugLevel", visit_GetDebugLevel, visit_GetDebugLevel_doc);
     AddMethod("GetLastError", visit_GetLastError, visit_GetLastError_doc);
+    AddMethod("GetLastMessage", visit_GetLastMessage, visit_GetLastMessage_doc);
     AddMethod("SetDebugLevel", visit_SetDebugLevel, visit_SetDebugLevel_doc);
     AddMethod("Version", visit_Version, visit_Version_doc);
     AddMethod("LongFileName", visit_LongFileName, visit_LongFileName_doc);
@@ -19382,7 +19438,7 @@ InitializeModule()
 
         VisItInit::Initialize(argc, argv, 0, 1, false);
     }
-    CATCH(VisItException)
+    CATCH(VisItException &)
     {
         // TODO: This case isn't handled.
         // Return that we could not initialize VisIt.
@@ -19641,7 +19697,7 @@ LaunchViewer(const char *visitProgram)
         GetViewerProxy()->InitializePlugins(PlotPluginManager::Scripting,
                                             visit_plugin_dir.c_str());
     }
-    CATCH(VisItException)
+    CATCH(VisItException &)
     {
         // Return since we could not initialize VisIt.
         CATCH_RETURN(1);
@@ -19666,7 +19722,7 @@ LaunchViewer(const char *visitProgram)
         //
         noViewer = false;
     }
-    CATCH(VisItException)
+    CATCH(VisItException &)
     {
         noViewer = true;
     }
@@ -20202,11 +20258,11 @@ void initvisitmodule(void)
 // Helper for updating our module's method table
 //---------------------------------------------------------------------------//
 void
-UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
+UpdateModuleMethods(PyObject *module, std::vector<PyMethodDef> &methods)
 {
     PyObject *mod_dict = PyModule_GetDict(module);
 
-    for(int i=0; i < methods.size(); i++)
+    for(size_t i=0; i < methods.size(); i++)
     {
         // check if method exists by doing a dict lookup
         const char *method_name = methods[i].ml_name;
@@ -20456,7 +20512,7 @@ visit_eventloop(void *)
                     GetViewerProxy()->ProcessInput();
                 MUTEX_UNLOCK();
             }
-            CATCH(LostConnectionException)
+            CATCH(LostConnectionException &)
             {
                 // We lost the viewer, terminate the event loop.
                 keepGoing = false;

@@ -82,6 +82,8 @@ using std::string;
 using namespace conduit;
 using namespace mfem;
 
+const std::string avtBlueprintFileFormat::DISPLAY_NAME("display_name");
+
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::FetchMeshAndTopoNames
 //
@@ -499,7 +501,69 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 }
 
 // ****************************************************************************
-//  Method: avtBlueprintFileFormat::ReadBlueprintMesh
+//  Method: avtBlueprintFileFormat::GetBlueprintIndexForField
+//
+//  Purpose:
+//    Returns a node in the Blueprint index for the field that either has the
+//    supplied name or has a DISPLAY_NAME that matches the supplied name.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 18 15:57:00 PDT 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const Node *
+avtBlueprintFileFormat::GetBlueprintIndexForField(const Node &fields,
+    const string &abs_varname) const
+{
+    const char *mName = "GetBlueprintIndexForField";
+    BP_PLUGIN_INFO(mName << ": " << abs_varname);
+    const Node *retval = nullptr;
+    string varname = FileFunctions::Basename(abs_varname);
+
+    if (fields.has_child(varname))
+    {
+        BP_PLUGIN_INFO(mName << ": found " << varname);
+        retval = fields.fetch_ptr(varname);
+    }
+    else
+    {
+        // We may have been given a display name for the variable as opposed
+        // to its real name. See if we can find that.
+        BP_PLUGIN_INFO(mName << ": checking fields for a display name.");
+        for(conduit::index_t i = 0; i < fields.number_of_children(); i++)
+        {
+            const Node *f = fields.child_ptr(i);
+            BP_PLUGIN_INFO(mName << ": checking field " << f->name() << ".");
+            if(f->has_child(DISPLAY_NAME))
+            {
+                std::string dn = f->fetch_existing(DISPLAY_NAME).as_string();
+                if(dn == abs_varname)
+                {
+                    BP_PLUGIN_INFO(mName << ": " << f->name() << " matched based on "
+                                   << DISPLAY_NAME << " " << dn);
+                    retval = f;
+                    break;
+                }
+            }
+        }
+
+        // only throw an error if element_coloring is not in the name
+        // element_coloring won't be in the index, its automatic.
+        if(retval == nullptr &&
+           varname.find("element_coloring") == std::string::npos)
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "field " << varname << " not found in blueprint index");
+        }
+    }
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadBlueprintField
 //
 //  Purpose:
 //      Reads a field for the given domain into the `out` conduit Node.
@@ -520,6 +584,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 // 
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+//
+//    Brad Whitlock, Tue Jul 18 16:02:13 PDT 2023
+//    Locate the index node for the variable using GetBlueprintIndexField.
 //
 // ****************************************************************************
 
@@ -553,30 +620,21 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
 
-    string varname  = FileFunctions::Basename(abs_varname);
-
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                              "mesh " << mesh_name << " not found in blueprint index");
     }
 
-    if (!m_root_node["blueprint_index"][mesh_name]["fields"].has_child(varname))
+    // Look up the index node for the field.
+    const Node &fields = m_root_node["blueprint_index"][mesh_name]["fields"];
+    const Node *bp_index_field = GetBlueprintIndexForField(fields, abs_varname);
+    std::string data_path;
+    if(bp_index_field != nullptr)
     {
-        // only throw an error if element_coloring is not in the name
-        // element_coloring won't be in the index, its automatic.
-        if(varname.find("element_coloring") == std::string::npos)
-        {
-            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                                 "field " << varname << " not found in blueprint index");
-        }
+        BP_PLUGIN_INFO(bp_index_field->to_yaml());
+        data_path    = bp_index_field->fetch_existing("path").as_string();
     }
-
-    const Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
-    BP_PLUGIN_INFO(bp_index_field.to_yaml());
-
-    string topo_tag  = bp_index_field["topology"].as_string();
-    string data_path    = bp_index_field["path"].as_string();
 
     try
     {
@@ -694,6 +752,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
 //
+//    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
+//    I added display_name support.
+//
 // ****************************************************************************
 
 void
@@ -767,6 +828,11 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
         {
             // Make a variable name for the volume fraction field and read it.
             std::string matVar = mesh_name + "_" + topo_name + "/" + it->second;
+            // If there is a display_name, use that to request the data.
+            const Node &bp_idx_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
+            const Node *bpi = GetBlueprintIndexForField(bp_idx_fields, it->second);
+            if(bpi != nullptr && bpi->has_child(DISPLAY_NAME))
+                matVar = bpi->fetch_existing(DISPLAY_NAME).as_string();
             vtkDataArray *da = GetVar(domain, matVar.c_str());
 
             // Save the material field as float into the new out node.
@@ -1048,9 +1114,19 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             string var_mesh_name = mesh_name + "_" + var_topo_name;
             string varname_wmesh = var_mesh_name + "/" + varname;
 
+            // Make the variable name that the user sees.
+            string varname_display(varname_wmesh);
+            if(n_field.has_child(DISPLAY_NAME))
+            {
+                varname_display = n_field[DISPLAY_NAME].as_string();
+                BP_PLUGIN_INFO("Field \"" << varname
+                               << "\" is being exposed as \""
+                               << varname_display << "\".");
+            }
+
             if (topo_dims[var_topo_name] == 0)
             {
-                BP_PLUGIN_WARNING("Field \"" << varname_wmesh
+                BP_PLUGIN_WARNING("Field \"" << varname_display
                                   << "\" defined on unknown topology=\""
                                   << n_field["topology"].as_string());
                 continue;
@@ -1097,7 +1173,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     }
                     else
                         node_centered = h1 && !l2;
-                    
                     if (!node_centered)
                         cent = AVT_ZONECENT;
                 }
@@ -1106,27 +1181,27 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             // special 1D case
             if (ndims == 1)
             {
-                m_curve_names.insert(varname_wmesh);
+                m_curve_names.insert(varname_display);
                 avtCurveMetaData *curve = new avtCurveMetaData;
-                curve->name = varname_wmesh;
+                curve->name = varname_display;
                 md->Add(curve);
             }
             else if (ncomps == 1)
-                md->Add(new avtScalarMetaData(varname_wmesh, var_mesh_name, cent));
+                md->Add(new avtScalarMetaData(varname_display, var_mesh_name, cent));
             else if (ndims == 2 && ncomps == 2)
-                md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtVectorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 2 && ncomps == 3)
-                md->Add(new avtSymmetricTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtSymmetricTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 2 && ncomps == 4)
-                md->Add(new avtTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 3 && ncomps == 3)
-                md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtVectorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 3 && ncomps == 6)
-                md->Add(new avtSymmetricTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtSymmetricTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 3 && ncomps == 9)
-                md->Add(new avtTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else
-                md->Add(new avtArrayMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtArrayMetaData(varname_display, var_mesh_name, cent, ncomps));
         }
     }
 }
@@ -1155,8 +1230,10 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                                                       const Node &n_mesh_info)
 {
     if (!n_mesh_info.has_child("matsets"))
+    {
+        BP_PLUGIN_INFO("Input data file has no matsets.");
         return;
-
+    }
     BP_PLUGIN_INFO("adding materials for " <<  mesh_name);
 
     NodeConstIterator msets_itr = n_mesh_info["matsets"].children();
@@ -2070,15 +2147,20 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    `m_new_refine` is passed to `RefineGridFunctionToVTK` so it can choose
 //    the appropriate MFEM LOR scheme.
 // 
-//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-//     Encased in try-catch block.
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Encased in try-catch block.
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
-// 
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
+//
+//    Brad Whitlock, Tue Dec 19 14:45:13 PST 2023
+//    Add MFEM refinement for certain fields that are low-order but live on a
+//    mesh that has been refined. This prevents the field from having too few
+//    values for the refined mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2143,6 +2225,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         Node *field_ptr = &n_field;
 
         ReadBlueprintField(domain,abs_varname_str,*field_ptr);
+
         // check for empty field case
         if(field_ptr->dtype().is_empty())
         {
@@ -2199,11 +2282,14 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("topo name: " << topo_name);
 
             const Node &n_topo = n_mesh["topologies/" + topo_name];
-
+            int tdims = -1;
             if (n_topo.has_path("elements/shape"))
             {
-                if (n_topo["elements/shape"].as_string() == "polyhedral" || 
-                    n_topo["elements/shape"].as_string() == "polygonal")
+                // Get the shape's topological dimension.
+                conduit::blueprint::mesh::utils::ShapeType shape(n_topo);
+                tdims = shape.dim;
+
+                if (shape.is_polygonal() || shape.is_polyhedral())
                 {
                     string field_name, coords_name;
                     // get name of coordset from topology
@@ -2230,9 +2316,44 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 }
             }
 
-            // low-order case, use vtk
-            res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
-                                                                             *field_ptr);
+            // Check whether the data need to be refined anyway.
+            const bool meshIsHO = n_mesh.has_path("topologies/" + topo_name + "/grid_function");
+            if(meshIsHO && (tdims >= 2) && ((m_selected_lod+1) > 1))
+            {
+                // The field data are low-order but need to be refined anyway since
+                // the mesh got refined.
+
+                // Wrap as HO-compatible field.
+                conduit::Node fieldHO;
+                fieldHO["topology"] = topo_name;
+                if(field_ptr->fetch_existing("association").as_string() == "element")
+                    fieldHO["basis"] = (tdims == 2) ? "L2_T2_2D_P0" : "L2_T2_3D_P0";
+                else
+                    fieldHO["basis"] = (tdims == 2) ? "H1_2D_P1" : "H1_3D_P1";
+                fieldHO["values"].set_external(field_ptr->fetch_existing("values"));
+
+                // create an mfem mesh
+                mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(n_mesh);
+
+                // create the grid fuction
+                mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
+                                                                                                       fieldHO);
+                // refine the grid function into a vtk data array
+                res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
+                                                                  gf,
+                                                                  m_selected_lod+1,
+                                                                  m_new_refine);
+
+                // cleanup mfem data
+                delete gf;
+                delete mesh;
+            }
+            else
+            {
+                // low-order case, use vtk
+                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
+                                                                                 *field_ptr);
+            }
         }
         // if we have a basis, this field is actually an mfem grid function
         else if(field_ptr->has_child("basis"))
