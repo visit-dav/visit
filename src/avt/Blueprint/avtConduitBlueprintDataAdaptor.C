@@ -753,29 +753,29 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 
 vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
-                                       int /* npts -- UNUSED */)
+                                       int npts)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
     // TODO, I don't think we need this logic any more
-    // // Handle empty and point topology
-    // if (!n_topo.has_path("elements/connectivity") ||
-    //     (n_topo.has_path("elements/shape") &&
-    //      n_topo["elements/shape"].as_string() == "point"))
-    // {
-    //     // TODO, why is this 2 * npts?
-    //     ida->SetNumberOfTuples(2*npts);
-    //     for (int i = 0 ; i < npts; i++)
-    //     {
-    //         ida->SetComponent(2*i  , 0, 1);
-    //         ida->SetComponent(2*i+1, 0, i);
-    //     }
-    //     ca->SetCells(npts, ida);
-    //     ida->Delete();
-    // }
-    // else
-    // {
+    // Handle empty and point topology
+    if (!n_topo.has_path("elements/connectivity") ||
+        (n_topo.has_path("elements/shape") &&
+         n_topo["elements/shape"].as_string() == "point"))
+    {
+        // TODO, why is this 2 * npts?
+        ida->SetNumberOfTuples(2*npts);
+        for (int i = 0 ; i < npts; i++)
+        {
+            ida->SetComponent(2*i  , 0, 1);
+            ida->SetComponent(2*i+1, 0, i);
+        }
+        ca->SetCells(npts, ida);
+        ida->Delete();
+    }
+    else
+    {
 
         int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
         int csize = VTKCellTypeSize(ctype);
@@ -805,7 +805,7 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         }
         ca->SetCells(ncells, ida);
         ida->Delete();
-    // }
+    }
     return ca;
 }
 
