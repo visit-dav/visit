@@ -87,8 +87,8 @@ function bv_ospray_info
         export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
         export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
         export OSPRAY_URL=${OSPRAY_URL:-"https://github.com/ospray/OSPRay/archive/v${OSPRAY_VERSION}"}
-#        export OSPRAY_MD5_CHECKSUM="1654f0582de2443db0b717986d82fbbe"
-#        export OSPRAY_SHA256_CHECKSUM="074bfd83b5a554daf8da8d9b778b6ef1061e54a1688eac13e0bdccf95593883d"
+        export OSPRAY_MD5_CHECKSUM="aabd728c2a4f71e4e090c7ee0f824b92"
+        export OSPRAY_SHA256_CHECKSUM="d8d8e632d77171c810c0f38f8d5c8387470ca19b75f5b80ad4d3d12007280288"
     else
         export OSPRAY_VERSION=${OSPRAY_VERSION:-"1.6.1"}
         export OSPRAY_VISIT_MODULE_VERSION=${OSPRAY_VISIT_MODULE_VERSION:-"1.6.x"}
