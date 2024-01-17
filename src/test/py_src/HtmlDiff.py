@@ -22,9 +22,13 @@
 #    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
 #    Refactored to module.
 #
+#    Kathleen Biagas, Wed Jul 26 17:29:45 PDT 2023
+#    Replace 'cgi.escape' (which is deprecated as of 3.2 and removed in 3.8)
+#    with 'html.escape'.
+#
 # ----------------------------------------------------------------------------
 
-import os, string, cgi, difflib
+import os, string, html, difflib
 
 from .HtmlPython import LeadingSpaceToHtmlFormat
 
@@ -123,7 +127,7 @@ class Differencer:
         self.in2.close()
 
     def GetNextLeft(self):
-        astr=cgi.escape(self.nextleft.rstrip())
+        astr=html.escape(self.nextleft.rstrip())
         self.nextleft = self.in1.readline()
         self.leftline = self.leftline+1
         if astr=="":
@@ -132,7 +136,7 @@ class Differencer:
             return astr
 
     def GetNextRight(self):
-        astr=cgi.escape(self.nextright.rstrip())
+        astr=html.escape(self.nextright.rstrip())
         self.nextright = self.in2.readline()
         self.rightline = self.rightline+1
         if astr=="":

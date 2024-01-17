@@ -1,4 +1,4 @@
-
+ 
 function bv_qt6_initialize
 {
     export DO_QT6="no"
@@ -32,6 +32,7 @@ function bv_qt6_info
     export QT6_BASE_FILE=${QT6_BASE_FILE:-"qtbase-everywhere-src-${QT6_VERSION}.tar.xz"}
     export QT6_BASE_SOURCE_DIR=${QT6_BASE_SOURCE_DIR:-"qtbase-everywhere-src-${QT6_VERSION}"}
     export QT6_BASE_SHA256_CHECKSUM="a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"
+    export QT6_BASE_MD5_CHECKSUM="01f3938ca797d0e5a578c7786c618fb7"
 
     # Other submodules
     export QT6_TOOLS_FILE=${QT6_TOOLS_FILE:-"qttools-everywhere-src-${QT6_VERSION}.tar.xz"}
@@ -90,6 +91,110 @@ function bv_qt6_ensure
     return 0
 }
 
+function apply_qt6_base_patch
+{
+     if [[ "$OPSYS" == "Darwin" ]]; then
+        qt6_macos_13_cpp_stdlib_issue_patch 
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+}
+
+
+function qt6_macos_13_cpp_stdlib_issue_patch
+{
+    info "Patching qt 6 for macOS c++ stdlib issue"
+
+    patch -p0 <<EOF
+diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h
+*** qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h	Tue Nov 15 23:54:24 2022
+--- qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h	Wed Oct 25 13:14:40 2023
+***************
+*** 16,33 ****
+  
+  #include <private/qglobal_p.h>
+  
+! #if __has_include(<memory_resource>)
+! #  include <unordered_set>
+! #  include <memory_resource>
+! #  include <qhash.h> // for the hashing helpers
+! #else
+! #  include <qset.h>
+! #endif
+  
+  QT_BEGIN_NAMESPACE
+  
+  template <typename T, size_t Prealloc = 32>
+  class QDuplicateTracker {
+  #ifdef __cpp_lib_memory_resource
+      template <typename HT>
+      struct QHasher {
+--- 16,38 ----
+  
+  #include <private/qglobal_p.h>
+  
+! // Only supported on macOS 14 and iOS 17
+! // #if __has_include(<memory_resource>)
+! // #  include <unordered_set>
+! // #  include <memory_resource>
+! // #  include <qhash.h> // for the hashing helpers
+! // #else
+! // #  include <qset.h>
+! // #endif
+  
++ #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
++ #include <qset.h>
++ 
+  QT_BEGIN_NAMESPACE
+  
+  template <typename T, size_t Prealloc = 32>
+  class QDuplicateTracker {
++ #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
+  #ifdef __cpp_lib_memory_resource
+      template <typename HT>
+      struct QHasher {
+***************
+*** 70,75 ****
+--- 75,81 ----
+      Q_DISABLE_COPY_MOVE(QDuplicateTracker);
+  public:
+      static constexpr inline bool uses_pmr =
++ #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
+          #ifdef __cpp_lib_memory_resource
+              true
+          #else
+***************
+*** 78,83 ****
+--- 84,90 ----
+              ;
+      QDuplicateTracker() = default;
+      explicit QDuplicateTracker(qsizetype n)
++ #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
+  #ifdef __cpp_lib_memory_resource
+          : set{size_t(n), &res}
+  #else
+diff -crB qtbase-everywhere-src-6.4.2/src/gui/image/qxpmhandler.cpp qtbase-everywhere-src-6.4.2-patched/src/gui/image/qxpmhandler.cpp
+*** qtbase-everywhere-src-6.4.2/src/gui/image/qxpmhandler.cpp	Tue Nov 15 23:54:24 2022
+--- qtbase-everywhere-src-6.4.2-patched/src/gui/image/qxpmhandler.cpp	Wed Oct 25 12:58:52 2023
+***************
+*** 1078,1083 ****
+--- 1078,1084 ----
+      else
+          image = sourceImage;
+  
++ #undef __cpp_lib_memory_resource
+  #ifdef __cpp_lib_memory_resource
+      char buffer[1024];
+      std::pmr::monotonic_buffer_resource res{&buffer, sizeof buffer};
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 6for macOS c++ stdlib issue failed"
+        return 1
+    fi
+}
+
 function build_qt6_base
 {
     echo "Build Qt 6 base module"
@@ -101,6 +206,24 @@ function build_qt6_base
     if [[ $untarred_qt6 == -1 ]] ; then
         warn "Unable to prepare Qt 6 build directory. Giving Up!"
         return 1
+    fi
+
+    #
+    # Apply patches
+    #
+    info "Patching qt6 . . ."
+
+    apply_qt6_base_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_qt == 1 ]] ; then
+            warn "Giving up on Qt6 build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     QT6_BASE_BUILD_DIR="${QT6_BASE_SOURCE_DIR}-build"

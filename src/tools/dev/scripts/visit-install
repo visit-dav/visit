@@ -429,6 +429,9 @@
 #    I added qtviswinExample, qtvtkExample and qvtkopenglExample to
 #    the bin directory.
 #
+#    Eric Brugger, Mon Nov 27 17:05:13 PST 2023
+#    I added a host profile for poodle.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1122,9 +1125,10 @@ elif [ "$config" = "llnl_open_cz" ]; then
    # Copy the files explicitly to avoid the rz hosts. We're most likely installing on a cz machine.
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_ansel.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_borax.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_pascal.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_poodle.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_quartz.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_surface.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_syrah.xml    "$dir"/$version+/.visit/hosts/

@@ -487,7 +487,7 @@ def default_suite_options():
                       "host_profile_dir": "",
                       "retry":False,
                       "index":None,
-                      "timeout":7200,
+                      "timeout":9000,
                       "nprocs":nprocs_def,
                       "ctest":False,
                       "display_failed":False,
@@ -719,7 +719,7 @@ def parse_args():
     parser.add_option("--timeout",
                       type="int",
                       default=defs["timeout"], # total timeout of two hours
-                      help="total test suite timeout in seconds [default = 7200]")
+                      help="total test suite timeout in seconds [default = 9000]")
     parser.add_option("-n","--num-processes",
                       dest="nprocs",
                       type=int,

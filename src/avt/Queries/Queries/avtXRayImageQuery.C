@@ -1117,7 +1117,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
 void
 avtXRayImageQuery::SetOutputDir(const std::string &dir)
 {
-    outputDir = dir;
+    outputDir = (dir == "" ? "." : dir);
 }
 
 // ****************************************************************************
@@ -1327,6 +1327,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    query xml result.
 //    BOV and rawfloats output logic has been simplified.
 // 
+//    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
+//    Handle windows-style file paths.
+// 
 // ****************************************************************************
 
 void
@@ -1484,11 +1487,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 std::stringstream fileName;
                 if (outputDir != ".")
-                    fileName << outputDir.c_str() << "/" << baseName.str();
+                    fileName << outputDir.c_str() << VISIT_SLASH_STRING;
                 if (multipleOutputFiles(outputType, numBins))
-                    fileName << ".00." << file_extensions[outputType];
+                    fileName << baseName.str() << ".00." << file_extensions[outputType];
                 else
-                    fileName << "." << file_extensions[outputType];
+                    fileName << baseName.str() << "." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < NUMFAMILYFILES)

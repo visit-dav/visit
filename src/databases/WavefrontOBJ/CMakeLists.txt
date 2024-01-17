@@ -17,6 +17,7 @@ WavefrontOBJMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtWavefrontOBJFileFormat.C
 vtkVisItOBJReader.C
+avtWavefrontOBJOptions.C
 )
 
 SET(LIBE_SOURCES
@@ -25,6 +26,7 @@ ${COMMON_SOURCES}
 avtWavefrontOBJFileFormat.C
 avtWavefrontOBJWriter.C
 vtkVisItOBJReader.C
+avtWavefrontOBJOptions.C
 )
 
 INCLUDE_DIRECTORIES(
@@ -46,13 +48,13 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EWavefrontOBJDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser )
+TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser avtwriter_ser )
 ADD_TARGET_DEFINITIONS(EWavefrontOBJDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EWavefrontOBJDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EWavefrontOBJDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_par visitcommon avtpipeline_par avtdatabase_par )
+    TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_par visitcommon avtpipeline_par avtdatabase_par avtwriter_par )
     ADD_TARGET_DEFINITIONS(EWavefrontOBJDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EWavefrontOBJDatabase_par)
 ENDIF(VISIT_PARALLEL)

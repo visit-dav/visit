@@ -11,16 +11,11 @@
 #    Valid machine names:
 #       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
 #       kickit_opengl (B-Div, Linux, x86_64, opengl),
-#       quartz (LC, Linux, x86_64, toss4),
-#       poodle (LC, Linux, x86_64, toss4),
-#       lassen (LC, Linux, power9),
-#       rzgenie (LC, Linux, x86_64, toss3),
-#       rztrona (LC, Linux, x86_64, toss4),
-#       rzansel (LC, Linux, power9),
-#       magma (LC, Linux, x86_64, toss4),
-#       jade (LC, Linux, x86_64),
-#       sierra (LC, Linux, power9)
-#       trinity (LANL, x86_64)
+#       poodle    (LC, Linux, x86_64, toss4),
+#       lassen    (LC, Linux, power9),
+#       rzwhippet (LC, Linux, x86_64, toss4),
+#       rztopaz   (LC, Linux, x86_64, toss4),
+#       trinity   (LANL, x86_64)
 #
 # Modifications:
 #    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
@@ -38,6 +33,14 @@
 #    Eric Brugger, Thu Jul 27 16:51:41 PDT 2023
 #    Added support for building on magma.
 #
+#    Eric Brugger, Mon Nov  6 16:43:55 PST 2023
+#    Updated poodle and lassen for building with VTK9 and Qt6. I
+#    also removed quartz, rztrona, rzansel, magma, jade and sierra since
+#    they are all duplicates of poodle and lassen.
+#
+#    Cyrus Harrison,Fri Jan 12 10:22:59 PST 2024
+#    Removed rzgenie, added rzwhippet
+#
 #-----------------------------------------------------------------------
 
 #
@@ -45,15 +48,10 @@
 #
 kickit_mesagl=false
 kickit_opengl=false
-quartz=false
 poodle=false
 lassen=false
 rzgenie=false
-rztrona=false
-rzansel=false
-magma=false
-jade=false
-sierra=false
+rztopaz=false
 trinity=false
 
 version=undefined
@@ -77,10 +75,6 @@ do
          kickit_opengl=true
          shift
          ;;
-      +quartz)
-         quartz=true
-         shift
-         ;;
       +poodle)
          poodle=true
          shift
@@ -89,28 +83,12 @@ do
          lassen=true
          shift
          ;;
-      +rzgenie)
-         rzgenie=true
+      +rzwhippet)
+         rzwhippet=true
          shift
          ;;
-      +rztrona)
-         rztrona=true
-         shift
-         ;;
-      +rzansel)
-         rzansel=true
-         shift
-         ;;
-      +magma)
-         magma=true
-         shift
-         ;;
-      +jade)
-         jade=true
-         shift
-         ;;
-      +sierra)
-         sierra=true
+      +rztopaz)
+         rztopaz=true
          shift
          ;;
       +trinity)
@@ -137,16 +115,11 @@ then
    echo "Valid machine names:"
    echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
-   echo "    quartz (LC, Linux, x86_64, toss4),"
-   echo "    poodle (LC, Linux, x86_64, toss4),"
-   echo "    lassen (LC, Linux, power9),"
-   echo "    rzgenie (LC, Linux, x86_64, toss3),"
-   echo "    rztrona (LC, Linux, x86_64, toss4),"
-   echo "    rzansel (LC, Linux, power9),"
-   echo "    magma (LC, Linux, x86_64, toss4),"
-   echo "    jade (LC, Linux, x86_64),"
-   echo "    sierra (LC, Linux, power9)"
-   echo "    trinity (LANL, Linux, x86_64)"
+   echo "    poodle    (LC, Linux, x86_64, toss4),"
+   echo "    lassen    (LC, Linux, power9),"
+   echo "    rzwhippet (LC, Linux, x86_64, toss3),"
+   echo "    rztopaz   (LC, Linux, x86_64, toss4),"
+   echo "    trinity   (LANL, Linux, x86_64)"
    exit
 fi
 
@@ -216,32 +189,6 @@ then
 fi
 
 #
-# Build on quartz.
-#
-if [ $quartz = true ]
-then
-   echo "Building on quartz"
-   ran_build_visit=true
-   if [ -f ${build_visit_script}_log.quartz ]
-   then
-      mv ${build_visit_script}_log.quartz ${build_visit_script}_log
-   fi
-   if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version ]
-   then
-      mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version
-   fi
-   if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4 ]
-   then
-      mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4
-   fi
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.quartz
-fi
-
-#
 # Build on poodle.
 #
 if [ $poodle = true ]
@@ -267,7 +214,7 @@ then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
+       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt6 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
    env FC_COMPILER=/usr/tce/bin/gfortran \
        FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" \
        STRIPACK_INSTALL_DIR=/usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4/stripack \
@@ -294,54 +241,27 @@ then
    then
       mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/blueos
    fi
-   module load gcc/7.3.1
-   env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicxx \
+   module load gcc/8.3.1
+   env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
        ./$build_visit_script --required --optional --mesagl --uintah \
-       --no-boxlib --no-openexr --no-embree --no-ispc --no-tbb \
-       --no-ospray --parallel --qt510 --no-pyside --no-visit \
+       --no-boxlib --no-gdal --no-openexr --no-embree --no-ispc --no-tbb \
+       --no-ospray --parallel --qt6 --no-pyside --no-visit \
        --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/blueos --makeflags -j16
    mv ${build_visit_script}_log ${build_visit_script}_log.lassen
 fi
 
 #
-# Build on rzgenie
+# Build on rzwhippet.
 #
-if [ $rzgenie = true ]
+if [ $rzwhippet = true ]
 then
-   echo "Building on rzgenie"
+   echo "Building on rzwhippet"
    ran_build_visit=true
-   if [ -f ${build_visit_script}_log.rzgenie]
+   if [ -f ${build_visit_script}_log.rzwhippet ]
    then
-      mv ${build_visit_script}_log.rzgenie ${build_visit_script}_log
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss3 ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss3
-   fi
-   module load gcc/7.3.0
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include \
-       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss3 --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.rzgenie
-fi
-
-#
-# Build on rztrona.
-#
-if [ $rztrona = true ]
-then
-   echo "Building on rztrona"
-   ran_build_visit=true
-   if [ -f ${build_visit_script}_log.rztrona ]
-   then
-      mv ${build_visit_script}_log.rztrona ${build_visit_script}_log
+      mv ${build_visit_script}_log.rzwhippet ${build_visit_script}_log
    fi
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
@@ -351,53 +271,31 @@ then
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
    fi
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.rztrona
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack
+   fi
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
+       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt6 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j20
+   env FC_COMPILER=/usr/tce/bin/gfortran \
+       FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" \
+       STRIPACK_INSTALL_DIR=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack \
+       ./$build_visit_script --fortran --no-visit --no-thirdparty --no-zlib --stripack --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+   mv ${build_visit_script}_log ${build_visit_script}_log.rzwhippet
 fi
 
 #
-# Build on rzansel
+# Build on rztopaz.
 #
-if [ $rzansel = true ]
+if [ $rztopaz = true ]
 then
-   echo "Building on rzansel"
+   echo "Building on rztopaz"
    ran_build_visit=true
-   if [ -f ${build_visit_script}_log.rzansel ]
+   if [ -f ${build_visit_script}_log.rztopaz ]
    then
-      mv ${build_visit_script}_log.rzansel ${build_visit_script}_log
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/blueos ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/blueos
-   fi
-   module load gcc/7.3.1
-   env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
-       ./$build_visit_script --required --optional --mesagl --uintah \
-       --no-boxlib --no-openexr --no-embree --no-ispc --no-tbb \
-       --no-ospray --parallel --qt510 --no-pyside --no-visit \
-       --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/blueos --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.rzansel
-fi
-
-#
-# Build on magma.
-#
-if [ $magma = true ]
-then
-   echo "Building on magma"
-   ran_build_visit=true
-   if [ -f ${build_visit_script}_log.magma ]
-   then
-      mv ${build_visit_script}_log.magma ${build_visit_script}_log
+      mv ${build_visit_script}_log.rztopaz ${build_visit_script}_log
    fi
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
@@ -407,68 +305,19 @@ then
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
    fi
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack
+   fi
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.magma
-fi
-
-#
-# Build on jade
-#
-if [ $jade = true ]
-then
-   echo "Building on jade"
-   ran_build_visit=true
-   if [ -f ${build_visit_script}_log.jade ]
-   then
-      mv ${build_visit_script}_log.jade ${build_visit_script}_log
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss3 ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss3
-   fi
-   module load gcc/7.3.0
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include \
-       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss3 --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.jade
-fi
-
-#
-# Build on sierra
-#
-if [ $sierra = true ]
-then
-   echo "Building on sierra"
-   ran_build_visit=true
-   if [ -f ${build_visit_script}_log.sierra ]
-   then
-      mv ${build_visit_script}_log.sierra ${build_visit_script}_log
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
-   fi
-   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/blueos ]
-   then
-      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/blueos
-   fi
-   module load gcc/7.3.1
-   env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
-       ./$build_visit_script --required --optional --mesagl --uintah \
-       --no-boxlib --no-openexr --no-embree --no-ispc --no-tbb \
-       --no-ospray --parallel --qt510 --no-pyside --no-visit \
-       --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/blueos --makeflags -j16
-   mv ${build_visit_script}_log ${build_visit_script}_log.sierra
+       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt6 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
+   env FC_COMPILER=/usr/tce/bin/gfortran \
+       FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" \
+       STRIPACK_INSTALL_DIR=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4/stripack \
+       ./$build_visit_script --fortran --no-visit --no-thirdparty --no-zlib --stripack --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+   mv ${build_visit_script}_log ${build_visit_script}_log.rztopaz
 fi
 
 #
@@ -512,15 +361,10 @@ then
    echo "Valid machine names:"
    echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
-   echo "    quartz (LC, Linux, x86_64, toss4),"
    echo "    poodle (LC, Linux, x86_64, toss4),"
    echo "    lassen (LC, Linux, power9),"
    echo "    rzgenie (LC, Linux, x86_64, toss3),"
-   echo "    rztrona (LC, Linux, x86_64, toss4),"
-   echo "    rzansel (LC, Linux, power9),"
-   echo "    magma (LC, Linux, x86_64, toss4),"
-   echo "    jade (LC, Linux, x86_64),"
-   echo "    sierra (LC, Linux, power9)"
+   echo "    rztopaz (LC, Linux, x86_64, toss4),"
    echo "    trinity (LANL, Linux, x86_64)"
    exit
 fi
