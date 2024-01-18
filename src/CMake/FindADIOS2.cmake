@@ -20,6 +20,9 @@
 #   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
 #   Updated adios2 to 2.7.1 and added all the libraries it creates to the
 #   installation as well as additional logic for parallel building.
+# 
+#   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+#   adios2 libs have changed so I removed many of the old ones.
 #
 #****************************************************************************/
 

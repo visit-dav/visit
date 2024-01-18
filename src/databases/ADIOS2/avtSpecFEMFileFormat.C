@@ -106,6 +106,11 @@ avtSpecFEMFileFormat::CreateInterface(const char *const *list,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
+// 
+//  Modifications:
+//    Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+//    Removed adios2::DebugON since it is not present in newer versions of 
+//    adios2.
 //
 // ****************************************************************************
 
@@ -1720,6 +1725,9 @@ avtSpecFEMFileFormat::GenerateFileNames(const std::string &nm,
 // Creation:    April  9, 2014
 //
 // Modifications:
+//    Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+//    Removed adios2::DebugON since it is not present in newer versions of 
+//    adios2.
 //
 //****************************************************************************
 

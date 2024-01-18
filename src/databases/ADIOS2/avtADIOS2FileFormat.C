@@ -47,6 +47,11 @@
 //
 //   Dave Pugmire, Thu Oct 30 11:59:40 EDT 2014
 //   Added a LAMMPS reader. Modified the flavor flag to an enum for clarity.
+// 
+//   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+//   Removed adios2::DebugON since it is not present in newer versions of 
+//   adios2.
+//   Added special logic for BP5 files.
 //
 // ****************************************************************************
 
