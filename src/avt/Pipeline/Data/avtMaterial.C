@@ -18,6 +18,7 @@
 
 #include <climits>
 #include <cassert>
+#include <cmath>
 
 using std::string;
 using std::vector;
@@ -1951,8 +1952,15 @@ avtMaterial::AssertSelfIsValid() const
                     assert(mix_zone[midx] < nZones+1); // one-origin
                 midx = mix_next[midx]-1; 
             }
-            float const eps = 1.0e-5;
-            assert(((1-eps) <= vfsum) && (vfsum <= (1+eps)));
+            constexpr float eps = 1.0e-5;
+            float vfsum_err = fabs(1.f - vfsum);
+            if(vfsum_err >= eps)
+            {
+                debug5 << "Zone " << z << " vfsum=" << vfsum
+                       << ", vfsum_err=" << vfsum_err
+                       << ", which exceeds eps=" << eps << endl;
+                assert(vfsum_err <= eps);
+            }
         }
     }
 }
