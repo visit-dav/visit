@@ -7241,6 +7241,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     // is the case, just return now.
     //
     int shouldStop = 0;
+    // this is a bad test - AVT_BOUNDARY_GHOST_ZONES is only set later
     unsigned char bit = (1 << AVT_BOUNDARY_GHOST_ZONES);
     unsigned char u = static_cast<unsigned char>(md->GetGhostZoneTypesPresent(meshname));
     if (u & bit)

@@ -7397,6 +7397,7 @@ avtDatabaseMetaData::GetGhostZoneTypesPresent(std::string name) const
     {
         if (GetMeshes(i).name == name)
         {
+            std::cout << "GetMeshes(i).presentGhostZoneTypes " << GetMeshes(i).presentGhostZoneTypes << std::endl;
             return GetMeshes(i).presentGhostZoneTypes;
         }
     }
