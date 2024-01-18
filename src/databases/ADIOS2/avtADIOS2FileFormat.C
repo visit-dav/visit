@@ -75,8 +75,6 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         {
             flavor = BASIC;
 
-            std::cout << "this is the string" << list[0] << std::endl;
-
             std::string engineName = ADIOS2Helper_GetEngineName(list[0]);
             std::string fileName   = ADIOS2Helper_GetFileName(list[0]);
             bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
@@ -187,6 +185,6 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
     }
 
-    cout<<"RETURN ADIOS READER"<<endl;
+    //cout<<"RETURN ADIOS READER"<<endl;
     return ffi;
 }
