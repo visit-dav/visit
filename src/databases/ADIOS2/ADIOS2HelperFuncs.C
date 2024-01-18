@@ -1,4 +1,7 @@
 #include <ADIOS2HelperFuncs.h>
+#include <visit-config.h>
+#include <iostream>
+#include <fstream>
 
 std::string ADIOS2Helper_GetEngineName(const std::string &fname)
 {
@@ -13,8 +16,23 @@ std::string ADIOS2Helper_GetEngineName(const std::string &fname)
     if (fname.find(".bp/md.0") != std::string::npos)
         return "BPFile";
 
-	if (ADIOS2Helper_FileIsDirectory(fname))
-	    return "BP4";
+    if (ADIOS2Helper_FileIsDirectory(fname))
+    {
+        std::string engine_name;
+        std::string bp5_special_file = fname + VISIT_SLASH_STRING + "mmd.0";
+        std::ifstream ifs;
+        ifs.open(bp5_special_file.c_str());
+        if(!ifs.is_open())
+        {
+            engine_name = "BP4";
+        }
+        else
+        {
+            engine_name = "BP5";
+        }
+        ifs.close();
+        return engine_name;
+    }
     else
         return "BPFile";
 }
