@@ -63,6 +63,7 @@ ADIOS2CommonPluginInfo::SetupDatabase(const char *const *list,
         }
         CATCH(VisItException)
         {
+            std::cout << "CATCH(VisItException)" << std::endl;
             delete ffi;
             delete db;
             RETHROW;

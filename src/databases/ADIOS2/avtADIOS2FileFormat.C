@@ -75,14 +75,23 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         {
             flavor = BASIC;
 
+            std::cout << "this is the string" << list[0] << std::endl;
+
             std::string engineName = ADIOS2Helper_GetEngineName(list[0]);
             std::string fileName   = ADIOS2Helper_GetFileName(list[0]);
             bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
 
             io.SetEngine(engineName);
-            //cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."
-            //    <<" engine "<<engineName<<" ..."<<endl;
-            reader = io.Open(fileName, adios2::Mode::Read);
+            cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."
+               <<" engine "<<engineName<<" ..."<<endl;
+            if (engineName == "BP5")
+            {
+                reader = io.Open(fileName, adios2::Mode::ReadRandomAccess);
+            }
+            else
+            {
+                reader = io.Open(fileName, adios2::Mode::Read);
+            }
             if (stagingMode)
             {
                 cout<<__FILE__<<" "<<__LINE__<<" Get first step "<<endl;
@@ -178,6 +187,6 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
     }
 
-    //cout<<"RETURN ADIOS READER"<<endl;
+    cout<<"RETURN ADIOS READER"<<endl;
     return ffi;
 }
