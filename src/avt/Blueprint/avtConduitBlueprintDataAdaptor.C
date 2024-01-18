@@ -663,7 +663,7 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     int n_elems = npts;
     if (n_topo["type"].as_string() == "unstructured" &&
         n_topo.has_path("elements/shape") &&
-        n_topo["elements/shape"].as_string() == "points" &&
+        n_topo["elements/shape"].as_string() == "point" &&
         n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
     {
         n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
@@ -766,7 +766,6 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         (n_topo.has_path("elements/shape") &&
          n_topo["elements/shape"].as_string() == "point"))
     {
-        std::cout << "here" << std::endl;
         // TODO, why is this 2 * npts?
         ida->SetNumberOfTuples(2*npts);
         for (int i = 0 ; i < npts; i++)
