@@ -48,9 +48,7 @@ function bv_adios2_depends_on
             depends_on="$depends_on hdf5"
         fi
 
-        if [[ "$DO_BLOSC2" == "yes" ]] ; then
-            depends_on="$depends_on blosc2"
-        fi
+        depends_on="$depends_on blosc2"
 
         echo $depends_on
     fi
