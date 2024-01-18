@@ -53,8 +53,9 @@ def set_test_view(tag_name):
     else:
         ResetView()
 
-def test(mesh_name, tag_name, var_name):
-    # AddPlot("Mesh", mesh_name)
+def test(mesh_name, tag_name, var_name, mesh_plot = False):
+    if mesh_plot:
+        AddPlot("Mesh", mesh_name)
     AddPlot("Pseudocolor", var_name)
     if "3d" in tag_name:
         AddOperator("Clip", 1)
@@ -89,7 +90,8 @@ OpenDatabase(cube_data, 0, "ADIOS2_1.0")
 mesh_name = "mesh71x71x71"
 tag_name = "adios2_3d_bp"
 var_name = "/data/0/meshes/admbase_lapse_rl00/admbase_alp"
-test(mesh_name, tag_name, var_name)
+do_mesh_plot = True
+test(mesh_name, tag_name, var_name, do_mesh_plot)
 CloseDatabase(cube_data)
 
 # requires adios2 to be built with c-blosc support
