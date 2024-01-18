@@ -48,10 +48,7 @@ function bv_adios2_depends_on
             depends_on="$depends_on hdf5"
         fi
 
-        if [[ "$DO_BLOSC" == "yes" ]] ; then
-            # note that at the time of writing (may 2022) ADIOS2 only supports c-blosc1, NOT c-blosc2.
-            depends_on="$depends_on blosc"
-        fi
+        depends_on="$depends_on blosc2"
 
         echo $depends_on
     fi
@@ -66,13 +63,13 @@ function bv_adios2_initialize_vars
 
 function bv_adios2_info
 {
-    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.7.1"}
+    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.10.0-rc1"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
     export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/refs/tags/v${ADIOS2_VERSION}"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="b78e02946c4ff481679063220f9fc961"
-    export ADIOS2_SHA256_CHECKSUM="c8e237fd51f49d8a62a0660db12b72ea5067512aa7970f3fcf80b70e3f87ca3e"
+    export ADIOS2_MD5_CHECKSUM="99e55ad8346551c632515905379c3cc1"
+    export ADIOS2_SHA256_CHECKSUM="8b72142bd5aabfb80c7963f524df11b8721c09ef20caea6df5fb00c31a7747c0"
 }
 
 function bv_adios2_print
@@ -190,7 +187,6 @@ function build_adios2
 
         cfg_opts=""
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
-        cfg_opts="${cfg_opts} -DADIOS2_BUILD_TESTING:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:BOOL=OFF"
 
@@ -205,11 +201,12 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
 
-        # Use Blosc?
-        if [[ "$DO_BLOSC" == "yes" ]] ; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
-            cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC_LIBRARY}"
+        # Use Blosc2?
+        if [[ "$DO_BLOSC2" == "yes" ]] ; then
+            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:BOOL=ON"
+            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_DIR}"
+            cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
+            cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
         fi
 
         if [[ "$bt" == "ser" ]]; then
