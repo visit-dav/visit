@@ -750,6 +750,9 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to conduit blueprint data adaptor.
+// 
+//    Justin Privitera, Thu Jan 18 14:53:32 PST 2024
+//    Added back in logic for unstructured points.
 //
 // ****************************************************************************
 

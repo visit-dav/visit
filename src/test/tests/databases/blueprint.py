@@ -41,6 +41,9 @@
 # 
 #    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
 #    Added a test for a polygonal mesh with no offsets.
+# 
+#    Justin Privitera, Thu Jan 18 14:53:32 PST 2024
+#    Added test for unstructured points.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
