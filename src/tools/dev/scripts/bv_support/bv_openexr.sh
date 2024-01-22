@@ -130,11 +130,11 @@ function build_ilmbase
     # If c++17 s the compiler default it will fail to build
     # Use --std=c++14 to avoid problems while building/
     #
-    OPENEXR_CXX_FLAGS="$CXXFLAGS $CXX_OPT_FLAGS --std=c++14"
+    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
 
     set -x
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$OPENEXR_CXX_FLAGS" \
+                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
                 $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
     set +x
     if [[ $? != 0 ]] ; then
