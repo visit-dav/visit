@@ -1,11 +1,16 @@
 #############################################################################
 #   The Parser class is the Python Source Parser
 #   taken from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52298
+#
+#    Kathleen Biagas, Wed Jul 26 17:29:45 PDT 2023
+#    Replace 'cgi.escape' (which is deprecated as of 3.2 and removed in 3.8)
+#    with 'html.escape'.
+#
 #############################################################################
 from __future__ import print_function
 # Imports
 import sys
-import cgi
+import html
 import string
 
 if (sys.version_info > (3, 0)):
@@ -112,7 +117,7 @@ class Parser:
 
         # send text
         self.out.write('<font color="%s"%s>' % (color, style))
-        self.out.write(cgi.escape(toktext))
+        self.out.write(html.escape(toktext))
         self.out.write('</font>')
 
 def ColorizePython(test_script ,result_dir,category, filename, filebase):

@@ -1207,6 +1207,8 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Returns:    The new y value.
 //
 // Note:
+//    This function is very similar to QvisSpectrumBar::evalCubicSpline.
+//    It would be wise to make changes in both places.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 27 14:02:56 PDT 2012
@@ -1275,6 +1277,8 @@ ColorControlPointList::EvalCubicSpline(float t, const float *allX, const float *
 // Returns:
 //
 // Note:
+//    This function is very similar to QvisSpectrumBar::getColorsCubicSpline.
+//    It would be wise to make changes in both places.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 27 14:02:56 PDT 2012

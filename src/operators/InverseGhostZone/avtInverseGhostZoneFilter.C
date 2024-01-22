@@ -7,6 +7,8 @@
 // ************************************************************************* //
 
 #include <avtInverseGhostZoneFilter.h>
+
+#include <visit-config.h> // For LIB_VERSION_LE
 #include <avtExtents.h>
 
 #include <vtkCellData.h>
@@ -140,6 +142,10 @@ avtInverseGhostZoneFilter::Equivalent(const AttributeGroup *a)
 //    I modified the routine to return a NULL in the case where it previously
 //    returned an avtDataRepresentation with a NULL vtkDataSet.
 //
+//    Kathleen Biagas, Fri Dec 1 2023
+//    vtkThreshold::ThresholdBetween has been deprecated for VTK-9, so use
+//    the new methods SetUpper/LowerThreshold instead when using VTK-9.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -223,7 +229,12 @@ avtInverseGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     temp_ds->GetCellData()->SetActiveScalars("avtRetainThese");
     
     vtkThreshold *t = vtkThreshold::New();
+#if LIB_VERSION_LE(VTK,8,1,0)
     t->ThresholdBetween(0.5, 1.5);
+#else
+    t->SetLowerThreshold(0.5);
+    t->SetUpperThreshold(1.5);
+#endif
     t->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS,
                               "avtRetainThese");
     t->SetInputData(temp_ds);

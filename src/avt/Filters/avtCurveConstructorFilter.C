@@ -33,6 +33,7 @@
 
 #include <maptypes.h>
 
+using std::string;
 
 
 // ****************************************************************************
@@ -92,10 +93,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Removed vtk filters associated with label-creation.  Now handled by
 //    the plot.
 //
-//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003
 //    Added logic to handle point-sorting when necessary. Add vertex cells,
 //    so they can be displayed upon user request.
-//    
+//
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
@@ -105,7 +106,7 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Save the curve points in output array to be added to PlotInfoAttributes.
 //
-//    Kathleen Bonnell, Mon Jul 31 16:50:55 PDT 2006 
+//    Kathleen Bonnell, Mon Jul 31 16:50:55 PDT 2006
 //    Changed reader from PolyData to DataSetReader, as curves can now be
 //    represented as 1D RectilinearGrids.  Modified logic to handle
 //    Rectilinear Grids as needed.
@@ -120,7 +121,7 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Dave Bremer, Thu Jun  7 19:47:35 PDT 2007
 //    Added a fix to correctly construct a curve from a histogram plot.
 //    I determine if there's a problem by looking at the geometry, and
-//    if necessary flip the last two points in each group of 4. 
+//    if necessary flip the last two points in each group of 4.
 //
 //    Hank Childs, Fri Feb 15 15:52:46 PST 2008
 //    Throw an exception in an error condition.
@@ -147,6 +148,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Biagas, Thu Sep 29 06:11:38 PDT 2011
 //    Only construct multiple outputs when requested in data attributes.
 //
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Consolidate logic for no-labels and labels.
+//    Add varname and count to CreateSingleOutput.
+
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -155,7 +160,7 @@ void avtCurveConstructorFilter::Execute()
 
 #ifdef PARALLEL
     //
-    //  Gather all data onto one processor, so that 
+    //  Gather all data onto one processor, so that
     //  there will be no discontinuities in the curve.
     //
     int myRank, numProcs;
@@ -181,7 +186,7 @@ void avtCurveConstructorFilter::Execute()
                     VISIT_MPI_COMM, &stat);
            for (j = 0; j < nds; j++)
            {
-               vtkDataSetReader *reader = vtkDataSetReader::New(); 
+               vtkDataSetReader *reader = vtkDataSetReader::New();
                reader->ReadFromInputStringOn();
                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
                          VISIT_MPI_COMM, &stat2);
@@ -192,11 +197,11 @@ void avtCurveConstructorFilter::Execute()
                charArray->SetArray((char*)str, size, 1);
                reader->SetInputArray(charArray);
                reader->Update();
-      
+
                inTree->Merge(new avtDataTree(reader->GetOutput(), -1));
                delete [] str;
-               reader->Delete(); 
-               charArray->Delete(); 
+               reader->Delete();
+               charArray->Delete();
            }
         }
     }
@@ -213,7 +218,7 @@ void avtCurveConstructorFilter::Execute()
 
         vtkDataSet **ds = inTree->GetAllLeaves(nleaves);
         MPI_Send(&nleaves, 1, MPI_INT, 0, mpiNdsTag, VISIT_MPI_COMM);
- 
+
         vtkDataSetWriter *writer = vtkDataSetWriter::New();
         writer->WriteToOutputStringOn();
         writer->SetFileTypeToBinary();
@@ -229,7 +234,7 @@ void avtCurveConstructorFilter::Execute()
             MPI_Send(str, size, MPI_CHAR, 0, mpiDataTag, VISIT_MPI_COMM);
             delete [] str; //allocated by writer
         }
-        writer->Delete(); 
+        writer->Delete();
         delete [] ds;
         return;
     }
@@ -238,59 +243,58 @@ void avtCurveConstructorFilter::Execute()
     if (inTree->IsEmpty())
     {
         SetOutputDataTree(inTree);
-        return; 
+        return;
     }
 
     avtDataTree_p outTree;
     stringVector labels;
     inTree->GetAllLabels(labels);
-    
-    if (labels.size() == 0 || 
-        !GetInput()->GetInfo().GetAttributes().GetConstructMultipleCurves())
+
+    const char *vname = (pipelineVariable != NULL ? pipelineVariable : "");
+    size_t count = labels.empty() ? 1 : labels.size();
+    vtkDataSet **ds = new vtkDataSet *[count];
+    for (size_t i = 0; i < count; ++i)
     {
-        vtkDataSet *outGrid;
-        outGrid = CreateSingleOutput(inTree);
-        if (outGrid == NULL)
+        ds[i] = nullptr;
+        if(labels.empty())
         {
-            SetOutputDataTree(inTree);
-            return; 
+            ds[i] = CreateSingleOutput(inTree, vname, count);
         }
-        const char *vname = (pipelineVariable != NULL ? pipelineVariable : "");
-        avtDataRepresentation dr(outGrid, -1, vname);
-        outTree = new avtDataTree(dr);
-        outGrid->Delete();
+        else
+        {
+            avtDataTree_p oneTree = inTree->PruneTree(labels[i]);
+            ds[i] = CreateSingleOutput(oneTree, labels[i], count);
+        }
+        if (ds[i] == NULL)
+        {
+            for (size_t j = 0; j < i; ++j)
+            {
+                if (ds[j] != NULL)
+                    ds[j]->Delete();
+            }
+            delete [] ds;
+            SetOutputDataTree(inTree);
+            return;
+        }
+    }
+    if(labels.empty())
+    {
+       avtDataRepresentation dr(ds[0], -1, vname);
+       outTree = new avtDataTree(dr);
     }
     else
     {
-        vtkDataSet **ds = new vtkDataSet *[labels.size()];
-        for (size_t i = 0; i < labels.size(); ++i)
-        {
-            ds[i] = NULL;
-            avtDataTree_p oneTree = inTree->PruneTree(labels[i]);
-            ds[i] = CreateSingleOutput(oneTree);
-            if (ds[i] == NULL)
-            {
-                for (size_t j = 0; j < i; ++j)
-                {
-                    if (ds[j] != NULL)
-                        ds[j]->Delete(); 
-                }
-                delete [] ds;
-                SetOutputDataTree(inTree);
-                return; 
-            }
-        }
         outTree = new avtDataTree((int)labels.size(), ds, -1, labels);
     }
 
     SetOutputDataTree(outTree);
 }
- 
- 
+
+
 // ****************************************************************************
 //  Method: avtCurveConstructorFilter::CreateSingleOutput
 //
-//  Notes:  Moved from Execute mthod.  
+//  Notes:  Moved from Execute mthod.
 //
 //  Purpose:
 //      Does the actual VTK code to modify the dataset.
@@ -304,21 +308,23 @@ void avtCurveConstructorFilter::Execute()
 //  Creation:   February 17, 2011
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Add vname and count arguments.
+//    Store xy-pairs in MapNode when creating multiple curves.
 //
 // ****************************************************************************
 
 vtkDataSet *
-avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
+avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string &label, const int count)
 {
     //
-    //  This filter doesn't do much right now.  Basically just a 
-    //  "connect-the-dots" between the vertices.  
+    //  This filter doesn't do much right now.  Basically just a
+    //  "connect-the-dots" between the vertices.
     //
     int nleaves, j, k;
     double x;
     vtkDataSet **ds;
     ds = inTree->GetAllLeaves(nleaves);
-
     if (nleaves == 0)
     {
         // Kind of a bizarre error, since "IsEmpty" above should have returned
@@ -332,11 +338,11 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
     //
     //  Cannot assume that there are no overlaps of points
     //  between datasets, so keep track of first and last
-    //  x values, to determine if sorting is required. 
+    //  x values, to determine if sorting is required.
     //  Now must order the datasets so that the points will
     //  be accessed in proper order, to avoid discontinuities
     //  between domains.
-    //  Store in map with x value as the key.  
+    //  Store in map with x value as the key.
     //  (from first point in each ds).
     //
     double *mm = new double[nleaves*2];
@@ -361,7 +367,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
         x = data->GetComponent(0, 0);
         minX.insert(DoubleIntMap::value_type(x, j));
         mm[j*2] = x;
-        mm[j*2+1] = data->GetComponent(npts-1, 0); 
+        mm[j*2+1] = data->GetComponent(npts-1, 0);
     }
 
     bool requiresSort = false;
@@ -375,20 +381,20 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
     }
     delete [] mm;
 
-    vtkDataArray *inXC; 
-    vtkDataArray *inVal; 
+    vtkDataArray *inXC;
+    vtkDataArray *inVal;
 
     int dtype = VTK_FLOAT;
     if (ds[0]->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         dtype = ((vtkRectilinearGrid*)ds[0])->GetXCoordinates()->GetDataType();
-    else 
+    else
         dtype = ((vtkPolyData*)ds[0])->GetPoints()->GetData()->GetDataType();
     vtkRectilinearGrid *outGrid = vtkVisItUtility::Create1DRGrid(0, dtype);
     vtkDataArray *outXC  = outGrid->GetXCoordinates();
     vtkDataArray *outVal = outXC->NewInstance();
     outGrid->GetPointData()->SetScalars(outVal);
     outVal->Delete();
-    int nPoints; 
+    int nPoints;
 
     //
     //  Ensure that the output is 2d by setting z-component to zero.
@@ -413,7 +419,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
         {
             inXC  = ((vtkPolyData*)ds[(*it).second])->GetPoints()->GetData();
             nPoints = inXC->GetNumberOfTuples();
-            
+
             // Insert a check to see if this data comes from a histogram plot,
             // in which case we need to swap some of the points.  Data comes
             // in groups of 4 points for each bar, connected like this: N
@@ -459,9 +465,9 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
         }
     }
 
-    // 
+    //
     // Sort if necessary
-    // 
+    //
     vtkDataArray *sortedXC;
     vtkDataArray *sortedVal;
     if (requiresSort)
@@ -472,7 +478,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
         nPoints = outXC->GetNumberOfTuples();
         for (int i = 0; i < nPoints; i++)
         {
-            x = outXC->GetTuple1(i); 
+            x = outXC->GetTuple1(i);
             sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
         DoubleIntMap::iterator it;
@@ -498,7 +504,13 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
     {
         outputArray.push_back(sortedXC->GetTuple1(i));
         outputArray.push_back(sortedVal->GetTuple1(i));
-    } 
+    }
+    string varname = (!label.empty() ? label : (pipelineVariable != NULL ? pipelineVariable : "Curve"));
+    if (count > 1)
+    {
+        outputInfo[varname] = outputArray;
+        outputArray.clear();
+    }
 
     // Pass a copy of the avtCurveTransform data into the new curve object.
     vtkDataArray *ct = ds[0]->GetFieldData()->GetArray("avtCurveTransform");
@@ -508,15 +520,14 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
         outGrid->GetFieldData()->AddArray(ct);
     }
 
-    const char *varname = (pipelineVariable != NULL ? pipelineVariable : "");
 
     // make sure the outputvar is named.
-    sortedVal->SetName(varname);
+    sortedVal->SetName(varname.c_str());
 
 
     //
     //  Clean up.
-    // 
+    //
     delete [] ds;
     return outGrid;
 }
@@ -528,10 +539,10 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
 //      Verifies that the input is 2D data, throws an exception if not.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   April 26, 2002 
+//  Creation:   April 26, 2002
 //
 // ****************************************************************************
- 
+
 void
 avtCurveConstructorFilter::VerifyInput(void)
 {
@@ -545,10 +556,10 @@ avtCurveConstructorFilter::VerifyInput(void)
 //  Method: avtCurveConstructorFilter::ModifyContract
 //
 //  Purpose:
-//    Indicates that we cannot do dynamic load balancing with this filter.  
+//    Indicates that we cannot do dynamic load balancing with this filter.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   April 26, 2002 
+//  Creation:   April 26, 2002
 //
 //  Modifications:
 //
@@ -574,11 +585,11 @@ avtCurveConstructorFilter::ModifyContract(avtContract_p spec)
 //      is a description of the data object.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   December 23, 2002 
+//  Creation:   December 23, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jul 31 16:50:55 PDT 2006
-//    Changed Spatial dimension to 1, as curves are not represented as 
+//    Changed Spatial dimension to 1, as curves are not represented as
 //    1D RectilinearGrid.
 //
 // ****************************************************************************
@@ -594,10 +605,10 @@ avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 //  Method: avtCurveConstructorFilter::PostExecute
 //
 //  Purpose:
-//    Saves the curve data to an output array in PlotInfoAtts.  
+//    Saves the curve data to an output array in PlotInfoAtts.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 20, 2006 
+//  Creation:   June 20, 2006
 //
 //  Modifications:
 //    Brad Whitlock, Tue Jan  6 16:41:18 PST 2009
@@ -606,26 +617,35 @@ avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 //    Brad Whitlock, Mon Jul 23 12:15:34 PDT 2012
 //    Limit the number of values sent to the client in plot information.
 //
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Multi-curve output is stored in outputInfo. Single curve stored in
+//    outputArray.  Removed parallel broadcast (don't think its necessary).
+//
 // ****************************************************************************
 
 void
 avtCurveConstructorFilter::PostExecute(void)
 {
-#ifdef PARALLEL
-    BroadcastDoubleVector(outputArray, PAR_Rank());
-#endif
-    // Limit outputArray size that we send back to the client.
-    if(outputArray.size() < 100000)
+    if(!outputArray.empty())
     {
-        PlotInfoAttributes plotInfoAtts ;
-        MapNode data;
-        data = outputArray;
-        GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
+        // Limit outputArray size that we send back to the client.
+        if(outputArray.size() < 100000)
+        {
+            PlotInfoAttributes plotInfoAtts ;
+            MapNode data;
+            data = outputArray;
+            GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
+        }
+        else
+        {
+            debug5 << "Curve constructor filter does not send curves that contain "
+                      "more than 100K values to the client." << endl;
+        }
     }
-    else
+    else if (outputInfo.GetNumEntries() > 0)
     {
-        debug5 << "Curve constructor filter does not send curves that contain "
-                  "more than 100K values to the client." << endl;
+        // There were multiple curves
+        GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curves", outputInfo);
     }
 }
 

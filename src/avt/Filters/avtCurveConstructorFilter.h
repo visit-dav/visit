@@ -47,6 +47,10 @@
 //    Kathleen Bonnell, Thu Feb 17 09:18:43 PST 2011
 //    Added CreateSingeOutput method.
 //
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Add a MapNode to store multi-curve output for adding to PlotInformation.
+//    Add vname and count arguments to CreateSingleOutput.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -62,7 +66,8 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
 
   protected:
     doubleVector              outputArray;
-    vtkDataSet               *CreateSingleOutput(avtDataTree_p inTree);
+    MapNode                   outputInfo;
+    vtkDataSet               *CreateSingleOutput(avtDataTree_p inTree, const std::string &vname, const int count);
 
     virtual void              Execute(void);
     virtual void              PostExecute(void);

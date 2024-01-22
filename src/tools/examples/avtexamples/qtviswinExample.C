@@ -5,6 +5,7 @@
 #include <QtVisWindow.h>
 
 #include <QApplication>
+#include <QSurfaceFormat>
 
 #include <visit-config.h> // For LIB_VERSION_LE
 #if LIB_VERSION_LE(VTK, 8,1,0)

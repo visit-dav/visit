@@ -47,6 +47,11 @@
 //
 //   Dave Pugmire, Thu Oct 30 11:59:40 EDT 2014
 //   Added a LAMMPS reader. Modified the flavor flag to an enum for clarity.
+// 
+//   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+//   Removed adios2::DebugON since it is not present in newer versions of 
+//   adios2.
+//   Added special logic for BP5 files.
 //
 // ****************************************************************************
 
@@ -66,7 +71,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
-        std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(adios2::DebugON));
+        std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>());
         adios2::IO io(adios->DeclareIO("ReadBP"));
         adios2::Engine reader;
         std::map<std::string, adios2::Params> variables, attributes;
@@ -81,8 +86,12 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
 
             io.SetEngine(engineName);
             //cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."
-            //    <<" engine "<<engineName<<" ..."<<endl;
-            reader = io.Open(fileName, adios2::Mode::Read);
+            //   <<" engine "<<engineName<<" ..."<<endl;
+            if (engineName == "BP5")
+                reader = io.Open(fileName, adios2::Mode::ReadRandomAccess);
+            else
+                reader = io.Open(fileName, adios2::Mode::Read);
+
             if (stagingMode)
             {
                 cout<<__FILE__<<" "<<__LINE__<<" Get first step "<<endl;
