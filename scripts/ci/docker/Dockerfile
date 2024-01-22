@@ -63,30 +63,29 @@ RUN cd /usr/include && ln -s freetype2 freetype
 
 # untar the current masonry source  (created as part of build_docker_visit_ci.py)
 COPY visit.masonry.docker.src.tar /
-RUN tar -xzf visit.masonry.docker.src.tar
+RUN tar -xf visit.masonry.docker.src.tar
 # untar the current build_visit source (created as part of build_docker_visit_ci.py)
 RUN mkdir -p /scripts/
 COPY visit.build_visit.docker.src.tar /scripts
-COPY masonry_docker_ci_cleanup.py /
-RUN cd /scripts/ && tar -xzf visit.build_visit.docker.src.tar
+RUN cd /scripts/ && tar -xf visit.build_visit.docker.src.tar
 
 # ensure build_visit script is executable
 RUN cd /scripts/ && chmod u+x build_visit
 
 # call masonry to build tpls
-#RUN cd masonry && python3 bootstrap_visit.py opts/mb-develop-ci-smoke.json
+RUN cd masonry && python3 bootstrap_visit.py opts/mb-develop-ci-smoke.json
 
 # cleanup extract build dirs and obtain the config site file
-#RUN python masonry_docker_ci_cleanup.py
+RUN python masonry_docker_ci_cleanup.py
 # change perms
-#RUN chmod -R a+rX /masonry
+RUN chmod -R a+rX /masonry
 
 # add helper script to clone visit
-#RUN echo "git clone https://github.com/visit-dav/visit.git" > /clone.sh
-#RUN chmod +x /clone.sh
+RUN echo "git clone https://github.com/visit-dav/visit.git" > /clone.sh
+RUN chmod +x /clone.sh
 
 # add helper script to add cmake to path
-#RUN echo "export TPLS_PATH=/masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/" > /env_setup.sh
-#RUN echo "export CMAKE_BIN_DIR=`ls -d ${TPLS_PATH}/cmake/*/ci/bin/`" >> /env_setup.sh
-#RUN echo "export PATH=$PATH:$CMAKE_BIN_DIR" >> /env_setup.sh
-#RUN chmod +x /env_setup.sh
+RUN echo "export TPLS_PATH=/masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/" > /env_setup.sh
+RUN echo "export CMAKE_BIN_DIR=`ls -d ${TPLS_PATH}/cmake/*/ci/bin/`" >> /env_setup.sh
+RUN echo "export PATH=$PATH:$CMAKE_BIN_DIR" >> /env_setup.sh
+RUN chmod +x /env_setup.sh
