@@ -7,10 +7,10 @@
 #
 
 import os
-import sys
 import subprocess
 import shutil
 import datetime
+import tarfile
 
 from os.path import join as pjoin
 
@@ -77,14 +77,15 @@ def main():
     os.chdir("../../../src/tools/dev")
 
     # get current copy of masonry
-    cmd ='tar -czvf {0} --exclude "build-*" --exclude "*.pyc" masonry'
-    sexe(cmd.format(pjoin(orig_dir, "visit.masonry.docker.src.tar")))
+    with tarfile.open(pjoin(orig_dir, "visit.masonry.docker.src.tar"),'w') as fout_mas:
+        fout_mas.add("masonry",recursive=True)
 
     # get current copy of build_visit from this branch
     os.chdir("scripts")
-    cmd = 'tar -czvf {0} --exclude "build-*" --exclude "*.pyc" build_visit bv_support' 
-    sexe(cmd.format(pjoin(orig_dir, "visit.build_visit.docker.src.tar")))
-
+    with tarfile.open(pjoin(orig_dir, "visit.build_visit.docker.src.tar"),'w') as fout_bv:
+        fout_bv.add("build_visit")
+        fout_bv.add("bv_support",recursive=True)
+    
     # change back to orig working dir
     os.chdir(orig_dir)
 
