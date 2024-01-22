@@ -1681,6 +1681,10 @@ def ProcessDiffImage(case_name, baseimg, testimg, diffimg):
 #
 #   Mark C. Miller, Fri Sep 11 19:55:17 PDT 2020
 #   Added numdifftol arg
+#
+#   Kathleen Biagas, Tue Jan 2, 2024
+#   Handle cases where there are extra path-separator escapes on Windows.
+#
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText, numdifftol):
@@ -1691,10 +1695,16 @@ def FilterTestText(inText, baseText, numdifftol):
     # We have to filter out the absolute path information we might see in
     # this string. runtest passes the value for visitTopDir here.
     #
+
+    # handle cases where there are extra path-separator escapes
+    if platform.system() == "Windows":
+        inText = inText.replace("\\\\", "\\")
+
     inText = inText.replace(TestEnv.params["run_dir"], "VISIT_TOP_DIR/test")
     inText = inText.replace(out_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(test_root_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(data_path(), "VISIT_TOP_DIR/data")
+
     #
     # Only consider doing any string substitution if numerical diff threshold
     # is non-zero

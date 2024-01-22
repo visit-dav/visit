@@ -39,6 +39,16 @@
 #   Use 'manuals.vcxproj' for building manuals during an install on Windows
 #   with MSVC.
 #
+#   Kathleen Biagas, Wed Nov 15, 2023
+#   Use sphinx-build.exe on Windows, due to newer python and sphinx.
+#
+#   Kathleen Biagas, Thue Dec 14, 2023
+#   Revert back to using sphinx-build-script.py on Windows.  Though sphinx
+#   didn't provide the script, the previous version works, with the version
+#   number updated to current.  The sphinx-build executable doesn't work
+#   on other machines, as it attempts to run python from the location where
+#   sphinx/python was built.
+#
 #****************************************************************************
 
 if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
