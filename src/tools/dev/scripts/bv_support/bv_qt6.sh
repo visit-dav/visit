@@ -1,4 +1,4 @@
-
+ 
 function bv_qt6_initialize
 {
     export DO_QT6="no"
@@ -32,6 +32,7 @@ function bv_qt6_info
     export QT6_BASE_FILE=${QT6_BASE_FILE:-"qtbase-everywhere-src-${QT6_VERSION}.tar.xz"}
     export QT6_BASE_SOURCE_DIR=${QT6_BASE_SOURCE_DIR:-"qtbase-everywhere-src-${QT6_VERSION}"}
     export QT6_BASE_SHA256_CHECKSUM="a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"
+    export QT6_BASE_MD5_CHECKSUM="01f3938ca797d0e5a578c7786c618fb7"
 
     # Other submodules
     export QT6_TOOLS_FILE=${QT6_TOOLS_FILE:-"qttools-everywhere-src-${QT6_VERSION}.tar.xz"}

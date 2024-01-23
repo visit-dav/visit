@@ -18,7 +18,7 @@
 # To create your own modular file, see the docs at
 # //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.4.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.4.1"}
 
 ####
 # Trunk:
