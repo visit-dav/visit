@@ -1308,6 +1308,13 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         // get matnames vec. No need to sort
         std::vector<string> matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
 
+        // we want to add the matnos to the names
+        for (size_t i = 0; i < matnames.size(); i ++)
+        {
+            int matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].value();
+            matnames[i] = std::to_string(matno) + " " + matnames[i];
+        }
+
         // If the materials were HO then we may need to add a "free" material
         // to the list.
         std::map<std::string, std::string> matFields;
