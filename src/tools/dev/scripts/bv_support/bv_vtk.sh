@@ -88,6 +88,7 @@ function bv_vtk_info
     if [[ $DO_QT6 == "yes" ]]; then
         DO_VTK9="yes"
     fi
+
     if [[ "$DO_VTK9" == "yes" ]] ; then
         info "setting up vtk for version 9"
         export VTK_FILE=${VTK_FILE:-"VTK-9.2.6.tar.gz"}
@@ -1120,6 +1121,32 @@ EOF
         warn "vtk patch for vtkCutter.cxx failed."
         return 1
     fi
+}
+
+function apply_vtk9_vtkgeotransform_patch
+{
+  # patch vtk's vtkGeoTransform (patch taken from 9.3)
+  # can  be removed when version changed to >= 9.3
+
+   patch -p0 << \EOF
+--- Geovis/Core/vtkGeoTransform.cxx.orig	2024-01-10 10:22:40.143031000 -0800
++++ Geovis/Core/vtkGeoTransform.cxx	2024-01-10 10:22:49.698983000 -0800
+@@ -212,7 +212,7 @@
+ #if PROJ_VERSION_MAJOR >= 5
+       c.lp.lam = coord[0];
+       c.lp.phi = coord[1];
+-      c_out = proj_trans(src, PJ_FWD, c);
++      c_out = proj_trans(dst, PJ_FWD, c);
+       coord[0] = c_out.xy.x;
+       coord[1] = c_out.xy.y;
+ #else
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkGeoTransform failed."
+      return 1
+    fi
+    return 0;
 }
 
 function apply_vtk8_vtkxopenglrenderwindow_patch
@@ -2543,6 +2570,11 @@ function apply_vtk_patch
             return 1
         fi
 
+        apply_vtk9_vtkgeotransform_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
     else
         apply_vtk8_vtkdatawriter_patch
         if [[ $? != 0 ]] ; then
@@ -2819,7 +2851,7 @@ function build_vtk
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 if [[ "$DO_VTK9" == "yes" ]]; then
-                    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:BOOL:STRING=YES"
+                    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES"
                     if [[ "$DO_QT6" == "yes" ]]; then
                         vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
                     else

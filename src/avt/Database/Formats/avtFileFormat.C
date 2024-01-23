@@ -737,6 +737,10 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //
 //    Mark C. Miller, Wed Aug  8 13:34:53 PDT 2007
 //    Adjusted regular expression to take last group of digits.
+//
+//    Mark C. Miller, Wed Dec 13 15:23:05 PST 2023
+//    Adjusted regular expression to take last group of digits BEFORE
+//    any extension if present.
 // ****************************************************************************
 
 int
@@ -746,7 +750,7 @@ avtFileFormat::GuessCycle(const char *fname, const char *re)
     if (reToUse == "")
         reToUse = re ? re : "";
     if (reToUse == "")
-        reToUse = "<([0-9]+)[^0-9]*$> \\0";
+        reToUse = "<([0-9]+)([^0-9]*)\\..*$> \\1";
 
     double d = GuessCycleOrTime(fname, reToUse.c_str());
 

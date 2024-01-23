@@ -60,6 +60,19 @@ sub get ($@)
     return @files
 }
 
+sub get_ls_recursive ($@)
+{
+    my ($dir) = @_;
+    @tmpfiles = `find $dir -print`;
+    my @files = ();
+    foreach (@tmpfiles)
+    {
+        chomp;
+        push @files, "$_";
+    }
+    return @files
+}
+
 sub get_git_recursive ($@)
 {
     my ($dir) = @_;
@@ -120,6 +133,7 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_git_recursive    "./src/tools/data/convert";
     push @files, get_git_recursive    "./src/include";
     push @files, get_git_norecursive  "./src/bin";
+    push @files, get_ls_recursive     "src/blt";
     push @files, get_git_norecursive  "./src/lib";
     push @files, get_git_recursive    "./src/plugins";
     push @files, get_git_recursive    "./src/tools/dev/scripts";
@@ -150,6 +164,7 @@ else
     push @files, get_git_recursive    "./src/sim";
     push @files, get_git_recursive    "./src/include";
     push @files, get_git_recursive    "./src/bin";
+    push @files, get_ls_recursive     "src/blt";
     push @files, get_git_norecursive  "./src/lib";
     push @files, get_git_recursive    "./src/archives";
     push @files, get_git_recursive    "./src/plugins";

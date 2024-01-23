@@ -6,6 +6,7 @@ Getting Help
     :numbered:
 
     Methods of Contact <contact>
+    Reporting Issues <reporting_issues>
     Supported Platforms <platforms>
     Managing GitHub Notifications <notifications>
 

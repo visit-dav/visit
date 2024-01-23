@@ -1,4 +1,4 @@
 {   'Contour': 'success',
     'Label': 'success',
-    'Tensor': 'success',
-    'Volume': 'success'}
+    'Molecule': 'success',
+    'Tensor': 'success'}

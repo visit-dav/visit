@@ -26,6 +26,8 @@ class avtDatabaseWriter;
 //  Creation:   omitted
 //
 //  Modifications:
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    Added GetWriteOptions().
 //
 // ****************************************************************************
 
@@ -48,6 +50,7 @@ class WavefrontOBJCommonPluginInfo : public virtual CommonDatabasePluginInfo, pu
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class WavefrontOBJMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual WavefrontOBJCommonPluginInfo
