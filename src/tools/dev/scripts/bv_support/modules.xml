@@ -15,7 +15,7 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
-            <lib name="blosc"/>
+            <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
@@ -67,7 +67,7 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
-            <lib name="blosc"/>
+            <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
