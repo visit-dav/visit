@@ -60,10 +60,10 @@ RUN cd /usr/include && ln -s freetype2 freetype
 # USER ci
 # WORKDIR /home/ci
 
-
 # untar the current masonry source  (created as part of build_docker_visit_ci.py)
 COPY visit.masonry.docker.src.tar /
 RUN tar -xf visit.masonry.docker.src.tar
+
 # untar the current build_visit source (created as part of build_docker_visit_ci.py)
 RUN mkdir -p /scripts/
 COPY visit.build_visit.docker.src.tar /scripts
@@ -75,8 +75,11 @@ RUN cd /scripts/ && chmod u+x build_visit
 # call masonry to build tpls
 RUN cd masonry && python3 bootstrap_visit.py opts/mb-develop-ci-smoke.json
 
+# copy cleanup helper
+COPY masonry_docker_ci_cleanup.py /
 # cleanup extract build dirs and obtain the config site file
 RUN python masonry_docker_ci_cleanup.py
+
 # change perms
 RUN chmod -R a+rX /masonry
 
