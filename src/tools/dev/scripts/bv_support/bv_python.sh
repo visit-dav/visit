@@ -446,7 +446,7 @@ function bv_python_info
     export EDITABLES_MD5_CHECKSUM=""
 
     export PLUGGY_URL=""
-    export PLUGGY_FILE="pluggy-1.2.0.tar.gz "
+    export PLUGGY_FILE="pluggy-1.2.0.tar.gz"
     export PLUGGY_BUILD_DIR="pluggy-1.2.0"
     export PLUGGY_MD5_CHECKSUM=""
 
