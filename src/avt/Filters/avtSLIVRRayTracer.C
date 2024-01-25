@@ -9,6 +9,7 @@
 #include <avtSLIVRRayTracer.h>
 
 #include <vector>
+#include <limits>
 
 #include <visit-config.h>
 

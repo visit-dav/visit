@@ -189,6 +189,13 @@ function build_mfem
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_CONDUIT=ON -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
     fi
+
+    # when using conduit, mfem's cmake logic requires HDF5_DIR to find HDF5
+    # (NOTE: mfem could use CONDUIT_HDF5_DIR)
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        vopts="${vopts} -DHDF5_DIR=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
+    fi
+
     if [[ "$DO_FMS" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
     else

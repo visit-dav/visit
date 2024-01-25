@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2023-03-23-shafe8254
+  container_tag: visitdav/visit-ci-develop:2024-01-24-sha0d1435
 
 # only build merge target pr to develop
 trigger: none
@@ -126,13 +126,12 @@ stages:
            #################################
            # run test suite
            cd build/test
-           # find vtk, ospray and tbb
+           # find qt, vtk, and ospray
+           export QT_LIB_DIR=`ls -d ${TPLS_PATH}/qt/*/ci/lib/`
            export VTK_LIB_DIR=`ls -d ${TPLS_PATH}/vtk/*/ci/lib/`
            export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/lib/`
-           # note: tbb has extra paths under lib
-           export TBB_LIB_DIR=`ls -d ${TPLS_PATH}/tbb/*/ci/lib/intel64/gcc4.7/`
            # add to ld_lib path (rpaths are missing?)
-           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
+           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
            export TESTS=../../src/test/tests/databases/silo.py
            export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
