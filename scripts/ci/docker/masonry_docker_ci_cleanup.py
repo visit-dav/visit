@@ -26,7 +26,7 @@ def cleanup_tpl_build_dirs():
     paths = glob.glob( pjoin(tpl_build_dir(),"*") )
     for path in paths:
         if not check_to_keep(path):
-            print "[removing %s]" % path
+            print("[removing %s]" % path)
             if os.path.isdir(path):
                 shutil.rmtree(path)
             else:
@@ -35,7 +35,7 @@ def cleanup_tpl_build_dirs():
 def copy_config_site():
      cfg_site = glob.glob( pjoin(tpl_build_dir(),"*.cmake") )[0]
      dest = "/visit-ci-cfg.cmake"
-     print "[copying %s to %s]" % (cfg_site,dest)
+     print("[copying %s to %s]" % (cfg_site,dest))
      shutil.copyfile(cfg_site,dest)
 
 def main():

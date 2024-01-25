@@ -122,9 +122,19 @@ function build_ilmbase
          EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
+    # Open EXR does not suport c++17, a few examples of errors:
+    #
+    #  ISO C++17 does not allow dynamic exception specifications
+    #  ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+    #
+    # If c++17 s the compiler default it will fail to build
+    # Use --std=c++14 to avoid problems while building/
+    #
+    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
+
     set -x
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
                 $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
     set +x
     if [[ $? != 0 ]] ; then
@@ -196,8 +206,18 @@ function build_openexr
          EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
+    # Open EXR does not suport c++17, a few examples of errors:
+    #
+    #  ISO C++17 does not allow dynamic exception specifications
+    #  ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+    #
+    # If c++17 s the compiler default it will fail to build
+    # Use --std=c++14 to avoid problems while building/
+    #
+    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
+
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
                 $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
                 --with-ilmbase-prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
                 --with-pic --enable-imfexamples $DISABLE_BUILDTYPE

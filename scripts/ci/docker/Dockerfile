@@ -1,8 +1,7 @@
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
-FROM ubuntu:bionic
-MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
+FROM ubuntu:22.04
 
 # fetch build env
 RUN apt-get update && apt-get install -y \
@@ -10,21 +9,28 @@ RUN apt-get update && apt-get install -y \
     git-lfs \
     wget \
     curl \
+    tar   \
     p7zip \
     unzip \
-    subversion \
     build-essential \
     gcc \
     g++ \
     gfortran \
     zlib1g-dev \
-    python \
+    python3 \
+    python3-dev \
+    python-is-python3 \
     libsm-dev \
     libice-dev \
     libssl-dev \
+    '^libxcb.*-dev' \
     libx11-xcb-dev \
     libxcb-dri2-0-dev \
     libxcb-xfixes0-dev \
+    libxrender-dev \
+    libxi-dev \
+    libxkbcommon-dev \
+    libxkbcommon-x11-dev \
     libffi-dev \
     xutils-dev \
     xorg-dev \
@@ -43,6 +49,7 @@ RUN apt-get update && apt-get install -y \
     locales \
  && rm -rf /var/lib/apt/lists/*
 
+
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
@@ -53,24 +60,26 @@ RUN cd /usr/include && ln -s freetype2 freetype
 # USER ci
 # WORKDIR /home/ci
 
-
 # untar the current masonry source  (created as part of build_docker_visit_ci.py)
 COPY visit.masonry.docker.src.tar /
-RUN tar -xzf visit.masonry.docker.src.tar
+RUN tar -xf visit.masonry.docker.src.tar
+
 # untar the current build_visit source (created as part of build_docker_visit_ci.py)
-RUN mkdir -p /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/
-COPY visit.build_visit.docker.src.tar /masonry
-COPY masonry_docker_ci_cleanup.py /
-RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && tar -xzf /masonry/visit.build_visit.docker.src.tar
+RUN mkdir -p /scripts/
+COPY visit.build_visit.docker.src.tar /scripts
+RUN cd /scripts/ && tar -xf visit.build_visit.docker.src.tar
 
 # ensure build_visit script is executable
-RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && chmod u+x build_visit
+RUN cd /scripts/ && chmod u+x build_visit
 
 # call masonry to build tpls
-RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
+RUN cd masonry && python3 bootstrap_visit.py opts/mb-develop-ci-smoke.json
 
+# copy cleanup helper
+COPY masonry_docker_ci_cleanup.py /
 # cleanup extract build dirs and obtain the config site file
 RUN python masonry_docker_ci_cleanup.py
+
 # change perms
 RUN chmod -R a+rX /masonry
 
