@@ -24,8 +24,6 @@ function bv_mdsplus_info
     export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}.tar.gz"}
     export MDSPLUS_COMPATIBILITY_VERSION=${MDSPLUS_COMPATIBILITY_VERSION:-"5.0"}
     export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
-    #export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus"}
-    export MDSPLUS_MD5_CHECKSUM=""
     export MDSPLUS_SHA256_CHECKSUM=""
 }
 

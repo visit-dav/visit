@@ -51,14 +51,12 @@ function bv_embree_info
         export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.macosx
         # these are binary builds, not source tarballs so the mdf5s and shas differ 
         # between platforms 
-        export EMBREE_MD5_CHECKSUM="8a3874975f1883d8df1714b3ba3eacba"
         export EMBREE_SHA256_CHECKSUM="31cbbe96c6f19bb9c5463e181070bd667d3dbb93e702671e8406ce26be259109"
     else
         export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.linux.tar.gz"}
         export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.linux
         # these are binary builds, not source tarballs so the mdf5s and shas differ 
         # between platforms 
-        export EMBREE_MD5_CHECKSUM="7a1c3d12e8732cfee7d389f81d008798"
         export EMBREE_SHA256_CHECKSUM="7671cc37c4dc4e3da00b2b299b906b35816f058efea92701e7b89574b15e652d"
     fi
     export EMBREE_COMPATIBILITY_VERSION=${EMBREE_COMPATIBILITY_VERSION:-"${EMBREE_VERSION}"}

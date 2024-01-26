@@ -53,7 +53,6 @@ function bv_pyside_info
     export PYSIDE_VERSION=${PYSIDE_VERSION:-"5.14.2"}
     export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-setup-5.14.2.tar.gz"}
     export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"pyside-setup-5.14.2"}
-    export PYSIDE_MD5_CHECKSUM="862cfe43648fa64152864dafe2e03849"
     export PYSIDE_SHA256_CHECKSUM="ff75f817b2de3e3b278d8f9e8269dd473c068e652264fc8e074af599a19b3c3a"
 }
 
