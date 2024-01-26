@@ -563,6 +563,18 @@ main(int argc, char *argv[])
         oss << "sys.path.append(pjoin(r'" << vlibdir  <<"','site-packages'))";
         PyRun_SimpleString(oss.str().c_str());
 
+#ifdef _WIN32
+        if(GetIsDevelopmentVersion())
+        {
+            // retrieve ThirdParty directory
+            std::string dlldir  = GetVisItThirdPartyDirectory(); 
+            // Add thirdparty DLL's directory
+            std::ostringstream ss;
+            ss << "os.add_dll_directory(r'" << dlldir  <<"')";
+            PyRun_SimpleString(ss.str().c_str());
+        }
+#endif
+
         // Initialize the VisIt module.
         cli_initvisit(bufferDebug ? -debugLevel : debugLevel,
                       verbose,

@@ -23,6 +23,10 @@ typedef _object PyObject;
 //  Programmer:  Cyrus Harrison
 //  Creation:    May 2, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jan 24, 2024
+//    Added new method 'AddDLLPath'.
+//
 // ****************************************************************************
 class AVTPYTHON_FILTERS_API PythonInterpreter
 {
@@ -36,6 +40,9 @@ public:
     void         Shutdown();
 
     bool         AddSystemPath(const std::string &path);
+#ifdef _WIN32
+    bool         AddDLLPath(const std::string &path);
+#endif
     bool         RunScript(const std::string &script);
     bool         RunScriptFile(const std::string &fname);
 
