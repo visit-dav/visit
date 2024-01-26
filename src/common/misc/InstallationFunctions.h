@@ -36,6 +36,10 @@ std::string MISC_API GetAndMakeUserVisItHostsDirectory();
 std::string MISC_API GetVisItHostsDirectory();
 std::string MISC_API GetSystemVisItHostsDirectory();
 
+#ifdef _WIN32
+std::string MISC_API GetVisItThirdPartyDirectory();
+#endif
+
 typedef enum {
     VISIT_RESOURCES,
     VISIT_RESOURCES_COLORTABLES,
