@@ -207,6 +207,30 @@ PythonInterpreter::AddSystemPath(const std::string &path)
     return RunScript("sys.path.insert(1,r'" + path + "')\n");
 }
 
+#ifdef _WIN32
+// ****************************************************************************
+//  Method: PythonInterpreter::AddDLLPath
+//
+//  Purpose:
+//      Adds passed path to "os.add_dll_directory"
+//
+//  Arguments:
+//      path      Path to DLLs  (eg VisIt's third party dlls)
+//
+//  Programmer:   Kathleen Biagas 
+//  Creation:     January 24, 2024 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+PythonInterpreter::AddDLLPath(const std::string &path)
+{
+    return RunScript("os.add_dll_directory(r'" + path + "')\n");
+}
+#endif
+
 // ****************************************************************************
 //  Method: PythonInterpreter::RunScript
 //
