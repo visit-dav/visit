@@ -100,7 +100,6 @@ function bv_cmake_info
     export CMAKE_VERSION=${CMAKE_VERSION:-"3.24.3"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_MD5_CHECKSUM="226dd564164372f9f7d1e21e38e6e8c5"
     export CMAKE_SHA256_CHECKSUM="b53aa10fa82bff84ccdb59065927b72d3bee49f4d86261249fc0984b3b367291"
 }
 
