@@ -203,8 +203,6 @@ function build_adios2
 
         # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
-            # find blosc2
-            BLOSC2_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
             BLOSC2_INCLUDE_DIR="${BLOSC2_DIR}/include"
             # note: lib dir can be `lib``, or `lib64` depending on the platform
             if [[ -d "${BLOSC2_DIR}/lib64/" ]] ; then

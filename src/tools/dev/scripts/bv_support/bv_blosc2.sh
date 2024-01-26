@@ -19,6 +19,7 @@ function bv_blosc2_disable
 # Where to get the module, the version, etc...
 function bv_blosc2_info
 {
+    BLOSC2_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
     # note this is c-blosc2, NOT c-blosc
     export BLOSC2_VERSION=${BLOSC2_VERSION:-"2.11.3"}
     export BLOSC2_FILE=${BLOSC2_FILE:-"c-blosc2-${BLOSC2_VERSION}.tar.gz"}
