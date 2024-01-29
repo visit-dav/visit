@@ -420,6 +420,40 @@ GetSystemVisItHostsDirectory()
     return retVal;
 }
 
+#ifdef _WIN32
+#include <filesystem>
+// ****************************************************************************
+// Method:  GetVisItThirdPartyDirectory
+//
+// Purpose:
+//   Returns the path to the ThirdParty directory for a dev build of VisIt.
+//   Returns an empty string if not running from a development build.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Kathleen Biagas 
+// Creation:    January 24, 2024
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+GetVisItThirdPartyDirectory()
+{
+    std::string retval;
+    if(GetIsDevelopmentVersion())
+    {
+        std::filesystem::path homeDir(GetVisItInstallationDirectory());
+        auto dllDir = homeDir.parent_path() / "ThirdParty";
+        retval = dllDir.string();
+    }
+    return retval;
+}
+
+#endif
+
 // ****************************************************************************
 // Method: GetVisItResourcesDirectory
 //
