@@ -129,7 +129,7 @@ stages:
            # find qt, vtk, and ospray
            export QT_LIB_DIR=`ls -d ${TPLS_PATH}/qt/*/ci/lib/`
            export VTK_LIB_DIR=`ls -d ${TPLS_PATH}/vtk/*/ci/lib/`
-           export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/lib/`
+           export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/ospray/lib/`
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
