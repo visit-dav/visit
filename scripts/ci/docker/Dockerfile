@@ -72,16 +72,15 @@ RUN cd /scripts/ && tar -xf visit.build_visit.docker.src.tar
 # ensure build_visit script is executable
 RUN cd /scripts/ && chmod u+x build_visit
 
-# call masonry to build tpls
-RUN cd masonry && python3 bootstrap_visit.py opts/mb-develop-ci-smoke.json
-
 # copy cleanup helper
 COPY masonry_docker_ci_cleanup.py /
-# cleanup extract build dirs and obtain the config site file
-RUN python masonry_docker_ci_cleanup.py
 
+# call masonry to build tpls
+# cleanup extract build dirs and obtain the config site file
 # change perms
-RUN chmod -R a+rX /masonry
+RUN cd masonry && python3 bootstrap_visit.py opts/mb-develop-ci-smoke.json && \
+    cd / && python3 masonry_docker_ci_cleanup.py && \
+    chmod -R a+rX /masonry
 
 # add helper script to clone visit
 RUN echo "git clone https://github.com/visit-dav/visit.git" > /clone.sh
