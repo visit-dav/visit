@@ -441,6 +441,9 @@ def log_test_result(result_dir,result):
 #    Changed definition of data_dir to new location.  Assumes in-src build,
 #    which is used for nightly regression tests.
 #
+#    Cyrus Harrison, Mon Jan 29 16:12:16 PST 2024
+#    Change test limit to 800 (an experiment for nightly regression suite )
+#
 # ----------------------------------------------------------------------------
 def default_suite_options():
     data_dir_def    = abs_path(visit_root(),"src","testdata")
@@ -469,7 +472,7 @@ def default_suite_options():
                       "height":300,
                       "modes":"serial",
                       "classes":"nightly",
-                      "limit":600,
+                      "limit":800,
                       "skip_file":skip_def,
                       "no_skip":False,
                       "check_data":True,
