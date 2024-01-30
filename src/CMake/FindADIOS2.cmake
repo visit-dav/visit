@@ -34,7 +34,8 @@ if(NOT WIN32)
         adios2_perfstubs adios2_cxx11 adios2_core adios2_enet)
 else()
     SET_UP_THIRD_PARTY(ADIOS2 LIBS
-        adios2_c adios2_cxx11 adios2_core adios2_perfstubs)
+        adios2_c adios2_cxx11 adios2_core adios2_atl
+        adios2_dill adios2_ffs )
 endif()
 
 if(VISIT_PARALLEL)
@@ -44,6 +45,7 @@ if(VISIT_PARALLEL)
     else()
         SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
             adios2_c adios2_cxx11 adios2_core
+            adios2_atl adios2_dill adios2_ffs 
             adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
     endif()
 endif()
