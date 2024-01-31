@@ -202,18 +202,19 @@ function build_adios2
 
         # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
-            BLOSC2_INCLUDE_DIR="${BLOSC2_DIR}/include"
+            BLOSC2_INSTALL_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
+            BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
             # note: lib dir can be `lib``, or `lib64` depending on the platform
-            if [[ -d "${BLOSC2_DIR}/lib64/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_DIR}/lib64/libblosc2.so"
+            if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
+                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.so"
             fi
 
-            if [[ -d "${BLOSC2_DIR}/lib/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_DIR}/lib/libblosc2.so"
+            if [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
+                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.so"
             fi
 
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:BOOL=ON"
-            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_DIR}"
+            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
         fi
