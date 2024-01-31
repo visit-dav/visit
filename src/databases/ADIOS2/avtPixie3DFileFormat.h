@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtADIOS2FileFormat.h                           //
+//                          avtPixie3DFileFormat.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_PIXIE3D_FILE_FORMAT_H

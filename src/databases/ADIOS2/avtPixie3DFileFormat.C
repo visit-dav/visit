@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtPixie3DFileFormat.C                           //
+//                          avtPixie3DFileFormat.C                           //
 // ************************************************************************* //
 
 #include <avtMTMDFileFormatInterface.h>
