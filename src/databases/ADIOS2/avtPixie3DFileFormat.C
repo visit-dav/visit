@@ -12,6 +12,7 @@
 
 #include <string>
 #include <map>
+#include <numeric>
 
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
@@ -202,7 +203,7 @@ avtPixie3DFileFormat::CreateInterfaceADIOS2(
 // ****************************************************************************
 
 avtPixie3DFileFormat::avtPixie3DFileFormat(const char *filename)
-    :  adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+    :  adios(std::make_shared<adios2::ADIOS>()),
        io(adios->DeclareIO("ReadBP")),
        numTimeSteps(1),
        avtMTMDFileFormat(filename),
@@ -625,7 +626,7 @@ avtPixie3DFileFormat::GetVar(int ts, int domain, const char *varname)
     meshInfo &mi = meshes[meshName];
 
     int ndims = mi.currDims.size();
-    vector<unsigned long> s = {0,0,0}, c = {1,1,1};
+    vector<size_t> s = {0,0,0}, c = {1,1,1};
     if (ndims == 2)
     {
         c[0] = 1;
