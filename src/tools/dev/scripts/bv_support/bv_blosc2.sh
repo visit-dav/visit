@@ -78,7 +78,7 @@ function build_blosc2
 
     cd $BLOSC2_BUILD_DIR || error "Can't cd to BLOSC2 source dir."
 
-    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${BLOSC2_DIR}"
+    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
