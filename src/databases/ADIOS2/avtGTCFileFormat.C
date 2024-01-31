@@ -41,7 +41,7 @@ avtGTCFileFormat::Identify(const char *fname)
         reader.BeginStep(adios2::StepMode::Read, -1.0f);
     if (status == adios2::StepStatus::OK)
     {
-        //std::debug5<<" Identifier for GTC received streaming step = "<<reader.CurrentStep()<<endl;
+        //debug5<<" Identifier for GTC received streaming step = "<<reader.CurrentStep()<<endl;
         std::map<std::string, adios2::Params> variables, attributes;
         variables = io.AvailableVariables();
         attributes = io.AvailableAttributes();
