@@ -66,7 +66,9 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
     bool isWDM = (std::string(list[0]).find(".ssc") != std::string::npos);
     bool stagingMode = isSST || isWDM;
 
-    debug5<<"ADIOS2: isSST, isWDM, isHDF5"<<isSST<<" "<<isWDM<<" "<<isHDF5<<std::endl;
+    debug5 << __FILE__ << " " << __LINE__ << " isSST " << isSST << endl;
+    debug5 << __FILE__ << " " << __LINE__ << " isWDM " << isWDM << endl;
+    debug5 << __FILE__ << " " << __LINE__ << " isHDF5 " << isHDF5 << endl;
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
@@ -84,10 +86,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
 
             io.SetEngine(engineName);
-            debug5<<" Connect to stream "<<fileName<<" ..."<<" engine "<<engineName<<" ..."<<std::endl;
-            reader = io.Open(fileName, adios2::Mode::Read);
-            //cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."
-            //   <<" engine "<<engineName<<" ..."<<endl;
+            //debug5 << __FILE__ << " " << __LINE__ << " Connect to stream " << fileName << " ..."
+            //   << " engine " << engineName << " ..." << endl;
             if (engineName == "BP5")
                 reader = io.Open(fileName, adios2::Mode::ReadRandomAccess);
             else
@@ -95,13 +95,13 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
 
             if (stagingMode)
             {
-                debug5<<" Get first step "<<endl;
+                debug5 << __FILE__ << " " << __LINE__ << " Get first step " << endl;
                 adios2::StepStatus status =
                     reader.BeginStep(adios2::StepMode::Read, -1.0f);
                 if (status == adios2::StepStatus::OK)
                 {
-                    debug5<<" Identifier received streaming step = "
-                          <<reader.CurrentStep()<<std::endl;
+                    debug5 << " Identifier received streaming step = "
+                        << reader.CurrentStep() << endl;
                     variables = io.AvailableVariables();
                     attributes = io.AvailableAttributes();
 
@@ -129,9 +129,9 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 variables = io.AvailableVariables();
                 attributes = io.AvailableAttributes();
 #if MDSERVER
-                debug5<<" MDSERVER Identifier has " << variables.size() << " variables"<<std::endl;
+                debug5 << " MDSERVER Identifier has " << variables.size() << " variables" << endl;
 #else
-                debug5<<" Identifier has " << variables.size() << " variables"<<endl;
+                debug5 << " Identifier has " << variables.size() << " variables" << endl;
 #endif
                 // add formats here that support reading from HDF5
                 if (avtGTCFileFormat::Identify(fileName.c_str()))
@@ -162,7 +162,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
         ENDTRY
 
-        debug5<<"ADIOS2 FLAVOR= "<<flavor<<endl;
+        debug5 << "FLAVOR= " << flavor << endl;
         switch(flavor)
         {
           case PIXIE3D:
