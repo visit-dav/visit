@@ -35,12 +35,14 @@ function bv_qwt_alt_qwt_dir
 
 function bv_qwt_depends_on
 {
-    depends_on="qt"
-
     if [[ "$USE_SYSTEM_QWT" == "yes" ]]; then
         echo ""
     else
-        echo $depends_on
+        if [[ "$DO_QT6" == "no" ]]; then
+            echo "qt"
+        else
+            echo "qt6"
+        fi
     fi
 }
 
@@ -53,12 +55,20 @@ function bv_qwt_initialize_vars
 
 function bv_qwt_info
 {
-    export QWT_FILE=${QWT_FILE:-"qwt-6.1.2.tar.bz2"}
-    export QWT_VERSION=${QWT_VERSION:-"6.1.2"}
-    export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.0"}
-    export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.1.2"}
-    export QWT_MD5_CHECKSUM="9c88db1774fa7e3045af063bbde44d7d"
-    export QWT_SHA256_CHECKSUM="2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
+    if [[ "$DO_QT6" == "no" ]]; then
+        export QWT_FILE=${QWT_FILE:-"qwt-6.1.2.tar.bz2"}
+        export QWT_VERSION=${QWT_VERSION:-"6.1.2"}
+        export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.0"}
+        export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.1.2"}
+        export QWT_MD5_CHECKSUM="9c88db1774fa7e3045af063bbde44d7d"
+        export QWT_SHA256_CHECKSUM="2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
+    else
+        export QWT_FILE=${QWT_FILE:-"qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz"}
+        export QWT_VERSION=${QWT_VERSION:-"6.3.0"}
+        export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.3"}
+        export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.3.0"}
+        export QWT_SHA256_CHECKSUM="39839f3aa83f41d09109296d41659e04bb234d9e41ab551af9f4e9b4fceed251"
+    fi
 }
 
 function bv_qwt_print
@@ -107,14 +117,7 @@ function bv_qwt_ensure
     fi
 }
 
-function bv_qwt_dry_run
-{
-    if [[ "$DO_QWT" == "yes" ]] ; then
-        echo "Dry run option not set for qwt."
-    fi
-}
-
-function apply_qwt_linux_patch
+function apply_qwt_612_linux_patch
 {
     PATCHFILE="./patchfile.patch"
     rm -rf $PATCHFILE
@@ -143,7 +146,35 @@ function apply_qwt_linux_patch
     return 0;
 }
 
-function apply_qwt_static_patch
+function apply_qwt_630_linux_patch
+{
+    PATCHFILE="./patchfile.patch"
+    rm -rf $PATCHFILE
+    touch $PATCHFILE
+
+    echo "--- qwtconfig.pri       2023-04-13 07:57:21.545486000 -0700" >> $PATCHFILE
+    echo "+++ qwtconfig.pri.new   2023-04-13 07:58:43.382979000 -0700" >> $PATCHFILE
+    echo "@@ -19,7 +19,7 @@" >> $PATCHFILE
+    echo " QWT_INSTALL_PREFIX = \$\$[QT_INSTALL_PREFIX]" >> $PATCHFILE
+    echo " " >> $PATCHFILE
+    echo " unix {" >> $PATCHFILE
+    echo "-    QWT_INSTALL_PREFIX    = /usr/local/qwt-\$\$QWT_VERSION-dev" >> $PATCHFILE
+    echo "+    QWT_INSTALL_PREFIX    = ${QWT_INSTALL_DIR}" >> $PATCHFILE
+    echo "     # QWT_INSTALL_PREFIX = /usr/local/qwt-\$\$QWT_VERSION-dev-qt-\$\$QT_VERSION" >> $PATCHFILE
+    echo " }" >> $PATCHFILE
+
+
+    patch -p0 < $PATCHFILE
+
+    if [[ $? != 0 ]] ; then
+        warn "qwt 6.3.0 linux patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qwt_612_static_patch
 {
     # must patch a file in order to create static library
     info "Patching qwt for static build"
@@ -215,12 +246,18 @@ EOF
 
 function apply_qwt_patch
 {
-    if [[ "$OPSYS" == "Linux" || "$OPSYS" == "Darwin" ]]; then
-        apply_qwt_linux_patch
-    fi
+    if [[ "$QWT_VERSION" == "6.1.2" ]]; then
+        if [[ "$OPSYS" == "Linux" || "$OPSYS" == "Darwin" ]]; then
+            apply_qwt_612_linux_patch
+        fi
 
-    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-        apply_qwt_static_patch
+        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+            apply_qwt_612_static_patch
+        fi
+    elif [[ "$QWT_VERSION" == "6.3.0" ]]; then
+        if [[ "$OPSYS" == "Linux" || "$OPSYS" == "Darwin" ]]; then
+            apply_qwt_630_linux_patch
+        fi
     fi
 }
 
@@ -273,7 +310,13 @@ function build_qwt
     # Build Qwt
     #
     info "Configuring Qwt . . . (~1 minute)"
-    ${QT_BIN_DIR}/qmake qwt.pro
+    if [[ "$DO_QT6" == "yes" ]]; then
+        info "qt6 is being used"
+        ${QT6_BIN_DIR}/qmake qwt.pro
+    else
+        info "qt6 is being used"
+        ${QT_BIN_DIR}/qmake qwt.pro
+    fi
     if [[ $? != 0 ]] ; then
         warn "Qwt project build failed.  Giving up"
         return 1

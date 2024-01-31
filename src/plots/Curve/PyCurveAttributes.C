@@ -5,6 +5,8 @@
 #include <PyCurveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -39,9 +41,8 @@ struct CurveAttributesObject
 // Internal prototypes
 //
 static PyObject *NewCurveAttributes(int);
-
 std::string
-PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
+PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -253,12 +254,48 @@ CurveAttributes_SetShowLines(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showLines in the object.
-    obj->data->SetShowLines(ival != 0);
+    obj->data->SetShowLines(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -277,12 +314,48 @@ CurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -301,12 +374,48 @@ CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showPoints in the object.
-    obj->data->SetShowPoints(ival != 0);
+    obj->data->SetShowPoints(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -325,22 +434,59 @@ CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 7)
+    {
+        std::stringstream ss;
+        ss << "An invalid symbol value was given." << std::endl;
+        ss << "Valid values are in the range [0,6]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Point";
+        ss << ", TriangleUp";
+        ss << ", TriangleDown";
+        ss << ", Square";
+        ss << ", Circle";
+        ss << ", Plus";
+        ss << ", X";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the symbol in the object.
-    if(ival >= 0 && ival < 7)
-        obj->data->SetSymbol(CurveAttributes::SymbolTypes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid symbol value was given. "
-                        "Valid values are in the range of [0,6]. "
-                        "You can also use the following names: "
-                        "Point, TriangleUp, TriangleDown, Square, Circle, "
-                        "Plus, X.");
-        return NULL;
-    }
+    obj->data->SetSymbol(CurveAttributes::SymbolTypes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -359,12 +505,48 @@ CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSize in the object.
-    obj->data->SetPointSize(dval);
+    obj->data->SetPointSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -383,21 +565,54 @@ CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid pointFillMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Static";
+        ss << ", Dynamic";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointFillMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetPointFillMode(CurveAttributes::FillMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid pointFillMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Static, Dynamic.");
-        return NULL;
-    }
+    obj->data->SetPointFillMode(CurveAttributes::FillMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -416,12 +631,48 @@ CurveAttributes_SetPointStride(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointStride in the object.
-    obj->data->SetPointStride((int)ival);
+    obj->data->SetPointStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -440,12 +691,48 @@ CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the symbolDensity in the object.
-    obj->data->SetSymbolDensity((int)ival);
+    obj->data->SetSymbolDensity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -464,21 +751,54 @@ CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid curveColorSource value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Cycle";
+        ss << ", Custom";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the curveColorSource in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCurveColorSource(CurveAttributes::CurveColor(ival));
-    else
-    {
-        fprintf(stderr, "An invalid curveColorSource value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Cycle, Custom.");
-        return NULL;
-    }
+    obj->data->SetCurveColorSource(CurveAttributes::CurveColor(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -574,12 +894,48 @@ CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showLegend in the object.
-    obj->data->SetShowLegend(ival != 0);
+    obj->data->SetShowLegend(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -598,12 +954,48 @@ CurveAttributes_SetShowLabels(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showLabels in the object.
-    obj->data->SetShowLabels(ival != 0);
+    obj->data->SetShowLabels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -622,12 +1014,37 @@ CurveAttributes_SetDesignator(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the designator in the object.
-    obj->data->SetDesignator(std::string(str));
+    obj->data->SetDesignator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -646,12 +1063,48 @@ CurveAttributes_SetDoBallTimeCue(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the doBallTimeCue in the object.
-    obj->data->SetDoBallTimeCue(ival != 0);
+    obj->data->SetDoBallTimeCue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -747,12 +1200,48 @@ CurveAttributes_SetTimeCueBallSize(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeCueBallSize in the object.
-    obj->data->SetTimeCueBallSize(dval);
+    obj->data->SetTimeCueBallSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -771,12 +1260,48 @@ CurveAttributes_SetDoLineTimeCue(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the doLineTimeCue in the object.
-    obj->data->SetDoLineTimeCue(ival != 0);
+    obj->data->SetDoLineTimeCue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -872,12 +1397,48 @@ CurveAttributes_SetLineTimeCueWidth(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineTimeCueWidth in the object.
-    obj->data->SetLineTimeCueWidth((int)ival);
+    obj->data->SetLineTimeCueWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -896,12 +1457,48 @@ CurveAttributes_SetDoCropTimeCue(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the doCropTimeCue in the object.
-    obj->data->SetDoCropTimeCue(ival != 0);
+    obj->data->SetDoCropTimeCue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -920,12 +1517,48 @@ CurveAttributes_SetTimeForTimeCue(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeForTimeCue in the object.
-    obj->data->SetTimeForTimeCue(dval);
+    obj->data->SetTimeForTimeCue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -944,21 +1577,56 @@ CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid fillMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " NoFill";
+        ss << ", Solid";
+        ss << ", HorizontalGradient";
+        ss << ", VerticalGradient";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fillMode in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetFillMode(CurveAttributes::CurveFillMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid fillMode value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "NoFill, Solid, HorizontalGradient, VerticalGradient.");
-        return NULL;
-    }
+    obj->data->SetFillMode(CurveAttributes::CurveFillMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1131,12 +1799,48 @@ CurveAttributes_SetPolarToCartesian(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the polarToCartesian in the object.
-    obj->data->SetPolarToCartesian(ival != 0);
+    obj->data->SetPolarToCartesian(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1155,21 +1859,54 @@ CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid polarCoordinateOrder value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " R_Theta";
+        ss << ", Theta_R";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the polarCoordinateOrder in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetPolarCoordinateOrder(CurveAttributes::PolarCoordinateOrder(ival));
-    else
-    {
-        fprintf(stderr, "An invalid polarCoordinateOrder value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "R_Theta, Theta_R.");
-        return NULL;
-    }
+    obj->data->SetPolarCoordinateOrder(CurveAttributes::PolarCoordinateOrder(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1188,21 +1925,54 @@ CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid angleUnits value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Radians";
+        ss << ", Degrees";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the angleUnits in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetAngleUnits(CurveAttributes::AngleUnits(ival));
-    else
-    {
-        fprintf(stderr, "An invalid angleUnits value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Radians, Degrees.");
-        return NULL;
-    }
+    obj->data->SetAngleUnits(CurveAttributes::AngleUnits(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1291,14 +2061,7 @@ CurveAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-CurveAttributes_compare(PyObject *v, PyObject *w)
-{
-    CurveAttributes *a = ((CurveAttributesObject *)v)->data;
-    CurveAttributes *b = ((CurveAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *CurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCurveAttributes_getattr(PyObject *self, char *name)
 {
@@ -1401,181 +2164,93 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CurveAttributes::Degrees));
 
 
-    // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "cycleColors") == 0)
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
     {
-        CurveAttributesObject *curveObj = (CurveAttributesObject *)self;
-        bool cycleColors = curveObj->data->GetCurveColorSource() == CurveAttributes::Custom;
-        return PyInt_FromLong(cycleColors?1L:0L);
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyCurveAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyCurveAttributes_methods[i].ml_name),
+                PyString_FromString(PyCurveAttributes_methods[i].ml_name));
+        return result;
     }
-    // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "color") == 0)
-    {
-        return CurveAttributes_GetCurveColor(self, NULL);
-    }
-    if(strcmp(name, "RenderAsLines") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RenderAsPoints") == 0)
-    {
-        return PyInt_FromLong(1L);
-    }
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        fprintf(stdout, "lineStyle is no longer a valid Curve "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
+
     return Py_FindMethod(PyCurveAttributes_methods, self, name);
 }
 
 int
 PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "showLines") == 0)
-        obj = CurveAttributes_SetShowLines(self, tuple);
+        obj = CurveAttributes_SetShowLines(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = CurveAttributes_SetLineWidth(self, tuple);
+        obj = CurveAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "showPoints") == 0)
-        obj = CurveAttributes_SetShowPoints(self, tuple);
+        obj = CurveAttributes_SetShowPoints(self, args);
     else if(strcmp(name, "symbol") == 0)
-        obj = CurveAttributes_SetSymbol(self, tuple);
+        obj = CurveAttributes_SetSymbol(self, args);
     else if(strcmp(name, "pointSize") == 0)
-        obj = CurveAttributes_SetPointSize(self, tuple);
+        obj = CurveAttributes_SetPointSize(self, args);
     else if(strcmp(name, "pointFillMode") == 0)
-        obj = CurveAttributes_SetPointFillMode(self, tuple);
+        obj = CurveAttributes_SetPointFillMode(self, args);
     else if(strcmp(name, "pointStride") == 0)
-        obj = CurveAttributes_SetPointStride(self, tuple);
+        obj = CurveAttributes_SetPointStride(self, args);
     else if(strcmp(name, "symbolDensity") == 0)
-        obj = CurveAttributes_SetSymbolDensity(self, tuple);
+        obj = CurveAttributes_SetSymbolDensity(self, args);
     else if(strcmp(name, "curveColorSource") == 0)
-        obj = CurveAttributes_SetCurveColorSource(self, tuple);
+        obj = CurveAttributes_SetCurveColorSource(self, args);
     else if(strcmp(name, "curveColor") == 0)
-        obj = CurveAttributes_SetCurveColor(self, tuple);
+        obj = CurveAttributes_SetCurveColor(self, args);
     else if(strcmp(name, "showLegend") == 0)
-        obj = CurveAttributes_SetShowLegend(self, tuple);
+        obj = CurveAttributes_SetShowLegend(self, args);
     else if(strcmp(name, "showLabels") == 0)
-        obj = CurveAttributes_SetShowLabels(self, tuple);
+        obj = CurveAttributes_SetShowLabels(self, args);
     else if(strcmp(name, "designator") == 0)
-        obj = CurveAttributes_SetDesignator(self, tuple);
+        obj = CurveAttributes_SetDesignator(self, args);
     else if(strcmp(name, "doBallTimeCue") == 0)
-        obj = CurveAttributes_SetDoBallTimeCue(self, tuple);
+        obj = CurveAttributes_SetDoBallTimeCue(self, args);
     else if(strcmp(name, "ballTimeCueColor") == 0)
-        obj = CurveAttributes_SetBallTimeCueColor(self, tuple);
+        obj = CurveAttributes_SetBallTimeCueColor(self, args);
     else if(strcmp(name, "timeCueBallSize") == 0)
-        obj = CurveAttributes_SetTimeCueBallSize(self, tuple);
+        obj = CurveAttributes_SetTimeCueBallSize(self, args);
     else if(strcmp(name, "doLineTimeCue") == 0)
-        obj = CurveAttributes_SetDoLineTimeCue(self, tuple);
+        obj = CurveAttributes_SetDoLineTimeCue(self, args);
     else if(strcmp(name, "lineTimeCueColor") == 0)
-        obj = CurveAttributes_SetLineTimeCueColor(self, tuple);
+        obj = CurveAttributes_SetLineTimeCueColor(self, args);
     else if(strcmp(name, "lineTimeCueWidth") == 0)
-        obj = CurveAttributes_SetLineTimeCueWidth(self, tuple);
+        obj = CurveAttributes_SetLineTimeCueWidth(self, args);
     else if(strcmp(name, "doCropTimeCue") == 0)
-        obj = CurveAttributes_SetDoCropTimeCue(self, tuple);
+        obj = CurveAttributes_SetDoCropTimeCue(self, args);
     else if(strcmp(name, "timeForTimeCue") == 0)
-        obj = CurveAttributes_SetTimeForTimeCue(self, tuple);
+        obj = CurveAttributes_SetTimeForTimeCue(self, args);
     else if(strcmp(name, "fillMode") == 0)
-        obj = CurveAttributes_SetFillMode(self, tuple);
+        obj = CurveAttributes_SetFillMode(self, args);
     else if(strcmp(name, "fillColor1") == 0)
-        obj = CurveAttributes_SetFillColor1(self, tuple);
+        obj = CurveAttributes_SetFillColor1(self, args);
     else if(strcmp(name, "fillColor2") == 0)
-        obj = CurveAttributes_SetFillColor2(self, tuple);
+        obj = CurveAttributes_SetFillColor2(self, args);
     else if(strcmp(name, "polarToCartesian") == 0)
-        obj = CurveAttributes_SetPolarToCartesian(self, tuple);
+        obj = CurveAttributes_SetPolarToCartesian(self, args);
     else if(strcmp(name, "polarCoordinateOrder") == 0)
-        obj = CurveAttributes_SetPolarCoordinateOrder(self, tuple);
+        obj = CurveAttributes_SetPolarCoordinateOrder(self, args);
     else if(strcmp(name, "angleUnits") == 0)
-        obj = CurveAttributes_SetAngleUnits(self, tuple);
+        obj = CurveAttributes_SetAngleUnits(self, args);
 
-   // Try and handle legacy fields in CurveAttributes
-    if(obj == NULL)
-    {
-        CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
-        if(strcmp(name, "color") == 0)
-        {
-            obj = CurveAttributes_SetCurveColor(self, tuple);
-        }
-        if(strcmp(name, "cycleColors") == 0)
-        {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            if(ival == 0)
-                CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
-            else
-                CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
-
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "renderMode") == 0)
-        {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            if(ival == 0)
-            {
-                CurveObj->data->SetShowLines(true);
-                CurveObj->data->SetShowPoints(false);
-            }
-            else
-            {
-                CurveObj->data->SetShowLines(false);
-                CurveObj->data->SetShowPoints(true);
-            }
-
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1583,7 +2258,7 @@ static int
 CurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1591,7 +2266,7 @@ PyObject *
 CurveAttributes_str(PyObject *v)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1604,49 +2279,70 @@ static char *CurveAttributes_Purpose = "Attributes for the xy plot";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject CurveAttributesType =
+
+VISIT_PY_TYPE_OBJ(CurveAttributesType,         \
+                  "CurveAttributes",           \
+                  CurveAttributesObject,       \
+                  CurveAttributes_dealloc,     \
+                  CurveAttributes_print,       \
+                  PyCurveAttributes_getattr,   \
+                  PyCurveAttributes_setattr,   \
+                  CurveAttributes_str,         \
+                  CurveAttributes_Purpose,     \
+                  CurveAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+CurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "CurveAttributes",                    // tp_name
-    sizeof(CurveAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)CurveAttributes_dealloc,  // tp_dealloc
-    (printfunc)CurveAttributes_print,     // tp_print
-    (getattrfunc)PyCurveAttributes_getattr, // tp_getattr
-    (setattrfunc)PyCurveAttributes_setattr, // tp_setattr
-    (cmpfunc)CurveAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)CurveAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    CurveAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &CurveAttributesType
+         || Py_TYPE(other) != &CurveAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    CurveAttributes *a = ((CurveAttributesObject *)self)->data;
+    CurveAttributes *b = ((CurveAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1722,7 +2418,7 @@ PyCurveAttributes_GetLogString()
 {
     std::string s("CurveAtts = CurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
     return s;
 }
 
@@ -1735,7 +2431,7 @@ PyCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CurveAtts = CurveAttributes()\n");
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
         cb(s);
     }
 }

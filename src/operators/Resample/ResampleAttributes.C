@@ -656,11 +656,6 @@ ResampleAttributes::SetFromNode(DataNode *parentNode)
         SetDistributedResample(node->AsBool());
     if((node = searchNode->GetNode("cellCenteredOutput")) != 0)
         SetCellCenteredOutput(node->AsBool());
-    // The SetStartX, etc calls trample useExtents.
-    // Set to the correct value at the end.
-    if((node = searchNode->GetNode("useExtents")) != 0)
-        SetUseExtents(node->AsBool());
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -677,8 +672,6 @@ ResampleAttributes::SetUseExtents(bool useExtents_)
 void
 ResampleAttributes::SetStartX(double startX_)
 {
-    SetUseExtents(false);
-
     startX = startX_;
     Select(ID_startX, (void *)&startX);
 }
@@ -686,8 +679,6 @@ ResampleAttributes::SetStartX(double startX_)
 void
 ResampleAttributes::SetEndX(double endX_)
 {
-    SetUseExtents(false);
-
     endX = endX_;
     Select(ID_endX, (void *)&endX);
 }
@@ -702,8 +693,6 @@ ResampleAttributes::SetSamplesX(int samplesX_)
 void
 ResampleAttributes::SetStartY(double startY_)
 {
-    SetUseExtents(false);
-
     startY = startY_;
     Select(ID_startY, (void *)&startY);
 }
@@ -711,8 +700,6 @@ ResampleAttributes::SetStartY(double startY_)
 void
 ResampleAttributes::SetEndY(double endY_)
 {
-    SetUseExtents(false);
-
     endY = endY_;
     Select(ID_endY, (void *)&endY);
 }
@@ -734,8 +721,6 @@ ResampleAttributes::SetIs3D(bool is3D_)
 void
 ResampleAttributes::SetStartZ(double startZ_)
 {
-    SetUseExtents(false);
-
     startZ = startZ_;
     Select(ID_startZ, (void *)&startZ);
 }
@@ -743,8 +728,6 @@ ResampleAttributes::SetStartZ(double startZ_)
 void
 ResampleAttributes::SetEndZ(double endZ_)
 {
-    SetUseExtents(false);
-
     endZ = endZ_;
     Select(ID_endZ, (void *)&endZ);
 }

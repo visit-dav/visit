@@ -152,7 +152,7 @@ FilterTecplotNamesForVisIt(const std::string &input)
 // ****************************************************************************
 
 avtTecplotBinaryFileFormat::avtTecplotBinaryFileFormat(const char *filename,
-                                                 DBOptionsAttributes *readOpts)
+                                                 const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1), zoneNameToZoneList(), scalarToZone()
 {
     tec = 0;

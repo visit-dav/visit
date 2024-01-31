@@ -5,6 +5,7 @@
 #ifndef PY_AVTSIMULATIONINFORMATION_H
 #define PY_AVTSIMULATIONINFORMATION_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtSimulationInformation.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyavtSimulationInformation_Wrap(const avtSimulationIn
 void VISITPY_API           PyavtSimulationInformation_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSimulationInformation_SetDefaults(const avtSimulationInformation *atts);
 std::string VISITPY_API    PyavtSimulationInformation_GetLogString();
-std::string VISITPY_API    PyavtSimulationInformation_ToString(const avtSimulationInformation *, const char *);
+std::string VISITPY_API    PyavtSimulationInformation_ToString(const avtSimulationInformation *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtSimulationInformation_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtSimulationInformation_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSimulationInformation_methods[AVTSIMULATIONINFORMATION_NMETH];

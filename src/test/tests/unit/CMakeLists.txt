@@ -14,6 +14,7 @@ SET(PY_TESTS
     namescheme
     protocol
     stringhelpers
+    annotation_objects
     )
 
 ADD_VISIT_PY_TESTS(Unit "${PY_TESTS}")

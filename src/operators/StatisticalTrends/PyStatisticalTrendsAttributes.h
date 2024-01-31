@@ -5,6 +5,7 @@
 #ifndef PY_STATISTICALTRENDSATTRIBUTES_H
 #define PY_STATISTICALTRENDSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <StatisticalTrendsAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyStatisticalTrendsAttributes_Wrap(const StatisticalTrendsAttribu
 void           PyStatisticalTrendsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyStatisticalTrendsAttributes_SetDefaults(const StatisticalTrendsAttributes *atts);
 std::string    PyStatisticalTrendsAttributes_GetLogString();
-std::string    PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *, const char *);
+std::string    PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *, const char *, const bool=false);
 PyObject *     PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name);
 int            PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyStatisticalTrendsAttributes_methods[STATISTICALTRENDSATTRIBUTES_NMETH];

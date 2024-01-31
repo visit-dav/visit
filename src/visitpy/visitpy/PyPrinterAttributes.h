@@ -5,6 +5,7 @@
 #ifndef PY_PRINTERATTRIBUTES_H
 #define PY_PRINTERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PrinterAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyPrinterAttributes_Wrap(const PrinterAttributes *att
 void VISITPY_API           PyPrinterAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPrinterAttributes_SetDefaults(const PrinterAttributes *atts);
 std::string VISITPY_API    PyPrinterAttributes_GetLogString();
-std::string VISITPY_API    PyPrinterAttributes_ToString(const PrinterAttributes *, const char *);
+std::string VISITPY_API    PyPrinterAttributes_ToString(const PrinterAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyPrinterAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyPrinterAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyPrinterAttributes_methods[PRINTERATTRIBUTES_NMETH];

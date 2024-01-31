@@ -16,6 +16,10 @@
 #  Added testing for python expressions with numpy mixed with simple
 #  expressions.
 #
+#  Kathleen Biagas Fri Mar 12, 2021
+#  Rename xx_simple_xx.py expression scripts to prevent them being run when
+#  passing file globs to test suite (eg tests/hybrid/*.py) 
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -52,14 +56,14 @@ DeleteAllPlots()
 # Test simple expressions mixed with python expressions using numpy
 OpenDatabase(silo_data_path("multi_rect2d.silo"))
 
-script_file = pjoin(os.path.split(TestScriptPath())[0],"simple_numpy_expr.py")
+script_file = pjoin(os.path.split(TestScriptPath())[0],"simple_numpy_expr.vpe")
 DefinePythonExpression("python_multiply", ['d','p'], file=script_file)
 AddPlot("Pseudocolor", "python_multiply", 1, 1)
 DrawPlots()
 Test("py_exprs_01")
 DeleteAllPlots()
 
-script_file = pjoin(os.path.split(TestScriptPath())[0],"python_simple_mix_01.py")
+script_file = pjoin(os.path.split(TestScriptPath())[0],"python_simple_mix_01.vpe")
 DefineScalarExpression("my_expr", "d*p")
 DefinePythonExpression("python_with_simple", ['d','p', 'my_expr'], file=script_file)
 AddPlot("Pseudocolor", "python_with_simple", 1, 1)
@@ -67,7 +71,7 @@ DrawPlots()
 Test("py_exprs_02")
 DeleteAllPlots()
 
-script_file = pjoin(os.path.split(TestScriptPath())[0],"python_simple_mix_02.py")
+script_file = pjoin(os.path.split(TestScriptPath())[0],"python_simple_mix_02.vpe")
 DefinePythonExpression("python_with_python", ['d','p', 'python_multiply'], file=script_file)
 AddPlot("Pseudocolor", "python_with_python", 1, 1)
 DrawPlots()
@@ -80,7 +84,22 @@ DrawPlots()
 Test("py_exprs_04")
 DeleteAllPlots()
 
+CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
+OpenDatabase(silo_data_path("curv2d.silo"))
 
+script_file = pjoin(os.path.split(TestScriptPath())[0],"python_example_1.vpe")
+DefinePythonExpression("MyExpression", ['d', 'p'], file=script_file)
+AddPlot("Pseudocolor", "MyExpression")
+DrawPlots()
+Test("py_exprs_05")
+DeleteAllPlots()
+
+script_file = pjoin(os.path.split(TestScriptPath())[0],"python_example_2.vpe")
+DefinePythonExpression("MyExpression", ("d"), file=script_file)
+AddPlot("Pseudocolor", "MyExpression")
+DrawPlots()
+Test("py_exprs_06")
+DeleteAllPlots()
 
 Exit()

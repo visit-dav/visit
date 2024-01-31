@@ -21,7 +21,6 @@
 #include <avtDatabaseMetaData.h>
 #include <AtomicProperties.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 #include <vtkTriangulationTables.h>
 

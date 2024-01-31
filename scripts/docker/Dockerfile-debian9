@@ -2,11 +2,11 @@ FROM debian:stretch
 MAINTAINER Eric Brugger <brugger1@llnl.gov>
 
 # fetch build env
+ENV TZ=America/Los_Angeles
 RUN apt-get update && apt-get install -y \
     git \
     wget \
     curl \
-    p7zip \
     unzip \
     subversion \
     build-essential \
@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     libx11-xcb-dev \
     libxcb-dri2-0-dev \
     libxcb-xfixes0-dev \
+    libxkbcommon-dev \
     xutils-dev \
     xorg-dev \
     libfreetype6-dev \
@@ -35,6 +36,8 @@ RUN apt-get update && apt-get install -y \
     bison \
     flex \
     cpio \
+    libegl1-mesa \
+    libegl1-mesa-dev \
  && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists/*
@@ -45,17 +48,19 @@ ENV LANG en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
+RUN cd /usr && ln -s lib lib64
+
 RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
 USER visit
 WORKDIR /home/visit
 
 # Create the third-party directory
-RUN mkdir third-party
+RUN mkdir /home/visit/third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_1_1 /home/visit
+COPY build_visit3_3_3 /home/visit
 COPY run_build_visit.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
 COPY build_test_visit.sh /home/visit
 COPY test_visit.py /home/visit
 # Build the third party libraries
-RUN /bin/bash run_build_visit.sh
+RUN /bin/bash run_build_visit.sh

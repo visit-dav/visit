@@ -152,8 +152,8 @@ class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
     friend class DropListWidget; //todo remove this dependency..
 public:
     QvisHostProfileWindow(HostProfileList *profiles, 
-                          const QString &caption = QString::null,
-                          const QString &shortName = QString::null,
+                          const QString &caption = QString(),
+                          const QString &shortName = QString(),
                           QvisNotepadArea *notepad = 0);
     virtual ~QvisHostProfileWindow();
     virtual void CreateWindowContents();
@@ -232,7 +232,7 @@ private slots:
     void clientHostNameMethodChanged(int);
     void clientHostNameChanged(const QString &);
     void toggleCanDoHW(bool);
-    void nGPUsChanged(const QString&);
+    void nGPUsChanged(int);
     void toggleTunnelSSH(bool);
     void toggleXArgs(bool);
     void xArgsChanged(const QString&);

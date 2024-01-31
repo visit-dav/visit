@@ -5,6 +5,7 @@
 #ifndef PY_AVTSPECIESMETADATA_H
 #define PY_AVTSPECIESMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtSpeciesMetaData.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyavtSpeciesMetaData_Wrap(const avtSpeciesMetaData *a
 void VISITPY_API           PyavtSpeciesMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSpeciesMetaData_SetDefaults(const avtSpeciesMetaData *atts);
 std::string VISITPY_API    PyavtSpeciesMetaData_GetLogString();
-std::string VISITPY_API    PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *, const char *);
+std::string VISITPY_API    PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtSpeciesMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSpeciesMetaData_methods[AVTSPECIESMETADATA_NMETH];

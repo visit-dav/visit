@@ -1,97 +1,3 @@
-Target: xml2python
-Code: PyMeshAttributes_getattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields in MeshAttributes
-    if(strcmp(name, "backgroundFlag") == 0)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        bool backgroundFlag = meshObj->data->GetOpaqueColorSource() == MeshAttributes::Background;
-        return PyInt_FromLong(backgroundFlag?1L:0L);
-    }
-    else if(strcmp(name, "foregroundFlag") == 0)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        bool foregroundFlag = meshObj->data->GetMeshColorSource() == MeshAttributes::Foreground;
-        return PyInt_FromLong(foregroundFlag?1L:0L);
-    }
-
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        fprintf(stdout, "lineStyle is no longer a valid Mesh "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
-
-Code: PyMeshAttributes_setattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields in MeshAttributes
-    if(obj == NULL)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        if(strcmp(name, "backgroundFlag") == 0)
-        {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            if(ival == 0)
-                meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
-            else
-                meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
-
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "foregroundFlag") == 0)
-        {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            if(ival == 0)
-                meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
-            else
-                meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
-
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-
 Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const MeshAttributes &, const int);
@@ -121,6 +27,9 @@ Definition:
 //    Kathleen Biagas, Thu Apr 23 13:14:51 PDT 2015
 //    Removed never-used oulineOnly and errorTolerance atts.
 //
+//    Kathleen Biagas, Wed Jun  10 10:00:03 PDT 2020
+//    Added test for changing point type.
+//
 // ****************************************************************************
 
 bool
@@ -133,57 +42,142 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
                              (obj.pointSizeVar != "") &&
                              (obj.pointSizeVar != "\0")));
 
-    return ((needSecondaryVar) ||
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType &&
+                              currentPointTypeIsPoint != newPointTypeIsPoint;
+
+    return ( needSecondaryVar || changingPointType ||
             (smoothingLevel != obj.smoothingLevel) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }
 
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
 // ****************************************************************************
-// Method: MeshAttributes::ProcessOldVersions
+// Method: MeshAttributes::CreateCompatible
 //
 // Purpose:
-//   This method handles some old fields by converting them to new fields.
+//   CreateCompatible method for the MeshAttributes class.
+//   Can create PointGlyphAttributes.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 12 09:33:52 PST 2010
+// Programmer: Kathleen Biagas
+// Creation:   June 10, 2020
 //
 // Modifications:
 //
 // ****************************************************************************
-#include <Utility.h>
-void
-MeshAttributes::ProcessOldVersions(DataNode *parentNode,
-    const char *configVersion)
+
+AttributeSubject *
+MeshAttributes::CreateCompatible(const std::string &tname) const
 {
-    if(parentNode == 0)
-        return;
+    AttributeSubject *retval = 0;
 
-    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
-    if(searchNode == 0)
-        return;
+    if(TypeName() == tname)
+    {
+        retval = new MeshAttributes(*this);
+    }
+    else if(tname == "PointGlyph")
+    {
+        PointGlyphAttributes *pga = new PointGlyphAttributes();
+        pga->SetPointSize(GetPointSize());
+        pga->SetPointType(GetPointType());
+        pga->SetPointSizeVarEnabled(GetPointSizeVarEnabled());
+        pga->SetPointSizeVar(GetPointSizeVar());
+        pga->SetPointSizePixels(GetPointSizePixels());
+        retval = pga;
+    }
 
-    if(VersionLessThan(configVersion, "2.0.0"))
+    return retval;
+}
+
+Target: xml2info
+Function: MeshViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition:
+// ****************************************************************************
+//  Method: MeshViewerEnginePluginInfo::InitializePlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 3, 2020
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+void
+MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
+{
+    *(MeshAttributes*)atts = *defaultAtts;
+    SetAutonomousColors(atts,
+        plot.GetBackgroundColor(), plot.GetForegroundColor());
+}
+
+Function: MeshViewerEnginePluginInfo::SetAutonomousColors
+Declaration: void SetAutonomousColors(AttributeSubject *, double const *, double const *);
+Definition:
+// ****************************************************************************
+//  Method: MeshViewerEnginePluginInfo::SetAutonomousColors
+//
+//  Purpose:
+//    Sets the color for any autonomous color selection modes 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 3, 2020
+// ****************************************************************************
+#include <avtColorTables.h>
+
+void
+MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
+    double const *bgColor, double const *fgColor)
+{
+    MeshAttributes *meshAtts = (MeshAttributes *)atts;
+    bool attsChanged = false;
+
+    unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
+                           static_cast<unsigned char>(bgColor[1]*255),
+                           static_cast<unsigned char>(bgColor[2]*255)};
+    unsigned char fg[3] = {static_cast<unsigned char>(fgColor[0]*255),
+                           static_cast<unsigned char>(fgColor[1]*255),
+                           static_cast<unsigned char>(fgColor[2]*255)};
+
+    if (meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
     {
-        DataNode *k = 0;
-        if((k = searchNode->GetNode("foregroundFlag")) != 0)
-        {
-            MeshColor val = k->AsBool() ? Foreground : MeshCustom;
-            searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("meshColorSource", MeshColor_ToString(val)));
-        }
-        if((k = searchNode->GetNode("backgroundFlag")) != 0)
-        {
-            OpaqueColor val = k->AsBool() ? Background : OpaqueCustom;
-            searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(val)));
-        }
+        unsigned char rgb[3] = {bg[0], bg[1], bg[2]};
+
+        // deconflict opaque color with foreground
+        avtColorTables *ct = avtColorTables::Instance();
+        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "MeshColor", fg, rgb))
+            ct->GetJNDControlPointColor("distinct", "MeshColor", fg, rgb);
+
+        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
+        meshAtts->SetOpaqueColor(c);
+        attsChanged = true;
     }
-    if(VersionLessThan(configVersion, "3.0.0"))
+
+    if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
     {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
+        unsigned char rgb[3] = {fg[0], fg[1], fg[2]};
+        ColorAttribute opqc = meshAtts->GetOpaqueColor();
+
+        // deconflict mesh (lines) color with opaque color
+        avtColorTables *ct = avtColorTables::Instance();
+        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "MeshColor", opqc.GetColor(), rgb))
+            ct->GetJNDControlPointColor("distinct", "MeshColor", opqc.GetColor(), rgb);
+
+        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
+        meshAtts->SetMeshColor(c);
+        attsChanged = true;
     }
+
+    // Ensure GUI reflects any color choices made here
+    if (attsChanged)
+        SetClientAtts(atts);
 }

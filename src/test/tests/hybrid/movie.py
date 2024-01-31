@@ -19,14 +19,32 @@
 #     Kathleen Biagas, Mon Oct 23 17:41:43 MST 2017
 #     Use Image lib for image conversion instead of 'convert'.
 #
+#     Kathleen Biagas, Tue Sep 14 09:51:45 PDT 2021
+#     Added call to CloseComputeEngine to GenerateMovie method, since the
+#     movie script launches its own. Prevents a hang when run in parallel.
+#
+#     Kathleen Biagas, Tue Sep 21 17:22:58 PDT 2021
+#     Removed CloseComputeEngine, it prevented the non-movie-generation parts
+#     of the test from running in parallel.  If the nightlies use srun,
+#     add "--overlap" srun option.  This allows cinema test to succeed in
+#     parallel with recent changes to slurm.
+#
+#     Kathleen Biagas, Tue Apr 12 11:41:20 PDT 2022
+#     Removed the conversion from .bmp to .png in test5, since visit_composite
+#     output is now fixed. (see bug #2386).
+#
 # ----------------------------------------------------------------------------
-import os, string, subprocess, visit_utils, Image
+import os
+import subprocess
+import visit_utils
+from PIL import Image
 
 def GenerateMovie(movieArgs):
+    args = [TestEnv.params["visit_bin"], "-noconfig", "-movie"] + movieArgs
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
-    else:
-        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig"] + movieArgs
+        args = args + ["-np", "2", "-l", TestEnv.params["parallel_launch"]]
+        if TestEnv.params["parallel_launch"] == "srun":
+            args = args + ["-la", "--overlap"]
     p = subprocess.check_output(args)
     return p
 
@@ -55,7 +73,6 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
             files = files + [framefiles[idx][0]]
     else:
         files = [x[0] for x in framefiles]
-    annot = None
     if len(label) > 0:
         annot = CreateAnnotationObject("Text2D")
         annot.position = (0.02,0.92)
@@ -75,8 +92,12 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
         Test(testname)
         DeleteAllPlots()
         CloseDatabase(f)
-    if annot != None:
-        annot.Delete()
+    if len(label) > 0:
+        annotations = GetAnnotationObjectNames()
+        for a in annotations:
+            if a.startswith("Text2D"):
+                GetAnnotationObject(a).Delete()
+                break
     return testid
 
 def FileSubstitution(infile, outfile, replacements):
@@ -86,14 +107,14 @@ def FileSubstitution(infile, outfile, replacements):
         s = line
         for token in replacements:
             if token in line:
-                s = string.replace(s, token, replacements[token])
+                s = s.replace(token, replacements[token])
         out.write(s)
     out.close()
 
 def test012():
     # Set up a movie script.
     f = open("fb_wave.py", "wt")
-    f.write("print \"MOVIE SCRIPT EXECUTING\"\n")
+    f.write("print (\"MOVIE SCRIPT EXECUTING\")\n")
     f.write("OpenDatabase(r\"%s\")\n" % silo_data_path("wave*.silo database"))
     f.write("AddPlot(\"FilledBoundary\", \"Material\")\n")
     f.write("DrawPlots()\n")
@@ -135,7 +156,7 @@ def test012():
     f.write("ts.width = 0.98\n")
     f.write("ts.startColor = (255,140,80,250)\n")
     f.write("ts.rounded = 0\n")
-    f.write("for i in xrange(TimeSliderGetNStates()):\n")
+    f.write("for i in range(TimeSliderGetNStates()):\n")
     f.write("    SetTimeSliderState(i)\n")
     f.write("    SaveWindow()\n")
     f.close()
@@ -165,7 +186,7 @@ def test012():
         # extract movie and let's plot some frames.
         visit_utils.encoding.extract("test_0.mpg", "frame%04d.png")
         framefiles = GetFiles("frame")
-        txt = string.join([x[0] for x in framefiles], "\n")
+        txt = "\n".join([x[0] for x in framefiles])
         TestText("movie_0_01", txt)
 
         # Plot some of the extracted frames
@@ -181,7 +202,7 @@ def test012():
 
         # Look at the mpeg movie file size.
         files = GetFiles("test_1")
-        txt = string.join([x[0] for x in files], "\n") + "\n\n"
+        txt = "\n".join([x[0] for x in files]) + "\n\n"
         for f in files:
             if f[0] == "test_1.mpg":
                 if f[1] > 1400000:
@@ -194,7 +215,7 @@ def test012():
         # extract movie and let's plot some frames.
         visit_utils.encoding.extract("test_1.mpg", "frame%04d.png")
         framefiles = GetFiles("frame")
-        txt = string.join([x[0] for x in framefiles], "\n")
+        txt = "\n".join([x[0] for x in framefiles])
         TestText("movie_1_01", txt)
 
         # Plot some of the png files we made.
@@ -221,10 +242,10 @@ def test012():
         rightWH = GetFiles("right_test_2_"+WH)
         left600 = GetFiles("left_test_2_600x600")
         right600 = GetFiles("right_test_2_600x600")
-        TestText("movie_2_00", string.join([x[0] for x in leftWH], "\n"))
-        TestText("movie_2_01", string.join([x[0] for x in rightWH], "\n"))
-        TestText("movie_2_02", string.join([x[0] for x in left600], "\n"))
-        TestText("movie_2_03", string.join([x[0] for x in right600], "\n"))
+        TestText("movie_2_00", "\n".join([x[0] for x in leftWH]))
+        TestText("movie_2_01", "\n".join([x[0] for x in rightWH]))
+        TestText("movie_2_02", "\n".join([x[0] for x in left600]))
+        TestText("movie_2_03", "\n".join([x[0] for x in right600]))
 
         # Plot some of the files we made.
         nextid = TestMovieFrames("movie_2_%02d", 4, leftWH, percents=[0., 0.25, 0.5, 0.75, 1.], label="Left Eye, "+ WH)
@@ -252,7 +273,7 @@ def test34():
         for line in lines:
             s = line
             if token in line:
-                s = string.replace(line, token, "localhost:" + silo_data_path("wave.visit"))
+                s = line.replace(token, "localhost:" + silo_data_path("wave.visit"))
             out.write(s)
         out.close()
 
@@ -265,7 +286,7 @@ def test34():
 
         # Get the frame files
         files = GetFiles("test3_")[1:]
-        txt = string.join([x[0] for x in files], "\n")
+        txt = "\n".join([x[0] for x in files])
         TestText("movie_3_00", txt)
 
         # Plot some of the frames
@@ -282,7 +303,7 @@ def test34():
         # Get the frame files
         files = GetFiles("test4_")[1:]
         print(files)
-        txt = string.join([x[0] for x in files], "\n")
+        txt = "\n".join([x[0] for x in files])
         TestText("movie_4_00", txt)
 
         # Plot some of the frames
@@ -291,7 +312,7 @@ def test34():
 
     # Make the session file suitable for testing.
     replacements = {"WAVE_VISIT_DATABASE" : "localhost:" + silo_data_path("wave.visit")}
-    infile = string.replace(TestEnv.params["script"], "movie.py", "movie.session")
+    infile = TestEnv.params["script"].replace("movie.py", "movie.session")
     FileSubstitution(infile, "movie.session", replacements)
 
     test3()
@@ -309,13 +330,13 @@ def test5():
 
     # Make the session file suitable for testing.
     replacements = {"WAVE_VISIT_DATABASE" : "localhost:%s" % os.path.abspath("shortwave.visit")}
-    infile = string.replace(TestEnv.params["script"], "movie.py", "movie5.session")
+    infile = TestEnv.params["script"].replace("movie.py", "movie5.session")
     FileSubstitution(infile, "movie5.session", replacements)
 
     # Make the template file suitable for testing.
     replacements = {"PATH_TO_VISITMOVIETEMPLATE_PY" : os.path.join(os.getenv("VISITHOME"), "resources", "movietemplates", "visitmovietemplate.py"),
                     "TEST_SESSION_FILE" : os.path.abspath("movie5.session")}
-    infile = string.replace(TestEnv.params["script"], "movie.py", "movie5.opt")
+    infile = TestEnv.params["script"].replace("movie.py", "movie5.opt")
     FileSubstitution(infile, "movie5.opt", replacements)
 
     # Note by KSB 03-11-2020
@@ -327,19 +348,8 @@ def test5():
     img = []
     for f in files:
         if f[0][-4:] == ".bmp":
-            #
-            # NOTE: I could not get ffmpeg to work with png output from visit-composite
-            # now that it uses VTK. I also could not get VisIt to read PNG, TIFF, or 
-            # BMP files made with that VTK export. The files looked okay on my Mac viewer
-            # but VisIt didn't like them. Maybe they had alpha.
-            #
-            bmp = f[0]
-            png = f[0][:-4] + ".png"
-            print("convert %s %s" % (bmp, png))
-            im1 = Image.open(bmp)
-            im1.save(png, "png")
-            img = img + [(png,0)]
-    txt = string.join([x[0] for x in img], "\n")
+            img = img + [(f[0],0)]
+    txt = "\n".join([x[0] for x in img])
     TestText("movie_5_00", txt)
 
     nextid = TestMovieFrames("movie_5_%02d", 1, img)

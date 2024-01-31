@@ -5,6 +5,7 @@
 #ifndef PY_LINESAMPLERATTRIBUTES_H
 #define PY_LINESAMPLERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LineSamplerAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyLineSamplerAttributes_Wrap(const LineSamplerAttributes *attr);
 void           PyLineSamplerAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLineSamplerAttributes_SetDefaults(const LineSamplerAttributes *atts);
 std::string    PyLineSamplerAttributes_GetLogString();
-std::string    PyLineSamplerAttributes_ToString(const LineSamplerAttributes *, const char *);
+std::string    PyLineSamplerAttributes_ToString(const LineSamplerAttributes *, const char *, const bool=false);
 PyObject *     PyLineSamplerAttributes_getattr(PyObject *self, char *name);
 int            PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH];

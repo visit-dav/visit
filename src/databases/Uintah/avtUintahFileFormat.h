@@ -11,9 +11,9 @@
 
 #include <visit-config.h>
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_GE(UINTAH, 2,5,1)
 #include <VisIt/interfaces/datatypes.h>
-#elif (VISIT_APP_VERSION_CHECK(2, 5, 0) <= UINTAH_VERSION_HEX )
+#elif LIB_VERSION_LE(UINTAH, 2,5,0)
 #include <VisIt/uda2vis/udaData.h>
 #else
 #include <StandAlone/tools/uda2vis/udaData.h>
@@ -49,7 +49,7 @@ class TimeStepInfo;
 class avtUintahFileFormat : public avtMTMDFileFormat
 {
 public:
-  avtUintahFileFormat( const char * filename, DBOptionsAttributes* attrs);
+  avtUintahFileFormat( const char * filename, const DBOptionsAttributes* attrs);
   virtual           ~avtUintahFileFormat();
 
   virtual double        GetTime( int timestep );
@@ -110,7 +110,7 @@ protected:
 
   int currTimeStep        {0};
 
-  // VisIt meshes (see https://visitbugs.ornl.gov/issues/52)
+  // VisIt meshes (see https://github.com/visit-dav/visit/issues/138)
   std::map<std::string, void_ref_ptr> mesh_domains;
   std::map<std::string, void_ref_ptr> mesh_boundaries;
 

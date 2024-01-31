@@ -30,12 +30,16 @@
 //    Jeremy Meredith, Wed Feb 20 10:00:31 EST 2008
 //    Support either nodal or zonal values.
 //
+//    Alister Maguire, Fri Oct  9 11:04:05 PDT 2020
+//    Setting canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtConstantFunctionExpression::avtConstantFunctionExpression(bool n)
 {
     nodal = n;
     value = 0;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

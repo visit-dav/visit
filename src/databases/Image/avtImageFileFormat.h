@@ -50,7 +50,7 @@ class DBOptionsAttributes;
 class avtImageFileFormat : public avtSTSDFileFormat
 {
   public:
-                       avtImageFileFormat(const char *filename, DBOptionsAttributes *);
+                       avtImageFileFormat(const char *filename, const DBOptionsAttributes *);
     virtual           ~avtImageFileFormat();
 
     virtual const char    *GetType(void)   { return "Image"; };

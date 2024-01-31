@@ -31,6 +31,9 @@ import java.util.Vector;
 //   Added a copy constructor that behaves similar to the constructor that
 //   takes an int.
 //
+//   Kathleen Biagas, Thu Nov 17, 2022
+//   Added boolArrayToString and boolVectorToString.
+//
 // ****************************************************************************
 /**
  * Base class for state objects.
@@ -280,6 +283,33 @@ public abstract class AttributeSubject
     protected String boolToString(String name, boolean val, String indent)
     {
         return indent + name + " = " + (val ? "true" : "false");
+    }
+
+    protected String boolArrayToString(String name, boolean[] val, String indent)
+    {
+        String s = indent + name + " = {";
+        for(int i = 0; i < val.length; ++i)
+        {
+            //boolean iv = new boolean(val[i]);
+            s = s + String.valueOf(val[i]);
+            if(i < val.length - 1)
+                s = s + ", ";
+        }
+        s = s + "}";
+        return s;
+    }
+
+    protected String boolVectorToString(String name, Vector val, String indent)
+    {
+        String s = indent + name + " = {";
+        for(int i = 0; i < val.size(); ++i)
+        {
+            s = s + String.valueOf(val.elementAt(i));
+            if(i < val.size() - 1)
+                s = s + ", ";
+        }
+        s = s + "}";
+        return s;
     }
 
     protected String intToString(String name, int val, String indent)

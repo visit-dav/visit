@@ -28,6 +28,9 @@
 #    Brad Whitlock, Tue Sep 11 14:38:37 PDT 2012
 #    Test file that has boundaries.
 #
+#    Alister Maguire, Tue Mar  2 10:29:37 PST 2021
+#    Added tests for NGon and NFace elements.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("CGNS")
 
@@ -314,6 +317,59 @@ def test3(datapath):
     Test("CGNS_3_00")
     DeleteAllPlots()
 
+def testNGonElements(datapath):
+    TestSection("Arbitrary polygons")
+
+    OpenDatabase(pjoin(datapath, "spherePolyMesh.cgns"))
+    AddPlot("Mesh", "sphere")
+    DrawPlots()
+    ResetView()
+
+    Test("CGNS_NGon_Elements_00")
+    DeleteAllPlots()
+    CloseDatabase(pjoin(datapath, "spherePolyMesh.cgns"))
+
+def testNFaceElements(datapath):
+    TestSection("Arbitrary polyhedra")
+
+    #
+    # First, test the simple case. This mesh has 2 sections,
+    # one for NGon and one for NFace.
+    #
+    OpenDatabase(pjoin(datapath, "trappedvtx_ngon.cgns"))
+    AddPlot("Mesh", "ComputeBase")
+    MeshAtts = MeshAttributes()
+    DrawPlots()
+    ResetView()
+
+    Test("CGNS_NFace_Elements_00")
+    DeleteAllPlots()
+    CloseDatabase(pjoin(datapath, "trappedvtx_ngon.cgns"))
+
+    #
+    # Next, test a more complicated case. This mesh has 5 sections,
+    # 4 of which are NGon. The single NFace section references all
+    # 4 NGon sections.
+    #
+    OpenDatabase(pjoin(datapath, "spherePolyMesh3D.cgns"))
+    AddPlot("Mesh", "sphere")
+    MeshAtts = MeshAttributes()
+    MeshAtts.opacity = 0.4
+    SetPlotOptions(MeshAtts)
+
+    AddPlot("Pseudocolor", "Density")
+    PseudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts.opacityType = PseudocolorAtts.Constant
+    PseudocolorAtts.opacity = 0.4
+    SetPlotOptions(PseudocolorAtts)
+
+    DrawPlots()
+    ResetView()
+
+    Test("CGNS_NFace_Elements_01")
+    DeleteAllPlots()
+    CloseDatabase(pjoin(datapath, "spherePolyMesh3D.cgns"))
+
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
@@ -325,6 +381,8 @@ def main():
     test1(datapath)
     test2(datapath)
     test3(datapath)
+    testNGonElements(datapath)
+    testNFaceElements(datapath)
 
 main()
 Exit()

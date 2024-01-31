@@ -5,6 +5,7 @@
 #ifndef PY_DISPLACEATTRIBUTES_H
 #define PY_DISPLACEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DisplaceAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyDisplaceAttributes_Wrap(const DisplaceAttributes *attr);
 void           PyDisplaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDisplaceAttributes_SetDefaults(const DisplaceAttributes *atts);
 std::string    PyDisplaceAttributes_GetLogString();
-std::string    PyDisplaceAttributes_ToString(const DisplaceAttributes *, const char *);
+std::string    PyDisplaceAttributes_ToString(const DisplaceAttributes *, const char *, const bool=false);
 PyObject *     PyDisplaceAttributes_getattr(PyObject *self, char *name);
 int            PyDisplaceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyDisplaceAttributes_methods[DISPLACEATTRIBUTES_NMETH];

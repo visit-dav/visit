@@ -8,6 +8,7 @@
 
 #include <avtANSYSFileFormat.h>
 
+#include <algorithm>
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -25,7 +26,6 @@
 #endif
 
 #include <vtkCellType.h>
-#include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
@@ -166,6 +166,9 @@ avtANSYSFileFormat::ActivateTimestep()
 //    read floating point values. Corrected logic for NBLOCK and EBLOCK
 //    parsing to interpret field count after *first* comma and not second.
 //    Changed interface to InterpretFormatString to accept field count arg.
+// 
+//    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
+//    Changed 'supressed' to 'suppressed'.
 // ****************************************************************************
 
 int
@@ -185,7 +188,7 @@ get_errno()
 #define CHECK_COORD_COMPONENT(Coord)                                \
 do {                                                                \
     int _errno = get_errno();                                       \
-    char msg[512] = "Further warnings will be supressed";           \
+    char msg[512] = "Further warnings will be suppressed";           \
     if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
     {                                                               \
         if (invalidCoordCompWarning < 5)                            \
@@ -251,7 +254,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
 #define MAX_ANSYS_LINE 200
     char  line[MAX_ANSYS_LINE];
     float pt[3];
-    vtkIdType   verts[8];
+    vtkIdType   verts[10];
     bool  recognized = false;
     bool  fatalError = false;
     bool  readingCoordinates = false;
@@ -261,6 +264,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
     int   firstFieldWidth = 8;
     int   fieldWidth = 16;
     int   fieldStart = 56;
+    int   nverts = -1;
 
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
     {
@@ -292,7 +296,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 valid &= (line[i] == ' ' || (line[i] >= '0' && line[i] <= '9'));
 
             if(!valid)
-            {                
+            {
                 expectedLineLength = 0;
                 readingCoordinates = false;
                 continue;
@@ -338,7 +342,10 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             // Get the number of vertices in this cell from column 9.
             static const int ncellsColumn = 9;
             line[ncellsColumn * fieldWidth] = '\0';
-            int nverts = atoi(line + (ncellsColumn-1) * fieldWidth);
+            if(nverts == -1)
+            {
+              nverts = atoi(line + (ncellsColumn-1) * fieldWidth);
+            }
 
             if(nverts == 8)
             {
@@ -360,10 +367,45 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
 #endif
                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
             }
+            else if(nverts == 10)
+            {
+                char *valstart = line + fieldStart;
+                char *valend   = valstart + fieldWidth;
+                for(int i = 0; i < 8; ++i)
+                {
+                    int ivalue = atoi(valstart);
+                    verts[7-i] = (ivalue > 0) ? (ivalue - 1) : ivalue;
+                    valstart -= fieldWidth;
+                    valend   -= fieldWidth;
+                    *valend = '\0';
+                }
+                char  extraline[MAX_ANSYS_LINE];
+                ifile.getline(extraline, MAX_ANSYS_LINE);
+                valstart = extraline + fieldWidth + 1;
+                valend   = valstart + 2*fieldWidth;
+                *valend = '\0';
+                for(int i = 0; i < 2; ++i)
+                {
+                    int ivalue = atoi(valstart);
+                    verts[9-i] = (ivalue > 0) ? (ivalue - 1) : ivalue;
+                    valstart -= fieldWidth;
+                    valend   -= fieldWidth;
+                    *valend = '\0';
+                }
+
+#if 0
+                for(int j = 0; j < 10; ++j)
+                    debug4 << ", " << verts[j];
+                debug4 << endl;
+#endif
+                ugrid->InsertNextCell(VTK_QUADRATIC_TETRA, 10, verts);
+
+            }
             else
             {
                 debug1 << mName << "The file " << name << " contained cells "
-                       "that are not hexes."<< endl;
+                       "that are not hexes or quadratic tets. They had "
+                       << nverts << " vertices" << endl;
 
                 fatalError = true;
                 break;
@@ -410,42 +452,48 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         }
         else if(STRNCASECMP(line, "EBLOCK", 6) == 0)
         {
-            int numFields = 0;
-            char *comma = strstr(line, ",");
-            if(comma != 0)
-            {
-                char *cols = comma + 1;
-                numFields = atoi(cols);
-                debug4 << mName << "Connectivity data stored in "
-                       << numFields << " columns." << endl;
-                char *comma2 = strstr(comma+1, ",");
-                if(comma2 != 0)
+              line [MAX_ANSYS_LINE-1] = '\0';
+              int numFields = -1;
+              char *comma = strstr(line, ",");
+              nverts = -1;
+              if(comma != 0)
+              {
+                std::string lowerCase = comma+1;
+                std::transform(lowerCase.begin(), lowerCase.end(), lowerCase.begin(), ::tolower);
+                if(std::string::npos != lowerCase.find_first_of("solid"))
                 {
-                    *comma2 = '\0';
-                    recognized = true;
-                }
-                recognized = true;
-            }
+                  // if the line looks like "eblock,19,solid,,1762" we read it in.
+                  // if solid is not in this line then the number of verts is contained 
+                  // in the eblock line but in the dataset that Andy Bauer got on this
+                  // these cells are wrong (they have the incorrect amount of vertices listed
+                  // as well as repeated vertex ids) and we ignore them.
+                  char *cols = comma + 1;
+                  numFields = atoi(cols);
+                  debug4 << mName << "Connectivity data stored in "
+                       << numFields << " columns." << endl;
+                  recognized = true;
 
-            // Get the field format string. Use it to set expectedLineLength,
-            // fieldWidth, and fieldStart.
-            ifile.getline(line, 1024);
-            if(line[0] == '(')
-            {
-                InterpretFormatString(line, numFields, firstFieldWidth, fieldStart, fieldWidth,
-                                      expectedLineLength);
-                debug4 << mName << "firstFieldWidth=" << firstFieldWidth
-                       << ", fieldStart=" << fieldStart
-                       << ", fieldWidth=" << fieldWidth
-                       << ", expectedLineLength=" << expectedLineLength 
-                       << endl; 
-                readingConnectivity = true;
-            }
-            else
-            {
-                debug1 << mName << "Malformed format string: " << line << endl;
-                fatalError = true;
-            }
+                  // Get the field format string. Use it to set expectedLineLength,
+                  // fieldWidth, and fieldStart.
+                  ifile.getline(line, 1024);
+                  if(line[0] == '(')
+                  {
+                    InterpretFormatString(line, numFields, firstFieldWidth, fieldStart, fieldWidth,
+                                          expectedLineLength);
+                    debug4 << mName << " eblock firstFieldWidth=" << firstFieldWidth
+                         << ", fieldStart=" << fieldStart
+                         << ", fieldWidth=" << fieldWidth
+                         << ", expectedLineLength=" << expectedLineLength 
+                         << endl; 
+                    readingConnectivity = true;
+                  }
+                  else
+                  {
+                    debug4 << mName << "Malformed format string: " << line << endl;
+                    fatalError = true;
+                  }
+                }
+              }
         }
         else if(STRNCASECMP(line, "/COM", 4) == 0)
         {
@@ -572,17 +620,41 @@ void
 avtANSYSFileFormat::Interpret(const char *fmt, bool isstd, int &numFields,
     int &fieldWidth, int &linelen) const
 {
-    int i0, i1, i2;
+    int i0, i1, i2, i3;
     bool goodFormat = true;
 
     debug4 << "avtANSYSFileFormat::Interpret: " << fmt << endl;
 
-    // Example: 6e16.9
-    if(sscanf(fmt, "%de%d.%d", &i0, &i1, &i2) == 3)
+    // Example: 3e20.9e3
+    if(sscanf(fmt, "%de%d.%de%d", &i0, &i1, &i2, &i3) == 4)
     {
         if (isstd) // std (buggy) ANSYS format string
         {
             //linelen = i0 * i1 / 2;
+            linelen = 3 * i1;
+            fieldWidth = i1;
+        }
+        else if (numFields == i0-1)
+        {
+            linelen = i0 * (i1+1);
+            fieldWidth = i1;
+            numFields++;
+        }
+        else if (numFields == i0)
+        {
+            linelen = i0 * (i1+1);
+            fieldWidth = i1;
+        }
+        else
+        {
+            goodFormat = false;
+        }
+    }
+    // Example: 6e16.9
+    else if(sscanf(fmt, "%de%d.%d", &i0, &i1, &i2) == 3)
+    {
+        if (isstd) // std (buggy) ANSYS format string
+        {
             linelen = 3 * i1;
             fieldWidth = i1;
         }
@@ -745,9 +817,9 @@ avtANSYSFileFormat::GetMesh(const char *meshname)
 //  Method: avtANSYSFileFormat::GetVar
 //
 //  Purpose:
-//      Gets a scalar variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
-//      that is supported everywhere through VisIt.
+//      Gets a scalar variable associated with this file.  For the ANSYS
+//      reader it throws an exception since this is an ANSYS input deck
+//      format that is used to run a simulation and doesn't contain results.
 //
 //  Arguments:
 //      varname    The name of the variable requested.
@@ -771,9 +843,9 @@ avtANSYSFileFormat::GetVar(const char *varname)
 //  Method: avtANSYSFileFormat::GetVectorVar
 //
 //  Purpose:
-//      Gets a vector variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
-//      that is supported everywhere through VisIt.
+//      Gets a vector variable associated with this file.  For the ANSYS
+//      reader it throws an exception since this is an ANSYS input deck
+//      format that is used to run a simulation and doesn't contain results.
 //
 //  Arguments:
 //      varname    The name of the variable requested.

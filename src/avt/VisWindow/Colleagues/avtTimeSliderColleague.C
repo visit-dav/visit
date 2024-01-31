@@ -18,12 +18,8 @@
 #define DEFAULT_Y       0.01
 #define DEFAULT_WIDTH   0.4
 #define DEFAULT_HEIGHT  0.05
-#define TIME_IDENTIFIER "$time"
-#define CYCLE_IDENTIFIER "$cycle"
+#define DEFAULT_STRING  "Time=$time"
 #define TEXT_SCALING_CORRECTION 0.666667
-
-double avtTimeSliderColleague::initialTime = 0.;
-int    avtTimeSliderColleague::initialCycle = 0;
 
 // ****************************************************************************
 // Method: avtTimeSliderColleague::avtTimeSliderColleague
@@ -63,18 +59,12 @@ int    avtTimeSliderColleague::initialCycle = 0;
 // ****************************************************************************
 
 avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
-    avtAnnotationColleague(m)
+    avtAnnotationWithTextColleague(m)
 {
     useForegroundForTextColor = true;
     addedToRenderer = false;
-    textFormatString = 0;
     timeFormatString = 0;
-    textString = 0;
     timeDisplayMode = 0;
-    currentTime = initialTime;
-    currentCycle = initialCycle;
-    timeScale = 1.;
-    timeOffset = 0.;
 
     //
     // Create and position the time slider actor
@@ -92,8 +82,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     //
     textActor = vtkVisItTextActor::New();
     textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
-    std::string defaultString("Time="); defaultString += TIME_IDENTIFIER;
-    SetText(defaultString.c_str(), "%g");
+    SetText(DEFAULT_STRING, "%g");
     vtkCoordinate *pos = textActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();
     GetTextRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
@@ -131,7 +120,9 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
 // Modifications:
 //    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
 //    Delete timeFormatString. 
-//   
+//    
+//    Mark C. Miller, Fri Jun 24, 04:47:31 PST 2022
+//    Deletion of strings handled in base class now.
 // ****************************************************************************
 
 avtTimeSliderColleague::~avtTimeSliderColleague()
@@ -147,12 +138,6 @@ avtTimeSliderColleague::~avtTimeSliderColleague()
         textActor->Delete();
         textActor = 0;
     }
-
-    if(textFormatString != 0)
-        delete [] textFormatString;
-
-    if(timeFormatString != 0)
-        delete [] timeFormatString;
 }
 
 // ****************************************************************************
@@ -355,7 +340,7 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
         if(text.size() > 1)
             SetText(text[0].c_str(), text[1].c_str());
         else
-            SetText("", "%g");
+            SetText(DEFAULT_STRING, "%g");
     }
 
     //
@@ -673,19 +658,10 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
                 break;
             }
         }
-        avtDataAttributes &atts = lst[plotIndex]->GetBehavior()->GetInfo().GetAttributes();
-        currentTime = atts.GetTime();
-        currentCycle = atts.GetCycle();
 
-        std::string formatString(textFormatString);
-        std::string::size_type pos;
-        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
-           (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
-            SetText(textFormatString, timeFormatString);
+        avtAnnotationWithTextColleague::UpdatePlotList(lst);
+        SetText(textFormatString, timeFormatString);
 
-        // Save the current values for new instances of this class.
-        initialTime = currentTime;
-        initialCycle = currentCycle;
     }
 }
 
@@ -715,61 +691,31 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 void
 avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat)
 {
-    if(formatString == 0)
+    if (formatString == 0)
         return;
 
     // Save the format string. Don't do it in the case that the formatString
     // pointer is the same as textFormatString, which is how we get here from
     // UpdatePlotList.
     size_t len = strlen(formatString);
-    if(textFormatString != formatString)
+    if (textFormatString != formatString)
     {
         delete [] textFormatString;
         textFormatString = new char[len + 1];
         strcpy(textFormatString, formatString);
     }
     size_t tf_len = strlen(timeFormat);
-    if(timeFormatString != timeFormat)
+    if (timeFormatString != timeFormat)
     {
         delete [] timeFormatString;
         timeFormatString = new char[tf_len + 1];
         strcpy(timeFormatString, timeFormat);
     }
 
-    // Replace $time with the time if the format string contains $time.
     delete [] textString;
-    std::string fmtStr(textFormatString);
-    std::string::size_type pos;
-    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(TIME_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        double t = currentTime * timeScale + timeOffset;
-        snprintf(tmp, 100, timeFormat, t);
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        textString = new char[len];
-        snprintf(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(CYCLE_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%d", currentCycle);
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        textString = new char[len];
-        snprintf(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else
-    {
-        textString = new char[len + 1];
-        strcpy(textString, formatString);
-    }
+    textString = CreateAnnotationString(textFormatString);
 
-    if(textActor)
+    if (textActor)
         textActor->SetInput(textString);
 }
 
@@ -845,28 +791,4 @@ avtTimeSliderColleague::GetSliderRect(double x, double y, double width,
     rect[1] = y + height - SliderHeight(height);
     rect[2] = width;
     rect[3] = SliderHeight(height);
-}
-
-// ****************************************************************************
-// Method: avtTimeSliderColleague::SetTimeScaleAndOffset
-//
-// Purpose: 
-//   Sets the scale and offset that will be applied to the time.
-//
-// Arguments:
-//   scale  : Multiplier for the time.
-//   offset : Offset that will be added to the time.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar  2 14:13:57 PST 2009
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtTimeSliderColleague::SetTimeScaleAndOffset(double scale, double offset)
-{
-    timeScale = scale;
-    timeOffset = offset;
 }

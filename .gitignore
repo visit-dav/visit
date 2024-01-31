@@ -2,6 +2,7 @@
 *.swp
 build_branch_*/
 /data/*_test_data/
+/src/CMakeUserPresets.json
 /src/test/current/
 /src/test/diff/
 /src/test/html/
@@ -10,5 +11,7 @@ build_branch_*/
 /src/test/results.json
 /src/test/tests.json
 visit.masonry.docker.src.tar
+visit.build_visit.docker.src.tar
 build-mb-*
 _logs
+*.vscode

@@ -28,7 +28,6 @@
 #include <avtCallback.h>
 #include <avtMixedVariable.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>

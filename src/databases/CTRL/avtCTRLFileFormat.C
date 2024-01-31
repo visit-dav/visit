@@ -28,6 +28,7 @@
 using std::string;
 using std::map;
 
+using avtCTRLNamespace::Atom;
 
 // ****************************************************************************
 //  Method: avtCTRL constructor

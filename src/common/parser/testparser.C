@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include "Token.h"
+#include "VisItToken.h"
 #include "Scanner.h"
-#include "Grammar.h"
+#include "VisItGrammar.h"
 #include "VisItParser.h"
 #include "ParseException.h"
 #include "Symbol.h"

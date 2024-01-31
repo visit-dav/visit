@@ -201,7 +201,6 @@ ViewerQueryManager::ViewerQueryManager() : ViewerBase()
     lineoutList    = 0;
     nLineouts      = 0;
     nLineoutsAlloc = 0;
-    colorIndex     = 0;
 
     baseDesignator = 'A';
     cycleDesignator = false;
@@ -1234,7 +1233,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
             if (GetViewerEngineManager()->Query(engineKey, networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
-               *(GetViewerState()->GetQueryAttributes()) = qa;
+               *(GetViewerState()->GetQueryAttributes()) = std::move(qa);
                 GetViewerState()->GetQueryAttributes()->Notify();
                 if (!suppressQueryOutput)
                     GetViewerMessaging()->Message(qa.GetResultsMessage());
@@ -2940,29 +2939,22 @@ ViewerQueryManager::NoGraphicsPick(PICK_POINT_INFO *ppi)
 ColorAttribute
 ViewerQueryManager::GetColor()
 {
-    ColorAttribute c;
-    unsigned char rgb[3] = {0,0,0};
+    ViewerWindowManager *vwm = ViewerWindowManager::Instance();
+    ViewerWindow *w = vwm->GetLineoutWindow();
+    WindowAttributes winAtts = w->GetWindowAttributes();
+    AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+    ColorAttribute const &bgca = annotAtts.GetBackgroundColor();
 
-    //
-    // Try and get the color for the colorIndex'th color in the default
-    // discrete color table.
-    //
     avtColorTables *ct = avtColorTables::Instance();
-    if(ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(),
-       colorIndex, rgb))
-    {
-        c.SetRed(int(rgb[0]));
-        c.SetGreen(int(rgb[1]));
-        c.SetBlue(int(rgb[2]));
-    }
+    unsigned char rgb[3] = {0,0,0};
+    if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "LineoutColor", bgca.GetColor(), rgb))
+        ct->GetJNDControlPointColor("distinct", "LineoutColor" , bgca.GetColor(), rgb);
 
-    // Increment the color index.
-    ++colorIndex;
+    ColorAttribute c(rgb[0], rgb[1], rgb[2]);
 
     return c;
 }
-
-
 
 // ****************************************************************************
 // Method: ViewerQueryManager::Lineout
@@ -4203,7 +4195,6 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
     //
     mgrNode->AddNode(new DataNode("baseDesignator", baseDesignator));
     mgrNode->AddNode(new DataNode("cycleDesignator", cycleDesignator));
-    mgrNode->AddNode(new DataNode("colorIndex", colorIndex));
 }
 
 // ****************************************************************************
@@ -4244,9 +4235,6 @@ ViewerQueryManager::SetFromNode(DataNode *parentNode,
         baseDesignator = node->AsChar() - 1;
         UpdateDesignator();
     }
-
-    if((node = mgrNode->GetNode("colorIndex")) != 0)
-        colorIndex = node->AsInt();
 }
 
 
@@ -4491,6 +4479,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 //    Added the GyRadius Query.
 //
+//    Chris Laganella, Tue Jan 11 18:08:08 EST 2022
+//    Added the "Flatten" query.
+//
 // ****************************************************************************
 
 void
@@ -4630,6 +4621,7 @@ ViewerQueryManager::InitializeQueryList()
 
     GetViewerState()->GetQueryList()->AddQuery("Integral Curve Info", dq, misc_r, ic, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("Line Sampler Info", dq, misc_r, lsi, 1, 0, qo);
+    GetViewerState()->GetQueryList()->AddQuery("Flatten", dq, vr, basic, 1, 0, qo, 0, 1);
     GetViewerState()->GetQueryList()->SelectAll();
 }
 
@@ -5279,7 +5271,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     if (resWin == NULL)
     {
         GetViewerMessaging()->Error(
-            TR("Please choose a different window method for the time query"));
+            TR("VisIt is unable to identify a window to plot the resulting curve.\n"
+               "Please adjust controls for how VisIt decides which window to use."));
         return;
     }
 
@@ -6109,7 +6102,7 @@ ViewerQueryManager::FinishLineQuery()
 //  Method: ViewerQueryManager::ResetLineoutColor
 //
 //  Purpose:
-//    Resets colorIndex to the default state.
+//    Resets color index for lineouts
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 5, 2004
@@ -6121,7 +6114,8 @@ ViewerQueryManager::FinishLineQuery()
 void
 ViewerQueryManager::ResetLineoutColor()
 {
-    colorIndex     = 0;
+    avtColorTables *ct = avtColorTables::Instance();
+    ct->ResetJNDIndex("LineoutColor");
 }
 
 

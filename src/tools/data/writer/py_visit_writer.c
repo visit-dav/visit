@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <Py2and3Support.h>
+
 #include "visit_writer.h"
 #include "py_visit_writer_doc.h"
 
@@ -24,7 +26,7 @@ enum TokenTypes { endOfList = 0, logicalToken, integerToken };
 typedef struct {
     enum TokenTypes type;
     int value;
-    char *string;
+    char *tok_string;
 } visItWriterIntegerTokens;
 
 static int convertDims( PyObject *dims_py, int pts[3] );
@@ -421,8 +423,10 @@ static int convertVarDatum( int npts, int ncells, int n, PyObject *nameDimVar, c
         setError( "name for nameDimensionAndVariables element at index %d is not a string", n );
         status = 0;
     }
-    if( status ) {
-        varnames[n] = PyString_AS_STRING( item );
+    if( status ){
+        char *item_str =PyString_AsString( item );
+        varnames[n] = strdup(item_str);
+        PyString_AsString_Cleanup(item_str);
         Py_DECREF( item );
 
         item = PySequence_GetItem(nameDimVar, count++);
@@ -622,14 +626,19 @@ static int getIntegerToken( PyObject *item, visItWriterIntegerTokens *tokens ) {
     int i;
     char *s;
 
-    if( PyInt_Check( item ) ) {
-        return( PyInt_AS_LONG( item ) ); }
-    else if( PyString_Check( item ) ) {
-        s = PyString_AS_STRING( item );
-        for( i = 0; tokens[i].type; i++ ) {
-            if( strcmp( tokens[i].string, s ) == 0 ) return( tokens[i].value );
+    if( PyInt_Check( item ) )
+    {
+        return( PyInt_AS_LONG( item ) );
+    }
+    else if( PyString_Check( item ) )
+    {
+        s = PyString_AsString( item );
+        for( i = 0; tokens[i].type; i++ )
+        {
+            if( strcmp( tokens[i].tok_string, s ) == 0 ) return( tokens[i].value );
         }
         return( -2 );
+        PyString_AsString_Cleanup(s);
     }
     return( -1 );
 }
@@ -718,18 +727,108 @@ static PyMethodDef visItWriterMethods[] = {
 ****************************************************************
 */
 
-#if __GNUC__ >= 4
-/* Ensure this function is visible even if -fvisibility=hidden was passed */
-DL_EXPORT( void ) __attribute__ ((visibility("default"))) initvisit_writer( void )
-#else
-DL_EXPORT( void ) initvisit_writer( void )
-#endif
-{
 
+
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+// Module Init Code
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+
+struct module_state {
+    PyObject *error;
+};
+
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+//---------------------------------------------------------------------------//
+
+//---------------------------------------------------------------------------//
+// Extra Module Setup Logic for Python3
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+//---------------------------------------------------------------------------//
+static int
+visit_writer_module_traverse(PyObject *m, visitproc visit, void *arg)
+{
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+//---------------------------------------------------------------------------//
+static int 
+visit_writer_clear(PyObject *m)
+{
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+//---------------------------------------------------------------------------//
+static struct PyModuleDef visit_writer_module_def = 
+{
+        PyModuleDef_HEAD_INIT,
+        "visit_writer",
+        NULL,
+        sizeof(struct module_state),
+        visItWriterMethods,
+        NULL,
+        visit_writer_module_traverse,
+        visit_writer_clear,
+        NULL
+};
+#endif
+
+
+//---------------------------------------------------------------------------//
+// The module init function signature is different between py2 and py3
+// This macro simplifies the process of returning when an init error occurs.
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+#define PY_MODULE_INIT_RETURN_ERROR return NULL
+#else
+#define PY_MODULE_INIT_RETURN_ERROR return
+#endif
+
+/******************************************************************/
+#if defined(IS_PY3K) /* py 3 */
+/******************************************************************/
+/******************************************************************/
+    #if __GNUC__ >= 4
+    /* Ensure this function is visible even if -fvisibility=hidden was passed */
+    __attribute__ ((visibility("default"))) PyObject * PyInit_visit_writer( void )
+    #elif _WIN32
+    __declspec(dllexport) PyObject * PyInit_visit_writer( void )
+    #else
+    PyObject * PyInit_visit_writer( void )
+    #endif
+/******************************************************************/
+/******************************************************************/
+#else /* py 2 */
+/******************************************************************/
+/******************************************************************/
+    #if __GNUC__ >= 4
+    /* Ensure this function is visible even if -fvisibility=hidden was passed */
+    DL_EXPORT( void ) __attribute__ ((visibility("default"))) initvisit_writer( void )
+    #else
+    DL_EXPORT( void ) initvisit_writer( void )
+    #endif
+/******************************************************************/
+#endif
+/******************************************************************/
+{
     PyObject *m, *member;
     ErrorExc = PyExc_ValueError;
 
+#if defined(IS_PY3K)
+    m = PyModule_Create(&visit_writer_module_def);
+#else
     m = Py_InitModule3( "visit_writer", visItWriterMethods, visItWriterInitDoc );
+#endif
 
     member = PyInt_FromLong( VISIT_VERTEX );
     PyModule_AddObject( m, "vertex", member );
@@ -763,4 +862,8 @@ DL_EXPORT( void ) initvisit_writer( void )
 
     member = PyString_FromString( version );
     PyModule_AddObject( m, "version", member );
+
+#if defined(IS_PY3K)
+    return m;
+#endif
 }

@@ -5,6 +5,7 @@
 #ifndef PY_ZONEDUMPATTRIBUTES_H
 #define PY_ZONEDUMPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ZoneDumpAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyZoneDumpAttributes_Wrap(const ZoneDumpAttributes *attr);
 void           PyZoneDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyZoneDumpAttributes_SetDefaults(const ZoneDumpAttributes *atts);
 std::string    PyZoneDumpAttributes_GetLogString();
-std::string    PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *, const char *);
+std::string    PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *, const char *, const bool=false);
 PyObject *     PyZoneDumpAttributes_getattr(PyObject *self, char *name);
 int            PyZoneDumpAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyZoneDumpAttributes_methods[ZONEDUMPATTRIBUTES_NMETH];

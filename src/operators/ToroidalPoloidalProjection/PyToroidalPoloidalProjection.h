@@ -5,6 +5,7 @@
 #ifndef PY_TOROIDALPOLOIDALPROJECTION_H
 #define PY_TOROIDALPOLOIDALPROJECTION_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ToroidalPoloidalProjection.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyToroidalPoloidalProjection_Wrap(const ToroidalPoloidalProjectio
 void           PyToroidalPoloidalProjection_SetParent(PyObject *obj, PyObject *parent);
 void           PyToroidalPoloidalProjection_SetDefaults(const ToroidalPoloidalProjection *atts);
 std::string    PyToroidalPoloidalProjection_GetLogString();
-std::string    PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *, const char *);
+std::string    PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *, const char *, const bool=false);
 PyObject *     PyToroidalPoloidalProjection_getattr(PyObject *self, char *name);
 int            PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMETH];

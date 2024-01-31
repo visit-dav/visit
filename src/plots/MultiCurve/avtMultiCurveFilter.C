@@ -112,6 +112,9 @@ avtMultiCurveFilter::PreExecute(void)
 //    input a collection of poly data data sets representing the individual
 //    curves to display.
 //
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Add curves info to PlotInformation.
+//
 // ****************************************************************************
 
 void
@@ -164,6 +167,7 @@ avtMultiCurveFilter::PostExecute(void)
         axisTickSpacing["spacing"] = yAxisTickSpacing;
         outAtts.AddPlotInformation("AxisTickSpacing", axisTickSpacing);
     }
+    outAtts.AddPlotInformation("Curves", outputInfo);
 }
 
 
@@ -214,13 +218,21 @@ avtMultiCurveFilter::PostExecute(void)
 //    only if the number of labels matches the number of y-axes beig creaed.
 //
 //    Kathleen Biagas, Wed Oct 17 11:22:32 PDT 2012
-//    Support double-precision in coordinates and/or data by using 
+//    Support double-precision in coordinates and/or data by using
 //    vtkDataArray GetTuple1 methods instead of VoidPointer. Merged the
 //    separate 'for (int j = 0; j < nx; j++)' loops into one.
 //
 //    Kathleen Biagas, Thu Jul 13 12:44:14 PDT 2017
 //    Don't throw an exception for no datasets. This is valid when running in
 //    parallel, doing a time-pick and creating MultiCurve plot from results.
+//
+//    Eric Brugger, Mon Jun 22 09:24:14 PDT 2020
+//    Increased the maximum number of curves to 20. Modified the end cap
+//    tick calculation to generate a single tick with 16 or more axes.
+//    Previously this gave no tick marks.
+//
+//    Kathleen Biagas, Tue Dec 19, 2023
+//    Fill outputInfo with the xy values of curves.
 //
 // ****************************************************************************
 
@@ -298,11 +310,11 @@ avtMultiCurveFilter::Execute(void)
 
     int nx = dims[0];
     int ny = dims[1];
-    if (ny > 16)
+    if (ny > 20)
     {
         avtCallback::IssueWarning("The MultiCurve plot only allows up to "
-            "16 curves, displaying the first 16 curves.");
-        ny = 16;
+            "20 curves, displaying the first 20 curves.");
+        ny = 20;
     }
 
     vtkDataArray *xpts = grid->GetXCoordinates();
@@ -340,8 +352,13 @@ avtMultiCurveFilter::Execute(void)
     // that, otherwise use the range of the data.
     //
     double scale;
-    double nTicks = floor(30./ny-1.);
-    double tickSize = ny / 60.;
+    double nTicks = floor(32./ny-1.);
+    double tickSize = ny / 64.;
+    if (ny > 16)
+    {
+        nTicks = 1.;
+        tickSize = 0.25;
+    }
     if (atts.GetUseYAxisTickSpacing())
     {
         scale = tickSize / atts.GetYAxisTickSpacing();
@@ -391,6 +408,7 @@ avtMultiCurveFilter::Execute(void)
 
     stringVector inLabels;
     GetInput()->GetInfo().GetAttributes().GetLabels(inLabels);
+    doubleVector outputArray;
     for (int i = 0; i < ny; i++)
     {
         //
@@ -426,6 +444,8 @@ avtMultiCurveFilter::Execute(void)
                 xLine[0] = xpts->GetTuple1(j);
                 xLine[1] = (double)i + 0.5 + var->GetTuple1(i*nx+j) * scale;
                 points->InsertNextPoint(xLine);
+                outputArray.push_back(xLine[0]);
+                outputArray.push_back(var->GetTuple1(i*nx+j));
 
                 // curve markers
                 if (var2 == NULL)
@@ -479,20 +499,22 @@ avtMultiCurveFilter::Execute(void)
         ids->Delete();
 
         out_ds[i] = polyData;
-    
+
         //
         // Create the label.
         //
         if(inLabels.size() != (size_t)ny)
         {
             char label[80];
-        
-            snprintf(label, 80, atts.GetYAxisTitleFormat().c_str(), 
+
+            snprintf(label, 80, atts.GetYAxisTitleFormat().c_str(),
                      ypts->GetTuple1(i));
             labels.push_back(label);
         }
         else
             labels.push_back(inLabels[i]);
+        outputInfo[labels[labels.size()-1]] = outputArray;
+        outputArray.clear();
     }
 
     //

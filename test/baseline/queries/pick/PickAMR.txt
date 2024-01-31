@@ -46,7 +46,7 @@ Point (R,Z): <0.0251016, 0.11993>
 Node:  400
 Incident Zones:  390  350  391  351  
 density:  <zonal> 
-    (390) = 5.09665
+    (390) = 5.09666
     (350) = 5.20894
     (391) = 5.11838
     (351) = 5.0991
@@ -67,7 +67,7 @@ Node:  2840
 Incident Zones:  2793  2794  
 density:  <zonal> 
     (2793) = 3.29057
-    (2794) = 3.55828
+    (2794) = 3.55829
 
 
 H:  Header
@@ -75,7 +75,7 @@ Mesh level 1 patch level1,patch7
 Point (R,Z): <0.0272833, 0.123024>
 Zone:  2794
 Incident Nodes:  2840  2841  2901  2902  
-density:  <zonal> = 3.55828
+density:  <zonal> = 3.55829
 
 
 I:  Header
@@ -84,7 +84,7 @@ Point (R,Z): <0.0286875, 0.118734>
 Node:  2537
 Incident Zones:  2496  2436  
 density:  <zonal> 
-    (2496) = 4.62702
+    (2496) = 4.62701
     (2436) = 4.28138
 
 
@@ -93,7 +93,7 @@ Mesh level 1 patch level1,patch7
 Point (R,Z): <0.0289473, 0.119098>
 Zone:  2496
 Incident Nodes:  2537  2538  2598  2599  
-density:  <zonal> = 4.62702
+density:  <zonal> = 4.62701
 
 
 Testing boxlib 2D, contour
@@ -108,7 +108,7 @@ density:  <zonal> = 2.84481
 
 L:  Header
 Mesh level 1 patch level1,patch5 
-Point (R,Z): <0.0199219, 0.124312>
+Point (R,Z): <0.0199219, 0.124313>
 Node:  25
 Incident Zones:  24  25  
 density:  <zonal> 

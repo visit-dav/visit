@@ -55,8 +55,8 @@ class QvisScatterPlotWindow : public QvisPostableWindowObserver
 public:
     QvisScatterPlotWindow(const int type,
                          ScatterAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisScatterPlotWindow();
     virtual void CreateWindowContents();

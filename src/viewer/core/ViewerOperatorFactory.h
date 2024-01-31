@@ -54,6 +54,9 @@ class ViewerOperatorPluginInfo;
 //    Brad Whitlock, Tue Jun 24 14:47:35 PDT 2008
 //    Inherit from ViewerBase.
 //
+//    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Add operator keyframing.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerOperatorFactory : private ViewerBase
@@ -64,7 +67,11 @@ class VIEWERCORE_API ViewerOperatorFactory : private ViewerBase
 
     int GetNOperatorTypes() const;
 
-    ViewerOperator *CreateOperator(const int type, ViewerPlot *plot,
+    ViewerOperator *CreateOperator(const int type,
+                                   const bool keyframeMode,
+                                   const int cacheIndex,
+                                   const int cacheSize,
+                                   ViewerPlot *plot,
                                    const bool fromDefault);
 
     AttributeSubject *GetDefaultAtts(const int type) const;

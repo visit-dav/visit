@@ -4,8 +4,6 @@
     <Field name="hostAliases" type="string">tr-fe#.lanl.gov tr-fe#</Field>
     <Field name="hostNickname" type="string">LANL Trinity</Field>
     <Field name="directory" type="string">/usr/projects/views/visit</Field>
-    <Field name="useGateway" type="bool">true</Field>
-    <Field name="gatewayHost" type="string">red-wtrw.lanl.gov</Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>

@@ -29,14 +29,15 @@
 //    Kathleen Bonnell, Fri Jul 11 16:19:32 PDT 2003
 //    Initialize value.
 //
+//    Eric Brugger, Wed Aug  2 16:50:25 PDT 2023
+//    No longer always have 1 value since no values now indicates an error.
+//
 // ****************************************************************************
 
 avtDatasetQuery::avtDatasetQuery() : avtDatasetSink()
 {
     currentNode = 0;
     totalNodes = 0;
-    // always have 1 value.
-    resValue.push_back(0.);
 }
 
 
@@ -176,7 +177,7 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     }
 
     UpdateProgress(1, 0);
-    *qA = queryAtts;
+    SetOutputQueryAtts(qA, hadError);
 }
 
 
@@ -365,15 +366,18 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 12, 2003
 //
+//  Modifications:
+//    Eric Brugger, Mon Aug  7 14:34:00 PDT 2023
+//    Removed the index argument.
+//
 // ****************************************************************************
 
 void
-avtDatasetQuery::SetResultValue(const double &d, const int i)
+avtDatasetQuery::SetResultValue(const double &d)
 {
-    if (i < 0 || i >= (int)resValue.size())
-        EXCEPTION2(BadIndexException, i, (int)resValue.size()-1)
-
-    resValue[i] = d;
+    if (!resValue.empty())
+        resValue.clear();
+    resValue.push_back(d);
 }
 
 

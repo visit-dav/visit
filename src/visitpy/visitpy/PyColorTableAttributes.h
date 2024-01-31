@@ -5,6 +5,7 @@
 #ifndef PY_COLORTABLEATTRIBUTES_H
 #define PY_COLORTABLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ColorTableAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyColorTableAttributes_Wrap(const ColorTableAttribute
 void VISITPY_API           PyColorTableAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorTableAttributes_SetDefaults(const ColorTableAttributes *atts);
 std::string VISITPY_API    PyColorTableAttributes_GetLogString();
-std::string VISITPY_API    PyColorTableAttributes_ToString(const ColorTableAttributes *, const char *);
+std::string VISITPY_API    PyColorTableAttributes_ToString(const ColorTableAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyColorTableAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH];

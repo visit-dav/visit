@@ -37,8 +37,8 @@ class QvisReplicateWindow : public QvisOperatorWindow
   public:
     QvisReplicateWindow(const int type,
                          ReplicateAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisReplicateWindow();
     virtual void CreateWindowContents();

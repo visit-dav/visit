@@ -21,6 +21,7 @@
 #include <avtExtents.h>
 #include <avtDataAttributes.h>
 #include <avtDataTree.h>
+#include <avtParallel.h>
 #include <vtkVisItClipper.h>
 
 #include <DebugStream.h>
@@ -128,6 +129,13 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: rusu1
 //  Creation:   Wed Apr  3 13:52:34 PDT 2019
 //
+//  Modifications:
+//      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
+//      Execute uses GetAllLeaves() instead of recursive traverse domain.
+//
+//      Eddie Rusu, Thu Jul 16 11:09:52 PDT 2020
+//      Added parallel support.
+//
 // ****************************************************************************
 
 void
@@ -221,75 +229,45 @@ avtRemapFilter::Execute(void)
     // ------------------------------------ //
 
     avtDataTree_p inTree = GetInputDataTree();
-    TraverseDomainTree(inTree);
-    
-    SetOutputDataTree(new avtDataTree(rg, 0));
-    debug5 << "DONE Remapping" << std::endl;
-
-    CleanClippingFunctions();
-    return;
-}
-
-
-// ****************************************************************************
-//  Method: avtRemapFilter::TraverseDomainTree
-//
-//  Purpose:
-//      Traverse the DomainTree.
-//
-//  Arguments:
-//      inTree     avtDataTree_p The root of the domain tree from Execute or
-//                 else a node in the domain tree called during recursion.
-//
-//  Programmer: rusu1
-//  Creation:   Wed Apr  3 13:52:34 PDT 2019
-//
-// ****************************************************************************
-
-void
-avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
-{
-    debug3 << "avtRemapFilter::TraverseDomainTree" << std::endl;
-    if (*inTree == NULL)
+    int totalNodes;
+    vtkDataSet **dataSets = inTree->GetAllLeaves(totalNodes);
+    for (int i = 0; i < totalNodes; ++i)
     {
-        debug4 << "inTree is null" << std::endl;
-        return;
+        ClipDomain(dataSets[i]);
     }
-    
-    std::vector<int> domainIds;
-    inTree->GetAllDomainIds(domainIds);
-    
-    int numChildren = inTree->GetNChildren();
-    
-    if (numChildren <= 0 && !inTree->HasData())
+
+
+    // ---------------------------------------------- //
+    // --- Gather information in parallel setting --- //
+    // ---------------------------------------------- //
+
+#ifdef PARALLEL
+    int size = vars->GetNumberOfTuples();
+    double *varsDouble = (double*) vars->GetVoidPointer(0);
+    double *newBuff = new double[size];
+    SumDoubleArray(varsDouble, newBuff, size);
+    if (PAR_Rank() == 0)
     {
-        debug4 << "No children and no data" << std::endl;
-        return;
+        for (int i = 0; i < size; ++i)
+        {
+            varsDouble[i] = newBuff[i];
+        }
     }
-    
-    if (numChildren == 0)
+    delete [] newBuff;
+#endif
+
+    if (PAR_Rank() == 0)
     {
-        debug5 << "Number of children is 0. Clipping this domain." << std::endl;
-        debug5 << "Domain Id: " << domainIds[0] << std::endl;
-        ClipDomain(inTree);
-        return;
+        SetOutputDataTree(new avtDataTree(rg, 0));
     }
     else
     {
-        debug5 << "Number of children is " << numChildren
-               << ". Looping over children." << std::endl;
-        for (int i = 0; i < numChildren; ++i)
-        {
-            if (inTree->ChildIsPresent(i))
-            {
-                TraverseDomainTree(inTree->GetChild(i));
-            }
-            else
-            {
-                debug4 << "Child " << i << " is not present. Skipping." << std::endl;
-            }
-        }
+        SetOutputDataTree(new avtDataTree());
     }
+
+    CleanClippingFunctions();
+    debug5 << "DONE Remapping" << std::endl;
+    return;
 }
 
 
@@ -300,24 +278,28 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
 //      Clip the input domain against the output rectilinear grid.
 //
 //  Arguments:
-//      inLeaf     avtDataTree_p leaf, as determined by TraverseDomainTree.
+//      in_ds_tmp     vtkDataSet*, as called in Execute
 //
-//  Programmer: rusu1
+//  Programmer: Eddie Rusu
 //  Creation:   Wed Apr  3 13:52:34 PDT 2019
+//
+//  Modifications:
+//      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
+//      Clip domain receives the vtkDataSet directly instead of the leaf.
+//
+//      Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//      Updated the clipper to set the correct cell clip strategy.
 //
 // ****************************************************************************
 
 void
-avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
+avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
 {
     debug3 << "avtRemapFilter::ClipDomain" << std::endl;
 
-    // --------------------------------------------------- //
-    // --- Convert the avtDataTree_p into a vtkDataSet --- //
-    // --------------------------------------------------- //
-    avtDataRepresentation in_dr = inLeaf->GetDataRepresentation();
-    int domainId = in_dr.GetDomain();
-    vtkDataSet* in_ds_tmp = in_dr.GetDataVTK();
+    // Must create a new copy like this because we will modify the dataset
+    // by adding new variables to it. If we don't copy like this, then we will
+    // crash the engine.
     vtkDataSet* in_ds = in_ds_tmp->NewInstance();
     in_ds->ShallowCopy(in_ds_tmp);
     
@@ -328,7 +310,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
     if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
         in_ds->GetNumberOfPoints() == 0 || in_ds->GetNumberOfCells() == 0)
     {
-        debug4 << "Domain " << domainId << " is invalid." << std::endl;
+        debug4 << "This domain is invalid for remapping." << std::endl;
         return;
     }
     
@@ -384,14 +366,14 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                 clipperLeft->SetInputData(in_ds);
                 clipperLeft->SetClipFunction(funcsArrayX[i]);
                 clipperLeft->SetInsideOut(false);
-                clipperLeft->SetRemoveWholeCells(false);
+                clipperLeft->SetCellClipStrategyToRemovePartial();
                 last = clipperLeft;
 
                 // Right plane
                 clipperRight->SetInputData(in_ds);
                 clipperRight->SetClipFunction(funcsArrayX[i+1]);
                 clipperRight->SetInsideOut(true);
-                clipperRight->SetRemoveWholeCells(false);
+                clipperRight->SetCellClipStrategyToRemovePartial();
                 clipperRight->SetInputConnection(last->GetOutputPort());
                 last = clipperRight;
 
@@ -399,7 +381,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                 clipperTop->SetInputData(in_ds);
                 clipperTop->SetClipFunction(funcsArrayY[j]);
                 clipperTop->SetInsideOut(false);
-                clipperTop->SetRemoveWholeCells(false);
+                clipperTop->SetCellClipStrategyToRemovePartial();
                 clipperTop->SetInputConnection(last->GetOutputPort());
                 last = clipperTop;
 
@@ -407,7 +389,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                 clipperBottom->SetInputData(in_ds);
                 clipperBottom->SetClipFunction(funcsArrayY[j+1]);
                 clipperBottom->SetInsideOut(true);
-                clipperBottom->SetRemoveWholeCells(false);
+                clipperBottom->SetCellClipStrategyToRemovePartial();
                 clipperBottom->SetInputConnection(last->GetOutputPort());
                 last = clipperBottom;
 
@@ -417,7 +399,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                     clipperFront->SetInputData(in_ds);
                     clipperFront->SetClipFunction(funcsArrayZ[k]);
                     clipperFront->SetInsideOut(false);
-                    clipperFront->SetRemoveWholeCells(false);
+                    clipperFront->SetCellClipStrategyToRemovePartial();
                     clipperFront->SetInputConnection(last->GetOutputPort());
                     last = clipperFront;
 
@@ -425,7 +407,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                     clipperBack->SetInputData(in_ds);
                     clipperBack->SetClipFunction(funcsArrayZ[k+1]);
                     clipperBack->SetInsideOut(true);
-                    clipperBack->SetRemoveWholeCells(false);
+                    clipperBack->SetCellClipStrategyToRemovePartial();
                     clipperBack->SetInputConnection(last->GetOutputPort());
                     last = clipperBack;
                 }
@@ -766,6 +748,13 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
 //  Programmer: rusu1
 //  Creation:   Wed Apr  3 13:52:34 PDT 2019
 //
+//  Modifications:
+//      Eddie Rusu, Thu Jul 16 11:09:52 PDT 2020
+//      GetSpatialExtents uses +-DBL_MAX as initial placeholders while looking
+//      for the extents. If they are not found then the rGridBounds will contain
+//      +-DBL_MAX as inputs. So I check for this to ensure 3D determination is
+//      correct.
+//
 // ****************************************************************************
 void
 avtRemapFilter::GetBounds()
@@ -795,7 +784,8 @@ avtRemapFilter::GetBounds()
             GetSpatialExtents(rGridBounds);
         }
     }
-    if (fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100)
+    if ((fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100) ||
+        (rGridBounds[4] == +DBL_MAX && rGridBounds[5] == -DBL_MAX))
     {
         debug5 << "2D Remapping" << std::endl;
         is3D = false;

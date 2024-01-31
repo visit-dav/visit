@@ -313,7 +313,7 @@ RestoreSiloLibState()
 //
 // ****************************************************************************
 
-avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
+avtSiloWriter::avtSiloWriter(const DBOptionsAttributes *dbopts)
 {
     headerDbMd = 0;
     optlist = 0;
@@ -441,6 +441,10 @@ bool avtSiloWriter::ShouldCreateFile()
 //    I modified the writer to handle the case where the meshes in a
 //    multimesh or multivar were not all of the same type.
 //
+//    Kathleen Biagas, Wed June 24, 2021
+//    Use FileFunctions to parse stemname into 'dir' and 'stem', to ensure
+//    things work on Windows.
+//
 // ****************************************************************************
 
 void
@@ -450,12 +454,12 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
     nblocks = nb;
     dir ="";
     // find dir if provided
-    size_t idx = stem.rfind("/");
-    if ( idx != string::npos )
+    stem = FileFunctions::Basename(stemname);
+    dir  = FileFunctions::Dirname(stemname);
+    if (!dir.empty())
     {
-        int stem_len = stem.size() - (idx+1) ;
-        dir  = stem.substr(0,idx+1);
-        stem = stem.substr(idx+1,stem_len);
+        // elsewhere that 'dir' is used expects a trailing slash, so add it
+        dir += VISIT_SLASH_STRING;
     }
 
     // Get the number of datasets on this processor and allocate the
@@ -1225,6 +1229,10 @@ avtSiloWriter::CloseFile(void)
 //    Mark C. Miller, Thu Mar  1 15:03:23 PST 2018
 //    Indicate db metadata is time-varying (even if it may not be). In trunk,
 //    a write option is added to disable.
+// 
+//    Justin Privitera, Thu Apr 28 14:40:37 PDT 2022
+//    Removed expression output.
+// 
 // ****************************************************************************
 
 void
@@ -1299,7 +1307,6 @@ avtSiloWriter::WriteRootFile()
         delete [] globalNMesh2;
         delete [] globalChunkToFileMap;
 
-        WriteExpressions(dbfile);
         DBClose(dbfile);
     }
 }
@@ -2599,94 +2606,6 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
         delete [] matnos;
 
         EndVar(dbfile, nlevels);
-    }
-}
-
-// ****************************************************************************
-// Method: avtSiloWriter::WriteExpressions
-//
-// Purpose: 
-//   This method writes out the expressions that originally came from the
-//   database to Silo.
-//
-// Arguments:
-//   dbfile : The Silo file that we're outputting.
-//
-// Returns:    
-//
-// Note:       This is primarily meant to export expressions for the master file.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Mar 11 11:26:22 PDT 2009
-//
-// Modifications:
-//   
-//   Hank Childs, Mon May 25 11:14:23 PDT 2009
-//   Add support for old Silo versions.
-//
-//    Mark C. Miller, Fri Oct 30 11:06:19 PDT 2009
-//    Fixed conditional compilation logic for DBPutDefvars calls.
-// ****************************************************************************
-
-void
-avtSiloWriter::WriteExpressions(DBfile *dbfile)
-{
-    const ExpressionList &expr = headerDbMd->GetExprList();
-    int i, ecount = 0;
-    for(i = 0; i < expr.GetNumExpressions(); ++i)
-        ecount += (expr.GetExpressions(i).GetFromDB() ? 1 : 0);
-    if(ecount > 0)
-    {
-        // Pack up the definitions into arrays that we can write out.
-        char **exprNames = new char*[ecount];
-        int   *exprTypes = new int[ecount];
-        char **exprDefs  = new char*[ecount];
-        ecount = 0;
-        for(i = 0; i < expr.GetNumExpressions(); ++i)
-        {
-            const Expression &e = expr.GetExpressions(i);
-            if(e.GetFromDB())
-            {
-                exprNames[ecount] = new char[e.GetName().size()+1];
-                strcpy(exprNames[ecount], e.GetName().c_str());
-
-                int vartype = 0;
-                switch(e.GetType())
-                {
-                case Expression::ScalarMeshVar: vartype = DB_VARTYPE_SCALAR;   break;
-                case Expression::VectorMeshVar: vartype = DB_VARTYPE_VECTOR;   break;
-                case Expression::TensorMeshVar: vartype = DB_VARTYPE_TENSOR;   break;
-                case Expression::ArrayMeshVar:  vartype = DB_VARTYPE_ARRAY;    break;
-                case Expression::Material:      vartype = DB_VARTYPE_MATERIAL; break;
-                case Expression::Species :      vartype = DB_VARTYPE_SPECIES;  break;
-                default:                        vartype = DB_VARTYPE_SCALAR;   break;
-                }
-                exprTypes[ecount] = vartype;
-
-                exprDefs[ecount] = new char[e.GetDefinition().size()+1];
-                strcpy(exprDefs[ecount], e.GetDefinition().c_str());
-
-                ++ecount;
-            }
-        }
-
-        // Write the definitions
-        // 4.6.1 chosen arbitrarily. 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,1)
-        DBPutDefvars(dbfile, "expressions", ecount, exprNames, exprTypes, exprDefs, NULL);
-#endif
-#endif
-
-        // Clean up
-        for(i = 0; i < ecount; ++i)
-        {
-            delete [] exprNames[i];
-            delete [] exprDefs[i];
-        }
-        delete [] exprNames;
-        delete [] exprTypes;
-        delete [] exprDefs;
     }
 }
 

@@ -971,6 +971,11 @@ ChooseCenterOfRotationAction::FinishCB(void *data, bool success,
 //   Brad Whitlock, Tue Apr 29 11:54:47 PDT 2008
 //   Support for internationalization.
 //
+//   Eric Brugger, Wed May  6 10:57:35 PDT 2020
+//   Made the warning message conditional on not being in scalable
+//   rendering mode, since the warning message will put out in
+//   ViewerWindow::GetPickAttributesForScreenPoint in that case.
+//
 // ****************************************************************************
 
 void
@@ -1014,7 +1019,7 @@ ChooseCenterOfRotationAction::FinishExecute(bool success,
         windowMgr->SetCenterOfRotation(window->GetWindowId(),
                                        pt[0], pt[1], pt[2]);
     }
-    else 
+    else if (!window->GetScalableRendering())
     {
         GetViewerMessaging()->Warning(
             TR("VisIt could not set the center of rotation. "

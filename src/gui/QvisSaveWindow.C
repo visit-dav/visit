@@ -50,7 +50,7 @@ static const char *fileFormats[] = {
 "vtk"
 };
 
-// Given a SaveWindowAttributes::FileFormat string name, determine the 
+// Given a SaveWindowAttributes::FileFormat string name, determine the
 // menu index.
 int FileFormatToMenuIndex(const std::string &ext)
 {
@@ -66,7 +66,7 @@ int FileFormatToMenuIndex(const std::string &ext)
 // ****************************************************************************
 // Method: QvisSaveWindow::QvisSaveWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisSaveWindow class.
 //
 // Arguments:
@@ -127,14 +127,14 @@ QvisSaveWindow::QvisSaveWindow(
 // ****************************************************************************
 // Method: QvisSaveWindow::~QvisSaveWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisSaveWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 9 17:10:02 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisSaveWindow::~QvisSaveWindow()
@@ -145,7 +145,7 @@ QvisSaveWindow::~QvisSaveWindow()
 // ****************************************************************************
 // Method: QvisSaveWindow::ConnectSubjects
 //
-// Purpose: 
+// Purpose:
 //   This function connects subjects so that the window observes them.
 //
 // Programmer: Kathleen Biagas
@@ -166,7 +166,7 @@ QvisSaveWindow::ConnectSubjects(DBPluginInfoAttributes *dbp)
 // ****************************************************************************
 // Method: QvisSaveWindow::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   This function is called when a subject is removed.
 //
 // Arguments:
@@ -190,7 +190,7 @@ QvisSaveWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // ****************************************************************************
 // Method: QvisSaveWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the Aslice operator window.
 //
 // Programmer: Brad Whitlock
@@ -212,7 +212,7 @@ QvisSaveWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Hank Childs, Wed Oct 15 08:58:16 PDT 2003
 //   Added stereo button.
 //
-//   Kathleen Bonnell, Thu Nov 13 12:15:25 PST 2003 
+//   Kathleen Bonnell, Thu Nov 13 12:15:25 PST 2003
 //   Added compression type combo box.
 //
 //   Mark C. Miller, Mon Mar 29 16:21:14 PST 2004
@@ -227,7 +227,7 @@ QvisSaveWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   I replaced the host line edit with an output directory line edit. I also
 //   added a save button.
 //
-//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004
 //   Changed SLOT for saveButton from 'saveWindow' to 'saveButtonClicked' so
 //   that 'apply' can be called before the save.
 //
@@ -299,9 +299,9 @@ QvisSaveWindow::CreateWindowContents()
 
     outputDirectoryLabel    = new QLabel(tr("Output directory"), nameBox);
     nameLayout->addWidget(outputDirectoryLabel, 2, 0, 1, 2);
-    
+
     QHBoxLayout *outputDirectoryLayout = new QHBoxLayout();
-    outputDirectoryLayout->setMargin(0);
+    outputDirectoryLayout->setContentsMargins(0,0,0,0);
     outputDirectoryLayout->setSpacing(0);
     nameLayout->addLayout(outputDirectoryLayout, 3, 0, 1, 4);
 
@@ -309,7 +309,7 @@ QvisSaveWindow::CreateWindowContents()
     outputDirectorySelectButton = new QPushButton("...", nameBox);
     outputDirectoryLayout->addWidget(outputDirectoryLineEdit);
     outputDirectoryLayout->addWidget(outputDirectorySelectButton);
-    
+
     connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processOutputDirectoryText()));
 
@@ -345,7 +345,7 @@ QvisSaveWindow::CreateWindowContents()
     qualitySlider = new QSlider(Qt::Horizontal, formatBox);
     qualitySlider->setMinimum(0);
     qualitySlider->setMaximum(100);
-    
+
     connect(qualitySlider, SIGNAL(valueChanged(int)),
             this, SLOT(qualityChanged(int)));
     formatLayout->addWidget(qualitySlider, 1, 1);
@@ -356,7 +356,7 @@ QvisSaveWindow::CreateWindowContents()
     connect(progressiveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(progressiveToggled(bool)));
     formatLayout->addWidget(progressiveCheckBox, 1, 2, Qt::AlignRight);
-   
+
     compressionTypeLabel = new QLabel(tr("Compression type"),formatBox);
     compressionTypeComboBox = new QComboBox(formatBox);
     compressionTypeComboBox->addItem(tr("None"));     // 0
@@ -371,7 +371,7 @@ QvisSaveWindow::CreateWindowContents()
             this, SLOT(compressionTypeChanged(int)));
     compressionTypeLabel->setBuddy(compressionTypeComboBox);
 
-    // Binary toggle 
+    // Binary toggle
     binaryCheckBox = new QCheckBox(tr("Binary"), central);
     connect(binaryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(binaryToggled(bool)));
@@ -400,9 +400,9 @@ QvisSaveWindow::CreateWindowContents()
 
     aspectRatioLabel = new QLabel(tr("Aspect ratio"),central);
     aspectRatioComboBox = new QComboBox(central);
-    aspectRatioComboBox->addItem("screen ratio");
-    aspectRatioComboBox->addItem("1:1 aspect ratio");
-    aspectRatioComboBox->addItem("no constraint");
+    aspectRatioComboBox->addItem(tr("screen ratio"));
+    aspectRatioComboBox->addItem(tr("1:1 aspect ratio"));
+    aspectRatioComboBox->addItem(tr("no constraint"));
     connect(aspectRatioComboBox, SIGNAL(activated(int)),
            this, SLOT(aspectRatioChanged(int)));
     resolutionLayout->addWidget(aspectRatioLabel, 0, 0);
@@ -482,9 +482,9 @@ QvisSaveWindow::CreateWindowContents()
     QGridLayout *multiWindowSaveLayout = new QGridLayout(multiWindowSaveBox);
 
     multiWindowSaveTypeButtonGroup = new QButtonGroup(multiWindowSaveBox);
-    tiledButton    = new QRadioButton(tr("Tiled"),             
+    tiledButton    = new QRadioButton(tr("Tiled"),
                                       multiWindowSaveBox);
-    advancedButton = new QRadioButton(tr("Advanced"),         
+    advancedButton = new QRadioButton(tr("Advanced"),
                                       multiWindowSaveBox);
 
     multiWindowSaveTypeButtonGroup->addButton(tiledButton,0);
@@ -594,7 +594,7 @@ QvisSaveWindow::CreateWindowContents()
     // The save button.
     QHBoxLayout *saveButtonLayout = new QHBoxLayout();
     topLayout->addLayout(saveButtonLayout);
-    
+
     //saveButtonLayout->setSpacing(5);
     QPushButton *saveButton = new QPushButton(tr("Save"), central);
     connect(saveButton, SIGNAL(clicked()),
@@ -611,7 +611,7 @@ QvisSaveWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisSaveWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method updates the window's widgets to reflect changes made
 //   in the SaveWindowAttributes object that the window watches.
 //
@@ -637,8 +637,8 @@ QvisSaveWindow::CreateWindowContents()
 //   Hank Childs, Wed Oct 15 09:03:08 PDT 2003
 //   Only allow the stereo button to be enabled when we have an image format.
 //
-//   Kathleen Bonnell, Thu Nov 13 12:16:06 PST 2003 
-//   Only allow the compression type combo box to be enabled when we 
+//   Kathleen Bonnell, Thu Nov 13 12:16:06 PST 2003
+//   Only allow the compression type combo box to be enabled when we
 //   have a tiff format.
 //
 //   Hank Childs, Thu Jun 17 11:39:35 PDT 2004
@@ -655,7 +655,7 @@ QvisSaveWindow::CreateWindowContents()
 //   Added button to force a merge of parallel geometry.
 //
 //   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
-//   bool field for "maintain aspect" was changed to an enum 
+//   bool field for "maintain aspect" was changed to an enum
 //   to constrain resolution.
 //
 //   Brad Whitlock, Mon Dec 17 10:38:20 PST 2007
@@ -676,6 +676,9 @@ QvisSaveWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Sep 19 13:21:02 PDT 2017
 //   I changed how the menu items are added for file formats to allow for
 //   conditionally compiled file formats. I added support for pixel data types.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.setNum.
 //
 // ****************************************************************************
 
@@ -730,7 +733,7 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             fileFormatComboBox->blockSignals(false);
             }
 
-            bool isCompressible = 
+            bool isCompressible =
                 saveWindowAtts->GetFormat() == SaveWindowAttributes::TIFF ||
                 saveWindowAtts->GetFormat() == SaveWindowAttributes::JPEG ||
                 saveWindowAtts->GetFormat() == SaveWindowAttributes::ULTRA ||
@@ -748,11 +751,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                                       SaveWindowAttributes::JPEG);
             compressionTypeLabel->setEnabled(isCompressible);
 
-            if (saveWindowAtts->GetFormat() 
+            if (saveWindowAtts->GetFormat()
                      == SaveWindowAttributes::VTK
-                || saveWindowAtts->GetFormat() 
+                || saveWindowAtts->GetFormat()
                      == SaveWindowAttributes::STL
-                || saveWindowAtts->GetFormat() 
+                || saveWindowAtts->GetFormat()
                      == SaveWindowAttributes::PLY)
             {
                 binaryCheckBox->setEnabled(true);
@@ -821,11 +824,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             break;
         }
         case SaveWindowAttributes::ID_width:
-            temp.sprintf("%d", saveWindowAtts->GetWidth());
+            temp.setNum(saveWindowAtts->GetWidth());
             widthLineEdit->setText(temp);
             break;
         case SaveWindowAttributes::ID_height:
-            temp.sprintf("%d", saveWindowAtts->GetHeight());
+            temp.setNum(saveWindowAtts->GetHeight());
             heightLineEdit->setText(temp);
             break;
         case SaveWindowAttributes::ID_screenCapture:
@@ -907,19 +910,19 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             mwsWindowComboBox->setCurrentIndex(currentWindow);
             mwsWindowComboBox->blockSignals(false);
             mwsIndWidthLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetSize()[0]);
+            temp.setNum(atts.GetSize()[0]);
             mwsIndWidthLineEdit->setText(temp);
             mwsIndWidthLineEdit->blockSignals(false);
             mwsIndHeightLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetSize()[1]);
+            temp.setNum(atts.GetSize()[1]);
             mwsIndHeightLineEdit->setText(temp);
             mwsIndHeightLineEdit->blockSignals(false);
             mwsPosXLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetPosition()[0]);
+            temp.setNum(atts.GetPosition()[0]);
             mwsPosXLineEdit->setText(temp);
             mwsPosXLineEdit->blockSignals(false);
             mwsPosYLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetPosition()[1]);
+            temp.setNum(atts.GetPosition()[1]);
             mwsPosYLineEdit->setText(temp);
             mwsPosYLineEdit->blockSignals(false);
             mwsLayerComboBox->blockSignals(true);
@@ -1048,7 +1051,7 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisSaveWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for one or all of the lineEdit widgets.
 //
 // Arguments:
@@ -1151,7 +1154,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 okay = (w <= VISIT_RENDERING_SIZE_LIMIT);
-                
+
                 if(okay)
                 {
                     saveWindowAtts->SetWidth(w);
@@ -1181,7 +1184,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 okay = (h <= VISIT_RENDERING_SIZE_LIMIT);
-                
+
                 if(okay)
                 {
                     saveWindowAtts->SetHeight(h);
@@ -1236,7 +1239,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 okay = (h <= VISIT_RENDERING_SIZE_LIMIT);
-            
+
                 if(okay)
                 {
                     int s[2] = { atts.GetSize()[0], h };
@@ -1297,7 +1300,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisSaveWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method applies the save image attributes and optionally tells
 //   the viewer to apply them.
 //
@@ -1336,14 +1339,14 @@ QvisSaveWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisSaveWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function to apply the save image attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 9 17:25:59 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1355,14 +1358,14 @@ QvisSaveWindow::apply()
 // ****************************************************************************
 // Method: QvisSaveWindow::processFilenameText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the normal vector.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 9 17:26:26 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1375,7 +1378,7 @@ QvisSaveWindow::processFilenameText()
 // ****************************************************************************
 // Method: QvisSaveWindow::familyToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the file is to be named as a family of files.
 //
@@ -1386,7 +1389,7 @@ QvisSaveWindow::processFilenameText()
 // Creation:   Fri Feb 9 17:27:07 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1399,7 +1402,7 @@ QvisSaveWindow::familyToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::outputToCurrentDirectoryToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //  "Output to current directory" toggle is clicked.
 //
@@ -1410,7 +1413,7 @@ QvisSaveWindow::familyToggled(bool val)
 // Creation:   Fri Jul 30 15:54:51 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1423,7 +1426,7 @@ QvisSaveWindow::outputToCurrentDirectoryToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::processOutputDirectoryText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the output directory where we'll
 //   save the image.
 //
@@ -1446,7 +1449,7 @@ QvisSaveWindow::processOutputDirectoryText()
 // ****************************************************************************
 // Method: QvisSaveWindow::selectOutputDirectory
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that selects a new output file directory.
 //
 // Programmer: Brad Whitlock
@@ -1489,7 +1492,7 @@ QvisSaveWindow::selectOutputDirectory()
 // ****************************************************************************
 // Method: QvisSaveWindow::fileFormatChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new file format
 //   is selected.
 //
@@ -1507,7 +1510,7 @@ QvisSaveWindow::selectOutputDirectory()
 //   Made file format be a true enum.
 //
 //   Brad Whitlock, Tue Sep 19 13:17:02 PDT 2017
-//   Changes so the menu names can have a different order than the 
+//   Changes so the menu names can have a different order than the
 //   FileFormat enum.
 //
 //   Kathleen Biagas, Fri Aug 31 13:58:34 PDT 2018
@@ -1518,7 +1521,7 @@ QvisSaveWindow::selectOutputDirectory()
 void
 QvisSaveWindow::fileFormatChanged(int index)
 {
-    // index is a menu index. Let's convert the upper case string name for the 
+    // index is a menu index. Let's convert the upper case string name for the
     // menu back to SaveWindowAttributes::FileFormat type.
     SaveWindowAttributes::FileFormat val = SaveWindowAttributes::PNG;
     SaveWindowAttributes::FileFormat_FromString(
@@ -1531,7 +1534,7 @@ QvisSaveWindow::fileFormatChanged(int index)
         std::string tmp = fileFormatComboBox->currentText().toStdString();
         if (tmp == "curve")
         {
-            int ntypes = dbPluginInfoAtts->GetTypes().size(); 
+            int ntypes = dbPluginInfoAtts->GetTypes().size();
             for (int i = 0; i < ntypes; ++i)
             {
                 if (dbPluginInfoAtts->GetTypes()[i] == "Curve2D")
@@ -1554,7 +1557,7 @@ QvisSaveWindow::fileFormatChanged(int index)
 // ****************************************************************************
 // Method: QvisSaveWindow::qualityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the quality slider changes.
 //
 // Arguments:
@@ -1579,7 +1582,7 @@ QvisSaveWindow::qualityChanged(int val)
 // ****************************************************************************
 // Method: QvisSaveWindow::progressiveToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the progressive toggle
 //   is clicked.
 //
@@ -1590,7 +1593,7 @@ QvisSaveWindow::qualityChanged(int val)
 // Creation:   Wed Jan 23 15:30:56 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1610,7 +1613,7 @@ QvisSaveWindow::compressionTypeChanged(int index)
 // ****************************************************************************
 // Method: QvisSaveWindow::binaryToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the binary toggle
 //   is clicked.
 //
@@ -1621,7 +1624,7 @@ QvisSaveWindow::compressionTypeChanged(int index)
 // Creation:   Sun May 26 17:31:18 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1634,7 +1637,7 @@ QvisSaveWindow::binaryToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::stereoToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not to save the image in stereo.
 //
@@ -1645,7 +1648,7 @@ QvisSaveWindow::binaryToggled(bool val)
 // Creation:   October 15, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1658,7 +1661,7 @@ QvisSaveWindow::stereoToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::*Toggled
 //
-// Purpose: 
+// Purpose:
 //   Qt slot functions that control the type of pixel data we're requesting.
 //
 // Arguments:
@@ -1668,7 +1671,7 @@ QvisSaveWindow::stereoToggled(bool val)
 // Creation:   Wed Sep 20 18:13:16 PDT 2017
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1734,7 +1737,7 @@ QvisSaveWindow::valueToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::forceMergeToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not it should attempt to merge parallel domains before saving.
 //
@@ -1761,7 +1764,7 @@ QvisSaveWindow::forceMergeToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::aspectRatioChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new aspect ratio
 //   is selected.
 //
@@ -1814,7 +1817,7 @@ QvisSaveWindow::aspectRatioChanged(int index)
 // ****************************************************************************
 // Method: QvisSaveWindow::processWidthText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the image width changes.
 //
 // Programmer: Brad Whitlock
@@ -1839,7 +1842,7 @@ QvisSaveWindow::processWidthText()
 // ****************************************************************************
 // Method: QvisSaveWindow::processHeightText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the image height changes.
 //
 // Programmer: Brad Whitlock
@@ -1848,7 +1851,7 @@ QvisSaveWindow::processWidthText()
 // Modifications:
 //   Brad Whitlock, Fri Jul 16 14:37:13 PST 2004
 //   Moved some code out of GetCurrentValues.
-//   
+//
 //   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
 //   Enum in SaveWindowAttributes changed.
 //
@@ -1864,7 +1867,7 @@ QvisSaveWindow::processHeightText()
 // ****************************************************************************
 // Method: QvisSaveWindow::screenCaptureToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not to screen capture the image.
 //
@@ -1875,7 +1878,7 @@ QvisSaveWindow::processHeightText()
 // Creation:   Mon Aug 31 10:38:12 PDT 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1888,7 +1891,7 @@ QvisSaveWindow::screenCaptureToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::multiWindowSaveToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that turns on and off multi window save.
 //
 // Arguments:
@@ -1931,7 +1934,7 @@ QvisSaveWindow::multiWindowSaveToggled(bool val)
 // ****************************************************************************
 // Method: QvisSaveWindow::multiWindowSaveTypeToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the type of multi window save
 //   to do.
 //
@@ -2148,7 +2151,7 @@ void QvisSaveWindow::imageTransparencyChanged(int val)
 // ****************************************************************************
 // Method: QvisSaveWindow::saveWindow
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that is called when the Save button is clicked.
 //
 // Note:       Saves the active vis window and may hide the window.
@@ -2196,11 +2199,11 @@ QvisSaveWindow::saveWindow()
 // ****************************************************************************
 // Method: QvisSaveWindow::saveButtonClicked
 //
-// Purpose: 
-//   This is Qt slot function that is called when the save button is clicked. 
+// Purpose:
+//   This is Qt slot function that is called when the save button is clicked.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 15, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   December 15, 2004
 //
 // Modifications:
 //   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
@@ -2219,11 +2222,11 @@ QvisSaveWindow::saveButtonClicked()
 // ****************************************************************************
 // Method: QvisSaveWindow::saveAndDismissButtonClicked
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that is called when the saveAndDismis button
-//   is clicked. 
+//   is clicked.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   January 7, 2015
 //
 // Modifications:

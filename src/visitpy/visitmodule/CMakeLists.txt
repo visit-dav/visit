@@ -7,6 +7,9 @@
 #   Brad Whitlock, Tue May  1 17:02:34 PDT 2012
 #   Add writescript.py
 #
+#   Cyrus Harrison, Wed Feb 24 10:12:20 PST 2021
+#   Moved PySide logic into visit_utils.builtin
+#
 #****************************************************************************
 
 PYTHON_ADD_DISTUTILS_SETUP(visitmodule_py_setup
@@ -14,9 +17,6 @@ PYTHON_ADD_DISTUTILS_SETUP(visitmodule_py_setup
                            setup.py
                            py_src/__init__.py
                            py_src/frontend.py
-                           py_src/pyside_support.py
-                           py_src/evalfuncs.py
-                           py_src/writescript.py
                            )
 
 

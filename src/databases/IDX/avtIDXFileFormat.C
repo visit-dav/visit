@@ -529,7 +529,7 @@ void avtIDXFileFormat::createTimeIndex()
 //
 // ****************************************************************************
 
-avtIDXFileFormat::avtIDXFileFormat(const char *filename, DBOptionsAttributes* attrs)
+avtIDXFileFormat::avtIDXFileFormat(const char *filename, const DBOptionsAttributes* attrs)
 : avtMTMDFileFormat(filename)
 {
 

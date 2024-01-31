@@ -63,7 +63,7 @@
       </Enum>
       <Enum name="ToroidalIntegration">
         NoToroidalIntegration
-        ToroidalTimeSample
+        SampleToroidally
         IntegrateToroidally
       </Enum>
       <Enum name="ToroidalAngleSampling">

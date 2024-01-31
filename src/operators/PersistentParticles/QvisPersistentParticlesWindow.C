@@ -74,7 +74,9 @@ QvisPersistentParticlesWindow::~QvisPersistentParticlesWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -88,7 +90,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     topLayout->addWidget(timeGroup);
 
     QGridLayout *timeLayout = new QGridLayout(timeGroup);
-    timeLayout->setMargin(5);
+    timeLayout->setContentsMargins(5,5,5,5);
     timeLayout->setSpacing(10);
 
     // Start
@@ -97,7 +99,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     startPathType = new QWidget(central);
     startPathTypeButtonGroup= new QButtonGroup(startPathType);
     QHBoxLayout *startPathTypeLayout = new QHBoxLayout(startPathType);
-    startPathTypeLayout->setMargin(0);
+    startPathTypeLayout->setContentsMargins(0,0,0,0);
     startPathTypeLayout->setSpacing(10);
 
     QRadioButton *startPathTypePathTypeEnumAbsolute = new QRadioButton(tr("Absolute"), startPathType);
@@ -106,8 +108,13 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QRadioButton *startPathTypePathTypeEnumRelative = new QRadioButton(tr("Relative"), startPathType);
     startPathTypeButtonGroup->addButton(startPathTypePathTypeEnumRelative, 1);
     startPathTypeLayout->addWidget(startPathTypePathTypeEnumRelative);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(startPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(startPathTypeChanged(int)));
+#else
+    connect(startPathTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(startPathTypeChanged(int)));
+#endif
     timeLayout->addWidget(startPathType, 0,1);
 
     startIndexLabel = new QLabel(tr("Index of first time slice"), central);
@@ -123,7 +130,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     stopPathType = new QWidget(central);
     stopPathTypeButtonGroup= new QButtonGroup(stopPathType);
     QHBoxLayout *stopPathTypeLayout = new QHBoxLayout(stopPathType);
-    stopPathTypeLayout->setMargin(0);
+    stopPathTypeLayout->setContentsMargins(0,0,0,0);
     stopPathTypeLayout->setSpacing(10);
     QRadioButton *stopPathTypePathTypeEnumAbsolute = new QRadioButton(tr("Absolute"), stopPathType);
     stopPathTypeButtonGroup->addButton(stopPathTypePathTypeEnumAbsolute, 0);
@@ -131,8 +138,13 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QRadioButton *stopPathTypePathTypeEnumRelative = new QRadioButton(tr("Relative"), stopPathType);
     stopPathTypeButtonGroup->addButton(stopPathTypePathTypeEnumRelative, 1);
     stopPathTypeLayout->addWidget(stopPathTypePathTypeEnumRelative);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(stopPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(stopPathTypeChanged(int)));
+#else
+    connect(stopPathTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(stopPathTypeChanged(int)));
+#endif
     timeLayout->addWidget(stopPathType, 2,1);
 
     stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
@@ -157,7 +169,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     topLayout->addWidget(coordinateGroup);
 
     QGridLayout *coordinateLayout = new QGridLayout(coordinateGroup);
-    coordinateLayout->setMargin(5);
+    coordinateLayout->setContentsMargins(5,5,5,5);
     coordinateLayout->setSpacing(10);
 
 
@@ -191,7 +203,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     topLayout->addWidget(connectionsGroup);
 
     QGridLayout *connectionsLayout = new QGridLayout(connectionsGroup);
-    connectionsLayout->setMargin(5);
+    connectionsLayout->setContentsMargins(5,5,5,5);
     connectionsLayout->setSpacing(10);
 
 

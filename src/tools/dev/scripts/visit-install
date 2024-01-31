@@ -12,7 +12,7 @@
 #                         eth_zurich | llnl_open | llnl_open_rz |"
 #                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
 #                         nersc | nics | ohio | ornl | princeton |"
-#                         sandia | sandia_closed | umich | utah]"
+#                         sandia | umich | utah]"
 #                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
 #                      [-beta | -private] version platform directory"
 #
@@ -422,6 +422,16 @@
 #    Eric Brugger, Thus Feb  6 07:01:40 PST 2020
 #    I removed the rzgw from the rz host profile names.
 #
+#    Mark C. Miller, Sat Aug 28 10:07:41 PDT 2021
+#    Removed all refs to visit_plugin
+#
+#    Eric Brugger, Tue Jan 25 09:53:25 PST 2022
+#    I added qtviswinExample, qtvtkExample and qvtkopenglExample to
+#    the bin directory.
+#
+#    Eric Brugger, Mon Nov 27 17:05:13 PST 2023
+#    I added a host profile for poodle.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -493,10 +503,10 @@ done
 
 if [ "$#" != "3" ]; then
    echo "Usage: visit-install [-c anl | arl | asu | awe | chombo | clemson | cscs |"
-   echo "                         eth_zurich | llnl_open | llnl_open_rz |"
+   echo "                         eth_zurich | kaust | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
    echo "                         nersc | nics | ohio | ornl | princeton | "
-   echo "                         sandia | sandia_closed | umich | utah]"
+   echo "                         sandia | umich | utah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -677,6 +687,14 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
+    echo "Testing kaust configuration..."
+    rm -rf $dir
+    $0 -c kaust $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_kaust*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
     echo "Testing llnl_open_rz configuration..."
     rm -rf $dir
     $0 -c llnl_open_rz $version $platform $dir > /dev/null 2>&1
@@ -773,14 +791,6 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
-    echo "Testing sandia_closed configuration..."
-    rm -rf $dir
-    $0 -c sandia_closed $version $platform $dir > /dev/null 2>&1
-    files=`ls $dir/$version/.visit/hosts/host_sandia_closed*` 
-    if [ "$files" == "" ]; then
-       echo "failed"
-       exit 1
-    fi
     echo "Testing umich configuration..."
     rm -rf $dir
     $0 -c umich $version $platform $dir > /dev/null 2>&1
@@ -816,23 +826,24 @@ while [ "$config" = "prompt" ]; do
    echo "   6)  AWE network"
    echo "   7)  Clemson University network"
    echo "   8)  ETH Zurich network"
-   echo "   9)  LLNL open network"
-   echo "   10) LLNL closed network"
-   echo "   11) Leibniz Supercomputing Centre network"
-   echo "   12) Lousiana State University network"
-   echo "   13) NCAR network"
-   echo "   14) NERSC network"
-   echo "   15) NICS at University of Tennessee at Knoxville"
-   echo "   16) Ohio Supercomputer Center (OSC) network"
-   echo "   17) ORNL network"
-   echo "   18) Princeton network"
-   echo "   19) Sandia network"
-   echo "   20) Sandia closed network"
-   echo "   21) Swiss National Supercomputing Center (CSCS) network"
-   echo "   22) U of Michigan Advanced Research Computing (ARC-TS) network"
-   echo "   23) U of Utah Center for High Performance Computing (CHPC) network"
+   echo "   9)  KAUST network"
+   echo "   10) LLNL open network"
+   echo "   11) LLNL closed network"
+   echo "   12) Leibniz Supercomputing Centre network"
+   echo "   13) Lousiana State University network"
+   echo "   14) NCAR network"
+   echo "   15) NERSC network"
+   echo "   16) NICS at University of Tennessee at Knoxville"
+   echo "   17) Ohio Supercomputer Center (OSC) network"
+   echo "   18) ORNL network"
+   echo "   19) Princeton network"
+   echo "   20) Sandia network"
+   echo "   21) Sandia closed network"
+   echo "   22) Swiss National Supercomputing Center (CSCS) network"
+   echo "   23) U of Michigan Advanced Research Computing (ARC-TS) network"
+   echo "   24) U of Utah Center for High Performance Computing (CHPC) network"
    echo ""
-   echo "Enter (1-23):"
+   echo "Enter (1-24):"
 
    read config
    case "$config" in
@@ -861,48 +872,48 @@ while [ "$config" = "prompt" ]; do
          config=eth_zurich
          ;;
       9)
-         config=llnl_open
+         config=kaust
          ;;
       10)
-         config=llnl_closed
+         config=llnl_open
          ;;
       11)
-         config=lrz
+         config=llnl_closed
          ;;
       12)
-         config=lsu
+         config=lrz
          ;;
       13)
-         config=ncar
+         config=lsu
          ;;
       14)
-         config=nersc
+         config=ncar
          ;;
       15)
-         config=nics
+         config=nersc
          ;;
       16)
-         config=ohio
+         config=nics
          ;;
       17)
-         config=ornl
+         config=ohio
          ;;
       18)
-         config=princeton
+         config=ornl
          ;;
       19)
-         config=sandia
+         config=princeton
          ;;
       20)
-         config=sandia_closed
-         ;;
-      21)
-         config=cscs
+         config=sandia
          ;;
       22)
-         config=umich
+         config=cscs
          ;;
       23)
+         config=umich
+         ;;
+      24)
          config=utah
          ;;
       *)
@@ -927,6 +938,8 @@ case "$config" in
    clemson)
       ;;
    eth_zurich)
+      ;;
+   kaust)
       ;;
    llnl_open)
       ;;
@@ -954,8 +967,6 @@ case "$config" in
       ;;
    sandia)
       ;;
-   sandia_closed)
-      ;;
    cscs)
       ;;
    umich)
@@ -964,9 +975,9 @@ case "$config" in
       ;;
    *)
       echo "Illegal configuration option, choices are none, chombo, anl,"
-      echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
+      echo "arl, asu, awe, clemson, cscs, eth_zurich, kaust, llnl_open, llnl_open_rz,"
       echo "llnl_open_cz, llnl_closed, lrz, lsu, ncar, nersc, nics, ohio, ornl,"
-      echo "princeton, sandia, sandia_closed, umich, utah"
+      echo "princeton, sandia, umich, utah"
       exit 4
       ;;
 esac
@@ -1033,7 +1044,6 @@ fi
 cp $distributiondir/bin/frontendlauncher    "$dir"/bin/frontendlauncher+
 cp $distributiondir/bin/frontendlauncher.py "$dir"/bin/frontendlauncher.py+
 cp $distributiondir/bin/xml2plugin          "$dir"/bin/xml2plugin+
-cp $distributiondir/bin/visit_plugin        "$dir"/bin/visit_plugin+
 cp $distributiondir/bin/mkgrdbl             "$dir"/bin/mkgrdbl+
 
 if [ -e "$dir"/$version ]; then
@@ -1098,6 +1108,9 @@ elif [ "$config" = "cscs" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "eth_zurich" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "kaust" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "llnl_open" ]; then
    # Install both cz hosts and rz hosts. We're most likely in a client
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
@@ -1112,9 +1125,10 @@ elif [ "$config" = "llnl_open_cz" ]; then
    # Copy the files explicitly to avoid the rz hosts. We're most likely installing on a cz machine.
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_ansel.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_borax.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_pascal.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_poodle.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_quartz.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_surface.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_syrah.xml    "$dir"/$version+/.visit/hosts/
@@ -1151,9 +1165,6 @@ elif [ "$config" = "princeton" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/config              "$dir"/$version+/.visit/config
 elif [ "$config" = "sandia" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
-elif [ "$config" = "sandia_closed" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "umich" ]; then
@@ -1204,7 +1215,6 @@ chmod $dir_permission "$dir"/bin
 chmod $dir_permission "$dir"/bin/frontendlauncher+
 chmod $dir_permission "$dir"/bin/frontendlauncher.py+
 chmod $dir_permission "$dir"/bin/xml2plugin+
-chmod $dir_permission "$dir"/bin/visit_plugin+
 chmod $dir_permission "$dir"/bin/mkgrdbl+
 if [ -e "$dir"/data ]; then
     chmod $dir_permission "$dir"/data
@@ -1275,7 +1285,7 @@ rm -rf distribution
 #
 # Make the symbolic links for the programs
 #
-programs="curv3dprep makemili_driver mcurvit mpeg2encode surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+programs="curv3dprep makemili_driver mcurvit mpeg2encode qtviswinExample qtvtkExample qvtkopenglExample surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd "$dir"/bin
 for prog in $programs; do
@@ -1308,8 +1318,6 @@ mv bin/frontendlauncher+ bin/frontendlauncher
 mv bin/frontendlauncher.py+ bin/frontendlauncher.py
 [ -e bin/xml2plugin ] &&         rm -f bin/xml2plugin
 mv bin/xml2plugin+ bin/xml2plugin
-[ -e bin/visit_plugin ] &&       rm -f bin/visit_plugin
-mv bin/visit_plugin+ bin/visit_plugin
 [ -e bin/mkgrdbl ] &&            rm -f bin/mkgrdbl
 mv bin/mkgrdbl+ bin/mkgrdbl
 if [ "$beta" = "true" ]; then

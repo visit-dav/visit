@@ -5,6 +5,7 @@
 #include <PyAxisLabels.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyFontAttributes.h>
 
 // ****************************************************************************
@@ -35,9 +36,8 @@ struct AxisLabelsObject
 // Internal prototypes
 //
 static PyObject *NewAxisLabels(int);
-
 std::string
-PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
+PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "font.";
-        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str(), forLogging);
     }
     snprintf(tmpStr, 1000, "%sscaling = %d\n", prefix, atts->GetScaling());
     str += tmpStr;
@@ -71,12 +71,48 @@ AxisLabels_SetVisible(PyObject *self, PyObject *args)
 {
     AxisLabelsObject *obj = (AxisLabelsObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visible in the object.
-    obj->data->SetVisible(ival != 0);
+    obj->data->SetVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -99,10 +135,7 @@ AxisLabels_SetFont(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyFontAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The font field can only be set with FontAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field font can be set only with FontAttributes objects");
 
     obj->data->SetFont(*PyFontAttributes_FromPyObject(newValue));
 
@@ -131,12 +164,48 @@ AxisLabels_SetScaling(PyObject *self, PyObject *args)
 {
     AxisLabelsObject *obj = (AxisLabelsObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaling in the object.
-    obj->data->SetScaling((int)ival);
+    obj->data->SetScaling(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -177,14 +246,7 @@ AxisLabels_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-AxisLabels_compare(PyObject *v, PyObject *w)
-{
-    AxisLabels *a = ((AxisLabelsObject *)v)->data;
-    AxisLabels *b = ((AxisLabelsObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *AxisLabels_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxisLabels_getattr(PyObject *self, char *name)
 {
@@ -195,32 +257,45 @@ PyAxisLabels_getattr(PyObject *self, char *name)
     if(strcmp(name, "scaling") == 0)
         return AxisLabels_GetScaling(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxisLabels_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxisLabels_methods[i].ml_name),
+                PyString_FromString(PyAxisLabels_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxisLabels_methods, self, name);
 }
 
 int
 PyAxisLabels_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
-        obj = AxisLabels_SetVisible(self, tuple);
+        obj = AxisLabels_SetVisible(self, args);
     else if(strcmp(name, "font") == 0)
-        obj = AxisLabels_SetFont(self, tuple);
+        obj = AxisLabels_SetFont(self, args);
     else if(strcmp(name, "scaling") == 0)
-        obj = AxisLabels_SetScaling(self, tuple);
+        obj = AxisLabels_SetScaling(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -228,7 +303,7 @@ static int
 AxisLabels_print(PyObject *v, FILE *fp, int flags)
 {
     AxisLabelsObject *obj = (AxisLabelsObject *)v;
-    fprintf(fp, "%s", PyAxisLabels_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisLabels_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -236,7 +311,7 @@ PyObject *
 AxisLabels_str(PyObject *v)
 {
     AxisLabelsObject *obj = (AxisLabelsObject *)v;
-    return PyString_FromString(PyAxisLabels_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisLabels_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -249,49 +324,70 @@ static char *AxisLabels_Purpose = "Contains the label properties for one axis.";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject AxisLabelsType =
+
+VISIT_PY_TYPE_OBJ(AxisLabelsType,         \
+                  "AxisLabels",           \
+                  AxisLabelsObject,       \
+                  AxisLabels_dealloc,     \
+                  AxisLabels_print,       \
+                  PyAxisLabels_getattr,   \
+                  PyAxisLabels_setattr,   \
+                  AxisLabels_str,         \
+                  AxisLabels_Purpose,     \
+                  AxisLabels_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+AxisLabels_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "AxisLabels",                    // tp_name
-    sizeof(AxisLabelsObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)AxisLabels_dealloc,  // tp_dealloc
-    (printfunc)AxisLabels_print,     // tp_print
-    (getattrfunc)PyAxisLabels_getattr, // tp_getattr
-    (setattrfunc)PyAxisLabels_setattr, // tp_setattr
-    (cmpfunc)AxisLabels_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)AxisLabels_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    AxisLabels_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &AxisLabelsType
+         || Py_TYPE(other) != &AxisLabelsType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AxisLabels *a = ((AxisLabelsObject *)self)->data;
+    AxisLabels *b = ((AxisLabelsObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -367,7 +463,7 @@ PyAxisLabels_GetLogString()
 {
     std::string s("AxisLabels = AxisLabels()\n");
     if(currentAtts != 0)
-        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.");
+        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.", true);
     return s;
 }
 
@@ -380,7 +476,7 @@ PyAxisLabels_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisLabels = AxisLabels()\n");
-        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.");
+        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.", true);
         cb(s);
     }
 }

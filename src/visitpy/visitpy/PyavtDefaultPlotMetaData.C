@@ -5,6 +5,7 @@
 #include <PyavtDefaultPlotMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyavtDefaultPlotMetaData
@@ -34,9 +35,8 @@ struct avtDefaultPlotMetaDataObject
 // Internal prototypes
 //
 static PyObject *NewavtDefaultPlotMetaData(int);
-
 std::string
-PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char *prefix)
+PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -78,12 +78,37 @@ avtDefaultPlotMetaData_SetPluginID(PyObject *self, PyObject *args)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pluginID in the object.
-    obj->data->pluginID = std::string(str);
+    obj->data->pluginID = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -102,12 +127,37 @@ avtDefaultPlotMetaData_SetPlotVar(PyObject *self, PyObject *args)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the plotVar in the object.
-    obj->data->plotVar = std::string(str);
+    obj->data->plotVar = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -126,31 +176,51 @@ avtDefaultPlotMetaData_SetPlotAttributes(PyObject *self, PyObject *args)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->plotAttributes;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->plotAttributes = vec;
     // Mark the plotAttributes in the object as modified.
     obj->data->SelectAll();
 
@@ -197,14 +267,7 @@ avtDefaultPlotMetaData_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-avtDefaultPlotMetaData_compare(PyObject *v, PyObject *w)
-{
-    avtDefaultPlotMetaData *a = ((avtDefaultPlotMetaDataObject *)v)->data;
-    avtDefaultPlotMetaData *b = ((avtDefaultPlotMetaDataObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *avtDefaultPlotMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtDefaultPlotMetaData_getattr(PyObject *self, char *name)
 {
@@ -215,32 +278,45 @@ PyavtDefaultPlotMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "plotAttributes") == 0)
         return avtDefaultPlotMetaData_GetPlotAttributes(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtDefaultPlotMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtDefaultPlotMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtDefaultPlotMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtDefaultPlotMetaData_methods, self, name);
 }
 
 int
 PyavtDefaultPlotMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "pluginID") == 0)
-        obj = avtDefaultPlotMetaData_SetPluginID(self, tuple);
+        obj = avtDefaultPlotMetaData_SetPluginID(self, args);
     else if(strcmp(name, "plotVar") == 0)
-        obj = avtDefaultPlotMetaData_SetPlotVar(self, tuple);
+        obj = avtDefaultPlotMetaData_SetPlotVar(self, args);
     else if(strcmp(name, "plotAttributes") == 0)
-        obj = avtDefaultPlotMetaData_SetPlotAttributes(self, tuple);
+        obj = avtDefaultPlotMetaData_SetPlotAttributes(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -248,7 +324,7 @@ static int
 avtDefaultPlotMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtDefaultPlotMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtDefaultPlotMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -256,7 +332,7 @@ PyObject *
 avtDefaultPlotMetaData_str(PyObject *v)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
-    return PyString_FromString(PyavtDefaultPlotMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtDefaultPlotMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -269,49 +345,70 @@ static char *avtDefaultPlotMetaData_Purpose = "Contains default plot metadata at
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject avtDefaultPlotMetaDataType =
+
+VISIT_PY_TYPE_OBJ(avtDefaultPlotMetaDataType,         \
+                  "avtDefaultPlotMetaData",           \
+                  avtDefaultPlotMetaDataObject,       \
+                  avtDefaultPlotMetaData_dealloc,     \
+                  avtDefaultPlotMetaData_print,       \
+                  PyavtDefaultPlotMetaData_getattr,   \
+                  PyavtDefaultPlotMetaData_setattr,   \
+                  avtDefaultPlotMetaData_str,         \
+                  avtDefaultPlotMetaData_Purpose,     \
+                  avtDefaultPlotMetaData_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+avtDefaultPlotMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "avtDefaultPlotMetaData",                    // tp_name
-    sizeof(avtDefaultPlotMetaDataObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)avtDefaultPlotMetaData_dealloc,  // tp_dealloc
-    (printfunc)avtDefaultPlotMetaData_print,     // tp_print
-    (getattrfunc)PyavtDefaultPlotMetaData_getattr, // tp_getattr
-    (setattrfunc)PyavtDefaultPlotMetaData_setattr, // tp_setattr
-    (cmpfunc)avtDefaultPlotMetaData_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)avtDefaultPlotMetaData_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    avtDefaultPlotMetaData_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &avtDefaultPlotMetaDataType
+         || Py_TYPE(other) != &avtDefaultPlotMetaDataType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    avtDefaultPlotMetaData *a = ((avtDefaultPlotMetaDataObject *)self)->data;
+    avtDefaultPlotMetaData *b = ((avtDefaultPlotMetaDataObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -387,7 +484,7 @@ PyavtDefaultPlotMetaData_GetLogString()
 {
     std::string s("avtDefaultPlotMetaData = avtDefaultPlotMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.");
+        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.", true);
     return s;
 }
 
@@ -400,7 +497,7 @@ PyavtDefaultPlotMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtDefaultPlotMetaData = avtDefaultPlotMetaData()\n");
-        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.");
+        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.", true);
         cb(s);
     }
 }

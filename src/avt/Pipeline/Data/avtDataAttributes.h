@@ -248,6 +248,11 @@ class     avtWebpage;
 //    This is to support unique conditions where we must remove faces
 //    first, regardless of other considerations. 
 //
+//    Mark C. Miller, Tue Jun 21 10:46:44 PDT 2022
+//    Added commentInDB for holding the database comment
+// 
+//    Justin Privitera, Thu Oct  5 14:50:38 PDT 2023
+//    Added an alternative version of SetVariableDimension.
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -314,6 +319,7 @@ class PIPELINE_API avtDataAttributes
     int                      GetSpatialDimension(void) const
                                    { return spatialDimension; };
 
+    void                     SetVariableDimension(int, int);
     void                     SetVariableDimension(int, const char * = NULL);
     int                      GetVariableDimension(const char * = NULL) const;
 
@@ -421,6 +427,9 @@ class PIPELINE_API avtDataAttributes
     const std::string       &GetFullDBName(void) const { return fullDBName; };
     void                     SetFullDBName(const std::string &s) 
                                                      { fullDBName=s; };
+    const std::string       &GetCommentInDB(void) const { return commentInDB; };
+    void                     SetCommentInDB(const std::string &s) 
+                                                     { commentInDB=s; };
 
     const std::string       &GetXUnits(void) const { return xUnits; };
     void                     SetXUnits(const std::string &s) { xUnits=s; };
@@ -659,6 +668,7 @@ class PIPELINE_API avtDataAttributes
     // can even include virtual database strings.  This is the name used by
     // the network manager.
     std::string              fullDBName;
+    std::string              commentInDB;
 
     std::string              xUnits;
     std::string              yUnits;

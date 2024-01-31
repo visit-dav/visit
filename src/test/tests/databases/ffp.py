@@ -5,6 +5,10 @@
 #
 #  Programmer: Olivier Cessenat
 #  Tue May  8 21:49:21 PDT 2018
+#
+#  Modifications:
+#     Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#     Changed Pseudocolor CurrentPlot to ActualData.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations()
 
@@ -63,7 +67,7 @@ AddPlot("Pseudocolor", "mffp", 1, 1)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.scaling = PseudocolorAtts.Skew  # Linear, Log, Skew
 PseudocolorAtts.skewFactor = 10000
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.minFlag = 0
 PseudocolorAtts.min = 0
 PseudocolorAtts.maxFlag = 0
@@ -92,7 +96,7 @@ PseudocolorAtts.tubeRadiusBBox = 0.005
 #PseudocolorAtts.varyTubeRadius = 0
 #PseudocolorAtts.varyTubeRadiusVariable = ""
 #PseudocolorAtts.varyTubeRadiusFactor = 10
-#PseudocolorAtts.endPointType = PseudocolorAtts.None  # None, Tails, Heads, Both
+#PseudocolorAtts.endPointType = PseudocolorAtts.NONE  # None, Tails, Heads, Both
 #PseudocolorAtts.endPointStyle = PseudocolorAtts.Spheres  # Spheres, Cones
 PseudocolorAtts.endPointRadiusSizeType = PseudocolorAtts.FractionOfBBox  # Absolute, FractionOfBBox
 PseudocolorAtts.endPointRadiusAbsolute = 1

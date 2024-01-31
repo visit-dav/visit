@@ -13,9 +13,12 @@
 #include <ImproperUseException.h>
 
 #include <vtkFloatArray.h>
-#include <vtkPolyData.h>
 #include <vtkPoints.h>
+#include <vtkFieldData.h>
+#include <vtkCell.h>
+#include <vtkVertex.h>
 #include <vtkDataArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <QueryOverTimeAttributes.h>
 
@@ -469,7 +472,7 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTMesh
+//  Method:  avtFileFormatInterface::GetQOTPointMesh
 //
 //  Purpose:
 //      Retrieve a query over time mesh. Currently, this is a reduced 
@@ -477,7 +480,7 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 //      where x is the timestep, simulation time, or cycle (whichever was
 //      requested).
 //
-//      All of the mesh's future arrays should be the same size (number of
+//      All of the mesh's feature arrays should be the same size (number of
 //      requested timesteps), and each will be a variable/element pair
 //      through time. The value located at position 'i' of every array
 //      should correspond to the value of the array's variable/element 
@@ -498,13 +501,17 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 //
 //  Modifications
 //
+//    Alister Maguire, Fri Nov  6 13:49:05 PST 2020
+//    Changed dataset type to vtkUnstructuredGrid for compatibility with
+//    GetQOTCoordMesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
-                                   int domain,
-                                   int *tsRange,
-                                   int tsStride)
+avtFileFormatInterface::GetQOTPointMesh(const QueryOverTimeAttributes *QOTAtts,
+                                        int domain,
+                                        int *tsRange,
+                                        int tsStride)
 {
     QueryOverTimeAttributes::TimeType tType = QOTAtts->GetTimeType();
 
@@ -594,8 +601,8 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
         }
     }
 
-    vtkPolyData *polyData = vtkPolyData::New();
-    vtkPoints *points     = vtkPoints::New();
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    vtkPoints *points          = vtkPoints::New();
     points->Allocate(numPoints);
 
     for (int i = 0; i < numPoints; ++i)
@@ -603,15 +610,410 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
         points->InsertNextPoint(xCoords[i], 0.0, 0.0);
     }
 
-    polyData->SetPoints(points);
+    ugrid->SetPoints(points);
     points->Delete();
 
-    return (vtkDataSet *) polyData;
+    return (vtkDataSet *) ugrid;
 }
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTVar
+//  Method:  avtFileFormatInterface::GetQOTCoordMesh
+//
+//  Purpose:
+//      Like with GetQOTPointMesh, we want to retrieve a timestep mesh, where
+//      each element represents a timestep. Unlike the GetQOTPointMesh, we
+//      need to attribute actual coordinates to this mesh. If our element is
+//      a cell, then we associate the true coordinates with this cell, and
+//      each cell in our mesh will represent the coordinates of this cell
+//      at the given timestep. These coordinate timestep meshes are primarily
+//      used when an expression needs cell coordinates to create its variable
+//      (like verdict metrics). Since the coordinates contain actual data, we
+//      need to store the timesteps in a field array.
+//
+//      All of the mesh's cell arrays should be the same size (number of
+//      requested timesteps), and each will be a variable/element pair
+//      through time. The value located at position 'i' of every array
+//      should correspond to the value of the array's variable/element 
+//      pair associated with the timestep/time/cycle from the x value
+//      of the 'ith' point. 
+//
+//  Arguments:
+//      QOTAtts    The query over time attributes. 
+//      domain     The domain to query. 
+//      element    The element to retrieve. 
+//      tsRange    The timestep range. 
+//      tsStride   The timestep stride. 
+//
+//  Returns:
+//      A query over time mesh. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep 24 11:15:10 MST 2019 
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
+                                        int element,
+                                        int domain,
+                                        int *tsRange,
+                                        int tsStride,
+                                        const char *meshName)
+{
+    QueryOverTimeAttributes::TimeType tType = QOTAtts->GetTimeType();
+
+    int startT = tsRange[0];
+    int stopT  = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
+
+    //
+    // First, let's make sure this timestep range is valid. 
+    //
+    intVector cycles;
+    GetCycles(domain, cycles);
+    int numTS = cycles.size();
+
+    if (startT < 0 || startT >= numTS ||
+        stopT < 0 || stopT >= numTS ||
+        startT > stopT)
+    {
+        char msg[256]; 
+        snprintf(msg, 256, "Invalid timestep range requested.");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
+    int spanSize = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
+
+    vtkUnstructuredGrid *coordMesh = vtkUnstructuredGrid::New();
+    vtkPoints *coordPoints         = vtkPoints::New(); 
+
+    avtCentering centering;
+
+    switch (QOTAtts->GetPickAtts().GetPickType())
+    {
+        case PickAttributes::Zone:
+        case PickAttributes::CurveZone:
+        case PickAttributes::DomainZone:
+        {
+            centering = AVT_ZONECENT;
+            coordMesh->Allocate(spanSize);
+            //
+            // We'll over estimate space needs here. What we really need
+            // is (spanSize * (number of nodes associated with this zone)),
+            // but that's an unknown at this point. We can squeeze later.
+            //
+            coordPoints->Allocate(spanSize * 100);
+            break;
+        }
+
+        case PickAttributes::Node:
+        case PickAttributes::CurveNode:
+        case PickAttributes::DomainNode:
+        {
+            centering = AVT_NODECENT;
+            coordPoints->Allocate(spanSize);
+            break;
+        }
+
+        default:
+        {
+            char msg[256]; 
+            snprintf(msg, 256, "avtFileFormatInterface: Invalid pick type "
+                "requested for GetQOTCoordMesh.");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+
+    //
+    // Iterate over the requested time states and retrieve the mesh
+    // coordinates.
+    //
+    vtkIdType pointId = 0;
+    vtkIdType cellId  = 0;
+    for (int ts = startT; ts <= stopT; ts += tsStride)
+    {
+        //
+        // Activate the current timestep and retrieve our coordinates.
+        //
+        TRY
+        {
+            ActivateTimestep(ts);
+            vtkDataSet *fullMesh = GetMesh(ts, domain, meshName);
+
+            //
+            // TODO: in the future, we may want to grab all adjacent elements
+            // as well. This would allow for at least a couple more expressions
+            // to handle the DirectDatabaseQOT.
+            //
+            switch (centering)
+            {
+                case AVT_ZONECENT:
+                {
+                    vtkCell *cell      = fullMesh->GetCell(element);
+                    vtkPoints *cellPts = cell->GetPoints();
+                    vtkIdType numCellPoints  = cell->GetNumberOfPoints();
+                    vtkNew<vtkIdList> pointIds;
+                    pointIds->SetNumberOfIds(numCellPoints);
+
+                    for (vtkIdType p = 0; p < numCellPoints; ++p)
+                    {
+                        coordPoints->InsertNextPoint(cellPts->GetPoint(p));
+                        pointIds->SetId(p, pointId);
+                        pointId += 1;
+                    }
+
+                    coordMesh->InsertNextCell(cell->GetCellType(), pointIds);
+
+                    break;
+                }
+                case AVT_NODECENT:
+                {
+                    coordPoints->InsertNextPoint(fullMesh->GetPoint(element));
+                    break;
+                }
+                default:
+                {
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
+                }
+            }
+
+            fullMesh->Delete();
+        }
+        CATCH2(VisItException, e)
+        {
+            //
+            // If we can't get the coordinates for this timestep, we need
+            // to somehow pass that information along. Let's add a vertex,
+            // and give it a NaN coordinate. We can check for this down the
+            // pipeline.
+            //
+            float errorPoints[3]; 
+            for (int i = 0; i < 3; ++i)
+            {
+                errorPoints[i] = std::numeric_limits<float>::quiet_NaN();
+            }
+
+            switch (centering)
+            {
+                case AVT_ZONECENT:
+                {
+
+                    vtkVertex *errorCell = vtkVertex::New();
+                    vtkPoints *cellPts   = errorCell->GetPoints();
+                    vtkIdType pointIds[1];
+
+                    errorCell->GetPoints()->InsertNextPoint(errorPoints);
+                    coordPoints->InsertNextPoint(cellPts->GetPoint(0));
+                    pointIds[0] = pointId;
+                    pointId    += 1;
+
+                    coordMesh->InsertNextCell(errorCell->GetCellType(),
+                        1, pointIds);
+
+                    break;
+                }
+                case AVT_NODECENT:
+                {
+                    coordPoints->InsertNextPoint(errorPoints);
+                    break;
+                }
+                default:
+                {
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
+                }
+            }
+        }
+        ENDTRY
+    }
+
+    //
+    // Depending on our step size, we may need one last entry.
+    //
+    if (addLastStep)
+    {
+        TRY
+        {
+            vtkDataSet *fullMesh = GetMesh(stopT, domain, meshName);
+
+            switch (centering)
+            {
+                case AVT_ZONECENT:
+                {
+                    vtkCell *cell      = fullMesh->GetCell(element);
+                    vtkPoints *cellPts = cell->GetPoints();
+                    vtkIdType numCellPoints  = cell->GetNumberOfPoints();
+                    vtkNew<vtkIdList> pointIds;
+                    pointIds->SetNumberOfIds(numCellPoints);
+
+                    for (vtkIdType p = 0; p < numCellPoints; ++p)
+                    {
+                        coordPoints->InsertNextPoint(cellPts->GetPoint(p));
+                        pointIds->SetId(p, pointId);
+                        pointId += 1;
+                    }
+
+                    coordMesh->InsertNextCell(cell->GetCellType(), pointIds);
+
+                    break;
+                }
+                case AVT_NODECENT:
+                {
+                    coordPoints->InsertNextPoint(fullMesh->GetPoint(element));
+                    break;
+                }
+                default:
+                {
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
+                }
+            }
+
+            fullMesh->Delete();
+        }
+        CATCH2(VisItException, e)
+        {
+            float errorPoints[3]; 
+            for (int i = 0; i < 3; ++i)
+            {
+                errorPoints[i] = std::numeric_limits<float>::quiet_NaN();
+            }
+
+            switch (centering)
+            {
+                case AVT_ZONECENT:
+                {
+
+                    vtkVertex *errorCell = vtkVertex::New();
+                    vtkPoints *cellPts   = errorCell->GetPoints();
+                    vtkIdType pointIds[1];
+
+                    errorCell->GetPoints()->InsertNextPoint(errorPoints);
+                    coordPoints->InsertNextPoint(cellPts->GetPoint(0));
+                    pointIds[0] = pointId;
+                    pointId    += 1;
+
+                    coordMesh->InsertNextCell(errorCell->GetCellType(),
+                        1, pointIds);
+
+                    break;
+                }
+                case AVT_NODECENT:
+                {
+                    coordPoints->InsertNextPoint(errorPoints);
+                    break;
+                }
+                default:
+                {
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
+                }
+            }
+        }
+        ENDTRY
+    }
+
+    //
+    // Now, create the timestep array. Unlike with the QOTPointMesh,
+    // we can't keep the timesteps in our coordinates. We'll add them
+    // as a field array instead.
+    //
+    doubleVector timeSteps;
+    timeSteps.reserve(spanSize);
+
+    switch (tType)
+    {
+        case QueryOverTimeAttributes::Cycle:
+        {
+            for (int i = startT; i <= stopT; i += tsStride)
+            {
+                timeSteps.push_back((double) cycles[i]);
+            }
+
+            if (addLastStep)
+            {
+                timeSteps.push_back((double) cycles[stopT]);
+            }
+
+            break;
+        }
+        case QueryOverTimeAttributes::DTime:
+        {
+            doubleVector times;
+            GetTimes(domain, times);
+
+            for (int i = startT; i <= stopT; i += tsStride)
+            {
+                timeSteps.push_back((double) times[i]);
+            }
+
+            if (addLastStep)
+            {
+                timeSteps.push_back((double) times[stopT]);
+            }
+
+            break;
+        }
+        case QueryOverTimeAttributes::Timestep:
+        {
+            for (int i = startT; i <= stopT; i += tsStride)
+            {
+                timeSteps.push_back((double) i);
+            }
+
+            if (addLastStep)
+            {
+                timeSteps.push_back((double) stopT);
+            }
+
+            break;
+        }
+        default:
+        {
+            char msg[256]; 
+            snprintf(msg, 256, "Unknown time type requested.");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+
+    vtkFloatArray *timestepArray = vtkFloatArray::New();
+    timestepArray->Allocate(spanSize);
+    timestepArray->SetNumberOfTuples(spanSize);
+    timestepArray->SetName("TimestepArray");
+
+    for (int i = 0; i < spanSize; ++i)
+    {
+        timestepArray->SetTuple1(i, timeSteps[i]);
+    }
+
+    vtkFieldData *fieldData = vtkFieldData::New();
+    fieldData->SetNumberOfTuples(spanSize);
+    fieldData->AddArray(timestepArray);
+
+    coordPoints->Squeeze();
+    coordMesh->SetPoints(coordPoints);
+    coordMesh->SetFieldData(fieldData);
+
+    coordPoints->Delete();
+    timestepArray->Delete();
+    fieldData->Delete();
+
+    return (vtkDataSet *) coordMesh;
+}
+
+
+// ****************************************************************************
+//  Method:  avtFileFormatInterface::GetQOTVar
 //
 //  Purpose:
 //      Retrieve a query over time variable. 
@@ -713,7 +1115,7 @@ avtFileFormatInterface::GetQOTVar(int domain,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTVectorVar
+//  Method:  avtFileFormatInterface::GetQOTVectorVar
 //
 //  Purpose:
 //      Retrieve a query over time vector variable. 

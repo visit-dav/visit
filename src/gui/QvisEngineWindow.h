@@ -52,6 +52,10 @@ class StatusAttributes;
 //    Brad Whitlock, Mon Oct 10 12:40:06 PDT 2011
 //    I added more information.
 //
+//    Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//    Removed interruptEngine and interruptEngineButton. We decided this
+//    is very unlikely to ever be implemented.
+//
 // ****************************************************************************
 
 class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
@@ -60,8 +64,8 @@ class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
 
 public:
     QvisEngineWindow(EngineList *engineList,
-                     const QString &caption = QString::null,
-                     const QString &shortName = QString::null,
+                     const QString &caption = QString(),
+                     const QString &shortName = QString(),
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisEngineWindow();
     virtual void CreateWindowContents();
@@ -78,7 +82,6 @@ private:
     void UpdateStatusEntry(const QString &key);
 private slots:
     void closeEngine();
-    void interruptEngine();
     void selectEngine(int index);
     void clearCache();
 private:
@@ -100,7 +103,6 @@ private:
     QProgressBar     *totalProgressBar;
     QLabel           *stageStatusLabel;
     QProgressBar     *stageProgressBar;
-    QPushButton      *interruptEngineButton;
     QPushButton      *closeEngineButton;
     QPushButton      *clearCacheButton;
 };

@@ -33,8 +33,8 @@ class QvisSphereSliceWindow : public QvisOperatorWindow
   public:
     QvisSphereSliceWindow(const int type,
                          SphereSliceAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisSphereSliceWindow();
     virtual void CreateWindowContents();

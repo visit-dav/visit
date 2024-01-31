@@ -35,14 +35,14 @@
 // ****************************************************************************
 // Method: QvisViewWindow::QvisViewWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisViewWindow class.
 //
 // Arguments:
 //   caption   : The name of the window.
 //   shortName : The posted name for the window.
 //   notepad   : The notepad area into which the window posts.
-//   
+//
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 27 11:00:57 PDT 2001
 //
@@ -80,7 +80,7 @@ QvisViewWindow::QvisViewWindow(const QString &caption, const QString &shortName,
 // ****************************************************************************
 // Method: QvisViewWindow::~QvisViewWindow
 //
-// Purpose: 
+// Purpose:
 //   The destructor for the QvisViewWindow class.
 //
 // Programmer: Brad Whitlock
@@ -119,7 +119,7 @@ QvisViewWindow::~QvisViewWindow()
 // ****************************************************************************
 // Method: QvisViewWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Create the view attributes window.
 //
 // Programmer: Brad Whitlock
@@ -169,7 +169,7 @@ QvisViewWindow::~QvisViewWindow()
 //   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007
 //   I added radio buttons for log scaling.
 //
-//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
+//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007
 //   I added radio buttons for 2d log scaling.
 //
 //   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
@@ -183,7 +183,7 @@ QvisViewWindow::~QvisViewWindow()
 //   Qt 4.
 //
 //   Cyrus Harrison, Thu Dec 18 09:36:57 PST 2008
-//   Changed the signal used and the argument for tabSelected slot to 
+//   Changed the signal used and the argument for tabSelected slot to
 //   an integer for Qt4.
 //
 //   Jeremy Meredith, Wed Feb  3 15:29:17 EST 2010
@@ -194,6 +194,9 @@ QvisViewWindow::~QvisViewWindow()
 //
 //   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //   Add shear for oblique projection support.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -213,7 +216,7 @@ QvisViewWindow::CreateWindowContents()
     pageCurve = new QWidget(central);
     QVBoxLayout *pageCurveLayout = new QVBoxLayout(pageCurve);
     pageCurveLayout->setSpacing(5);
-    pageCurveLayout->setMargin(10);
+    pageCurveLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageCurve, tr("Curve view"));
 
     QGridLayout *layoutCurve = new QGridLayout(0);
@@ -247,8 +250,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *domainScaleLabel = new QLabel(tr("Domain Scale"), pageCurve);
     layoutCurve->addWidget(domainScaleLabel, 3, 0);
     domainScaleMode = new QButtonGroup(pageCurve);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(domainScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(domainScaleModeChanged(int)));
+#else
+    connect(domainScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(domainScaleModeChanged(int)));
+#endif
     domainLinear = new QRadioButton(tr("Linear"), pageCurve);
     domainScaleMode->addButton(domainLinear, 0);
     layoutCurve->addWidget(domainLinear, 3, 1);
@@ -259,8 +267,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *rangeScaleLabel = new QLabel(tr("Range Scale"), pageCurve);
     layoutCurve->addWidget(rangeScaleLabel, 4, 0);
     rangeScaleMode = new QButtonGroup(pageCurve);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(rangeScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(rangeScaleModeChanged(int)));
+#else
+    connect(rangeScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(rangeScaleModeChanged(int)));
+#endif
     rangeLinear = new QRadioButton(tr("Linear"), pageCurve);
     rangeScaleMode->addButton(rangeLinear, 0);
     layoutCurve->addWidget(rangeLinear, 4, 1);
@@ -275,7 +288,7 @@ QvisViewWindow::CreateWindowContents()
     page2D = new QWidget(central);
     QVBoxLayout *page2DLayout = new QVBoxLayout(page2D);
     page2DLayout->setSpacing(5);
-    page2DLayout->setMargin(10);
+    page2DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page2D, tr("2D view"));
 
     QGridLayout *layout2D = new QGridLayout(0);
@@ -301,8 +314,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *fullFrameLabel = new QLabel(tr("Full Frame"), page2D);
     layout2D->addWidget(fullFrameLabel, 2, 0);
     fullFrameActivationMode = new QButtonGroup(page2D);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fullFrameActivationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(fullFrameActivationModeChanged(int)));
+#else
+    connect(fullFrameActivationMode, SIGNAL(idClicked(int)),
+            this, SLOT(fullFrameActivationModeChanged(int)));
+#endif
     fullFrameAuto = new QRadioButton(tr("Auto"), page2D);
     fullFrameActivationMode->addButton(fullFrameAuto, 0);
     layout2D->addWidget(fullFrameAuto, 2, 1);
@@ -316,8 +334,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *xScaleLabel = new QLabel(tr("X Scale"), page2D);
     layout2D->addWidget(xScaleLabel, 3, 0);
     xScaleMode = new QButtonGroup(page2D);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(xScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(xScaleModeChanged(int)));
+#else
+    connect(xScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(xScaleModeChanged(int)));
+#endif
     xLinear = new QRadioButton(tr("Linear"), page2D);
     xScaleMode->addButton(xLinear, 0);
     layout2D->addWidget(xLinear, 3, 1);
@@ -328,8 +351,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *yScaleLabel = new QLabel(tr("Y Scale"), page2D);
     layout2D->addWidget(yScaleLabel, 4, 0);
     yScaleMode = new QButtonGroup(page2D);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(yScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(yScaleModeChanged(int)));
+#else
+    connect(yScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(yScaleModeChanged(int)));
+#endif
     yLinear = new QRadioButton(tr("Linear"), page2D);
     yScaleMode->addButton(yLinear, 0);
     layout2D->addWidget(yLinear, 4, 1);
@@ -344,7 +372,7 @@ QvisViewWindow::CreateWindowContents()
     page3D = new QWidget(central);
     QVBoxLayout *page3DLayout = new QVBoxLayout(page3D);
     page3DLayout->setSpacing(5);
-    page3DLayout->setMargin(10);
+    page3DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page3D, tr("3D view"));
 
     QGridLayout *layout3D = new QGridLayout(0);
@@ -499,7 +527,7 @@ QvisViewWindow::CreateWindowContents()
     pageAxisArray = new QWidget(central);
     QVBoxLayout *pageAxisArrayLayout = new QVBoxLayout(pageAxisArray);
     pageAxisArrayLayout->setSpacing(5);
-    pageAxisArrayLayout->setMargin(10);
+    pageAxisArrayLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageAxisArray, tr("AxisArray view"));
 
     QGridLayout *layoutAxisArray = new QGridLayout(0);
@@ -537,7 +565,7 @@ QvisViewWindow::CreateWindowContents()
     pageAdvanced = new QWidget(central);
     QVBoxLayout *pageAdvancedLayout = new QVBoxLayout(pageAdvanced);
     pageAdvancedLayout->setSpacing(5);
-    pageAdvancedLayout->setMargin(10);
+    pageAdvancedLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageAdvanced, tr("Advanced"));
 
     QGridLayout *advLayout = new QGridLayout(0);
@@ -676,7 +704,7 @@ QvisViewWindow::ConnectWindowInformation(WindowInformation *w)
 // ****************************************************************************
 // Method: QvisViewWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window must update itself.
 //
 // Arguments:
@@ -720,7 +748,7 @@ QvisViewWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisViewWindow::UpdateCurve
 //
-// Purpose: 
+// Purpose:
 //   Update the portion of the window for curve views.
 //
 // Programmer: Eric Brugger
@@ -785,7 +813,7 @@ QvisViewWindow::UpdateCurve(bool doAll)
 // ****************************************************************************
 // Method: QvisViewWindow::UpdateAxisArray
 //
-// Purpose: 
+// Purpose:
 //   Update the portion of the window for axis array views.
 //
 // Programmer: Jeremy Meredith
@@ -831,7 +859,7 @@ QvisViewWindow::UpdateAxisArray(bool doAll)
 // ****************************************************************************
 // Method: QvisViewWindow::Update2D
 //
-// Purpose: 
+// Purpose:
 //   Update the portion of the window for 2d views.
 //
 // Programmer: Brad Whitlock
@@ -856,7 +884,7 @@ QvisViewWindow::UpdateAxisArray(bool doAll)
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Added logic for auto full frame mode
 //
-//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
+//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007
 //   I added radio buttons for 2d log scaling.
 //
 //   Brad Whitlock, Mon Dec 17 10:48:04 PST 2007
@@ -921,7 +949,7 @@ QvisViewWindow::Update2D(bool doAll)
 // ****************************************************************************
 // Method: QvisViewWindow::Update3D
 //
-// Purpose: 
+// Purpose:
 //   Update the portion of the window for 3d views.
 //
 // Programmer: Brad Whitlock
@@ -1112,7 +1140,7 @@ QvisViewWindow::Update3D(bool doAll)
 // ****************************************************************************
 // Method: QvisViewWindow::UpdateGlobal
 //
-// Purpose: 
+// Purpose:
 //   Updates the global widgets.
 //
 // Arguments:
@@ -1132,7 +1160,7 @@ QvisViewWindow::Update3D(bool doAll)
 //   I removed auto center view.
 //
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
-//   Fixed confusion in indices of members of WindowInformation and case labels 
+//   Fixed confusion in indices of members of WindowInformation and case labels
 //   Added logic for setting tab to whatever the active window's mode is.
 //
 //   Hank Childs, Mon Jun 11 21:51:55 PDT 2007
@@ -1256,7 +1284,7 @@ QvisViewWindow::UpdateEyeAngleSliderFromAtts(void)
             }
         }
     }
-        
+
     eyeAngleSlider->blockSignals(true);
     eyeAngleSlider->setValue(val);
     eyeAngleSlider->blockSignals(false);
@@ -1265,7 +1293,7 @@ QvisViewWindow::UpdateEyeAngleSliderFromAtts(void)
 // ****************************************************************************
 // Method: QvisViewWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Applies the new view.
 //
 // Arguments:
@@ -1277,7 +1305,7 @@ QvisViewWindow::UpdateEyeAngleSliderFromAtts(void)
 // Modifications:
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
-//   
+//
 //   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
 //   Added support for axis-array views.
 //
@@ -1335,7 +1363,7 @@ QvisViewWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisViewWindow::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Writes the window's extra information to the config file.
 //
 // Arguments:
@@ -1368,7 +1396,7 @@ QvisViewWindow::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: QvisViewWindow::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Reads window attributes from the DataNode representation of the config
 //   file.
 //
@@ -1476,7 +1504,7 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
 // ****************************************************************************
 // Method: QvisViewWindow::GetCurrentValuesCurve
 //
-// Purpose: 
+// Purpose:
 //   Get the current values for the curve text fields.
 //
 // Programmer: Eric Brugger
@@ -1545,7 +1573,7 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
 // ****************************************************************************
 // Method: QvisViewWindow::GetCurrentValues2d
 //
-// Purpose: 
+// Purpose:
 //   Get the current values for the 2d text fields.
 //
 // Programmer: Brad Whitlock
@@ -1606,7 +1634,7 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 // ****************************************************************************
 // Method: QvisViewWindow::GetCurrentValues3d
 //
-// Purpose: 
+// Purpose:
 //   Get the current values for the 3d text fields.
 //
 // Programmer: Brad Whitlock
@@ -1886,8 +1914,11 @@ QvisViewWindow::GetCurrentValues(int which_widget)
 //   Eric Brugger, Wed Dec 24 10:20:47 PST 2003
 //   I added the commands "xtrans", "ytrans" and "zf".
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
- 
+
 void
 QvisViewWindow::ParseViewCommands(const char *str)
 {
@@ -1899,7 +1930,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
     strcpy(strCopy, str);
 
     //
-    // Loop over the commands, parsing one at a time. 
+    // Loop over the commands, parsing one at a time.
     //
     command = strtok(strCopy, ";");
     while (command != NULL)
@@ -1981,7 +2012,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         else if(strncmp(command, "rotx ", 5) == 0)
         {
             double angle;
- 
+
             if (sscanf(&command[5], "%lg", &angle) == 1)
             {
                 RotateAxis(0, angle);
@@ -1993,7 +2024,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         else if(strncmp(command, "rx ", 3) == 0)
         {
             double angle;
- 
+
             if (sscanf(&command[3], "%lg", &angle) == 1)
             {
                 RotateAxis(0, angle);
@@ -2005,7 +2036,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         else if(strncmp(command, "roty ", 5) == 0)
         {
             double angle;
- 
+
             if (sscanf(&command[5], "%lg", &angle) == 1)
             {
                 RotateAxis(1, angle);
@@ -2017,7 +2048,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         else if(strncmp(command, "ry ", 3) == 0)
         {
             double angle;
- 
+
             if (sscanf(&command[3], "%lg", &angle) == 1)
             {
                 RotateAxis(1, angle);
@@ -2029,7 +2060,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         else if(strncmp(command, "rotz ", 5) == 0)
         {
             double angle;
- 
+
             if (sscanf(&command[5], "%lg", &angle) == 1)
             {
                 RotateAxis(2, angle);
@@ -2041,7 +2072,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         else if(strncmp(command, "rz ", 3) == 0)
         {
             double angle;
- 
+
             if (sscanf(&command[3], "%lg", &angle) == 1)
             {
                 RotateAxis(2, angle);
@@ -2129,16 +2160,14 @@ QvisViewWindow::ParseViewCommands(const char *str)
         }
         else
             okay = false;
- 
+
         if(!okay)
         {
-            QString msg;
-
-            msg.sprintf("Bad command >> %s <<", command);
+            QString msg = QString("Bad command >> %1 <<").arg(command);
             Error(msg);
         }
 
-        command = strtok(NULL, ";"); 
+        command = strtok(NULL, ";");
     }
 
     delete [] strCopy;
@@ -2164,7 +2193,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
 // Creation:   August 6, 2002
 //
 // Modifications:
-//   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003  
+//   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003
 //   Modify the command to change the image pan instead of the focus.
 //
 //   Eric Brugger, Tue Dec 23 07:58:34 PST 2003
@@ -2172,20 +2201,20 @@ QvisViewWindow::ParseViewCommands(const char *str)
 //   they are a fraction of the current image width and height.
 //
 // ****************************************************************************
- 
+
 void
 QvisViewWindow::Pan(double panx, double pany)
 {
     double imagePan[2];
- 
+
     imagePan[0] = view3d->GetImagePan()[0] + panx / view3d->GetImageZoom();
     imagePan[1] = view3d->GetImagePan()[1] + pany / view3d->GetImageZoom();
 
     view3d->SetImagePan(imagePan);
- 
+
     Update3D(true);
 }
- 
+
 // ****************************************************************************
 // Method: QvisViewWindow::RotateAxis
 //
@@ -2213,14 +2242,14 @@ QvisViewWindow::Pan(double panx, double pany)
 //   is specified.
 //
 // ****************************************************************************
- 
+
 void
 QvisViewWindow::RotateAxis(int axis, double angle)
 {
     view3d->RotateAxis(axis, angle);
     Update3D(true);
 }
- 
+
 // ****************************************************************************
 // Method: QvisViewWindow::Zoom
 //
@@ -2234,7 +2263,7 @@ QvisViewWindow::RotateAxis(int axis, double angle)
 // Creation:   August 6, 2002
 //
 // Modifications:
-//   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003  
+//   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003
 //   Modify the command to change the image zoom instead of the parallel
 //   scale.
 //
@@ -2244,7 +2273,7 @@ void
 QvisViewWindow::Zoom(double zoom)
 {
     view3d->SetImageZoom(view3d->GetImageZoom() * zoom);
- 
+
     Update3D(true);
 }
 
@@ -2266,7 +2295,7 @@ void
 QvisViewWindow::Viewport(const double *viewport)
 {
     view2d->SetViewportCoords(viewport);
- 
+
     Update2D(true);
 }
 
@@ -2301,7 +2330,7 @@ QvisViewWindow::Window(const double *window)
         return;
     }
     view2d->SetWindowCoords(window);
- 
+
     Update2D(true);
 }
 
@@ -2312,7 +2341,7 @@ QvisViewWindow::Window(const double *window)
 // ****************************************************************************
 // Method: QvisViewWindow::show
 //
-// Purpose: 
+// Purpose:
 //   Qt slot that is called when the window needs to be shown.
 //
 // Programmer: Brad Whitlock
@@ -2356,11 +2385,11 @@ void
 QvisViewWindow::processCommandText()
 {
     QString temp;
- 
+
     temp = commandLineEdit->displayText().trimmed();
     if(!temp.isEmpty())
     {
-        ParseViewCommands(temp.toStdString().c_str()); 
+        ParseViewCommands(temp.toStdString().c_str());
     }
 
     commandLineEdit->setText("");
@@ -2369,7 +2398,7 @@ QvisViewWindow::processCommandText()
 // ****************************************************************************
 // Method: QvisViewWindow::tabSelected
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the tabs are changed.
 //
 // Arguments:
@@ -2384,7 +2413,7 @@ QvisViewWindow::processCommandText()
 //
 //   Cyrus Harrison, Thu Dec 18 09:35:25 PST 2008
 //   Changed input argument to tab index instead of tab name for Qt4.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2402,21 +2431,21 @@ void
 QvisViewWindow::processViewportAxisArrayText()
 {
     GetCurrentValuesAxisArray(ViewAxisArrayAttributes::ID_viewportCoords);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processDomainAxisArrayText()
 {
     GetCurrentValuesAxisArray(ViewAxisArrayAttributes::ID_domainCoords);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processRangeAxisArrayText()
 {
     GetCurrentValuesAxisArray(ViewAxisArrayAttributes::ID_rangeCoords);
-    Apply();    
+    Apply();
 }
 
 //
@@ -2427,21 +2456,21 @@ void
 QvisViewWindow::processViewportCurveText()
 {
     GetCurrentValuesCurve(ViewCurveAttributes::ID_viewportCoords);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processDomainText()
 {
     GetCurrentValuesCurve(ViewCurveAttributes::ID_domainCoords);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processRangeText()
 {
     GetCurrentValuesCurve(ViewCurveAttributes::ID_rangeCoords);
-    Apply();    
+    Apply();
 }
 
 //
@@ -2452,14 +2481,14 @@ void
 QvisViewWindow::processViewportText()
 {
     GetCurrentValues2d(View2DAttributes::ID_viewportCoords);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processWindowText()
 {
     GetCurrentValues2d(View2DAttributes::ID_windowCoords);
-    Apply();    
+    Apply();
 }
 
 //
@@ -2470,77 +2499,77 @@ void
 QvisViewWindow::processNormalText()
 {
     GetCurrentValues3d(View3DAttributes::ID_viewNormal);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processFocusText()
 {
     GetCurrentValues3d(View3DAttributes::ID_focus);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processUpVectorText()
 {
     GetCurrentValues3d(View3DAttributes::ID_viewUp);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processViewAngleText()
 {
     GetCurrentValues3d(View3DAttributes::ID_viewAngle);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processParallelScaleText()
 {
     GetCurrentValues3d(View3DAttributes::ID_parallelScale);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processNearText()
 {
     GetCurrentValues3d(View3DAttributes::ID_nearPlane);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processFarText()
 {
     GetCurrentValues3d(View3DAttributes::ID_farPlane);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processImagePanText()
 {
     GetCurrentValues3d(View3DAttributes::ID_imagePan);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processImageZoomText()
 {
     GetCurrentValues3d(View3DAttributes::ID_imageZoom);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processShearText()
 {
     GetCurrentValues3d(View3DAttributes::ID_shear);
-    Apply();    
+    Apply();
 }
 
 void
 QvisViewWindow::processEyeAngleText()
 {
     GetCurrentValues3d(View3DAttributes::ID_eyeAngle);
-    Apply();    
+    Apply();
 }
 
 //  Modifications:
@@ -2570,9 +2599,9 @@ QvisViewWindow::eyeAngleSliderChanged(int val)
         int most = (int) (angle*100);
         angle = ((float)most)/100.;
     }
-    
+
     view3d->SetEyeAngle(angle);
- 
+
     QString temp;
     temp.setNum(view3d->GetEyeAngle());
     eyeAngleLineEdit->setText(temp);
@@ -2591,7 +2620,7 @@ QvisViewWindow::perspectiveToggled(bool val)
 // ****************************************************************************
 // Method: QvisViewWindow::viewButtonClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when one of the default view
 //   buttons is clicked.
 //
@@ -2682,14 +2711,14 @@ QvisViewWindow::viewButtonClicked(int index)
 // ****************************************************************************
 // Method: QvisViewWindow::lockedViewChecked
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer to toggle its window locking flag.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep 17 15:40:07 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2701,7 +2730,7 @@ QvisViewWindow::lockedViewChecked(bool)
 // ****************************************************************************
 // Method: QvisMainWindow::maintainViewToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the maintain view limits
 //   checkbox is toggled.
 //
@@ -2709,7 +2738,7 @@ QvisViewWindow::lockedViewChecked(bool)
 // Creation:   February  3, 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2721,14 +2750,14 @@ QvisViewWindow::maintainViewChecked(bool)
 // ****************************************************************************
 // Method: QvisViewWindow::extentTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function sets the viewer's view extent type.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep 17 15:40:07 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2740,14 +2769,14 @@ QvisViewWindow::extentTypeChanged(int val)
 // ****************************************************************************
 // Method: QvisViewWindow::resetView
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer to reset the view.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 11 09:34:07 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2759,14 +2788,14 @@ QvisViewWindow::resetView()
 // ****************************************************************************
 // Method: QvisViewWindow::recenterView
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer to recenter the view.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 11 09:34:07 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2778,14 +2807,14 @@ QvisViewWindow::recenterView()
 // ****************************************************************************
 // Method: QvisViewWindow::undoView
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer to undo the last view change.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep 17 17:28:00 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2797,14 +2826,14 @@ QvisViewWindow::undoView()
 // ****************************************************************************
 // Method: QvisViewWindow::copyViewFromCameraChecked
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer to change the camera view mode.
 //
 // Programmer: Jeremy Meredith
 // Creation:   February  4, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2816,14 +2845,14 @@ QvisViewWindow::copyViewFromCameraChecked(bool)
 // ****************************************************************************
 // Method: QvisViewWindow::undoView
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer to make a new view keyframe.
 //
 // Programmer: Jeremy Meredith
 // Creation:   February  4, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2835,7 +2864,7 @@ QvisViewWindow::makeViewKeyframe()
 // ****************************************************************************
 // Method: QvisViewWindow::centerChecked
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function tells the viewer that the center of rotation
 //   was set.
 //
@@ -2843,7 +2872,7 @@ QvisViewWindow::makeViewKeyframe()
 // Creation:   February 10, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2857,7 +2886,7 @@ QvisViewWindow::centerChecked(bool val)
 // ****************************************************************************
 // Method: QvisViewWindow::processCenterText
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function handles the center of rotation changing.
 //
 // Programmer: Eric Brugger
@@ -2879,10 +2908,10 @@ QvisViewWindow::processCenterText()
 // ****************************************************************************
 // Method: QvisViewWindow::fullFrameActivationModeChanged
 //
-// Purpose: Qt slot function to handle changes in full frame mode 
+// Purpose: Qt slot function to handle changes in full frame mode
 //
-// Programmer: Mark C. Miller 
-// Creation:   July 5, 2005 
+// Programmer: Mark C. Miller
+// Creation:   July 5, 2005
 //
 // ****************************************************************************
 void
@@ -2904,8 +2933,8 @@ QvisViewWindow::fullFrameActivationModeChanged(int val)
 //
 // Purpose: Qt slot function to handle changes in domain scale
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 29, 2006 
+// Programmer: Kathleen Bonnell
+// Creation:   November 29, 2006
 //
 // ****************************************************************************
 void
@@ -2923,8 +2952,8 @@ QvisViewWindow::domainScaleModeChanged(int val)
 //
 // Purpose: Qt slot function to handle changes in range scale
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 29, 2006 
+// Programmer: Kathleen Bonnell
+// Creation:   November 29, 2006
 //
 // ****************************************************************************
 void
@@ -2942,8 +2971,8 @@ QvisViewWindow::rangeScaleModeChanged(int val)
 //
 // Purpose: Qt slot function to handle changes in x scale
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   April 2, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   April 2, 2007
 //
 // ****************************************************************************
 void
@@ -2961,8 +2990,8 @@ QvisViewWindow::xScaleModeChanged(int val)
 //
 // Purpose: Qt slot function to handle changes in y scale
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   April 2, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   April 2, 2007
 //
 // ****************************************************************************
 void

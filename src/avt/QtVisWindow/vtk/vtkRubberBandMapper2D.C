@@ -6,14 +6,19 @@
 #include <math.h>
 #include "vtkRubberBandMapper2D.h"
 
+#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h> // used by vtkRubberBandMapper2D_body.C which is #included below
+#endif
 #include <vtkCoordinate.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
 
@@ -50,7 +55,7 @@ struct vtkRubberBandMapper2DPrivate
     }
 
     ~vtkRubberBandMapper2DPrivate()
-    { 
+    {
         ReleaseGraphicsResources();
     }
 
@@ -106,7 +111,7 @@ struct vtkRubberBandMapper2DPrivate
 
 // ***************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
+//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 // ***************************************************************************
 
@@ -115,47 +120,47 @@ vtkStandardNewMacro(vtkRubberBandMapper2D);
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::vtkRubberBandMapper2D
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 13 10:04:25 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkRubberBandMapper2D::vtkRubberBandMapper2D() : vtkPolyDataMapper2D()
 {
-    d = new vtkRubberBandMapper2DPrivate;
+    privateInstance = new vtkRubberBandMapper2DPrivate;
 }
 
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::~vtkRubberBandMapper2D
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 13 10:04:03 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkRubberBandMapper2D::~vtkRubberBandMapper2D()
 {
-    if(d != 0)
+    if(privateInstance != 0)
     {
-        delete d;
-        d = 0;
+        delete privateInstance;
+        privateInstance = 0;
     }
 }
 
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::ReleaseGraphicsResources
 //
-// Purpose: 
+// Purpose:
 //   Releases the mapper's graphics resources.
 //
 // Arguments:
@@ -168,13 +173,13 @@ vtkRubberBandMapper2D::~vtkRubberBandMapper2D()
 // Creation:   Mon Mar 13 10:01:08 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 {
-    d->ReleaseGraphicsResources();
+    privateInstance->ReleaseGraphicsResources();
 
     // Call the superclass's ReleaseGraphicsResources method.
     vtkPolyDataMapper2D::ReleaseGraphicsResources(win);
@@ -183,7 +188,7 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::SetWidget
 //
-// Purpose: 
+// Purpose:
 //   Set the widget that we want to draw over.
 //
 // Arguments:
@@ -193,19 +198,19 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 // Creation:   Fri Oct 14 14:27:04 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 vtkRubberBandMapper2D::SetWidget(QWidget *w)
 {
-    d->widget = w;
+    privateInstance->widget = w;
 }
 
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::RenderOverlay
 //
-// Purpose: 
+// Purpose:
 //   Render the polydata as an "overlay".
 //
 // Arguments:
@@ -216,15 +221,15 @@ vtkRubberBandMapper2D::SetWidget(QWidget *w)
 // Creation:   Fri Oct 14 14:19:53 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 {
-    if(d->widget != 0)
+    if(privateInstance->widget != 0)
     {
-        switch(d->SelectBestRenderer())
+        switch(privateInstance->SelectBestRenderer())
         {
         case 1:
             RenderOverlay_X11(viewport, actor);
@@ -290,7 +295,7 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
     XPoint *points = new XPoint [1024];
 
     Display* displayId = (Display*) QX11Info::display();
-    Window windowId = (Window) d->widget->winId();
+    Window windowId = (Window) privateInstance->widget->winId();
 
     Screen *screen = XDefaultScreenOfDisplay(displayId);
     int screenN = XScreenNumberOfScreen(screen);
@@ -308,7 +313,7 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
     // Get the drawable to draw into
     Drawable drawable = (Drawable) windowId;
     if (!drawable) vtkErrorMacro(<<"Window returned NULL drawable!");
-  
+
     // Set up the forground color
     XWindowAttributes attr;
     XGetWindowAttributes(displayId,windowId,&attr);
@@ -328,6 +333,7 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
 //  Modifications:
 //    Kathleen Biagas, Mon Jun 11 15:48:10 MST 2012
 //    Remove ifdef preventing this method from bein used on _WIN32
+//
 // ***************************************************************************
 
 void
@@ -352,7 +358,7 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
     painter.drawLine(QLine(x1, y1, x2, y2));
 
 #define FLUSH_AND_SYNC() \
-    d->overlay->setPixmap(pixmap);
+    privateInstance->overlay->setPixmap(pixmap);
 
 #define CLEAN_UP()
 
@@ -361,11 +367,12 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
 #define END_POLYLINE()
 
     int x,y,w,h;
-    QPoint tl(d->widget->mapToGlobal(QPoint(0,0)));
+    QPoint tl(privateInstance->widget->mapToGlobal(QPoint(0,0)));
+
     x = tl.x();
     y = tl.y();
-    w = d->widget->width();
-    h = d->widget->height();
+    w = privateInstance->widget->width();
+    h = privateInstance->widget->height();
 
     QPixmap pixmap(w, h);
     pixmap.fill(Qt::transparent);
@@ -373,19 +380,19 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
     //
     // Try and create the window if we've not yet created it.
     //
-    if(d->overlay == 0)
+    if(privateInstance->overlay == 0)
     {
-        d->overlay = new QLabel(0, Qt::FramelessWindowHint);
-        d->overlay->setAttribute(Qt::WA_TranslucentBackground);
+        privateInstance->overlay = new QLabel(0, Qt::FramelessWindowHint);
+        privateInstance->overlay->setAttribute(Qt::WA_TranslucentBackground);
         // FIXME? We should need the following, but it triggers a Qt
         // bug and  strangely everything seems to work without it.
-        // overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-        d->overlay->setAutoFillBackground(false);
-        d->overlay->setPixmap(pixmap);
+        //privateInstance->overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+        privateInstance->overlay->setAutoFillBackground(false);
+        privateInstance->overlay->setPixmap(pixmap);
     }
 
-    d->overlay->setGeometry(x, y, w, h);
-    d->overlay->show();
+    privateInstance->overlay->setGeometry(x, y, w, h);
+    privateInstance->overlay->show();
 
     // Clear the window so it's ready for us to draw.
     QPainter painter(&pixmap);

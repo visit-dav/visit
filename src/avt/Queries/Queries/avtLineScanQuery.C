@@ -193,6 +193,10 @@ avtLineScanQuery::PreExecute(void)
 //    prevents the whole line scan from building up into a longer line. This
 //    was causing results of zero in the Hohlraum Flux query.
 //
+//    Eric Brugger, Fri Oct  2 09:15:29 PDT 2020
+//    I fixed the logic that ignores duplicate line segments to handle
+//    the case where the first segments are duplicates.
+//
 // ****************************************************************************
 
 int
@@ -209,6 +213,7 @@ avtLineScanQuery::GetCellsForPoint(int ptId, vtkPolyData *pd,
     pd->GetPointCells(ptId, list);
     int numMatches = 0;
     int workingLineid = lineid;
+    int pt1, pt2, pt3, pt4;
     for (int i = 0 ; i < list->GetNumberOfIds() ; i++)
     {
         int curId = list->GetId(i);
@@ -221,12 +226,33 @@ avtLineScanQuery::GetCellsForPoint(int ptId, vtkPolyData *pd,
             seg1 = curId;
             if (workingLineid < 0)
                 workingLineid = lineids->GetValue(seg1);
+            pd->GetCellPoints(curId, cell_pts);
+            pt1 = cell_pts->GetId(0);
+            pt2 = cell_pts->GetId(1);
+            if (pt2 < pt1)
+            {
+                int tmp = pt1;
+                pt1 = pt2;
+                pt2 = tmp;
+            }
             numMatches++;
         }
         else if (numMatches == 1)
         {
-            seg2 = curId;
-            numMatches++;
+            pd->GetCellPoints(curId, cell_pts);
+            pt3 = cell_pts->GetId(0);
+            pt4 = cell_pts->GetId(1);
+            if (pt4 < pt3)
+            {
+                int tmp = pt3;
+                pt3 = pt4;
+                pt4 = tmp;
+            }
+            if (pt1 != pt3 || pt2 != pt4)
+            {
+                seg2 = curId;
+                numMatches++;
+            }
         }
         else
         {

@@ -129,6 +129,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Kathleen Biagas, Thu Apr 23 13:13:16 PDT 2015
 //   Removed never used outlineOnly and errorTolerance widgets.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -142,7 +145,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(zoneGroup);
 
     QGridLayout *zoneLayout = new QGridLayout(zoneGroup);
-    zoneLayout->setMargin(5);
+    zoneLayout->setContentsMargins(5,5,5,5);
     zoneLayout->setSpacing(10);
  
     // Create the showInternal toggle
@@ -159,7 +162,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10); 
     
     // Create the radio buttons for mesh color source
@@ -179,8 +182,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     colorLayout->addWidget(rb, 0, 3, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(meshColorButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(meshColorClicked(int)));
+#else
+    connect(meshColorButtons, SIGNAL(idClicked(int)),
+            this, SLOT(meshColorClicked(int)));
+#endif
 
     // Create the mesh color button.
     meshColor = new QvisColorButton(central);
@@ -206,8 +214,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     colorLayout->addWidget(rb, 1, 3, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(opaqueColorButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(opaqueColorClicked(int)));
+#else
+    connect(opaqueColorButtons, SIGNAL(idClicked(int)),
+            this, SLOT(opaqueColorClicked(int)));
+#endif
 
     // Create the opaque color button.
     opaqueColor = new QvisColorButton(central);
@@ -218,11 +231,16 @@ QvisMeshPlotWindow::CreateWindowContents()
     // Create the opaque mode buttons
     colorLayout->addWidget(new QLabel(tr("Opaque mode"), central), 2, 0);
     opaqueModeGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(opaqueModeGroup, SIGNAL(buttonClicked(int)), this,
             SLOT(opaqueModeChanged(int)));
+#else
+    connect(opaqueModeGroup, SIGNAL(idClicked(int)), this,
+            SLOT(opaqueModeChanged(int)));
+#endif
 
     QHBoxLayout *opaqueModeLayout = new QHBoxLayout();
-    opaqueModeLayout->setMargin(0);
+    opaqueModeLayout->setContentsMargins(0,0,0,0);
     opaqueModeLayout->setSpacing(10);
    
     rb = new QRadioButton(tr("Auto"), central);
@@ -263,7 +281,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
  
     // Create the point control
@@ -297,15 +315,20 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(smoothingGroup);
 
     QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
-    smoothingLayout->setMargin(5);
+    smoothingLayout->setContentsMargins(5,5,5,5);
     smoothingLayout->setSpacing(10);
     
     smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
+#else
+    connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+#endif
 
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);
@@ -326,7 +349,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle

@@ -48,7 +48,7 @@ using std::string;
 // ****************************************************************************
 // Method: QvisQueryWindow::QvisQueryWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisQueryWindow class.
 //
 // Arguments:
@@ -60,9 +60,9 @@ using std::string;
 // Creation:   Mon Sep 9 16:47:41 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002 
+//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
 //   Initialize queryAtts.
-// 
+//
 //   Brad Whitlock, Fri Nov 7 17:24:42 PST 2003
 //   Prevented extra buttons from being created.
 //
@@ -81,9 +81,9 @@ using std::string;
 //
 // ****************************************************************************
 
-QvisQueryWindow::QvisQueryWindow(const QString &caption, 
-    const QString &shortName, QvisNotepadArea *n) : 
-    QvisPostableWindowSimpleObserver(caption, shortName, n, NoExtraButtons, 
+QvisQueryWindow::QvisQueryWindow(const QString &caption,
+    const QString &shortName, QvisNotepadArea *n) :
+    QvisPostableWindowSimpleObserver(caption, shortName, n, NoExtraButtons,
                                      false),
     currentFloatFormat()
 {
@@ -106,16 +106,16 @@ QvisQueryWindow::QvisQueryWindow(const QString &caption,
 // ****************************************************************************
 // Method: QvisQueryWindow::~QvisQueryWindow
 //
-// Purpose: 
+// Purpose:
 //   The destructor for the QvisQueryWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 16:48:36 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002 
+//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
 //   Detach queryAtts.
-//   
+//
 // ****************************************************************************
 
 QvisQueryWindow::~QvisQueryWindow()
@@ -136,7 +136,7 @@ QvisQueryWindow::~QvisQueryWindow()
 // ****************************************************************************
 // Method: QvisQueryWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -146,29 +146,29 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Brad Whitlock, Mon May 12 13:02:32 PST 2003
 //   I added a button to clear out the query results.
 //
-//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003 
-//   I added radio buttons to select between a database query and a 
+//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003
+//   I added radio buttons to select between a database query and a
 //   'current plot' query.  (Only appear if query requests them).
 //
-//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004 
-//   Added TimeQuery push button. 
+//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004
+//   Added TimeQuery push button.
 //
-//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004 
-//   Made the default for dataOpts be 'actual data'. 
+//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004
+//   Made the default for dataOpts be 'actual data'.
 //
-//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
-//   Made the default for dataOpts be 'original data'. 
+//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
+//   Made the default for dataOpts be 'original data'.
 //
-//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004
 //   Added displayMode.
 //
-//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
-//   Remove coordLabel. 
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004
+//   Remove coordLabel.
 //
-//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
-//   Added useGlobal checkbox. 
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004
+//   Added useGlobal checkbox.
 //
-//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
+//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
 //   Connect useGlobal to its slot.
 //
 //   Hank Childs, Fri Sep  1 16:21:35 PDT 2006
@@ -192,7 +192,7 @@ QvisQueryWindow::~QvisQueryWindow()
 //   that the fourth text line isn't clobbered by the variable controls.
 //
 //   Cyrus Harrison,
-//   Refactoring for python query integration. Most of functionality was 
+//   Refactoring for python query integration. Most of functionality was
 //   moved into the CreateStandardQueryWidget() method.
 //
 // ****************************************************************************
@@ -212,8 +212,8 @@ QvisQueryWindow::CreateWindowContents()
     CreatePythonQueryWidget();
     CreateResultsWidget();
 
-    queryTabs->addTab(stdQueryWidget, "Standard queries");
-    queryTabs->addTab(pyQueryWidget, "Python query editor");
+    queryTabs->addTab(stdQueryWidget, tr("Standard queries"));
+    queryTabs->addTab(pyQueryWidget, tr("Python query editor"));
 
     splitter->addWidget(queryTabs);
     splitter->addWidget(resultsWidget);
@@ -226,7 +226,7 @@ QvisQueryWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisQueryWindow::CreateStandardQueryWidget
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the standard query tab.
 //
 // Programmer: Cyrus Harrison
@@ -250,6 +250,9 @@ QvisQueryWindow::CreateWindowContents()
 //
 //   Kathleen Biagas, Thu Jun  8 12:50:13 PDT 2017
 //   Made the default for dataOpts be 'actual data'.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -311,21 +314,21 @@ QvisQueryWindow::CreateStandardQueryWidget()
     vbLayout->addWidget(varsButton);
 
     varsLineEdit = new QLineEdit(argPanel);
-    varsLineEdit->setText("default"); 
+    varsLineEdit->setText("default");
     varsLineEdit->hide();
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(handleText()));
     vbLayout->addWidget(varsLineEdit);
 
     QGridLayout *sLayout = new QGridLayout();
-    sLayout->setMargin(0);
+    sLayout->setContentsMargins(0,0,0,0);
     gLayout->addLayout(sLayout);
 
     for(int i = 0; i < 6; ++i)
     {
         QString name1, name2;
-        name1.sprintf("queryArgLabel%02d", i);
-        name2.sprintf("queryArgText%02d", i);
+        name1 = QString("queryArgLabel%1").arg(i,2,10,QLatin1Char('0'));
+        name2 = QString("queryArgText%1").arg(i,2,10,QLatin1Char('0'));
         textFields[i] = new QLineEdit(name2,argPanel);
         connect(textFields[i], SIGNAL(returnPressed()),
                 this, SLOT(handleText()));
@@ -337,7 +340,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     }
 
     useGlobal = new QCheckBox(tr("Use Global Id"), argPanel);
-    connect(useGlobal, SIGNAL(toggled(bool)), this, 
+    connect(useGlobal, SIGNAL(toggled(bool)), this,
             SLOT(useGlobalToggled(bool)));
     useGlobal->hide();
     sLayout->addWidget(useGlobal, 8, 0, 1, 2);
@@ -356,25 +359,25 @@ QvisQueryWindow::CreateStandardQueryWidget()
 
     // Add the dump check box options to the argument panel.
     dumpIndex = new QCheckBox(tr("Dump Index"), argPanel);
-    connect(dumpIndex, SIGNAL(toggled(bool)), this, 
+    connect(dumpIndex, SIGNAL(toggled(bool)), this,
             SLOT(dumpIndexToggled(bool)));
     dumpIndex->hide();
     sLayout->addWidget(dumpIndex, 11, 0, 1, 2);
 
     dumpCoordinates = new QCheckBox(tr("Dump Coordinates"), argPanel);
-    connect(dumpCoordinates, SIGNAL(toggled(bool)), this, 
+    connect(dumpCoordinates, SIGNAL(toggled(bool)), this,
             SLOT(dumpCoordinatesToggled(bool)));
     dumpCoordinates->hide();
     sLayout->addWidget(dumpCoordinates, 12, 0, 1, 2);
 
     dumpArcLength = new QCheckBox(tr("Dump Arc Length"), argPanel);
-    connect(dumpArcLength, SIGNAL(toggled(bool)), this, 
+    connect(dumpArcLength, SIGNAL(toggled(bool)), this,
             SLOT(dumpArcLengthToggled(bool)));
     dumpArcLength->hide();
     sLayout->addWidget(dumpArcLength, 13, 0, 1, 2);
 
     dumpValues = new QCheckBox(tr("Dump Values"), argPanel);
-    connect(dumpValues, SIGNAL(toggled(bool)), this, 
+    connect(dumpValues, SIGNAL(toggled(bool)), this,
             SLOT(dumpValuesToggled(bool)));
     dumpValues->hide();
     sLayout->addWidget(dumpValues, 14, 0, 1, 2);
@@ -403,7 +406,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     //  PickQueryWidget needs to know when time is toggled, so it
     //  can enable certain of its own time-specific options.
     //
-    connect(timeQueryOptions, SIGNAL(toggled(bool)), 
+    connect(timeQueryOptions, SIGNAL(toggled(bool)),
             pickQueryWidget, SLOT(timeOptionsToggled(bool)));
 
     // Add the query button to the argument panel.
@@ -423,7 +426,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
 // ****************************************************************************
 // Method: QvisQueryWindow::CreatePythonQueryWidget
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the python query tab.
 //
 // Programmer: Cyrus Harrison
@@ -478,7 +481,7 @@ QvisQueryWindow::CreatePythonQueryWidget()
 // ****************************************************************************
 // Method: QvisQueryWindow::CreateResultsWidget
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets that display query results.
 //
 // Programmer: Cyrus Harrison
@@ -519,7 +522,7 @@ QvisQueryWindow::CreateResultsWidget()
 // ****************************************************************************
 // Method: QvisQueryWindow::CreateEntireWindow
 //
-// Purpose: 
+// Purpose:
 //   Creates the entire window.
 //
 // Programmer: Brad Whitlock
@@ -569,7 +572,7 @@ QvisQueryWindow::CreateEntireWindow()
     connect(saveResultsButton, SIGNAL(clicked()),
             this, SLOT(saveResultText()));
     buttonLayout->addWidget(saveResultsButton);
-    
+
     buttonLayout->addStretch();
 
     postButton = new QPushButton(tr("Post"), central);
@@ -595,7 +598,7 @@ QvisQueryWindow::CreateEntireWindow()
 // ****************************************************************************
 // Method: QvisQueryWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window needs to be updated.
 //
 // Arguments:
@@ -605,13 +608,13 @@ QvisQueryWindow::CreateEntireWindow()
 // Creation:   Mon Sep 9 16:49:24 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Sep 25 11:31:41 PDT 2002 
+//   Kathleen Bonnell, Wed Sep 25 11:31:41 PDT 2002
 //   QueryAtts can also be used to update the results.
-//   
-//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004 
+//
+//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004
 //   Call update for timeQueryButton.
-//   
-//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004
 //   Removed unncessary argument from UpdateQueryList.
 //
 // ****************************************************************************
@@ -622,7 +625,7 @@ QvisQueryWindow::UpdateWindow(bool doAll)
     if(SelectedSubject() == queries || doAll)
         UpdateQueryList();
 
-    if(SelectedSubject() == queryAtts || 
+    if(SelectedSubject() == queryAtts ||
        SelectedSubject() == pickAtts || doAll)
         UpdateResults(doAll);
 
@@ -636,14 +639,14 @@ QvisQueryWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisQueryWindow::UpdateQueryButton
 //
-// Purpose: 
+// Purpose:
 //   Sets the enabled state for the query button.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 16:50:03 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -653,15 +656,15 @@ QvisQueryWindow::UpdateQueryButton()
                (plotList->GetNumPlots() > 0);
     queryButton->setEnabled(val);
 }
- 
+
 // ****************************************************************************
 // Method: QvisQueryWindow::UpdateTimeQueryOptions
 //
-// Purpose: 
+// Purpose:
 //   Sets the enabled state for the time query options widget.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   April 1, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   April 1, 2004
 //
 // Modifications:
 //    Kathleen Biagas, Wed Apr 11 19:14:07 PDT 2012
@@ -693,9 +696,9 @@ QvisQueryWindow::UpdateTimeQueryOptions()
 //   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //   Reflect changes in queryList -- timeQuery is now queryMode.
 //
-//   Kathleen Bonnell, Fri Sep 28 14:46:09 PDT 2007 
+//   Kathleen Bonnell, Fri Sep 28 14:46:09 PDT 2007
 //   Added 'canBePublic' which when false, allows queries to NOT be added
-//   to this window. 
+//   to this window.
 //
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
@@ -721,7 +724,7 @@ QvisQueryWindow::UpdateQueryList()
     int selectedIndex = -1;
     int selectedFunction = displayMode->currentIndex() -1;
     queryList->clear();
-    
+
     for(size_t i = 0; i < names.size(); ++i)
     {
         if (!canBePublic[i])
@@ -770,7 +773,7 @@ QvisQueryWindow::UpdateQueryList()
 // ****************************************************************************
 // Method: QvisQueryWindow::UpdateResults
 //
-// Purpose: 
+// Purpose:
 //   Displays the query results.
 //
 // Note:       This method will change big time when queries are really
@@ -780,9 +783,9 @@ QvisQueryWindow::UpdateQueryList()
 // Creation:   Mon Sep 9 16:55:39 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Sep 25 11:31:41 PDT 2002 
+//   Kathleen Bonnell, Wed Sep 25 11:31:41 PDT 2002
 //   Use pickAtts to set resultText only if the pick was fulfilled.
-//   Also use queryAtts to set resultText. 
+//   Also use queryAtts to set resultText.
 //
 //   Brad Whitlock, Fri May 9 17:27:05 PST 2003
 //   I made it append the query results to the existing text.
@@ -821,7 +824,7 @@ QvisQueryWindow::UpdateResults(bool)
 // ****************************************************************************
 // Method: QvisQueryWindow::UpdateArgumentPanel
 //
-// Purpose: 
+// Purpose:
 //   Shows the widgets to gather query parameters.
 //
 // Arguments:
@@ -833,7 +836,7 @@ QvisQueryWindow::UpdateResults(bool)
 // Modifications:
 //   Kathleen Bonnell, Mon Nov 18 09:42:12 PST 2002
 //   Don't show the variable widget for Eulerian queries.
-//   
+//
 //   Hank Childs, Tue Mar 18 21:30:09 PST 2003
 //   Added revolved surface area.
 //
@@ -905,7 +908,7 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
 //   Queries that require variables now use varsButton and varsLineEdit.
 //
-//   Kathleen Bonnell, Tue Jun 24 13:38:45 PDT 2008 
+//   Kathleen Bonnell, Tue Jun 24 13:38:45 PDT 2008
 //   Limit the variables for Hohlraum Flux to Scalars and Arrays.
 //
 //   Eric Brugger, Mon May 11 13:48:58 PDT 2009
@@ -974,7 +977,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     {
         bool showWidgets[6] = {false, false, false, false, false, false};
         bool showDataOptions = false;
-        bool showDumpOptions = false;
         bool showGlobal = false;
         bool showDumpIndex = false;
         bool showDumpCoordinates = false;
@@ -1277,7 +1279,7 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 // ****************************************************************************
 // Method: QvisQueryWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we actually want to do a query.
 //
 // Arguments:
@@ -1287,8 +1289,8 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 // Creation:   Mon Sep 9 16:58:47 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-//   Removed call to viewer->SetPickAttributes.   
+//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//   Removed call to viewer->SetPickAttributes.
 //
 //   Brad Whitlock, Thu Dec 26 17:42:37 PST 2002
 //   I made it use stringVectors when passing variables names to the
@@ -1297,14 +1299,14 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Brad Whitlock, Mon May 12 14:26:17 PST 2003
 //   I removed the line of code that cleared the query results.
 //
-//   Kathleen Bonnell, Wed May 14 17:32:20 PDT 2003 
-//   Removed Pick related hack. 
+//   Kathleen Bonnell, Wed May 14 17:32:20 PDT 2003
+//   Removed Pick related hack.
 //
-//   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003 
-//   Added special checks for 'Variable by Zone' query.  
+//   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003
+//   Added special checks for 'Variable by Zone' query.
 //   Include 'sample' in call to viewer->LineQuery.
 //
-//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003 
+//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003
 //   Removed references to specific query names.  Reworked code to
 //   utilize new WindowType ivar.
 //
@@ -1347,7 +1349,7 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Initial Qt4 Port.
 //
 //   Cyrus Harrison, Sat Oct 18 21:33:18 PDT 2008
-//   Fixed parsing error for Connected Components Summary Query, caused by 
+//   Fixed parsing error for Connected Components Summary Query, caused by
 //   migration of GetVars to a new text field widget.
 //
 //   Eric Brugger, Mon May 11 13:48:58 PDT 2009
@@ -1409,7 +1411,7 @@ QvisQueryWindow::Apply(bool ignore)
 // Modifications:
 //   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
 //   I added the x ray image query.
-//  
+//
 //   Kathleen Bonnell, Tue Mar  1 11:08:16 PST 2011
 //   For TimePicks, send along curvePlotType.
 //
@@ -1459,7 +1461,7 @@ QvisQueryWindow::ExecuteStandardQuery()
             ;//basic queries don't require any more parameters
         }
         else if ((winT == QueryList::DomainZone) ||
-                 (winT == QueryList::DomainNode) || 
+                 (winT == QueryList::DomainNode) ||
                  (winT == QueryList::DomainZoneVars) ||
                  (winT == QueryList::DomainNodeVars))
         {
@@ -1702,7 +1704,7 @@ QvisQueryWindow::ExecutePythonQuery()
 // ****************************************************************************
 // Method: QvisQueryWindow::GetNumber
 //
-// Purpose: 
+// Purpose:
 //   Gets an integer from the i'th text field.
 //
 // Arguments:
@@ -1810,6 +1812,9 @@ QvisQueryWindow::GetFloatingPointNumber(int index, double *num)
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   When spitting to create the vars list, discard empty parts.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
+//
 // ****************************************************************************
 
 bool
@@ -1820,7 +1825,11 @@ QvisQueryWindow::GetVars(stringVector &vars)
     QString temp(varsLineEdit->displayText().trimmed());
 
     // Split the variable list using the spaces.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QStringList sList = temp.split(" ",QString::SkipEmptyParts);
+#else
+    QStringList sList = temp.split(" ",Qt::SkipEmptyParts);
+#endif
 
     QStringList::Iterator it;
 
@@ -1842,14 +1851,14 @@ QvisQueryWindow::GetVars(stringVector &vars)
 // ****************************************************************************
 // Method: QvisQueryWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the Query button is clicked.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 17:57:13 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1862,17 +1871,17 @@ QvisQueryWindow::apply()
 // ****************************************************************************
 // Method: QvisQueryWindow::selectQuery
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we select a new query.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 17:57:37 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
-//   Changed argument to UpdateArgumentPaenl from index to qname -- 
-//   because queryList box may have fewer items than all queries. 
-//   
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004
+//   Changed argument to UpdateArgumentPaenl from index to qname --
+//   because queryList box may have fewer items than all queries.
+//
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   Initial Qt4 Port.
 //
@@ -1889,15 +1898,15 @@ QvisQueryWindow::selectQuery()
 // ****************************************************************************
 // Method: QvisQueryWindow::handleText
 //
-// Purpose: 
-//   This is a Qt slot function that is called when Return is pressed in a 
+// Purpose:
+//   This is a Qt slot function that is called when Return is pressed in a
 //   text field.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 17:58:06 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1909,14 +1918,14 @@ QvisQueryWindow::handleText()
 // ****************************************************************************
 // Method: QvisQueryWindow::clearResultText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that clears the results text.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May 9 17:28:48 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1928,36 +1937,36 @@ QvisQueryWindow::clearResultText()
 // ****************************************************************************
 // Method: QvisQueryWindow::displayModeChanged
 //
-// Purpose: 
-//   Updates the query list when display mode changes. 
+// Purpose:
+//   Updates the query list when display mode changes.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   September 4, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   September 4, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::displayModeChanged(int)
 {
-    UpdateQueryList(); 
+    UpdateQueryList();
 }
 
 
 // ****************************************************************************
 // Method: QvisQueryWindow::useGlobalToggled
 //
-// Purpose: 
-//   A slot function called when the useGlobal checkbox is toggled. 
+// Purpose:
+//   A slot function called when the useGlobal checkbox is toggled.
 //   Sets the 'enabled' state of the label and textfield correpsonding
 //   to 'Domain'.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 11, 2005 
+// Programmer: Kathleen Bonnell
+// Creation:   January 11, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2031,7 +2040,7 @@ QvisQueryWindow::dumpValuesToggled(bool val)
 // ****************************************************************************
 // Method: QvisQueryWindow::saveResultText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that saves the results text in a user selected file.
 //
 // Programmer: Ellen Tarwater
@@ -2040,18 +2049,21 @@ QvisQueryWindow::dumpValuesToggled(bool val)
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   Initial Qt4 Port.
 //
 //   Cyrus Harrison, Thu Dec  4 09:38:44 PST 2008
 //   Added default file support to the save as dialog.
-//   Skip file save if no results are available. 
+//   Skip file save if no results are available.
 //
-//    Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
-//    On Windows, explicitly test writeability of the 'cwd' before passing it 
-//    to getSaveFileName (eg don't present user with a place to save a file if 
-//    they cannot save there!)
+//   Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
+//   On Windows, explicitly test writeability of the 'cwd' before passing it
+//   to getSaveFileName (eg don't present user with a place to save a file if
+//   they cannot save there!)
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -2059,7 +2071,7 @@ void
 QvisQueryWindow::saveResultText()
 {
     // make sure there are results to save!
-    
+
     QString result_txt( resultText->toPlainText() );
     if ( result_txt.length() == 0 )
     {
@@ -2070,12 +2082,11 @@ QvisQueryWindow::saveResultText()
     QString saveExtension(".txt");
 
     // Create the name of a VisIt save file to use.
-    QString defaultFile;
-    defaultFile.sprintf("visit%04d", saveCount);
+    QString defaultFile = QString("visit%1").arg(saveCount,4,10,QLatin1Char('0'));
     defaultFile += saveExtension;
-    
+
     QString useDir = QDir::current().path();
-  
+
 #ifdef _WIN32
     { // new scope
         // force a temporary file creation in cwd
@@ -2086,12 +2097,12 @@ QvisQueryWindow::saveResultText()
         }
     }
 #endif
-   
+
     defaultFile = useDir + "/" + defaultFile;
 
     // Get the name of the file that the user saved.
     QString sFilter(QString("VisIt ") + tr("save") + QString(" (*") + saveExtension + ")");
-    
+
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     tr("Save Query Results As"),
                                                     defaultFile,
@@ -2101,19 +2112,19 @@ QvisQueryWindow::saveResultText()
     if(!fileName.isNull())
     {
         ++saveCount;
-        
+
         QFile file( fileName );
         if ( file.open(QIODevice::WriteOnly | QIODevice::Text) )
         {
             QTextStream stream( &file );
             stream << result_txt + "\n";
-        
+
             file.close();
         }
         else
             Error(tr("VisIt could not save the query results "
                      "to the selected file"));
-        
+
     }
 }
 
@@ -2121,18 +2132,18 @@ QvisQueryWindow::saveResultText()
 // ****************************************************************************
 // Method: QvisQueryWindow::addVariable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user selects a new
 //   variable.
 //
 // Arguments:
 //   var : The variable to add.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   June 24, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

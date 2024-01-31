@@ -5,6 +5,7 @@
 #include <PyLabelAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyColorAttribute.h>
 #include <PyFontAttributes.h>
 #include <PyFontAttributes.h>
@@ -37,9 +38,8 @@ struct LabelAttributesObject
 // Internal prototypes
 //
 static PyObject *NewLabelAttributes(int);
-
 std::string
-PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
+PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -107,12 +107,12 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "textFont1.";
-        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "textFont2.";
-        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str(), forLogging);
     }
     const char *horizontalJustification_names = "HCenter, Left, Right";
     switch (atts->GetHorizontalJustification())
@@ -190,12 +190,48 @@ LabelAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -214,12 +250,48 @@ LabelAttributes_SetShowNodes(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showNodes in the object.
-    obj->data->SetShowNodes(ival != 0);
+    obj->data->SetShowNodes(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -238,12 +310,48 @@ LabelAttributes_SetShowCells(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showCells in the object.
-    obj->data->SetShowCells(ival != 0);
+    obj->data->SetShowCells(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -262,12 +370,48 @@ LabelAttributes_SetRestrictNumberOfLabels(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the restrictNumberOfLabels in the object.
-    obj->data->SetRestrictNumberOfLabels(ival != 0);
+    obj->data->SetRestrictNumberOfLabels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -286,21 +430,55 @@ LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid drawLabelsFacing value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Front";
+        ss << ", Back";
+        ss << ", FrontAndBack";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawLabelsFacing in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDrawLabelsFacing(LabelAttributes::LabelDrawFacing(ival));
-    else
-    {
-        fprintf(stderr, "An invalid drawLabelsFacing value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Front, Back, FrontAndBack.");
-        return NULL;
-    }
+    obj->data->SetDrawLabelsFacing(LabelAttributes::LabelDrawFacing(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -319,21 +497,55 @@ LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid labelDisplayFormat value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Natural";
+        ss << ", LogicalIndex";
+        ss << ", Index";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the labelDisplayFormat in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetLabelDisplayFormat(LabelAttributes::LabelIndexDisplay(ival));
-    else
-    {
-        fprintf(stderr, "An invalid labelDisplayFormat value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Natural, LogicalIndex, Index.");
-        return NULL;
-    }
+    obj->data->SetLabelDisplayFormat(LabelAttributes::LabelIndexDisplay(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -352,12 +564,48 @@ LabelAttributes_SetNumberOfLabels(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numberOfLabels in the object.
-    obj->data->SetNumberOfLabels((int)ival);
+    obj->data->SetNumberOfLabels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -380,10 +628,7 @@ LabelAttributes_SetTextFont1(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyFontAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The textFont1 field can only be set with FontAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field textFont1 can be set only with FontAttributes objects");
 
     obj->data->SetTextFont1(*PyFontAttributes_FromPyObject(newValue));
 
@@ -416,10 +661,7 @@ LabelAttributes_SetTextFont2(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyFontAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The textFont2 field can only be set with FontAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field textFont2 can be set only with FontAttributes objects");
 
     obj->data->SetTextFont2(*PyFontAttributes_FromPyObject(newValue));
 
@@ -448,21 +690,55 @@ LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid horizontalJustification value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " HCenter";
+        ss << ", Left";
+        ss << ", Right";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the horizontalJustification in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetHorizontalJustification(LabelAttributes::LabelHorizontalAlignment(ival));
-    else
-    {
-        fprintf(stderr, "An invalid horizontalJustification value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "HCenter, Left, Right.");
-        return NULL;
-    }
+    obj->data->SetHorizontalJustification(LabelAttributes::LabelHorizontalAlignment(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -481,21 +757,55 @@ LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid verticalJustification value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " VCenter";
+        ss << ", Top";
+        ss << ", Bottom";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the verticalJustification in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVerticalJustification(LabelAttributes::LabelVerticalAlignment(ival));
-    else
-    {
-        fprintf(stderr, "An invalid verticalJustification value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "VCenter, Top, Bottom.");
-        return NULL;
-    }
+    obj->data->SetVerticalJustification(LabelAttributes::LabelVerticalAlignment(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -514,21 +824,55 @@ LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid depthTestMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " LABEL_DT_AUTO";
+        ss << ", LABEL_DT_ALWAYS";
+        ss << ", LABEL_DT_NEVER";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the depthTestMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDepthTestMode(LabelAttributes::DepthTestMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid depthTestMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "LABEL_DT_AUTO, LABEL_DT_ALWAYS, LABEL_DT_NEVER.");
-        return NULL;
-    }
+    obj->data->SetDepthTestMode(LabelAttributes::DepthTestMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -547,12 +891,37 @@ LabelAttributes_SetFormatTemplate(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the formatTemplate in the object.
-    obj->data->SetFormatTemplate(std::string(str));
+    obj->data->SetFormatTemplate(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -613,14 +982,7 @@ LabelAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-LabelAttributes_compare(PyObject *v, PyObject *w)
-{
-    LabelAttributes *a = ((LabelAttributesObject *)v)->data;
-    LabelAttributes *b = ((LabelAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *LabelAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLabelAttributes_getattr(PyObject *self, char *name)
 {
@@ -686,184 +1048,65 @@ PyLabelAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "formatTemplate") == 0)
         return LabelAttributes_GetFormatTemplate(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyLabelAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyLabelAttributes_methods[i].ml_name),
+                PyString_FromString(PyLabelAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyLabelAttributes_methods, self, name);
 }
 
 int
 PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "legendFlag") == 0)
-        obj = LabelAttributes_SetLegendFlag(self, tuple);
+        obj = LabelAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "showNodes") == 0)
-        obj = LabelAttributes_SetShowNodes(self, tuple);
+        obj = LabelAttributes_SetShowNodes(self, args);
     else if(strcmp(name, "showCells") == 0)
-        obj = LabelAttributes_SetShowCells(self, tuple);
+        obj = LabelAttributes_SetShowCells(self, args);
     else if(strcmp(name, "restrictNumberOfLabels") == 0)
-        obj = LabelAttributes_SetRestrictNumberOfLabels(self, tuple);
+        obj = LabelAttributes_SetRestrictNumberOfLabels(self, args);
     else if(strcmp(name, "drawLabelsFacing") == 0)
-        obj = LabelAttributes_SetDrawLabelsFacing(self, tuple);
+        obj = LabelAttributes_SetDrawLabelsFacing(self, args);
     else if(strcmp(name, "labelDisplayFormat") == 0)
-        obj = LabelAttributes_SetLabelDisplayFormat(self, tuple);
+        obj = LabelAttributes_SetLabelDisplayFormat(self, args);
     else if(strcmp(name, "numberOfLabels") == 0)
-        obj = LabelAttributes_SetNumberOfLabels(self, tuple);
+        obj = LabelAttributes_SetNumberOfLabels(self, args);
     else if(strcmp(name, "textFont1") == 0)
-        obj = LabelAttributes_SetTextFont1(self, tuple);
+        obj = LabelAttributes_SetTextFont1(self, args);
     else if(strcmp(name, "textFont2") == 0)
-        obj = LabelAttributes_SetTextFont2(self, tuple);
+        obj = LabelAttributes_SetTextFont2(self, args);
     else if(strcmp(name, "horizontalJustification") == 0)
-        obj = LabelAttributes_SetHorizontalJustification(self, tuple);
+        obj = LabelAttributes_SetHorizontalJustification(self, args);
     else if(strcmp(name, "verticalJustification") == 0)
-        obj = LabelAttributes_SetVerticalJustification(self, tuple);
+        obj = LabelAttributes_SetVerticalJustification(self, args);
     else if(strcmp(name, "depthTestMode") == 0)
-        obj = LabelAttributes_SetDepthTestMode(self, tuple);
+        obj = LabelAttributes_SetDepthTestMode(self, args);
     else if(strcmp(name, "formatTemplate") == 0)
-        obj = LabelAttributes_SetFormatTemplate(self, tuple);
+        obj = LabelAttributes_SetFormatTemplate(self, args);
 
-    // Try to handle legacy fields
-    if(obj == NULL)
-    {
-#define GETCOLOR if(!PyArg_ParseTuple(tuple, "iiii", &c[0], &c[1], &c[2], &c[3])) \
-    { \
-        c[3] = 255; \
-        if(!PyArg_ParseTuple(tuple, "iii", &c[0], &c[1], &c[2])) \
-        { \
-            double dr, dg, db, da; \
-            if(PyArg_ParseTuple(tuple, "dddd", &dr, &dg, &db, &da)) \
-            { \
-                c[0] = int(dr); \
-                c[1] = int(dg); \
-                c[2] = int(db); \
-                c[3] = int(da); \
-            } \
-            else if(PyArg_ParseTuple(tuple, "ddd", &dr, &dg, &db)) \
-            { \
-                c[0] = int(dr); \
-                c[1] = int(dg); \
-                c[2] = int(db); \
-                c[3] = 255; \
-            } \
-            else \
-            { \
-                PyObject *obj = NULL; \
-                if(!PyArg_ParseTuple(tuple, "O", &obj)) \
-                    success = false; \
-                if(!PyTuple_Check(obj)) \
-                    success = false; \
-                if(PyTuple_Size(obj) < 3 || PyTuple_Size(obj) > 4) \
-                    success = false; \
-                for(int i = 0; i < PyTuple_Size(obj); ++i) \
-                { \
-                    PyObject *item = PyTuple_GET_ITEM(obj, i); \
-                    if(PyInt_Check(item)) \
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj, i))); \
-                    else if(PyFloat_Check(item)) \
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj, i))); \
-                    else \
-                        success = false; \
-                } \
-            } \
-        } \
-        PyErr_Clear(); \
-    }
-
-        LabelAttributesObject *LabelObj = (LabelAttributesObject *)self;
-        FontAttributes font1 = LabelObj->data->GetTextFont1();
-        FontAttributes font2 = LabelObj->data->GetTextFont2();
-        if(strcmp(name, "textHeight1") == 0)
-        {
-            double val;
-            if(!PyArg_ParseTuple(tuple, "d", &val))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            // Increase the value, new labels are smaller, we want
-            // a better approximation of the original size
-            font1.SetScale((val+0.02)*100);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "textHeight2") == 0)
-        {
-            double val;
-            if(!PyArg_ParseTuple(tuple, "d", &val))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            // Increase the value, new labels are smaller, we want
-            // a better approximation of the original size
-            font2.SetScale((val+0.02)*100);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "specifyTextColor1") == 0)
-        {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            font1.SetUseForegroundColor(ival == 0 ? 1: 0);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "specifyTextColor2") == 0)
-        {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            font2.SetUseForegroundColor(ival == 0 ? 1: 0);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "textColor1") == 0)
-        {
-            int c[4];
-            bool success = true;
-            GETCOLOR;
-            if (success)
-            {
-                font1.GetColor().SetRgba(c[0], c[1], c[2], c[3]);
-                Py_INCREF(Py_None);
-                obj = Py_None;
-            }
-        }
-        else if(strcmp(name, "textColor2") == 0)
-        {
-            int c[4];
-            bool success = true;
-            GETCOLOR;
-            if (success)
-            {
-                font2.GetColor().SetRgba(c[0], c[1], c[2], c[3]);
-                Py_INCREF(Py_None);
-                obj = Py_None;
-            }
-        }
-        if (obj != NULL)
-        {
-            LabelObj->data->SetTextFont1(font1);
-            LabelObj->data->SetTextFont2(font2);
-        }
-    }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -871,7 +1114,7 @@ static int
 LabelAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -879,7 +1122,7 @@ PyObject *
 LabelAttributes_str(PyObject *v)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    return PyString_FromString(PyLabelAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLabelAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -892,49 +1135,70 @@ static char *LabelAttributes_Purpose = "This class contains the fields that we n
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject LabelAttributesType =
+
+VISIT_PY_TYPE_OBJ(LabelAttributesType,         \
+                  "LabelAttributes",           \
+                  LabelAttributesObject,       \
+                  LabelAttributes_dealloc,     \
+                  LabelAttributes_print,       \
+                  PyLabelAttributes_getattr,   \
+                  PyLabelAttributes_setattr,   \
+                  LabelAttributes_str,         \
+                  LabelAttributes_Purpose,     \
+                  LabelAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+LabelAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LabelAttributes",                    // tp_name
-    sizeof(LabelAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LabelAttributes_dealloc,  // tp_dealloc
-    (printfunc)LabelAttributes_print,     // tp_print
-    (getattrfunc)PyLabelAttributes_getattr, // tp_getattr
-    (setattrfunc)PyLabelAttributes_setattr, // tp_setattr
-    (cmpfunc)LabelAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LabelAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LabelAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &LabelAttributesType
+         || Py_TYPE(other) != &LabelAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    LabelAttributes *a = ((LabelAttributesObject *)self)->data;
+    LabelAttributes *b = ((LabelAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1010,7 +1274,7 @@ PyLabelAttributes_GetLogString()
 {
     std::string s("LabelAtts = LabelAttributes()\n");
     if(currentAtts != 0)
-        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.");
+        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.", true);
     return s;
 }
 
@@ -1023,7 +1287,7 @@ PyLabelAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LabelAtts = LabelAttributes()\n");
-        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.");
+        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.", true);
         cb(s);
     }
 }

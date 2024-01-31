@@ -79,11 +79,11 @@ sw.fileName = "tmp"
 sw.outputToCurrentDirectory = 1
 SetSaveWindowAttributes(sw)
 
-import string
+import locale
 def GetNum(line):
    a = line.split(' ')
-   pos = string.atof(a[0])
-   max = string.atof(a[1])
+   pos = locale.atof(a[0])
+   max = locale.atof(a[1])
    return [pos, max]
 
 

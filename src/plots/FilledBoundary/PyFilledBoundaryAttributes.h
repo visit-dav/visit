@@ -5,6 +5,7 @@
 #ifndef PY_FILLEDBOUNDARYATTRIBUTES_H
 #define PY_FILLEDBOUNDARYATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FilledBoundaryAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyFilledBoundaryAttributes_Wrap(const FilledBoundaryAttributes *a
 void           PyFilledBoundaryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts);
 std::string    PyFilledBoundaryAttributes_GetLogString();
-std::string    PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *, const char *);
+std::string    PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *, const char *, const bool=false);
 PyObject *     PyFilledBoundaryAttributes_getattr(PyObject *self, char *name);
 int            PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyFilledBoundaryAttributes_methods[FILLEDBOUNDARYATTRIBUTES_NMETH];

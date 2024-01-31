@@ -105,7 +105,13 @@ QvisReflectWindow::~QvisReflectWindow()
 //
 //    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
 //    Added option for user to reflect by an arbitrary plane,
-//    and added tabs to distinguish options. 
+//    and added tabs to distinguish options.
+//
+//    Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//    Replace obsolete QPalette::Background with QPalette::Window.
+//
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -119,7 +125,7 @@ QvisReflectWindow::CreateWindowContents()
     reflectTabs = new QTabWidget();
     axisTab = new QWidget(central);
     planeTab = new QWidget(central);
-    connect(reflectTabs, SIGNAL(currentChanged(int)), 
+    connect(reflectTabs, SIGNAL(currentChanged(int)),
         this, SLOT(reflectTabsChangedIndex(int)));
     reflectTabs->addTab(axisTab, tr("Reflect across axis"));
     reflectTabs->addTab(planeTab, tr("Reflect across plane"));
@@ -131,7 +137,7 @@ QvisReflectWindow::CreateWindowContents()
     // Add the controls to select the input mode.
     QGridLayout *octantLayout = new QGridLayout();
     axisLayout->addLayout(octantLayout);
-    
+
     modeButtons = new QButtonGroup(central);
     octantLayout->addWidget(new QLabel(tr("Input mode"), central),0, 0);
     QRadioButton *rb = new QRadioButton(tr("2D"), central);
@@ -140,8 +146,13 @@ QvisReflectWindow::CreateWindowContents()
     rb = new QRadioButton(tr("3D"), central);
     modeButtons->addButton(rb,1);
     modeButtons->button(0)->setChecked(true);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(modeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(selectMode(int)));
+#else
+    connect(modeButtons, SIGNAL(idClicked(int)),
+            this, SLOT(selectMode(int)));
+#endif
     octantLayout->addWidget(rb, 0, 2);
 
     // Octant
@@ -156,11 +167,11 @@ QvisReflectWindow::CreateWindowContents()
     connect(reflect, SIGNAL(valueChanged(bool*)),
             this, SLOT(selectOctants(bool*)));
     reflectionLabel = new QLabel(tr("Reflection quadrants"), central);
-    // Change the background color to match the tab space. 
+    // Change the background color to match the tab space.
     QPalette pal = QPalette();
-    pal.setColor(QPalette::Background, Qt::white);
+    pal.setColor(QPalette::Window, Qt::white);
     reflect->setAutoFillBackground(true);
-    reflect->setPalette(pal); 
+    reflect->setPalette(pal);
     axisLayout->addWidget(reflectionLabel);
     axisLayout->addWidget(reflect, 100);
 
@@ -204,22 +215,37 @@ QvisReflectWindow::CreateWindowContents()
 
     connect(octant,        SIGNAL(activated(int)),
             this,          SLOT(octantChanged(int)));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(xBound,        SIGNAL(buttonClicked(int)),
             this,          SLOT(xBoundaryChanged(int)));
+#else
+    connect(xBound,        SIGNAL(idClicked(int)),
+            this,          SLOT(xBoundaryChanged(int)));
+#endif
     connect(specifiedX,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedXProcessText()));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(yBound,        SIGNAL(buttonClicked(int)),
             this,          SLOT(yBoundaryChanged(int)));
+#else
+    connect(yBound,        SIGNAL(idClicked(int)),
+            this,          SLOT(yBoundaryChanged(int)));
+#endif
     connect(specifiedY,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedYProcessText()));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(zBound,        SIGNAL(buttonClicked(int)),
             this,          SLOT(zBoundaryChanged(int)));
+#else
+    connect(zBound,        SIGNAL(idClicked(int)),
+            this,          SLOT(zBoundaryChanged(int)));
+#endif
     connect(specifiedZ,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedZProcessText()));
 
     // The layout of the plane reflect.
     QGridLayout *planeLayout = new QGridLayout(planeTab);
-    
+
     // Create the plane point editor.
     QLabel *planePointLabel = new QLabel(tr("Plane Point"), central);
     planeLayout->addWidget(planePointLabel, 0, 0, 1, 1);
@@ -279,7 +305,7 @@ QvisReflectWindow::CreateWindowContents()
 //    all windows.
 //
 //    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
-//    Added updates for the plane point, plane normal, and reflect tabs.  
+//    Added updates for the plane point, plane normal, and reflect tabs.
 //
 // ****************************************************************************
 
@@ -355,7 +381,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             {
                 if (atts->GetReflectType() == ReflectAttributes::Axis)
                 {
-                    reflectTabs->setCurrentIndex(0); 
+                    reflectTabs->setCurrentIndex(0);
                 }
                 else if (atts->GetReflectType() == ReflectAttributes::Plane)
                 {
@@ -405,7 +431,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisReflectWindow::UpdateOctantMenuContents
 //
-// Purpose: 
+// Purpose:
 //   Updates the octant menu's contents so it shows the appropriate choices.
 //
 // Programmer: Brad Whitlock
@@ -468,7 +494,7 @@ QvisReflectWindow::UpdateOctantMenuContents()
 //    Qt4 Port.
 //
 //    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
-//    Added updates for the plane point and plane normal. 
+//    Added updates for the plane point and plane normal.
 //
 // ****************************************************************************
 void
@@ -555,7 +581,7 @@ QvisReflectWindow::GetCurrentValues(int which_field)
 // ****************************************************************************
 // Method: QvisReflectWindow::selectOctants
 //
-// Purpose: 
+// Purpose:
 //   Slot for changing selected octants.
 //
 // Arguments:
@@ -565,7 +591,7 @@ QvisReflectWindow::GetCurrentValues(int which_field)
 // Creation:   Tue Mar 11 11:23:25 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -579,7 +605,7 @@ QvisReflectWindow::selectOctants(bool *octants)
     }
 
     atts->SetReflections(r);
-    Apply();    
+    Apply();
 }
 
 // ****************************************************************************
@@ -697,10 +723,10 @@ QvisReflectWindow::specifiedZProcessText()
 //  Method:  QvisReflectWindow::planePointProcessText
 //
 //  Purpose:
-//      Retrieve the user-input plane point. 
+//      Retrieve the user-input plane point.
 //
 //  Programmer:  Alister Maguire
-//  Creation:    Apr 11, 2018 
+//  Creation:    Apr 11, 2018
 //
 // ****************************************************************************
 void
@@ -713,7 +739,7 @@ QvisReflectWindow::planePointProcessText()
 //  Method:  QvisReflectWindow::planeNormProcessText
 //
 //  Purpose:
-//      Retrieve the user-input plane normal. 
+//      Retrieve the user-input plane normal.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Apr 11, 2018
@@ -728,7 +754,7 @@ QvisReflectWindow::planeNormProcessText()
 // ****************************************************************************
 // Method: QvisReflectWindow::selectMode
 //
-// Purpose: 
+// Purpose:
 //   Selects the input mode.
 //
 // Arguments:
@@ -795,14 +821,14 @@ QvisReflectWindow::selectMode(int mode)
 // ****************************************************************************
 // Method: QvisReflectWindow::reflectTabsChangedIndex
 //
-// Purpose: 
-//     Set the reflect type based on the current tab selected. 
+// Purpose:
+//     Set the reflect type based on the current tab selected.
 //
 // Arguments:
 //     index    The index of the selected tab
 //
 // Programmer:  Alister Maguire
-// Creation:    Apr 11, 2018 
+// Creation:    Apr 11, 2018
 //
 // Modifications:
 //

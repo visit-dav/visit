@@ -122,6 +122,6 @@ FileType MISC_API GetFileType(std::string const &filename, struct dirent const *
          VisItStat_t *statbuf = 0);
 
 bool MISC_API ReadTextFile(const std::string &filename, std::string &fileContents);
-};
+} // end namespace FileFunctions
 
 #endif

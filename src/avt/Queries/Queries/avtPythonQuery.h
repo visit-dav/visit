@@ -40,6 +40,9 @@ class avtPythonFilterEnvironment;
 //   Cyrus Harrison, Fri Mar 30 13:51:24 PDT 2012
 //   Convert python query filter to use new query params infrastructure.
 //
+//   Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//   Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 class QUERY_API avtPythonQuery :  public avtDataObjectQuery,
@@ -51,7 +54,7 @@ class QUERY_API avtPythonQuery :  public avtDataObjectQuery,
     void                        CleanUp();
     virtual void                SetInputParams(const MapNode &);
     void                        SetPythonScript(const std::string &py_script);
-    void                        SetPythonArgs(const std::string &py_args);
+    void                        SetPythonArgs(const std::vector<char> &py_args);
 
     virtual const char         *GetType(void);
     virtual const char         *GetDescription(void);
@@ -84,7 +87,7 @@ class QUERY_API avtPythonQuery :  public avtDataObjectQuery,
 
     avtPythonFilterEnvironment *pyEnv;
     std::string                 pyScript;
-    std::string                 pyArgs;
+    std::vector<char>           pyArgs;
 
     stringVector                varNames;
 

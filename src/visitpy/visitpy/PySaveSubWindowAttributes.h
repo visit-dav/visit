@@ -5,6 +5,7 @@
 #ifndef PY_SAVESUBWINDOWATTRIBUTES_H
 #define PY_SAVESUBWINDOWATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SaveSubWindowAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PySaveSubWindowAttributes_Wrap(const SaveSubWindowAtt
 void VISITPY_API           PySaveSubWindowAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PySaveSubWindowAttributes_SetDefaults(const SaveSubWindowAttributes *atts);
 std::string VISITPY_API    PySaveSubWindowAttributes_GetLogString();
-std::string VISITPY_API    PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *, const char *);
+std::string VISITPY_API    PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PySaveSubWindowAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PySaveSubWindowAttributes_methods[SAVESUBWINDOWATTRIBUTES_NMETH];

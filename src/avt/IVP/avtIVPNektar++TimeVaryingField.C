@@ -118,7 +118,7 @@ avtIVPNektarPPTimeVaryingField::avtIVPNektarPPTimeVaryingField( vtkDataSet* data
       else
       {
         EXCEPTION1( InvalidVariableException,
-                    "Uninitialized option: Nektar++FieldPointers. (Please contact visit-developer mailing list to report)" );
+                    "Uninitialized option: Nektar++FieldPointers. (Please report https://github.com/visit-dav/visit/discussions)" );
       }
     }
 }

@@ -193,12 +193,12 @@ SetAppearance(QApplication *app, AppearanceAttributes *aa)
         bool bright_mode = false;
         if(v >= 255 - 50)
         {
-            base = btn.dark(150);
+            base = btn.darker(150);
             bright_mode = true;
         }
 
-        QPalette pal(fg, btn, btn.light(),
-                     btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
+        QPalette pal(fg, btn, btn.lighter(),
+                     btn.darker(), btn.darker(150), fg, Qt::white, base, bg);
 //        pal.setCurrentColorGroup(QPalette::Normal);
         
         if (bright_mode)
@@ -240,7 +240,7 @@ SetAppearance(QApplication *app, AppearanceAttributes *aa)
         
 //        pal.setCurrentColorGroup(QPalette::Disabled);
         pal.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
-        pal.setColor(QPalette::Disabled, QPalette::Light, btn.light( 125 ));
+        pal.setColor(QPalette::Disabled, QPalette::Light, btn.lighter( 125 ));
         pal.setColor(QPalette::Disabled, QPalette::Text, disabled);
         pal.setColor(QPalette::Disabled, QPalette::Base, Qt::white);
         if (bright_mode)

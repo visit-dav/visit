@@ -5,6 +5,7 @@
 #ifndef PY_MESHATTRIBUTES_H
 #define PY_MESHATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MeshAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyMeshAttributes_Wrap(const MeshAttributes *attr);
 void           PyMeshAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMeshAttributes_SetDefaults(const MeshAttributes *atts);
 std::string    PyMeshAttributes_GetLogString();
-std::string    PyMeshAttributes_ToString(const MeshAttributes *, const char *);
+std::string    PyMeshAttributes_ToString(const MeshAttributes *, const char *, const bool=false);
 PyObject *     PyMeshAttributes_getattr(PyObject *self, char *name);
 int            PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH];

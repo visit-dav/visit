@@ -298,7 +298,7 @@ def copy_results(cur_dir):
     shutil.copy(os.path.join(mode_dir, "css", "styles.css"), css_dir)
     js_dir = os.path.join(out_mode_dir, "js")
     os.mkdir(js_dir)
-    shutil.copy(os.path.join(mode_dir, "js", "jquery-latest.js"), js_dir)
+    shutil.copy(os.path.join(mode_dir, "js", "jquery-3.6.1.min.js"), js_dir)
     shutil.copy(os.path.join(mode_dir, "js", "jquery.tablesorter.js"), js_dir)
     shutil.copy(os.path.join(mode_dir, "js", "purl.js"), js_dir)
     for file in os.listdir(mode_dir):

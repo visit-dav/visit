@@ -1,3 +1,5 @@
+.. _site_reliability_engineering:
+
 Site Reliability Engineering (SRE)
 ==================================
 
@@ -12,7 +14,7 @@ Some of these may relate to the *use* of VisIt_ such as
 and some may relate to an *operational* aspect of either the VisIt_ software
 itself such as
 
-    * A botched *managed* VisIt installation.
+    * A botched *managed* VisIt_ installation.
     * An update to host profiles to address site access changes.
     * A missing database reader plugin.
 
@@ -36,12 +38,12 @@ The continuous investment of effort to craft and carry out
 in response to such inquiries is a *best practice*. It represents a
 `fusion <https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a>`_
 of aspects of Google's
-`Site Reliability Engineering <https://landing.google.com/sre/sre-book/toc/>`_ (SRE)
+`Site Reliability Engineering <https://landing.google.com/sre/sre-book/toc/>`__ (SRE)
 process (sometimes also called
 `Systems Reliability Engineering or Services Reliability Engineering <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_)
-and maybe aspects of either
+and aspects of
 `User Experience Regression Testing <https://www.uxmatters.com/mt/archives/2019/04/reining-in-ux-regression.php>`_
-or
+and/or
 `User Experience Driven Development (UXDD) <https://docs.microsoft.com/en-us/archive/msdn-magazine/2016/february/cutting-edge-architecture-spinoffs-of-uxdd>`_.
 
 For mature DOE software projects with wide reach and many users, SRE activity
@@ -49,8 +51,10 @@ represents a brand of effort wholly different from conventional software product
 development, planning and execution. Like most DOE software projects, VisIt_ has
 no dedicated SRE resources. Instead, developers themselves must also support SRE
 work. Nonetheless,
-`managing SRE work effectively and efficiently is an essential part of maintaining the overall productivity and sustainability of the software <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
-as well as the productivity of both users and developers of the software alike.
+`managing SRE work effectively <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
+and efficiently is an essential part of maintaining the overall productivity and
+sustainability of the software as well as the productivity of both users and developers
+of the software alike.
 
 Goals
 -----
@@ -79,6 +83,9 @@ the tools and resources to build from sources. Operational issues impacting
 VisIt_ but outside of this scope are typically delegated to other teams who
 are responsible for the associated processes and resources.
 
+Business Hours
+~~~~~~~~~~~~~~
+
 In the IT world where companies like Google, Apple and Amazon have whole teams
 dedicated to SRE activity, coverage is 24/7 and response time is measured in
 *minutes*. For the VisIt_ project where the majority of funded development takes
@@ -88,6 +95,15 @@ through Friday excluding
 `LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_
 and response time may be as much as four hours due to team members having to
 multi-task among many responsibilities.
+
+Developer Away Notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As an aside but nonetheless related to the SRE response time goal of four hours,
+developers agree to notify the team if, during normal business hours, they will
+unexpectedly be away from their desk for periods longer than four hours. This is
+true whether working on or off site. Being away for periods shorter than four
+hours does not require such notification.
 
 The Basic Process
 -----------------
@@ -104,11 +120,11 @@ within the response time goal, to each inquiry. Ideally, all SRE
 activity during the week is handled and :ref:`resolved <sre_response_vs_resolution>`
 solely by the **Primary**. However, :ref:`escalations <sre_escalation>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any :ref:`active SRE issues <sre_active_issues>` that remain
+developers. In addition, any :ref:`active SRE dicussions <sre_active_discussions>` that remain
 unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
-:ref:`Active SRE issues <sre_active_issues>` will be logged and tracked in a separate GitHub,
+:ref:`Active SRE discussions <sre_active_discussions>` will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepare a brief
@@ -116,7 +132,7 @@ resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepa
 in practices to avoid repeating such major incidents.
 
 Because SRE work tends to be :ref:`interrupt driven <sre_misconceptions>`, there is always
-the chance that the **Primary** will have no :ref:`active <sre_active_issues>` issues.
+the chance that the **Primary** will have no :ref:`active <sre_active_discussions>` discussions.
 At these *idle* times, the **Primary** shall use their time to address general
 :ref:`housekeeping <sre_sre_vs_product_development>` or other *low-hanging fruit* type work. In
 particular, there shall be no expectation that a developer serving as **Primary**
@@ -146,7 +162,7 @@ preceding weekend/holiday. The **Primary**'s goal is to :ref:`resolve <sre_respo
 all inquiries by the end of their week.
 
 The **Primary** has the sole responsibility for responding to inquiries
-and opening and resolving :ref:`SRE issue tickets <sre_active_issues>`.
+and opening and resolving :ref:`SRE issue tickets <sre_active_discussions>`.
 When the **Primary** needs help to
 :ref:`resolve an SRE issue <sre_response_vs_resolution>`, s/he should
 first enlist the **Backup**. This is an :ref:`escalation <sre_escalation>`.
@@ -177,7 +193,7 @@ SRE vs. Product Development
 
 Part of the reason for formalizing this process is the recognition of a
 different category of work,
-`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_ (SRE),
+`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`__ (SRE),
 that is
 `essential part of maintaining the overall quality <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
 of a software product as well as the productivity of both developers and users
@@ -196,7 +212,7 @@ Constructive Correction  Comprehensive Solution
 =======================  ======================
 Short term               Longer term
 Faster response          Slower response
-Low cost                 Higher cost
+Low cost/benefit         Higher cost/benefit
 Low risk                 Higher risk
 Unplanned                Planned
 Mitigation               Resolution
@@ -204,10 +220,11 @@ Mitigation               Resolution
 
 A constructive correction has value only when it represents a step towards the
 comprehensive solution, can sufficiently reduce the impact of the issue and can
-be rolled out to users significantly sooner than the comprehensive solution.
-Ordinarily, the constructive work is something the **Primary** handles as
-part of their SRE responsibilities. The comprehensive work is handled as part of
-normal product development.
+be rolled out to users significantly sooner and with lower cost than the
+comprehensive solution. Ordinarily, a constructive correction is something the
+**Primary** handles as part of their SRE activity. The comprehensive solution,
+which often involves more planning and resource allocation, is handled as part
+of normal product development activities.
 
 Constructive corrections can wind up falling through the cracks of traditional
 software project management and planning processes. However, such work also often
@@ -216,14 +233,14 @@ itself or the development or deployment processes supporting it. We refer to iss
 of this nature as general *low-hanging fruit* type issues.
 
 Apart from acknowledging their existence, a key part of this process is the
-allocation of resources for the sole purpose of supporting SRE activities
-and developing a practice of continuously crafting constructive corrective
-actions arising from SRE inquiries.
+allocation of a small fraction of our resources for the sole purpose of supporting
+SRE activities and developing a practice of continuously crafting constructive
+corrective actions arising from SRE inquiries.
 
 Consequently, another key role of the **Primary** is to use any time not working
 active SRE issues to fix other *low-hanging fruit* issues from the
 *product development* backlog. As a rule of thumb, low-hanging
-fruit is considered to be anything that the **Primary** believes is fixable
+fruit is considered to be anything that the team believes is fixable
 within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
@@ -238,41 +255,102 @@ and/or new issue(s) being added to the
 Any new *product development* issues should be linked back to the original
 SRE issue that spawned them.
 
-.. _sre_active_issues:
+.. _sre_active_discussions:
 
-Active SRE Issues Repo
+Active SRE Discussions
 ----------------------
 
-:ref:`Active SRE issues <sre_active_issues>` will be logged and tracked in a separate GitHub,
-`issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
+:ref:`Active SRE issues <sre_active_discussions>` will be logged and tracked as discussions
+in our `GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
-For each new inquiry, the primary will file an issue ticket and assign themselves.
-When the inquiry is :ref:`resolved <sre_response_vs_resolution>`, the associated
-issue is closed. The primary will endeavor to capture all relevant information and
-communications in this issue. The use of GitHub issues for this purpose has a number
-of advantages over other options such as email including better search/browse as well
-as support for attachments. For this reason, a number of steps were taken to integrate
-the ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
+For each new inquiry, a discussion will be created either by the primary or by the
+customer who started the discussion.
 
-Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
-call, or walk-in (with the exception of walk-ins involving classified information),
-the procedure is for the **Primary** to cut-n-paste the initial email to a new
-GitHub `SRE issue <https://github.com/visit-dav/live-customer-response/issues>`_
-and from then on handle all communication through the *conversation* associated with
-that issue. Each comment there
-will generate an email to ``visit-users``. In addition, any reply to any
-GitHub generated emails will result in a new comment added to the GitHub issues
-as though it came from GitHub user account ``markcmiller86-visit``. However,
-any replies to the *initial* email (which is not generated by GitHub) will not
-route to the GitHub issue conversation. The more quickly the **Primary** creates
-the associated GitHub issue in response to the *initial* email, the less likely
-this can occur. In addition, boilerplate guidance in an issue template will help
-to mitigate this by informing ``visit-users`` members of this behavior.
+The primary will endeavor to capture all relevant information and
+communications in this issue. The use of GitHub Discussions for this purpose has a number
+of advantages over other options such as email including better search/browse as well
+as support for attachments.
+For the remainder of this document we simply use the term *conversation* to refer to the
+communication involved in an active SRE issue.
+
+Upon receiving a *new* inquiry, if the inquiry did not start as a discussion (e.g. maybe
+it was a telephone hotline call, or a walk-in, the procedure is for the **Primary** to include
+the initial information (with the exception of inquries involving classified information) in a
+new GitHub `discussion <https://github.com/visit-dav/visit/discussions>`_,
+attach the SRE label and from then on handle all communication through the *conversation* associated with
+that discussion.
 
 For any work the **Primary** performs, even if it is a rather trivial amount
-of work to resolve, there should be an associated issue for tracking that work.
-Tracking even the trivial issues can help identify patterns that we may be able
-to later mine to identify process improvements.
+of work to resolve, there should be an associated discussion for tracking that work.
+Tracking even the trivial tasks will help to build a database of activity we
+may be able to later mine to identify patterns and further process improvements.
+
+An SRE discussion is *answered* when the associated inquiry is
+:ref:`resolved <sre_response_vs_resolution>`. Or, it is *answered* and labeled
+``wontfix`` if 21 days pass since the user last engaged in any conversation with
+VisIt_ developers to reach a resolution. Because of the manner in which the
+interface to GitHub discussions behaves, the natural chain of communication may
+not always lend itself well to using GitHub's *check this reply as the answer*
+feature to indicate an SRE discussion is resolved. In such circumstances, the
+adopted approach is to add a *new*, top-level comment with a link to whichever
+previous, embedded comment best answers the issue and then tag that new, top-level
+comment as the discussion's answer.
+
+.. _supported_methods_of_contact:
+
+Supported Methods of Contact
+----------------------------
+
+An SRE inquiry with the VisIt team begins with a *first contact* and may optionally
+be followed by *ongoing* conversation. These two kinds of communication have different
+requirements and can involve different processes. This is due to the fact that we need
+to balance two priorities; *accessibility* for users and *productivity* for developers.
+
+To maximize accessibility for users, we should support a wide variety of methods of
+first contact. However, to maximize productivity for developers, we should restrict
+methods of ongoing conversations.
+
+A key benefit of having the VisIt_ team *co-located* with our user community is
+that users can spontaneously make a first contact with any one of us by an office
+drop-in or a tackle in the hallway or parking lot. This can even occur on social
+media platforms such as Confluence, Jabber, MS Teams, etc. where users can wind
+up engaging specific VisIt_ developers that happen, by nothing more than
+coincidence, to also be using those platforms.
+
+A challenge with these spontaneous methods of first contact is that they
+inadvertently single out a specific developer who is then expected to at least
+*respond* and possibly even to also *resolve* the issue. But, these actions
+and the effort they involve are the responsibility of the primary SRE.
+Consequently, spontaneous methods of first contact can wind up jeopardizing the
+goals of our SRE process by making it difficult to track, allocate and manage
+SRE effort.
+
+Therefore, the methods of first contact we officially support are those which
+engage the *whole team* instead of singling out a specific member. This
+includes...
+
+  * Creation of a `GitHub discussion <https://github.com/visit-dav/visit/discussions>`_.
+  * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
+  * Telephone call to the `VisIt hotline <tel:42847>`_.
+
+Whenever users attempt a first contact through something other than the supported
+methods listed immediately above, the receiving developer should make an effort
+to :ref:`handoff <sre_handoffs>` the inquiry to the primary SRE as quickly and
+politely as practical.
+
+What does it mean for a method of first contact to be *supported*? It means
+there is an assurance that the particular platform is being monitored by VisIt_
+team members during normal business hours such that the response time goal can
+be maintained. In addition, supported methods are encouraged and promoted in
+any documentation where VisIt_ support processes are discussed.
+
+Balancing the priorites of user accessibility with developer productivity
+involves a compromise on the number of platforms we make an assurance to monitor. 
+Currently, this is limited to those listed above. However, the selected methods
+should be periodically reevaluated. If there is some platform which seems to
+be gaining popularity among users, it could either be added to the list of
+supported platforms or perhaps it could be integrated with email in the same way
+GitHub issue conversations have been.
 
 .. _sre_response_vs_resolution:
 
@@ -324,7 +402,7 @@ following activities...
   * Determining if the user's issue is known (e.g. an issue ticket already exists).
   * Updating a known issue with new information from this user, perhaps
     adjusting labels on the issue or putting the issue back into the
-    UN-reviewed state for further discussion at a VisIt_ project meeting.
+    un-reviewed state for further discussion at a VisIt_ project meeting.
   * Identifying and filing a new *product development* type issue ticket.
 
 To emphasize the last bullet, *resolution* does not always mean a customer's

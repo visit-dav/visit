@@ -22,7 +22,7 @@
 
 #include <vectortypes.h>
 
-struct    avtDatasetCollection;
+class    avtDatasetCollection;
 class     avtMatSpeciesMetaData;
 class     avtDomainBoundaries;
 class     avtStreamingGhostGenerator;
@@ -56,28 +56,28 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Mon Mar 12 15:32:50 PST 2001
 //    Added logic to create a SIL from an ordinary table of contents.
 //
-//    Kathleen Bonnell, Tue Mar 27 08:59:23 PST 2001 
-//    Added logic to create a Mesh dataset. 
+//    Kathleen Bonnell, Tue Mar 27 08:59:23 PST 2001
+//    Added logic to create a Mesh dataset.
 //
-//    Kathleen Bonnell, Mon Apr  9 14:47:12 PDT 2001 
-//    changed return type of GetOutput to avtDataTree_p. 
+//    Kathleen Bonnell, Mon Apr  9 14:47:12 PDT 2001
+//    changed return type of GetOutput to avtDataTree_p.
 //
-//    Kathleen Bonnell, Fri Jun 15 11:34:26 PDT 2001 
+//    Kathleen Bonnell, Fri Jun 15 11:34:26 PDT 2001
 //    Added method AddOriginalCellsArray.
 //
 //    Hank Childs, Fri Aug 17 16:35:12 PDT 2001
 //    Inherited from avtDatasetDatabase.
 //
-//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001 
-//    Make GetMaterialList return the material names in an argument.  
+//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
+//    Make GetMaterialList return the material names in an argument.
 //
-//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001 
-//    Added another vector<string> argument to MaterialSelect method. 
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Added another vector<string> argument to MaterialSelect method.
 //
 //    Hank Childs, Tue Oct 23 09:16:53 PDT 2001
 //    Added support for reading multiple variables.
 //
-//    Kathleen Bonnell, Mon Nov 12 11:33:55 PST 2001 
+//    Kathleen Bonnell, Mon Nov 12 11:33:55 PST 2001
 //    Added Query and CreateOriginalZones.
 //
 //    Jeremy Meredith, Mon Dec 17 14:37:04 PST 2001
@@ -89,29 +89,29 @@ class     vtkUnstructuredGrid;
 //    Jeremy Meredith, Thu Mar 14 17:44:19 PST 2002
 //    Added support for internal surfaces during material selection.
 //
-//    Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002 
+//    Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002
 //    Added argument to AddOriginalCellsArray.
 //
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002  
-//    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
+//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
+//    vtkScalars and vtkVectors have been deprecated in VTK 4.0,
 //    use vtkDataArray instead.
 //
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002  
-//    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
+//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
+//    vtkScalars and vtkVectors have been deprecated in VTK 4.0,
 //    use vtkDataArray instead.
 //
-//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002 
-//    Change AddOriginalCellsArray parameter from 'int &' to 'const int'. 
+//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002
+//    Change AddOriginalCellsArray parameter from 'int &' to 'const int'.
 //
 //    Sean Ahern, Tue May 21 11:58:02 PDT 2002
 //    Added a virtual method for freeing up resources.
-//    
+//
 //    Hank Childs, Mon Jun 24 17:35:37 PDT 2002
 //    Added support for groups.
 //
 //    Kathleen Bonnell, Fri Jun 28 09:32:26 PDT 2002
-//    Added methods QueryScalars, QueryVectors, QueryMaterial. 
-//    
+//    Added methods QueryScalars, QueryVectors, QueryMaterial.
+//
 //    Hank Childs, Thu Jul  4 13:21:20 PDT 2002
 //    Add better support for mixed variables, as well as secondary variables
 //    when reconstructing material interfaces.  Also pushed the struct
@@ -120,25 +120,25 @@ class     vtkUnstructuredGrid;
 //    Jeremy Meredith, Tue Aug 13 14:48:27 PDT 2002
 //    Added extra information to the material selection routines.
 //
-//    Kathleen Bonnell, Thu Aug 15 17:48:38 PDT 2002 
+//    Kathleen Bonnell, Thu Aug 15 17:48:38 PDT 2002
 //    Added an argument to AddGroups, so that collections beneath the
-//    group will have the correct titles. 
+//    group will have the correct titles.
 //
 //    Jeremy Meredith, Thu Oct 24 15:37:56 PDT 2002
 //    Added smoothing option and clean zones only option for MIR.
 //
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Moved Query method to parent class.  Made QueryScalars/Vectors/Material
-//    virtual methods. 
+//    virtual methods.
 //
-//    Kathleen Bonnell, Fri Dec  6 16:25:20 PST 2002 
-//    Added QueryNodes. 
-//    
-//    Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002 
-//    Added arguments to QueryNodes. 
-//    
-//    Kathleen Bonnell, Fri Apr 18 14:11:24 PDT 2003   
-//    Added QueryMesh. 
+//    Kathleen Bonnell, Fri Dec  6 16:25:20 PST 2002
+//    Added QueryNodes.
+//
+//    Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002
+//    Added arguments to QueryNodes.
+//
+//    Kathleen Bonnell, Fri Apr 18 14:11:24 PDT 2003
+//    Added QueryMesh.
 //
 //    Brad Whitlock, Wed May 14 09:16:44 PDT 2003
 //    I added an optional int argument to SetDatabaseMetaData.
@@ -149,13 +149,13 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
 //    Added CreateOriginalNodes.
 //
-//    Kathleen Bonnell, Fri Jun 20 13:52:00 PDT 2003  
+//    Kathleen Bonnell, Fri Jun 20 13:52:00 PDT 2003
 //    Added QueryZones, added parameter to other Query methods.
 //
 //    Hank Childs, Tue Jul 29 15:59:56 PDT 2003
 //    Added AssociateBounds and ScaleMesh.
 //
-//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003
 //    Changed PickVarInfo argument in QueryMesh to std::string.
 //
 //    Jeremy Meredith, Mon Sep 15 09:43:26 PDT 2003
@@ -170,18 +170,18 @@ class     vtkUnstructuredGrid;
 //    Add bool and string vector args to QueryNodes, QueryZones, in support
 //    of logical zone coords.
 //
-//    Kathleen Bonnell, Thu Nov 20 15:10:23 PST 2003 
-//    Added QuerySpecies. 
-//    
-//    Kathleen Bonnell, Thu Nov 20 17:47:57 PST 2003 
-//    Add 'FindElementForPoint'. 
+//    Kathleen Bonnell, Thu Nov 20 15:10:23 PST 2003
+//    Added QuerySpecies.
 //
-//    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003 
+//    Kathleen Bonnell, Thu Nov 20 17:47:57 PST 2003
+//    Add 'FindElementForPoint'.
+//
+//    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003
 //    Updated arguments lists for QueryNodes and QueryZones so that multiple
-//    types of coordinates could be retrieved. 
+//    types of coordinates could be retrieved.
 //
-//    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003 
-//    Add 'GetDomainName'. 
+//    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003
+//    Add 'GetDomainName'.
 //
 //    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
 //    Added timestep argument to PopulateIOInformation
@@ -189,13 +189,13 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Fri Apr  9 09:02:57 PDT 2004
 //    Calculate material indices directly from the material for that timestep.
 //
-//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
-//    Add QueryZoneCenter. 
+//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004
+//    Add QueryZoneCenter.
 //
-//    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
-//    Add bool arg to QueryMesh. 
+//    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004
+//    Add bool arg to QueryMesh.
 //
-//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004 
+//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004
 //    Rename QueryZoneCenter to QueryCoords, added bool arg.
 //
 //    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
@@ -207,26 +207,26 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
 //    Add more methods for global node and zone ids.
 //
-//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
-//    Added args to QueryZones and QueryNodes, to support ghost-element 
-//    indication. 
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004
+//    Added args to QueryZones and QueryNodes, to support ghost-element
+//    indication.
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added vector of bools for data selections to ReadDataset
 //
-//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
 //    Changed 'std::vector<std::string>' to 'stringVector', 'std::vector<int>'
 //    to intVector, 'std::vector<bool>' to 'boolVector'.  Added method
-//    'QueryGlobalIds'. 
+//    'QueryGlobalIds'.
 //
-//    Kathleen Bonnell, Wed Dec 15 17:32:29 PST 2004 
+//    Kathleen Bonnell, Wed Dec 15 17:32:29 PST 2004
 //    Added 'LocalIdForGlobal'.
 //
 //    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
-//    Added another bool arg to QueryCoords. 
+//    Added another bool arg to QueryCoords.
 //
-//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
-//    Added const char* arg to QueryCoords. 
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005
+//    Added const char* arg to QueryCoords.
 //
 //    Hank Childs, Sun Feb 27 11:20:39 PST 2005
 //    Added argument to CanDoDynamicLoadBalancing.
@@ -261,7 +261,7 @@ class     vtkUnstructuredGrid;
 //    Added a new isovolume MIR algorithm, and a VF cutoff for it.
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Replaced type conversion args on many Get functions to data spec 
+//    Replaced type conversion args on many Get functions to data spec
 //
 //    Jeremy Meredith, Mon Aug 28 16:39:17 EDT 2006
 //    Added support for enumerated scalars.
@@ -273,7 +273,7 @@ class     vtkUnstructuredGrid;
 //    Added issuedOriginalConnectivityWarning to support once per session
 //    matvf/specmf warning about ghost zones.
 //
-//    Kathleen Bonnell, Thu Jun 21 17:00:26 PDT 2007 
+//    Kathleen Bonnell, Thu Jun 21 17:00:26 PDT 2007
 //    Added method CreateAMRIndices.
 //
 //    Hank Childs, Thu Jul 26 16:32:50 PDT 2007
@@ -321,12 +321,15 @@ class     vtkUnstructuredGrid;
 //    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
 //    Added methods supporting local domain boundary info.
 //
-//    Alister Maguire, 
-//    Added another bool variable to MaterialSelect 
-//    for forceConstructMaterialLabels. 
+//    Alister Maguire,
+//    Added another bool variable to MaterialSelect
+//    for forceConstructMaterialLabels.
 //
 //    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
-//    Added a number of QOT specific methods. 
+//    Added a number of QOT specific methods.
+//
+//    Alister Maguire, Fri Nov  6 08:39:59 PST 2020
+//    Updated AddSecondaryQOTVariables to accept a vector of strings.
 //
 // ****************************************************************************
 
@@ -359,7 +362,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual void               ActivateTimestep(int stateIndex);
 
-    virtual bool               FindElementForPoint(const char *, const int, 
+    virtual bool               FindElementForPoint(const char *, const int,
                                     const int, const char *, double[3], int &);
     virtual void               GetDomainName(const std::string &, const int ts,
                                     const int dom, std::string &);
@@ -393,13 +396,13 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     vtkDataSet                *GetDataset(const char *, int, int, const char *,
                                           const std::vector<CharStrRef> &,
-                                          avtDataRequest_p, 
+                                          avtDataRequest_p,
                                           avtSourceFromDatabase *);
     vtkDataSet                *GetScalarVarDataset(const char *, int, int,
                                                    const char *,
                                                    const avtDataRequest_p);
     vtkDataSet                *GetMeshDataset(const char *, int, int,
-                                              const char *, const avtDataRequest_p); 
+                                              const char *, const avtDataRequest_p);
     vtkDataSet                *GetVectorVarDataset(const char *, int, int,
                                                    const char *,
                                                    const avtDataRequest_p);
@@ -450,104 +453,104 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                        avtDataRequest_p);
 
     //
-    // Query over time specific dataset methods. 
+    // Query over time specific dataset methods.
     //
     vtkDataSet                *GetQOTDataset(int,
                                              const char *,
                                              const std::vector<CharStrRef> &,
-                                             avtDataRequest_p, 
+                                             avtDataRequest_p,
                                              avtSourceFromDatabase *);
-    vtkDataSet                *GetQOTScalarVarDataset(const char *, 
+    vtkDataSet                *GetQOTScalarVarDataset(const char *,
                                                       int,
                                                       int,
                                                       avtDataRequest_p);
-    vtkDataSet                *GetQOTVectorVarDataset(const char *, 
+    vtkDataSet                *GetQOTVectorVarDataset(const char *,
                                                       int,
                                                       int,
                                                       avtDataRequest_p);
-    vtkDataSet                *GetQOTTensorVarDataset(const char *, 
+    vtkDataSet                *GetQOTTensorVarDataset(const char *,
                                                       int,
                                                       int,
                                                       avtDataRequest_p);
-    vtkDataSet                *GetQOTSymmetricTensorVarDataset(const char *, 
+    vtkDataSet                *GetQOTSymmetricTensorVarDataset(const char *,
                                                                int,
                                                                int,
                                                                avtDataRequest_p);
-    vtkDataSet                *GetQOTArrayVarDataset(const char *, 
+    vtkDataSet                *GetQOTArrayVarDataset(const char *,
                                                      int,
                                                      int,
                                                      avtDataRequest_p);
-    vtkDataArray              *GetQOTScalarVariable(const char *, 
-                                                    int, 
+    vtkDataArray              *GetQOTScalarVariable(const char *,
+                                                    int,
                                                     int,
                                                     int *,
                                                     int,
                                                     const avtDataRequest_p);
-    vtkDataArray              *GetQOTVectorVariable(const char *, 
-                                                    int, 
+    vtkDataArray              *GetQOTVectorVariable(const char *,
+                                                    int,
                                                     int,
                                                     int *,
                                                     int,
                                                     const avtDataRequest_p);
-    vtkDataArray              *GetQOTTensorVariable(const char *, 
-                                                    int, 
+    vtkDataArray              *GetQOTTensorVariable(const char *,
+                                                    int,
                                                     int,
                                                     int *,
                                                     int,
                                                     const avtDataRequest_p);
-    vtkDataArray              *GetQOTSymmetricTensorVariable(const char *, 
-                                                             int, 
+    vtkDataArray              *GetQOTSymmetricTensorVariable(const char *,
+                                                             int,
                                                              int,
                                                              int *,
                                                              int,
                                                              const avtDataRequest_p);
-    vtkDataArray              *GetQOTArrayVariable(const char *, 
-                                                   int, 
+    vtkDataArray              *GetQOTArrayVariable(const char *,
+                                                   int,
                                                    int,
                                                    int *,
                                                    int,
                                                    const avtDataRequest_p);
     void                       AddSecondaryQOTVariables(vtkDataSet *, int,
-                                                const std::vector<CharStrRef> &,
+                                                const std::vector<std::string> &,
                                                 const avtDataRequest_p);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);
 
     bool                       PrepareMaterialSelect(int, bool,
-                                                  avtSILRestrictionTraverser &, 
+                                                  avtSILRestrictionTraverser &,
                                                   stringVector &);
-    avtDataTree_p              MaterialSelect(vtkDataSet *, avtMaterial *, 
+    avtDataTree_p              MaterialSelect(vtkDataSet *, avtMaterial *,
                                               std::vector<avtMixedVariable *>,
                                               int, const char *, int,
-                                              stringVector &, 
-                                              stringVector &, 
+                                              stringVector &,
+                                              stringVector &,
                                               bool, bool, bool, bool, bool,
                                               bool, bool, bool, int, int,
-                                              int, float, float, int, bool, 
+                                              int, float, float, int, bool,
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
                                       bool, int, int, int, float,
-                                      float, int, bool, bool&, bool&,bool, 
+                                      float, int, bool, bool&, bool&,bool,
                                       avtMaterial *&);
     avtMaterial               *GetMaterial(int, const char *, int, const avtDataRequest_p = 0);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,
-                                                  stringVector &, 
+                                                  stringVector &,
                                                   intVector &);
 
-    void                       ReadDataset(avtDatasetCollection &, 
+    void                       ReadDataset(avtDatasetCollection &,
                                   intVector &, avtDataRequest_p &,
                                   avtSourceFromDatabase *,
                                   boolVector &);
 
-    void                       ReadQOTDataset(avtDatasetCollection &, 
+    void                       ReadQOTDataset(avtDatasetCollection &,
                                   intVector &, avtDataRequest_p &,
                                   avtSourceFromDatabase *);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
-                                      avtDatasetCollection &, intVector &, 
+                                      avtDatasetCollection &, intVector &,
                                       avtDataRequest_p,
                                       bool confirmInputMeshHasRightSize = true);
     avtDomainBoundaries       *GetLocalDomainBoundaryInformation(avtDatasetCollection &,
@@ -561,38 +564,38 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     avtSourceFromDatabase *, intVector &,bool);
     bool                       CommunicateGhostZonesFromDomainBoundaries(
                                     avtDomainBoundaries *,
-                                    avtDatasetCollection &, intVector &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostZonesFromDomainBoundariesFromFile(
-                                    avtDatasetCollection &, intVector &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostNodesFromDomainBoundariesFromFile(
-                                    avtDatasetCollection &, intVector &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *, intVector &);
     bool                       CommunicateGhostZonesFromGlobalNodeIds(
-                                    avtDatasetCollection &, intVector &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostNodesFromGlobalNodeIds(
-                                    avtDatasetCollection &, intVector &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostZonesWhileStreaming(
-                                    avtDatasetCollection &, intVector &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
 
     bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
-                                  intVector &, intVector &, 
+                                  intVector &, intVector &,
                                   avtDataRequest_p &, bool);
     void                       MaterialSelect(avtDatasetCollection &,
                                  intVector &, avtDataRequest_p &,
                                  avtSourceFromDatabase *, bool);
     void                       SpeciesSelect(avtDatasetCollection &,
-                                 intVector &, boolVector &, 
+                                 intVector &, boolVector &,
                                  avtDataRequest_p &,
                                  avtSourceFromDatabase *);
     void                       EnumScalarSelect(avtDatasetCollection &,
@@ -600,17 +603,17 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 const avtDatabaseMetaData*,
                                                 const std::string &);
     void                       CreateOriginalZones(avtDatasetCollection &,
-                                                   intVector &, 
+                                                   intVector &,
                                                    avtSourceFromDatabase *);
     void                       CreateOriginalNodes(avtDatasetCollection &,
-                                                   intVector &, 
+                                                   intVector &,
                                                    avtSourceFromDatabase *);
     void                       CreateGlobalZones(avtDatasetCollection &,
-                                                   intVector &, 
+                                                   intVector &,
                                                    avtSourceFromDatabase *,
                                                    avtDataRequest_p &);
     void                       CreateGlobalNodes(avtDatasetCollection &,
-                                                   intVector &, 
+                                                   intVector &,
                                                    avtSourceFromDatabase *,
                                                    avtDataRequest_p &);
     void                       CreateStructuredIndices(avtDatasetCollection &,
@@ -628,71 +631,71 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               avtGhostDataType);
     void                       CreateAMRIndices(avtDatasetCollection &,
                                                 intVector &,
-                                                avtDataRequest_p &, 
+                                                avtDataRequest_p &,
                                                 avtSourceFromDatabase*,
                                                 int level);
     void                       UpdateInternalState(int);
 
-    virtual bool               QueryScalars(const std::string &, const int, 
+    virtual bool               QueryScalars(const std::string &, const int,
                                             const int , const int ,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QueryVectors(const std::string &, const int, 
+    virtual bool               QueryVectors(const std::string &, const int,
                                             const int, const int,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QueryTensors(const std::string &, const int, 
+    virtual bool               QueryTensors(const std::string &, const int,
                                             const int, const int,
                                             const intVector &,
                                             PickVarInfo &, const bool);
     virtual bool               QuerySymmetricTensors(const std::string &,
                                             const int, const int, const int,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QueryLabels(const std::string &, const int, 
+    virtual bool               QueryLabels(const std::string &, const int,
                                             const int , const int ,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QueryArrays(const std::string &, const int, 
+    virtual bool               QueryArrays(const std::string &, const int,
                                             const int , const int ,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QueryMaterial(const std::string &, const int, 
+    virtual bool               QueryMaterial(const std::string &, const int,
                                             const int , const int,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QuerySpecies(const std::string &, const int, 
+    virtual bool               QuerySpecies(const std::string &, const int,
                                             const int , const int ,
-                                            const intVector &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
-    virtual bool               QueryNodes(const std::string &, const int, 
-                                          const std::string &, const int, 
-                                          bool &, const int, 
-                                          intVector &, intVector &, 
-                                          const bool, double [3], 
+    virtual bool               QueryNodes(const std::string &, const int,
+                                          const std::string &, const int,
+                                          bool &, const int,
+                                          intVector &, intVector &,
+                                          const bool, double [3],
                                           const int, const bool, const bool,
                                           const bool, stringVector &,
                                           stringVector &, stringVector &,
                                           const bool, const bool,
                                           stringVector &, stringVector &);
 
-    virtual bool               QueryMesh(const std::string &, const int, const int, 
+    virtual bool               QueryMesh(const std::string &, const int, const int,
                                          std::string &, const bool);
 
-    virtual bool               QueryZones(const std::string&, const int, 
+    virtual bool               QueryZones(const std::string&, const int,
                                           const std::string &, int &,
-                                          bool &, const int, intVector &, 
+                                          bool &, const int, intVector &,
                                           intVector &, const bool,
-                                          double [3], const int, const bool, 
-                                          const bool, const bool, 
+                                          double [3], const int, const bool,
+                                          const bool, const bool,
                                           stringVector &, stringVector &,
-                                          stringVector &, const bool, const bool, 
-                                          stringVector &, stringVector &); 
+                                          stringVector &, const bool, const bool,
+                                          stringVector &, stringVector &);
     virtual bool               QueryCoords(const std::string &, const int,
                                            const int, const int, double[3],
                                            const bool, const bool, const char *mn = NULL);
     virtual void               QueryGlobalIds(const int, const std::string &,
-                                        const int, const bool, const int, 
+                                        const int, const bool, const int,
                                         const intVector &, int &, intVector &);
 
     virtual int                LocalIdForGlobal(const int, const std::string &,

@@ -8,7 +8,6 @@
 #include <vtkImageReader2Factory.h>
 #include <vtkRenderer.h>
 #include <vtkTexture.h>
-#include <vtkToolkits.h>
 
 #include "vtkOpenGLTexturedBackgroundMapper.h"
 

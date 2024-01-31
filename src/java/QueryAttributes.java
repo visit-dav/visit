@@ -6,6 +6,7 @@ package llnl.visit;
 
 import java.lang.Double;
 import java.util.Vector;
+import java.lang.Float;
 import java.lang.Integer;
 
 // ****************************************************************************
@@ -25,7 +26,7 @@ import java.lang.Integer;
 
 public class QueryAttributes extends AttributeSubject
 {
-    private static int QueryAttributes_numAdditionalAtts = 13;
+    private static int QueryAttributes_numAdditionalAtts = 14;
 
     // Enum values
     public final static int VARTYPE_MESH = 0;
@@ -48,6 +49,8 @@ public class QueryAttributes extends AttributeSubject
         resultsMessage = new String("");
         resultsValue = new Vector();
         resultsValue.addElement(new Double(0));
+        floatResultsValue = new Vector();
+        floatResultsValue.addElement(new Float(0));
         timeStep = 0;
         varTypes = new Vector();
         pipeIndex = -1;
@@ -68,6 +71,8 @@ public class QueryAttributes extends AttributeSubject
         resultsMessage = new String("");
         resultsValue = new Vector();
         resultsValue.addElement(new Double(0));
+        floatResultsValue = new Vector();
+        floatResultsValue.addElement(new Float(0));
         timeStep = 0;
         varTypes = new Vector();
         pipeIndex = -1;
@@ -93,6 +98,13 @@ public class QueryAttributes extends AttributeSubject
         {
             Double dv = (Double)obj.resultsValue.elementAt(i);
             resultsValue.addElement(new Double(dv.doubleValue()));
+        }
+
+        floatResultsValue = new Vector(obj.floatResultsValue.size());
+        for(i = 0; i < obj.floatResultsValue.size(); ++i)
+        {
+            Float dv = (Float)obj.floatResultsValue.elementAt(i);
+            floatResultsValue.addElement(new Float(dv.floatValue()));
         }
 
         timeStep = obj.timeStep;
@@ -141,6 +153,15 @@ public class QueryAttributes extends AttributeSubject
             Double resultsValue2 = (Double)obj.resultsValue.elementAt(i);
             resultsValue_equal = resultsValue1.equals(resultsValue2);
         }
+        // Compare the elements in the floatResultsValue vector.
+        boolean floatResultsValue_equal = (obj.floatResultsValue.size() == floatResultsValue.size());
+        for(i = 0; (i < floatResultsValue.size()) && floatResultsValue_equal; ++i)
+        {
+            // Make references to Float from Object.
+            Float floatResultsValue1 = (Float)floatResultsValue.elementAt(i);
+            Float floatResultsValue2 = (Float)obj.floatResultsValue.elementAt(i);
+            floatResultsValue_equal = floatResultsValue1.equals(floatResultsValue2);
+        }
         // Compare the elements in the varTypes vector.
         boolean varTypes_equal = (obj.varTypes.size() == varTypes.size());
         for(i = 0; (i < varTypes.size()) && varTypes_equal; ++i)
@@ -153,6 +174,7 @@ public class QueryAttributes extends AttributeSubject
         // Create the return value
         return ((resultsMessage.equals(obj.resultsMessage)) &&
                 resultsValue_equal &&
+                floatResultsValue_equal &&
                 (timeStep == obj.timeStep) &&
                 varTypes_equal &&
                 (pipeIndex == obj.pipeIndex) &&
@@ -179,75 +201,82 @@ public class QueryAttributes extends AttributeSubject
         Select(1);
     }
 
+    public void SetFloatResultsValue(Vector floatResultsValue_)
+    {
+        floatResultsValue = floatResultsValue_;
+        Select(2);
+    }
+
     public void SetTimeStep(int timeStep_)
     {
         timeStep = timeStep_;
-        Select(2);
+        Select(3);
     }
 
     public void SetVarTypes(Vector varTypes_)
     {
         varTypes = varTypes_;
-        Select(3);
+        Select(4);
     }
 
     public void SetPipeIndex(int pipeIndex_)
     {
         pipeIndex = pipeIndex_;
-        Select(4);
+        Select(5);
     }
 
     public void SetXUnits(String xUnits_)
     {
         xUnits = xUnits_;
-        Select(5);
+        Select(6);
     }
 
     public void SetYUnits(String yUnits_)
     {
         yUnits = yUnits_;
-        Select(6);
+        Select(7);
     }
 
     public void SetFloatFormat(String floatFormat_)
     {
         floatFormat = floatFormat_;
-        Select(7);
+        Select(8);
     }
 
     public void SetXmlResult(String xmlResult_)
     {
         xmlResult = xmlResult_;
-        Select(8);
+        Select(9);
     }
 
     public void SetSuppressOutput(boolean suppressOutput_)
     {
         suppressOutput = suppressOutput_;
-        Select(9);
+        Select(10);
     }
 
     public void SetQueryInputParams(MapNode queryInputParams_)
     {
         queryInputParams = queryInputParams_;
-        Select(10);
+        Select(11);
     }
 
     public void SetDefaultName(String defaultName_)
     {
         defaultName = defaultName_;
-        Select(11);
+        Select(12);
     }
 
     public void SetDefaultVars(Vector defaultVars_)
     {
         defaultVars = defaultVars_;
-        Select(12);
+        Select(13);
     }
 
     // Property getting methods
     public String  GetResultsMessage() { return resultsMessage; }
     public Vector  GetResultsValue() { return resultsValue; }
+    public Vector  GetFloatResultsValue() { return floatResultsValue; }
     public int     GetTimeStep() { return timeStep; }
     public Vector  GetVarTypes() { return varTypes; }
     public int     GetPipeIndex() { return pipeIndex; }
@@ -268,26 +297,28 @@ public class QueryAttributes extends AttributeSubject
         if(WriteSelect(1, buf))
             buf.WriteDoubleVector(resultsValue);
         if(WriteSelect(2, buf))
-            buf.WriteInt(timeStep);
+            buf.WriteFloatVector(floatResultsValue);
         if(WriteSelect(3, buf))
-            buf.WriteIntVector(varTypes);
+            buf.WriteInt(timeStep);
         if(WriteSelect(4, buf))
-            buf.WriteInt(pipeIndex);
+            buf.WriteIntVector(varTypes);
         if(WriteSelect(5, buf))
-            buf.WriteString(xUnits);
+            buf.WriteInt(pipeIndex);
         if(WriteSelect(6, buf))
-            buf.WriteString(yUnits);
+            buf.WriteString(xUnits);
         if(WriteSelect(7, buf))
-            buf.WriteString(floatFormat);
+            buf.WriteString(yUnits);
         if(WriteSelect(8, buf))
-            buf.WriteString(xmlResult);
+            buf.WriteString(floatFormat);
         if(WriteSelect(9, buf))
-            buf.WriteBool(suppressOutput);
+            buf.WriteString(xmlResult);
         if(WriteSelect(10, buf))
-            queryInputParams.Write(buf);
+            buf.WriteBool(suppressOutput);
         if(WriteSelect(11, buf))
-            buf.WriteString(defaultName);
+            queryInputParams.Write(buf);
         if(WriteSelect(12, buf))
+            buf.WriteString(defaultName);
+        if(WriteSelect(13, buf))
             buf.WriteStringVector(defaultVars);
     }
 
@@ -302,36 +333,39 @@ public class QueryAttributes extends AttributeSubject
             SetResultsValue(buf.ReadDoubleVector());
             break;
         case 2:
-            SetTimeStep(buf.ReadInt());
+            SetFloatResultsValue(buf.ReadFloatVector());
             break;
         case 3:
-            SetVarTypes(buf.ReadIntVector());
+            SetTimeStep(buf.ReadInt());
             break;
         case 4:
-            SetPipeIndex(buf.ReadInt());
+            SetVarTypes(buf.ReadIntVector());
             break;
         case 5:
-            SetXUnits(buf.ReadString());
+            SetPipeIndex(buf.ReadInt());
             break;
         case 6:
-            SetYUnits(buf.ReadString());
+            SetXUnits(buf.ReadString());
             break;
         case 7:
-            SetFloatFormat(buf.ReadString());
+            SetYUnits(buf.ReadString());
             break;
         case 8:
-            SetXmlResult(buf.ReadString());
+            SetFloatFormat(buf.ReadString());
             break;
         case 9:
-            SetSuppressOutput(buf.ReadBool());
+            SetXmlResult(buf.ReadString());
             break;
         case 10:
-            queryInputParams.Read(buf);
+            SetSuppressOutput(buf.ReadBool());
             break;
         case 11:
-            SetDefaultName(buf.ReadString());
+            queryInputParams.Read(buf);
             break;
         case 12:
+            SetDefaultName(buf.ReadString());
+            break;
+        case 13:
             SetDefaultVars(buf.ReadStringVector());
             break;
         }
@@ -342,6 +376,7 @@ public class QueryAttributes extends AttributeSubject
         String str = new String();
         str = str + stringToString("resultsMessage", resultsMessage, indent) + "\n";
         str = str + doubleVectorToString("resultsValue", resultsValue, indent) + "\n";
+        str = str + floatVectorToString("floatResultsValue", floatResultsValue, indent) + "\n";
         str = str + intToString("timeStep", timeStep, indent) + "\n";
         str = str + intVectorToString("varTypes", varTypes, indent) + "\n";
         str = str + intToString("pipeIndex", pipeIndex, indent) + "\n";
@@ -360,6 +395,7 @@ public class QueryAttributes extends AttributeSubject
     // Attributes
     private String  resultsMessage;
     private Vector  resultsValue; // vector of Double objects
+    private Vector  floatResultsValue; // vector of Float objects
     private int     timeStep;
     private Vector  varTypes; // vector of Integer objects
     private int     pipeIndex;

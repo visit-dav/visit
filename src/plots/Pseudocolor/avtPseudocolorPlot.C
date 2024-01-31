@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                           avtPseudocolorPlot.C                            //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtPseudocolorPlot.C
+// ****************************************************************************
 
 #include <avtPseudocolorPlot.h>
 
@@ -12,17 +12,21 @@
 
 #include <avtColorTables.h>
 #include <avtExtents.h>
+#include <avtLineGlyphFilter.h>
 #include <avtLookupTable.h>
 #include <avtPolylineCleanupFilter.h>
 #include <avtPseudocolorFilter.h>
-#include <avtPseudocolorGeometryFilter.h>
+#include <avtPseudocolorMapper.h>
 #include <avtStaggeringFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
-#include <avtPseudocolorMapper.h>
+#include <avtVertexExtractor.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
+
+#include <float.h>
 
 #include <string>
 #include <vector>
@@ -83,6 +87,10 @@ using std::string;
 //    Replace polylineAddEndPointsFilter, polylineToRibbonFilter,
 //    polylineToTubeFilter with geoFilter. Remove glyphMapper.
 //
+//    Kathleen Biagas, Thu Jun  4 17:19:38 PDT 2020
+//    Replace avtPseudocolorGeometryFilter with avtVertexExtractor and
+//    avtLineGlypher.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
@@ -98,7 +106,8 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 
     shiftFilter = NULL;
     pcFilter = NULL;
-    geoFilter = NULL;
+    vertexExtractor = NULL;
+    lineGlypher = NULL;
     staggeringFilter = NULL;
     polylineCleanupFilter = NULL;
     colorTableIsFullyOpaque = true;
@@ -137,6 +146,10 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 //    Replace polylineAddEndPointsFilter, polylineToRibbonFilter,
 //    polylineToTubeFilter with geoFilter. Remove glyphMapper.
 //
+//    Kathleen Biagas, Thu Jun  4 17:19:38 PDT 2020
+//    Replace avtPseudocolorGeometryFilter with avtVertexExtractor and
+//    avtLineGlypher.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::~avtPseudocolorPlot()
@@ -165,10 +178,16 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
         pcFilter = NULL;
     }
 
-    if (geoFilter != NULL)
+    if (vertexExtractor != NULL)
     {
-        delete geoFilter;
-        geoFilter = NULL;
+        delete vertexExtractor;
+        vertexExtractor = NULL;
+    }
+
+    if (lineGlypher != NULL)
+    {
+        delete lineGlypher;
+        lineGlypher = NULL;
     }
 
     if (avtLUT != NULL)
@@ -363,6 +382,10 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Replace polylineAddEndPointsFilter, polylineToRibbonFilter,
 //    polylineToTubeFilter with geoFilter.
 //
+//    Kathleen Biagas, Thu Jun  4 17:19:38 PDT 2020
+//    Replace avtPseudocolorGeometryFilter with avtVertexExtractor and
+//    avtLineGlypher.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -370,8 +393,8 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
     topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
-
-    if ((atts.GetCentering() == PseudocolorAttributes::Nodal) || (atts.GetCentering() == PseudocolorAttributes::Zonal))
+    if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
+        (atts.GetCentering() == PseudocolorAttributes::Zonal))
     {
         //
         // It was requested that we shift centering.  If we asked for zonal
@@ -405,17 +428,41 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
     polylineCleanupFilter->SetInput(dob);
     dob = polylineCleanupFilter->GetOutput();
 
-    // geometry Filter
-    if (geoFilter != NULL)
+    if (vertexExtractor != NULL)
     {
-      delete geoFilter;
-      geoFilter = NULL;
+      delete vertexExtractor;
+      vertexExtractor = NULL;
     }
 
-    geoFilter = new avtPseudocolorGeometryFilter();
-    geoFilter->SetInput(dob);
-    geoFilter->SetPlotAtts(&atts);
-    dob = geoFilter->GetOutput();
+    if (lineGlypher != NULL)
+    {
+      delete lineGlypher;
+      lineGlypher = NULL;
+    }
+
+    if (topoDim != 0 && atts.GetPointType() != Point)
+    {
+        vertexExtractor = new avtVertexExtractor();
+        vertexExtractor->SetInput(dob);
+        vertexExtractor->SetLabelPrefix("pc");
+        vertexExtractor->SetConvertAllPoints(atts.GetRenderPoints());
+        vertexExtractor->SetKeepNonVertex(atts.GetRenderSurfaces() || atts.GetRenderWireframe());
+        vertexExtractor->SetPointGlyphAtts((PointGlyphAttributes*)(atts.CreateCompatible("PointGlyph")));
+        dob = vertexExtractor->GetOutput();
+    }
+
+    if (topoDim != 0 && atts.GetRenderSurfaces() &&
+        (atts.GetLineType()  != PseudocolorAttributes::Line ||
+        atts.GetHeadStyle() != PseudocolorAttributes::None ||
+        atts.GetTailStyle() != PseudocolorAttributes::None))
+    {
+        lineGlypher = new avtLineGlyphFilter();
+        lineGlypher->SetInput(dob);
+        lineGlypher->SetLabelPrefix("pc");
+        lineGlypher->SetKeepNonLine(atts.GetRenderSurfaces() || atts.GetRenderWireframe());
+        lineGlypher->SetLineGlyphAtts((LineGlyphAttributes*)(atts.CreateCompatible("LineGlyph")));
+        dob = lineGlypher->GetOutput();
+    }
 
     return dob;
 }
@@ -1173,6 +1220,13 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //    Kathleen Biagas, Tue Nov  5 11:42:38 PST 2019
 //    Remove glyphMapper.
 //
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Modified the range limits text to use the current variable limits
+//    if OriginalData is not set.
+//
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Throw an improper use exception if the variable range was never set.
+//
 // ****************************************************************************
 
 void
@@ -1205,8 +1259,21 @@ avtPseudocolorPlot::SetLegendRanges()
     //
     // set and get the range for the legend's limits text
     //
-    mapper->GetVarRange(min, max);
+    if (atts.GetLimitsMode() == PseudocolorAttributes::OriginalData)
+        mapper->GetVarRange(min, max);
+    else
+        mapper->GetCurrentVarRange(min, max);
     varLegend->SetVarRange(min, max);
+
+    //
+    // Check if the limits were ever set. This would only happen if there
+    // was no data or the entire mesh was ghost data.
+    //
+    if (min == DBL_MAX && max == -DBL_MAX)
+    {
+        EXCEPTION1(ImproperUseException,
+            "The entire mesh consists of ghost zones.");
+    }
 
     varLegend->UseBelowRangeColor(atts.GetUseBelowMinColor());
     varLegend->UseAboveRangeColor(atts.GetUseAboveMaxColor());
@@ -1271,6 +1338,10 @@ avtPseudocolorPlot::SetPointGlyphSize()
 //    Replace polylineAddEndPointsFilter, polylineToRibbonFilter,
 //    polylineToTubeFilter with geoFilter.
 //
+//    Kathleen Biagas, Thu Jun  4 17:19:38 PDT 2020
+//    Replace avtPseudocolorGeometryFilter with avtVertexExtractor and
+//    avtLineGlypher.
+//
 // ****************************************************************************
 
 void
@@ -1298,11 +1369,15 @@ avtPseudocolorPlot::ReleaseData(void)
         pcFilter->ReleaseData();
     }
 
-    if (geoFilter != NULL)
+    if (lineGlypher != NULL)
     {
-        geoFilter->ReleaseData();
+        lineGlypher->ReleaseData();
     }
 
+    if (vertexExtractor != NULL)
+    {
+        vertexExtractor->ReleaseData();
+    }
 }
 
 // ****************************************************************************

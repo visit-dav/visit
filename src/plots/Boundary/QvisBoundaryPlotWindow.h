@@ -52,8 +52,8 @@ class QvisBoundaryPlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisBoundaryPlotWindow(const int type, BoundaryAttributes *boundaryAtts_,
-                           const QString &caption = QString::null,
-                           const QString &shortName = QString::null,
+                           const QString &caption = QString(),
+                           const QString &shortName = QString(),
                            QvisNotepadArea *notepad = 0);
     virtual ~QvisBoundaryPlotWindow();
     virtual void CreateWindowContents();

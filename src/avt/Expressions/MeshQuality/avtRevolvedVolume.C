@@ -18,6 +18,8 @@
 
 #include <InvalidDimensionsException.h>
 
+#include <cmath>
+
 
 // ****************************************************************************
 //  Method: avtRevolvedVolume constructor
@@ -28,6 +30,12 @@
 //  Modifications:
 //    Kathleen Bonnell, Fri Feb  3 11:24:40 PST 2006
 //    Initialize revolveAboutX.
+//
+//    Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
+//    Alister Maguire, Fri Nov  6 08:53:20 PST 2020
+//    Removed direct database QOT disabler as they are now compatible.
 //
 // ****************************************************************************
 
@@ -522,6 +530,9 @@ avtRevolvedVolume::GetTriangleVolume2(double x[3], double y[3])
 //    Kathleen Bonnell, Thu Feb  2 11:26:23 PST 2006
 //    Renamed some vars for clarity.
 //
+//    Mark C. Miller, Tue Apr 11 09:24:54 PDT 2023
+//    Reduce numerical sensitivity for line segments nearly parallel to axis
+//    of revolution.
 // ****************************************************************************
  
 double
@@ -548,7 +559,11 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
         }
         return 0.;
     }
-    if (y[0] == y[1])
+    // Treat all lines which are almost parallel to axis as indeed
+    // parallel and defining a volume of cylinder. This is numerically
+    // better for lines almost parallel to axis because computing
+    // intercept is ill-conditioned in these cases.
+    if (abs(y[1]-y[0]) < (1e-6)*abs(x[1]-x[0]))
     {
 #if defined(_WIN32) && !defined(M_PI)
 #define M_PI 3.14159265358979323846

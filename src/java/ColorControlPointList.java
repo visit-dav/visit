@@ -23,7 +23,7 @@ import java.util.Vector;
 
 public class ColorControlPointList extends AttributeSubject
 {
-    private static int ColorControlPointList_numAdditionalAtts = 6;
+    private static int ColorControlPointList_numAdditionalAtts = 7;
 
     // Enum values
     public final static int SMOOTHINGMETHOD_NONE = 0;
@@ -40,7 +40,8 @@ public class ColorControlPointList extends AttributeSubject
         equalSpacingFlag = false;
         discreteFlag = false;
         externalFlag = false;
-        categoryName = new String("");
+        tagNames = new Vector();
+        builtIn = true;
     }
 
     public ColorControlPointList(int nMoreFields)
@@ -52,7 +53,8 @@ public class ColorControlPointList extends AttributeSubject
         equalSpacingFlag = false;
         discreteFlag = false;
         externalFlag = false;
-        categoryName = new String("");
+        tagNames = new Vector();
+        builtIn = true;
     }
 
     public ColorControlPointList(ColorControlPointList obj)
@@ -73,7 +75,11 @@ public class ColorControlPointList extends AttributeSubject
         equalSpacingFlag = obj.equalSpacingFlag;
         discreteFlag = obj.discreteFlag;
         externalFlag = obj.externalFlag;
-        categoryName = new String(obj.categoryName);
+        tagNames = new Vector(obj.tagNames.size());
+        for(i = 0; i < obj.tagNames.size(); ++i)
+            tagNames.addElement(new String((String)obj.tagNames.elementAt(i)));
+
+        builtIn = obj.builtIn;
 
         SelectAll();
     }
@@ -101,13 +107,23 @@ public class ColorControlPointList extends AttributeSubject
             ColorControlPoint controlPoints2 = (ColorControlPoint)obj.controlPoints.elementAt(i);
             controlPoints_equal = controlPoints1.equals(controlPoints2);
         }
+        // Compare the elements in the tagNames vector.
+        boolean tagNames_equal = (obj.tagNames.size() == tagNames.size());
+        for(i = 0; (i < tagNames.size()) && tagNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String tagNames1 = (String)tagNames.elementAt(i);
+            String tagNames2 = (String)obj.tagNames.elementAt(i);
+            tagNames_equal = tagNames1.equals(tagNames2);
+        }
         // Create the return value
         return (controlPoints_equal &&
                 (smoothing == obj.smoothing) &&
                 (equalSpacingFlag == obj.equalSpacingFlag) &&
                 (discreteFlag == obj.discreteFlag) &&
                 (externalFlag == obj.externalFlag) &&
-                (categoryName.equals(obj.categoryName)));
+                tagNames_equal &&
+                (builtIn == obj.builtIn));
     }
 
     // Property setting methods
@@ -135,10 +151,16 @@ public class ColorControlPointList extends AttributeSubject
         Select(4);
     }
 
-    public void SetCategoryName(String categoryName_)
+    public void SetTagNames(Vector tagNames_)
     {
-        categoryName = categoryName_;
+        tagNames = tagNames_;
         Select(5);
+    }
+
+    public void SetBuiltIn(boolean builtIn_)
+    {
+        builtIn = builtIn_;
+        Select(6);
     }
 
     // Property getting methods
@@ -147,7 +169,8 @@ public class ColorControlPointList extends AttributeSubject
     public boolean GetEqualSpacingFlag() { return equalSpacingFlag; }
     public boolean GetDiscreteFlag() { return discreteFlag; }
     public boolean GetExternalFlag() { return externalFlag; }
-    public String  GetCategoryName() { return categoryName; }
+    public Vector  GetTagNames() { return tagNames; }
+    public boolean GetBuiltIn() { return builtIn; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -170,7 +193,9 @@ public class ColorControlPointList extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteBool(externalFlag);
         if(WriteSelect(5, buf))
-            buf.WriteString(categoryName);
+            buf.WriteStringVector(tagNames);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(builtIn);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -203,7 +228,10 @@ public class ColorControlPointList extends AttributeSubject
             SetExternalFlag(buf.ReadBool());
             break;
         case 5:
-            SetCategoryName(buf.ReadString());
+            SetTagNames(buf.ReadStringVector());
+            break;
+        case 6:
+            SetBuiltIn(buf.ReadBool());
             break;
         }
     }
@@ -232,7 +260,8 @@ public class ColorControlPointList extends AttributeSubject
         str = str + boolToString("equalSpacingFlag", equalSpacingFlag, indent) + "\n";
         str = str + boolToString("discreteFlag", discreteFlag, indent) + "\n";
         str = str + boolToString("externalFlag", externalFlag, indent) + "\n";
-        str = str + stringToString("categoryName", categoryName, indent) + "\n";
+        str = str + stringVectorToString("tagNames", tagNames, indent) + "\n";
+        str = str + boolToString("builtIn", builtIn, indent) + "\n";
         return str;
     }
 
@@ -276,6 +305,7 @@ public class ColorControlPointList extends AttributeSubject
     private boolean equalSpacingFlag;
     private boolean discreteFlag;
     private boolean externalFlag;
-    private String  categoryName;
+    private Vector  tagNames; // vector of String objects
+    private boolean builtIn;
 }
 

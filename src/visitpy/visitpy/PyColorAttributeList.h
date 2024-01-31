@@ -5,6 +5,7 @@
 #ifndef PY_COLORATTRIBUTELIST_H
 #define PY_COLORATTRIBUTELIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ColorAttributeList.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyColorAttributeList_Wrap(const ColorAttributeList *a
 void VISITPY_API           PyColorAttributeList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorAttributeList_SetDefaults(const ColorAttributeList *atts);
 std::string VISITPY_API    PyColorAttributeList_GetLogString();
-std::string VISITPY_API    PyColorAttributeList_ToString(const ColorAttributeList *, const char *);
+std::string VISITPY_API    PyColorAttributeList_ToString(const ColorAttributeList *, const char *, const bool=false);
 VISITPY_API PyObject *     PyColorAttributeList_getattr(PyObject *self, char *name);
 int VISITPY_API            PyColorAttributeList_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyColorAttributeList_methods[COLORATTRIBUTELIST_NMETH];

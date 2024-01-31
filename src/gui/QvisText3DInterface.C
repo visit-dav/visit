@@ -38,7 +38,7 @@
 // ****************************************************************************
 // Method: QvisText3DInterface::QvisText3DInterface
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisText3DInterface class.
 //
 // Arguments:
@@ -56,9 +56,12 @@
 //   Place 'useForeground' checkbox before text color button, added
 //   textColorLabel so it can be disabled when the button is disabled.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
-QvisText3DInterface::QvisText3DInterface(QWidget *parent) : 
+QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
     QvisAnnotationObjectInterface(parent)
 {
     // Set the title of the group box.
@@ -88,8 +91,13 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
 
     // Add controls for the height.
     heightMode = new QButtonGroup(this);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(heightMode, SIGNAL(buttonClicked(int)),
             this, SLOT(heightModeChanged(int)));
+#else
+    connect(heightMode, SIGNAL(idClicked(int)),
+            this, SLOT(heightModeChanged(int)));
+#endif
     cLayout->addWidget(new QLabel(tr("Height"), this), row, 0);
     QRadioButton *rb = new QRadioButton(tr("Relative"), this);
     heightMode->addButton(rb, 0);
@@ -156,7 +164,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
             this, SLOT(rotateYChanged(int)));
     QLabel *rotateYLabel = new QLabel(tr("Rotate Y"), this);
     QGridLayout *rLayout = new QGridLayout(0);
-    rLayout->setMargin(0);
+    rLayout->setContentsMargins(0,0,0,0);
     cLayout->addLayout(rLayout, row, 0, 1, 3);
     rLayout->addWidget(rotateYLabel, 0, 0);
     rLayout->addWidget(rotateXLabel, 0, 1);
@@ -203,14 +211,14 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisText3DInterface::~QvisText3DInterface
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisText3DInterface class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 7 11:47:58 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisText3DInterface::~QvisText3DInterface()
@@ -220,7 +228,7 @@ QvisText3DInterface::~QvisText3DInterface()
 // ****************************************************************************
 // Method: QvisText3DInterface::GetMenuText
 //
-// Purpose: 
+// Purpose:
 //   Returns the text to use in the annotation list box.
 //
 // Arguments:
@@ -252,7 +260,7 @@ QvisText3DInterface::GetMenuText(const AnnotationObject &annot) const
 // ****************************************************************************
 // Method: QvisText3DInterface::UpdateControls
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
@@ -265,6 +273,9 @@ QvisText3DInterface::GetMenuText(const AnnotationObject &annot) const
 //
 //   Kathleen Biagas, Mon Jul 13 13:19:45 PDT 2015
 //   Enable/disable textColorLabel along with textColorButton.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg and QString.setNum.
 //
 // ****************************************************************************
 
@@ -279,11 +290,10 @@ QvisText3DInterface::UpdateControls()
         textLineEdit->setText("");
 
     // Set the position.
-    QString pos;
-    pos.sprintf("%lg %lg %lg", 
-        annot->GetPosition()[0],
-        annot->GetPosition()[1],
-        annot->GetPosition()[2]);
+    QString pos = QString("%1 %2 %3")
+        .arg(annot->GetPosition()[0])
+        .arg(annot->GetPosition()[1])
+        .arg(annot->GetPosition()[2]);
     positionEdit->setText(pos);
 
     // Set the height mode
@@ -300,7 +310,7 @@ QvisText3DInterface::UpdateControls()
 
     // Set the value for the fixed height.
     QString tmp;
-    tmp.sprintf("%lg", annot->GetFixedHeight());
+    tmp.setNum(annot->GetFixedHeight());
     fixedHeightEdit->setText(tmp);
 
     // Set the faces camera check box.
@@ -312,13 +322,13 @@ QvisText3DInterface::UpdateControls()
     int rx = (int)annot->GetRotations()[0];
     int ry = (int)annot->GetRotations()[1];
     int rz = (int)annot->GetRotations()[2];
-    rotateX->blockSignals(true); rotateX->setValue(rx); rotateX->blockSignals(false); 
-    rotateY->blockSignals(true); rotateY->setValue(ry); rotateY->blockSignals(false); 
-    rotateZ->blockSignals(true); rotateZ->setValue(rz); rotateZ->blockSignals(false); 
+    rotateX->blockSignals(true); rotateX->setValue(rx); rotateX->blockSignals(false);
+    rotateY->blockSignals(true); rotateY->setValue(ry); rotateY->blockSignals(false);
+    rotateZ->blockSignals(true); rotateZ->setValue(rz); rotateZ->blockSignals(false);
 
     //
     // Set the text color. If we're using the foreground color for the text
-    // color then make the button be white and only let the user change the 
+    // color then make the button be white and only let the user change the
     // opacity.
     //
     textColorOpacity->blockSignals(true);
@@ -357,7 +367,7 @@ QvisText3DInterface::UpdateControls()
 // ****************************************************************************
 // Method: QvisText3DInterface::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the text fields.
 //
 // Arguments:
@@ -399,7 +409,7 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
                 arg(DoublesToQString(annot->GetPosition(), 3));
             Error(msg);
             annot->SetPosition(annot->GetPosition());
-        }  
+        }
     }
 
     if(which_widget == 2 || doAll)
@@ -470,15 +480,15 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisText3DInterface::textChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   text line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 7 11:49:46 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -491,15 +501,15 @@ QvisText3DInterface::textChanged()
 // ****************************************************************************
 // Method: QvisText3DInterface::positionChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   position line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 7 11:49:46 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -535,7 +545,7 @@ QvisText3DInterface::fixedHeightChanged()
 // ****************************************************************************
 // Method: QvisText3DInterface::facesCameraToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the faces camera checkbox
 //   is toggled.
 //
@@ -546,7 +556,7 @@ QvisText3DInterface::fixedHeightChanged()
 // Creation:   Thu Nov 8 16:01:03 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -581,7 +591,7 @@ QvisText3DInterface::rotateYChanged(int)
 // ****************************************************************************
 // Method: QvisText3DInterface::textColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start color is
 //   selected.
 //
@@ -592,7 +602,7 @@ QvisText3DInterface::rotateYChanged(int)
 // Creation:   Wed Nov 7 11:49:46 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -607,7 +617,7 @@ QvisText3DInterface::textColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisText3DInterface::textOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start opacity is
 //   selected.
 //
@@ -618,7 +628,7 @@ QvisText3DInterface::textColorChanged(const QColor &c)
 // Creation:   Wed Nov 7 11:49:46 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -634,7 +644,7 @@ QvisText3DInterface::textOpacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisText3DInterface::useForegroundColorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the useForegroundColor
 //   check box is clicked.
 //
@@ -645,7 +655,7 @@ QvisText3DInterface::textOpacityChanged(int opacity)
 // Creation:   Wed Nov 7 12:34:48 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -658,7 +668,7 @@ QvisText3DInterface::useForegroundColorToggled(bool val)
 // ****************************************************************************
 // Method: QvisText3DInterface::visibilityToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the visibility toggle is
 //   changed.
 //
@@ -669,7 +679,7 @@ QvisText3DInterface::useForegroundColorToggled(bool val)
 // Creation:   Wed Nov 7 11:49:46 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

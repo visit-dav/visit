@@ -25,6 +25,7 @@
 #include <QToolButton>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QScrollBar>
 
 #include <GetMetaDataException.h>
 
@@ -199,6 +200,13 @@ using std::vector;
 //   Brad Whitlock, Fri Sep 13 12:24:36 PDT 2013
 //   Hook up plot animation.
 //
+//   Kevin Griffin, Wed Aug 12 11:40:27 PDT 2020
+//   Updated the vertical scroll bar mode to ScrollPerPixel and to use a
+//   single step.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -225,7 +233,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     varMenuFlags = 0;
 
     topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     plotActionsToolbar = new QToolBar(this);
     plotActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -280,6 +288,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     plotListBox = new QvisPlotListBox(this);
     plotListBox->setSelectionMode(QAbstractItemView::ExtendedSelection);
     plotListBox->setMinimumHeight(fontMetrics().boundingRect("X").height() * 6);
+    plotListBox->verticalScrollBar()->setSingleStep(1);
+    plotListBox->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     topLayout->addWidget(plotListBox,10);
 
     connect(plotListBox, SIGNAL(itemSelectionChanged()),
@@ -337,11 +347,11 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     topLayout->addWidget(applyWindow);
 
     QHBoxLayout *applyWindowLayout = new QHBoxLayout(applyWindow);
-    applyWindowLayout->setMargin(0);
+    applyWindowLayout->setContentsMargins(0,0,0,0);
     applyWindowLayout->setSpacing(10);
 
     applyWindowLabel = new QLabel(tr("Apply to"), applyWindow);
-    applyWindowLayout->addWidget(applyWindowLabel,0,0);
+    applyWindowLayout->addWidget(applyWindowLabel,0);
 
 
     applyWindowButtonGroup= new QButtonGroup(applyWindow);
@@ -351,8 +361,13 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     applyWindowAllRadioButton = new QRadioButton(tr("all windows"), applyWindow);
     applyWindowButtonGroup->addButton(applyWindowAllRadioButton,1);
     applyWindowLayout->addWidget(applyWindowAllRadioButton);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(applyWindowButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(applyWindowChanged(int)));
+#else
+    connect(applyWindowButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(applyWindowChanged(int)));
+#endif
 
     applyOperatorCheckBox = new QCheckBox(tr("Apply operators to all plots"), this);
     connect(applyOperatorCheckBox, SIGNAL(toggled(bool)),

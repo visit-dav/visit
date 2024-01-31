@@ -89,7 +89,6 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     void RemoveActionFromNode(DataNode *, const char *, ViewerRPC::ViewerRPCType);
     void RemoveActionFromNode(DataNode *, const char *, const char *);
     void AddAction(DataNode *, const char *, ViewerRPC::ViewerRPCType);

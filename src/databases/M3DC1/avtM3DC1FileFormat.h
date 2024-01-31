@@ -32,7 +32,7 @@ class vtkPoints;
 class avtM3DC1FileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtM3DC1FileFormat(const char *, DBOptionsAttributes *);
+                       avtM3DC1FileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtM3DC1FileFormat() {;};
 
     //

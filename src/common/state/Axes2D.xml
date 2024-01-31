@@ -34,4 +34,6 @@
     </Field>
     <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
+   <Function name="CreateNode" user="false" member="true">
+    </Function>
   </Attribute>

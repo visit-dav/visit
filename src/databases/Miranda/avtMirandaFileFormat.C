@@ -215,7 +215,7 @@ private:
 //    Updated to read curvilinear or rectilinear data.
 // ****************************************************************************
 
-avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
   : avtMTMDFileFormat(filename)
 {
   string tag, buf1;

@@ -2,11 +2,7 @@
 #include "timer.h"
 #include <iostream>
 #include <string> 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/format.hpp>
-#include <boost/algorithm/string.hpp>
-using namespace boost; 
-using namespace std;
 
 
 /*!
@@ -30,6 +26,19 @@ int Progress(timer &iTimer, double iNum, double iMax,
     return 1; 
   }
   return 0; 
+}
+
+// A simple trim, attempt to minimize boost dependencies on Windows.
+// This should work on linux, too.
+void
+trimString(std::string &s, const std::string &whitespace=" \t \f \n \r \t \v")
+{
+    const auto subStrBegin = s.find_first_not_of(whitespace);
+    if(subStrBegin != std::string::npos)
+    {
+        const auto subStrEnd = s.find_last_not_of(whitespace);
+        s = s.substr(subStrBegin, subStrEnd - subStrBegin+1);
+    }
 }
 
 // __________________________________________________________________________
@@ -145,7 +154,7 @@ std::ostream& operator<<(std::ostream& os, timer& t)
 */ 
 bool GetTimeFromString(string s, struct tm &tms) {
   
-  boost::trim(s);
+  trimString(s);
   //cerr << "Checking time \"" << s << "\"" << endl;
   vector<string> delims; 
   delims.push_back(" "); 
@@ -205,7 +214,7 @@ bool GetTimeFromString(string s, struct tm &tms) {
   }
 
   time_t now = time(NULL); 
-  boost::trim(s);
+  trimString(s);
   char *m = 0; 
   uint32_t numattempts = 0; 
   for (vector<string>::iterator yearformat = yearformats.begin(); yearformat != yearformats.end(); yearformat++) {
@@ -232,8 +241,19 @@ bool GetTimeFromString(string s, struct tm &tms) {
               tms.tm_mon = tms.tm_wday = tms.tm_yday = 0; 
               tms.tm_mday = 1; 
               const char *sp = s.c_str(); 
+#ifdef _WIN32
+              // KSB Oct 14, 2020.
+              // get_time isn't necessarily available in the compiler
+              // versions being used on other platforms, otherwise this
+              // could be used on non-Windows too.
+              std::stringstream ss(sp);
+              ss >> std::get_time(&tms, timestrings[i].c_str());
+              if (!ss.fail())
+#else
               m = strptime(sp, timestrings[i].c_str(), &tms);
-              if (m && !*m) {
+              if (m && !*m)
+#endif
+              {
                 cerr << "matched format " << numattempts << ": " << timestrings[i] << endl; 
                 return true;           
               }
@@ -252,7 +272,7 @@ bool GetTimeFromString(string s, struct tm &tms) {
 /*bool GetTimeFromString(string s, struct tm &tms) {
   vector<string> timestrings = GetTimeStrings();
   time_t now = time(NULL); 
-  boost::trim(s);
+  trimString(s);
   char *m = 0; 
   for (uint32_t i = 0; i < timestrings.size(); i++) {
     tms.tm_year = localtime(&now)->tm_year; 
@@ -274,7 +294,7 @@ string GetStandardTimeStringFromString(string s) {
     return INVALID_TIME_STRING;
   }
   s = asctime(&ts);
-  boost::trim (s); 
+  trimString(s);
   return s;
 }
   

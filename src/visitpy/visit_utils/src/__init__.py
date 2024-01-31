@@ -10,6 +10,8 @@
      Init file for 'visit_utils' module.
 """
 
+from .builtin import *
+
 from . import common
 from . import exprs
 from . import engine

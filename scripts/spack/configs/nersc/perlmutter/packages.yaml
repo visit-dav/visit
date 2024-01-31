@@ -1,0 +1,124 @@
+packages:
+  binutils:
+    externals:
+    - spec: binutils@2.39.0
+      prefix: /usr
+  coreutils:
+    externals:
+    - spec: coreutils@8.32
+      prefix: /usr
+  diffutils:
+    externals:
+    - spec: diffutils@3.6
+      prefix: /usr
+  findutils:
+    externals:
+    - spec: findutils@4.8.0
+      prefix: /usr
+  gawk:
+    externals:
+    - spec: gawk@4.2.1
+      prefix: /usr
+  openssh:
+    externals:
+    - spec: openssh@8.4p1
+      prefix: /usr
+  openssl:
+    externals:
+    - spec: openssl@1.1.1l
+      prefix: /usr
+  tar:
+    externals:
+    - spec: tar@1.34
+      prefix: /usr
+  autoconf:
+    externals:
+    - spec: autoconf@2.69
+      prefix: /usr
+  automake:
+    externals:
+    - spec: automake@1.15.1
+      prefix: /usr
+  bison:
+    externals:
+    - spec: bison@3.0.4
+      prefix: /usr
+  ccache:
+    externals:
+    - spec: ccache@3.4.2
+      prefix: /usr
+  cmake:
+    externals:
+    - spec: cmake@3.20.4
+      prefix: /usr
+  curl:
+    externals:
+    - spec: curl@8.0.1+gssapi+ldap+nghttp2
+      prefix: /usr
+  doxygen:
+    externals:
+    - spec: doxygen@1.8.14~graphviz~mscgen
+      prefix: /usr
+  flex:
+    externals:
+    - spec: flex@2.6.4+lex
+      prefix: /usr
+  git:
+    externals:
+    - spec: git@2.35.3~tcltk
+      prefix: /usr
+  gmake:
+    externals:
+    - spec: gmake@4.2.1
+      prefix: /usr
+  groff:
+    externals:
+    - spec: groff@1.22.4
+      prefix: /usr
+  libtool:
+    externals:
+    - spec: libtool@2.4.6
+      prefix: /usr
+  m4:
+    externals:
+    - spec: m4@1.4.18
+      prefix: /usr
+  ninja:
+    externals:
+    - spec: ninja@1.10.0
+      prefix: /usr
+  pkg-config:
+    externals:
+    - spec: pkg-config@0.29.2
+      prefix: /usr
+  subversion:
+    externals:
+    - spec: subversion@1.14.1
+      prefix: /usr
+  texinfo:
+    externals:
+    - spec: texinfo@6.5
+      prefix: /usr
+  libfabric:
+    externals:
+    - spec: libfabric@1.15.2.0
+      prefix: /opt/cray/libfabric/1.15.2.0
+  all:
+    compiler: [gcc, cce]
+    providers:
+      mpi: [cray-mpich]
+  cray-mpich:
+    buildable: false
+    externals:
+    - prefix: /opt/cray/pe/mpich/8.1.25/ofi/gnu/9.1
+      spec: cray-mpich@8.1.25%gcc
+      modules:
+      - cray-mpich/8.1.25
+        cray-pmi/6.1.10
+        libfabric/1.15.2.0
+    - prefix: /opt/cray/pe/mpich/8.1.25/ofi/cray/10.0
+      spec: cray-mpich@8.1.23%cce
+      modules:
+      - cray-mpich/8.1.25
+        cray-pmi/6.1.10
+        libfabric/1.15.2.0

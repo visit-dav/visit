@@ -11,6 +11,7 @@
 typedef std::vector<bool>             boolVector;
 typedef std::vector<char>             charVector;
 typedef std::vector<unsigned char>    unsignedCharVector;
+typedef std::vector<unsigned char>    ucharVector; // alias w/ std case convention
 typedef std::vector<int>              intVector;
 typedef std::vector<long>             longVector;
 typedef std::vector<float>            floatVector;

@@ -3,7 +3,6 @@
         <!-- required libraries -->
         <required>
             <lib name="cmake"/> <!-- cmake is here -->
-            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
@@ -16,18 +15,17 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
+            <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
             <lib name="embree"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
-            <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="ispc"/>
@@ -38,29 +36,26 @@
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="mpich"/>
-            <lib name="mxml"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
-            <lib name="p7zip"/>
             <lib name="pidx"/>
+            <lib name="pyside"/>
+            <lib name="qt6"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
             <lib name="tbb"/>
-            <lib name="tcmalloc"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
-            <lib name="vtkh"/>
             <lib name="xdmf"/>
         </optional>
 
         <!-- thirdparty flag -->
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/> <!-- cmake is here -->
-            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
@@ -72,16 +67,17 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
+            <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
             <lib name="embree"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
-            <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="ispc"/>
@@ -89,23 +85,20 @@
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
-            <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
-            <lib name="p7zip"/>
             <lib name="pidx"/>
+            <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
             <lib name="vtkm"/>
-            <lib name="vtkh"/>
             <lib name="xdmf"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
-            <lib name="no-openssl"/>
             <lib name="no-python"/>
             <lib name="no-qt" />
             <lib name="no-qwt" />
@@ -124,12 +117,10 @@
             <lib name="conduit"/>
             <lib name="mfem"/>
             <lib name="cgns"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
-            <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
             <lib name="openexr"/>
@@ -152,12 +143,10 @@
             <lib name="conduit"/>
             <lib name="mfem"/>
             <lib name="cgns"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
-            <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
             <lib name="pidx"/>
@@ -186,10 +175,8 @@
         # Releasibility of these libs is not yet understood
         -->
         <group name="advanced" comment="Must be manually downloaded" enabled="no">
-            <lib name="hdf4"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mili"/>
-            <lib name="tcmalloc"/>
         </group>
     </license>
 
@@ -221,6 +208,7 @@
             <lib name="mpich"/>
             <lib name="osmesa"/>
             <lib name="pyqt"/>
+            <lib name="qt6"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
             <lib name="xercesc"/>
@@ -240,7 +228,6 @@
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="boost"/>
             <lib name="hdf5"/>
-            <lib name="openssl"/>
             <lib name="netcdf"/>
             <lib name="mpich"/>
             <lib name="szip"/>

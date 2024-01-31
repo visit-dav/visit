@@ -5,6 +5,7 @@
 #include <PyTriangulateRegularPointsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyTriangulateRegularPointsAttributes
@@ -34,9 +35,8 @@ struct TriangulateRegularPointsAttributesObject
 // Internal prototypes
 //
 static PyObject *NewTriangulateRegularPointsAttributes(int);
-
 std::string
-PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *atts, const char *prefix)
+PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -72,12 +72,48 @@ TriangulateRegularPointsAttributes_SetUseXGridSpacing(PyObject *self, PyObject *
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useXGridSpacing in the object.
-    obj->data->SetUseXGridSpacing(ival != 0);
+    obj->data->SetUseXGridSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -96,12 +132,48 @@ TriangulateRegularPointsAttributes_SetXGridSpacing(PyObject *self, PyObject *arg
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xGridSpacing in the object.
-    obj->data->SetXGridSpacing(dval);
+    obj->data->SetXGridSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -120,12 +192,48 @@ TriangulateRegularPointsAttributes_SetUseYGridSpacing(PyObject *self, PyObject *
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useYGridSpacing in the object.
-    obj->data->SetUseYGridSpacing(ival != 0);
+    obj->data->SetUseYGridSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -144,12 +252,48 @@ TriangulateRegularPointsAttributes_SetYGridSpacing(PyObject *self, PyObject *arg
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yGridSpacing in the object.
-    obj->data->SetYGridSpacing(dval);
+    obj->data->SetYGridSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -192,14 +336,7 @@ TriangulateRegularPointsAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-TriangulateRegularPointsAttributes_compare(PyObject *v, PyObject *w)
-{
-    TriangulateRegularPointsAttributes *a = ((TriangulateRegularPointsAttributesObject *)v)->data;
-    TriangulateRegularPointsAttributes *b = ((TriangulateRegularPointsAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *TriangulateRegularPointsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyTriangulateRegularPointsAttributes_getattr(PyObject *self, char *name)
 {
@@ -212,34 +349,47 @@ PyTriangulateRegularPointsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "yGridSpacing") == 0)
         return TriangulateRegularPointsAttributes_GetYGridSpacing(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyTriangulateRegularPointsAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyTriangulateRegularPointsAttributes_methods[i].ml_name),
+                PyString_FromString(PyTriangulateRegularPointsAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyTriangulateRegularPointsAttributes_methods, self, name);
 }
 
 int
 PyTriangulateRegularPointsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "useXGridSpacing") == 0)
-        obj = TriangulateRegularPointsAttributes_SetUseXGridSpacing(self, tuple);
+        obj = TriangulateRegularPointsAttributes_SetUseXGridSpacing(self, args);
     else if(strcmp(name, "xGridSpacing") == 0)
-        obj = TriangulateRegularPointsAttributes_SetXGridSpacing(self, tuple);
+        obj = TriangulateRegularPointsAttributes_SetXGridSpacing(self, args);
     else if(strcmp(name, "useYGridSpacing") == 0)
-        obj = TriangulateRegularPointsAttributes_SetUseYGridSpacing(self, tuple);
+        obj = TriangulateRegularPointsAttributes_SetUseYGridSpacing(self, args);
     else if(strcmp(name, "yGridSpacing") == 0)
-        obj = TriangulateRegularPointsAttributes_SetYGridSpacing(self, tuple);
+        obj = TriangulateRegularPointsAttributes_SetYGridSpacing(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -247,7 +397,7 @@ static int
 TriangulateRegularPointsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)v;
-    fprintf(fp, "%s", PyTriangulateRegularPointsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTriangulateRegularPointsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -255,7 +405,7 @@ PyObject *
 TriangulateRegularPointsAttributes_str(PyObject *v)
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)v;
-    return PyString_FromString(PyTriangulateRegularPointsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTriangulateRegularPointsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -268,49 +418,70 @@ static char *TriangulateRegularPointsAttributes_Purpose = "Attributes for the tr
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject TriangulateRegularPointsAttributesType =
+
+VISIT_PY_TYPE_OBJ(TriangulateRegularPointsAttributesType,         \
+                  "TriangulateRegularPointsAttributes",           \
+                  TriangulateRegularPointsAttributesObject,       \
+                  TriangulateRegularPointsAttributes_dealloc,     \
+                  TriangulateRegularPointsAttributes_print,       \
+                  PyTriangulateRegularPointsAttributes_getattr,   \
+                  PyTriangulateRegularPointsAttributes_setattr,   \
+                  TriangulateRegularPointsAttributes_str,         \
+                  TriangulateRegularPointsAttributes_Purpose,     \
+                  TriangulateRegularPointsAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+TriangulateRegularPointsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "TriangulateRegularPointsAttributes",                    // tp_name
-    sizeof(TriangulateRegularPointsAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)TriangulateRegularPointsAttributes_dealloc,  // tp_dealloc
-    (printfunc)TriangulateRegularPointsAttributes_print,     // tp_print
-    (getattrfunc)PyTriangulateRegularPointsAttributes_getattr, // tp_getattr
-    (setattrfunc)PyTriangulateRegularPointsAttributes_setattr, // tp_setattr
-    (cmpfunc)TriangulateRegularPointsAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)TriangulateRegularPointsAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    TriangulateRegularPointsAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &TriangulateRegularPointsAttributesType
+         || Py_TYPE(other) != &TriangulateRegularPointsAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    TriangulateRegularPointsAttributes *a = ((TriangulateRegularPointsAttributesObject *)self)->data;
+    TriangulateRegularPointsAttributes *b = ((TriangulateRegularPointsAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -386,7 +557,7 @@ PyTriangulateRegularPointsAttributes_GetLogString()
 {
     std::string s("TriangulateRegularPointsAtts = TriangulateRegularPointsAttributes()\n");
     if(currentAtts != 0)
-        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.");
+        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.", true);
     return s;
 }
 
@@ -399,7 +570,7 @@ PyTriangulateRegularPointsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TriangulateRegularPointsAtts = TriangulateRegularPointsAttributes()\n");
-        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.");
+        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.", true);
         cb(s);
     }
 }

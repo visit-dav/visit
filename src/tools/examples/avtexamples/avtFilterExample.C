@@ -19,6 +19,7 @@
 #include <VisItException.h>
 #include <visitstream.h>
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,16 @@ using std::vector;
 int
 main(int argc, char *argv[])
 {
+    std::string dataDir("/usr/gapps/visit/data");
+    for(int i = 1; i < argc; ++i)
+    {
+        if(std::strcmp(argv[i], "-datadir") == 0 && (i+1) < argc)
+        {
+            dataDir = std::string(argv[i+1]);
+            break;
+        }
+    }
+
     //
     // Initialize VisIt.
     //
@@ -64,7 +75,8 @@ main(int argc, char *argv[])
     // Instantiate the database.
     //
     cerr << "Opening the file." << endl;
-    const char *filename = "/usr/gapps/visit/data/rect2d.silo";
+    string fn = dataDir + "/rect2d.silo";
+    const char*filename(fn.c_str());
     avtDatabase *db = NULL;
     vector<string> pluginList;
     TRY
@@ -81,7 +93,7 @@ main(int argc, char *argv[])
 
     if (db == NULL)
     {
-        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
+        cerr << "Could not open file " << filename << ".  Tried using plugins ";
         for (size_t i = 0 ; i < pluginList.size() ; i++)
         {
             cerr << pluginList[i];

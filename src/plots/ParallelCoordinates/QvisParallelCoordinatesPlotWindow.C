@@ -25,14 +25,14 @@
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::QvisParallelCoordinatesPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisParallelCoordinatesPlotWindow::QvisParallelCoordinatesPlotWindow(const int type,
@@ -50,14 +50,14 @@ QvisParallelCoordinatesPlotWindow::QvisParallelCoordinatesPlotWindow(const int t
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
@@ -68,7 +68,7 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Jeremy Meredith
@@ -78,7 +78,7 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Jeremy Meredith, Wed Mar 21 18:20:47 EDT 2007
 //    Added a checkbox to allow the lines to be hidden when the extents
 //    tool has not limited the viewing range to a focus.
-//   
+//
 //    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
 //    Added ability to unify extents across all axes.
 //
@@ -93,7 +93,7 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Added tr()'s
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 //    Jeremy Meredith, Wed Feb 25 12:55:54 EST 2009
 //    Added number of bins for line drawing.
@@ -126,17 +126,17 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     QGridLayout *axisLayout = new QGridLayout(axisGroup);
 
     // axes list
-    
+
     axisTree = new QTreeWidget(axisGroup);
     axisTree->setSortingEnabled(false);
     axisTree->setRootIsDecorated(false);
-    
+
     QTreeWidgetItem *header = new QTreeWidgetItem();
     header->setText(0,tr("Axis"));
     header->setText(1,tr("Min"));
     header->setText(2,tr("Max"));
     axisTree->setHeaderItem(header);
-        
+
     axisLayout->addWidget(axisTree, 0,0, 4,4);
     connect(axisTree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             this, SLOT(axisSelected(QTreeWidgetItem*)));
@@ -302,8 +302,8 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     contextGammaSlider->setRange(0,100);
     contextGammaSlider->setPageStep(5);
     contextGammaSlider->setValue(66);
-    
-                                     
+
+
     connect(contextGammaSlider, SIGNAL(valueChanged(int)),
             this, SLOT(contextGammaSliderChanged(int)));
     connect(contextGammaSlider, SIGNAL(sliderReleased()),
@@ -349,7 +349,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Jeremy Meredith
@@ -359,7 +359,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Jeremy Meredith, Wed Mar 21 18:20:47 EDT 2007
 //    Added a checkbox to allow the lines to be hidden when the extents
 //    tool has not limited the viewing range to a focus.
-//   
+//
 //    Jeremy Meredith, Thu Feb  7 17:42:48 EST 2008
 //    For an empty list of axis names, disable critical widgets and
 //    put in a useful message.
@@ -380,7 +380,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Don't enable de/up/down buttons if we were created from an array var.
 //
 //    Cyrus Harrison, Mon Feb 25 13:42:21 PST 2008
-//    Resolved AIX QString init error. 
+//    Resolved AIX QString init error.
 //
 //    Kathleen Bonnell, Thu Mar  6 09:47:34 PST 2008
 //    Cannot convert a std::string to a QString on windows, must use .c_str().
@@ -392,7 +392,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Removed unused variables.
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 //    Jeremy Meredith, Thu Mar 12 13:12:37 EDT 2009
 //    Qt4 port of new additions.
@@ -406,6 +406,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Jeremy Meredith, Tue Oct 27 11:18:23 EDT 2009
 //    Added ability to manually set axis extents to specific values.
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace use of QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -413,7 +416,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
 
-    QString oldAxis = axisTree->currentItem() ? 
+    QString oldAxis = axisTree->currentItem() ?
         axisTree->currentItem()->text(0) : QString("");
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
@@ -446,7 +449,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
                     name = (atts->GetVisualAxisNames()[ax]).c_str();
                 else
                 {
-                    name.sprintf(" %02ld",ax);
+                    name = QString(" %1").arg(ax,2,10,QLatin1Char('0'));
                     name = tr("Axis") + name;
                 }
                 QTreeWidgetItem *item =
@@ -572,9 +575,9 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
         axisTree->setCurrentItem(item);
         axisSelected(item);
     }
-    
+
     // Set enabled states
-    
+
     nitems = (int)atts->GetScalarAxisNames().size();
     axisDelButton->setEnabled( nitems > 2 &&
                               axisTree->currentItem()!= NULL);
@@ -591,7 +594,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: Jeremy Meredith
@@ -602,7 +605,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 //   Added tr()
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 //    Jeremy Meredith, Wed Feb 25 13:00:02 EST 2009
 //    Added number of bins for line drawing.
@@ -718,14 +721,14 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -751,14 +754,14 @@ QvisParallelCoordinatesPlotWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -771,14 +774,14 @@ QvisParallelCoordinatesPlotWindow::apply()
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when "Make default" button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -793,14 +796,14 @@ QvisParallelCoordinatesPlotWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when reset button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -935,7 +938,7 @@ QvisParallelCoordinatesPlotWindow::resetAxisExtents()
 //    Don't enable del/up/down buttons if we were created from an array var.
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 //    Jeremy Meredith, Tue Oct 27 13:02:24 EDT 2009
 //    Add explicit axis min/max value settings.
@@ -985,7 +988,7 @@ QvisParallelCoordinatesPlotWindow::axisSelected(QTreeWidgetItem*)
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -1014,7 +1017,7 @@ QvisParallelCoordinatesPlotWindow::addAxis(const QString &axisToAdd)
 //    Changed axis list to QTreeView to support multiple columns.
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -1022,7 +1025,7 @@ void
 QvisParallelCoordinatesPlotWindow::delAxis()
 {
     if (axisTree->currentItem())
-    { 
+    {
         QString axis = axisTree->currentItem()->text(0);
         atts->DeleteAxis(axis.toStdString(), 2);
         Apply();
@@ -1050,7 +1053,7 @@ QvisParallelCoordinatesPlotWindow::delAxis()
 //    as names of actual scalars instead of just display names.
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -1100,7 +1103,7 @@ QvisParallelCoordinatesPlotWindow::moveAxisUp()
 //    as names of actual scalars instead of just display names.
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -1111,11 +1114,11 @@ QvisParallelCoordinatesPlotWindow::moveAxisDown()
     int index = GetSelectedAxisIndex();
     if( index < 0)
         return;
-    
+
     // must make a local copy
     stringVector axes = atts->GetScalarAxisNames();
     int naxes = (int)axes.size();
- 
+
     // can't move last axis down in list
     if (index >= naxes-1)
         return;
@@ -1335,7 +1338,7 @@ QvisParallelCoordinatesPlotWindow::unifyAxisExtentsToggled(bool val)
 //
 //  Purpose:
 //    Helper that obtains the index of the currently selected axis, or
-//    -1 if no axis is selected. 
+//    -1 if no axis is selected.
 //
 //
 //  Programmer:  Cyrus Harrison
@@ -1485,7 +1488,7 @@ QvisParallelCoordinatesPlotWindow::axisMinValChanged(const QString &val)
     if (!ok)
         return;
 
-    
+
     atts->GetExtentMinima()[index] = v;
     atts->SelectExtentMinima();
     axisTree->topLevelItem(index)->setText(1, val);
@@ -1530,7 +1533,7 @@ QvisParallelCoordinatesPlotWindow::axisMaxValChanged(const QString &val)
     if (!ok)
         return;
 
-    
+
     atts->GetExtentMaxima()[index] = v;
     atts->SelectExtentMaxima();
     axisTree->topLevelItem(index)->setText(2, val);

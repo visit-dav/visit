@@ -5,6 +5,7 @@
 #ifndef PY_DEFEREXPRESSIONATTRIBUTES_H
 #define PY_DEFEREXPRESSIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DeferExpressionAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyDeferExpressionAttributes_Wrap(const DeferExpressionAttributes 
 void           PyDeferExpressionAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDeferExpressionAttributes_SetDefaults(const DeferExpressionAttributes *atts);
 std::string    PyDeferExpressionAttributes_GetLogString();
-std::string    PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *, const char *);
+std::string    PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *, const char *, const bool=false);
 PyObject *     PyDeferExpressionAttributes_getattr(PyObject *self, char *name);
 int            PyDeferExpressionAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyDeferExpressionAttributes_methods[DEFEREXPRESSIONATTRIBUTES_NMETH];

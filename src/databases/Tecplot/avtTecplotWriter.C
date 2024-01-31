@@ -8,16 +8,21 @@
 
 #include <avtTecplotWriter.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
 
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <visit_gzstream.h>
 
 #include <vtkCell.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkDataSetWriter.h>
@@ -38,7 +43,7 @@ using     std::vector;
 #define FLOAT_COLUMN_WIDTH 14
 #define INT_COLUMN_WIDTH   11
 
-avtTecplotWriter::avtTecplotWriter(DBOptionsAttributes *writeOpts)
+avtTecplotWriter::avtTecplotWriter(const DBOptionsAttributes *writeOpts)
 {
     variablesWritten = false;
     gzipLevel = 0;
@@ -158,7 +163,7 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
 // ****************************************************************************
 // Method: ReallyHasMaterialsEx
 //
-// Purpose: 
+// Purpose:
 //   Traverses the data tree and determines if all of the nodes have materials.
 //
 // Arguments:
@@ -166,13 +171,13 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 // Returns:    true if all nodes have avtSubsets; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep  2 12:00:03 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static bool
@@ -258,7 +263,7 @@ avtTecplotWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Modifications:
 //    Mark C. Miller, Tue Mar 10 11:15:29 PDT 2009
-//    Added conditional compilation for dbio-only build. 
+//    Added conditional compilation for dbio-only build.
 // ****************************************************************************
 
 void
@@ -277,7 +282,7 @@ avtTecplotWriter::CloseFile(void)
 // Returns:    True because we want to have each domain append to the existing
 //             file that was created by its write group leader.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar  5 15:45:09 PST 2014
@@ -295,7 +300,7 @@ avtTecplotWriter::SequentialOutput() const
 // ****************************************************************************
 // Method: avtTecplotWriter::WriteVariables
 //
-// Purpose: 
+// Purpose:
 //   Write the names of the variables.
 //
 // Arguments:
@@ -305,7 +310,7 @@ avtTecplotWriter::SequentialOutput() const
 // Creation:   Wed Sep  2 11:14:40 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -340,7 +345,7 @@ avtTecplotWriter::WriteVariables(const vector<string> &coordvars)
 // ****************************************************************************
 // Method: avtTecplotWriter::WriteCurvilinearMesh
 //
-// Purpose: 
+// Purpose:
 //   Writes one curvilinear mesh's data as a tecplot zone.
 //
 // Arguments:
@@ -407,7 +412,7 @@ avtTecplotWriter::WriteCurvilinearMesh(vtkStructuredGrid *sg, int chunk)
 // ****************************************************************************
 // Method: avtTecplotWriter::WriteRectilinearMesh
 //
-// Purpose: 
+// Purpose:
 //   Writes one rectilinear mesh's data as a tecplot zone.
 //
 // Arguments:
@@ -479,7 +484,7 @@ avtTecplotWriter::WriteRectilinearMesh(vtkRectilinearGrid *rgrid, int chunk)
 // ****************************************************************************
 // Method: avtTecplotWriter::WriteUnstructuredMesh
 //
-// Purpose: 
+// Purpose:
 //   Writes one unstructured mesh's data as a tecplot zone.
 //
 // Arguments:
@@ -805,7 +810,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 // ****************************************************************************
 // Method: avtTecplotWriter::WritePolyData
 //
-// Purpose: 
+// Purpose:
 //   Saves a polydata dataset to Tecplot format.
 //
 // Arguments:
@@ -819,7 +824,10 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 //   Jeremy Meredith, Tue Sep 28 10:30:33 EDT 2010
 //   Added at least one character of manual whitespace in between values.
 //   Not sure how, but a problem was reported where none showed up.
-//   
+//
+//   Kathleen Biagas, Thu Aug 11, 2022
+//   Support VTK9: use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void
@@ -833,10 +841,19 @@ avtTecplotWriter::WritePolyData(vtkPolyData *pd, int chunk)
 
     // Search through the poly cells and see what we have.
     int ntri = 0, nquad = 0;
+    vtkIdType npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
     pd->GetPolys()->InitTraversal();
-    vtkIdType npts, *pts = 0;
+    vtkIdType *pts = 0;
     while(pd->GetPolys()->GetNextCell(npts, pts))
     {
+#else
+    const vtkIdType *pts = nullptr;
+    auto iter = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
+    for(iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+    {
+        iter->GetCurrentCell(npts, pts);
+#endif
         if(npts == 3)
             ntri++;
         else if(npts == 4)
@@ -880,9 +897,15 @@ avtTecplotWriter::WritePolyData(vtkPolyData *pd, int chunk)
     WriteDataArrays(pd);
 
     // Save the polygons.
+#if LIB_VERSION_LE(VTK,8,1,0)
     pd->GetPolys()->InitTraversal();
     while(pd->GetPolys()->GetNextCell(npts, pts))
     {
+#else
+    for(iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+    {
+        iter->GetCurrentCell(npts, pts);
+#endif
         if(npts == 3 || npts == 4)
         {
             if(subdivide && npts == 4)
@@ -909,15 +932,15 @@ avtTecplotWriter::WritePolyData(vtkPolyData *pd, int chunk)
                     file() << pts[i]+1 << " ";
                 }
                 file() << endl;
-            }            
-        }        
+            }
+        }
     }
 }
 
 // ****************************************************************************
 // Method: avtTecplotWriter::WriteDataArrays
 //
-// Purpose: 
+// Purpose:
 //   Writes the data arrays for the dataset.
 //
 // Arguments:
@@ -1000,7 +1023,7 @@ avtTecplotWriter::WriteDataArrays(vtkDataSet *ds1)
 // ****************************************************************************
 // Method: avtTecplotWriter::WritePoints
 //
-// Purpose: 
+// Purpose:
 //   Write the VTK points to the file.
 //
 // Arguments:
@@ -1014,12 +1037,12 @@ avtTecplotWriter::WriteDataArrays(vtkDataSet *ds1)
 //   Jeremy Meredith, Tue Sep 28 10:30:33 EDT 2010
 //   Added at least one character of manual whitespace in between values.
 //   Not sure how, but a problem was reported where none showed up.
-//   
+//
 // ****************************************************************************
 
 void
 avtTecplotWriter::WritePoints(vtkPoints *pts, int dim)
-{ 
+{
     int npts = pts->GetNumberOfPoints();
     vtkDataArray *arr = pts->GetData();
     for (int d = 0; d < dim; d++)

@@ -5,7 +5,7 @@
 #ifndef AVT_TIME_SLIDER_COLLEAGUE_H
 #define AVT_TIME_SLIDER_COLLEAGUE_H
 #include <viswindow_exports.h>
-#include <avtAnnotationColleague.h>
+#include <avtAnnotationWithTextColleague.h>
 #include <ColorAttribute.h>
 
 class vtkVisItTextActor;
@@ -36,9 +36,11 @@ class vtkTimeSliderActor;
 //   Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
 //   Change the text actor type.
 //
+//   Mark C. Miller, Thu Oct  5 15:29:27 PDT 2023
+//   Moved timeScale, timeOffset to avtAnnotationColleague
 // ****************************************************************************
 
-class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationColleague
+class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationWithTextColleague
 {
 public:
     avtTimeSliderColleague(VisWindowColleagueProxy &);
@@ -47,8 +49,6 @@ public:
     virtual void AddToRenderer();
     virtual void RemoveFromRenderer();
     virtual void Hide();
-
-    virtual void SetTimeScaleAndOffset(double,double);
 
     virtual std::string TypeName() const { return "TimeSlider"; }
 
@@ -70,20 +70,11 @@ private:
     void  GetTextRect(double, double, double, double, double *) const;
     void  GetSliderRect(double, double, double, double, double *) const;
 
-    static double      initialTime;
-    static int         initialCycle;
-
     vtkTimeSliderActor *timeSlider;
     vtkVisItTextActor  *textActor;
-    char               *textFormatString;
-    char               *textString;
     char               *timeFormatString;
     int                timeDisplayMode;
 
-    double             currentTime;
-    int                currentCycle;
-    double             timeScale;
-    double             timeOffset;
     bool               useForegroundForTextColor;
     bool               addedToRenderer;
     ColorAttribute     textColor;

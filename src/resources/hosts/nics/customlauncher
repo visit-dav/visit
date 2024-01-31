@@ -73,6 +73,9 @@ class JobSubmitter_qsub_NICS(JobSubmitter_qsub):
 #
 # Modifications:
 #
+#   Cyrus Harrison, Fri Dec 11 09:34:38 PST 2020
+#   Python 3 port (avoid using old string methods)
+#
 ###############################################################################
 
 class NICSLauncher(MainLauncher):
@@ -114,7 +117,7 @@ class NICSLauncher(MainLauncher):
         if self.IsRunningOnKraken():
             self.generalArgs.host = self.hostname()
             if "krakenpf" in self.generalArgs.host:
-                self.generalArgs.host = string.replace(self.generalArgs.host, "krakenpf", "login")
+                self.generalArgs.host = self.generalArgs.host.replace("krakenpf", "login")
 
             # The /sw filesystem is not accessible from the compute nodes.
             # NICS requires that only required support files be present on /lustre.

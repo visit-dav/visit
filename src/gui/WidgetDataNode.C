@@ -3,22 +3,22 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-// Purpose:  This file is a set of routines that can set/get values from 
+// Purpose:  This file is a set of routines that can set/get values from
 //           QWidget/DataNode. This allows us to use custom UI components. We
 //           could even use them to create DataNodes that AttributeSubjects
 //           could use to initialize themselves, which would open the door to
 //           plots with UI's created with Qt designer. It would also mean that
 //           we might not need Qt to build new UI's at all, which would be a
 //           plus on systems where you have to pay for QT.
-//   
 //
-// Notes:      
+//
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 6 17:35:57 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 
@@ -45,7 +45,7 @@ ConvertTextToDataNodeSettings(const QString &text, DataNode *node)
 // ****************************************************************************
 // Function: DataNodeToBool
 //
-// Purpose: 
+// Purpose:
 //   Converts a data node value into a bool
 //
 // Arguments:
@@ -53,13 +53,13 @@ ConvertTextToDataNodeSettings(const QString &text, DataNode *node)
 //
 // Returns:    The converted bool value.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 10:37:19 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static bool
@@ -102,7 +102,7 @@ DataNodeToBool(DataNode *node)
 // ****************************************************************************
 // Function: DataNodeToInt
 //
-// Purpose: 
+// Purpose:
 //   Converts a data node into an int.
 //
 // Arguments:
@@ -110,13 +110,13 @@ DataNodeToBool(DataNode *node)
 //
 // Returns:    The int value of the data node.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 10:37:54 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static int
@@ -165,7 +165,7 @@ DataNodeToInt(DataNode *node)
 // ****************************************************************************
 // Function: DataNodeToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts the data node into a QString.
 //
 // Arguments:
@@ -173,13 +173,16 @@ DataNodeToInt(DataNode *node)
 //
 // Returns:    The QString representation of the data node.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 10:38:27 PDT 2006
 //
 // Modifications:
-//   
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.setNum where possible.
+//
 // ****************************************************************************
 
 QString
@@ -187,24 +190,26 @@ DataNodeToQString(const DataNode *node)
 {
     QString s, tmp;
     int i;
-#define ARRAY_TO_STRING(Type, Method, Fmt, suffix)\
+
+// These only handle numbers now, and call QString.setNum
+#define ARRAY_TO_STRING(Type, Method)\
         {\
             const Type *ptr = node->Method();\
             for(i = 0; i < node->GetLength(); ++i)\
             {\
-                tmp.sprintf(Fmt, ptr[i] suffix);\
+                tmp.setNum(ptr[i]);\
                 if(i > 0)\
                     s += " ";\
                 s += tmp;\
             }\
         }
 
-#define VECTOR_TO_STRING(Type, Method, Fmt, suffix)\
+#define VECTOR_TO_STRING(Type, Method)\
         {\
             const Type &vec = node->Method();\
             for(size_t i = 0; i < vec.size(); ++i)\
             {\
-                tmp.sprintf(Fmt, vec[i] suffix);\
+                tmp.setNum(vec[i]);\
                 if(i > 0)\
                     s += " ";\
                 s += tmp;\
@@ -215,25 +220,25 @@ DataNodeToQString(const DataNode *node)
     case INTERNAL_NODE:
         break;
     case CHAR_NODE:
-        s.sprintf("%d", (int)node->AsChar());
+        s.setNum((int)node->AsChar());
         break;
     case UNSIGNED_CHAR_NODE:
-        s.sprintf("%d", (int)node->AsUnsignedChar());
+        s.setNum((int)node->AsUnsignedChar());
         break;
     case INT_NODE:
-        s.sprintf("%d", node->AsInt());
+        s.setNum(node->AsInt());
         break;
     case LONG_NODE:
-        s.sprintf("%ld", node->AsLong());
+        s.setNum(node->AsLong());
         break;
     case FLOAT_NODE:
-        s.sprintf("%f", node->AsFloat());
+        s.setNum(node->AsFloat());
         break;
     case DOUBLE_NODE:
-        s.sprintf("%lg", node->AsDouble());
+        s.setNum(node->AsDouble());
         break;
     case STRING_NODE:
-        s.sprintf("%s", node->AsString().c_str());
+        s = QString(node->AsString().c_str());
         break;
     case BOOL_NODE:
         if(node->AsBool()) s = "true"; else s = "false";
@@ -243,7 +248,7 @@ DataNodeToQString(const DataNode *node)
             const char *cptr = node->AsCharArray();
             for(i = 0; i < node->GetLength(); ++i)
             {
-                tmp.sprintf("%d", (int)cptr[i]);
+                tmp.setNum((int)cptr[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -255,7 +260,7 @@ DataNodeToQString(const DataNode *node)
             const unsigned char *cptr = node->AsUnsignedCharArray();
             for(i = 0; i < node->GetLength(); ++i)
             {
-                tmp.sprintf("%d", (int)cptr[i]);
+                tmp.setNum((int)cptr[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -263,19 +268,28 @@ DataNodeToQString(const DataNode *node)
         }
         break;
     case INT_ARRAY_NODE:
-        ARRAY_TO_STRING(int, AsIntArray, "%d",);
+        ARRAY_TO_STRING(int, AsIntArray);
         break;
     case LONG_ARRAY_NODE:
-        ARRAY_TO_STRING(long, AsLongArray, "%ld",);
+        ARRAY_TO_STRING(long, AsLongArray);
         break;
     case FLOAT_ARRAY_NODE:
-        ARRAY_TO_STRING(float, AsFloatArray, "%f",);
+        ARRAY_TO_STRING(float, AsFloatArray);
         break;
     case DOUBLE_ARRAY_NODE:
-        ARRAY_TO_STRING(double, AsDoubleArray, "%lg",);
+        ARRAY_TO_STRING(double, AsDoubleArray);
         break;
     case STRING_ARRAY_NODE:
-        ARRAY_TO_STRING(std::string, AsStringArray, "\"%s\"", .c_str());
+        {
+            const std::string *ptr = node->AsStringArray();
+            for(i = 0; i < node->GetLength(); ++i)
+            {
+                tmp = QString(ptr[i].c_str());
+                if(i > 0)
+                    s += " ";
+                s += tmp;
+            }
+        }
         break;
     case BOOL_ARRAY_NODE:
         {
@@ -297,7 +311,7 @@ DataNodeToQString(const DataNode *node)
             const charVector &vec = node->AsCharVector();
             for(size_t i = 0; i < vec.size(); ++i)
             {
-                tmp.sprintf("%d", (int)vec[i]);
+                tmp.setNum((int)vec[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -309,7 +323,7 @@ DataNodeToQString(const DataNode *node)
             const unsignedCharVector &vec = node->AsUnsignedCharVector();
             for(size_t i = 0; i < vec.size(); ++i)
             {
-                tmp.sprintf("%d", (int)vec[i]);
+                tmp.setNum((int)vec[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -317,19 +331,28 @@ DataNodeToQString(const DataNode *node)
         }
         break;
     case INT_VECTOR_NODE:
-        VECTOR_TO_STRING(intVector, AsIntVector, "%d",);
+        VECTOR_TO_STRING(intVector, AsIntVector);
         break;
     case LONG_VECTOR_NODE:
-        VECTOR_TO_STRING(longVector, AsLongVector, "%ld",);
+        VECTOR_TO_STRING(longVector, AsLongVector);
         break;
     case FLOAT_VECTOR_NODE:
-        VECTOR_TO_STRING(floatVector, AsFloatVector, "%f",);
+        VECTOR_TO_STRING(floatVector, AsFloatVector);
         break;
     case DOUBLE_VECTOR_NODE:
-        VECTOR_TO_STRING(doubleVector, AsDoubleVector, "%lg",);
+        VECTOR_TO_STRING(doubleVector, AsDoubleVector);
         break;
     case STRING_VECTOR_NODE:
-        VECTOR_TO_STRING(stringVector, AsStringVector, "\"%s\"", .c_str());
+        {
+            const stringVector &vec = node->AsStringVector();
+            for(size_t i = 0; i < vec.size(); ++i)
+            {
+                tmp = QString(vec[i].c_str());
+                if(i > 0)
+                    s += " ";
+                s += tmp;
+            }
+        }
         break;
     default:
         break;
@@ -344,7 +367,7 @@ DataNodeToQString(const DataNode *node)
 // ****************************************************************************
 // Function: DataNodeToQColor
 //
-// Purpose: 
+// Purpose:
 //   Converts a data node representation of color into a QColor.
 //
 // Arguments:
@@ -353,13 +376,13 @@ DataNodeToQString(const DataNode *node)
 //
 // Returns:    True on success; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Nov 16 13:34:12 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool DataNodeToQColor(DataNode *node, QColor &color)
@@ -368,7 +391,7 @@ bool DataNodeToQColor(DataNode *node, QColor &color)
     int   i, rgb[3] = {0, 0, 0};
     float f_rgb[3] = {0., 0., 0.};
     bool  fp = false;
-    
+
 #define ARRAY_TO_RGB(Rgb, Type, Method, Cast) \
         if(node->GetLength() >= 3) \
         { \
@@ -459,7 +482,7 @@ bool DataNodeToQColor(DataNode *node, QColor &color)
 // ****************************************************************************
 // Method: QColorToDataNode
 //
-// Purpose: 
+// Purpose:
 //   This function inserts a color into a data node.
 //
 // Arguments:
@@ -471,7 +494,7 @@ bool DataNodeToQColor(DataNode *node, QColor &color)
 // Creation:   Thu Nov 16 13:35:18 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -489,7 +512,7 @@ QColorToDataNode(DataNode *node, const char *key, const QColor &c)
 // ****************************************************************************
 // Method: InitializeQComboBoxFromDataNode
 //
-// Purpose: 
+// Purpose:
 //   Initializes a QComboBox from a DataNode
 //
 // Arguments:
@@ -544,7 +567,7 @@ InitializeQComboBoxFromDataNode(QComboBox *co, DataNode *node)
 // ****************************************************************************
 // Function: InitializeDataNodeFromQComboBox
 //
-// Purpose: 
+// Purpose:
 //   Initializes a data node from the active item in a QComboBox.
 //
 // Arguments:
@@ -582,7 +605,7 @@ InitializeDataNodeFromQComboBox(QComboBox *co, DataNode *node)
             node->AddNode(new DataNode(objectName, co->currentIndex()));
         else if(t == STRING_NODE)
         {
-            node->AddNode(new DataNode(objectName, 
+            node->AddNode(new DataNode(objectName,
                 co->currentText().toStdString()));
         }
     }
@@ -596,7 +619,7 @@ InitializeDataNodeFromQComboBox(QComboBox *co, DataNode *node)
 // ****************************************************************************
 // Function: InitializeQCheckBoxFromDataNode
 //
-// Purpose: 
+// Purpose:
 //   Initializes a QCheckBox from a data node.
 //
 // Arguments:
@@ -607,7 +630,7 @@ InitializeDataNodeFromQComboBox(QComboBox *co, DataNode *node)
 // Creation:   Fri Nov 17 10:40:22 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static void
@@ -619,7 +642,7 @@ InitializeQCheckBoxFromDataNode(QCheckBox *co, DataNode *node)
 // ****************************************************************************
 // Method: InitializeDataNodeFromQCheckBox
 //
-// Purpose: 
+// Purpose:
 //   Initialize a data node from a QCheckBox.
 //
 // Arguments:
@@ -630,7 +653,7 @@ InitializeQCheckBoxFromDataNode(QCheckBox *co, DataNode *node)
 // Creation:   Fri Nov 17 10:41:00 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static void
@@ -644,7 +667,7 @@ InitializeDataNodeFromQCheckBox(QCheckBox *co, DataNode *node)
 // ****************************************************************************
 // Function: InitializeQButtonGroupFromDataNode
 //
-// Purpose: 
+// Purpose:
 //   Initializes a QButtonGroup from a data node.
 //
 // Arguments:
@@ -671,7 +694,7 @@ InitializeQButtonGroupFromDataNode(QButtonGroup *co, DataNode *node)
 // ****************************************************************************
 // Method: InitializeDataNodeFromQButtonGroup
 //
-// Purpose: 
+// Purpose:
 //   Initializes a data node from a QButtonGroup.
 //
 // Arguments:
@@ -724,7 +747,7 @@ InitializeDataNodeFromQButtonGroup(QButtonGroup *co, DataNode *node)
 // ****************************************************************************
 // Function: InitializeWidgetFromDataNode
 //
-// Purpose: 
+// Purpose:
 //   This function initializes a Qt widget (and its children) using a data
 //   node, allowing us to initialize our custom UI's from data node from
 //   saved settings, session files, etc.
@@ -840,7 +863,7 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
 // ****************************************************************************
 // Function: InitializeDataNodeFromWidget
 //
-// Purpose: 
+// Purpose:
 //   This function adds the widget data values into the data node structure.
 //
 // Arguments:
@@ -872,7 +895,7 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
         DataNode *objValues = node->GetNode(objectName);
         if(objValues)
         {
-            // objValues points to the node in the settings that 
+            // objValues points to the node in the settings that
             // contains the settings for the named widget.
             if(obj->inherits("QButtonGroup"))
             {

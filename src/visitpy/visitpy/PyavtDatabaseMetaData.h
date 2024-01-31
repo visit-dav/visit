@@ -5,6 +5,7 @@
 #ifndef PY_AVTDATABASEMETADATA_H
 #define PY_AVTDATABASEMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtDatabaseMetaData.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyavtDatabaseMetaData_Wrap(const avtDatabaseMetaData 
 void VISITPY_API           PyavtDatabaseMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtDatabaseMetaData_SetDefaults(const avtDatabaseMetaData *atts);
 std::string VISITPY_API    PyavtDatabaseMetaData_GetLogString();
-std::string VISITPY_API    PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *, const char *);
+std::string VISITPY_API    PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtDatabaseMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH];

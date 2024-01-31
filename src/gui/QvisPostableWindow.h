@@ -65,8 +65,8 @@ class GUI_API QvisPostableWindow : public QvisWindowBase
 {
     Q_OBJECT
 public:
-    QvisPostableWindow(const QString &captionString = QString::null,
-                       const QString &shortName = QString::null,
+    QvisPostableWindow(const QString &captionString = QString(),
+                       const QString &shortName = QString(),
                        QvisNotepadArea *n = 0);
     virtual ~QvisPostableWindow();
     virtual void CreateWindowContents() = 0;

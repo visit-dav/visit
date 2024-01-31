@@ -25,7 +25,7 @@ visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetDomainList(const char *, void *);
 void ControlCommandCallback(const char *cmd, const char *args, void *cbdata);
-void SlaveProcessCallback(void);
+void WorkerProcessCallback(void);
 int ProcessVisItCommand();
 #ifdef PARALLEL
 int visit_broadcast_int_callback(int *value, int sender);
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "VisIt connected\n");
             }
           VisItSetCommandCallback(ControlCommandCallback, (void*)NULL);
-          VisItSetSlaveProcessCallback(SlaveProcessCallback);
+          VisItSetWorkerProcessCallback(WorkerProcessCallback);
 
           VisItSetGetMetaData(SimGetMetaData, NULL);
           VisItSetGetMesh(SimGetMesh, NULL);

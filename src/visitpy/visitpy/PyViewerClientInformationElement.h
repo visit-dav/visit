@@ -5,6 +5,7 @@
 #ifndef PY_VIEWERCLIENTINFORMATIONELEMENT_H
 #define PY_VIEWERCLIENTINFORMATIONELEMENT_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ViewerClientInformationElement.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyViewerClientInformationElement_Wrap(const ViewerCli
 void VISITPY_API           PyViewerClientInformationElement_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewerClientInformationElement_SetDefaults(const ViewerClientInformationElement *atts);
 std::string VISITPY_API    PyViewerClientInformationElement_GetLogString();
-std::string VISITPY_API    PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *, const char *);
+std::string VISITPY_API    PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *, const char *, const bool=false);
 VISITPY_API PyObject *     PyViewerClientInformationElement_getattr(PyObject *self, char *name);
 int VISITPY_API            PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewerClientInformationElement_methods[VIEWERCLIENTINFORMATIONELEMENT_NMETH];

@@ -37,35 +37,28 @@
 //    Pascal Grosset, Fri Sep 20 2013
 //    Added ray casting slivr & trilinear interpolation
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9: Change view
+//    to viewInfo and move some initialization into header.
+//
 // ****************************************************************************
 
 avtRayTracerBase::avtRayTracerBase()
 {
-    view.camera[0] = -5.;
-    view.camera[1] = 10.;
-    view.camera[2] = -15.;
-    view.focus[0]  = 0.;
-    view.focus[1]  = 0.;
-    view.focus[2]  = 0.;
-    view.viewAngle = 70.;
-    view.viewUp[0] = 0.;
-    view.viewUp[1] = 0.;
-    view.viewUp[2] = 1.;
-    view.nearPlane = 5.;
-    view.farPlane  = 30.;
-    view.parallelScale = 10;
-    view.orthographic = true;
-
-    rayfoo         = NULL;
-
-    opaqueImage    = NULL;
-
-    background[0]  = 255;
-    background[1]  = 255;
-    background[2]  = 255;
-
-    screen[0] = screen[1] = 400;
-    samplesPerRay  = 40;
+    viewInfo.camera[0] = -5.;
+    viewInfo.camera[1] = 10.;
+    viewInfo.camera[2] = -15.;
+    viewInfo.focus[0]  = 0.;
+    viewInfo.focus[1]  = 0.;
+    viewInfo.focus[2]  = 0.;
+    viewInfo.viewAngle = 70.;
+    viewInfo.viewUp[0] = 0.;
+    viewInfo.viewUp[1] = 0.;
+    viewInfo.viewUp[2] = 1.;
+    viewInfo.nearPlane = 5.;
+    viewInfo.farPlane  = 30.;
+    viewInfo.parallelScale = 10;
+    viewInfo.orthographic = true;
 }
 
 
@@ -152,8 +145,11 @@ avtRayTracerBase::GetNumberOfStages(int screenX, int screenY, int screenZ)
 //  Modifications:
 //
 //    Hank Childs, Sat Sep 26 20:43:55 CDT 2009
-//    If we have more than 32 procs, then we have enough memory and don't need 
+//    If we have more than 32 procs, then we have enough memory and don't need
 //    to tile.
+//
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
 //
 // ****************************************************************************
 
@@ -163,7 +159,7 @@ avtRayTracerBase::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
     if (PAR_Size() >= 32)
         return 1;
 
-    VISIT_LONG_LONG numSamps = screenX*screenY*screenZ;
+    long long numSamps = screenX*screenY*screenZ;
     int sampLimitPerProc = 25000000; // 25M
     numSamps /= PAR_Size();
     int numTiles = numSamps/sampLimitPerProc;
@@ -193,12 +189,17 @@ avtRayTracerBase::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //  Programmer: Hank Childs
 //  Creation:   November 27, 2000
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9: Change view
+//    to viewInfo.
+//
 // ****************************************************************************
 
 void
-avtRayTracerBase::SetView(const avtViewInfo &v)
+avtRayTracerBase::SetView(const avtViewInfo &vInfo)
 {
-    view = v;
+    viewInfo = vInfo;
     modified = true;
 }
 
@@ -336,7 +337,7 @@ avtRayTracerBase::ReleaseData(void)
 //
 //  Purpose:
 //      Restricts the data of interest.  Does this by getting the spatial
-//      extents and culling around the view.
+//      extents and culling around the viewInfo.
 //
 //  Programmer: Hank Childs
 //  Creation:   December 15, 2000
@@ -359,7 +360,7 @@ avtRayTracerBase::ReleaseData(void)
 //    And the two are no longer synonymous.
 //
 //    Hank Childs, Thu May 29 09:44:17 PDT 2008
-//    No longer remove domains that cannot contribute to final picture, 
+//    No longer remove domains that cannot contribute to final picture,
 //    because that decision is made here one time for many renders.  If you
 //    choose one set, it may change later for a different render.
 //
@@ -420,15 +421,19 @@ avtRayTracerBase::FilterUnderstandsTransformedRectMesh()
 //     Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //     Change extents names.
 //
+//     Kathleen Biagas, Wed Aug 17, 2022
+//     Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9: Change view
+//     to viewInfo.
+//
 // ****************************************************************************
 
 void
-avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &view,
+avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &viewInfo,
                                     vtkMatrix4x4 *transform,
                                     double &newNearPlane, double &newFarPlane)
 {
-    newNearPlane = view.nearPlane;
-    newFarPlane  = view.farPlane;
+    newNearPlane = viewInfo.nearPlane;
+    newFarPlane  = viewInfo.farPlane;
 
     double dbounds[6];
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
@@ -442,9 +447,9 @@ avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &view,
         GetSpatialExtents(dbounds);
     }
 
-    double vecFromCameraToPlaneX = view.focus[0] - view.camera[0];
-    double vecFromCameraToPlaneY = view.focus[1] - view.camera[1];
-    double vecFromCameraToPlaneZ = view.focus[2] - view.camera[2];
+    double vecFromCameraToPlaneX = viewInfo.focus[0] - viewInfo.camera[0];
+    double vecFromCameraToPlaneY = viewInfo.focus[1] - viewInfo.camera[1];
+    double vecFromCameraToPlaneZ = viewInfo.focus[2] - viewInfo.camera[2];
     double vecMag = (vecFromCameraToPlaneX*vecFromCameraToPlaneX)
                   + (vecFromCameraToPlaneY*vecFromCameraToPlaneY)
                   + (vecFromCameraToPlaneZ*vecFromCameraToPlaneZ);
@@ -468,9 +473,9 @@ avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &view,
         // a triangle with the camera-to-farthest-vector.  Then we have the
         // same angle between them and we can re-use the cosine we calculate.
         //
-        double vecFromCameraToX = X - view.camera[0];
-        double vecFromCameraToY = Y - view.camera[1];
-        double vecFromCameraToZ = Z - view.camera[2];
+        double vecFromCameraToX = X - viewInfo.camera[0];
+        double vecFromCameraToY = Y - viewInfo.camera[1];
+        double vecFromCameraToZ = Z - viewInfo.camera[2];
 
         //
         // dot = cos X * mag(A) * mag(B)
@@ -483,8 +488,8 @@ avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &view,
                    + vecFromCameraToPlaneZ*vecFromCameraToZ;
 
         double dist = dot / vecMag;
-        double newNearest  = dist - (view.farPlane-dist)*0.01; // fudge
-        double newFarthest = dist + (dist-view.nearPlane)*0.01; // fudge
+        double newNearest  = dist - (viewInfo.farPlane-dist)*0.01; // fudge
+        double newFarthest = dist + (dist-viewInfo.nearPlane)*0.01; // fudge
         if (i == 0)
         {
             farthest = newFarthest;
@@ -499,10 +504,10 @@ avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &view,
         }
     }
 
-    if (nearest > view.nearPlane)
+    if (nearest > viewInfo.nearPlane)
         newNearPlane = nearest;
 
-    if (farthest < view.farPlane)
+    if (farthest < viewInfo.farPlane)
         newFarPlane = farthest;
 }
 

@@ -43,7 +43,7 @@ avtOpacityMap::avtOpacityMap(int te)
 {
     tableEntries = te;
     table = new RGBA[tableEntries];
-  
+
     transferFn1D = new RGBAF[tableEntries]();
     // RGBA contains a padded byte after the B and before the A.  Use a memset
     // to make sure this inaccessible byte is initialized.  This will allow
@@ -221,6 +221,9 @@ avtOpacityMap::SetIntermediateVars(void)
 //    Eric Brugger, Thu Mar  7 16:27:32 PST 2019
 //    Fix alpha calculation so that it isn't truncated to an unsigned char.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
 // ****************************************************************************
 
 void
@@ -232,26 +235,35 @@ avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation)
         EXCEPTION0(ImproperUseException);
     }
 
-    if (table != NULL)
+    if (table != nullptr)
         delete [] table;
-    if (transferFn1D != NULL)
+    if (transferFn1D != nullptr)
         delete [] transferFn1D;
 
     tableEntries = te;
     table = new RGBA[tableEntries];
     transferFn1D = new RGBAF[tableEntries];
-    for (int i = 0 ; i < tableEntries ; i++)
+
+    for (int i=0; i<tableEntries; i++)
     {
         table[i].R = arr[i*4];
         table[i].G = arr[i*4+1];
         table[i].B = arr[i*4+2];
         table[i].A = (static_cast<float>(arr[i*4+3]) / 255.f) * attenuation;
 
-        transferFn1D[i].R = static_cast<float>(arr[i*4]) / 255.f;
-        transferFn1D[i].G = static_cast<float>(arr[i*4+1]) / 255.f;
-        transferFn1D[i].B = static_cast<float>(arr[i*4+2]) / 255.f;
+        transferFn1D[i].R =  static_cast<float>(arr[i*4  ]) / 255.f;
+        transferFn1D[i].G =  static_cast<float>(arr[i*4+1]) / 255.f;
+        transferFn1D[i].B =  static_cast<float>(arr[i*4+2]) / 255.f;
         transferFn1D[i].A = (static_cast<float>(arr[i*4+3]) / 255.f) * attenuation;
-    }
+
+#if LIB_VERSION_GE(VTK,9,1,0)
+        if (table[i].A < 0. || table[i].A > 1.)
+        {
+            debug1 << "Bad value " << table[i].A << std::endl;
+            EXCEPTION0(ImproperUseException);
+        }
+#endif
+   }
 
     //
     // We need to set the intermediate vars again since the table size has
@@ -260,7 +272,7 @@ avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation)
     SetIntermediateVars();
 }
 
-
+#if LIB_VERSION_LE(VTK,8,1,0)
 // ****************************************************************************
 //  Method: avtOpacityMap::SetTable
 //
@@ -312,7 +324,7 @@ avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation, float ov
     //
     SetIntermediateVars();
 }
-
+#endif
 
 // ****************************************************************************
 //  Method: avtOpacityMap::SetTableFloat
@@ -330,7 +342,14 @@ avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation, float ov
 //  Programmer: Pascal Grosset
 //  Creation:   June 6, 2013
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//    Rename method to SetTableComposite for VTK9.
+//
 // ****************************************************************************
+
+#if LIB_VERSION_LE(VTK,8,1,0)
 void
 avtOpacityMap::SetTableFloat(unsigned char *arr, int te, double attenuation, float over)
 {
@@ -347,26 +366,96 @@ avtOpacityMap::SetTableFloat(unsigned char *arr, int te, double attenuation, flo
 
     tableEntries = te;
     transferFn1D = new RGBAF[tableEntries]();
-    minVisibleScalarIndex =  maxVisibleScalarIndex = -1;
+    minVisibleScalarIndex = maxVisibleScalarIndex = -1;
     for (int i = 0 ; i < tableEntries ; i++)
     {
         double bp = tan(1.570796327 * (0.5 - attenuation*0.49999));
         double alpha = pow((float) arr[i*4+3] / 255.f, (float)bp);
-        alpha = 1.0 - pow((1.0 - alpha), 1.0/over);
+        // Opacity correction.
+        if( over != 0.0 )
+            alpha = 1.0 - pow((1.0 - alpha), 1.0/over);
 
-        transferFn1D[i].R = (float)arr[i*4+0]/255.*alpha;
-        transferFn1D[i].G = (float)arr[i*4+1]/255.*alpha;
-        transferFn1D[i].B = (float)arr[i*4+2]/255.*alpha;
+        // Set up the transfer function with pre-multiplied
+        // values. That is multiply the RGB value by alpha.
+        transferFn1D[i].R = (float)arr[i*4  ] / 255. * alpha;
+        transferFn1D[i].G = (float)arr[i*4+1] / 255. * alpha;
+        transferFn1D[i].B = (float)arr[i*4+2] / 255. * alpha;
         transferFn1D[i].A = alpha;
-        if (alpha != 0 && minVisibleScalarIndex == -1){
+
+        if (alpha != 0 && minVisibleScalarIndex == -1)
+        {
             minVisibleScalarIndex = i;
         }
 
     }
     for (int i=tableEntries-1; i>=0; i--)
     {
-        if (transferFn1D[i].A != 0 && maxVisibleScalarIndex == -1){
+        if (transferFn1D[i].A != 0 && maxVisibleScalarIndex == -1)
+        {
             maxVisibleScalarIndex = i;
+        }
+    }
+    //
+    // We need to set the intermediate vars again since the table size has
+    // potentially changed.
+    //
+    SetIntermediateVars();
+}
+#else
+void
+avtOpacityMap::SetTableComposite(unsigned char *arr, int te,
+                                 double attenuation, float over)
+{
+    if (attenuation < -1. || attenuation > 1.)
+    {
+        debug1 << "Bad attenuation value " << attenuation << std::endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (table != nullptr)
+        delete [] table;
+
+    if (transferFn1D != nullptr)
+    {
+        delete [] transferFn1D;
+    }
+
+    tableEntries = te;
+    table = new RGBA[tableEntries];
+    transferFn1D = new RGBAF[tableEntries]();
+    minVisibleScalarIndex = maxVisibleScalarIndex = -1;
+    for (int i = 0 ; i < tableEntries ; i++)
+    {
+        double bp = tan(1.570796327 * (0.5 - attenuation*0.49999));
+        double alpha = pow((float) arr[i*4+3] / 255.f, (float)bp);
+        // Opacity correction.
+        if( over != 0.0 )
+            alpha = 1.0 - pow((1.0 - alpha), 1.0/over);
+
+        table[i].R = arr[i*4  ];
+        table[i].G = arr[i*4+1];
+        table[i].B = arr[i*4+2];
+        table[i].A = alpha;
+
+        // Set up the transfer function with pre-multiplied
+        // values. That is multiply the RGB value by alpha.
+        transferFn1D[i].R = (float)arr[i*4  ] / 255. * alpha;
+        transferFn1D[i].G = (float)arr[i*4+1] / 255. * alpha;
+        transferFn1D[i].B = (float)arr[i*4+2] / 255. * alpha;
+        transferFn1D[i].A = alpha;
+
+        if (alpha != 0 )
+        {
+            if( minVisibleScalarIndex == -1 )
+                minVisibleScalarIndex = i;
+
+            maxVisibleScalarIndex = i;
+        }
+
+        if (table[i].A < 0. || table[i].A > 1.)
+        {
+            debug1 << "Bad value " << table[i].A << std::endl;
+            EXCEPTION0(ImproperUseException);
         }
     }
 
@@ -376,8 +465,10 @@ avtOpacityMap::SetTableFloat(unsigned char *arr, int te, double attenuation, flo
     //
     SetIntermediateVars();
 }
+#endif
 
 
+#if LIB_VERSION_LE(VTK,8,1,0)
 // ****************************************************************************
 //  Method: avtOpacityMap::SetTableFloatNOC
 //
@@ -437,7 +528,7 @@ avtOpacityMap::SetTableFloatNOC(unsigned char *arr, int te, double attenuation)
     //
     SetIntermediateVars();
 }
-
+#endif
 
 // ****************************************************************************
 //  Method: avtOpacityMap::GetMinVisibleScalar
@@ -494,20 +585,20 @@ void avtOpacityMap::ComputeVisibleRange()
     else
         minVisibleScalar = (((float)minVisibleScalarIndex/(tableEntries-1)) *
                             scalarRange) + min;
-    
+
     if (maxVisibleScalarIndex == tableEntries-1)
         maxVisibleScalar =  max;
     else
-        maxVisibleScalar = (((float)maxVisibleScalarIndex/(tableEntries-1)) * 
+        maxVisibleScalar = (((float)maxVisibleScalarIndex/(tableEntries-1)) *
                             scalarRange) + min;
 
-     debug5 << " max: " << max << " min: " << min 
-            << " scalarRange: " << scalarRange 
-            << " minVisibleScalarIndex: " << minVisibleScalarIndex 
-            << " maxVisibleScalarIndex: " << maxVisibleScalarIndex 
+     debug5 << " max: " << max << " min: " << min
+            << " scalarRange: " << scalarRange
+            << " minVisibleScalarIndex: " << minVisibleScalarIndex
+            << " maxVisibleScalarIndex: " << maxVisibleScalarIndex
             << " tableEntries: " << tableEntries
-            << " maxVisibleScalar: " << maxVisibleScalar 
-            << " minVisibleScalar: " << minVisibleScalar 
+            << " maxVisibleScalar: " << maxVisibleScalar
+            << " minVisibleScalar: " << minVisibleScalar
             << std::endl;
 }
 
@@ -530,6 +621,9 @@ void avtOpacityMap::ComputeVisibleRange()
 //    Hank Childs, Tue Dec 21 16:39:22 PST 2004
 //    Add support for attenuation.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
 // ****************************************************************************
 
 void
@@ -541,19 +635,36 @@ avtOpacityMap::SetTable(RGBA *arr, int te, double attenuation)
         EXCEPTION0(ImproperUseException);
     }
 
-    if (table != NULL)
+    if (table != nullptr)
     {
         delete [] table;
     }
 
+#if LIB_VERSION_GE(VTK,9,1,0)
+    if (transferFn1D != nullptr)
+        delete [] transferFn1D;
+#endif
+
     tableEntries = te;
     table = new RGBA[tableEntries];
-    for (int i = 0 ; i < tableEntries ; i++)
+#if LIB_VERSION_GE(VTK,9,1,0)
+    transferFn1D = new RGBAF[tableEntries];
+#endif
+
+    for (int i=0; i<tableEntries; i++)
     {
         table[i].R = arr[i].R;
         table[i].G = arr[i].G;
         table[i].B = arr[i].B;
         table[i].A = arr[i].A * attenuation;
+
+#if LIB_VERSION_GE(VTK,9,1,0)
+        transferFn1D[i].R = arr[i].R;
+        transferFn1D[i].G = arr[i].G;
+        transferFn1D[i].B = arr[i].B;
+        transferFn1D[i].A = arr[i].A * attenuation;
+#endif
+
         if (table[i].A < 0. || table[i].A > 1.)
         {
             debug1 << "Bad value " << table[i].A << std::endl;
@@ -620,7 +731,7 @@ avtOpacityMap::AddRange(double lo, double hi, RGBA &rgba)
     {
         table[i].R = rgba.R;
         table[i].G = rgba.G;
-        table[i].B = rgba.G;
+        table[i].B = rgba.B;
         table[i].A = rgba.A;
     }
 }
@@ -637,7 +748,7 @@ operator << (ostream &os, const avtOpacityMap &obj)
            << static_cast<int>(obj.table[i].R) << ", "
            << static_cast<int>(obj.table[i].G) << ", "
            << static_cast<int>(obj.table[i].B) << ", "
-           << static_cast<int>(obj.table[i].A) << "}" 
+           << static_cast<int>(obj.table[i].A) << "}"
            << endl;
     }
     os << "}";

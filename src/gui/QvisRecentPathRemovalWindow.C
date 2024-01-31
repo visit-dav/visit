@@ -15,7 +15,7 @@
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::QvisRecentPathRemovalWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisRecentPathRemovalWindow class.
 //
 // Programmer: Brad Whitlock
@@ -36,14 +36,14 @@ QvisRecentPathRemovalWindow::QvisRecentPathRemovalWindow(Subject *s,
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::~QvisRecentPathRemovalWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for QvisRecentPathRemovalWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 10 16:08:32 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisRecentPathRemovalWindow::~QvisRecentPathRemovalWindow()
@@ -53,7 +53,7 @@ QvisRecentPathRemovalWindow::~QvisRecentPathRemovalWindow()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -62,7 +62,7 @@ QvisRecentPathRemovalWindow::~QvisRecentPathRemovalWindow()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Wed Jun 25 16:13:05 PDT 2008
 //   Initial Qt4 Port.
 //
@@ -77,7 +77,7 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
     topLayout->addWidget(removalControlsGroup, 5);
 
     QVBoxLayout *innerTopLayout = new QVBoxLayout(removalControlsGroup);
-    
+
     // Create the listbox that lets us select the paths to remove.
     removalListBox = new QListWidget(removalControlsGroup);
     removalListBox->setSelectionMode(QAbstractItemView::MultiSelection);
@@ -98,7 +98,7 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
     invertSelectionButton = new QPushButton(tr("Invert selection"), removalControlsGroup);
     connect(invertSelectionButton, SIGNAL(clicked()),
             this, SLOT(invertSelection()));
-    hLayout->addWidget(invertSelectionButton);    
+    hLayout->addWidget(invertSelectionButton);
 
     // Create the ok and cancel buttons.
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -117,7 +117,7 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method gets called when the window must be updated.
 //
 // Arguments:
@@ -127,7 +127,7 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
 // Creation:   Fri Oct 10 16:09:12 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -158,7 +158,7 @@ QvisRecentPathRemovalWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::UpdateWidgets
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window.
 //
 // Programmer: Brad Whitlock
@@ -167,6 +167,9 @@ QvisRecentPathRemovalWindow::UpdateWindow(bool doAll)
 // Modifications:
 //   Cyrus Harrison, Wed Jun 25 16:13:05 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -179,8 +182,7 @@ QvisRecentPathRemovalWindow::UpdateWidgets()
     // Display the file paths for all of the hosts.
     for(size_t i = 0; i < paths.size(); ++i)
     {
-        QString f;
-        f.sprintf("%s:%s", paths[i].host.c_str(), paths[i].path.c_str());
+        QString f = QString("%1:%2").arg(paths[i].host.c_str()).arg(paths[i].path.c_str());
         removalListBox->addItem(f);
     }
 
@@ -198,14 +200,14 @@ QvisRecentPathRemovalWindow::UpdateWidgets()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::show
 //
-// Purpose: 
+// Purpose:
 //   Forces the window to update when it is shown.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 10 16:41:26 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -218,7 +220,7 @@ QvisRecentPathRemovalWindow::show()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::removePaths
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to remove selected
 //   paths from the list.
 //
@@ -248,7 +250,7 @@ QvisRecentPathRemovalWindow::removePaths()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::removeAllPaths
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to remove all
 //   paths from the list.
 //
@@ -256,7 +258,7 @@ QvisRecentPathRemovalWindow::removePaths()
 // Creation:   Fri Oct 10 16:10:14 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -269,7 +271,7 @@ QvisRecentPathRemovalWindow::removeAllPaths()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::invertSelection
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to invert the
 //   selection for the selected paths.
 //
@@ -297,7 +299,7 @@ QvisRecentPathRemovalWindow::invertSelection()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::applyDismiss
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to remove selected
 //   paths from the list.
 //
@@ -305,7 +307,7 @@ QvisRecentPathRemovalWindow::invertSelection()
 // Creation:   Fri Oct 10 16:10:14 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -329,14 +331,14 @@ QvisRecentPathRemovalWindow::applyDismiss()
 // ****************************************************************************
 // Method: QvisRecentPathRemovalWindow::handleCancel
 //
-// Purpose: 
+// Purpose:
 //   Cancels everything and hides the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 10 16:13:43 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

@@ -63,7 +63,7 @@ class     DBOptionsAttributes;
 class avtExodusFileFormat : public avtMTSDFileFormat
 {
   public:
-                                avtExodusFileFormat(const char *, DBOptionsAttributes *rdatts);
+                                avtExodusFileFormat(const char *, const DBOptionsAttributes *rdatts);
     virtual                    ~avtExodusFileFormat();
  
     virtual void                FreeUpResources(void);

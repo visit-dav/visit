@@ -142,8 +142,8 @@ void ContourAttributes::Init()
     invertColorTable = false;
     legendFlag = true;
     lineWidth = 0;
-    contourNLevels = 10;
     contourMethod = Level;
+    contourNLevels = 10;
     minFlag = false;
     maxFlag = false;
     min = 0;
@@ -179,11 +179,11 @@ void ContourAttributes::Copy(const ContourAttributes &obj)
     legendFlag = obj.legendFlag;
     lineWidth = obj.lineWidth;
     singleColor = obj.singleColor;
-    multiColor = obj.multiColor;
+    contourMethod = obj.contourMethod;
     contourNLevels = obj.contourNLevels;
     contourValue = obj.contourValue;
     contourPercent = obj.contourPercent;
-    contourMethod = obj.contourMethod;
+    multiColor = obj.multiColor;
     minFlag = obj.minFlag;
     maxFlag = obj.maxFlag;
     min = obj.min;
@@ -357,11 +357,11 @@ ContourAttributes::operator == (const ContourAttributes &obj) const
             (legendFlag == obj.legendFlag) &&
             (lineWidth == obj.lineWidth) &&
             (singleColor == obj.singleColor) &&
-            (multiColor == obj.multiColor) &&
+            (contourMethod == obj.contourMethod) &&
             (contourNLevels == obj.contourNLevels) &&
             (contourValue == obj.contourValue) &&
             (contourPercent == obj.contourPercent) &&
-            (contourMethod == obj.contourMethod) &&
+            (multiColor == obj.multiColor) &&
             (minFlag == obj.minFlag) &&
             (maxFlag == obj.maxFlag) &&
             (min == obj.min) &&
@@ -519,11 +519,11 @@ ContourAttributes::SelectAll()
     Select(ID_legendFlag,       (void *)&legendFlag);
     Select(ID_lineWidth,        (void *)&lineWidth);
     Select(ID_singleColor,      (void *)&singleColor);
-    Select(ID_multiColor,       (void *)&multiColor);
+    Select(ID_contourMethod,    (void *)&contourMethod);
     Select(ID_contourNLevels,   (void *)&contourNLevels);
     Select(ID_contourValue,     (void *)&contourValue);
     Select(ID_contourPercent,   (void *)&contourPercent);
-    Select(ID_contourMethod,    (void *)&contourMethod);
+    Select(ID_multiColor,       (void *)&multiColor);
     Select(ID_minFlag,          (void *)&minFlag);
     Select(ID_maxFlag,          (void *)&maxFlag);
     Select(ID_min,              (void *)&min);
@@ -891,10 +891,10 @@ ContourAttributes::SetSingleColor(const ColorAttribute &singleColor_)
 }
 
 void
-ContourAttributes::SetMultiColor(const ColorAttributeList &multiColor_)
+ContourAttributes::SetContourMethod(ContourAttributes::Select_by contourMethod_)
 {
-    multiColor = multiColor_;
-    Select(ID_multiColor, (void *)&multiColor);
+    contourMethod = contourMethod_;
+    Select(ID_contourMethod, (void *)&contourMethod);
 }
 
 void
@@ -933,10 +933,10 @@ ContourAttributes::SetContourPercent(const doubleVector &contourPercent_)
 }
 
 void
-ContourAttributes::SetContourMethod(ContourAttributes::Select_by contourMethod_)
+ContourAttributes::SetMultiColor(const ColorAttributeList &multiColor_)
 {
-    contourMethod = contourMethod_;
-    Select(ID_contourMethod, (void *)&contourMethod);
+    multiColor = multiColor_;
+    Select(ID_multiColor, (void *)&multiColor);
 }
 
 void
@@ -1057,16 +1057,10 @@ ContourAttributes::GetSingleColor()
     return singleColor;
 }
 
-const ColorAttributeList &
-ContourAttributes::GetMultiColor() const
+ContourAttributes::Select_by
+ContourAttributes::GetContourMethod() const
 {
-    return multiColor;
-}
-
-ColorAttributeList &
-ContourAttributes::GetMultiColor()
-{
-    return multiColor;
+    return Select_by(contourMethod);
 }
 
 int
@@ -1099,10 +1093,16 @@ ContourAttributes::GetContourPercent()
     return contourPercent;
 }
 
-ContourAttributes::Select_by
-ContourAttributes::GetContourMethod() const
+const ColorAttributeList &
+ContourAttributes::GetMultiColor() const
 {
-    return Select_by(contourMethod);
+    return multiColor;
+}
+
+ColorAttributeList &
+ContourAttributes::GetMultiColor()
+{
+    return multiColor;
 }
 
 bool
@@ -1170,12 +1170,6 @@ ContourAttributes::SelectSingleColor()
 }
 
 void
-ContourAttributes::SelectMultiColor()
-{
-    Select(ID_multiColor, (void *)&multiColor);
-}
-
-void
 ContourAttributes::SelectContourValue()
 {
     Select(ID_contourValue, (void *)&contourValue);
@@ -1185,6 +1179,12 @@ void
 ContourAttributes::SelectContourPercent()
 {
     Select(ID_contourPercent, (void *)&contourPercent);
+}
+
+void
+ContourAttributes::SelectMultiColor()
+{
+    Select(ID_multiColor, (void *)&multiColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1219,11 +1219,11 @@ ContourAttributes::GetFieldName(int index) const
     case ID_legendFlag:       return "legendFlag";
     case ID_lineWidth:        return "lineWidth";
     case ID_singleColor:      return "singleColor";
-    case ID_multiColor:       return "multiColor";
+    case ID_contourMethod:    return "contourMethod";
     case ID_contourNLevels:   return "contourNLevels";
     case ID_contourValue:     return "contourValue";
     case ID_contourPercent:   return "contourPercent";
-    case ID_contourMethod:    return "contourMethod";
+    case ID_multiColor:       return "multiColor";
     case ID_minFlag:          return "minFlag";
     case ID_maxFlag:          return "maxFlag";
     case ID_min:              return "min";
@@ -1262,11 +1262,11 @@ ContourAttributes::GetFieldType(int index) const
     case ID_legendFlag:       return FieldType_bool;
     case ID_lineWidth:        return FieldType_linewidth;
     case ID_singleColor:      return FieldType_color;
-    case ID_multiColor:       return FieldType_att;
+    case ID_contourMethod:    return FieldType_enum;
     case ID_contourNLevels:   return FieldType_int;
     case ID_contourValue:     return FieldType_doubleVector;
     case ID_contourPercent:   return FieldType_doubleVector;
-    case ID_contourMethod:    return FieldType_enum;
+    case ID_multiColor:       return FieldType_att;
     case ID_minFlag:          return FieldType_bool;
     case ID_maxFlag:          return FieldType_bool;
     case ID_min:              return FieldType_double;
@@ -1305,11 +1305,11 @@ ContourAttributes::GetFieldTypeName(int index) const
     case ID_legendFlag:       return "bool";
     case ID_lineWidth:        return "linewidth";
     case ID_singleColor:      return "color";
-    case ID_multiColor:       return "att";
+    case ID_contourMethod:    return "enum";
     case ID_contourNLevels:   return "int";
     case ID_contourValue:     return "doubleVector";
     case ID_contourPercent:   return "doubleVector";
-    case ID_contourMethod:    return "enum";
+    case ID_multiColor:       return "att";
     case ID_minFlag:          return "bool";
     case ID_maxFlag:          return "bool";
     case ID_min:              return "double";
@@ -1382,9 +1382,9 @@ ContourAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (singleColor == obj.singleColor);
         }
         break;
-    case ID_multiColor:
+    case ID_contourMethod:
         {  // new scope
-        retval = (multiColor == obj.multiColor);
+        retval = (contourMethod == obj.contourMethod);
         }
         break;
     case ID_contourNLevels:
@@ -1402,9 +1402,9 @@ ContourAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (contourPercent == obj.contourPercent);
         }
         break;
-    case ID_contourMethod:
+    case ID_multiColor:
         {  // new scope
-        retval = (contourMethod == obj.contourMethod);
+        retval = (multiColor == obj.multiColor);
         }
         break;
     case ID_minFlag:
@@ -1643,37 +1643,5 @@ ContourAttributes::SetValue(const std::string &name, const doubleVector &value)
     else
         retval = AttributeSubject::SetValue(name, value);
     return retval;
-}
-
-// ****************************************************************************
-// Method: ContourAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
-//
-// Programmer: Kathleen Biagas
-// Creation:   April 4, 2018
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ContourAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("ContourAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
 }
 

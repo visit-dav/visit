@@ -267,7 +267,7 @@ typedef struct _GroupInfo
 class avtSiloFileFormat : public avtSTMDFileFormat
 {
   public:
-                          avtSiloFileFormat(const char *, DBOptionsAttributes*);
+                          avtSiloFileFormat(const char *, const DBOptionsAttributes*);
     virtual              ~avtSiloFileFormat();
 
     virtual void          FreeUpResources(void);

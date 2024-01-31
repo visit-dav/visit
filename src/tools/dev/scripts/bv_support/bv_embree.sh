@@ -7,7 +7,12 @@ function bv_embree_initialize
 
 function bv_embree_enable
 {
-    DO_EMBREE="yes"
+    # separate embree not required by ospray for vtk-9
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        DO_EMBREE="no"
+    else
+        DO_EMBREE="yes"
+    fi
 }
 
 function bv_embree_disable
@@ -104,13 +109,6 @@ function bv_embree_ensure
         if [[ ! -d $EMBREE_INSTALL_DIR/include/embree3 ]]; then
             error "Unable to find embree v3.+ in the alternative path, perhaps a wrong embree version is provided."
         fi
-    fi
-}
-
-function bv_embree_dry_run
-{
-    if [[ "$DO_EMBREE" == "yes" ]] ; then
-        echo "Dry run option not set for embree."
     fi
 }
 

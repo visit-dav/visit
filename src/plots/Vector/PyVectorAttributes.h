@@ -5,6 +5,7 @@
 #ifndef PY_VECTORATTRIBUTES_H
 #define PY_VECTORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <VectorAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyVectorAttributes_Wrap(const VectorAttributes *attr);
 void           PyVectorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyVectorAttributes_SetDefaults(const VectorAttributes *atts);
 std::string    PyVectorAttributes_GetLogString();
-std::string    PyVectorAttributes_ToString(const VectorAttributes *, const char *);
+std::string    PyVectorAttributes_ToString(const VectorAttributes *, const char *, const bool=false);
 PyObject *     PyVectorAttributes_getattr(PyObject *self, char *name);
 int            PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH];

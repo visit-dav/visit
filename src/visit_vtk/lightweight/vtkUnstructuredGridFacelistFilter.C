@@ -7,7 +7,11 @@
 // ************************************************************************* //
 
 #include "vtkUnstructuredGridFacelistFilter.h"
+#include <visit-config.h> // For LIB_VERSION_GE/LE
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -185,7 +189,7 @@ class HashEntry
     unsigned char  last_good_entry;
     unsigned char  face_type;
     HashEntry     *extension;
-   
+
     HashEntryList *hashEntryList;
 
     bool           LocateAndRemoveTri(Tri *);
@@ -240,7 +244,7 @@ class HashEntryMemoryManager
 //
 //  Purpose:
 //      This effectively works as the hash.  It hashes each faces by its lowest
-//      numbered index. 
+//      numbered index.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
@@ -296,7 +300,7 @@ class Quad
   public:
                    Quad() { ordering_case = 255; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(Quad *);
     bool           Equals(Tri *);
     void           AddInRemainingTriangle(Tri *, int);
@@ -337,7 +341,7 @@ typedef enum
     Q3012, Q3021, Q3102, Q3120, Q3201, Q3210
 }  QUAD_ORDERING_CASES;
 
-static int quad_reorder_list[24][4] = 
+static vtkIdType quad_reorder_list[24][4] =
     { { -1, 0, 1, 2 }, { -1, 0, 2, 1 }, { -1, 1, 0, 2 }, { -1, 2, 0, 1 },
       { -1, 1, 2, 0 }, { -1, 2, 1, 0 },
       { 0, -1, 1, 2 }, { 0, -1, 2, 1 }, { 1, -1, 0, 2 }, { 2, -1, 0, 1 },
@@ -345,10 +349,10 @@ static int quad_reorder_list[24][4] =
       { 0, 1, -1, 2 }, { 0, 2, -1, 1 }, { 1, 0, -1, 2 }, { 2, 0, -1, 1 },
       { 1, 2, -1, 0 }, { 2, 1, -1, 0 },
       { 0, 1, 2, -1 }, { 0, 2, 1, -1 }, { 1, 0, 2, -1 }, { 2, 0, 1, -1 },
-      { 1, 2, 0, -1 }, { 2, 1, 0, -1 } 
+      { 1, 2, 0, -1 }, { 2, 1, 0, -1 }
     };
 
-static int quad_map_back_list[24][3] =
+static vtkIdType quad_map_back_list[24][3] =
     {
          { 1, 2, 3 }, { 1, 3, 2 }, { 2, 1, 3 },
          { 2, 3, 1 }, { 3, 1, 2 }, { 3, 2, 1 },
@@ -381,7 +385,7 @@ class Tri
   public:
                    Tri() { ordering_case = 255; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(Tri *&t)
                    {
                       if (t->nodes[0] == nodes[0] && t->nodes[1] == nodes[1])
@@ -428,9 +432,9 @@ typedef enum
     T201, T210
 }  TRI_ORDERING_CASES;
 
-static int tri_reorder_list[6][3] = 
-    { 
-        { -1, 0, 1 }, { -1, 1, 0 }, 
+static int tri_reorder_list[6][3] =
+    {
+        { -1, 0, 1 }, { -1, 1, 0 },
         { 0, -1, 1 }, { 0, 1, -1 },
         { 1, -1, 0 }, { 1, 0, -1 }
     };
@@ -439,6 +443,8 @@ static int tri_reorder_list[6][3] =
 //
 // Function prototypes
 //
+
+#if LIB_VERSION_LE(VTK, 8,1,0)
 
 static void AddTetrahedron(vtkIdType *, int, HashEntryList &);
 static void AddWedge(vtkIdType *, int, HashEntryList &);
@@ -460,6 +466,31 @@ static void AddBiQuadraticQuad(vtkIdType *, int, HashEntryList &);
 static void AddBiQuadraticQuadraticWedge(vtkIdType *, int, HashEntryList &);
 static void AddBiQuadraticQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
 static void AddTriQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+
+#else
+
+static void AddTetrahedron(const vtkIdType *, int, HashEntryList &);
+static void AddWedge(const vtkIdType *, int, HashEntryList &);
+static void AddPyramid(const vtkIdType *, int, HashEntryList &);
+static void AddHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddVoxel(const vtkIdType *, int, HashEntryList &);
+
+static void AddQuadraticTriangle(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticQuad(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticTetrahedron(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticPyramid(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticWedge(const vtkIdType *, int, HashEntryList &);
+
+static void AddQuadraticLinearQuad(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticLinearWedge(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticTriangle(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuad(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuadraticWedge(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddTriQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
+
+#endif
 
 static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
@@ -489,15 +520,15 @@ static void LoopOverStripCells(vtkUnstructuredGrid *, vtkPolyData *,
 //
 //  Modifications:
 //    Jeremy Meredith, Tue Nov 16 14:54:09 PST 2004
-//    Make more robust for degenerate input data.  Specifically, quads with 
+//    Make more robust for degenerate input data.  Specifically, quads with
 //    all four corners at the same node.  See '5659.
 //
 // ****************************************************************************
 
-int
+vtkIdType
 Quad::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[1] < n[smallest])
        smallest = 1;
     if (n[2] < n[smallest])
@@ -522,7 +553,7 @@ Quad::AssignNodes(const vtkIdType *n)
         nodes[2] = n[3];
     }
     else if (biggest == 3)
-    { 
+    {
         if (smallest == 0)
         {
             if (n[1] < n[2])
@@ -737,7 +768,7 @@ Quad::AssignNodes(const vtkIdType *n)
             }
         }
     }
-    
+
 /*** There was an effort to play with additional hashing functions.  It was
  *** determined that the functions to calculate the key was just too expensive.
  *** The only function that could be used for a single pass hash was one that
@@ -772,7 +803,7 @@ Quad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
-    int *list = quad_reorder_list[ordering_case];
+    vtkIdType *list = quad_reorder_list[ordering_case];
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
@@ -896,10 +927,10 @@ Quad::AddInRemainingTriangle(Tri *t, int node_0)
 void
 Quad::AddInRemainingTriangle(int n, int node_0)
 {
-    int orig_quad_index = quad_map_back_list[ordering_case][n];
-    int *neighbors = quad_reorder_list[ordering_case];
+    vtkIdType orig_quad_index = quad_map_back_list[ordering_case][n];
+    vtkIdType *neighbors = quad_reorder_list[ordering_case];
 
-    int n_list[3];
+    vtkIdType n_list[3];
     n_list[0] = neighbors[(orig_quad_index+3)%4];
     n_list[1] = neighbors[orig_quad_index];
     n_list[2] = neighbors[(orig_quad_index+1)%4];
@@ -926,7 +957,7 @@ Quad::AddInRemainingTriangle(int n, int node_0)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 Tri::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
@@ -1099,7 +1130,7 @@ HashEntry::AddTri(Tri *f)
         ActuallyAddTri(f);
     }
 }
-        
+
 
 // ****************************************************************************
 //  Method: HashEntry::AddQuad
@@ -1122,7 +1153,7 @@ HashEntry::AddQuad(Quad *f)
         ActuallyAddQuad(f);
     }
 }
-        
+
 
 // ****************************************************************************
 //  Method: HashEntry::RemoveEntry
@@ -1152,7 +1183,7 @@ HashEntry::RemoveEntry(int ind)
 
 // ****************************************************************************
 //  Method: HashEntry::LocateAndRemoveQuad
-// 
+//
 //  Purpose:
 //      Locates a quad in the hash entry and removes it if it exists.
 //
@@ -1205,7 +1236,7 @@ HashEntry::LocateAndRemoveQuad(Quad *f)
 
 // ****************************************************************************
 //  Method: HashEntry::LocateAndRemoveQuad
-// 
+//
 //  Purpose:
 //      Locates a triangle in the hash entry and removes it if it exists.
 //
@@ -1292,7 +1323,7 @@ HashEntry::ActuallyAddQuad(Quad *f)
 //  Method: HashEntry::ActuallyAddTri
 //
 //  Purpose:
-//      After determining that this triangle is unique, this actually adds it 
+//      After determining that this triangle is unique, this actually adds it
 //      to the hash entry.
 //
 //  Programmer: Hank Childs
@@ -1559,7 +1590,7 @@ HashEntryList::AddTri(const vtkIdType *node_list, vtkIdType orig_zone)
 {
     nfaces++;
     Tri *tri = tmm.GetFreeTri(this);
-    int hash_index = tri->AssignNodes(node_list);
+    vtkIdType hash_index = tri->AssignNodes(node_list);
     tri->SetOriginalZone(orig_zone);
     if (list[hash_index] == NULL)
     {
@@ -1589,7 +1620,7 @@ HashEntryList::AddQuad(const vtkIdType *node_list, vtkIdType orig_zone)
 {
     nfaces++;
     Quad *quad = qmm.GetFreeQuad(this);
-    int hash_index = quad->AssignNodes(node_list);
+    vtkIdType hash_index = quad->AssignNodes(node_list);
     quad->SetOriginalZone(orig_zone);
     if (list[hash_index] == NULL)
     {
@@ -1630,7 +1661,7 @@ HashEntryList::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 //  Method: HashEntry::CreateOutputCells
 //
 //  Purpose:
-//      Goes through each of the faces and has them output themselves as VTK 
+//      Goes through each of the faces and has them output themselves as VTK
 //      objects.
 //
 //  Programmer: Hank Childs
@@ -1663,7 +1694,7 @@ HashEntry::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 }
 
 
-vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter); 
+vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter);
 
 
 // ****************************************************************************
@@ -1718,7 +1749,7 @@ vtkUnstructuredGridFacelistFilter::RequestData(
 
     vtkCellData *cd = input->GetCellData();
     vtkCellData *outputCD = output->GetCellData();
- 
+
     //
     // We won't be doing anything to the points, so they can be passed right
     // through.
@@ -1820,6 +1851,9 @@ vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 //    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
 //    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void
@@ -1835,11 +1869,20 @@ LoopOverVertexCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -1871,6 +1914,9 @@ LoopOverVertexCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
 //    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void
@@ -1887,11 +1933,20 @@ LoopOverLineCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -1932,6 +1987,9 @@ LoopOverLineCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
 //    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void
@@ -1948,11 +2006,20 @@ LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -1991,6 +2058,9 @@ LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
 //    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void
@@ -2006,11 +2076,20 @@ LoopOverStripCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
+#if LIB_VERSION_LE(VTK, 8, 1, 0)
     vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2049,7 +2128,10 @@ LoopOverStripCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
 //    I modified the routine to return the number of vertex based cells, line
 //    based cells, polygon based cells and strip based cells, instead of just
-//    the sum of those numbers. 
+//    the sum of those numbers.
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -2070,37 +2152,46 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
     numStripCells = 0;
     vtkIdType   cellId;
     vtkIdType   npts;
+
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
- 
         switch (cellType)
         {
           case VTK_VERTEX:
           case VTK_POLY_VERTEX:
             numVertexCells++;
             break;
- 
+
           case VTK_LINE:
           case VTK_POLY_LINE:
           case VTK_QUADRATIC_EDGE:
             numLineCells++;
             break;
- 
+
           case VTK_TRIANGLE:
           case VTK_QUAD:
           case VTK_POLYGON:
           case VTK_PIXEL:
             numPolygonCells++;
             break;
- 
+
           case VTK_TRIANGLE_STRIP:
             numStripCells++;
             break;
- 
+
           case VTK_TETRA:
             AddTetrahedron(pts, cellId, list);
             break;
@@ -2155,7 +2246,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
 
           case VTK_BIQUADRATIC_TRIANGLE:
             AddBiQuadraticTriangle(pts, cellId, list);
-            break;         
+            break;
 
           case VTK_BIQUADRATIC_QUAD:
             AddBiQuadraticQuad(pts, cellId, list);
@@ -2171,7 +2262,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
 
           case VTK_TRIQUADRATIC_HEXAHEDRON:
             AddTriQuadraticHexahedron(pts, cellId, list);
-            break;      
+            break;
 
           default:
             AddUnknownCell(input->GetCell(cellId), cellId, list);
@@ -2188,10 +2279,19 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -2222,10 +2322,19 @@ AddTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddVoxel(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddVoxel(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2270,10 +2379,19 @@ AddVoxel(vtkIdType *pts, int cellId, HashEntryList &list)
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2318,10 +2436,19 @@ AddHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2359,10 +2486,19 @@ AddWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2391,19 +2527,26 @@ AddPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddQuadraticTriangle
 //
-// Purpose: 
+// Purpose:
 //   Breaks up the quadratic triangle into linear triangles and adds them
 //   to the hash entry list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 8 14:52:30 PST 2006
 //
-// Modifications:
-//   
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2427,19 +2570,26 @@ AddQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddQuadraticQuad
 //
-// Purpose: 
+// Purpose:
 //   Breaks up the quadratic quad into linear triangles and adds them
 //   to the hash entry list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 8 14:52:30 PST 2006
 //
-// Modifications:
-//   
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2471,19 +2621,26 @@ AddQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddQuadraticTetrahedron
 //
-// Purpose: 
+// Purpose:
 //   Breaks up the faces of the quadratic tet into linear triangles and adds
 //   them to the hash entry list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 8 14:52:30 PST 2006
 //
-// Modifications:
-//   
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     // Break up the surface of the quadratic tet into triangles.
     const int triangles[][3] = {
@@ -2505,19 +2662,26 @@ AddQuadraticTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddQuadraticHexahedron
 //
-// Purpose: 
+// Purpose:
 //   Breaks up the faces of the quadratic hex into linear triangles and adds
 //   them to the hash entry list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 8 14:52:30 PST 2006
 //
-// Modifications:
-//   
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     // Break up the surface of the quadratic hex into triangles.
     const int triangles[][3] = {
@@ -2542,19 +2706,26 @@ AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddQuadraticPyramid
 //
-// Purpose: 
+// Purpose:
 //   Breaks up the faces of the quadratic pyramid into linear triangles and
 //   adds them to the list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 29 14:32:38 PST 2010
 //
-// Modifications:
-//   
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     const int triangles[][3] = {
        {0,5,9},{5,10,9},{5,1,10},{9,10,4},
@@ -2586,19 +2757,26 @@ AddQuadraticPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddQuadraticWedge
 //
-// Purpose: 
+// Purpose:
 //   Breaks up the faces of the quadratic wedge into linear triangles and
 //   adds them to the list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 29 14:32:38 PST 2010
 //
-// Modifications:
-//   
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2640,12 +2818,19 @@ AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // Programmer: Kenneth Leiter
 // Creation:   Sun Feb 20 11:09:27 PST 2011
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticLinearQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticLinearQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2676,12 +2861,19 @@ AddQuadraticLinearQuad(vtkIdType *pts, int cellId, HashEntryList &list)
 // Programmer: Kenneth Leiter
 // Creation:   Sun Feb 20 12:56:55 PST 2011
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddQuadraticLinearWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddQuadraticLinearWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2720,12 +2912,19 @@ AddQuadraticLinearWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // Programmer: Kenneth Leiter
 // Creation:   Mon Feb 21 09:11:40 PST 2006
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddBiQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddBiQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2764,12 +2963,19 @@ AddBiQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
 // Programmer: Kenneth Leiter
 // Creation:   Mon Feb 21 10:01:41 PST 2006
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddBiQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddBiQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2816,12 +3022,19 @@ AddBiQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 29 14:32:38 PST 2010
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddBiQuadraticQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddBiQuadraticQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2847,18 +3060,25 @@ AddBiQuadraticQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // Function: AddBiQuadraticQuadraticHexahedron
 //
 // Purpose:
-//   Breaks up the faces of the bi quadratic hexahedron into linear triangles 
+//   Breaks up the faces of the bi quadratic hexahedron into linear triangles
 //   and adds them to the list.
 //
 // Programmer: Kenneth Leiter
 // Creation:   Mon Feb 21 14:55:30 PST 2010
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},
@@ -2872,7 +3092,7 @@ AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &lis
         {4,12,15},{12,5,13},{13,6,14},{14,7,15},
         {12,13,14},{12,14,15},
         {3,10,11},{10,2,9},{9,1,8},{8,0,11},
-        {10,9,8},{10,8,11}        
+        {10,9,8},{10,8,11}
     };
     vtkIdType nodes[3];
     for(int i = 0; i < 44; ++i)
@@ -2888,18 +3108,25 @@ AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &lis
 // Function: AddTriQuadraticHexahedron
 //
 // Purpose:
-//   Breaks up the faces of the tri quadratic hexahedron into linear triangles 
+//   Breaks up the faces of the tri quadratic hexahedron into linear triangles
 //   and adds them to the list.
 //
 // Programmer: Kenneth Leiter
 // Creation:   Mon Feb 21 14:55:30 PST 2010
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Add VTK9 support, change pts arg to const.
 //
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+#else
+void
+AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+#endif
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},
@@ -2913,7 +3140,7 @@ AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
         {4,12,15},{12,5,13},{13,6,14},{14,7,15},
         {15,12,25},{12,13,25},{13,14,25},{14,15,25},
         {3,10,11},{10,2,9},{9,1,8},{8,0,11},
-        {9,8,24},{8,11,24},{11,10,24},{10,9,24}        
+        {9,8,24},{8,11,24},{11,10,24},{10,9,24}
     };
     vtkIdType nodes[3];
     for(int i = 0; i < 48; ++i)
@@ -2928,14 +3155,14 @@ AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 // Function: AddUnknownCell
 //
-// Purpose: 
+// Purpose:
 //     Adds a cell of unknown type by using VTK general interface methods.
 //
 // Programmer: Hank Childs
 // Creation:   September 7, 2006
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Thu Jul  9 08:09:26 PDT 2009
 //   Add support for polygons.
 //

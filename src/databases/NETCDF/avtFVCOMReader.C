@@ -2078,8 +2078,8 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
   // nvvals is  [3 * nElem] linear index to the node numbers that are the 
   // vertices of each cell. 
   // nvvals[i=0,i<nElem] are the first vertices of each cell
-  // nvvals[i=nElem,i<2*nElem] are the second verticies of each cell
-  // nvvals[i=2*nElem,i<3*nElem] are the third verticies of each cell
+  // nvvals[i=nElem,i<2*nElem] are the second vertices of each cell
+  // nvvals[i=2*nElem,i<3*nElem] are the third vertices of each cell
   // ***************************************************************
   // nvvals as stored from fvcom counts nodes from 1 to nNodes
   // Visit must count from 0 to nNodes-1

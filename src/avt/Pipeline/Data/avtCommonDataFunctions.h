@@ -112,6 +112,12 @@ class     vtkDataArray;
 //    Kathleen Biagas, Thu Sep 11 09:29:57 PDT 2014
 //    Added 'Original' options for GetNumberOfZones/Nodes.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
+//    Kathleen Biagas, Tue Apr 5 2022
+//    Added CGetTopologicalDimension.
+//
 // ****************************************************************************
 
 //
@@ -175,6 +181,9 @@ PIPELINE_API bool CMaybeCompressedDataString(const unsigned char *dstr);
 PIPELINE_API void CGetCompressionInfoFromDataString(const unsigned char *dstr,
                       int len, float *timeToCompress, float *compressionRatio);
 
+PIPELINE_API void CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success);
+
+
 typedef struct
 {
     const char *varname;
@@ -231,7 +240,7 @@ typedef struct
     double                         min;
     double                         max;
     std::string                    variable;
-    std::vector<VISIT_LONG_LONG>   numVals;
+    std::vector<long long>   numVals;
 } CalculateHistogramArgs;
 
 typedef struct

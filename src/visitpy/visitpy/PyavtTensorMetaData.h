@@ -5,6 +5,7 @@
 #ifndef PY_AVTTENSORMETADATA_H
 #define PY_AVTTENSORMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtTensorMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>
@@ -23,7 +24,7 @@ VISITPY_API PyObject *     PyavtTensorMetaData_Wrap(const avtTensorMetaData *att
 void VISITPY_API           PyavtTensorMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtTensorMetaData_SetDefaults(const avtTensorMetaData *atts);
 std::string VISITPY_API    PyavtTensorMetaData_GetLogString();
-std::string VISITPY_API    PyavtTensorMetaData_ToString(const avtTensorMetaData *, const char *);
+std::string VISITPY_API    PyavtTensorMetaData_ToString(const avtTensorMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtTensorMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtTensorMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtTensorMetaData_methods[AVTTENSORMETADATA_NMETH];

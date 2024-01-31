@@ -74,7 +74,7 @@ using std::string;
 // ****************************************************************************
 
 avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
-    DBOptionsAttributes *readOpts)
+    const DBOptionsAttributes *readOpts)
     : avtMTMDFileFormat(fname),
        visitMetaFile(),
        xFileName(),
@@ -208,11 +208,19 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         }
         if (readOpts->FindIndex("IBlanking") >= 0)
         {
-            bool ib = readOpts->GetBool("IBlanking");
-            if (ib)
-                reader->IBlankingOn();
-            else 
-                reader->IBlankingOff();
+            reader->SetIBlankingInFile(readOpts->GetEnum("IBlanking"));
+        }
+        if (readOpts->FindIndex("Use IBlanking If Present") >= 0)
+        {
+            bool useIBlanking = readOpts->GetBool("Use IBlanking If Present");
+            if (useIBlanking)
+            {
+                reader->UseIBlankingIfDetectedOn();
+            }
+            else
+            {
+                reader->UseIBlankingIfDetectedOff();
+            }
         }
         if (readOpts->FindIndex("Solution (Q) File Name") >= 0)
         {
@@ -252,7 +260,8 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         reader->MultiGridOff();
         reader->BinaryFileOn();
         reader->SetByteOrderToBigEndian();
-        reader->IBlankingOff();
+        reader->SetIBlankingInFile(0);
+        reader->UseIBlankingIfDetectedOn();
         reader->TwoDimensionalGeometryOff();
         reader->DoublePrecisionOff();
     }
@@ -411,6 +420,7 @@ avtPLOT3DFileFormat::GetMesh(int timestate, int domain, const char *name)
         debug3 << "avtPLOT3DFileFormat::GetMesh: Error retreiving Grid for"
                << " timestate " << timestate << " domain " << domain << endl;
     }
+
     return rv;
 }
 
@@ -626,15 +636,16 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         mesh->topologicalDimension =2;
     }
 
-    debug3 <<"PLOT3D  geometry file:    " << reader->GetXYZFileName() << endl;
-    debug3 <<"PLOT3D  solution file:    " << reader->GetQFileName() << endl;
-    debug3 <<"PLOT3D  multigrid:        " << reader->GetMultiGrid() << endl;
-    debug3 <<"PLOT3D  double precision: " << reader->GetDoublePrecision() << endl;
-    debug3 <<"PLOT3D  binary:           " << reader->GetBinaryFile() << endl;
-    debug3 <<"PLOT3D  fortran binary:   " << reader->GetHasByteCount() << endl;
-    debug3 <<"PLOT3D  byte order:       " << reader->GetByteOrderAsString() << endl;
-    debug3 <<"PLOT3D  has iblanking:    " << reader->GetIBlanking() << endl;
-    debug3 <<"PLOT3D  2D geometry:      " << reader->GetTwoDimensionalGeometry() << endl;
+    debug3 <<"PLOT3D  geometry file:                " << reader->GetXYZFileName() << endl;
+    debug3 <<"PLOT3D  solution file:                " << reader->GetQFileName() << endl;
+    debug3 <<"PLOT3D  multigrid:                    " << reader->GetMultiGrid() << endl;
+    debug3 <<"PLOT3D  double precision:             " << reader->GetDoublePrecision() << endl;
+    debug3 <<"PLOT3D  binary:                       " << reader->GetBinaryFile() << endl;
+    debug3 <<"PLOT3D  fortran binary:               " << reader->GetHasByteCount() << endl;
+    debug3 <<"PLOT3D  byte order:                   " << reader->GetByteOrderAsString() << endl;
+    debug3 <<"PLOT3D  has iblanking:                " << reader->GetIBlankingInFile() << endl;
+    debug3 <<"PLOT3D  using iblanking if detected:  " << reader->GetUseIBlankingIfDetected() << endl;
+    debug3 <<"PLOT3D  2D geometry:                  " << reader->GetTwoDimensionalGeometry() << endl;
 
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
@@ -890,11 +901,15 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
             }
             else if (MatchesSubstring(infoLine,"NO_IBLANKING"))
             {
-                reader->IBlankingOff();
+                reader->SetIBlankingInFile(2);
             }
             else if (MatchesSubstring(infoLine,"IBLANKING"))
             {
-                reader->IBlankingOn();
+                reader->SetIBlankingInFile(1);
+            }
+            else if (MatchesSubstring(infoLine,"IGNORE_IBLANKING"))
+            {
+                reader->UseIBlankingIfDetectedOff();
             }
             else if (MatchesSubstring(infoLine,"3D"))
             {

@@ -42,7 +42,6 @@
         M3DC13DField
         Nek5000Field
         NektarPPField
-        NIMRODField
       </Enum>
       <Enum name="IntegrationType">
         Euler
@@ -59,7 +58,7 @@
       <Enum name="ParallelizationAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
-        MasterSlave
+        ManagerWorker
         VisItSelects
       </Enum>
       <Enum name="OperationType">
@@ -273,6 +272,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="LCSViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
     </Attribute>
   </Plugin>

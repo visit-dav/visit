@@ -1,1 +1,170 @@
-{'shell 9': {'timestep_2': {'pick_letter': 'shell 9', 'OriginalZoneLabels': 'shell 9', 'zone_id': 79, 'point': (0.7683892473578453, 0.7683893144130707, 2.0), 'timestep': 2, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (12, 57, 58, 13)}, 'timestep_0': {'pick_letter': 'shell 9', 'OriginalZoneLabels': 'shell 9', 'zone_id': 79, 'point': (0.7683892473578453, 0.7683893144130707, 2.0), 'timestep': 0, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (12, 57, 58, 13)}, 'timestep_1': {'pick_letter': 'shell 9', 'OriginalZoneLabels': 'shell 9', 'zone_id': 79, 'point': (0.7683892473578453, 0.7683893144130707, 2.0), 'timestep': 1, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (12, 57, 58, 13)}}, 'shell 5': {'timestep_2': {'pick_letter': 'shell 5', 'OriginalZoneLabels': 'shell 5', 'zone_id': 75, 'point': (0.15624997516431982, 0.5831329524517059, 2.0), 'timestep': 2, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (50, 54, 55, 51)}, 'timestep_0': {'pick_letter': 'shell 5', 'OriginalZoneLabels': 'shell 5', 'zone_id': 75, 'point': (0.15624997516431982, 0.5831329524517059, 2.0), 'timestep': 0, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (50, 54, 55, 51)}, 'timestep_1': {'pick_letter': 'shell 5', 'OriginalZoneLabels': 'shell 5', 'zone_id': 75, 'point': (0.15624997516431982, 0.5831329524517059, 2.0), 'timestep': 1, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (50, 54, 55, 51)}}, 'shell 4': {'timestep_2': {'pick_letter': 'shell 4', 'OriginalZoneLabels': 'shell 4', 'zone_id': 74, 'point': (0.5976360887289047, 0.5976361334323883, 2.0), 'timestep': 2, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (53, 12, 13, 54)}, 'timestep_0': {'pick_letter': 'shell 4', 'OriginalZoneLabels': 'shell 4', 'zone_id': 74, 'point': (0.5976360887289047, 0.5976361334323883, 2.0), 'timestep': 0, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (53, 12, 13, 54)}, 'timestep_1': {'pick_letter': 'shell 4', 'OriginalZoneLabels': 'shell 4', 'zone_id': 74, 'point': (0.5976360887289047, 0.5976361334323883, 2.0), 'timestep': 1, 'filename': 'd3samp6.plt.mili', 'incident_nodes': (53, 12, 13, 54)}}}
+{
+  "shell 4": {
+    "timestep_0": {
+      "OriginalZoneLabels": "shell 4",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        53,
+        12,
+        13,
+        54
+      ],
+      "pick_letter": "shell 4",
+      "point": [
+        0.5976360887289047,
+        0.5976361334323883,
+        2.0
+      ],
+      "timestep": 0,
+      "zone_id": 74
+    },
+    "timestep_1": {
+      "OriginalZoneLabels": "shell 4",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        53,
+        12,
+        13,
+        54
+      ],
+      "pick_letter": "shell 4",
+      "point": [
+        0.5976360887289047,
+        0.5976361334323883,
+        2.0
+      ],
+      "timestep": 1,
+      "zone_id": 74
+    },
+    "timestep_2": {
+      "OriginalZoneLabels": "shell 4",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        53,
+        12,
+        13,
+        54
+      ],
+      "pick_letter": "shell 4",
+      "point": [
+        0.5976360887289047,
+        0.5976361334323883,
+        2.0
+      ],
+      "timestep": 2,
+      "zone_id": 74
+    }
+  },
+  "shell 5": {
+    "timestep_0": {
+      "OriginalZoneLabels": "shell 5",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        50,
+        54,
+        55,
+        51
+      ],
+      "pick_letter": "shell 5",
+      "point": [
+        0.15624997516431982,
+        0.5831329524517059,
+        2.0
+      ],
+      "timestep": 0,
+      "zone_id": 75
+    },
+    "timestep_1": {
+      "OriginalZoneLabels": "shell 5",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        50,
+        54,
+        55,
+        51
+      ],
+      "pick_letter": "shell 5",
+      "point": [
+        0.15624997516431982,
+        0.5831329524517059,
+        2.0
+      ],
+      "timestep": 1,
+      "zone_id": 75
+    },
+    "timestep_2": {
+      "OriginalZoneLabels": "shell 5",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        50,
+        54,
+        55,
+        51
+      ],
+      "pick_letter": "shell 5",
+      "point": [
+        0.15624997516431982,
+        0.5831329524517059,
+        2.0
+      ],
+      "timestep": 2,
+      "zone_id": 75
+    }
+  },
+  "shell 9": {
+    "timestep_0": {
+      "OriginalZoneLabels": "shell 9",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        12,
+        57,
+        58,
+        13
+      ],
+      "pick_letter": "shell 9",
+      "point": [
+        0.7683892473578453,
+        0.7683893144130707,
+        2.0
+      ],
+      "timestep": 0,
+      "zone_id": 79
+    },
+    "timestep_1": {
+      "OriginalZoneLabels": "shell 9",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        12,
+        57,
+        58,
+        13
+      ],
+      "pick_letter": "shell 9",
+      "point": [
+        0.7683892473578453,
+        0.7683893144130707,
+        2.0
+      ],
+      "timestep": 1,
+      "zone_id": 79
+    },
+    "timestep_2": {
+      "OriginalZoneLabels": "shell 9",
+      "filename": "d3samp6.plt.mili",
+      "incident_nodes": [
+        12,
+        57,
+        58,
+        13
+      ],
+      "pick_letter": "shell 9",
+      "point": [
+        0.7683892473578453,
+        0.7683893144130707,
+        2.0
+      ],
+      "timestep": 2,
+      "zone_id": 79
+    }
+  }
+}

@@ -7,6 +7,7 @@
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
+#include <QPen>
 
 #define HISTORY 50
 #define MAX_STRIP_CHART_VARS 5
@@ -83,6 +84,9 @@ public:
     void setCurveTitle( const unsigned int index, const QString &newTitle);
     void addDataPoint ( const unsigned int index,
                         const double x, const double y);
+    void addDataPoints( const unsigned int index,
+                        const unsigned int npts,
+                        const double *x, const double *y);
 
 private Q_SLOTS:
     void legendChecked( const QVariant &, bool on );

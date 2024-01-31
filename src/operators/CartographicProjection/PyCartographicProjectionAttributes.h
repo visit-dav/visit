@@ -5,6 +5,7 @@
 #ifndef PY_CARTOGRAPHICPROJECTIONATTRIBUTES_H
 #define PY_CARTOGRAPHICPROJECTIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CartographicProjectionAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyCartographicProjectionAttributes_Wrap(const CartographicProject
 void           PyCartographicProjectionAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCartographicProjectionAttributes_SetDefaults(const CartographicProjectionAttributes *atts);
 std::string    PyCartographicProjectionAttributes_GetLogString();
-std::string    PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *, const char *);
+std::string    PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *, const char *, const bool=false);
 PyObject *     PyCartographicProjectionAttributes_getattr(PyObject *self, char *name);
 int            PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyCartographicProjectionAttributes_methods[CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH];

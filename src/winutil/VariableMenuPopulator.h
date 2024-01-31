@@ -11,9 +11,7 @@
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 
-#include <algorithm>
-#include <map>
-#include <string>
+#include <maptypes.h>
 #include <vectortypes.h>
 
 class avtDatabaseMetaData;
@@ -95,6 +93,11 @@ class QObject;
 //   Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
 //   Change use of maps for variable lists to multimaps using case-insensitive
 //   comparator function.
+//
+//   Kathleen Biagas, Fri Oct 23, 2020
+//   Moved Comparator and typedefs into maptypes.h, so it they could be passed
+//   as args to StringHelpers functions.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -131,17 +134,6 @@ public:
         bool mustRePopMD, bool isSim);
 
 private:
-    struct Comparator {
-        bool operator() (const std::string& s1, const std::string& s2) const {
-            std::string str1(s1.length(),' ');
-            std::string str2(s2.length(),' ');
-            std::transform(s1.begin(), s1.end(), str1.begin(), tolower);
-            std::transform(s2.begin(), s2.end(), str2.begin(), tolower);
-            return  str1 < str2;
-        }
-    };
-    typedef std::multimap<std::string, bool, Comparator> StringBoolMap;
-    typedef std::multimap<std::string, std::string, Comparator> StringStringMap;
 
     class VariableList
     {
@@ -157,19 +149,19 @@ private:
         bool Contains(const std::string &var) const;
         void InitTraversal();
         bool GetNextVariable(std::string &var, bool &validVar);
-        bool IsGroupingRequired(StringStringMap& origNameToGroupedName);
+        bool IsGroupingRequired(CIStringStringMap& origNameToGroupedName);
         bool operator == (const VariableList &) const;
         bool operator != (const VariableList &) const;
         unsigned int GetHashVal() const { return myHashVal; };
         void SetHashVal(unsigned int hv) { myHashVal = hv; };
     private:
-        bool                    sorted;
-        StringBoolMap           sortedVariables;
-        StringBoolMap::iterator sortedVariablesIterator;
-        stringVector            unsortedVariableNames;
-        boolVector              unsortedVariableValid;
-        int                     unsortedVariableIndex;
-        unsigned int            myHashVal;
+        bool                      sorted;
+        CIStringBoolMap           sortedVariables;
+        CIStringBoolMap::iterator sortedVariablesIterator;
+        stringVector              unsortedVariableNames;
+        boolVector                unsortedVariableValid;
+        int                       unsortedVariableIndex;
+        unsigned int              myHashVal;
     };
 
     class GroupingInfo
@@ -180,7 +172,7 @@ private:
        ~GroupingInfo();
         void operator = (const GroupingInfo &obj);
 
-        StringStringMap grouping;
+        CIStringStringMap grouping;
         bool            required;
     };
 

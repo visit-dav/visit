@@ -27,10 +27,27 @@
 #  Use 'splitlines' instead of split("\n"), use list version of first 
 #  argmument for Popen command, so that it works on Windows.
 #
-#   Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
-#   Fix __read_visit_env so the Windows changes get executed on Windows and the
-#   previous way gets executed for non-Windows -- so it works again on 
-#   non-Windows.
+#  Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
+#  Fix __read_visit_env so the Windows changes get executed on Windows and the
+#  previous way gets executed for non-Windows -- so it works again on 
+#  non-Windows.
+#
+#  Cyrus Harrison, Thu Apr  9 09:19:24 PDT 2020
+#  Update Popen call for Python 3.
+#
+#  Cyrus Harrison, Wed Feb 24 16:13:34 PST 2021
+#  Update due to refactor of PySide 2 module logic.
+#
+#  Kathleen Biagas, Thu Jun 3, 2021
+#  Changes for Windows:
+#    Retrieve vdir from VISITLOC env var if the vdir arg in Launch commands
+#      wasn't set.
+#    Add '-nodialog' to 'visit.exe -env' command so that environment string
+#      can be retrieved. Otherwise we get a dialog box and nothing to stdout.
+#
+#  Kathleen Biagas, Tue Aug 15, 2023
+#  For Windows, don't add launch args to vcmd passed to __read_visit_env,
+#  instead add them to the pcmd constructed in that function.
 #
 ###############################################################################
 
@@ -38,32 +55,43 @@ import sys
 import subprocess
 import os
 import imp
+import visit_utils
 
 from os.path import join as pjoin
 
-__all__ = ["Launch","LaunchNowin","LaunchWithProxy","LaunchPySide","LaunchPyQt","AddArgument","SetDebugLevel","GetDebugLevel"]
+__all__ = ["Launch",
+           "LaunchNowin",
+           "LaunchWithProxy",
+           "LaunchPySide",
+           "LaunchPyQt",
+           "AddArgument","SetDebugLevel","GetDebugLevel"]
+
+def GetVDir(vdir):
+    if sys.platform.startswith("win") and vdir==None and 'VISITLOC' in os.environ:
+        return os.environ['VISITLOC']
+
+    return vdir
 
 def Launch(vdir=None):
-    return VisItModuleState.launch(vdir)
+    return VisItModuleState.launch(GetVDir(vdir))
 
 def LaunchNowin(vdir=None):
     VisItModuleState.add_argument("-nowin")
-    return VisItModuleState.launch(vdir)
+    return VisItModuleState.launch(GetVDir(vdir))
 
 def LaunchWithProxy(vdir=None,proxy=None):
-    return VisItModuleState.launch(vdir,proxy)
+    return VisItModuleState.launch(GetVDir(vdir),proxy)
 
 def LaunchPySide(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    from . import pyside_support
-    ret = pyside_support.LaunchPyViewer(args)
-    return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
+    ret = visit_utils.builtin.pyside_support.LaunchPyViewer(args)
+    return VisItModuleState.launch(GetVDir(vdir),ret.GetViewerProxyPtr())
 
 def LaunchPyQt(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
     from . import pyqt_support
-    ret = pyqt_support.LaunchPyViewer(args)
-    return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
+    ret = visit_utils.builtin.pyqt_support.LaunchPyViewer(args)
+    return VisItModuleState.launch(GetVDir(vdir),ret.GetViewerProxyPtr())
 
 def AddArgument(arg):
     return VisItModuleState.add_argument(arg)
@@ -84,10 +112,16 @@ class VisItModuleState(object):
     def launch(cls,vdir=None,proxy=None):
         launched = False
         try:
-            vcmd = cls.__visit_cmd(vdir,cls.launch_args)
+            if sys.platform.startswith("win"):
+                # adding launch_args to vcmd here causes problems
+                # with the command constructed for subprocess.Popen
+                # in __read_visit_env so let that method handle them
+                vcmd = cls.__visit_cmd(vdir,[])
+            else:
+                vcmd = cls.__visit_cmd(vdir,cls.launch_args)
             env  = cls.__read_visit_env(vcmd)
             mod  = cls.__visit_module_path(env["LIBPATH"])
-            #print "Using visitmodule: %s" % mod
+            #print("Using visitmodule: %s" % mod)
             for k in list(env.keys()):
                 if k != "LIBPATH" and k != "VISITARCHHOME":
                     os.environ[k] = env[k]
@@ -193,7 +227,7 @@ class VisItModuleState(object):
             vcmd = pjoin(vdir,vcmd)
         for arg in args:
             vcmd += " %s" % str(arg)
-        #print "[visit command: %s]" % vcmd
+        #print("[visit command: %s]" % vcmd)
         return vcmd
     @classmethod
     def __visit_module_path(cls,libpath):
@@ -215,14 +249,19 @@ class VisItModuleState(object):
     @classmethod
     def __read_visit_env(cls,vcmd):
         if sys.platform.startswith("win"):
-            pcmd = vcmd.strip().split(' ')
-            pcmd.append("-env")
+            pcmd = [vcmd, "-env", "-nodialog"]
+            # launch_args no longer used in constructing the vcmd arg, so add them here
+            pcmd += cls.launch_args
         else:
             pcmd = vcmd + " -env"
+        # universal_newlines needed to make sure
+        # result is encoded as a useable string when
+        # returned Python 3
         p = subprocess.Popen(pcmd,
                              shell=True,
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+                             stderr=subprocess.STDOUT,
+                             universal_newlines=True)
         pout =p.communicate()[0]
         if p.returncode != 0:
             msg  = "Could not execute VisIt to determine proper env settings!\n"

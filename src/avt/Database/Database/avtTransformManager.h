@@ -18,7 +18,7 @@
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
 
-struct avtDatasetCollection;
+class avtDatasetCollection;
 class avtDatabaseMetaData;
 class avtSourceFromDatabase;
 

@@ -27,7 +27,7 @@
 //    Brad Whitlock, Tue Jul 20 16:41:11 PST 2004
 //    Added varUnits.
 //
-//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
+//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004
 //    Initialize globalVisibility.
 //
 //    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
@@ -35,7 +35,7 @@
 //
 // ****************************************************************************
 
-avtLegend::avtLegend()
+avtLegend::avtLegend() : customTitle()
 {
     legend   = NULL;
     legendOn = true;
@@ -52,6 +52,8 @@ avtLegend::avtLegend()
     varUnits = NULL;
     message = NULL;
     orientation = VerticalTextOnRight;
+
+    useCustomTitle = false;
 }
 
 
@@ -328,7 +330,7 @@ avtLegend::GetCurrentlyDrawn() const
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -344,7 +346,7 @@ avtLegend::SetTitleVisibility(bool)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -362,7 +364,7 @@ avtLegend::GetTitleVisibility() const
 // Modifications:
 //    Kathleen Bonnell, Thu Oct  1 14:19:27 PDT 2009
 //    Changed arg from bool to int, to support multiple modes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -380,7 +382,7 @@ avtLegend::SetLabelVisibility(int)
 // Modifications:
 //    Kathleen Bonnell, Thu Oct  1 14:19:27 PDT 2009
 //    Changed retrun type from bool to int, to support multiple modes.
-//   
+//
 // ****************************************************************************
 
 int
@@ -396,7 +398,7 @@ avtLegend::GetLabelVisibility() const
 // Creation:   January 23, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -412,7 +414,7 @@ avtLegend::SetMinMaxVisibility(bool)
 // Creation:   January 23, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -428,7 +430,7 @@ avtLegend::GetMinMaxVisibility() const
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -444,7 +446,7 @@ avtLegend::SetNumberFormat(const char *)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -460,7 +462,7 @@ avtLegend::SetLegendScale(double xScale, double yScale)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -476,7 +478,7 @@ avtLegend::SetBoundingBoxVisibility(bool)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -494,7 +496,7 @@ avtLegend::SetBoundingBoxColor(const double *)
 // Modifications:
 //    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
 //    This was a noop.  Now, orientation is set.
-//   
+//
 // ****************************************************************************
 
 void
@@ -510,7 +512,7 @@ avtLegend::SetOrientation(LegendOrientation o)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -666,7 +668,7 @@ avtLegend::SetVarName(const char *str)
 // ****************************************************************************
 // Method: avtLegend::SetVarUnits
 //
-// Purpose: 
+// Purpose:
 //   Sets the variable units.
 //
 // Arguments:
@@ -676,7 +678,7 @@ avtLegend::SetVarName(const char *str)
 // Creation:   Tue Jul 20 16:46:40 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -739,9 +741,12 @@ avtLegend::SetMessage(const char *str)
 //    Brad Whitlock, Tue Jul 20 16:48:56 PST 2004
 //    Added varUnits.
 //
-//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005 
+//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005
 //    Call ChangeFontHeight/ChangeTitle instead of legend->SetFontHeight/
 //    legend->SetTitle.
+//
+//    Kathleen Biagas, Thursday May 20, 2021
+//    Support custom title (which may be empty).
 //
 // ****************************************************************************
 
@@ -756,49 +761,59 @@ avtLegend::Update()
     //
     // Set the title.
     //
-    size_t len = 0;
-    if (title != NULL)        len += strlen(title) + 1;
-    if (databaseInfo != NULL) len += strlen(databaseInfo) + 1;
-    if (varName != NULL)      len += strlen(varName) + 6;
-    if (varUnits != NULL)     len += strlen(varUnits) + 8;
-    if (message != NULL)      len += strlen(message) + 1;
-
-    if (len != 0)
+    if (!useCustomTitle)
     {
-        char *str = new char[len];
-        char *tmpstr = str;
-        str[0] = '\0';
+        size_t len = 0;
+        if (title != NULL)        len += strlen(title) + 1;
+        if (databaseInfo != NULL) len += strlen(databaseInfo) + 1;
+        if (varName != NULL)      len += strlen(varName) + 6;
+        if (varUnits != NULL)     len += strlen(varUnits) + 8;
+        if (message != NULL)      len += strlen(message) + 1;
 
-        if (title != NULL)
+        if (len != 0)
         {
-            strcpy(tmpstr, title);
-            tmpstr += strlen(tmpstr);
+            char *str = new char[len];
+            char *tmpstr = str;
+            str[0] = '\0';
+
+            if (title != NULL)
+            {
+                strcpy(tmpstr, title);
+                tmpstr += strlen(tmpstr);
+            }
+            if (databaseInfo != NULL)
+            {
+                strcpy(tmpstr, "\n");
+                strcat(tmpstr, databaseInfo);
+                tmpstr += strlen(tmpstr);
+            }
+            if (varName != NULL)
+            {
+                strcpy(tmpstr, "\nVar: ");
+                strcat(tmpstr, varName);
+                tmpstr += strlen(tmpstr);
+            }
+            if (varUnits != NULL)
+            {
+                strcpy(tmpstr, "\nUnits: ");
+                strcat(tmpstr, varUnits);
+                tmpstr += strlen(tmpstr);
+            }
+            if (message != NULL)
+            {
+                strcpy(tmpstr, "\n");
+                strcat(tmpstr, message);
+            }
+            ChangeTitle(str);
+            delete [] str;
         }
-        if (databaseInfo != NULL)
-        {
-            strcpy(tmpstr, "\n");
-            strcat(tmpstr, databaseInfo);
-            tmpstr += strlen(tmpstr);
-        }
-        if (varName != NULL)
-        {
-            strcpy(tmpstr, "\nVar: ");
-            strcat(tmpstr, varName);
-            tmpstr += strlen(tmpstr);
-        }
-        if (varUnits != NULL)
-        {
-            strcpy(tmpstr, "\nUnits: ");
-            strcat(tmpstr, varUnits);
-            tmpstr += strlen(tmpstr);
-        }
-        if (message != NULL)
-        {
-            strcpy(tmpstr, "\n");
-            strcat(tmpstr, message);
-        }
-        ChangeTitle(str);
-        delete [] str;
+    }
+    else
+    {
+        if(!customTitle.empty())
+            ChangeTitle(customTitle.c_str());
+        else
+            ChangeTitle("");
     }
 }
 
@@ -807,10 +822,10 @@ avtLegend::Update()
 //  Method: avtLegend::SetGlobalVisibility
 //
 //  Purpose:
-//    Sets the state global legend visibility. 
+//    Sets the state global legend visibility.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 12, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 12, 2004
 //
 // ****************************************************************************
 
@@ -828,10 +843,10 @@ avtLegend::SetGlobalVisibility(bool v)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void                          
+void
 avtLegend::SetNumTicks(int)
 {
     // Do nothing
@@ -845,7 +860,7 @@ avtLegend::SetNumTicks(int)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -862,7 +877,7 @@ avtLegend::SetUseSuppliedLabels(bool)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -879,7 +894,7 @@ avtLegend::SetMinMaxInclusive(bool)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -896,7 +911,7 @@ avtLegend::SetSuppliedValues(const doubleVector &)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -913,7 +928,7 @@ avtLegend::SetSuppliedLabels(const stringVector &)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -929,11 +944,51 @@ avtLegend::GetCalculatedLabels(doubleVector &)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 avtLegend::GetCalculatedLabels(stringVector &)
 {
     // Do nothing
+}
+
+// ****************************************************************************
+//  Method: avtLegend::SetCustomTitle
+//
+//  Purpose:
+//      Sets the custom title.
+//
+//  Arguments:
+//      ct        The new custom title.
+//
+//  Programmer:   Kathleen Biagas
+//  Creation:     May 19, 2021
+//
+// ****************************************************************************
+
+void
+avtLegend::SetCustomTitle(const std::string &ct)
+{
+    customTitle = ct;
+}
+
+// ****************************************************************************
+//  Method: avtLegend::UseCustomTitle
+//
+//  Purpose:
+//      Sets the custom title flag.
+//
+//  Arguments:
+//      val       The new custom title.
+//
+//  Programmer:   Kathleen Biagas
+//  Creation:     May 19, 2021
+//
+// ****************************************************************************
+
+void
+avtLegend::UseCustomTitle(bool val)
+{
+    useCustomTitle = val;
 }

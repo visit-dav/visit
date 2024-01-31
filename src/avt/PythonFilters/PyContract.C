@@ -3,9 +3,9 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PyContract.h>
 #include <PyDataRequest.h>
-
 
 // ****************************************************************************
 //  Modifications:
@@ -491,50 +491,31 @@ static char *Contract_Doc = "This class provides access to the avt pipeline cont
 #endif
 
 //
-// The type description structure
+// Python Type Struct Def Macro from Py2and3Support.h
 //
-static PyTypeObject PyContractType =
-{
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Contract",                          // tp_name
-    sizeof(PyContractObject),           // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Contract_dealloc,        // tp_dealloc
-    (printfunc)Contract_print,          // tp_print
-    (getattrfunc)Contract_getattr,       // tp_getattr
-    (setattrfunc)0,                      // tp_setattr
-    (cmpfunc)0,                          // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type Categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    0,                                   // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Contract_Doc,                        // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
 
+VISIT_PY_TYPE_OBJ(PyContractType,      \
+                  "Contract",          \
+                  PyContractObject,    \
+                  Contract_dealloc,    \
+                  Contract_print,      \
+                  Contract_getattr,    \
+                  0,                   \
+                  0,                   \
+                  Contract_Doc,        \
+                  0,                   \
+                  0); /* as_number*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //

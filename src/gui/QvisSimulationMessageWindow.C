@@ -37,7 +37,7 @@ QvisSimulationMessageWindow::CreateWindowContents()
     QPushButton *clearButton = new QPushButton(tr("Clear"), central);
     connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
     clearButton->setEnabled(true);
-    topLayout->addWidget(clearButton, 1, 0);
+    topLayout->addWidget(clearButton, 1);
 }
 
 //

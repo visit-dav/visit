@@ -253,17 +253,24 @@ QvisClipWindow::~QvisClipWindow()
 //   Jeremy Meredith, Fri Apr  3 10:19:16 EDT 2009
 //   Added missing connections for plane toggles.
 //
+//   Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//   Added support for the crinkle clip.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::CreateWindowContents()
 {
     
+    // Clip quality
     QWidget *qualityWidget= new QWidget(central);
     qualityGroup = new QButtonGroup(qualityWidget);
     
     QHBoxLayout *qualityLayout = new QHBoxLayout(qualityWidget);
-    qualityLayout->setMargin(0);
+    qualityLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *fastQuality = new QRadioButton("Fast", qualityWidget);
     QRadioButton *accurateQuality = new QRadioButton(tr("Accurate"), qualityWidget);
@@ -276,15 +283,20 @@ QvisClipWindow::CreateWindowContents()
     qualityLayout->addWidget(accurateQuality);
     
     topLayout->addWidget(qualityWidget);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(qualityGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(qualityChanged(int)));
+#else
+    connect(qualityGroup, SIGNAL(idClicked(int)),
+            this, SLOT(qualityChanged(int)));
+#endif
 
-    
+    // Clip type
     QWidget *typeWidget = new QWidget(central);
     typeGroup = new QButtonGroup(typeWidget);
     
     QHBoxLayout  *typeLayout = new QHBoxLayout(typeWidget);
-    typeLayout->setMargin(0);
+    typeLayout->setContentsMargins(0,0,0,0);
     QRadioButton *planeType = new QRadioButton(tr("Plane"), typeWidget);
     QRadioButton *sphereType = new QRadioButton(tr("Sphere"), typeWidget);
     
@@ -296,9 +308,29 @@ QvisClipWindow::CreateWindowContents()
     typeGroup->addButton(planeType,0);
     typeGroup->addButton(sphereType,1);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(typeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(sliceTypeChanged(int)));
+#else
+    connect(typeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(sliceTypeChanged(int)));
+#endif
 
+    // Crinkle clip
+    QWidget *crinkleWidget = new QWidget(central);
+    
+    QHBoxLayout *crinkleLayout = new QHBoxLayout(crinkleWidget);
+    crinkleLayout->setContentsMargins(0,0,0,0);
+    QCheckBox *crinkleClip = new QCheckBox(tr("Crinkle clip"), crinkleWidget);
+    crinkleClip->setChecked(false);
+    
+    crinkleLayout->addWidget(crinkleClip);
+    topLayout->addWidget(crinkleWidget);
+    
+    connect(crinkleClip, SIGNAL(toggled(bool)),
+            this, SLOT(crinkleClipToggled(bool)));
+
+    // Clip parameters
     QGroupBox *frame = new QGroupBox(tr("Clip parameters"),central);
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
     topLayout->addWidget(frame);
@@ -341,7 +373,7 @@ QvisClipWindow::CreateWindowContents()
     planeWidgetsLayout->addWidget(planeToolControlledClipPlaneWidget);
     
     QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlaneWidget);
-    planeToolControlledClipPlaneLayout->setMargin(0);
+    planeToolControlledClipPlaneLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton(tr("Nothing"),          
                                                                                     planeToolControlledClipPlaneWidget);
@@ -367,8 +399,13 @@ QvisClipWindow::CreateWindowContents()
     planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane2,2);
     planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane3,3);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(planeToolControlledClipPlane, SIGNAL(buttonClicked(int)),
             this, SLOT(planeToolControlledClipPlaneChanged(int)));
+#else
+    connect(planeToolControlledClipPlane, SIGNAL(idClicked(int)),
+            this, SLOT(planeToolControlledClipPlaneChanged(int)));
+#endif
  
     // 
     // Sphere widgets
@@ -1177,5 +1214,30 @@ void
 QvisClipWindow::sphereInverseToggled(bool val)
 {
     atts->SetSphereInverse(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisClipWindow::crinkleClipToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the crinkle clip
+//   checkbox is toggled.
+//
+// Arguments:
+//   val  :  On/off.
+//
+// Programmer: Alister Maguire
+// Creation:   November 13, 2020
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisClipWindow::crinkleClipToggled(bool val)
+{
+    atts->SetCrinkleClip(val);
     Apply();
 }

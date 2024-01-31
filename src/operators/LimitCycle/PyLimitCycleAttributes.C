@@ -5,6 +5,7 @@
 #include <PyLimitCycleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyLimitCycleAttributes
@@ -34,9 +35,8 @@ struct LimitCycleAttributesObject
 // Internal prototypes
 //
 static PyObject *NewLimitCycleAttributes(int);
-
 std::string
-PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *prefix)
+PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -274,7 +274,7 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-        "NektarPPField, NIMRODField";
+        "NektarPPField";
     switch (atts->GetFieldType())
     {
       case LimitCycleAttributes::Default:
@@ -299,10 +299,6 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
           break;
       case LimitCycleAttributes::NektarPPField:
           snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
-          str += tmpStr;
-          break;
-      case LimitCycleAttributes::NIMRODField:
-          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -359,7 +355,7 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
           break;
     }
 
-    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
+    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, ManagerWorker, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
       case LimitCycleAttributes::LoadOnDemand:
@@ -370,8 +366,8 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
           snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
-      case LimitCycleAttributes::MasterSlave:
-          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+      case LimitCycleAttributes::ManagerWorker:
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sManagerWorker  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::VisItSelects:
@@ -526,21 +522,54 @@ LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid sourceType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " SpecifiedLine";
+        ss << ", SpecifiedPlane";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sourceType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetSourceType(LimitCycleAttributes::SourceType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid sourceType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "SpecifiedLine, SpecifiedPlane.");
-        return NULL;
-    }
+    obj->data->SetSourceType(LimitCycleAttributes::SourceType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -559,35 +588,60 @@ LimitCycleAttributes_SetLineStart(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double *dvals = obj->data->GetLineStart();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetLineStart();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the lineStart in the object as modified.
     obj->data->SelectLineStart();
@@ -613,35 +667,60 @@ LimitCycleAttributes_SetLineEnd(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double *dvals = obj->data->GetLineEnd();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetLineEnd();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the lineEnd in the object as modified.
     obj->data->SelectLineEnd();
@@ -667,35 +746,60 @@ LimitCycleAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double *dvals = obj->data->GetPlaneOrigin();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPlaneOrigin();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the planeOrigin in the object as modified.
     obj->data->SelectPlaneOrigin();
@@ -721,35 +825,60 @@ LimitCycleAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double *dvals = obj->data->GetPlaneNormal();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPlaneNormal();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the planeNormal in the object as modified.
     obj->data->SelectPlaneNormal();
@@ -775,35 +904,60 @@ LimitCycleAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double *dvals = obj->data->GetPlaneUpAxis();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPlaneUpAxis();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the planeUpAxis in the object as modified.
     obj->data->SelectPlaneUpAxis();
@@ -829,12 +983,48 @@ LimitCycleAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleDensity0 in the object.
-    obj->data->SetSampleDensity0((int)ival);
+    obj->data->SetSampleDensity0(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -853,12 +1043,48 @@ LimitCycleAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleDensity1 in the object.
-    obj->data->SetSampleDensity1((int)ival);
+    obj->data->SetSampleDensity1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -877,23 +1103,63 @@ LimitCycleAttributes_SetDataValue(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 11)
+    {
+        std::stringstream ss;
+        ss << "An invalid dataValue value was given." << std::endl;
+        ss << "Valid values are in the range [0,10]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Solid";
+        ss << ", SeedPointID";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", ArcLength";
+        ss << ", TimeAbsolute";
+        ss << ", TimeRelative";
+        ss << ", AverageDistanceFromSeed";
+        ss << ", CorrelationDistance";
+        ss << ", Difference";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 11)
-        obj->data->SetDataValue(LimitCycleAttributes::DataValue(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,10]. "
-                        "You can also use the following names: "
-                        "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
-                        "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
-                        "Difference, Variable.");
-        return NULL;
-    }
+    obj->data->SetDataValue(LimitCycleAttributes::DataValue(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -912,12 +1178,37 @@ LimitCycleAttributes_SetDataVariable(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dataVariable in the object.
-    obj->data->SetDataVariable(std::string(str));
+    obj->data->SetDataVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -936,22 +1227,58 @@ LimitCycleAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid integrationDirection value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Forward";
+        ss << ", Backward";
+        ss << ", Both";
+        ss << ", ForwardDirectionless";
+        ss << ", BackwardDirectionless";
+        ss << ", BothDirectionless";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the integrationDirection in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetIntegrationDirection(LimitCycleAttributes::IntegrationDirection(ival));
-    else
-    {
-        fprintf(stderr, "An invalid integrationDirection value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, "
-                        "BothDirectionless.");
-        return NULL;
-    }
+    obj->data->SetIntegrationDirection(LimitCycleAttributes::IntegrationDirection(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -970,12 +1297,48 @@ LimitCycleAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxSteps in the object.
-    obj->data->SetMaxSteps((int)ival);
+    obj->data->SetMaxSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -994,12 +1357,48 @@ LimitCycleAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the terminateByDistance in the object.
-    obj->data->SetTerminateByDistance(ival != 0);
+    obj->data->SetTerminateByDistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1018,12 +1417,48 @@ LimitCycleAttributes_SetTermDistance(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the termDistance in the object.
-    obj->data->SetTermDistance(dval);
+    obj->data->SetTermDistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1042,12 +1477,48 @@ LimitCycleAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the terminateByTime in the object.
-    obj->data->SetTerminateByTime(ival != 0);
+    obj->data->SetTerminateByTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1066,12 +1537,48 @@ LimitCycleAttributes_SetTermTime(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the termTime in the object.
-    obj->data->SetTermTime(dval);
+    obj->data->SetTermTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1090,12 +1597,48 @@ LimitCycleAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxStepLength in the object.
-    obj->data->SetMaxStepLength(dval);
+    obj->data->SetMaxStepLength(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1114,12 +1657,48 @@ LimitCycleAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the limitMaximumTimestep in the object.
-    obj->data->SetLimitMaximumTimestep(ival != 0);
+    obj->data->SetLimitMaximumTimestep(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1138,12 +1717,48 @@ LimitCycleAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxTimeStep in the object.
-    obj->data->SetMaxTimeStep(dval);
+    obj->data->SetMaxTimeStep(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1162,12 +1777,48 @@ LimitCycleAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the relTol in the object.
-    obj->data->SetRelTol(dval);
+    obj->data->SetRelTol(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1186,21 +1837,54 @@ LimitCycleAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid absTolSizeType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the absTolSizeType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetAbsTolSizeType(LimitCycleAttributes::SizeType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid absTolSizeType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, FractionOfBBox.");
-        return NULL;
-    }
+    obj->data->SetAbsTolSizeType(LimitCycleAttributes::SizeType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1219,12 +1903,48 @@ LimitCycleAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the absTolAbsolute in the object.
-    obj->data->SetAbsTolAbsolute(dval);
+    obj->data->SetAbsTolAbsolute(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1243,12 +1963,48 @@ LimitCycleAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the absTolBBox in the object.
-    obj->data->SetAbsTolBBox(dval);
+    obj->data->SetAbsTolBBox(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1267,22 +2023,58 @@ LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid fieldType value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Default";
+        ss << ", FlashField";
+        ss << ", M3DC12DField";
+        ss << ", M3DC13DField";
+        ss << ", Nek5000Field";
+        ss << ", NektarPPField";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 7)
-        obj->data->SetFieldType(LimitCycleAttributes::FieldType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,6]. "
-                        "You can also use the following names: "
-                        "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-                        "NektarPPField, NIMRODField.");
-        return NULL;
-    }
+    obj->data->SetFieldType(LimitCycleAttributes::FieldType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1301,12 +2093,48 @@ LimitCycleAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fieldConstant in the object.
-    obj->data->SetFieldConstant(dval);
+    obj->data->SetFieldConstant(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1325,35 +2153,60 @@ LimitCycleAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double *dvals = obj->data->GetVelocitySource();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetVelocitySource();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the velocitySource in the object as modified.
     obj->data->SelectVelocitySource();
@@ -1379,22 +2232,58 @@ LimitCycleAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid integrationType value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Euler";
+        ss << ", Leapfrog";
+        ss << ", DormandPrince";
+        ss << ", AdamsBashforth";
+        ss << ", RK4";
+        ss << ", M3DC12DIntegrator";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the integrationType in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetIntegrationType(LimitCycleAttributes::IntegrationType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
-                        "M3DC12DIntegrator.");
-        return NULL;
-    }
+    obj->data->SetIntegrationType(LimitCycleAttributes::IntegrationType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1413,21 +2302,56 @@ LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *a
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid parallelizationAlgorithmType value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " LoadOnDemand";
+        ss << ", ParallelStaticDomains";
+        ss << ", ManagerWorker";
+        ss << ", VisItSelects";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the parallelizationAlgorithmType in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetParallelizationAlgorithmType(LimitCycleAttributes::ParallelizationAlgorithmType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid parallelizationAlgorithmType value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
-        return NULL;
-    }
+    obj->data->SetParallelizationAlgorithmType(LimitCycleAttributes::ParallelizationAlgorithmType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1446,12 +2370,48 @@ LimitCycleAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxProcessCount in the object.
-    obj->data->SetMaxProcessCount((int)ival);
+    obj->data->SetMaxProcessCount(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1470,12 +2430,48 @@ LimitCycleAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxDomainCacheSize in the object.
-    obj->data->SetMaxDomainCacheSize((int)ival);
+    obj->data->SetMaxDomainCacheSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1494,12 +2490,48 @@ LimitCycleAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the workGroupSize in the object.
-    obj->data->SetWorkGroupSize((int)ival);
+    obj->data->SetWorkGroupSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1518,12 +2550,48 @@ LimitCycleAttributes_SetPathlines(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pathlines in the object.
-    obj->data->SetPathlines(ival != 0);
+    obj->data->SetPathlines(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1542,12 +2610,48 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObje
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pathlinesOverrideStartingTimeFlag in the object.
-    obj->data->SetPathlinesOverrideStartingTimeFlag(ival != 0);
+    obj->data->SetPathlinesOverrideStartingTimeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1566,12 +2670,48 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pathlinesOverrideStartingTime in the object.
-    obj->data->SetPathlinesOverrideStartingTime(dval);
+    obj->data->SetPathlinesOverrideStartingTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1590,12 +2730,48 @@ LimitCycleAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pathlinesPeriod in the object.
-    obj->data->SetPathlinesPeriod(dval);
+    obj->data->SetPathlinesPeriod(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1614,21 +2790,54 @@ LimitCycleAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid pathlinesCMFE value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " CONN_CMFE";
+        ss << ", POS_CMFE";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pathlinesCMFE in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetPathlinesCMFE(LimitCycleAttributes::PathlinesCMFE(ival));
-    else
-    {
-        fprintf(stderr, "An invalid pathlinesCMFE value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "CONN_CMFE, POS_CMFE.");
-        return NULL;
-    }
+    obj->data->SetPathlinesCMFE(LimitCycleAttributes::PathlinesCMFE(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1647,12 +2856,48 @@ LimitCycleAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleDistance0 in the object.
-    obj->data->SetSampleDistance0(dval);
+    obj->data->SetSampleDistance0(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1671,12 +2916,48 @@ LimitCycleAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleDistance1 in the object.
-    obj->data->SetSampleDistance1(dval);
+    obj->data->SetSampleDistance1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1695,12 +2976,48 @@ LimitCycleAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleDistance2 in the object.
-    obj->data->SetSampleDistance2(dval);
+    obj->data->SetSampleDistance2(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1719,12 +3036,48 @@ LimitCycleAttributes_SetFillInterior(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fillInterior in the object.
-    obj->data->SetFillInterior(ival != 0);
+    obj->data->SetFillInterior(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1743,12 +3096,48 @@ LimitCycleAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the randomSamples in the object.
-    obj->data->SetRandomSamples(ival != 0);
+    obj->data->SetRandomSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1767,12 +3156,48 @@ LimitCycleAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the randomSeed in the object.
-    obj->data->SetRandomSeed((int)ival);
+    obj->data->SetRandomSeed(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1791,12 +3216,48 @@ LimitCycleAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numberOfRandomSamples in the object.
-    obj->data->SetNumberOfRandomSamples((int)ival);
+    obj->data->SetNumberOfRandomSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1815,12 +3276,48 @@ LimitCycleAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the forceNodeCenteredData in the object.
-    obj->data->SetForceNodeCenteredData(ival != 0);
+    obj->data->SetForceNodeCenteredData(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1839,12 +3336,48 @@ LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cycleTolerance in the object.
-    obj->data->SetCycleTolerance(dval);
+    obj->data->SetCycleTolerance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1863,12 +3396,48 @@ LimitCycleAttributes_SetMaxIterations(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxIterations in the object.
-    obj->data->SetMaxIterations((int)ival);
+    obj->data->SetMaxIterations(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1887,12 +3456,48 @@ LimitCycleAttributes_SetShowPartialResults(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showPartialResults in the object.
-    obj->data->SetShowPartialResults(ival != 0);
+    obj->data->SetShowPartialResults(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1911,12 +3516,48 @@ LimitCycleAttributes_SetShowReturnDistances(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showReturnDistances in the object.
-    obj->data->SetShowReturnDistances(ival != 0);
+    obj->data->SetShowReturnDistances(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1935,12 +3576,48 @@ LimitCycleAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the issueAdvectionWarnings in the object.
-    obj->data->SetIssueAdvectionWarnings(ival != 0);
+    obj->data->SetIssueAdvectionWarnings(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1959,12 +3636,48 @@ LimitCycleAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the issueBoundaryWarnings in the object.
-    obj->data->SetIssueBoundaryWarnings(ival != 0);
+    obj->data->SetIssueBoundaryWarnings(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1983,12 +3696,48 @@ LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the issueTerminationWarnings in the object.
-    obj->data->SetIssueTerminationWarnings(ival != 0);
+    obj->data->SetIssueTerminationWarnings(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2007,12 +3756,48 @@ LimitCycleAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the issueStepsizeWarnings in the object.
-    obj->data->SetIssueStepsizeWarnings(ival != 0);
+    obj->data->SetIssueStepsizeWarnings(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2031,12 +3816,48 @@ LimitCycleAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the issueStiffnessWarnings in the object.
-    obj->data->SetIssueStiffnessWarnings(ival != 0);
+    obj->data->SetIssueStiffnessWarnings(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2055,12 +3876,48 @@ LimitCycleAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *ar
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the issueCriticalPointsWarnings in the object.
-    obj->data->SetIssueCriticalPointsWarnings(ival != 0);
+    obj->data->SetIssueCriticalPointsWarnings(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2079,12 +3936,48 @@ LimitCycleAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the criticalPointThreshold in the object.
-    obj->data->SetCriticalPointThreshold(dval);
+    obj->data->SetCriticalPointThreshold(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2103,12 +3996,48 @@ LimitCycleAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the correlationDistanceAngTol in the object.
-    obj->data->SetCorrelationDistanceAngTol(dval);
+    obj->data->SetCorrelationDistanceAngTol(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2127,12 +4056,48 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObj
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the correlationDistanceMinDistAbsolute in the object.
-    obj->data->SetCorrelationDistanceMinDistAbsolute(dval);
+    obj->data->SetCorrelationDistanceMinDistAbsolute(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2151,12 +4116,48 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject 
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the correlationDistanceMinDistBBox in the object.
-    obj->data->SetCorrelationDistanceMinDistBBox(dval);
+    obj->data->SetCorrelationDistanceMinDistBBox(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2175,21 +4176,54 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject 
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid correlationDistanceMinDistType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the correlationDistanceMinDistType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCorrelationDistanceMinDistType(LimitCycleAttributes::SizeType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid correlationDistanceMinDistType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, FractionOfBBox.");
-        return NULL;
-    }
+    obj->data->SetCorrelationDistanceMinDistType(LimitCycleAttributes::SizeType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2342,14 +4376,7 @@ LimitCycleAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-LimitCycleAttributes_compare(PyObject *v, PyObject *w)
-{
-    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)v)->data;
-    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLimitCycleAttributes_getattr(PyObject *self, char *name)
 {
@@ -2459,8 +4486,6 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::Nek5000Field));
     if(strcmp(name, "NektarPPField") == 0)
         return PyInt_FromLong(long(LimitCycleAttributes::NektarPPField));
-    if(strcmp(name, "NIMRODField") == 0)
-        return PyInt_FromLong(long(LimitCycleAttributes::NIMRODField));
 
     if(strcmp(name, "fieldConstant") == 0)
         return LimitCycleAttributes_GetFieldConstant(self, NULL);
@@ -2487,8 +4512,8 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::LoadOnDemand));
     if(strcmp(name, "ParallelStaticDomains") == 0)
         return PyInt_FromLong(long(LimitCycleAttributes::ParallelStaticDomains));
-    if(strcmp(name, "MasterSlave") == 0)
-        return PyInt_FromLong(long(LimitCycleAttributes::MasterSlave));
+    if(strcmp(name, "ManagerWorker") == 0)
+        return PyInt_FromLong(long(LimitCycleAttributes::ManagerWorker));
     if(strcmp(name, "VisItSelects") == 0)
         return PyInt_FromLong(long(LimitCycleAttributes::VisItSelects));
 
@@ -2565,144 +4590,179 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::FractionOfBBox));
 
 
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0) 
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid LimitCycle attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+        
+    // parallelizationAlgorithmType
+    if(strcmp(name, "MasterSlave") == 0)
+    {       
+        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
+        return PyInt_FromLong(long(LimitCycleAttributes::ManagerWorker));
+    }           
+    // end parallelizationAlgorithmType 
+    // NOTE: no cooresponding _setattr method is needed for this case because this
+    // is handling only a change in enum symbol name. Those are constants in the
+    // python object and never set
+#endif  
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyLimitCycleAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyLimitCycleAttributes_methods[i].ml_name),
+                PyString_FromString(PyLimitCycleAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyLimitCycleAttributes_methods, self, name);
 }
 
 int
 PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "sourceType") == 0)
-        obj = LimitCycleAttributes_SetSourceType(self, tuple);
+        obj = LimitCycleAttributes_SetSourceType(self, args);
     else if(strcmp(name, "lineStart") == 0)
-        obj = LimitCycleAttributes_SetLineStart(self, tuple);
+        obj = LimitCycleAttributes_SetLineStart(self, args);
     else if(strcmp(name, "lineEnd") == 0)
-        obj = LimitCycleAttributes_SetLineEnd(self, tuple);
+        obj = LimitCycleAttributes_SetLineEnd(self, args);
     else if(strcmp(name, "planeOrigin") == 0)
-        obj = LimitCycleAttributes_SetPlaneOrigin(self, tuple);
+        obj = LimitCycleAttributes_SetPlaneOrigin(self, args);
     else if(strcmp(name, "planeNormal") == 0)
-        obj = LimitCycleAttributes_SetPlaneNormal(self, tuple);
+        obj = LimitCycleAttributes_SetPlaneNormal(self, args);
     else if(strcmp(name, "planeUpAxis") == 0)
-        obj = LimitCycleAttributes_SetPlaneUpAxis(self, tuple);
+        obj = LimitCycleAttributes_SetPlaneUpAxis(self, args);
     else if(strcmp(name, "sampleDensity0") == 0)
-        obj = LimitCycleAttributes_SetSampleDensity0(self, tuple);
+        obj = LimitCycleAttributes_SetSampleDensity0(self, args);
     else if(strcmp(name, "sampleDensity1") == 0)
-        obj = LimitCycleAttributes_SetSampleDensity1(self, tuple);
+        obj = LimitCycleAttributes_SetSampleDensity1(self, args);
     else if(strcmp(name, "dataValue") == 0)
-        obj = LimitCycleAttributes_SetDataValue(self, tuple);
+        obj = LimitCycleAttributes_SetDataValue(self, args);
     else if(strcmp(name, "dataVariable") == 0)
-        obj = LimitCycleAttributes_SetDataVariable(self, tuple);
+        obj = LimitCycleAttributes_SetDataVariable(self, args);
     else if(strcmp(name, "integrationDirection") == 0)
-        obj = LimitCycleAttributes_SetIntegrationDirection(self, tuple);
+        obj = LimitCycleAttributes_SetIntegrationDirection(self, args);
     else if(strcmp(name, "maxSteps") == 0)
-        obj = LimitCycleAttributes_SetMaxSteps(self, tuple);
+        obj = LimitCycleAttributes_SetMaxSteps(self, args);
     else if(strcmp(name, "terminateByDistance") == 0)
-        obj = LimitCycleAttributes_SetTerminateByDistance(self, tuple);
+        obj = LimitCycleAttributes_SetTerminateByDistance(self, args);
     else if(strcmp(name, "termDistance") == 0)
-        obj = LimitCycleAttributes_SetTermDistance(self, tuple);
+        obj = LimitCycleAttributes_SetTermDistance(self, args);
     else if(strcmp(name, "terminateByTime") == 0)
-        obj = LimitCycleAttributes_SetTerminateByTime(self, tuple);
+        obj = LimitCycleAttributes_SetTerminateByTime(self, args);
     else if(strcmp(name, "termTime") == 0)
-        obj = LimitCycleAttributes_SetTermTime(self, tuple);
+        obj = LimitCycleAttributes_SetTermTime(self, args);
     else if(strcmp(name, "maxStepLength") == 0)
-        obj = LimitCycleAttributes_SetMaxStepLength(self, tuple);
+        obj = LimitCycleAttributes_SetMaxStepLength(self, args);
     else if(strcmp(name, "limitMaximumTimestep") == 0)
-        obj = LimitCycleAttributes_SetLimitMaximumTimestep(self, tuple);
+        obj = LimitCycleAttributes_SetLimitMaximumTimestep(self, args);
     else if(strcmp(name, "maxTimeStep") == 0)
-        obj = LimitCycleAttributes_SetMaxTimeStep(self, tuple);
+        obj = LimitCycleAttributes_SetMaxTimeStep(self, args);
     else if(strcmp(name, "relTol") == 0)
-        obj = LimitCycleAttributes_SetRelTol(self, tuple);
+        obj = LimitCycleAttributes_SetRelTol(self, args);
     else if(strcmp(name, "absTolSizeType") == 0)
-        obj = LimitCycleAttributes_SetAbsTolSizeType(self, tuple);
+        obj = LimitCycleAttributes_SetAbsTolSizeType(self, args);
     else if(strcmp(name, "absTolAbsolute") == 0)
-        obj = LimitCycleAttributes_SetAbsTolAbsolute(self, tuple);
+        obj = LimitCycleAttributes_SetAbsTolAbsolute(self, args);
     else if(strcmp(name, "absTolBBox") == 0)
-        obj = LimitCycleAttributes_SetAbsTolBBox(self, tuple);
+        obj = LimitCycleAttributes_SetAbsTolBBox(self, args);
     else if(strcmp(name, "fieldType") == 0)
-        obj = LimitCycleAttributes_SetFieldType(self, tuple);
+        obj = LimitCycleAttributes_SetFieldType(self, args);
     else if(strcmp(name, "fieldConstant") == 0)
-        obj = LimitCycleAttributes_SetFieldConstant(self, tuple);
+        obj = LimitCycleAttributes_SetFieldConstant(self, args);
     else if(strcmp(name, "velocitySource") == 0)
-        obj = LimitCycleAttributes_SetVelocitySource(self, tuple);
+        obj = LimitCycleAttributes_SetVelocitySource(self, args);
     else if(strcmp(name, "integrationType") == 0)
-        obj = LimitCycleAttributes_SetIntegrationType(self, tuple);
+        obj = LimitCycleAttributes_SetIntegrationType(self, args);
     else if(strcmp(name, "parallelizationAlgorithmType") == 0)
-        obj = LimitCycleAttributes_SetParallelizationAlgorithmType(self, tuple);
+        obj = LimitCycleAttributes_SetParallelizationAlgorithmType(self, args);
     else if(strcmp(name, "maxProcessCount") == 0)
-        obj = LimitCycleAttributes_SetMaxProcessCount(self, tuple);
+        obj = LimitCycleAttributes_SetMaxProcessCount(self, args);
     else if(strcmp(name, "maxDomainCacheSize") == 0)
-        obj = LimitCycleAttributes_SetMaxDomainCacheSize(self, tuple);
+        obj = LimitCycleAttributes_SetMaxDomainCacheSize(self, args);
     else if(strcmp(name, "workGroupSize") == 0)
-        obj = LimitCycleAttributes_SetWorkGroupSize(self, tuple);
+        obj = LimitCycleAttributes_SetWorkGroupSize(self, args);
     else if(strcmp(name, "pathlines") == 0)
-        obj = LimitCycleAttributes_SetPathlines(self, tuple);
+        obj = LimitCycleAttributes_SetPathlines(self, args);
     else if(strcmp(name, "pathlinesOverrideStartingTimeFlag") == 0)
-        obj = LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
+        obj = LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(self, args);
     else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
-        obj = LimitCycleAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+        obj = LimitCycleAttributes_SetPathlinesOverrideStartingTime(self, args);
     else if(strcmp(name, "pathlinesPeriod") == 0)
-        obj = LimitCycleAttributes_SetPathlinesPeriod(self, tuple);
+        obj = LimitCycleAttributes_SetPathlinesPeriod(self, args);
     else if(strcmp(name, "pathlinesCMFE") == 0)
-        obj = LimitCycleAttributes_SetPathlinesCMFE(self, tuple);
+        obj = LimitCycleAttributes_SetPathlinesCMFE(self, args);
     else if(strcmp(name, "sampleDistance0") == 0)
-        obj = LimitCycleAttributes_SetSampleDistance0(self, tuple);
+        obj = LimitCycleAttributes_SetSampleDistance0(self, args);
     else if(strcmp(name, "sampleDistance1") == 0)
-        obj = LimitCycleAttributes_SetSampleDistance1(self, tuple);
+        obj = LimitCycleAttributes_SetSampleDistance1(self, args);
     else if(strcmp(name, "sampleDistance2") == 0)
-        obj = LimitCycleAttributes_SetSampleDistance2(self, tuple);
+        obj = LimitCycleAttributes_SetSampleDistance2(self, args);
     else if(strcmp(name, "fillInterior") == 0)
-        obj = LimitCycleAttributes_SetFillInterior(self, tuple);
+        obj = LimitCycleAttributes_SetFillInterior(self, args);
     else if(strcmp(name, "randomSamples") == 0)
-        obj = LimitCycleAttributes_SetRandomSamples(self, tuple);
+        obj = LimitCycleAttributes_SetRandomSamples(self, args);
     else if(strcmp(name, "randomSeed") == 0)
-        obj = LimitCycleAttributes_SetRandomSeed(self, tuple);
+        obj = LimitCycleAttributes_SetRandomSeed(self, args);
     else if(strcmp(name, "numberOfRandomSamples") == 0)
-        obj = LimitCycleAttributes_SetNumberOfRandomSamples(self, tuple);
+        obj = LimitCycleAttributes_SetNumberOfRandomSamples(self, args);
     else if(strcmp(name, "forceNodeCenteredData") == 0)
-        obj = LimitCycleAttributes_SetForceNodeCenteredData(self, tuple);
+        obj = LimitCycleAttributes_SetForceNodeCenteredData(self, args);
     else if(strcmp(name, "cycleTolerance") == 0)
-        obj = LimitCycleAttributes_SetCycleTolerance(self, tuple);
+        obj = LimitCycleAttributes_SetCycleTolerance(self, args);
     else if(strcmp(name, "maxIterations") == 0)
-        obj = LimitCycleAttributes_SetMaxIterations(self, tuple);
+        obj = LimitCycleAttributes_SetMaxIterations(self, args);
     else if(strcmp(name, "showPartialResults") == 0)
-        obj = LimitCycleAttributes_SetShowPartialResults(self, tuple);
+        obj = LimitCycleAttributes_SetShowPartialResults(self, args);
     else if(strcmp(name, "showReturnDistances") == 0)
-        obj = LimitCycleAttributes_SetShowReturnDistances(self, tuple);
+        obj = LimitCycleAttributes_SetShowReturnDistances(self, args);
     else if(strcmp(name, "issueAdvectionWarnings") == 0)
-        obj = LimitCycleAttributes_SetIssueAdvectionWarnings(self, tuple);
+        obj = LimitCycleAttributes_SetIssueAdvectionWarnings(self, args);
     else if(strcmp(name, "issueBoundaryWarnings") == 0)
-        obj = LimitCycleAttributes_SetIssueBoundaryWarnings(self, tuple);
+        obj = LimitCycleAttributes_SetIssueBoundaryWarnings(self, args);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
-        obj = LimitCycleAttributes_SetIssueTerminationWarnings(self, tuple);
+        obj = LimitCycleAttributes_SetIssueTerminationWarnings(self, args);
     else if(strcmp(name, "issueStepsizeWarnings") == 0)
-        obj = LimitCycleAttributes_SetIssueStepsizeWarnings(self, tuple);
+        obj = LimitCycleAttributes_SetIssueStepsizeWarnings(self, args);
     else if(strcmp(name, "issueStiffnessWarnings") == 0)
-        obj = LimitCycleAttributes_SetIssueStiffnessWarnings(self, tuple);
+        obj = LimitCycleAttributes_SetIssueStiffnessWarnings(self, args);
     else if(strcmp(name, "issueCriticalPointsWarnings") == 0)
-        obj = LimitCycleAttributes_SetIssueCriticalPointsWarnings(self, tuple);
+        obj = LimitCycleAttributes_SetIssueCriticalPointsWarnings(self, args);
     else if(strcmp(name, "criticalPointThreshold") == 0)
-        obj = LimitCycleAttributes_SetCriticalPointThreshold(self, tuple);
+        obj = LimitCycleAttributes_SetCriticalPointThreshold(self, args);
     else if(strcmp(name, "correlationDistanceAngTol") == 0)
-        obj = LimitCycleAttributes_SetCorrelationDistanceAngTol(self, tuple);
+        obj = LimitCycleAttributes_SetCorrelationDistanceAngTol(self, args);
     else if(strcmp(name, "correlationDistanceMinDistAbsolute") == 0)
-        obj = LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(self, tuple);
+        obj = LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(self, args);
     else if(strcmp(name, "correlationDistanceMinDistBBox") == 0)
-        obj = LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(self, tuple);
+        obj = LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(self, args);
     else if(strcmp(name, "correlationDistanceMinDistType") == 0)
-        obj = LimitCycleAttributes_SetCorrelationDistanceMinDistType(self, tuple);
+        obj = LimitCycleAttributes_SetCorrelationDistanceMinDistType(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -2710,7 +4770,7 @@ static int
 LimitCycleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
-    fprintf(fp, "%s", PyLimitCycleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLimitCycleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2718,7 +4778,7 @@ PyObject *
 LimitCycleAttributes_str(PyObject *v)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
-    return PyString_FromString(PyLimitCycleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLimitCycleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2731,49 +4791,70 @@ static char *LimitCycleAttributes_Purpose = "Attributes for the LimitCycle";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject LimitCycleAttributesType =
+
+VISIT_PY_TYPE_OBJ(LimitCycleAttributesType,         \
+                  "LimitCycleAttributes",           \
+                  LimitCycleAttributesObject,       \
+                  LimitCycleAttributes_dealloc,     \
+                  LimitCycleAttributes_print,       \
+                  PyLimitCycleAttributes_getattr,   \
+                  PyLimitCycleAttributes_setattr,   \
+                  LimitCycleAttributes_str,         \
+                  LimitCycleAttributes_Purpose,     \
+                  LimitCycleAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LimitCycleAttributes",                    // tp_name
-    sizeof(LimitCycleAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LimitCycleAttributes_dealloc,  // tp_dealloc
-    (printfunc)LimitCycleAttributes_print,     // tp_print
-    (getattrfunc)PyLimitCycleAttributes_getattr, // tp_getattr
-    (setattrfunc)PyLimitCycleAttributes_setattr, // tp_setattr
-    (cmpfunc)LimitCycleAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LimitCycleAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LimitCycleAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &LimitCycleAttributesType
+         || Py_TYPE(other) != &LimitCycleAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)self)->data;
+    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -2849,7 +4930,7 @@ PyLimitCycleAttributes_GetLogString()
 {
     std::string s("LimitCycleAtts = LimitCycleAttributes()\n");
     if(currentAtts != 0)
-        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.");
+        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.", true);
     return s;
 }
 
@@ -2862,7 +4943,7 @@ PyLimitCycleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LimitCycleAtts = LimitCycleAttributes()\n");
-        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.");
+        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.", true);
         cb(s);
     }
 }

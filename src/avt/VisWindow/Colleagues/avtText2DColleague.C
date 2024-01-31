@@ -15,12 +15,6 @@
 #include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
 
-#define TIME_IDENTIFIER "$time"
-#define CYCLE_IDENTIFIER "$cycle"
-
-double avtText2DColleague::initialTime = 0.;
-int    avtText2DColleague::initialCycle = 0;
-
 // ****************************************************************************
 // Method: avtText2DColleague::avtText2DColleague
 //
@@ -43,14 +37,10 @@ int    avtText2DColleague::initialCycle = 0;
 // ****************************************************************************
 
 avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m) 
-    : avtAnnotationColleague(m)
+    : avtAnnotationWithTextColleague(m)
 {
     useForegroundForTextColor = true;
     addedToRenderer = false;
-    textFormatString = 0;
-    textString = 0;
-    currentTime = initialTime;
-    currentCycle = initialCycle;
 
     //
     // Create and position the actor.
@@ -96,8 +86,6 @@ avtText2DColleague::~avtText2DColleague()
 {
     if (textActor)
         textActor->Delete();
-    delete [] textString;
-    delete [] textFormatString;
 }
 
 // ****************************************************************************
@@ -461,40 +449,12 @@ avtText2DColleague::NoPlots(void)
 void
 avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
-    if(lst.size() > 0 && textFormatString != 0)
+    if (lst.size() > 0 && textFormatString != 0)
     {
-        avtDataAttributes &atts = lst[0]->GetBehavior()->GetInfo().GetAttributes();
-        currentTime = atts.GetTime();
-        currentCycle = atts.GetCycle();
-
-        std::string formatString(textFormatString);
-        std::string::size_type pos;
-        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
-           (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
-            SetText(textFormatString);
-
-        // Set the initial values from the current values.
-        initialTime = currentTime;
-        initialCycle = currentCycle;
+        avtAnnotationWithTextColleague::UpdatePlotList(lst);
+        SetText(textFormatString);
     }
 }
-
-// ****************************************************************************
-// Method: avtText2DColleague::SetText
-//
-// Purpose: 
-//   Updates the text string.
-//
-// Note:       This code matches avtTimeSliderColleague::SetText.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 14:17:22 PST 2003
-//
-// Modifications:
-//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
-//    Added $cycle support.
-//
-// ****************************************************************************
 
 void
 avtText2DColleague::SetText(const char *formatString)
@@ -506,45 +466,16 @@ avtText2DColleague::SetText(const char *formatString)
     // pointer is the same as textFormatString, which is how we get here from
     // UpdatePlotList.
     size_t len = strlen(formatString);
-    if(textFormatString != formatString)
+    if (textFormatString != formatString)
     {
         delete [] textFormatString;
         textFormatString = new char[len + 1];
         strcpy(textFormatString, formatString);
     }
 
-    // Replace $time with the time if the format string contains $time.
     delete [] textString;
-    std::string fmtStr(textFormatString);
-    std::string::size_type pos;
-    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(TIME_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%g", currentTime);
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        textString = new char[len];
-        snprintf(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(CYCLE_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%d", currentCycle);
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        textString = new char[len];
-        snprintf(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else
-    {
-        textString = new char[len + 1];
-        strcpy(textString, formatString);
-    }
+    textString = CreateAnnotationString(textFormatString);
 
-    if(textActor)
+    if (textActor)
         textActor->SetInput(textString);
 }

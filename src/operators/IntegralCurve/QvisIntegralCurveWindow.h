@@ -59,7 +59,7 @@ class SelectionList;
 //   Removed the accurate distance calculation option.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //   Added number of steps as a termination criterion.
@@ -128,8 +128,8 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
   public:
     QvisIntegralCurveWindow(const int type,
                             IntegralCurveAttributes *subj,
-                            const QString &caption = QString::null,
-                            const QString &shortName = QString::null,
+                            const QString &caption = QString(),
+                            const QString &shortName = QString(),
                             QvisNotepadArea *notepad = 0);
     virtual ~QvisIntegralCurveWindow();
     virtual void CreateWindowContents();

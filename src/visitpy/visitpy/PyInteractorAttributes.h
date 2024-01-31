@@ -5,6 +5,7 @@
 #ifndef PY_INTERACTORATTRIBUTES_H
 #define PY_INTERACTORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <InteractorAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyInteractorAttributes_Wrap(const InteractorAttribute
 void VISITPY_API           PyInteractorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyInteractorAttributes_SetDefaults(const InteractorAttributes *atts);
 std::string VISITPY_API    PyInteractorAttributes_GetLogString();
-std::string VISITPY_API    PyInteractorAttributes_ToString(const InteractorAttributes *, const char *);
+std::string VISITPY_API    PyInteractorAttributes_ToString(const InteractorAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyInteractorAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyInteractorAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyInteractorAttributes_methods[INTERACTORATTRIBUTES_NMETH];

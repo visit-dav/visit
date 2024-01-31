@@ -10,6 +10,9 @@
 #  Programmer: Allen Sanderson
 #  Date:       March 10, 2016
 #
+#  Modifications:
+#    Kathleen Biagas, Tue Sep 29 11:01:37 PDT 2020
+#    Turn off IC warnings.
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
@@ -54,6 +57,14 @@ IntegralCurveAtts.maxProcessCount = 10
 IntegralCurveAtts.maxDomainCacheSize = 3
 IntegralCurveAtts.workGroupSize = 32
 IntegralCurveAtts.dataValue = IntegralCurveAtts.TimeAbsolute
+# turn off warnings
+IntegralCurveAtts.issueAdvectionWarnings = 0
+IntegralCurveAtts.issueBoundaryWarnings = 0
+IntegralCurveAtts.issueTerminationWarnings = 0
+IntegralCurveAtts.issueStepsizeWarnings = 0
+IntegralCurveAtts.issueStiffnessWarnings = 0
+IntegralCurveAtts.issueCriticalPointsWarnings = 0
+
 
 # test defaults
 SetOperatorOptions(IntegralCurveAtts)

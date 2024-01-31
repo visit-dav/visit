@@ -56,11 +56,15 @@
 //    Cyrus Harrison, Wed Aug  8 11:19:10 PDT 2007
 //    Add support for multiple gradient algorithms.
 //
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtGradientExpression::avtGradientExpression()
 {
      gradientAlgo = SAMPLE;
+     canApplyToDirectDatabaseQOT = false;
 }
 
 
@@ -1632,6 +1636,12 @@ avtGradientExpression::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 //    Add an argument for the output variable name, since this is now a static
 //    function.
 //
+//    Brad Whitlock, Fri Jul 17 11:33:38 PDT 2020
+//    Use NewInstance to allocate cell grad so we preserve the input array's
+//    precision. This prevents the value from being removed downstream in
+//    the avtCompactTreeFilter (variables with mixed types get hashed to
+//    different keys in VTK).
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1651,7 +1661,7 @@ avtGradientExpression::FastGradient(vtkDataSet *in_ds,
     if (!allHexes)
         return NULL;
 
-    vtkDoubleArray *cellGrad = vtkDoubleArray::New();
+    vtkDataArray *cellGrad = arr->NewInstance();
     cellGrad->SetNumberOfComponents(3);
     cellGrad->SetNumberOfTuples(ncells);
     cellGrad->SetName("tmpGrad");

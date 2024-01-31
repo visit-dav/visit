@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const SubsetAttributes &obj);
 Definition:
@@ -12,6 +13,9 @@ Definition:
 //    Kathleen Biagas, Tue Dec 20 14:27:42 PST 2016
 //    Removed filledFlag.
 //
+//    Kathleen Biagas, Wed Jun  3 10:00:03 PDT 2020
+//    Added test for changing point type.
+//
 // ****************************************************************************
 bool
 SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
@@ -22,12 +26,20 @@ SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
                             obj.pointSizeVar != "" &&
                             obj.pointSizeVar != "\0";
 
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType &&
+                              currentPointTypeIsPoint != newPointTypeIsPoint;
+
     return ((subsetType != obj.subsetType) ||
             (subsetNames != obj.subsetNames) ||
             (wireframe != obj.wireframe) ||
             (drawInternal != obj.drawInternal) ||
             (smoothingLevel != obj.smoothingLevel) ||
-            needSecondaryVar);
+            needSecondaryVar ||
+            changingPointType);
 }
 
 Function: VarChangeRequiresReset
@@ -39,128 +51,48 @@ SubsetAttributes::VarChangeRequiresReset()
     return true;
 }
 
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
 // ****************************************************************************
-// Method: SubsetAttributes::ProcessOldVersions
+// Method: SubsetAttributes::CreateCompatible
 //
 // Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
+//   CreateCompatible method for the SubsetAttributes class.
+//   Can create PointGlyphAttributes.
 //
 // Programmer: Kathleen Biagas
-// Creation:   December 19, 2016
+// Creation:   June 3, 2020
 //
 // Modifications:
 //
 // ****************************************************************************
 
-void
-SubsetAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
+AttributeSubject *
+SubsetAttributes::CreateCompatible(const std::string &tname) const
 {
-    if(parentNode == 0)
-        return;
+    AttributeSubject *retval = 0;
 
-    DataNode *searchNode = parentNode->GetNode("SubsetAttributes");
-    if(searchNode == 0)
-        return;
+    if(TypeName() == tname)
+    {
+        retval = new SubsetAttributes(*this);
+    }
+    else if(tname == "PointGlyph")
+    {
+        PointGlyphAttributes *pga = new PointGlyphAttributes();
+        pga->SetPointSize(GetPointSize());
+        pga->SetPointType(GetPointType());
+        pga->SetPointSizeVarEnabled(GetPointSizeVarEnabled());
+        pga->SetPointSizeVar(GetPointSizeVar());
+        pga->SetPointSizePixels(GetPointSizePixels());
+        retval = pga;
+    }
 
-    if (VersionLessThan(configVersion, "2.13.0"))
-    {
-        if (searchNode->GetNode("filledFlag") != 0)
-            searchNode->RemoveNode("filledFlag");
-    }
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
+    return retval;
 }
 
 
 Target: xml2python
-Code: PySubsetAttributes_getattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields
-
-    // subsetType and it's possible enumerations
-    // these should have been internal all along ...
-    if (strcmp(name, "subsetType") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    // filledFlag -- hasn't been used in a LONG time
-    else if (strcmp(name, "filledFlag") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    // lineStyle and it's possible enumerations
-    else if (strcmp(name, "lineStyle") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-
-
-Code: PySubsetAttributes_setattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields
-    if(obj == NULL)
-    {
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        // internal only, shouldn't be set by scripts
-        else if(strcmp(name, "subsetType") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-
-
 Function: PySubsetAttributes_SetDefaults
 Declaration: PySubsetAttributes_SetDefaults
 Definition:

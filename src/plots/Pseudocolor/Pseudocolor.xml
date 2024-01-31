@@ -5,15 +5,11 @@
     </CXXFLAGS>
     <Files components="V">
       avtPseudocolorFilter.C
-      avtPseudocolorGeometryFilter.C
       avtPseudocolorMapper.C
-      vtkExtractCellsByType.C
     </Files>
     <Files components="E">
       avtPseudocolorFilter.C
-      avtPseudocolorGeometryFilter.C
       avtPseudocolorMapper.C
-      vtkExtractCellsByType.C
     </Files>
     <Attribute name="PseudocolorAttributes" purpose="Attributes for the pseudocolor plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Pseudocolor.code">
       <Enum name="Scaling">
@@ -23,7 +19,7 @@
       </Enum>
       <Enum name="LimitsMode">
         OriginalData
-        CurrentPlot
+        ActualData
       </Enum>
       <Enum name="Centering">
         Natural
@@ -215,10 +211,19 @@
       </Function>
       <Function name="Print" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
+      <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">
         visitstream.h
+      </Include>
+      <Include file="source" quoted="false">
+        LineGlyphAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        PointGlyphAttributes.h
+      </Include>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
       </Include>
     </Attribute>
   </Plugin>

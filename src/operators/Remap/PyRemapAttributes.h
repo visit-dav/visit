@@ -5,6 +5,7 @@
 #ifndef PY_REMAPATTRIBUTES_H
 #define PY_REMAPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RemapAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyRemapAttributes_Wrap(const RemapAttributes *attr);
 void           PyRemapAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyRemapAttributes_SetDefaults(const RemapAttributes *atts);
 std::string    PyRemapAttributes_GetLogString();
-std::string    PyRemapAttributes_ToString(const RemapAttributes *, const char *);
+std::string    PyRemapAttributes_ToString(const RemapAttributes *, const char *, const bool=false);
 PyObject *     PyRemapAttributes_getattr(PyObject *self, char *name);
 int            PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyRemapAttributes_methods[REMAPATTRIBUTES_NMETH];

@@ -44,11 +44,45 @@
 #  Cyrus Harrison, Fri Dec  6 14:51:33 PST 2019
 #  Add python code gen cmake targets for those objects that can be code-gend
 #
+#  Chris Laganella, Mon Jan 17 12:31:49 EST 2022
+#  Add common/PyTable.C
+#
+#  Chris Laganella, Mon Jan 24 18:12:20 EST 2022
+#  Link the cli to "rt" on non windows platforms.
+#
+#  Chris Laganella, Mon Feb  7 20:36:34 EST 2022
+#  Link the visitmodule to "rt" on non windows platforms.
+#
+#  Kathleen Biagas, Fri Sep 9, 2022
+#  Link with CMAKE_THREAD_LIBS.
+#
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 #########################################################
 # BEGIN Logic for XML Code Gen Targets
 #########################################################
+
+#####################
+# Common Objects
+#####################
+
+
+#####################
+# Common Objects that we can't Code-Gen, or have customizations:
+#####################
+
+# SET(PY_GEN_ANNOTATION_OBJECTS
+#     ImageObject 
+#     LegendAttributesObject
+#     LineObject
+#     Line3DObject
+#     Text2DObject
+#     Text3DObject
+#     TimeSliderObject
+#     )
 
 #####################
 # Metadata Objects
@@ -58,9 +92,6 @@
 #####################
 # Metadata Objects that we can't Code-Gen, or have customizations:
 #####################
-# avtMeshMetaData
-# avtSimulationInformation
-# avtSpeciesMetaData
 
 SET(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
@@ -71,11 +102,11 @@ SET(PY_GEN_METADATA_OBJECTS
     avtLabelMetaData
     avtMatSpeciesMetaData
     avtMaterialMetaData
-    # avtMeshMetaData (see above note)
+    avtMeshMetaData
     avtScalarMetaData
     avtSimulationCommandSpecification
-    # avtSimulationInformation # (see above note)
-    # avtSpeciesMetaData # (see above note)
+    avtSimulationInformation
+    avtSpeciesMetaData
     avtSubsetsMetaData
     avtSymmetricTensorMetaData
     avtTensorMetaData
@@ -90,11 +121,9 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
-# ColorControlPointList
-# DatabaseCorrelation
-# SaveSubWindowAttributes
-# View2DAttributes
-# View2DAttributes
+# DatabaseCorrelation - NOT OK
+# View2DAttributes -- NOT OK -- need as_number worked out
+# View3DAttributes -- NOT OK -- need as_number worked out
 
 SET(PY_GEN_STATE_OBJECTS
     AnimationAttributes
@@ -105,11 +134,10 @@ SET(PY_GEN_STATE_OBJECTS
     AxisAttributes
     AxisLabels
     AxisTickMarks
-    AxisTitle
     ColorAttribute
     ColorAttributeList
     ColorControlPoint
-    # ColorControlPointList  # (see above note)
+    ColorControlPointList
     ColorTableAttributes 
     ConstructDataBinningAttributes
     # DatabaseCorrelation # (see above note)
@@ -143,15 +171,16 @@ SET(PY_GEN_STATE_OBJECTS
     RenderingAttributes
     SaveWindowAttributes
     SaveSubWindowAttributes 
-    # SaveSubWindowsAttributes # (see above note)
+    SaveSubWindowsAttributes
     SelectionProperties
     SelectionSummary
     SelectionVariableSummary
     SelectionList
     ThresholdOpAttributes
-    # View2DAttributes # (see above note)
-    # View3DAttributes # (see above note)
+    #View2DAttributes # (see above note)
+    #View3DAttributes # (see above note)
     ViewAttributes
+    AxisTitles
     ViewAxisArrayAttributes
     ViewerClientAttributes
     ViewerClientInformation
@@ -169,6 +198,14 @@ SET(PY_GEN_RPC_OBJECTS ViewerRPC)
 #########################################################
 # Add our code gen targets
 #########################################################
+# Annotation Objects
+foreach(obj_name ${PY_GEN_ANNOTATION_OBJECTS})
+    ADD_PYTHON_GEN_TARGET(${obj_name}
+                          ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+                          ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
+endforeach()
+
+
 # Metadata Objects
 foreach(obj_name ${PY_GEN_METADATA_OBJECTS})
     ADD_PYTHON_GEN_TARGET(${obj_name}
@@ -186,7 +223,7 @@ endforeach()
 # RPC Objects
 foreach(obj_name ${PY_GEN_RPC_OBJECTS})
     ADD_PYTHON_GEN_TARGET(${obj_name}
-                          ${VISIT_SOURCE_DIR}/viewer/rpcstate/
+                          ${VISIT_SOURCE_DIR}/viewer/rpc/
                           ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
 endforeach()
 #########################################################
@@ -195,19 +232,27 @@ endforeach()
 
 
 SET(COMMON_SOURCES
-common/CallbackHandlers.C
-common/CallbackManager.C
-common/Logging.C
-common/MethodDoc.C
+# Annotation Wrappers are still custom, and hand ported
+# to python 3. They diverge from  code gen to map custom 
+# parts of the fields to the general annotation object.
+# while we could just implement this in python (instead of)
+# C++, replication the current logic would be a detailed
+# and tricky endeavor 
 common/PyImageObject.C
 common/PyLegendAttributesObject.C
 common/PyLineObject.C
 common/PyLine3DObject.C
-common/PySILRestrictionBase.C
-common/PySILRestriction.C
 common/PyText2DObject.C
 common/PyText3DObject.C
 common/PyTimeSliderObject.C
+# end Annotation Wrappers
+common/CallbackHandlers.C
+common/CallbackManager.C
+common/Logging.C
+common/MethodDoc.C
+common/PySILRestrictionBase.C
+common/PySILRestriction.C
+common/PyTable.C
 common/ViewerRPCArguments.C
 common/ViewerRPCCallbacks.C
 common/visitmodule.C
@@ -258,6 +303,7 @@ visitpy/PyColorTableAttributes.C
 visitpy/PyConstructDataBinningAttributes.C 
 visitpy/PyDatabaseCorrelation.C 
 visitpy/PyDBOptionsAttributes.C
+visitpy/PyDBOptionsAttributes_Helpers.C
 visitpy/PyEngineProperties.C 
 visitpy/PyExportDBAttributes.C 
 visitpy/PyExpression.C 
@@ -347,7 +393,8 @@ TARGET_LINK_LIBRARIES(visitpy
 avtdbatts
 viewerrpc
 visitcommon
-${PYTHON_LIBRARY}
+${PYTHON_LIBRARIES}
+Threads::Threads
 )
 
 # Create the CLI
@@ -367,17 +414,22 @@ viewerrpc
 avtdbatts
 visitcommon
 visitpy
-${PYTHON_LIBRARY}
-${CMAKE_THREAD_LIBS}
+${PYTHON_LIBRARIES}
+Threads::Threads
 )
 IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(cli dl)
     IF(NOT APPLE)
+        find_library(LIBRT rt)
+        TARGET_LINK_LIBRARIES(cli ${LIBRT})
         IF(NOT AIX)
             # Is this a Python companion libary? We need it for unresolved openpty/forkpty
             TARGET_LINK_LIBRARIES(cli util)
         ENDIF(NOT AIX)
     ENDIF(NOT APPLE)
+else()
+    # resolve inconsistent dll-linkage problem
+    set_target_properties(cli PROPERTIES COMPILE_DEFINITIONS "visitmodule_EXPORTS")
 ENDIF(NOT WIN32)
 
 # If we're building statically then the cli can't be linked until the plugin
@@ -407,6 +459,10 @@ ELSE(VISIT_STATIC)
     )
 
     IF(NOT WIN32)
+        IF(NOT APPLE)
+            find_library(LIBRT rt)
+            TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
+        ENDIF(NOT APPLE)
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES
                                           LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
     ENDIF(NOT WIN32)

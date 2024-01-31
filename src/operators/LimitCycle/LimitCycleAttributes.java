@@ -52,7 +52,7 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
 
     public final static int PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
-    public final static int PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE = 2;
+    public final static int PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER = 2;
     public final static int PARALLELIZATIONALGORITHMTYPE_VISITSELECTS = 3;
 
     public final static int FIELDTYPE_DEFAULT = 0;
@@ -61,7 +61,6 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     public final static int FIELDTYPE_M3DC13DFIELD = 3;
     public final static int FIELDTYPE_NEK5000FIELD = 4;
     public final static int FIELDTYPE_NEKTARPPFIELD = 5;
-    public final static int FIELDTYPE_NIMRODFIELD = 6;
 
     public final static int INTEGRATIONTYPE_EULER = 0;
     public final static int INTEGRATIONTYPE_LEAPFROG = 1;
@@ -1313,8 +1312,6 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
             str = str + "FIELDTYPE_NEK5000FIELD";
         if(fieldType == FIELDTYPE_NEKTARPPFIELD)
             str = str + "FIELDTYPE_NEKTARPPFIELD";
-        if(fieldType == FIELDTYPE_NIMRODFIELD)
-            str = str + "FIELDTYPE_NIMRODFIELD";
         str = str + "\n";
         str = str + doubleToString("fieldConstant", fieldConstant, indent) + "\n";
         str = str + doubleArrayToString("velocitySource", velocitySource, indent) + "\n";
@@ -1337,8 +1334,8 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
             str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS)
             str = str + "PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS";
-        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE)
-            str = str + "PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_VISITSELECTS)
             str = str + "PARALLELIZATIONALGORITHMTYPE_VISITSELECTS";
         str = str + "\n";

@@ -289,6 +289,10 @@ VisWinParallelAxes::SetForegroundColor(double fr_, double fg_, double fb_)
 //    I added the ability to display the parallel axes either horizontally
 //    or vertically.
 //
+//    Eric Brugger, Fri Jun 19 15:54:29 PDT 2020
+//    I modified the end cap tick calculation to generate a single tick with
+//    16 or more axes. Previously this gave no tick marks.
+//
 // ****************************************************************************
 
 void
@@ -360,8 +364,17 @@ VisWinParallelAxes::UpdateView(void)
         else
             axes[i].axis->SetMajorTickLabelScale(1.);
 
-        double nTicks = floor(30./(axes.size()-1.)-1.);
-        double tickSize = (axes.size() - 1.) / 60.;
+        //
+        // We are subtracting 1 because the number of axes is one more
+        // than the user specified to provide an axis for the labels.
+        //
+        double nTicks = floor(32./(axes.size()-1.)-1.);
+        double tickSize = (axes.size() - 1.) / 64.;
+        if (axes.size() > 16)
+        {
+            nTicks = 1.;
+            tickSize = 0.25;
+        }
 
         double xpos1 = vxmin + (axes[i].xpos - (nTicks * tickSize) - xmin) * dx;
         double xpos2 = vxmin + (axes[i].xpos + (nTicks * tickSize) - xmin) * dx;
@@ -485,6 +498,9 @@ VisWinParallelAxes::UpdatePlotList(vector<avtActor_p> &list)
             }
         }
 
+        //
+        // We are creating an extra axis for the labels.
+        //
         SetNumberOfAxes(naxes+1);
 
         if (actorIndex >= 0)
@@ -1071,12 +1087,38 @@ VisWinParallelAxes::SetLabelTextAttributes(const VisWinTextAttributes &att)
 //  Programmer:  Eric Brugger
 //  Creation:    November 5, 2012
 //
+//  Modifiecations:
+//    Eric Brugger, Fri Jun 19 15:54:29 PDT 2020
+//    I fixed a bug where changing the orientation wasn't handled properly
+//    and some of the axes were missing or incomplete.
+//
 // ****************************************************************************
 
 void
 VisWinParallelAxes::SetAxisOrientation(Orientation orientation)
 {
     axisOrientation = orientation;
+    for (size_t i=0; i < axes.size(); i++)
+    {
+        if (axisOrientation == Horizontal)
+        {
+            axes[i].axis->SetOrientationAngle(0.);
+            if (i > 0)
+            {
+                axes[i].axisCap1->SetOrientationAngle(-1.5707963);
+                axes[i].axisCap2->SetOrientationAngle(1.5707963);
+            }
+        }
+        else
+        {
+            axes[i].axis->SetOrientationAngle(-1.5707963);
+            if (i > 0)
+            {
+                axes[i].axisCap1->SetOrientationAngle(0);
+                axes[i].axisCap2->SetOrientationAngle(3.1415927);
+            }
+        }
+    }
 }
 
 
@@ -1105,6 +1147,10 @@ VisWinParallelAxes::SetAxisOrientation(Orientation orientation)
 //    I added the ability to display the parallel axes either horizontally
 //    or vertically.
 //
+//    Eric Brugger, Fri Jun 19 15:54:29 PDT 2020
+//    I modified the end cap tick calculation to generate a single tick with
+//    16 or more axes. Previously this gave no tick marks.
+//
 // ****************************************************************************
 
 void
@@ -1120,10 +1166,24 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
     {
         for (int i=1; i<n; i++)
         {
-            axes[i].axisCap1->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
-            axes[i].axisCap1->SetMajorTickMaximum(floor(30./(n-1.)-1.));
-            axes[i].axisCap2->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
-            axes[i].axisCap2->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+            //
+            // We are subtracting 1 because the number of axes is one more
+            // than the user specified to provide an axis for the labels.
+            //
+            if ((n - 1) <= 16)
+            {
+                axes[i].axisCap1->SetMajorTickMinimum(-floor(32./(n-1.)-1.));
+                axes[i].axisCap1->SetMajorTickMaximum(floor(32./(n-1.)-1.));
+                axes[i].axisCap2->SetMajorTickMinimum(-floor(32./(n-1.)-1.));
+                axes[i].axisCap2->SetMajorTickMaximum(floor(32./(n-1.)-1.));
+            }
+            else
+            {
+                axes[i].axisCap1->SetMajorTickMinimum(-1.);
+                axes[i].axisCap1->SetMajorTickMaximum(1.);
+                axes[i].axisCap2->SetMajorTickMinimum(-1.);
+                axes[i].axisCap2->SetMajorTickMaximum(1.);
+            }
         }
         for (size_t i=n; i<axes.size(); i++)
         {
@@ -1140,10 +1200,24 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
     {
         for (size_t i=1; i<axes.size(); i++)
         {
-            axes[i].axisCap1->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
-            axes[i].axisCap1->SetMajorTickMaximum(floor(30./(n-1.)-1.));
-            axes[i].axisCap2->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
-            axes[i].axisCap2->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+            //
+            // We are subtracting 1 because the number of axes is one more
+            // than the user specified to provide an axis for the labels.
+            //
+            if ((n - 1) <= 16)
+            {
+                axes[i].axisCap1->SetMajorTickMinimum(-floor(32./(n-1.)-1.));
+                axes[i].axisCap1->SetMajorTickMaximum(floor(32./(n-1.)-1.));
+                axes[i].axisCap2->SetMajorTickMinimum(-floor(32./(n-1.)-1.));
+                axes[i].axisCap2->SetMajorTickMaximum(floor(32./(n-1.)-1.));
+            }
+            else
+            {
+                axes[i].axisCap1->SetMajorTickMinimum(-1.);
+                axes[i].axisCap1->SetMajorTickMaximum(1.);
+                axes[i].axisCap2->SetMajorTickMinimum(-1.);
+                axes[i].axisCap2->SetMajorTickMaximum(1.);
+            }
         }
         for (size_t i=axes.size(); i<(size_t)n; i++)
         {
@@ -1205,8 +1279,20 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
                 ax->SetTickLocation(0);
                 ax->SetDrawGridlines(false);
                 ax->SetAdjustLabels(false);
-                ax->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
-                ax->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+                //
+                // We are subtracting 1 because the number of axes is one more
+                // than the user specified to provide an axis for the labels.
+                //
+                if ((n - 1) <= 16)
+                {
+                    ax->SetMajorTickMinimum(-floor(32./(n-1.)-1.));
+                    ax->SetMajorTickMaximum(floor(32./(n-1.)-1.));
+                }
+                else
+                {
+                    ax->SetMajorTickMinimum(-1.);
+                    ax->SetMajorTickMaximum(1.);
+                }
                 ax->SetMajorTickSpacing(1.);
                 ax->SetMinorTickSpacing(1.);
                 ax->SetLabelFontHeight(labelFontHeight);
@@ -1234,8 +1320,20 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
                 ax->SetTickLocation(0);
                 ax->SetDrawGridlines(false);
                 ax->SetAdjustLabels(false);
-                ax->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
-                ax->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+                //
+                // We are subtracting 1 because the number of axes is one more
+                // than the user specified to provide an axis for the labels.
+                //
+                if ((n - 1) <= 16)
+                {
+                    ax->SetMajorTickMinimum(-floor(32./(n-1.)-1.));
+                    ax->SetMajorTickMaximum(floor(32./(n-1.)-1.));
+                }
+                else
+                {
+                    ax->SetMajorTickMinimum(-1.);
+                    ax->SetMajorTickMaximum(1.);
+                }
                 ax->SetMajorTickSpacing(1.);
                 ax->SetMinorTickSpacing(1.);
                 ax->GetProperty()->SetLineWidth(lineWidth);

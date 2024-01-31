@@ -5,6 +5,7 @@
 #ifndef PY_BOUNDARYOPATTRIBUTES_H
 #define PY_BOUNDARYOPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <BoundaryOpAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyBoundaryOpAttributes_Wrap(const BoundaryOpAttributes *attr);
 void           PyBoundaryOpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyBoundaryOpAttributes_SetDefaults(const BoundaryOpAttributes *atts);
 std::string    PyBoundaryOpAttributes_GetLogString();
-std::string    PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *, const char *);
+std::string    PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *, const char *, const bool=false);
 PyObject *     PyBoundaryOpAttributes_getattr(PyObject *self, char *name);
 int            PyBoundaryOpAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyBoundaryOpAttributes_methods[BOUNDARYOPATTRIBUTES_NMETH];

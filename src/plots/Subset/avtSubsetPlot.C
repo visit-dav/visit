@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                              avtSubsetPlot.C                              //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtSubsetPlot.C
+// ****************************************************************************
 
 #include <avtSubsetPlot.h>
 
@@ -15,13 +15,13 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
-#include <avtLevelsMapper.h>
-#include <avtLevelsPointGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtSubsetFilter.h>
+#include <avtSubsetMapper.h>
 #include <avtFeatureEdgesFilter.h>
 #include <avtSmoothPolyDataFilter.h>
 #include <avtSubsetBlockMergeFilter.h>
+#include <avtVertexExtractor.h>
 
 #include <DebugStream.h>
 #include <InvalidColortableException.h>
@@ -65,7 +65,7 @@ using std::vector;
 //    Tell facelist filter to consolidate faces.
 //
 //    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004
-//    Changed mapper type to avtLevelsPointGlyphMapper.
+//    Changed subsetMapper type to avtLevelsPointGlyphMapper.
 //
 //    Hank Childs, Wed Dec 20 09:25:42 PST 2006
 //    Make new method calls in response to changing behavior from facelist
@@ -81,12 +81,15 @@ using std::vector;
 //    Added LevelsMapper as points and surfaces no longer handled by the
 //    same mapper.
 //
+//    Kathleen Biagas, Fri Jun  5 08:18:16 PDT 2020
+//    Add avtSurfaceMapper in place of levels and point glyph subsetMapper.
+//    Add avtVertexExtractor.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
 {
-    glyphMapper  = new avtLevelsPointGlyphMapper();
-    levelsMapper = new avtLevelsMapper();
+    subsetMapper  = new avtSubsetMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Subset");
     // there is no 'range' per se, so turn off range visibility.
@@ -119,11 +122,13 @@ avtSubsetPlot::avtSubsetPlot()
     sub   = new avtSubsetFilter();
     smooth= new avtSmoothPolyDataFilter();
     sbmf = new avtSubsetBlockMergeFilter();
+
+    vertexExtractor = nullptr;
 }
 
 
 // ****************************************************************************
-//  Method: avtLevelsMapper destructor
+//  Method: avtSubsetPlot destructor
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 17, 2001
@@ -139,19 +144,18 @@ avtSubsetPlot::avtSubsetPlot()
 //    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
 //    Deleted gz2.
 //
+//    Kathleen Biagas, Fri Jun  5 08:18:16 PDT 2020
+//    Add avtSurfaceMapper in place of levels and point glyph subsetMapper.
+//    Add avtVertexExtractor.
+//
 // ****************************************************************************
 
 avtSubsetPlot::~avtSubsetPlot()
 {
-    if (glyphMapper != NULL)
+    if (subsetMapper != NULL)
     {
-        delete glyphMapper;
-        glyphMapper = NULL;
-    }
-    if (levelsMapper != NULL)
-    {
-        delete levelsMapper;
-        levelsMapper = NULL;
+        delete subsetMapper;
+        subsetMapper = NULL;
     }
     if (avtLUT != NULL)
     {
@@ -198,6 +202,11 @@ avtSubsetPlot::~avtSubsetPlot()
     {
         delete sbmf;
         sbmf = NULL;
+    }
+    if (vertexExtractor != nullptr)
+    {
+        delete vertexExtractor;
+        vertexExtractor = nullptr;
     }
 
     //
@@ -262,6 +271,9 @@ avtSubsetPlot::Create()
 //    Brad Whitlock, Tue Jan  8 11:44:18 PST 2013
 //    I added some new glyph types.
 //
+//    Kathleen Biagas, Fri Jun  5 08:18:16 PDT 2020
+//    Add avtSurfaceMapper in place of levels and point glyph subsetMapper.
+//
 // ****************************************************************************
 
 void
@@ -278,29 +290,27 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
     if (!atts.GetWireframe())
     {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
-        levelsMapper->SetSpecularIsInappropriate(false);
-        glyphMapper->SetSpecularIsInappropriate(false);
+        subsetMapper->SetSpecularIsInappropriate(false);
     }
     else
     {
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
-        levelsMapper->SetSpecularIsInappropriate(true);
-        glyphMapper->SetSpecularIsInappropriate(true);
+        subsetMapper->SetSpecularIsInappropriate(true);
     }
 
-    glyphMapper->SetScale(atts.GetPointSize());
+    subsetMapper->SetScale(atts.GetPointSize());
     if (atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "default" &&
         atts.GetPointSizeVar() != "" &&
         atts.GetPointSizeVar() != "\0")
     {
-        glyphMapper->ScaleByVar(atts.GetPointSizeVar());
+        subsetMapper->ScaleByVar(atts.GetPointSizeVar());
     }
     else
     {
-        glyphMapper->DataScalingOff();
+        subsetMapper->DataScalingOff();
     }
-    glyphMapper->SetGlyphType(atts.GetPointType());
+    subsetMapper->SetGlyphType(atts.GetPointType());
     SetPointGlyphSize();
 }
 
@@ -385,7 +395,7 @@ avtSubsetPlot::SetLegend(bool legendOn)
 void
 avtSubsetPlot::SetLineWidth(int lw)
 {
-    levelsMapper->SetLineWidth(Int2LineWidth(lw));
+    subsetMapper->SetLineWidth(Int2LineWidth(lw));
 }
 
 
@@ -393,8 +403,7 @@ avtSubsetPlot::SetLineWidth(int lw)
 //  Method: avtSubsetPlot::GetMapper
 //
 //  Purpose:
-//      Gets the levels mapper as its base class (avtMapper) for our base
-//      class (avtPlot).
+//      Gets the mapper for this class.
 //
 //  Returns:    The mapper for this plot.
 //
@@ -406,14 +415,7 @@ avtSubsetPlot::SetLineWidth(int lw)
 avtMapperBase *
 avtSubsetPlot::GetMapper(void)
 {
-    if (topologicalDim != 0)
-    {
-        return levelsMapper;
-    }
-    else
-    {
-        return glyphMapper;
-    }
+    return subsetMapper;
 }
 
 
@@ -521,11 +523,17 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    when this flag is true. If the drawInteral flag is false, the wireframe of
 //    subset plots of blocks will only outline the blocks.
 //
+//    Kathleen Biagas, Fri Jun  5 08:29:08 PDT 2020
+//    Added avtVertexExtractor, for separating out vertex cells from non-vertex
+//    for proper point glyhping and sizing in mixed topology data.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
+    avtDataObject_p dob = input;
+    int topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
     int type = atts.GetSubsetType();
 
     if (!atts.GetWireframe())
@@ -557,7 +565,7 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             //   - strip ghost zones first to keep domain boundaries
             //   - find the external faces of every domain
             //   - do the subset (smoothing if needed)
-            gz->SetInput(input);
+            gz->SetInput(dob);
             fl->SetInput(gz->GetOutput());
             if (atts.GetSmoothingLevel() > 0)
             {
@@ -568,14 +576,14 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             {
                 sub->SetInput(fl->GetOutput());
             }
-            return sub->GetOutput();
+            dob = sub->GetOutput();
         }
         else
         {
             // We're doing any other non-wireframe subset plot:
             //   - do the facelist and ghost zones in the needed order
             //   - do the subset (smoothing if needed)
-            gzfl->SetInput(input);
+            gzfl->SetInput(dob);
             unsigned char nodeType = 0;
             nodeType |= (1 << DUPLICATED_NODE);
             nodeType |= (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
@@ -589,7 +597,7 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             {
                 sub->SetInput(gzfl->GetOutput());
             }
-            return sub->GetOutput();
+            dob = sub->GetOutput();
         }
     }
     else
@@ -607,7 +615,7 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             //      (these are capture with avtGhostNodes.  The avtGhostNodes
             //       are not removed by the first ghost zone filter, since
             //       they only take effect with poly data.)
-            gz->SetInput(input);
+            gz->SetInput(dob);
             fl->SetInput(gz->GetOutput());
             if (atts.GetSmoothingLevel() > 0)
             {
@@ -634,7 +642,7 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             nodeType |= (1 << NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
             nodeType |= (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
             gz2->SetGhostNodeTypesToRemove(nodeType);
-            return gz2->GetOutput();
+            dob = gz2->GetOutput();
         }
         else
         {
@@ -655,11 +663,24 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             }
             wf->SetInput(sub->GetOutput());
             gz->SetInput(wf->GetOutput());
-            return gz->GetOutput();
+            dob = gz->GetOutput();
         }
     }
+    if (topoDim != 0 && atts.GetPointType() != Point)
+    {
+        if (vertexExtractor == nullptr)
+        {
+            vertexExtractor = new avtVertexExtractor();
+        }
+        vertexExtractor->SetInput(dob);
+        vertexExtractor->SetLabelPrefix("subset");
+        vertexExtractor->SetConvertAllPoints(false);
+        vertexExtractor->SetKeepNonVertex(true);
+        vertexExtractor->SetPointGlyphAtts((PointGlyphAttributes*)(atts.CreateCompatible("PointGlyph")));
+        dob = vertexExtractor->GetOutput();
+    }
 
-    return input;
+    return dob;
 }
 
 
@@ -690,6 +711,10 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //
 //    Brad Whitlock, Thu Jul 21 15:39:12 PST 2005
 //    Set the point glyph size.
+//
+//    Kathleen Biagas, Fri Jun  5 08:32:31 PDT 2020
+//    Strip off prefixes on labels that may have been added by vertexExtractor
+//    before seting them to the legend.
 //
 // ****************************************************************************
 
@@ -732,9 +757,7 @@ avtSubsetPlot::CustomizeBehavior(void)
 void
 avtSubsetPlot::SetPointGlyphSize()
 {
-    // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point)
-        glyphMapper->SetPointSize(atts.GetPointSizePixels());
+    subsetMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 
@@ -822,7 +845,18 @@ avtSubsetPlot::SetColors()
     const vector < string > &allLabels = atts.GetSubsetNames();
     LevelColorMap levelColorMap;
 
-    const vector < string > &labels = behavior->GetInfo().GetAttributes().GetLabels();
+
+    // The labels coming from behavior may have special prefixes used to
+    // determine which type of mapper to use.  Dont want them being used
+    // by the legend, so strip off prefixes first.
+    vector<string> labels = behavior->GetInfo().GetAttributes().GetLabels();
+    for(size_t i = 0; i < labels.size(); ++i)
+    {
+        if (labels[i].compare(0, 12, "subset_surf_") == 0)
+           labels[i] = labels[i].substr(12);
+        else if (labels[i].compare(0, 14, "subset_points_") == 0)
+           labels[i] = labels[i].substr(14);
+    }
 
     bool colorBarVisible = true;
     if (labels.size() == 0)
@@ -853,8 +887,7 @@ avtSubsetPlot::SetColors()
         cal.AddColors(ca);
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal, needsRecalculation);
-        glyphMapper->SetColors(cal, needsRecalculation);
+        subsetMapper->SetColors(cal, needsRecalculation);
         //
         //  Send an empty color map, rather than one where all
         //  entries map to same value.
@@ -892,11 +925,9 @@ avtSubsetPlot::SetColors()
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
         {
-            StackTimer t0("Set up levels mapper");
-            levelsMapper->SetColors(cal, needsRecalculation);
-            levelsMapper->SetLabelColorMap(levelColorMap);
-            glyphMapper->SetColors(cal, needsRecalculation);
-            glyphMapper->SetLabelColorMap(levelColorMap);
+            StackTimer t0("Set up levels subsetMapper");
+            subsetMapper->SetColors(cal, needsRecalculation);
+            subsetMapper->SetLabelColorMap(levelColorMap);
         }
         if(colorBarVisible)
         {
@@ -977,11 +1008,9 @@ avtSubsetPlot::SetColors()
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
         {
-            StackTimer t0("Set up levels mapper");
-            levelsMapper->SetColors(cal, needsRecalculation);
-            levelsMapper->SetLabelColorMap(levelColorMap);
-            glyphMapper->SetColors(cal, needsRecalculation);
-            glyphMapper->SetLabelColorMap(levelColorMap);
+            StackTimer t0("Set up levels subsetMapper");
+            subsetMapper->SetColors(cal, needsRecalculation);
+            subsetMapper->SetLabelColorMap(levelColorMap);
         }
 
         if(colorBarVisible)
@@ -1039,6 +1068,10 @@ avtSubsetPlot::ReleaseData(void)
     if (smooth != NULL)
     {
         smooth->ReleaseData();
+    }
+    if (vertexExtractor != nullptr)
+    {
+        vertexExtractor->ReleaseData();
     }
 }
 

@@ -5,6 +5,7 @@
 #ifndef PY_AVTSUBSETSMETADATA_H
 #define PY_AVTSUBSETSMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtSubsetsMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>
@@ -23,7 +24,7 @@ VISITPY_API PyObject *     PyavtSubsetsMetaData_Wrap(const avtSubsetsMetaData *a
 void VISITPY_API           PyavtSubsetsMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSubsetsMetaData_SetDefaults(const avtSubsetsMetaData *atts);
 std::string VISITPY_API    PyavtSubsetsMetaData_GetLogString();
-std::string VISITPY_API    PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *, const char *);
+std::string VISITPY_API    PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtSubsetsMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtSubsetsMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSubsetsMetaData_methods[AVTSUBSETSMETADATA_NMETH];

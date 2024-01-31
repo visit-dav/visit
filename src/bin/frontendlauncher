@@ -25,6 +25,24 @@
 #   Modified the script to use the the python that goes with the version of
 #   visit specified rather than the python that goes with the newest visit.
 #
+#   Eric Brugger, Tue May 25 15:18:03 PDT 2021
+#   Modified the logic that determines the python version to work with a
+#   two digit version when launching the cli.
+#
+#   Eric Brugger, Wed Aug 11 14:31:38 PDT 2021
+#   Added "-u" to the command line when launching python to disable buffering
+#   on output streams.
+#
+#   Eric Brugger, Sun Aug 29 13:19:55 PDT 2021
+#   Modified the test that looks for the latest python to look for "python3"
+#   in addition to "python". Modified the test that tests for a two digit
+#   version string to use "expr" instead of the bash built-in "[[ ]]", which
+#   doesn't work with bourne shell.
+#
+#   Cyrus Harrison, Fri Jan 27 09:12:15 PST 2023
+#   Added logic to use system `python3` if `python` is not available.
+#   (Installed use finds and calls our python, this helps with developer use)
+#
 ###############################################################################
 
 # Determine VisIt architecture
@@ -60,12 +78,12 @@ fi
 # Come up with a list of versions, starting with current
 versions="current"
 for minor in 9 8 7 6 5 4 3 2 1 0; do
-    for patch in 4 3 2 1 0; do
+    for patch in 9 8 7 6 5 4 3 2 1 0; do
         versions="$versions 3.$minor.$patch"
     done
 done
 for minor in 15 14 13 12 11 10 9 8 7 6; do
-    for patch in 4 3 2 1 0; do
+    for patch in 9 8 7 6 5 4 3 2 1 0; do
         versions="$versions 2.$minor.$patch"
     done
 done
@@ -75,6 +93,11 @@ visitpython=""
 dir="$(dirname $0)"
 for ver in $versions; do
     thispython="$dir/../$ver/$platform/bin/python"
+    thispython3="$dir/../$ver/$platform/bin/python3"
+    if test -x "$thispython3"; then
+        visitpython="$thispython3"
+        break
+    fi
     if test -x "$thispython"; then
         visitpython="$thispython"
         break
@@ -110,10 +133,45 @@ do
         have_version=yes
     fi
 done
+
+# Handle possible language spec
+have_lang=no
+for arg in $@
+do
+    if test "$have_lang" = "yes"; then
+        lang=$arg
+        export LANG="$lang"
+        export LANGUAGE="$lang"
+	export LC_NUMERIC="C"
+        break
+    fi
+    if test "$arg" = "-lang"; then
+        have_lang=yes
+    fi
+done
+
+# If we have a two digit version number, find the latest patch associated
+# with that two digit version. 
+if expr "$version" : '[0-9]\+\.[0-9]\+$' > /dev/null; then
+    for patch in 9 8 7 6 5 4 3 2 1 0; do
+        version_dir="$dir/../$version.$patch"
+        if test -x "$version_dir"; then
+            version="$version.$patch"
+            break
+        fi
+    done
+fi
+
+# Find the python associated with the version.
 if test "$version" != ""; then
     thispython="$dir/../$version/$platform/bin/python"
     if test -x "$thispython"; then
         visitpython="$thispython"
+    else
+        thispython="$dir/../$version/$platform/bin/python3"
+        if test -x "$thispython"; then
+            visitpython="$thispython"
+        fi
     fi
 fi
 
@@ -126,8 +184,8 @@ if test -n "$visitpython"; then
     # Which Python was VisIt built against? Look for python<ver> executable
     # next to the python binary we located already.
     pyver=""
-    for ver in 2.4 2.5 2.6 2.7; do
-        if test -x "$visitpython$ver"; then
+    for ver in 2.4 2.5 2.6 2.7 3.6 3.7 3.8 3.9 3.10 3.11 3.12; do
+        if test -x "$visitdir/bin/python$ver"; then
             pyver=$ver
             break
         fi
@@ -150,9 +208,18 @@ if test -n "$visitpython"; then
 
     #echo "VisIt Python: $visitpython $frontendlauncherpy $0 ${1+"$@"}"
 
-    exec "$visitpython" $frontendlauncherpy $0 ${1+"$@"}
+    # Pass "-u" to python to turn off buffering
+    exec "$visitpython" -u $frontendlauncherpy $0 ${1+"$@"}
 else
     #echo "System python $frontendlauncherpy $0 ${1+"$@"}"
-    exec python $frontendlauncherpy $0 ${1+"$@"}
+    # check if system python is called `python`,
+    # if not we assume it is called `python3`, since that is the way of the world
+    type python >/dev/null 2>&1
+    testValue=$?
+    if [ $testValue -ne 0 ]; then
+        exec python3 -u $frontendlauncherpy $0 ${1+"$@"}
+    else
+        # Pass "-u" to python to turn off buffering
+        exec python -u $frontendlauncherpy $0 ${1+"$@"}
+    fi
 fi
-$0 = shift @ARGV;

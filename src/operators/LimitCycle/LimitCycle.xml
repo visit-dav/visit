@@ -1,13 +1,22 @@
 <?xml version="1.0"?>
-  <Plugin name="LimitCycle" type="operator" label="LimitCycle" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Integral Curves" createExpression="true" exprInType="vector" exprOutType="scalar,curve" iconFile="LimitCycle.xpm">
+  <Plugin name="LimitCycle" type="operator" label="LimitCycle" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="LimitCycle.xpm" category="Integral Curves" createExpression="true" exprInType="vector" exprOutType="scalar,curve">
+    <LDFLAGS>
+      ${NEKTAR++_LIBRARY_DIR}
+      ${NEKTAR++_LIBRARY_DIRS}
+      ${NEKTAR++_TP_LIBRARY_DIRS}
+      ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
+    </LDFLAGS>
+    <LIBS components="ESer">
+      avtivp_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtivp_par
+    </LIBS>
     <Files components="V">
     </Files>
     <Files components="E">
       avtLimitCycleFilter.C
     </Files>
-    <LDFLAGS>
-      ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
-    </LDFLAGS>
     <LIBS components="ESer">
       avtivp_ser
     </LIBS>
@@ -43,7 +52,7 @@
       <Enum name="ParallelizationAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
-        MasterSlave
+        ManagerWorker
         VisItSelects
       </Enum>
       <Enum name="FieldType">
@@ -53,7 +62,6 @@
         M3DC13DField
         Nek5000Field
         NektarPPField
-        NIMRODField
       </Enum>
       <Enum name="IntegrationType">
         Euler
@@ -74,27 +82,27 @@
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedLine
       </Field>
-      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:Line">
+      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:Line">
+      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
         1.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:Plane">
+      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:Plane">
+      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         0.000000
         1.000000
       </Field>
-      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:Plane">
+      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         1.000000
         0.000000
@@ -266,9 +274,9 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Include file="source" quoted="false">
         PointAttributes.h

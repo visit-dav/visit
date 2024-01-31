@@ -5,6 +5,7 @@
 #ifndef PY_LIMITCYCLEATTRIBUTES_H
 #define PY_LIMITCYCLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LimitCycleAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyLimitCycleAttributes_Wrap(const LimitCycleAttributes *attr);
 void           PyLimitCycleAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLimitCycleAttributes_SetDefaults(const LimitCycleAttributes *atts);
 std::string    PyLimitCycleAttributes_GetLogString();
-std::string    PyLimitCycleAttributes_ToString(const LimitCycleAttributes *, const char *);
+std::string    PyLimitCycleAttributes_ToString(const LimitCycleAttributes *, const char *, const bool=false);
 PyObject *     PyLimitCycleAttributes_getattr(PyObject *self, char *name);
 int            PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyLimitCycleAttributes_methods[LIMITCYCLEATTRIBUTES_NMETH];

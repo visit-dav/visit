@@ -127,13 +127,17 @@ QvisLCSWindow::CreateWindowContents()
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
+// Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the source group box.
@@ -142,7 +146,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(sourceGroup, 0, 0, 5, 2);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
-    sourceLayout->setMargin(5);
+    sourceLayout->setContentsMargins(5,5,5,5);
     sourceLayout->setSpacing(10);
 
     // Create the source type combo box.
@@ -159,7 +163,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
-    geometryLayout->setMargin(5);
+    geometryLayout->setContentsMargins(5,5,5,5);
     geometryLayout->setSpacing(10);
     geometryLayout->setRowStretch(5,10);
 
@@ -189,8 +193,13 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     rb = new QRadioButton(tr("Subset"));
     UseDataSetStart->addButton(rb, 1);
     rgridLayout->addWidget(rb, 1,2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(UseDataSetStart, SIGNAL(buttonClicked(int)), this,
             SLOT(UseDataSetStartChanged(int)));
+#else
+    connect(UseDataSetStart, SIGNAL(idClicked(int)), this,
+            SLOT(UseDataSetStartChanged(int)));
+#endif
 
     StartPosition = new QLineEdit();
     connect(StartPosition, SIGNAL(returnPressed()),
@@ -209,8 +218,13 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     rb = new QRadioButton(tr("Subset"));
     UseDataSetEnd->addButton(rb, 1);
     rgridLayout->addWidget(rb, 2,2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(UseDataSetEnd, SIGNAL(buttonClicked(int)), this,
             SLOT(UseDataSetEndChanged(int)));
+#else
+    connect(UseDataSetEnd, SIGNAL(idClicked(int)), this,
+            SLOT(UseDataSetEndChanged(int)));
+#endif
 
     EndPosition = new QLineEdit();
     connect(EndPosition, SIGNAL(returnPressed()),
@@ -224,7 +238,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(auxiliaryGridGroup, 5, 0, 1, 4);
 
     QGridLayout *auxiliaryGridLayout = new QGridLayout(auxiliaryGridGroup);
-    auxiliaryGridLayout->setMargin(5);
+    auxiliaryGridLayout->setContentsMargins(5,5,5,5);
     auxiliaryGridLayout->setSpacing(10);
 
     // Auxiliary grid label and combo box
@@ -253,7 +267,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
-    fieldLayout->setMargin(5);
+    fieldLayout->setContentsMargins(5,5,5,5);
     fieldLayout->setSpacing(10);
 
 
@@ -265,7 +279,6 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -299,7 +312,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(integrationGroup, 7, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
 
@@ -318,7 +331,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Runge-Kutta-Dormand-Prince (RKDP)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
@@ -348,7 +361,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
     integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
-    toleranceLayout->setMargin(5);
+    toleranceLayout->setContentsMargins(5,5,5,5);
     toleranceLayout->setSpacing(10);
 
     // Create the relative tolerance text field.
@@ -383,13 +396,17 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
+// Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
 {
     QGridLayout *mainLayout = new QGridLayout(pageLCS);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the termination group box.
@@ -398,7 +415,7 @@ QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
     mainLayout->addWidget(terminationGroup, 0, 0, 2, 2);
 //    mainLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
-    terminationLayout->setMargin(5);
+    terminationLayout->setContentsMargins(5,5,5,5);
     terminationLayout->setSpacing(10);
 
     // For FTLE or FLLE base the termintion on the time or distance,
@@ -501,7 +518,11 @@ QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
     terminationTypeButtonGroup->addButton(rb, 2);
     terminationLayout->addWidget(rb, 4, 0, 1, 2);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
+#else
+    connect(terminationTypeButtonGroup, SIGNAL(idClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
+#endif
 
     // Check box termination type
     limitMaxTime = new QCheckBox(tr("Limit maximum advection time"), terminationGroup);
@@ -598,13 +619,16 @@ QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Streamlines/Pathline Group.
@@ -624,7 +648,11 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     icButtonGroup->addButton(pathlineButton, 1);
     icGrpLayout->addWidget(streamlineButton, 1, 0);
     icGrpLayout->addWidget(pathlineButton, 2, 0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#else
+    connect(icButtonGroup, SIGNAL(idClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#endif
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
@@ -672,7 +700,11 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineCMFEButtonGroup->addButton(posButton, 1);
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#else
+    connect(pathlineCMFEButtonGroup, SIGNAL(idClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#endif
 
 }
 
@@ -706,7 +738,7 @@ void
 QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
@@ -802,27 +834,22 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 4, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 4, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 5, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 6, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 7, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 7, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 8, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
+    
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 9, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 6, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 9, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 6, 2);
 }
 
 
@@ -1224,12 +1251,6 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(LCSAttributes::M3DC12DIntegrator);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetFieldType() == LCSAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(LCSAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(LCSAttributes::AdamsBashforth);
-              UpdateIntegrationAttributes();
-            }
             else if (atts->GetIntegrationType() == LCSAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(LCSAttributes::DormandPrince);
@@ -1419,7 +1440,6 @@ QvisLCSWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case LCSAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);
@@ -1511,8 +1531,8 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
                             LCSAttributes::LoadOnDemand);
     bool useStaticDomains = (atts->GetParallelizationAlgorithmType() ==
                              LCSAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
-                           LCSAttributes::MasterSlave);
+    bool useManagerWorker = (atts->GetParallelizationAlgorithmType() ==
+                           LCSAttributes::ManagerWorker);
 
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -1532,7 +1552,7 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
         maxSLCountLabel->show();
         maxSLCount->show();
     }
-    else if (useMasterSlave)
+    else if (useManagerWorker)
     {
         maxDomainCacheLabel->show();
         maxDomainCache->show();

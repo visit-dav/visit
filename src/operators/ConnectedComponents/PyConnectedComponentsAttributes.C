@@ -5,6 +5,7 @@
 #include <PyConnectedComponentsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyConnectedComponentsAttributes
@@ -34,9 +35,8 @@ struct ConnectedComponentsAttributesObject
 // Internal prototypes
 //
 static PyObject *NewConnectedComponentsAttributes(int);
-
 std::string
-PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *atts, const char *prefix)
+PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -63,12 +63,48 @@ ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(PyObject *self
 {
     ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the EnableGhostNeighborsOptimization in the object.
-    obj->data->SetEnableGhostNeighborsOptimization(ival != 0);
+    obj->data->SetEnableGhostNeighborsOptimization(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -105,19 +141,24 @@ ConnectedComponentsAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ConnectedComponentsAttributes_compare(PyObject *v, PyObject *w)
-{
-    ConnectedComponentsAttributes *a = ((ConnectedComponentsAttributesObject *)v)->data;
-    ConnectedComponentsAttributes *b = ((ConnectedComponentsAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyConnectedComponentsAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
         return ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(self, NULL);
+
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyConnectedComponentsAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyConnectedComponentsAttributes_methods[i].ml_name),
+                PyString_FromString(PyConnectedComponentsAttributes_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyConnectedComponentsAttributes_methods, self, name);
 }
@@ -125,22 +166,23 @@ PyConnectedComponentsAttributes_getattr(PyObject *self, char *name)
 int
 PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
-        obj = ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(self, tuple);
+        obj = ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -148,7 +190,7 @@ static int
 ConnectedComponentsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
-    fprintf(fp, "%s", PyConnectedComponentsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyConnectedComponentsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -156,7 +198,7 @@ PyObject *
 ConnectedComponentsAttributes_str(PyObject *v)
 {
     ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
-    return PyString_FromString(PyConnectedComponentsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyConnectedComponentsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -169,49 +211,70 @@ static char *ConnectedComponentsAttributes_Purpose = "Attributes for Connected C
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ConnectedComponentsAttributesType =
+
+VISIT_PY_TYPE_OBJ(ConnectedComponentsAttributesType,         \
+                  "ConnectedComponentsAttributes",           \
+                  ConnectedComponentsAttributesObject,       \
+                  ConnectedComponentsAttributes_dealloc,     \
+                  ConnectedComponentsAttributes_print,       \
+                  PyConnectedComponentsAttributes_getattr,   \
+                  PyConnectedComponentsAttributes_setattr,   \
+                  ConnectedComponentsAttributes_str,         \
+                  ConnectedComponentsAttributes_Purpose,     \
+                  ConnectedComponentsAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ConnectedComponentsAttributes",                    // tp_name
-    sizeof(ConnectedComponentsAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ConnectedComponentsAttributes_dealloc,  // tp_dealloc
-    (printfunc)ConnectedComponentsAttributes_print,     // tp_print
-    (getattrfunc)PyConnectedComponentsAttributes_getattr, // tp_getattr
-    (setattrfunc)PyConnectedComponentsAttributes_setattr, // tp_setattr
-    (cmpfunc)ConnectedComponentsAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ConnectedComponentsAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ConnectedComponentsAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ConnectedComponentsAttributesType
+         || Py_TYPE(other) != &ConnectedComponentsAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ConnectedComponentsAttributes *a = ((ConnectedComponentsAttributesObject *)self)->data;
+    ConnectedComponentsAttributes *b = ((ConnectedComponentsAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -287,7 +350,7 @@ PyConnectedComponentsAttributes_GetLogString()
 {
     std::string s("ConnectedComponentsAtts = ConnectedComponentsAttributes()\n");
     if(currentAtts != 0)
-        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.");
+        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.", true);
     return s;
 }
 
@@ -300,7 +363,7 @@ PyConnectedComponentsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ConnectedComponentsAtts = ConnectedComponentsAttributes()\n");
-        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.");
+        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.", true);
         cb(s);
     }
 }

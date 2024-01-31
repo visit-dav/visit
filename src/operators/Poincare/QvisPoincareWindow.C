@@ -135,13 +135,16 @@ QvisPoincareWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the source group box.
@@ -150,7 +153,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(sourceGroup, 0, 0);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
-    sourceLayout->setMargin(5);
+    sourceLayout->setContentsMargins(5,5,5,5);
     sourceLayout->setSpacing(10);
 
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
@@ -225,7 +228,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(fieldGroup, 3, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
-    fieldLayout->setMargin(5);
+    fieldLayout->setContentsMargins(5,5,5,5);
     fieldLayout->setSpacing(10);
 
 
@@ -237,7 +240,6 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -273,7 +275,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(integrationGroup, 6, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
 
@@ -281,7 +283,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Runge-Kutta-Dormand-Prince (RKDP)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
@@ -311,7 +313,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
     integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
-    toleranceLayout->setMargin(5);
+    toleranceLayout->setContentsMargins(5,5,5,5);
     toleranceLayout->setSpacing(10);
 
     // Create the relative tolerance text field.
@@ -341,7 +343,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //     mainLayout->addWidget(coordinateGroup, 2, 0);
 
 //     QGridLayout *coordinateLayout = new QGridLayout(coordinateGroup);
-//     coordinateLayout->setMargin(5);
+//     coordinateLayout->setContentsMargins(5,5,5,5);
 //     coordinateLayout->setSpacing(10);
 
 //     coordinateButtonGroup = new QButtonGroup(coordinateGroup);
@@ -353,8 +355,13 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //     coordinateLayout->addWidget(cartesianButton, 0, 0);
 //     coordinateLayout->addWidget(cylindricalButton, 0, 1);
 
+//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 //     connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
 //          SLOT(coordinateButtonGroupChanged(int)));
+//#else
+//     connect(coordinateButtonGroup, SIGNAL(idClicked(int)), this,
+//          SLOT(coordinateButtonGroupChanged(int)));
+//#endif
 
     // Create the punctures group box.
     QGroupBox *puncturesGroup = new QGroupBox(central);
@@ -363,7 +370,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //    mainLayout->setStretchFactor(puncturesGroup, 100);
 
     QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
-    puncturesLayout->setMargin(5);
+    puncturesLayout->setContentsMargins(5,5,5,5);
     puncturesLayout->setSpacing(10);
 
 
@@ -371,7 +378,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturesMinMaxGroup->setTitle(tr(""));
     puncturesLayout->addWidget(puncturesMinMaxGroup, 0, 0);
     QGridLayout *puncturesMinMaxLayout = new QGridLayout(puncturesMinMaxGroup);
-    puncturesMinMaxLayout->setMargin(5);
+    puncturesMinMaxLayout->setContentsMargins(5,5,5,5);
     puncturesMinMaxLayout->setSpacing(10);
 
     minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
@@ -399,7 +406,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturePlotGroup->setTitle(tr(""));
     puncturesLayout->addWidget(puncturePlotGroup, 2, 0);
     QGridLayout *puncturePlotLayout = new QGridLayout(puncturePlotGroup);
-    puncturePlotLayout->setMargin(5);
+    puncturePlotLayout->setContentsMargins(5,5,5,5);
     puncturePlotLayout->setSpacing(10);
 
     puncturePlotTypeLabel = new QLabel(tr("Puncture plot type"), central);
@@ -407,7 +414,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturePlotType = new QWidget(central);
     puncturePlotTypeButtonGroup= new QButtonGroup(puncturePlotType);
     QHBoxLayout *puncturePlotTypeLayout = new QHBoxLayout(puncturePlotType);
-    puncturePlotTypeLayout->setMargin(0);
+    puncturePlotTypeLayout->setContentsMargins(0,0,0,0);
     puncturePlotTypeLayout->setSpacing(10);
     QRadioButton *puncturePlotTypeTypePoloidal =
       new QRadioButton(tr("Single"), puncturePlotType);
@@ -417,8 +424,13 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
       new QRadioButton(tr("Double"), puncturePlotType);
     puncturePlotTypeButtonGroup->addButton(puncturePlotTypeTypeTorodial,1);
     puncturePlotTypeLayout->addWidget(puncturePlotTypeTypeTorodial);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(puncturePlotTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(puncturePlotTypeChanged(int)));
+#else
+    connect(puncturePlotTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(puncturePlotTypeChanged(int)));
+#endif
     puncturePlotLayout->addWidget(puncturePlotType, 1, 1);
 
 
@@ -450,7 +462,7 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
     puncturePlaneGroup->setTitle(tr(""));
     puncturesLayout->addWidget(puncturePlaneGroup, 4, 0);
     QGridLayout *puncturePlaneLayout = new QGridLayout(puncturePlaneGroup);
-    puncturePlaneLayout->setMargin(5);
+    puncturePlaneLayout->setContentsMargins(5,5,5,5);
     puncturePlaneLayout->setSpacing(10);
 
     puncturePlaneLabel = new QLabel(tr("Puncture Plane"), central);
@@ -459,7 +471,7 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
     puncturePlaneButtonGroup= new QButtonGroup(puncturePlane);
 
     QHBoxLayout *puncturePlaneTypeLayout = new QHBoxLayout(puncturePlane);
-    puncturePlaneTypeLayout->setMargin(0);
+    puncturePlaneTypeLayout->setContentsMargins(0,0,0,0);
     puncturePlaneTypeLayout->setSpacing(10);
     QRadioButton *puncturePlaneTypePoloidal =
       new QRadioButton(tr("Poloidal"), puncturePlane);
@@ -469,8 +481,13 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
       new QRadioButton(tr("Toroidal"), puncturePlane);
     puncturePlaneButtonGroup->addButton(puncturePlaneTypeTorodial,1);
     puncturePlaneTypeLayout->addWidget(puncturePlaneTypeTorodial);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(puncturePlaneButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(puncturePlaneChanged(int)));
+#else
+    connect(puncturePlaneButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(puncturePlaneChanged(int)));
+#endif
     puncturePlaneLayout->addWidget(puncturePlane, 1, 1);
 }
 
@@ -484,6 +501,8 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -491,7 +510,7 @@ void
 QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAnalysis);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     analysisLabel = new QLabel(tr("Analysis type"), central);
@@ -499,7 +518,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     analysis = new QWidget(central);
     analysisButtonGroup= new QButtonGroup(analysis);
     QHBoxLayout *analysisTypeLayout = new QHBoxLayout(analysis);
-    analysisTypeLayout->setMargin(0);
+    analysisTypeLayout->setContentsMargins(0,0,0,0);
     analysisTypeLayout->setSpacing(10);
     QRadioButton *analysisTypeNone =
       new QRadioButton(tr("None - Punctures only"), analysis);
@@ -509,8 +528,13 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
       new QRadioButton(tr("Full"), analysis);
     analysisButtonGroup->addButton(analysisTypeNormal,1);
     analysisTypeLayout->addWidget(analysisTypeNormal);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(analysisButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(analysisChanged(int)));
+#else
+    connect(analysisButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(analysisChanged(int)));
+#endif
     mainLayout->addWidget(analysis, 0, 1, Qt::AlignTop);
 
 
@@ -520,7 +544,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(analysisGroup, 1, 0, 3, 3, Qt::AlignTop);
 
     QGridLayout *analysisLayout = new QGridLayout(analysisGroup);
-    analysisLayout->setMargin(5);
+    analysisLayout->setContentsMargins(5,5,5,5);
     analysisLayout->setSpacing(10);
 
     maximumToroidalWindingLabel =
@@ -579,7 +603,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(rationalSurfaceGroup, 4, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *rationalSurfaceLayout = new QGridLayout(rationalSurfaceGroup);
-    rationalSurfaceLayout->setMargin(5);
+    rationalSurfaceLayout->setContentsMargins(5,5,5,5);
     rationalSurfaceLayout->setSpacing(10);
 
     showRationalSurfaces = new QCheckBox(tr("Detect Rational Surfaces"), rationalSurfaceGroup);
@@ -603,7 +627,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *criticalPointLayout = new QGridLayout(criticalPointGroup);
-    criticalPointLayout->setMargin(5);
+    criticalPointLayout->setContentsMargins(5,5,5,5);
     criticalPointLayout->setSpacing(10);
 
     showOPoints = new QCheckBox(tr("Detect O Points"), criticalPointGroup);
@@ -628,7 +652,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(OLineAnalysisGroup, 6, 0, 2, 3, Qt::AlignTop);
 
     QGridLayout *OLineAnalysisLayout = new QGridLayout(OLineAnalysisGroup);
-    OLineAnalysisLayout->setMargin(5);
+    OLineAnalysisLayout->setContentsMargins(5,5,5,5);
     OLineAnalysisLayout->setSpacing(10);
 
     performOLineAnalysis = new QCheckBox(tr("Perform O-Line analysis"),
@@ -666,7 +690,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(analysisOptionsGroup, 9, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *analysisOptionsLayout = new QGridLayout(analysisOptionsGroup);
-    analysisOptionsLayout->setMargin(5);
+    analysisOptionsLayout->setContentsMargins(5,5,5,5);
     analysisOptionsLayout->setSpacing(10);
 
     showChaotic =
@@ -707,6 +731,8 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -714,21 +740,21 @@ void
 QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the data group box.
     QGroupBox *dataGroup = new QGroupBox(central);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
     dataLayout->setColumnStretch(2, 10);
 
 
-    dataValueLabel = new QLabel(tr("Data value:"), dataGroup);
+    dataValueLabel = new QLabel(tr("Color by"), dataGroup);
     dataLayout->addWidget(dataValueLabel, 0, 0);
 
     dataValueCombo = new QComboBox(dataGroup);
@@ -758,7 +784,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(displayGroup, 1, 0);
 
     QGridLayout *displayLayout = new QGridLayout(displayGroup);
-    displayLayout->setMargin(5);
+    displayLayout->setContentsMargins(5,5,5,5);
     displayLayout->setSpacing(10);
 
     meshTypeLabel = new QLabel(tr("Mesh type:"), displayGroup);
@@ -804,7 +830,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(overlapsGroup, 3, 0);
 
     QGridLayout *overlapsLayout = new QGridLayout(overlapsGroup);
-    overlapsLayout->setMargin(5);
+    overlapsLayout->setContentsMargins(5,5,5,5);
     overlapsLayout->setSpacing(10);
 
     overlapsLabel = new QLabel(tr("Overlaping curve sections"), central);
@@ -812,7 +838,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     overlaps = new QWidget(central);
     overlapsButtonGroup= new QButtonGroup(overlaps);
     QHBoxLayout *overlapTypeLayout = new QHBoxLayout(overlaps);
-    overlapTypeLayout->setMargin(0);
+    overlapTypeLayout->setContentsMargins(0,0,0,0);
     overlapTypeLayout->setSpacing(10);
     QRadioButton *overlapTypeRaw =
       new QRadioButton(tr("Raw"), overlaps);
@@ -830,8 +856,13 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
       new QRadioButton(tr("Smooth"), overlaps);
     overlapsButtonGroup->addButton(overlapTypeSmooth,3);
     overlapTypeLayout->addWidget(overlapTypeSmooth);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(overlapsChanged(int)));
+#else
+    connect(overlapsButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(overlapsChanged(int)));
+#endif
     overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
 
 
@@ -852,7 +883,11 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     icButtonGroup->addButton(pathlineButton, 1);
     icGrpLayout->addWidget(streamlineButton, 1, 0);
     icGrpLayout->addWidget(pathlineButton, 2, 0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#else
+    connect(icButtonGroup, SIGNAL(idClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#endif
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
@@ -900,7 +935,11 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineCMFEButtonGroup->addButton(posButton, 1);
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#else
+    connect(pathlineCMFEButtonGroup, SIGNAL(idClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#endif
 }
 
 
@@ -921,7 +960,7 @@ void
 QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
@@ -1005,27 +1044,22 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 2, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 2, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 3, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 4, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 3, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 6, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 3, 1, 1, 2);
+    
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 7, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 4, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 7, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 4, 2);
 }
 
 
@@ -1259,12 +1293,6 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             {
               atts->SetIntegrationType(PoincareAttributes::M3DC12DIntegrator);
               integrationType->setCurrentIndex(PoincareAttributes::M3DC12DIntegrator);
-              UpdateIntegrationAttributes();
-            }
-            else if (atts->GetFieldType() == PoincareAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(PoincareAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(PoincareAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
             else if (atts->GetIntegrationType() == PoincareAttributes::M3DC12DIntegrator)
@@ -2022,7 +2050,6 @@ QvisPoincareWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case PoincareAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);
@@ -2132,7 +2159,7 @@ QvisPoincareWindow::UpdateAlgorithmAttributes()
         maxSLCount->show();
         break;
 
-    case PoincareAttributes::MasterSlave:
+    case PoincareAttributes::ManagerWorker:
         maxDomainCacheLabel->show();
         maxDomainCache->show();
         maxSLCountLabel->show();

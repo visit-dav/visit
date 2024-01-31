@@ -85,6 +85,9 @@ QvisDataBinningWindow::~QvisDataBinningWindow()
 //   Hank Childs, Fri Jan  4 11:49:36 PST 2013
 //   Remove unused bins for curves.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -144,8 +147,13 @@ QvisDataBinningWindow::CreateWindowContents()
     dim1BinBasedOnButtonGroup->addButton(dim1XLabel,1);
     dim1BinBasedOnButtonGroup->addButton(dim1YLabel,2);
     dim1BinBasedOnButtonGroup->addButton(dim1ZLabel,3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(dim1BinBasedOnButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(dim1BinBasedOnChanged(int)));
+#else
+    connect(dim1BinBasedOnButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(dim1BinBasedOnChanged(int)));
+#endif
 
     dim1NumBinsLabel = new QLabel(tr("Number of bins"), central);
     dim1Layout->addWidget(dim1NumBinsLabel,1,0);
@@ -221,8 +229,13 @@ QvisDataBinningWindow::CreateWindowContents()
     dim2BinBasedOnButtonGroup->addButton(dim2XLabel,1);
     dim2BinBasedOnButtonGroup->addButton(dim2YLabel,2);
     dim2BinBasedOnButtonGroup->addButton(dim2ZLabel,3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(dim2BinBasedOnButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(dim2BinBasedOnChanged(int)));
+#else
+    connect(dim2BinBasedOnButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(dim2BinBasedOnChanged(int)));
+#endif
 
     dim3BinBasedOn = new QLabel(tr("Bin based on"), central);
     dim3Layout->addWidget(dim3BinBasedOn,0,0);
@@ -272,15 +285,20 @@ QvisDataBinningWindow::CreateWindowContents()
     dim3BinBasedOnButtonGroup->addButton(dim3XLabel,1);
     dim3BinBasedOnButtonGroup->addButton(dim3YLabel,2);
     dim3BinBasedOnButtonGroup->addButton(dim3ZLabel,3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(dim3BinBasedOnButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(dim3BinBasedOnChanged(int)));
+#else
+    connect(dim3BinBasedOnButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(dim3BinBasedOnChanged(int)));
+#endif
 
     outOfBoundsBehaviorLabel = new QLabel(tr("Behavior for data outside range"), central);
     bdLayout->addWidget(outOfBoundsBehaviorLabel,2,0);
     outOfBoundsBehavior = new QWidget(central);
     outOfBoundsBehaviorButtonGroup= new QButtonGroup(outOfBoundsBehavior);
     QHBoxLayout *outOfBoundsBehaviorLayout = new QHBoxLayout(outOfBoundsBehavior);
-    outOfBoundsBehaviorLayout->setMargin(0);
+    outOfBoundsBehaviorLayout->setContentsMargins(0,0,0,0);
     outOfBoundsBehaviorLayout->setSpacing(10);
     QRadioButton *outOfBoundsBehaviorOutOfBoundsBehaviorClamp = new QRadioButton(tr("Clamp"), outOfBoundsBehavior);
     outOfBoundsBehaviorButtonGroup->addButton(outOfBoundsBehaviorOutOfBoundsBehaviorClamp,0);
@@ -288,8 +306,13 @@ QvisDataBinningWindow::CreateWindowContents()
     QRadioButton *outOfBoundsBehaviorOutOfBoundsBehaviorDiscard = new QRadioButton(tr("Discard"), outOfBoundsBehavior);
     outOfBoundsBehaviorButtonGroup->addButton(outOfBoundsBehaviorOutOfBoundsBehaviorDiscard,1);
     outOfBoundsBehaviorLayout->addWidget(outOfBoundsBehaviorOutOfBoundsBehaviorDiscard);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(outOfBoundsBehaviorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(outOfBoundsBehaviorChanged(int)));
+#else
+    connect(outOfBoundsBehaviorButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(outOfBoundsBehaviorChanged(int)));
+#endif
     bdLayout->addWidget(outOfBoundsBehavior, 2,1);
 
     QGroupBox *rtGroup = new QGroupBox(central);
@@ -346,7 +369,7 @@ QvisDataBinningWindow::CreateWindowContents()
     QWidget *outputWidget = new QWidget(central);
     outputButtonGroup= new QButtonGroup(outputWidget);
     QHBoxLayout *outputHLayout = new QHBoxLayout(outputWidget);
-    outputHLayout->setMargin(0);
+    outputHLayout->setContentsMargins(0,0,0,0);
     outputHLayout->setSpacing(0);
     QRadioButton *outputBins = new QRadioButton(tr("Bins"), outputWidget);
     outputButtonGroup->addButton(outputBins,0);
@@ -355,8 +378,13 @@ QvisDataBinningWindow::CreateWindowContents()
     outputButtonGroup->addButton(outputMesh,1);
     outputHLayout->addWidget(outputMesh);
     outputLayout->addWidget(outputWidget, 0, 1);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(outputButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(outputChanged(int)));
+#else
+    connect(outputButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(outputChanged(int)));
+#endif
 }
 
 
@@ -381,6 +409,9 @@ QvisDataBinningWindow::CreateWindowContents()
 //
 //   Hank Childs, Fri Jan  4 11:49:36 PST 2013
 //   Remove unused bins for curves.
+//
+//   Kathleen Biagas, Tue May 4 2021
+//   Ensure dim2Var is enabled when NumDimensions is 3.
 //
 // ****************************************************************************
 
@@ -675,7 +706,7 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
           case DataBinningAttributes::ID_dim2BinBasedOn:
             if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Variable
                 && (atts->GetNumDimensions() == DataBinningAttributes::Two ||
-                    atts->GetNumDimensions() == DataBinningAttributes::Two))
+                    atts->GetNumDimensions() == DataBinningAttributes::Three))
                dim2Var->setEnabled(true);
             else
                dim2Var->setEnabled(false);

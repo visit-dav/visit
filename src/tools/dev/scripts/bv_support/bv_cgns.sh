@@ -28,13 +28,12 @@ function bv_cgns_depends_on
 
 function bv_cgns_info
 {
-    export CGNS_FILE=${CGNS_FILE:-"cgnslib_3.2.1.tar.gz"}
-    export CGNS_VERSION=${CGNS_VERSION:-"3.2.1"}
-    export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.2"}
-    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgnslib_3.2.1/src"}
-    export CGNS_MD5_CHECKSUM="2d26f88b2058dcd0ee5ce58f483bfccb"
-    export CGNS_SHA256_CHECKSUM="34306316f04dbf6484343a4bc611b3bf912ac7dbc3c13b581defdaebbf6c1fc3"
-
+    export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.0.tar.gz"}
+    export CGNS_VERSION=${CGNS_VERSION:-"4.1.0"}
+    export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"4.1"}
+    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0/src"}
+    export CGNS_MD5_CHECKSUM="f90b85ae10693d4db0825c7ce61c6f73"
+    export CGNS_SHA256_CHECKSUM="b4584e4d0fa52c737a0fb4738157a88581df251c8c5886175ee287e1777e99fd"
 }
 
 function bv_cgns_print
@@ -81,130 +80,213 @@ function bv_cgns_ensure
     fi
 }
 
-function bv_cgns_dry_run
+function apply_cgns_410_patch
 {
-    if [[ "$DO_CGNS" == "yes" ]] ; then
-        echo "Dry run option not set for cgns."
-    fi
-}
-
-function apply_cgns_321_darwin_patch
-{
+    info "Patching CGNS 4.1.0"
     patch -p0 << \EOF
-diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig    2015-04-27 15:11:36.000000000 -0700
---- cgnslib_3.2.1/src/configure 2015-04-27 14:24:48.000000000 -0700
+diff -c CGNS-4.1.0/src/configure.orig CGNS-4.1.0/src/configure
+*** CGNS-4.1.0/src/configure.orig	Thu Feb 11 17:51:22 2021
+--- CGNS-4.1.0/src/configure	Fri Feb 12 07:55:02 2021
 ***************
-*** 2324,2333 ****
-  echo "$ac_t""$shared" 1>&6
-  
-  if test $shared = all; then
-!   exts="so sl a"
-    shared=yes
+*** 5939,5945 ****
+    $as_echo_n "(cached) " >&6
   else
-!   exts="a so sl"
-  fi
-  if test $shared = yes; then
-    cgnsdir=`pwd`
---- 2324,2333 ----
-  echo "$ac_t""$shared" 1>&6
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
   
-  if test $shared = all; then
-!   exts="dylib so sl a"
-    shared=yes
+--- 5939,5945 ----
+    $as_echo_n "(cached) " >&6
   else
-!   exts="dylib a so sl"
-  fi
-  if test $shared = yes; then
-    cgnsdir=`pwd`
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$ZLIBLIB -lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
 ***************
-*** 2352,2363 ****
-        shared=no
-      else
-        CFGFLAGS="-fPIC $CFGFLAGS"
-!       AR_LIB="\$(CC) -shared $SYSCFLAGS -Wl,-rpath,$LIBDIR:$cgnsdir/$BUILDDIR -o"
-!       EXT_LIB=so
-      fi
-    fi
-    if test $shared = yes; then
-!     RAN_LIB="\$(STRIP)"
-    fi
-  fi
+*** 5974,5980 ****
+  #define HAVE_LIBZ 1
+  _ACEOF
   
---- 2352,2363 ----
-        shared=no
+!   LIBS="-lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+--- 5974,5980 ----
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="$ZLIBLIB -lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+***************
+*** 6031,6037 ****
+  
+  
+      if test $shared = yes; then
+!       ZLIBLIB="-L$zlib_lib"
       else
-        CFGFLAGS="-fPIC $CFGFLAGS"
-!       AR_LIB="\$(CC) -shared $SYSCFLAGS -Wl,-L$with_hdf5/lib -Wl,-lhdf5 -o"
-!       EXT_LIB=dylib
-      fi
+        if test -n "$zlib_lib"; then
+          for a in $exts ; do
+--- 6031,6037 ----
+  
+  
+      if test $shared = yes; then
+!       ZLIBLIB="-L$zlib_lib -lz"
+      else
+        if test -n "$zlib_lib"; then
+          for a in $exts ; do
+***************
+*** 6050,6056 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6050,6056 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$ZLIBLIB $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6085,6091 ****
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="-lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+--- 6085,6091 ----
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="$ZLIBLIB $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+***************
+*** 6147,6153 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6147,6153 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$SZIPLIB -lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6182,6188 ****
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="-lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+--- 6182,6188 ----
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="$SZIPLIB -lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+***************
+*** 6239,6245 ****
+  
+  
+      if test $shared = yes; then
+!       SZIPLIB="-L$szip_lib"
+      else
+        if test -n "$szip_lib"; then
+          for a in $exts ; do
+--- 6239,6245 ----
+  
+  
+      if test $shared = yes; then
+!       SZIPLIB="-L$szip_lib -lsz"
+      else
+        if test -n "$szip_lib"; then
+          for a in $exts ; do
+***************
+*** 6258,6264 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6258,6264 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$SZIPLIB $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6293,6299 ****
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="-lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+--- 6293,6299 ----
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="$SZIPLIB $LIBS"
+  
+  else
+    unset HAVE_SZIP
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
-    if test $shared = yes; then
-!     RAN_LIB="\$(STRIP) -x"
-    fi
-  fi
 
+    patch -p0 << \EOF
+diff -u CGNS-4.1.0/src/Makefile.in.orig CGNS-4.1.0/src/Makefile.in
+--- CGNS-4.1.0/src/Makefile.in.orig	2021-01-29 09:15:50.000000000 -0800
++++ CGNS-4.1.0/src/Makefile.in	2021-05-05 08:52:32.000000000 -0700
+@@ -53,7 +53,7 @@
+ 
+ $(CGNSLIB) : $(OBJDIR) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
+ 	-@$(RM) $@
+-	@AR_LIB@ $@ $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
++	@AR_LIB@ $@ $(LDFLAGS) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS) $(CLIBS)
+ 	@RAN_LIB@ $@
+ 
+ $(OBJDIR) :
 EOF
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
     return 0
-}
-
-function apply_cgns_321_zlib_patch
-{
-    patch -p0 << \EOF
-diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig    2013-06-19 21:04:00.000000000 -0700
---- cgnslib_3.2.1/src/configure 2015-04-27 15:03:16.000000000 -0700
-***************
-*** 2490,2495 ****
---- 2490,2496 ----
-  if test "${with_zlib+set}" = set; then
-    withval="$with_zlib"
-    withzlib=$withval
-+   ZLIBLIB=$withval
-  else
-    withzlib="no"
-  fi
-***************
-*** 2499,2504 ****
---- 2500,2506 ----
-    else
-      H5NEEDZLIB=1
-      if test -z "$withzlib" || test "$withzlib" = "yes"; then
-+       ZLIBLIB=""
-        zlibdir=""
-        echo "$ac_t""yes" 1>&6
-        ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'`
-EOF
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_cgns_321_patch
-{
-
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        info "Applying OS X patch . . ."
-        apply_cgns_321_darwin_patch
-        apply_cgns_321_zlib_patch
-    else 
-        info "Applying patch . . ."
-        apply_cgns_321_zlib_patch
-    fi
-
-    return $?
 }
 
 function apply_cgns_patch
 {
-    if [[ ${CGNS_VERSION} == 3.2.1 ]] ; then
-        apply_cgns_321_patch
+    if [[ ${CGNS_VERSION} == "4.1.0" ]] ; then
+        apply_cgns_410_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -285,31 +367,38 @@ function build_cgns
     fi
 
     # optionally add HDF5 and szip to the configure.
+    LIBS_ENV=""
+    LDFLAGS_ENV=""
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
+        LIBS_ENV="-lhdf5"
+        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
+            LIBS_ENV="$LIBS_ENV -lsz"
+            LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
+            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         fi
-        H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
+        LIBS_ENV="$LIBS_ENV -lz"
+        LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+        H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
     fi
+
+    # Disable fortran
+    FORTRANARGS="--with-fortran=no"
+
+    set -x
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-       CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
-
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
             CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+            LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
+            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     else
-        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-       CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
-
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
             CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     fi
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "CGNS configure failed.  Giving up"
@@ -321,22 +410,18 @@ function build_cgns
     #
     info "Building CGNS . . . (~2 minutes)"
 
-    $MAKE
+    $MAKE cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS build failed.  Giving up"
         return 1
     fi
+
     #
     # Install into the VisIt third party location.
     #
     info "Installing CGNS . . ."
 
-    mkdir "$VISITDIR/cgns"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/include"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
-    $MAKE install
+    $MAKE install-cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS install failed.  Giving up"
         return 1

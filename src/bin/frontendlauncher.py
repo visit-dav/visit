@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 import string
 import sys
@@ -54,6 +53,12 @@ import subprocess
 #   Eric Brugger, Thu Oct  1 12:14:26 PDT 2015
 #   I added add_visit_searchpath.
 #
+#   Cyrus, Wed Dec 18 09:05:28 PST 2019
+#   Python 2 to 3 tweaks
+#
+#   Eric Brugger, Wed Jun 28 11:39:29 PDT 2023
+#   Added support for ffmpeg.
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -80,12 +85,12 @@ def UNSETENV(var):
 
 def exit(msg, value):
     if msg != None:
-        print(msg, file=sys.stderr)
+        sys.stderr.write("%s\n" % msg)
     sys.exit(value)
 
 def ParseVersion(ver):
     version = [0,0,-1,-1]
-    b = string.find(ver, "b")
+    b = ver.find("b")
     if b != -1:
         ver_b = ver[b:]
         ver = ver[:b]
@@ -93,7 +98,7 @@ def ParseVersion(ver):
             version[3] = 0
         else:
             version[3] = int(ver_b[1:])
-    v = string.split(ver, ".")
+    v = ver.split(".")
     if len(v) > 3:
         raise "Invalid version string"
     for i in range(3):
@@ -106,18 +111,6 @@ def ParseVersion(ver):
 
 frontendlauncherpy = sys.argv[0]
 sys.argv = sys.argv[1:]
-
-# -----------------------------------------------------------------------------
-#                            Check the Python version
-# -----------------------------------------------------------------------------
-
-if sys.version_info[0] > 2:
-    msg = "\nError: VisIt's launch script is not compatible with Python " + \
-          str(sys.version_info[0]) + \
-          ". You will need to prepend the path to a Python 2 interpreter to your " + \
-          "path in order to start VisIt.\n"
-    print(msg) # python 3 code!
-    exit(None, -1)
 
 # -----------------------------------------------------------------------------
 #                            Figure out visitdir
@@ -152,6 +145,7 @@ visitargs        = []
 programs = (
 "-add_visit_searchpath",
 "-convert",
+"-ffmpeg",
 "-makemili_driver",
 "-mpeg2encode",
 "-mpeg_encode",
@@ -205,9 +199,9 @@ while i < len(sys.argv):
         want_version = 1
     elif arg in programs:
         progname = arg[1:]
-        print("NOTE:  Specifying tools as an argument to VisIt is ", file=sys.stderr)
-        print("no longer necessary.\nIn the future, you should ", file=sys.stderr)
-        print("just run '%s' instead.\n" % progname, file=sys.stderr)
+        sys.stderr.write("NOTE:  Specifying tools as an argument to VisIt is \n")
+        sys.stderr.write("no longer necessary.\nIn the future, you should \n")
+        sys.stderr.write("just run '%s' instead.\n\n" % progname)
     elif arg in list(programsWithOtherNames.keys()):
         progname = programsWithOtherNames[arg]
     else:
@@ -248,7 +242,7 @@ if os.path.exists(visitdir + "exe"):
         visitpluginver = open(VERSIONFILE).readlines()[0][:-1]
     elif os.path.exists(VISIT_CONFIG_H):
         tok = "#define VISIT_VERSION"
-        vline = [x for x in open(VISIT_CONFIG_H).readlines() if string.find(x, tok) == 0]
+        vline = [x for x in open(VISIT_CONFIG_H).readlines() if x.find(tok) == 0]
         visitpluginver = vline[0][23:-2]
 
     # We want to make sure we know if we are trying to launch a public
@@ -311,6 +305,10 @@ else:
         add_forceversion = 1
     if (not (version[0] == 1 and version[1] < 7)) and version[2] == -1 and version[3] == -1:
         add_forceversion = 0
+        # We take the list of all the versions and create an unsorted
+        # list of the versions where the major and minor versions match.
+        # Then we sort that list by patch number and select that one
+        # as the version.
         unsorted_matches = []
         for v in exeversions:
             try:
@@ -319,16 +317,12 @@ else:
                     unsorted_matches.append(v)
             except:
                 continue
-        def by_patch_version(a,b):
-            v1 = string.split(a, ".")
-            v2 = string.split(b, ".")
-            if len(v1) < 3: return -1
-            if len(v2) < 3: return +1
-            if v1[2] < v2[2]: return -1
-            if v1[2] > v2[2]: return +1
-            return 0
+        def get_patch_version(a):
+            v = a.split(".")
+            if len(v) < 3: return -1
+            return int(v[2])
         if len(unsorted_matches) > 0:
-            sorted_matches = sorted(unsorted_matches, cmp=by_patch_version)
+            sorted_matches = sorted(unsorted_matches, key=get_patch_version)
             ver = sorted_matches[-1]
             version = ParseVersion(ver)
 
@@ -340,10 +334,10 @@ else:
 
     # Warn if we mixed public and private development versions.
     if using_dev:
-        print("", file=sys.stderr);
-        print("WARNING: You are launching a public version of VisIt", file=sys.stderr);
-        print("         from within a development version!", file=sys.stderr);
-        print("", file=sys.stderr);
+        sys.stderr.write("\n");
+        sys.stderr.write("WARNING: You are launching a public version of VisIt\n");
+        sys.stderr.write("         from within a development version!\n");
+        sys.stderr.write("\n");
         visitargs = ["-dv"] + visitargs
 
     # The actual visit directory is now version-specific
@@ -360,10 +354,10 @@ if visitdir[-1] != os.path.sep:
 # -----------------------------------------------------------------------------
 #     Set the environment variables needed for the internal visit launcher
 # -----------------------------------------------------------------------------
-path = list(string.split(GETENV("PATH"), ":"))
+path = list(GETENV("PATH").split(":"))
 path = path + ["/bin","/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/bsd","/usr/ucb"]
 path = [progdir] + path
-SETENV("PATH",               string.join(path, ":"))
+SETENV("PATH",               ":".join(path))
 SETENV("VISITVERSION",       ver)
 SETENV("VISITPLUGINVERSION", visitpluginver)
 SETENV("VISITPROGRAM",       progname)
@@ -381,7 +375,7 @@ if GETENV("VISIT_STARTED_FROM_APPBUNDLE") == "TRUE":
 #     If the user specified the minor version then add a -forceversion with
 #     the minor version
 # -----------------------------------------------------------------------------
-if progname != "mpeg2encode" and forceversion_set == 0 and add_forceversion == 1:
+if progname != "mpeg2encode" and progname != "ffmpeg" and forceversion_set == 0 and add_forceversion == 1:
     visitargs = ["-forceversion", ver] + visitargs
 
 # -----------------------------------------------------------------------------
@@ -415,7 +409,7 @@ else:
             newlauncher = createlauncher()
             launcher = newlauncher
         except:
-            print("Could not create custom launcher", file=sys.stderr)
+            sys.stderr.write("Could not create custom launcher\n")
 
     # Now, call the regular internallauncher function with the launcher
     # object that we created.

@@ -1,1 +1,2177 @@
-{'102': {'timestep_28': {'pick_letter': 'O', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.12547169625759125, 0.0), 'timestep': 28, 'filename': 'wave_tv0280.silo', 'node_id': 102, 'v': -0.008632590994238853}, 'timestep_60': {'pick_letter': 'e', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06009998917579651, 0.0), 'timestep': 60, 'filename': 'wave_tv0600.silo', 'node_id': 102, 'v': -0.00041636303649283946}, 'timestep_38': {'pick_letter': 'T', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.0820000022649765, 0.0), 'timestep': 38, 'filename': 'wave_tv0380.silo', 'node_id': 102, 'v': -0.002376074204221368}, 'timestep_36': {'pick_letter': 'S', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.08702332526445389, 0.0), 'timestep': 36, 'filename': 'wave_tv0360.silo', 'node_id': 102, 'v': -0.0029606816824525595}, 'timestep_20': {'pick_letter': 'K', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.26691973209381104, 0.0), 'timestep': 20, 'filename': 'wave_tv0200.silo', 'node_id': 102, 'v': -0.04014967009425163}, 'timestep_34': {'pick_letter': 'R', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.09330879151821136, 0.0), 'timestep': 34, 'filename': 'wave_tv0340.silo', 'node_id': 102, 'v': -0.003750031813979149}, 'timestep_22': {'pick_letter': 'L', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.20898251235485077, 0.0), 'timestep': 22, 'filename': 'wave_tv0220.silo', 'node_id': 102, 'v': -0.025860371068120003}, 'timestep_32': {'pick_letter': 'Q', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.10130836069583893, 0.0), 'timestep': 32, 'filename': 'wave_tv0320.silo', 'node_id': 102, 'v': -0.004839867819100618}, 'timestep_24': {'pick_letter': 'M', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.17062726616859436, 0.0), 'timestep': 24, 'filename': 'wave_tv0240.silo', 'node_id': 102, 'v': -0.017303772270679474}, 'timestep_30': {'pick_letter': 'P', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.11169031262397766, 0.0), 'timestep': 30, 'filename': 'wave_tv0300.silo', 'node_id': 102, 'v': -0.006383204832673073}, 'timestep_26': {'pick_letter': 'N', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.14425070583820343, 0.0), 'timestep': 26, 'filename': 'wave_tv0260.silo', 'node_id': 102, 'v': -0.012019218876957893}, 'timestep_58': {'pick_letter': 'd', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06095890328288078, 0.0), 'timestep': 58, 'filename': 'wave_tv0580.silo', 'node_id': 102, 'v': -0.0004709735803771764}, 'timestep_48': {'pick_letter': 'Y', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06746724992990494, 0.0), 'timestep': 48, 'filename': 'wave_tv0480.silo', 'node_id': 102, 'v': -0.0009523495682515204}, 'timestep_50': {'pick_letter': 'Z', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06577038764953613, 0.0), 'timestep': 50, 'filename': 'wave_tv0500.silo', 'node_id': 102, 'v': -0.0008161153527908027}, 'timestep_42': {'pick_letter': 'V', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.07457606494426727, 0.0), 'timestep': 42, 'filename': 'wave_tv0420.silo', 'node_id': 102, 'v': -0.001595096429809928}, 'timestep_52': {'pick_letter': 'a', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06430819630622864, 0.0), 'timestep': 52, 'filename': 'wave_tv0520.silo', 'node_id': 102, 'v': -0.0007045622332952917}, 'timestep_40': {'pick_letter': 'U', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.07792516052722931, 0.0), 'timestep': 40, 'filename': 'wave_tv0400.silo', 'node_id': 102, 'v': -0.0019344990141689777}, 'timestep_54': {'pick_letter': 'b', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06303951144218445, 0.0), 'timestep': 54, 'filename': 'wave_tv0540.silo', 'node_id': 102, 'v': -0.0006123674102127552}, 'timestep_46': {'pick_letter': 'X', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.0694514662027359, 0.0), 'timestep': 46, 'filename': 'wave_tv0460.silo', 'node_id': 102, 'v': -0.0011204301845282316}, 'timestep_56': {'pick_letter': 'c', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.06193175166845322, 0.0), 'timestep': 56, 'filename': 'wave_tv0560.silo', 'node_id': 102, 'v': -0.0005355229950509965}, 'timestep_44': {'pick_letter': 'W', 'incident_zones': (100, 0, 101, 1), 'point': (0.09999999403953552, 0.07179123908281326, 0.0), 'timestep': 44, 'filename': 'wave_tv0440.silo', 'node_id': 102, 'v': -0.0013301473809406161}}, '103': {'timestep_28': {'pick_letter': 'j', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.129617840051651, 0.0), 'timestep': 28, 'filename': 'wave_tv0280.silo', 'node_id': 103, 'v': -0.00935013685375452}, 'timestep_60': {'pick_letter': 'z', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.06030502915382385, 0.0), 'timestep': 60, 'filename': 'wave_tv0600.silo', 'node_id': 103, 'v': -0.00042919183033518493}, 'timestep_38': {'pick_letter': 'o', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.08315649628639221, 0.0), 'timestep': 38, 'filename': 'wave_tv0380.silo', 'node_id': 103, 'v': -0.002506839344277978}, 'timestep_36': {'pick_letter': 'n', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.08846154063940048, 0.0), 'timestep': 36, 'filename': 'wave_tv0360.silo', 'node_id': 103, 'v': -0.0031357991974800825}, 'timestep_20': {'pick_letter': 'f', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.28584906458854675, 0.0), 'timestep': 20, 'filename': 'wave_tv0200.silo', 'node_id': 103, 'v': -0.045049820095300674}, 'timestep_34': {'pick_letter': 'm', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.09512635320425034, 0.0), 'timestep': 34, 'filename': 'wave_tv0340.silo', 'node_id': 103, 'v': -0.003989559598267078}, 'timestep_22': {'pick_letter': 'g', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.22123287618160248, 0.0), 'timestep': 22, 'filename': 'wave_tv0220.silo', 'node_id': 103, 'v': -0.028767123818397522}, 'timestep_32': {'pick_letter': 'l', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.10364806652069092, 0.0), 'timestep': 32, 'filename': 'wave_tv0320.silo', 'node_id': 103, 'v': -0.00517546059563756}, 'timestep_24': {'pick_letter': 'h', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.17886598408222198, 0.0), 'timestep': 24, 'filename': 'wave_tv0240.silo', 'node_id': 103, 'v': -0.019063014537096024}, 'timestep_30': {'pick_letter': 'k', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.11476683616638184, 0.0), 'timestep': 30, 'filename': 'wave_tv0300.silo', 'node_id': 103, 'v': -0.0068663982674479485}, 'timestep_26': {'pick_letter': 'i', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.15000000596046448, 0.0), 'timestep': 26, 'filename': 'wave_tv0260.silo', 'node_id': 103, 'v': -0.013122172094881535}, 'timestep_58': {'pick_letter': 'y', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.06119069084525108, 0.0), 'timestep': 58, 'filename': 'wave_tv0580.silo', 'node_id': 103, 'v': -0.00048609721125103533}, 'timestep_48': {'pick_letter': 't', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.06793400645256042, 0.0), 'timestep': 48, 'filename': 'wave_tv0480.silo', 'node_id': 103, 'v': -0.0009910538792610168}, 'timestep_50': {'pick_letter': 'u', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.06617076694965363, 0.0), 'timestep': 50, 'filename': 'wave_tv0500.silo', 'node_id': 103, 'v': -0.0008476165821775794}, 'timestep_42': {'pick_letter': 'q', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.07535497099161148, 0.0), 'timestep': 42, 'filename': 'wave_tv0420.silo', 'node_id': 103, 'v': -0.0016720574349164963}, 'timestep_52': {'pick_letter': 'v', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.0646541640162468, 0.0), 'timestep': 52, 'filename': 'wave_tv0520.silo', 'node_id': 103, 'v': -0.0007304535829462111}, 'timestep_40': {'pick_letter': 'p', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.07886835932731628, 0.0), 'timestep': 40, 'filename': 'wave_tv0400.silo', 'node_id': 103, 'v': -0.002033988246694207}, 'timestep_54': {'pick_letter': 'w', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.0633404478430748, 0.0), 'timestep': 54, 'filename': 'wave_tv0540.silo', 'node_id': 103, 'v': -0.0006338390521705151}, 'timestep_46': {'pick_letter': 's', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.07000000029802322, 0.0), 'timestep': 46, 'filename': 'wave_tv0460.silo', 'node_id': 103, 'v': -0.0011685012141242623}, 'timestep_56': {'pick_letter': 'x', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.06219512224197388, 0.0), 'timestep': 56, 'filename': 'wave_tv0560.silo', 'node_id': 103, 'v': -0.0005534756928682327}, 'timestep_44': {'pick_letter': 'r', 'incident_zones': (101, 1, 102, 2), 'point': (0.19999998807907104, 0.07244165241718292, 0.0), 'timestep': 44, 'filename': 'wave_tv0440.silo', 'node_id': 103, 'v': -0.0013905694941058755}}, '100': {'timestep_28': {'pick_letter': 'YY', 'incident_zones': (99,), 'point': (10.0, 0.02383222058415413, 0.0), 'timestep': 28, 'filename': 'wave_tv0280.silo', 'node_id': 100, 'v': 0.0013905694941058755}, 'timestep_60': {'pick_letter': 'oo', 'incident_zones': (99,), 'point': (10.0, 1.0, 0.0), 'timestep': 60, 'filename': 'wave_tv0600.silo', 'node_id': 100, 'v': 0.03846153989434242}, 'timestep_38': {'pick_letter': 'dd', 'incident_zones': (99,), 'point': (10.0, 0.04911591485142708, 0.0), 'timestep': 38, 'filename': 'wave_tv0380.silo', 'node_id': 100, 'v': 0.003989559598267078}, 'timestep_36': {'pick_letter': 'cc', 'incident_zones': (99,), 'point': (10.0, 0.041597336530685425, 0.0), 'timestep': 36, 'filename': 'wave_tv0360.silo', 'node_id': 100, 'v': 0.0031357991974800825}, 'timestep_20': {'pick_letter': 'UU', 'incident_zones': (99,), 'point': (10.0, 0.015384615398943424, 0.0), 'timestep': 20, 'filename': 'wave_tv0200.silo', 'node_id': 100, 'v': 0.0007304535829462111}, 'timestep_34': {'pick_letter': 'bb', 'incident_zones': (99,), 'point': (10.0, 0.035663336515426636, 0.0), 'timestep': 34, 'filename': 'wave_tv0340.silo', 'node_id': 100, 'v': 0.002506839344277978}, 'timestep_22': {'pick_letter': 'VV', 'incident_zones': (99,), 'point': (10.0, 0.017018379643559456, 0.0), 'timestep': 22, 'filename': 'wave_tv0220.silo', 'node_id': 100, 'v': 0.0008476165821775794}, 'timestep_32': {'pick_letter': 'aa', 'incident_zones': (99,), 'point': (10.0, 0.030902348458766937, 0.0), 'timestep': 32, 'filename': 'wave_tv0320.silo', 'node_id': 100, 'v': 0.002033988246694207}, 'timestep_24': {'pick_letter': 'WW', 'incident_zones': (99,), 'point': (10.0, 0.018925055861473083, 0.0), 'timestep': 24, 'filename': 'wave_tv0240.silo', 'node_id': 100, 'v': 0.0009910538792610168}, 'timestep_30': {'pick_letter': 'ZZ', 'incident_zones': (99,), 'point': (10.0, 0.027027027681469917, 0.0), 'timestep': 30, 'filename': 'wave_tv0300.silo', 'node_id': 100, 'v': 0.0016720574349164963}, 'timestep_26': {'pick_letter': 'XX', 'incident_zones': (99,), 'point': (10.0, 0.021168502047657967, 0.0), 'timestep': 26, 'filename': 'wave_tv0260.silo', 'node_id': 100, 'v': 0.0011685012141242623}, 'timestep_58': {'pick_letter': 'nn', 'incident_zones': (99,), 'point': (10.0, 0.8620689511299133, 0.0), 'timestep': 58, 'filename': 'wave_tv0580.silo', 'node_id': 100, 'v': 0.1267748475074768}, 'timestep_48': {'pick_letter': 'ii', 'incident_zones': (99,), 'point': (10.0, 0.14792899787425995, 0.0), 'timestep': 48, 'filename': 'wave_tv0480.silo', 'node_id': 100, 'v': 0.019063014537096024}, 'timestep_50': {'pick_letter': 'jj', 'incident_zones': (99,), 'point': (10.0, 0.20000000298023224, 0.0), 'timestep': 50, 'filename': 'wave_tv0500.silo', 'node_id': 100, 'v': 0.028767123818397522}, 'timestep_42': {'pick_letter': 'ff', 'incident_zones': (99,), 'point': (10.0, 0.0716332346200943, 0.0), 'timestep': 42, 'filename': 'wave_tv0420.silo', 'node_id': 100, 'v': 0.0068663982674479485}, 'timestep_52': {'pick_letter': 'kk', 'incident_zones': (99,), 'point': (10.0, 0.2808988690376282, 0.0), 'timestep': 52, 'filename': 'wave_tv0520.silo', 'node_id': 100, 'v': 0.045049820095300674}, 'timestep_40': {'pick_letter': 'ee', 'incident_zones': (99,), 'point': (10.0, 0.05882352963089943, 0.0), 'timestep': 40, 'filename': 'wave_tv0400.silo', 'node_id': 100, 'v': 0.00517546059563756}, 'timestep_54': {'pick_letter': 'll', 'incident_zones': (99,), 'point': (10.0, 0.4098360538482666, 0.0), 'timestep': 54, 'filename': 'wave_tv0540.silo', 'node_id': 100, 'v': 0.071998231112957}, 'timestep_46': {'pick_letter': 'hh', 'incident_zones': (99,), 'point': (10.0, 0.11312217265367508, 0.0), 'timestep': 46, 'filename': 'wave_tv0460.silo', 'node_id': 100, 'v': 0.013122172094881535}, 'timestep_56': {'pick_letter': 'mm', 'incident_zones': (99,), 'point': (10.0, 0.6097561120986938, 0.0), 'timestep': 56, 'filename': 'wave_tv0560.silo', 'node_id': 100, 'v': 0.10975609719753265}, 'timestep_44': {'pick_letter': 'gg', 'incident_zones': (99,), 'point': (10.0, 0.08896797150373459, 0.0), 'timestep': 44, 'filename': 'wave_tv0440.silo', 'node_id': 100, 'v': 0.00935013685375452}}, '101': {'timestep_28': {'pick_letter': 'tt', 'incident_zones': (100, 0), 'point': (0.0, 0.12163323909044266, 0.0), 'timestep': 28, 'filename': 'wave_tv0280.silo', 'node_id': 101, 'v': -0.00798459630459547}, 'timestep_60': {'pick_letter': 'J', 'incident_zones': (100, 0), 'point': (0.0, 0.05990099161863327, 0.0), 'timestep': 60, 'filename': 'wave_tv0600.silo', 'node_id': 101, 'v': -0.00040403875755146146}, 'timestep_38': {'pick_letter': 'yy', 'incident_zones': (100, 0), 'point': (0.0, 0.0809023529291153, 0.0), 'timestep': 38, 'filename': 'wave_tv0380.silo', 'node_id': 101, 'v': -0.0022541501093655825}, 'timestep_36': {'pick_letter': 'xx', 'incident_zones': (100, 0), 'point': (0.0, 0.085663340985775, 0.0), 'timestep': 36, 'filename': 'wave_tv0360.silo', 'node_id': 101, 'v': -0.0027982003521174192}, 'timestep_20': {'pick_letter': 'pp', 'incident_zones': (100, 0), 'point': (0.0, 0.25, 0.0), 'timestep': 20, 'filename': 'wave_tv0200.silo', 'node_id': 101, 'v': -0.035849057137966156}, 'timestep_34': {'pick_letter': 'ww', 'incident_zones': (100, 0), 'point': (0.0, 0.09159734100103378, 0.0), 'timestep': 34, 'filename': 'wave_tv0340.silo', 'node_id': 101, 'v': -0.003529015928506851}, 'timestep_22': {'pick_letter': 'qq', 'incident_zones': (100, 0), 'point': (0.0, 0.1979289948940277, 0.0), 'timestep': 22, 'filename': 'wave_tv0220.silo', 'node_id': 101, 'v': -0.023303883150219917}, 'timestep_32': {'pick_letter': 'vv', 'incident_zones': (100, 0), 'point': (0.0, 0.09911591559648514, 0.0), 'timestep': 32, 'filename': 'wave_tv0320.silo', 'node_id': 101, 'v': -0.004532155115157366}, 'timestep_24': {'pick_letter': 'rr', 'incident_zones': (100, 0), 'point': (0.0, 0.16312217712402344, 0.0), 'timestep': 24, 'filename': 'wave_tv0240.silo', 'node_id': 101, 'v': -0.015743806958198547}, 'timestep_30': {'pick_letter': 'uu', 'incident_zones': (100, 0), 'point': (0.0, 0.10882353037595749, 0.0), 'timestep': 30, 'filename': 'wave_tv0300.silo', 'node_id': 101, 'v': -0.005943309981375933}, 'timestep_26': {'pick_letter': 'ss', 'incident_zones': (100, 0), 'point': (0.0, 0.13896797597408295, 0.0), 'timestep': 26, 'filename': 'wave_tv0260.silo', 'node_id': 101, 'v': -0.011032028123736382}, 'timestep_58': {'pick_letter': 'I', 'incident_zones': (100, 0), 'point': (0.0, 0.06073421984910965, 0.0), 'timestep': 58, 'filename': 'wave_tv0580.silo', 'node_id': 101, 'v': -0.0004564686387311667}, 'timestep_48': {'pick_letter': 'D', 'incident_zones': (100, 0), 'point': (0.0, 0.06701838225126266, 0.0), 'timestep': 48, 'filename': 'wave_tv0480.silo', 'node_id': 101, 'v': -0.0009156230371445417}, 'timestep_50': {'pick_letter': 'E', 'incident_zones': (100, 0), 'point': (0.0, 0.06538461893796921, 0.0), 'timestep': 50, 'filename': 'wave_tv0500.silo', 'node_id': 101, 'v': -0.0007861478952690959}, 'timestep_42': {'pick_letter': 'A', 'incident_zones': (100, 0), 'point': (0.0, 0.07383222132921219, 0.0), 'timestep': 42, 'filename': 'wave_tv0420.silo', 'node_id': 101, 'v': -0.001522748381830752}, 'timestep_52': {'pick_letter': 'F', 'incident_zones': (100, 0), 'point': (0.0, 0.0639742910861969, 0.0), 'timestep': 52, 'filename': 'wave_tv0520.silo', 'node_id': 101, 'v': -0.00067987444344908}, 'timestep_40': {'pick_letter': 'zz', 'incident_zones': (100, 0), 'point': (0.0, 0.07702703028917313, 0.0), 'timestep': 40, 'filename': 'wave_tv0400.silo', 'node_id': 101, 'v': -0.0018413332290947437}, 'timestep_54': {'pick_letter': 'G', 'incident_zones': (100, 0), 'point': (0.0, 0.06274859607219696, 0.0), 'timestep': 54, 'filename': 'wave_tv0540.silo', 'node_id': 101, 'v': -0.0005918506067246199}, 'timestep_46': {'pick_letter': 'C', 'incident_zones': (100, 0), 'point': (0.0, 0.06892506033182144, 0.0), 'timestep': 46, 'filename': 'wave_tv0460.silo', 'node_id': 101, 'v': -0.0010749432258307934}, 'timestep_56': {'pick_letter': 'H', 'incident_zones': (100, 0), 'point': (0.0, 0.061676789075136185, 0.0), 'timestep': 56, 'filename': 'wave_tv0560.silo', 'node_id': 101, 'v': -0.000518335378728807}, 'timestep_44': {'pick_letter': 'B', 'incident_zones': (100, 0), 'point': (0.0, 0.07116850465536118, 0.0), 'timestep': 44, 'filename': 'wave_tv0440.silo', 'node_id': 101, 'v': -0.0012731504393741488}}, '104': {'timestep_28': {'pick_letter': 'EE', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.13410429656505585, 0.0), 'timestep': 28, 'filename': 'wave_tv0280.silo', 'node_id': 104, 'v': -0.010146417655050755}, 'timestep_60': {'pick_letter': 'UU', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.0605163536965847, 0.0), 'timestep': 60, 'filename': 'wave_tv0600.silo', 'node_id': 104, 'v': -0.00044255118700675666}, 'timestep_38': {'pick_letter': 'JJ', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.08437607437372208, 0.0), 'timestep': 38, 'filename': 'wave_tv0380.silo', 'node_id': 104, 'v': -0.002647250425070524}, 'timestep_36': {'pick_letter': 'II', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.08998400717973709, 0.0), 'timestep': 36, 'filename': 'wave_tv0360.silo', 'node_id': 104, 'v': -0.0033247852697968483}, 'timestep_20': {'pick_letter': 'AA', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.3070693910121918, 0.0), 'timestep': 20, 'filename': 'wave_tv0200.silo', 'node_id': 104, 'v': -0.05062289908528328}, 'timestep_34': {'pick_letter': 'HH', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.09705882519483566, 0.0), 'timestep': 34, 'filename': 'wave_tv0340.silo', 'node_id': 104, 'v': -0.004249539691954851}, 'timestep_22': {'pick_letter': 'BB', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.23484288156032562, 0.0), 'timestep': 22, 'filename': 'wave_tv0220.silo', 'node_id': 104, 'v': -0.03207685425877571}, 'timestep_32': {'pick_letter': 'GG', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.10614822804927826, 0.0), 'timestep': 32, 'filename': 'wave_tv0320.silo', 'node_id': 104, 'v': -0.00554208317771554}, 'timestep_24': {'pick_letter': 'CC', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.18793103098869324, 0.0), 'timestep': 24, 'filename': 'wave_tv0240.silo', 'node_id': 104, 'v': -0.021051477640867233}, 'timestep_30': {'pick_letter': 'FF', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.11807352304458618, 0.0), 'timestep': 30, 'filename': 'wave_tv0300.silo', 'node_id': 104, 'v': -0.007398178800940514}, 'timestep_26': {'pick_letter': 'DD', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.15626992285251617, 0.0), 'timestep': 26, 'filename': 'wave_tv0260.silo', 'node_id': 104, 'v': -0.014357335865497589}, 'timestep_58': {'pick_letter': 'TT', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.06142987683415413, 0.0), 'timestep': 58, 'filename': 'wave_tv0580.silo', 'node_id': 104, 'v': -0.0005018726806156337}, 'timestep_48': {'pick_letter': 'OO', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.06841959804296494, 0.0), 'timestep': 48, 'filename': 'wave_tv0480.silo', 'node_id': 104, 'v': -0.0010318701388314366}, 'timestep_50': {'pick_letter': 'PP', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.06658650189638138, 0.0), 'timestep': 50, 'filename': 'wave_tv0500.silo', 'node_id': 104, 'v': -0.0008807503036223352}, 'timestep_42': {'pick_letter': 'LL', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.0761711597442627, 0.0), 'timestep': 42, 'filename': 'wave_tv0420.silo', 'node_id': 104, 'v': -0.0017540011322125793}, 'timestep_52': {'pick_letter': 'QQ', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.06501276046037674, 0.0), 'timestep': 52, 'filename': 'wave_tv0520.silo', 'node_id': 104, 'v': -0.0007576223579235375}, 'timestep_40': {'pick_letter': 'KK', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.079859659075737, 0.0), 'timestep': 40, 'filename': 'wave_tv0400.silo', 'node_id': 104, 'v': -0.002140340395271778}, 'timestep_54': {'pick_letter': 'RR', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.06365187466144562, 0.0), 'timestep': 54, 'filename': 'wave_tv0540.silo', 'node_id': 104, 'v': -0.0006563214701600373}, 'timestep_46': {'pick_letter': 'NN', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.0705718994140625, 0.0), 'timestep': 46, 'filename': 'wave_tv0460.silo', 'node_id': 104, 'v': -0.0012193411821499467}, 'timestep_56': {'pick_letter': 'SS', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.06246727332472801, 0.0), 'timestep': 56, 'filename': 'wave_tv0560.silo', 'node_id': 104, 'v': -0.0005722363130189478}, 'timestep_44': {'pick_letter': 'MM', 'incident_zones': (102, 2, 103, 3), 'point': (0.29999998211860657, 0.07312139123678207, 0.0), 'timestep': 44, 'filename': 'wave_tv0440.silo', 'node_id': 104, 'v': -0.0014546755701303482}}, '105': {'timestep_28': {'pick_letter': 'ZZ', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.13896797597408295, 0.0), 'timestep': 28, 'filename': 'wave_tv0280.silo', 'node_id': 105, 'v': -0.011032028123736382}, 'timestep_60': {'pick_letter': 'pp', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.06073421984910965, 0.0), 'timestep': 60, 'filename': 'wave_tv0600.silo', 'node_id': 105, 'v': -0.0004564686387311667}, 'timestep_38': {'pick_letter': 'ee', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.085663340985775, 0.0), 'timestep': 38, 'filename': 'wave_tv0380.silo', 'node_id': 105, 'v': -0.0027982003521174192}, 'timestep_36': {'pick_letter': 'dd', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.09159734100103378, 0.0), 'timestep': 36, 'filename': 'wave_tv0360.silo', 'node_id': 105, 'v': -0.003529015928506851}, 'timestep_20': {'pick_letter': 'VV', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.33089888095855713, 0.0), 'timestep': 20, 'filename': 'wave_tv0200.silo', 'node_id': 105, 'v': -0.056938961148262024}, 'timestep_34': {'pick_letter': 'cc', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.09911591559648514, 0.0), 'timestep': 34, 'filename': 'wave_tv0340.silo', 'node_id': 105, 'v': -0.004532155115157366}, 'timestep_22': {'pick_letter': 'WW', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.25, 0.0), 'timestep': 22, 'filename': 'wave_tv0220.silo', 'node_id': 105, 'v': -0.035849057137966156}, 'timestep_32': {'pick_letter': 'bb', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.10882353037595749, 0.0), 'timestep': 32, 'filename': 'wave_tv0320.silo', 'node_id': 105, 'v': -0.005943309981375933}, 'timestep_24': {'pick_letter': 'XX', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.1979289948940277, 0.0), 'timestep': 24, 'filename': 'wave_tv0240.silo', 'node_id': 105, 'v': -0.023303881287574768}, 'timestep_30': {'pick_letter': 'aa', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.12163323909044266, 0.0), 'timestep': 30, 'filename': 'wave_tv0300.silo', 'node_id': 105, 'v': -0.00798459630459547}, 'timestep_26': {'pick_letter': 'YY', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.16312217712402344, 0.0), 'timestep': 26, 'filename': 'wave_tv0260.silo', 'node_id': 105, 'v': -0.015743806958198547}, 'timestep_58': {'pick_letter': 'oo', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.061676789075136185, 0.0), 'timestep': 58, 'filename': 'wave_tv0580.silo', 'node_id': 105, 'v': -0.000518335378728807}, 'timestep_48': {'pick_letter': 'jj', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.06892506033182144, 0.0), 'timestep': 48, 'filename': 'wave_tv0480.silo', 'node_id': 105, 'v': -0.0010749432258307934}, 'timestep_50': {'pick_letter': 'kk', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.06701838225126266, 0.0), 'timestep': 50, 'filename': 'wave_tv0500.silo', 'node_id': 105, 'v': -0.0009156230371445417}, 'timestep_42': {'pick_letter': 'gg', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.07702703028917313, 0.0), 'timestep': 42, 'filename': 'wave_tv0420.silo', 'node_id': 105, 'v': -0.0018413332290947437}, 'timestep_52': {'pick_letter': 'll', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.06538461893796921, 0.0), 'timestep': 52, 'filename': 'wave_tv0520.silo', 'node_id': 105, 'v': -0.0007861478952690959}, 'timestep_40': {'pick_letter': 'ff', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.0809023454785347, 0.0), 'timestep': 40, 'filename': 'wave_tv0400.silo', 'node_id': 105, 'v': -0.0022541501093655825}, 'timestep_54': {'pick_letter': 'mm', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.0639742910861969, 0.0), 'timestep': 54, 'filename': 'wave_tv0540.silo', 'node_id': 105, 'v': -0.00067987444344908}, 'timestep_46': {'pick_letter': 'ii', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.07116850465536118, 0.0), 'timestep': 46, 'filename': 'wave_tv0460.silo', 'node_id': 105, 'v': -0.0012731504393741488}, 'timestep_56': {'pick_letter': 'nn', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.06274859607219696, 0.0), 'timestep': 56, 'filename': 'wave_tv0560.silo', 'node_id': 105, 'v': -0.0005918506067246199}, 'timestep_44': {'pick_letter': 'hh', 'incident_zones': (103, 3, 104, 4), 'point': (0.3999999761581421, 0.07383222132921219, 0.0), 'timestep': 44, 'filename': 'wave_tv0440.silo', 'node_id': 105, 'v': -0.001522748381830752}}}
+{
+  "100": {
+    "timestep_20": {
+      "filename": "wave_tv0200.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "UU",
+      "point": [
+        10.0,
+        0.015384615398943424,
+        0.0
+      ],
+      "timestep": 20,
+      "v": 0.0007304535829462111
+    },
+    "timestep_22": {
+      "filename": "wave_tv0220.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "VV",
+      "point": [
+        10.0,
+        0.017018379643559456,
+        0.0
+      ],
+      "timestep": 22,
+      "v": 0.0008476165821775794
+    },
+    "timestep_24": {
+      "filename": "wave_tv0240.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "WW",
+      "point": [
+        10.0,
+        0.018925055861473083,
+        0.0
+      ],
+      "timestep": 24,
+      "v": 0.0009910538792610168
+    },
+    "timestep_26": {
+      "filename": "wave_tv0260.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "XX",
+      "point": [
+        10.0,
+        0.021168502047657967,
+        0.0
+      ],
+      "timestep": 26,
+      "v": 0.0011685012141242623
+    },
+    "timestep_28": {
+      "filename": "wave_tv0280.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "YY",
+      "point": [
+        10.0,
+        0.02383222058415413,
+        0.0
+      ],
+      "timestep": 28,
+      "v": 0.0013905694941058755
+    },
+    "timestep_30": {
+      "filename": "wave_tv0300.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "ZZ",
+      "point": [
+        10.0,
+        0.027027027681469917,
+        0.0
+      ],
+      "timestep": 30,
+      "v": 0.0016720574349164963
+    },
+    "timestep_32": {
+      "filename": "wave_tv0320.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "aa",
+      "point": [
+        10.0,
+        0.030902348458766937,
+        0.0
+      ],
+      "timestep": 32,
+      "v": 0.002033988246694207
+    },
+    "timestep_34": {
+      "filename": "wave_tv0340.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "bb",
+      "point": [
+        10.0,
+        0.035663336515426636,
+        0.0
+      ],
+      "timestep": 34,
+      "v": 0.002506839344277978
+    },
+    "timestep_36": {
+      "filename": "wave_tv0360.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "cc",
+      "point": [
+        10.0,
+        0.041597336530685425,
+        0.0
+      ],
+      "timestep": 36,
+      "v": 0.0031357991974800825
+    },
+    "timestep_38": {
+      "filename": "wave_tv0380.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "dd",
+      "point": [
+        10.0,
+        0.04911591485142708,
+        0.0
+      ],
+      "timestep": 38,
+      "v": 0.003989559598267078
+    },
+    "timestep_40": {
+      "filename": "wave_tv0400.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "ee",
+      "point": [
+        10.0,
+        0.05882352963089943,
+        0.0
+      ],
+      "timestep": 40,
+      "v": 0.00517546059563756
+    },
+    "timestep_42": {
+      "filename": "wave_tv0420.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "ff",
+      "point": [
+        10.0,
+        0.0716332346200943,
+        0.0
+      ],
+      "timestep": 42,
+      "v": 0.0068663982674479485
+    },
+    "timestep_44": {
+      "filename": "wave_tv0440.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "gg",
+      "point": [
+        10.0,
+        0.08896797150373459,
+        0.0
+      ],
+      "timestep": 44,
+      "v": 0.00935013685375452
+    },
+    "timestep_46": {
+      "filename": "wave_tv0460.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "hh",
+      "point": [
+        10.0,
+        0.11312217265367508,
+        0.0
+      ],
+      "timestep": 46,
+      "v": 0.013122172094881535
+    },
+    "timestep_48": {
+      "filename": "wave_tv0480.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "ii",
+      "point": [
+        10.0,
+        0.14792899787425995,
+        0.0
+      ],
+      "timestep": 48,
+      "v": 0.019063014537096024
+    },
+    "timestep_50": {
+      "filename": "wave_tv0500.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "jj",
+      "point": [
+        10.0,
+        0.20000000298023224,
+        0.0
+      ],
+      "timestep": 50,
+      "v": 0.028767123818397522
+    },
+    "timestep_52": {
+      "filename": "wave_tv0520.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "kk",
+      "point": [
+        10.0,
+        0.2808988690376282,
+        0.0
+      ],
+      "timestep": 52,
+      "v": 0.045049820095300674
+    },
+    "timestep_54": {
+      "filename": "wave_tv0540.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "ll",
+      "point": [
+        10.0,
+        0.4098360538482666,
+        0.0
+      ],
+      "timestep": 54,
+      "v": 0.071998231112957
+    },
+    "timestep_56": {
+      "filename": "wave_tv0560.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "mm",
+      "point": [
+        10.0,
+        0.6097561120986938,
+        0.0
+      ],
+      "timestep": 56,
+      "v": 0.10975609719753265
+    },
+    "timestep_58": {
+      "filename": "wave_tv0580.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "nn",
+      "point": [
+        10.0,
+        0.8620689511299133,
+        0.0
+      ],
+      "timestep": 58,
+      "v": 0.1267748475074768
+    },
+    "timestep_60": {
+      "filename": "wave_tv0600.silo",
+      "incident_zones": [
+        99
+      ],
+      "node_id": 100,
+      "pick_letter": "oo",
+      "point": [
+        10.0,
+        1.0,
+        0.0
+      ],
+      "timestep": 60,
+      "v": 0.03846153989434242
+    }
+  },
+  "101": {
+    "timestep_20": {
+      "filename": "wave_tv0200.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "pp",
+      "point": [
+        0.0,
+        0.25,
+        0.0
+      ],
+      "timestep": 20,
+      "v": -0.035849057137966156
+    },
+    "timestep_22": {
+      "filename": "wave_tv0220.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "qq",
+      "point": [
+        0.0,
+        0.1979289948940277,
+        0.0
+      ],
+      "timestep": 22,
+      "v": -0.023303883150219917
+    },
+    "timestep_24": {
+      "filename": "wave_tv0240.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "rr",
+      "point": [
+        0.0,
+        0.16312217712402344,
+        0.0
+      ],
+      "timestep": 24,
+      "v": -0.015743806958198547
+    },
+    "timestep_26": {
+      "filename": "wave_tv0260.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "ss",
+      "point": [
+        0.0,
+        0.13896797597408295,
+        0.0
+      ],
+      "timestep": 26,
+      "v": -0.011032028123736382
+    },
+    "timestep_28": {
+      "filename": "wave_tv0280.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "tt",
+      "point": [
+        0.0,
+        0.12163323909044266,
+        0.0
+      ],
+      "timestep": 28,
+      "v": -0.00798459630459547
+    },
+    "timestep_30": {
+      "filename": "wave_tv0300.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "uu",
+      "point": [
+        0.0,
+        0.10882353037595749,
+        0.0
+      ],
+      "timestep": 30,
+      "v": -0.005943309981375933
+    },
+    "timestep_32": {
+      "filename": "wave_tv0320.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "vv",
+      "point": [
+        0.0,
+        0.09911591559648514,
+        0.0
+      ],
+      "timestep": 32,
+      "v": -0.004532155115157366
+    },
+    "timestep_34": {
+      "filename": "wave_tv0340.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "ww",
+      "point": [
+        0.0,
+        0.09159734100103378,
+        0.0
+      ],
+      "timestep": 34,
+      "v": -0.003529015928506851
+    },
+    "timestep_36": {
+      "filename": "wave_tv0360.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "xx",
+      "point": [
+        0.0,
+        0.085663340985775,
+        0.0
+      ],
+      "timestep": 36,
+      "v": -0.0027982003521174192
+    },
+    "timestep_38": {
+      "filename": "wave_tv0380.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "yy",
+      "point": [
+        0.0,
+        0.0809023529291153,
+        0.0
+      ],
+      "timestep": 38,
+      "v": -0.0022541501093655825
+    },
+    "timestep_40": {
+      "filename": "wave_tv0400.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "zz",
+      "point": [
+        0.0,
+        0.07702703028917313,
+        0.0
+      ],
+      "timestep": 40,
+      "v": -0.0018413332290947437
+    },
+    "timestep_42": {
+      "filename": "wave_tv0420.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "A",
+      "point": [
+        0.0,
+        0.07383222132921219,
+        0.0
+      ],
+      "timestep": 42,
+      "v": -0.001522748381830752
+    },
+    "timestep_44": {
+      "filename": "wave_tv0440.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "B",
+      "point": [
+        0.0,
+        0.07116850465536118,
+        0.0
+      ],
+      "timestep": 44,
+      "v": -0.0012731504393741488
+    },
+    "timestep_46": {
+      "filename": "wave_tv0460.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "C",
+      "point": [
+        0.0,
+        0.06892506033182144,
+        0.0
+      ],
+      "timestep": 46,
+      "v": -0.0010749432258307934
+    },
+    "timestep_48": {
+      "filename": "wave_tv0480.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "D",
+      "point": [
+        0.0,
+        0.06701838225126266,
+        0.0
+      ],
+      "timestep": 48,
+      "v": -0.0009156230371445417
+    },
+    "timestep_50": {
+      "filename": "wave_tv0500.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "E",
+      "point": [
+        0.0,
+        0.06538461893796921,
+        0.0
+      ],
+      "timestep": 50,
+      "v": -0.0007861478952690959
+    },
+    "timestep_52": {
+      "filename": "wave_tv0520.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "F",
+      "point": [
+        0.0,
+        0.0639742910861969,
+        0.0
+      ],
+      "timestep": 52,
+      "v": -0.00067987444344908
+    },
+    "timestep_54": {
+      "filename": "wave_tv0540.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "G",
+      "point": [
+        0.0,
+        0.06274859607219696,
+        0.0
+      ],
+      "timestep": 54,
+      "v": -0.0005918506067246199
+    },
+    "timestep_56": {
+      "filename": "wave_tv0560.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "H",
+      "point": [
+        0.0,
+        0.061676789075136185,
+        0.0
+      ],
+      "timestep": 56,
+      "v": -0.000518335378728807
+    },
+    "timestep_58": {
+      "filename": "wave_tv0580.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "I",
+      "point": [
+        0.0,
+        0.06073421984910965,
+        0.0
+      ],
+      "timestep": 58,
+      "v": -0.0004564686387311667
+    },
+    "timestep_60": {
+      "filename": "wave_tv0600.silo",
+      "incident_zones": [
+        100,
+        0
+      ],
+      "node_id": 101,
+      "pick_letter": "J",
+      "point": [
+        0.0,
+        0.05990099161863327,
+        0.0
+      ],
+      "timestep": 60,
+      "v": -0.00040403875755146146
+    }
+  },
+  "102": {
+    "timestep_20": {
+      "filename": "wave_tv0200.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "K",
+      "point": [
+        0.09999999403953552,
+        0.26691973209381104,
+        0.0
+      ],
+      "timestep": 20,
+      "v": -0.04014967009425163
+    },
+    "timestep_22": {
+      "filename": "wave_tv0220.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "L",
+      "point": [
+        0.09999999403953552,
+        0.20898251235485077,
+        0.0
+      ],
+      "timestep": 22,
+      "v": -0.025860371068120003
+    },
+    "timestep_24": {
+      "filename": "wave_tv0240.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "M",
+      "point": [
+        0.09999999403953552,
+        0.17062726616859436,
+        0.0
+      ],
+      "timestep": 24,
+      "v": -0.017303772270679474
+    },
+    "timestep_26": {
+      "filename": "wave_tv0260.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "N",
+      "point": [
+        0.09999999403953552,
+        0.14425070583820343,
+        0.0
+      ],
+      "timestep": 26,
+      "v": -0.012019218876957893
+    },
+    "timestep_28": {
+      "filename": "wave_tv0280.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "O",
+      "point": [
+        0.09999999403953552,
+        0.12547169625759125,
+        0.0
+      ],
+      "timestep": 28,
+      "v": -0.008632590994238853
+    },
+    "timestep_30": {
+      "filename": "wave_tv0300.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "P",
+      "point": [
+        0.09999999403953552,
+        0.11169031262397766,
+        0.0
+      ],
+      "timestep": 30,
+      "v": -0.006383204832673073
+    },
+    "timestep_32": {
+      "filename": "wave_tv0320.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "Q",
+      "point": [
+        0.09999999403953552,
+        0.10130836069583893,
+        0.0
+      ],
+      "timestep": 32,
+      "v": -0.004839867819100618
+    },
+    "timestep_34": {
+      "filename": "wave_tv0340.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "R",
+      "point": [
+        0.09999999403953552,
+        0.09330879151821136,
+        0.0
+      ],
+      "timestep": 34,
+      "v": -0.003750031813979149
+    },
+    "timestep_36": {
+      "filename": "wave_tv0360.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "S",
+      "point": [
+        0.09999999403953552,
+        0.08702332526445389,
+        0.0
+      ],
+      "timestep": 36,
+      "v": -0.0029606816824525595
+    },
+    "timestep_38": {
+      "filename": "wave_tv0380.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "T",
+      "point": [
+        0.09999999403953552,
+        0.0820000022649765,
+        0.0
+      ],
+      "timestep": 38,
+      "v": -0.002376074204221368
+    },
+    "timestep_40": {
+      "filename": "wave_tv0400.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "U",
+      "point": [
+        0.09999999403953552,
+        0.07792516052722931,
+        0.0
+      ],
+      "timestep": 40,
+      "v": -0.0019344990141689777
+    },
+    "timestep_42": {
+      "filename": "wave_tv0420.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "V",
+      "point": [
+        0.09999999403953552,
+        0.07457606494426727,
+        0.0
+      ],
+      "timestep": 42,
+      "v": -0.001595096429809928
+    },
+    "timestep_44": {
+      "filename": "wave_tv0440.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "W",
+      "point": [
+        0.09999999403953552,
+        0.07179123908281326,
+        0.0
+      ],
+      "timestep": 44,
+      "v": -0.0013301473809406161
+    },
+    "timestep_46": {
+      "filename": "wave_tv0460.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "X",
+      "point": [
+        0.09999999403953552,
+        0.0694514662027359,
+        0.0
+      ],
+      "timestep": 46,
+      "v": -0.0011204301845282316
+    },
+    "timestep_48": {
+      "filename": "wave_tv0480.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "Y",
+      "point": [
+        0.09999999403953552,
+        0.06746724992990494,
+        0.0
+      ],
+      "timestep": 48,
+      "v": -0.0009523495682515204
+    },
+    "timestep_50": {
+      "filename": "wave_tv0500.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "Z",
+      "point": [
+        0.09999999403953552,
+        0.06577038764953613,
+        0.0
+      ],
+      "timestep": 50,
+      "v": -0.0008161153527908027
+    },
+    "timestep_52": {
+      "filename": "wave_tv0520.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "a",
+      "point": [
+        0.09999999403953552,
+        0.06430819630622864,
+        0.0
+      ],
+      "timestep": 52,
+      "v": -0.0007045622332952917
+    },
+    "timestep_54": {
+      "filename": "wave_tv0540.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "b",
+      "point": [
+        0.09999999403953552,
+        0.06303951144218445,
+        0.0
+      ],
+      "timestep": 54,
+      "v": -0.0006123674102127552
+    },
+    "timestep_56": {
+      "filename": "wave_tv0560.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "c",
+      "point": [
+        0.09999999403953552,
+        0.06193175166845322,
+        0.0
+      ],
+      "timestep": 56,
+      "v": -0.0005355229950509965
+    },
+    "timestep_58": {
+      "filename": "wave_tv0580.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "d",
+      "point": [
+        0.09999999403953552,
+        0.06095890328288078,
+        0.0
+      ],
+      "timestep": 58,
+      "v": -0.0004709735803771764
+    },
+    "timestep_60": {
+      "filename": "wave_tv0600.silo",
+      "incident_zones": [
+        100,
+        0,
+        101,
+        1
+      ],
+      "node_id": 102,
+      "pick_letter": "e",
+      "point": [
+        0.09999999403953552,
+        0.06009998917579651,
+        0.0
+      ],
+      "timestep": 60,
+      "v": -0.00041636303649283946
+    }
+  },
+  "103": {
+    "timestep_20": {
+      "filename": "wave_tv0200.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "f",
+      "point": [
+        0.19999998807907104,
+        0.28584906458854675,
+        0.0
+      ],
+      "timestep": 20,
+      "v": -0.045049820095300674
+    },
+    "timestep_22": {
+      "filename": "wave_tv0220.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "g",
+      "point": [
+        0.19999998807907104,
+        0.22123287618160248,
+        0.0
+      ],
+      "timestep": 22,
+      "v": -0.028767123818397522
+    },
+    "timestep_24": {
+      "filename": "wave_tv0240.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "h",
+      "point": [
+        0.19999998807907104,
+        0.17886598408222198,
+        0.0
+      ],
+      "timestep": 24,
+      "v": -0.019063014537096024
+    },
+    "timestep_26": {
+      "filename": "wave_tv0260.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "i",
+      "point": [
+        0.19999998807907104,
+        0.15000000596046448,
+        0.0
+      ],
+      "timestep": 26,
+      "v": -0.013122172094881535
+    },
+    "timestep_28": {
+      "filename": "wave_tv0280.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "j",
+      "point": [
+        0.19999998807907104,
+        0.129617840051651,
+        0.0
+      ],
+      "timestep": 28,
+      "v": -0.00935013685375452
+    },
+    "timestep_30": {
+      "filename": "wave_tv0300.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "k",
+      "point": [
+        0.19999998807907104,
+        0.11476683616638184,
+        0.0
+      ],
+      "timestep": 30,
+      "v": -0.0068663982674479485
+    },
+    "timestep_32": {
+      "filename": "wave_tv0320.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "l",
+      "point": [
+        0.19999998807907104,
+        0.10364806652069092,
+        0.0
+      ],
+      "timestep": 32,
+      "v": -0.00517546059563756
+    },
+    "timestep_34": {
+      "filename": "wave_tv0340.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "m",
+      "point": [
+        0.19999998807907104,
+        0.09512635320425034,
+        0.0
+      ],
+      "timestep": 34,
+      "v": -0.003989559598267078
+    },
+    "timestep_36": {
+      "filename": "wave_tv0360.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "n",
+      "point": [
+        0.19999998807907104,
+        0.08846154063940048,
+        0.0
+      ],
+      "timestep": 36,
+      "v": -0.0031357991974800825
+    },
+    "timestep_38": {
+      "filename": "wave_tv0380.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "o",
+      "point": [
+        0.19999998807907104,
+        0.08315649628639221,
+        0.0
+      ],
+      "timestep": 38,
+      "v": -0.002506839344277978
+    },
+    "timestep_40": {
+      "filename": "wave_tv0400.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "p",
+      "point": [
+        0.19999998807907104,
+        0.07886835932731628,
+        0.0
+      ],
+      "timestep": 40,
+      "v": -0.002033988246694207
+    },
+    "timestep_42": {
+      "filename": "wave_tv0420.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "q",
+      "point": [
+        0.19999998807907104,
+        0.07535497099161148,
+        0.0
+      ],
+      "timestep": 42,
+      "v": -0.0016720574349164963
+    },
+    "timestep_44": {
+      "filename": "wave_tv0440.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "r",
+      "point": [
+        0.19999998807907104,
+        0.07244165241718292,
+        0.0
+      ],
+      "timestep": 44,
+      "v": -0.0013905694941058755
+    },
+    "timestep_46": {
+      "filename": "wave_tv0460.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "s",
+      "point": [
+        0.19999998807907104,
+        0.07000000029802322,
+        0.0
+      ],
+      "timestep": 46,
+      "v": -0.0011685012141242623
+    },
+    "timestep_48": {
+      "filename": "wave_tv0480.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "t",
+      "point": [
+        0.19999998807907104,
+        0.06793400645256042,
+        0.0
+      ],
+      "timestep": 48,
+      "v": -0.0009910538792610168
+    },
+    "timestep_50": {
+      "filename": "wave_tv0500.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "u",
+      "point": [
+        0.19999998807907104,
+        0.06617076694965363,
+        0.0
+      ],
+      "timestep": 50,
+      "v": -0.0008476165821775794
+    },
+    "timestep_52": {
+      "filename": "wave_tv0520.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "v",
+      "point": [
+        0.19999998807907104,
+        0.0646541640162468,
+        0.0
+      ],
+      "timestep": 52,
+      "v": -0.0007304535829462111
+    },
+    "timestep_54": {
+      "filename": "wave_tv0540.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "w",
+      "point": [
+        0.19999998807907104,
+        0.0633404478430748,
+        0.0
+      ],
+      "timestep": 54,
+      "v": -0.0006338390521705151
+    },
+    "timestep_56": {
+      "filename": "wave_tv0560.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "x",
+      "point": [
+        0.19999998807907104,
+        0.06219512224197388,
+        0.0
+      ],
+      "timestep": 56,
+      "v": -0.0005534756928682327
+    },
+    "timestep_58": {
+      "filename": "wave_tv0580.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "y",
+      "point": [
+        0.19999998807907104,
+        0.06119069084525108,
+        0.0
+      ],
+      "timestep": 58,
+      "v": -0.00048609721125103533
+    },
+    "timestep_60": {
+      "filename": "wave_tv0600.silo",
+      "incident_zones": [
+        101,
+        1,
+        102,
+        2
+      ],
+      "node_id": 103,
+      "pick_letter": "z",
+      "point": [
+        0.19999998807907104,
+        0.06030502915382385,
+        0.0
+      ],
+      "timestep": 60,
+      "v": -0.00042919183033518493
+    }
+  },
+  "104": {
+    "timestep_20": {
+      "filename": "wave_tv0200.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "AA",
+      "point": [
+        0.29999998211860657,
+        0.3070693910121918,
+        0.0
+      ],
+      "timestep": 20,
+      "v": -0.05062289908528328
+    },
+    "timestep_22": {
+      "filename": "wave_tv0220.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "BB",
+      "point": [
+        0.29999998211860657,
+        0.23484288156032562,
+        0.0
+      ],
+      "timestep": 22,
+      "v": -0.03207685425877571
+    },
+    "timestep_24": {
+      "filename": "wave_tv0240.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "CC",
+      "point": [
+        0.29999998211860657,
+        0.18793103098869324,
+        0.0
+      ],
+      "timestep": 24,
+      "v": -0.021051477640867233
+    },
+    "timestep_26": {
+      "filename": "wave_tv0260.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "DD",
+      "point": [
+        0.29999998211860657,
+        0.15626992285251617,
+        0.0
+      ],
+      "timestep": 26,
+      "v": -0.014357335865497589
+    },
+    "timestep_28": {
+      "filename": "wave_tv0280.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "EE",
+      "point": [
+        0.29999998211860657,
+        0.13410429656505585,
+        0.0
+      ],
+      "timestep": 28,
+      "v": -0.010146417655050755
+    },
+    "timestep_30": {
+      "filename": "wave_tv0300.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "FF",
+      "point": [
+        0.29999998211860657,
+        0.11807352304458618,
+        0.0
+      ],
+      "timestep": 30,
+      "v": -0.007398178800940514
+    },
+    "timestep_32": {
+      "filename": "wave_tv0320.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "GG",
+      "point": [
+        0.29999998211860657,
+        0.10614822804927826,
+        0.0
+      ],
+      "timestep": 32,
+      "v": -0.00554208317771554
+    },
+    "timestep_34": {
+      "filename": "wave_tv0340.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "HH",
+      "point": [
+        0.29999998211860657,
+        0.09705882519483566,
+        0.0
+      ],
+      "timestep": 34,
+      "v": -0.004249539691954851
+    },
+    "timestep_36": {
+      "filename": "wave_tv0360.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "II",
+      "point": [
+        0.29999998211860657,
+        0.08998400717973709,
+        0.0
+      ],
+      "timestep": 36,
+      "v": -0.0033247852697968483
+    },
+    "timestep_38": {
+      "filename": "wave_tv0380.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "JJ",
+      "point": [
+        0.29999998211860657,
+        0.08437607437372208,
+        0.0
+      ],
+      "timestep": 38,
+      "v": -0.002647250425070524
+    },
+    "timestep_40": {
+      "filename": "wave_tv0400.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "KK",
+      "point": [
+        0.29999998211860657,
+        0.079859659075737,
+        0.0
+      ],
+      "timestep": 40,
+      "v": -0.002140340395271778
+    },
+    "timestep_42": {
+      "filename": "wave_tv0420.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "LL",
+      "point": [
+        0.29999998211860657,
+        0.0761711597442627,
+        0.0
+      ],
+      "timestep": 42,
+      "v": -0.0017540011322125793
+    },
+    "timestep_44": {
+      "filename": "wave_tv0440.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "MM",
+      "point": [
+        0.29999998211860657,
+        0.07312139123678207,
+        0.0
+      ],
+      "timestep": 44,
+      "v": -0.0014546755701303482
+    },
+    "timestep_46": {
+      "filename": "wave_tv0460.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "NN",
+      "point": [
+        0.29999998211860657,
+        0.0705718994140625,
+        0.0
+      ],
+      "timestep": 46,
+      "v": -0.0012193411821499467
+    },
+    "timestep_48": {
+      "filename": "wave_tv0480.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "OO",
+      "point": [
+        0.29999998211860657,
+        0.06841959804296494,
+        0.0
+      ],
+      "timestep": 48,
+      "v": -0.0010318701388314366
+    },
+    "timestep_50": {
+      "filename": "wave_tv0500.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "PP",
+      "point": [
+        0.29999998211860657,
+        0.06658650189638138,
+        0.0
+      ],
+      "timestep": 50,
+      "v": -0.0008807503036223352
+    },
+    "timestep_52": {
+      "filename": "wave_tv0520.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "QQ",
+      "point": [
+        0.29999998211860657,
+        0.06501276046037674,
+        0.0
+      ],
+      "timestep": 52,
+      "v": -0.0007576223579235375
+    },
+    "timestep_54": {
+      "filename": "wave_tv0540.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "RR",
+      "point": [
+        0.29999998211860657,
+        0.06365187466144562,
+        0.0
+      ],
+      "timestep": 54,
+      "v": -0.0006563214701600373
+    },
+    "timestep_56": {
+      "filename": "wave_tv0560.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "SS",
+      "point": [
+        0.29999998211860657,
+        0.06246727332472801,
+        0.0
+      ],
+      "timestep": 56,
+      "v": -0.0005722363130189478
+    },
+    "timestep_58": {
+      "filename": "wave_tv0580.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "TT",
+      "point": [
+        0.29999998211860657,
+        0.06142987683415413,
+        0.0
+      ],
+      "timestep": 58,
+      "v": -0.0005018726806156337
+    },
+    "timestep_60": {
+      "filename": "wave_tv0600.silo",
+      "incident_zones": [
+        102,
+        2,
+        103,
+        3
+      ],
+      "node_id": 104,
+      "pick_letter": "UU",
+      "point": [
+        0.29999998211860657,
+        0.0605163536965847,
+        0.0
+      ],
+      "timestep": 60,
+      "v": -0.00044255118700675666
+    }
+  },
+  "105": {
+    "timestep_20": {
+      "filename": "wave_tv0200.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "VV",
+      "point": [
+        0.3999999761581421,
+        0.33089888095855713,
+        0.0
+      ],
+      "timestep": 20,
+      "v": -0.056938961148262024
+    },
+    "timestep_22": {
+      "filename": "wave_tv0220.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "WW",
+      "point": [
+        0.3999999761581421,
+        0.25,
+        0.0
+      ],
+      "timestep": 22,
+      "v": -0.035849057137966156
+    },
+    "timestep_24": {
+      "filename": "wave_tv0240.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "XX",
+      "point": [
+        0.3999999761581421,
+        0.1979289948940277,
+        0.0
+      ],
+      "timestep": 24,
+      "v": -0.023303881287574768
+    },
+    "timestep_26": {
+      "filename": "wave_tv0260.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "YY",
+      "point": [
+        0.3999999761581421,
+        0.16312217712402344,
+        0.0
+      ],
+      "timestep": 26,
+      "v": -0.015743806958198547
+    },
+    "timestep_28": {
+      "filename": "wave_tv0280.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "ZZ",
+      "point": [
+        0.3999999761581421,
+        0.13896797597408295,
+        0.0
+      ],
+      "timestep": 28,
+      "v": -0.011032028123736382
+    },
+    "timestep_30": {
+      "filename": "wave_tv0300.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "aa",
+      "point": [
+        0.3999999761581421,
+        0.12163323909044266,
+        0.0
+      ],
+      "timestep": 30,
+      "v": -0.00798459630459547
+    },
+    "timestep_32": {
+      "filename": "wave_tv0320.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "bb",
+      "point": [
+        0.3999999761581421,
+        0.10882353037595749,
+        0.0
+      ],
+      "timestep": 32,
+      "v": -0.005943309981375933
+    },
+    "timestep_34": {
+      "filename": "wave_tv0340.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "cc",
+      "point": [
+        0.3999999761581421,
+        0.09911591559648514,
+        0.0
+      ],
+      "timestep": 34,
+      "v": -0.004532155115157366
+    },
+    "timestep_36": {
+      "filename": "wave_tv0360.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "dd",
+      "point": [
+        0.3999999761581421,
+        0.09159734100103378,
+        0.0
+      ],
+      "timestep": 36,
+      "v": -0.003529015928506851
+    },
+    "timestep_38": {
+      "filename": "wave_tv0380.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "ee",
+      "point": [
+        0.3999999761581421,
+        0.085663340985775,
+        0.0
+      ],
+      "timestep": 38,
+      "v": -0.0027982003521174192
+    },
+    "timestep_40": {
+      "filename": "wave_tv0400.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "ff",
+      "point": [
+        0.3999999761581421,
+        0.0809023454785347,
+        0.0
+      ],
+      "timestep": 40,
+      "v": -0.0022541501093655825
+    },
+    "timestep_42": {
+      "filename": "wave_tv0420.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "gg",
+      "point": [
+        0.3999999761581421,
+        0.07702703028917313,
+        0.0
+      ],
+      "timestep": 42,
+      "v": -0.0018413332290947437
+    },
+    "timestep_44": {
+      "filename": "wave_tv0440.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "hh",
+      "point": [
+        0.3999999761581421,
+        0.07383222132921219,
+        0.0
+      ],
+      "timestep": 44,
+      "v": -0.001522748381830752
+    },
+    "timestep_46": {
+      "filename": "wave_tv0460.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "ii",
+      "point": [
+        0.3999999761581421,
+        0.07116850465536118,
+        0.0
+      ],
+      "timestep": 46,
+      "v": -0.0012731504393741488
+    },
+    "timestep_48": {
+      "filename": "wave_tv0480.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "jj",
+      "point": [
+        0.3999999761581421,
+        0.06892506033182144,
+        0.0
+      ],
+      "timestep": 48,
+      "v": -0.0010749432258307934
+    },
+    "timestep_50": {
+      "filename": "wave_tv0500.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "kk",
+      "point": [
+        0.3999999761581421,
+        0.06701838225126266,
+        0.0
+      ],
+      "timestep": 50,
+      "v": -0.0009156230371445417
+    },
+    "timestep_52": {
+      "filename": "wave_tv0520.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "ll",
+      "point": [
+        0.3999999761581421,
+        0.06538461893796921,
+        0.0
+      ],
+      "timestep": 52,
+      "v": -0.0007861478952690959
+    },
+    "timestep_54": {
+      "filename": "wave_tv0540.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "mm",
+      "point": [
+        0.3999999761581421,
+        0.0639742910861969,
+        0.0
+      ],
+      "timestep": 54,
+      "v": -0.00067987444344908
+    },
+    "timestep_56": {
+      "filename": "wave_tv0560.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "nn",
+      "point": [
+        0.3999999761581421,
+        0.06274859607219696,
+        0.0
+      ],
+      "timestep": 56,
+      "v": -0.0005918506067246199
+    },
+    "timestep_58": {
+      "filename": "wave_tv0580.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "oo",
+      "point": [
+        0.3999999761581421,
+        0.061676789075136185,
+        0.0
+      ],
+      "timestep": 58,
+      "v": -0.000518335378728807
+    },
+    "timestep_60": {
+      "filename": "wave_tv0600.silo",
+      "incident_zones": [
+        103,
+        3,
+        104,
+        4
+      ],
+      "node_id": 105,
+      "pick_letter": "pp",
+      "point": [
+        0.3999999761581421,
+        0.06073421984910965,
+        0.0
+      ],
+      "timestep": 60,
+      "v": -0.0004564686387311667
+    }
+  }
+}

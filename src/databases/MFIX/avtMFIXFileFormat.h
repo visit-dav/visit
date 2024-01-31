@@ -57,7 +57,7 @@ class vtkUnstructuredGrid;
 class avtMFIXFileFormat : public avtMTMDFileFormat
 {
  public:
-     avtMFIXFileFormat(const char *, DBOptionsAttributes *);
+     avtMFIXFileFormat(const char *, const DBOptionsAttributes *);
      virtual               ~avtMFIXFileFormat();
 
      virtual int            GetNTimesteps(void);

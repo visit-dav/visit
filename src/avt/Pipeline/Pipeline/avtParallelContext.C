@@ -276,9 +276,9 @@ avtParallelContext::GlobalSize()
 // Arguments:
 //   ranks : The ranks to include from the current communicator.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug  4 16:27:07 PDT 2015
@@ -326,7 +326,7 @@ avtParallelContext::CreateGroup(const std::vector<int> &ranks)
 // Arguments:
 //   N : The number of ranks to include in each group.
 //
-// Returns:    
+// Returns:
 //
 // Note:       The grouping will put leftover ranks (group smaller than N) into
 //             the last group so the last group might have fewer than N members.
@@ -391,9 +391,9 @@ avtParallelContext::CreateGroupsOfN(int N)
 //   groupId : The id of the group.
 //   nGroups : The number of possible groups we're creating.
 //
-// Returns:    
+// Returns:
 //
-// Note:       All ranks that are part of the context's communicator must 
+// Note:       All ranks that are part of the context's communicator must
 //             call this.
 //
 // Programmer: Brad Whitlock
@@ -473,6 +473,126 @@ MinMaxOp(void *ibuf, void *iobuf, int *len, MPI_Datatype *)
     }
 }
 #endif
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyLogicalAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyLogicalAndValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_LAND, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyLogicalOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyLogicalOrValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_LOR, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyBitwiseAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyBitwiseAndValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_BAND, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyBitwiseOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyBitwiseOrValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_BOR, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
 
 // ****************************************************************************
 //  Function: avtParallelContext::UnifyMinMax
@@ -981,11 +1101,14 @@ avtParallelContext::SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, 
 //    Brad Whitlock, Mon Apr 20 12:06:25 PDT 2009
 //    Check MPI_VERSION and MPI_SUBVERSION before using MPI_Type_get_extent.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
-avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
-                                    VISIT_LONG_LONG *outArray, int nArray)
+avtParallelContext::SumLongLongArrayAcrossAllProcessors(long long *inArray,
+                                    long long *outArray, int nArray)
 {
 #ifdef PARALLEL
     MPI_Datatype datatype = MPI_LONG_LONG;
@@ -998,14 +1121,14 @@ avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray
     MPI_Aint lb,e;
     MPI_Type_get_extent(datatype, &lb, &e);
 #if defined(MPI_UNSIGNED_LONG_LONG)
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_get_extent(datatype, &lb, &e);
     }
 #endif
 #if defined(MPI_INTEGER8)  // ... may only be MPI-2.
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_INTEGER8;
         MPI_Type_get_extent(datatype, &lb, &e);
@@ -1015,7 +1138,7 @@ avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray
     MPI_Aint e;
     MPI_Type_extent(datatype, &e);
 #if defined(MPI_UNSIGNED_LONG_LONG)
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_extent(datatype, &e);
@@ -1023,7 +1146,7 @@ avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray
 #endif
 #endif
 
-    if (e == sizeof(VISIT_LONG_LONG))
+    if (e == sizeof(long long))
     {
         MPI_Allreduce(inArray, outArray, nArray, datatype, MPI_SUM,
                       this->GetCommunicator());
@@ -1594,8 +1717,12 @@ void avtParallelContext::BroadcastInt(int &i)
 //  Programmer:  Hank Childs
 //  Creation:    December 10, 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
-void avtParallelContext::BroadcastLongLong(VISIT_LONG_LONG &l)
+void avtParallelContext::BroadcastLongLong(long long &l)
 {
 #ifndef PARALLEL
     (void)l;
@@ -1710,14 +1837,14 @@ void avtParallelContext::BroadcastIntVectorFromAny(std::vector<int> &vi, int myr
     MPI_Bcast(&len, 1, MPI_INT, root, this->GetCommunicator());
     if (myrank!=root)
         vi.resize(len);
-    
+
     if(len == 0)
     {
         debug1 << "Don't know how to broadcast empty vector!  "
         << "Bailing out early." << std::endl;
         return;
     }
-    
+
     MPI_Bcast(&vi[0], len, MPI_INT, root, this->GetCommunicator());
 #endif
 }
@@ -1957,14 +2084,14 @@ void avtParallelContext::BroadcastDoubleVectorFromAny(std::vector<double> &vi, i
     MPI_Bcast(&len, 1, MPI_INT, root, this->GetCommunicator());
     if (myrank!=root)
         vi.resize(len);
-    
+
     if(len == 0)
     {
         debug1 << "Don't know how to broadcast empty vector!  "
         << "Bailing out early." << std::endl;
         return;
     }
-    
+
     MPI_Bcast(&vi[0], len, MPI_DOUBLE, root, this->GetCommunicator());
 #endif
 }
@@ -2249,24 +2376,32 @@ bool avtParallelContext::GetListToRootProc(std::vector<std::string> &vars, int t
 //    I moved the body into a static helper that I templated so I could add
 //    another version that uses doubles.
 //
+//    Chris Laganella, Tue Jan 18 17:04:44 EST 2022
+//    I updated the function to take allocator functions (which are templates)
+//    so that I could add another version that uses C++ vectors.
+//    Also made sendBuf const.
+//
 // ****************************************************************************
 
-template <class T>
+template <class T, typename RecvBuffAllocFunc, typename RecvCountsAllocFunc>
 static void
 CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
-    T *sendBuf, int sendCount,
+    const T *sendBuf, int sendCount,
 #ifdef PARALLEL
     MPI_Datatype dataType,
     MPI_Comm communicator,
 #endif
-    int root)
+    int root,
+    RecvBuffAllocFunc &&rbAlloc,
+    RecvCountsAllocFunc &&rcAlloc
+    )
 {
 #ifdef PARALLEL
     // Determine the receive counts.
     receiveCounts = NULL;
     if (rank == root)
     {
-        receiveCounts = new int[nProc];
+        receiveCounts = rcAlloc(nProc);
     }
     MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
                root, communicator);
@@ -2291,7 +2426,7 @@ CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
             nReceiveBuf += receiveCounts[i];
 
         // Allocate it.
-        receiveBuf = new T[nReceiveBuf];
+        receiveBuf = rbAlloc(nReceiveBuf);
     }
 
     MPI_Gatherv(sendBuf, sendCount, dataType, receiveBuf,
@@ -2302,13 +2437,33 @@ CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
         delete [] procOffset;
     }
 #else
-    receiveCounts = new int[1];
+    receiveCounts = rcAlloc(1);
     receiveCounts[0] = sendCount;
 
-    receiveBuf = new T[sendCount];
+    receiveBuf = rbAlloc(sendCount);
     for (int i = 0; i < sendCount; i++)
         receiveBuf[i] = sendBuf[i];
 #endif
+}
+
+// ****************************************************************************
+//  Function: SimpleNewAlloc
+//
+//  Purpose:
+//      To be passed to CollectArraysOnRank for the original cases that just
+//      use new T[N].
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:08:50 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+template<typename T>
+static T *
+SimpleNewAlloc(int N)
+{
+    return new T[N];
 }
 
 void
@@ -2319,7 +2474,9 @@ avtParallelContext::CollectIntArraysOnRank(int *&receiveBuf, int *&receiveCounts
 #ifdef PARALLEL
                              MPI_INT, this->GetCommunicator(),
 #endif
-                             root);
+                             root,
+                             SimpleNewAlloc<int>,
+                             SimpleNewAlloc<int>);
 }
 
 void
@@ -2330,7 +2487,9 @@ avtParallelContext::CollectIntArraysOnRootProc(int *&receiveBuf, int *&receiveCo
 #ifdef PARALLEL
                              MPI_INT, this->GetCommunicator(),
 #endif
-                             0);
+                             0,
+                             SimpleNewAlloc<int>,
+                             SimpleNewAlloc<int>);
 }
 
 void
@@ -2341,7 +2500,97 @@ avtParallelContext::CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&rec
 #ifdef PARALLEL
                                 MPI_DOUBLE, this->GetCommunicator(),
 #endif
-                                0);
+                                0,
+                                SimpleNewAlloc<double>,
+                                SimpleNewAlloc<int>);
+}
+
+// ****************************************************************************
+//  Function: CollectFloatVectorsOnRank
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Fri Jan 21 15:30:47 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtParallelContext::CollectFloatVectorsOnRootProc(
+                                    std::vector<float> &recvBuf,
+                                    std::vector<int> &recvCounts,
+                                    const std::vector<float> &sendBuf,
+                                    int root)
+{
+    const auto allocRecvBuf = [&recvBuf](int sz){
+        recvBuf.resize(sz);
+        return recvBuf.data();
+    };
+    const auto allocRecvCount = [&recvCounts](int sz) {
+        recvCounts.resize(sz);
+        return recvCounts.data();
+    };
+
+    // The template function takes references to pointers and manipulates them
+    //   this version of the function doesn't need those pointers returned out
+    float *rbTemp = recvBuf.data();
+    int *rcTemp = recvCounts.data();
+    int sendCount = static_cast<int>(sendBuf.size());
+
+    CollectArraysOnRank<float>(Rank(), Size(), rbTemp, rcTemp,
+                                sendBuf.data(), sendCount,
+#ifdef PARALLEL
+                                MPI_FLOAT, this->GetCommunicator(),
+#endif
+                                root,
+                                allocRecvBuf,
+                                allocRecvCount);
+}
+
+// ****************************************************************************
+//  Function: CollectDoubleVectorsOnRank
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:26:16 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtParallelContext::CollectDoubleVectorsOnRootProc(
+                                    std::vector<double> &recvBuf,
+                                    std::vector<int> &recvCounts,
+                                    const std::vector<double> &sendBuf,
+                                    int root)
+{
+    const auto allocRecvBuf = [&recvBuf](int sz){
+        recvBuf.resize(sz);
+        return recvBuf.data();
+    };
+    const auto allocRecvCount = [&recvCounts](int sz) {
+        recvCounts.resize(sz);
+        return recvCounts.data();
+    };
+
+    // The template function takes references to pointers and manipulates them
+    //   this version of the function doesn't need those pointers returned out
+    double *rbTemp = recvBuf.data();
+    int *rcTemp = recvCounts.data();
+    int sendCount = static_cast<int>(sendBuf.size());
+
+    CollectArraysOnRank<double>(Rank(), Size(), rbTemp, rcTemp,
+                                sendBuf.data(), sendCount,
+#ifdef PARALLEL
+                                MPI_DOUBLE, this->GetCommunicator(),
+#endif
+                                root,
+                                allocRecvBuf,
+                                allocRecvCount);
 }
 
 // ****************************************************************************
@@ -2564,9 +2813,9 @@ avtParallelContext::GetAttToRootProc(AttributeGroup &att, int hasAtt)
 // Arguments:
 //   atts : The AttributeGroup that we want to broadcast.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 17 15:27:20 PDT 2015
@@ -2736,6 +2985,10 @@ avtParallelContext::UnifyMaximumValue(std::vector<int> &mymax, std::vector<int> 
 //    Cast a Boolean to an int, to make sure that a cast to a pointer was
 //    correctly word aligned.
 //
+//    Eric Brugger, Thu Aug  3 14:25:20 PDT 2023
+//    Don't set the success argument to true in the serial case. Instead
+//    leave it unchanged.
+//
 // ****************************************************************************
 
 void
@@ -2744,7 +2997,7 @@ avtParallelContext::GetDoubleArrayToRootProc(double *da, int nd, bool &success)
 #ifndef PARALLEL
     (void)da;
     (void)nd;
-    success = true;
+    (bool)success;
 #else
     int myRank, numProcs;
     MPI_Comm_rank(this->GetCommunicator(), &myRank);

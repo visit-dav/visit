@@ -5,6 +5,7 @@
 #ifndef PY_MESHMANAGEMENTATTRIBUTES_H
 #define PY_MESHMANAGEMENTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MeshManagementAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyMeshManagementAttributes_Wrap(const MeshManagementA
 void VISITPY_API           PyMeshManagementAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyMeshManagementAttributes_SetDefaults(const MeshManagementAttributes *atts);
 std::string VISITPY_API    PyMeshManagementAttributes_GetLogString();
-std::string VISITPY_API    PyMeshManagementAttributes_ToString(const MeshManagementAttributes *, const char *);
+std::string VISITPY_API    PyMeshManagementAttributes_ToString(const MeshManagementAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyMeshManagementAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyMeshManagementAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyMeshManagementAttributes_methods[MESHMANAGEMENTATTRIBUTES_NMETH];

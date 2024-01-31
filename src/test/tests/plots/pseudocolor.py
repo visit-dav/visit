@@ -24,6 +24,9 @@
 #    Kathleen Biagas, Wed Nov  6 18:29:29 PST 2019
 #    Add new tests: PointGlyphing MixedTopology Lines ObjectRenderingOptions
 #
+#    Kevin Griffin, Tue Aug  4 11:31:09 PDT 2020
+#    Added ExternalSurface test
+#
 # ----------------------------------------------------------------------------
 
 import itertools
@@ -46,6 +49,7 @@ def TestScale():
     Test("pseudocolor_01")
 
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("rect2d.silo"))
 
 def TestDomainBoundaries():
     #
@@ -499,6 +503,44 @@ def ObjectRenderingOptions():
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path("rect3d.silo"))
+
+def ExternalSurface():
+    TestSection("External Surface")
+    OpenDatabase(data_path("external_surface_test_data/data.nv0_step00000.root"))
+
+    DefineScalarExpression("dUdy", "gradient(UVelC)[1]")
+
+    AddPlot("Pseudocolor", "UVelC")
+
+    PseudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts.centering = PseudocolorAtts.Nodal  # Natural, Nodal, Zonal
+    SetPlotOptions(PseudocolorAtts)
+    DrawPlots()
+
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.90786, 0.176706, 0.380217)
+    View3DAtts.focus = (3.14159, 0, 1.5708)
+    View3DAtts.viewUp = (-0.166194, 0.98423, -0.0605927)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 3.65199
+    View3DAtts.nearPlane = -7.30397
+    View3DAtts.farPlane = 7.30397
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (3.14159, 0, 1.5708)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+
+    ChangeActivePlotsVar("dUdy")
+    Test("pseudocolor_external_surface")
+    DeleteAllPlots()
+    CloseDatabase(data_path("external_surface_test_data/data.nv0_step00000.root"))
     
 def Main():
     TestScale()
@@ -507,6 +549,7 @@ def Main():
     MixedTopology()
     Lines()
     ObjectRenderingOptions()
+    ExternalSurface()
 
 Main()
 Exit()

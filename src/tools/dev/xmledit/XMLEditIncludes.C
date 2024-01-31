@@ -33,6 +33,9 @@
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 XMLEditIncludes::XMLEditIncludes(QWidget *p)
     : QFrame(p)
@@ -101,10 +104,17 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p)
 
     connect(includelist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fileGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(fileGroupChanged(int)));
     connect(quotedGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(quotedGroupChanged(int)));
+#else
+    connect(fileGroup, SIGNAL(idClicked(int)),
+            this, SLOT(fileGroupChanged(int)));
+    connect(quotedGroup, SIGNAL(idClicked(int)),
+            this, SLOT(quotedGroupChanged(int)));
+#endif
     connect(file, SIGNAL(textChanged(const QString&)),
             this, SLOT(includeTextChanged(const QString&)));
     connect(target, SIGNAL(textChanged(const QString&)),
@@ -417,6 +427,9 @@ XMLEditIncludes::quotedGroupChanged(int qg)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::includelistNew()
@@ -428,7 +441,7 @@ XMLEditIncludes::includelistNew()
     while (!okay)
     {
         okay = true;
-        newname.sprintf("unnamed%d", newid);
+        newname = QString("unnamed%1").arg(newid);
         for (int i=0; i<includelist->count() && okay; i++)
         {
             if (includelist->item(i)->text() == newname)

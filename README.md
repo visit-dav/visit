@@ -5,16 +5,22 @@
 
 Source code repository for the VisIt Scientific Visualization and Data Analysis Application
 
-[Project Website](https://visit.llnl.gov) | [Nightly Test Status](https://visit-dav.github.io/dashboard/)
+[Project Website](https://visit-dav.github.io/visit-website/) | [Nightly Test Status](https://visit-dav.github.io/dashboard/)
 
 
 ##  Documentation
 
-[Users Wiki](https://www.visitusers.org) | [GUI and CLI Users Manuals](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop) [![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=develop)](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/?badge=develop)
+[Users Manuals](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop) [![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=develop)](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/?badge=develop)
+
+## Getting Help
+
+* [Summary](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/getting_help/index.html)
+* Help [using](https://github.com/visit-dav/visit/discussions/categories/help-using-visit), [building](https://github.com/visit-dav/visit/discussions/categories/help-building-visit) or [developing](https://github.com/visit-dav/visit/discussions/categories/help-developing-visit) VisIt
+* Old [user](https://github.com/visit-dav/visit/discussions/categories/visit-users-email-archive) and [developer](https://github.com/visit-dav/visit/discussions/categories/visit-developers-email-archive) email archives.
 
 ##  Developer Resources
 
-* [Github Development Info](https://visitusers.org/index.php?title=Github)
+* [Github Development Info](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/GitHub.html)
 * [Newly Submitted Issues](https://github.com/visit-dav/visit/issues?utf8=✓&q=is%3Aissue+is%3Aopen+-label%3Areviewed)
 
 

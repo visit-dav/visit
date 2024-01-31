@@ -2,14 +2,16 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                        avtMeshPlotMapper.C                                //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtMeshPlotMapper.C
+// ****************************************************************************
 
 #include <avtMeshPlotMapper.h>
 
 #include <vtkActor.h>
+#include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkPointGlyphMapper.h>
 #include <vtkProperty.h>
 
 #include <avtTransparencyActor.h>
@@ -43,7 +45,10 @@ avtMeshPlotMapper::avtMeshPlotMapper()
     polysColor[0] = polysColor[1] = polysColor[2] = 1.;
     opacity = 1.;
     surfaceVis = true;
-    pointSize = 1;
+    glyphType = Point;
+    scale = 0.2;
+    scalingVarName = "";
+    pointSize = 2;
 }
 
 
@@ -61,6 +66,59 @@ avtMeshPlotMapper::~avtMeshPlotMapper()
 
 
 // ****************************************************************************
+//  Method: avtMeshPlotMapper::CreateActorMapperPairs
+//
+//  Purpose:  Creates the appropriate mapper type based on current settings
+//            and sets up the input->mapper->actor pipeline.
+//
+//            For points, use vtkPointGlyphMapper, otherwise vtkDataSetMapper.
+//
+//  Arguments:
+//    children  The input datasets.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 10, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::CreateActorMapperPairs(vtkDataSet **children)
+{
+    int topoDim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+
+    mappers  = new vtkDataSetMapper*[nMappers];
+    actors   = new vtkActor*[nMappers];
+
+    for (int i = 0; i < nMappers; ++i)
+    {
+        if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
+        {
+            mappers[i] = NULL;
+            actors[i]  = NULL;
+            continue;
+        }
+        if (topoDim != 0 && (labels.empty() ||
+            (labels[i].compare(0, 12, string("mesh_points_")) != 0)))
+        {
+            mappers[i] = vtkDataSetMapper::New();
+            mappers[i]->SetInputData(children[i]);
+            actors[i]  = vtkActor::New();
+            actors[i]->SetMapper(mappers[i]);
+        }
+        else
+        {
+            mappers[i] = (vtkDataSetMapper*)vtkPointGlyphMapper::New();
+            mappers[i]->SetInputData(children[i]);
+            actors[i]  = vtkActor::New();
+            actors[i]->SetMapper(mappers[i]);
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtMeshPlotMapper::CustomizeMappers
 //
 //  Purpose:
@@ -74,6 +132,9 @@ avtMeshPlotMapper::~avtMeshPlotMapper()
 //    Kathleen Biagas, Wed Apr  3 16:11:45 PDT 2019
 //    Added pointSize.
 //
+//    Kathleen Biagas, Thu Dec 15, 2023
+//    Ensure opacity is set for all actors. 
+//
 // ****************************************************************************
 
 void
@@ -86,25 +147,57 @@ avtMeshPlotMapper::CustomizeMappers()
 
         mappers[i]->SetScalarVisibility(false);
         vtkProperty *prop = actors[i]->GetProperty();
+        prop->SetOpacity(opacity);
 
-        // properties for lines and surfaces
-        prop->SetAmbient(1.);
-        prop->SetDiffuse(0.);
-
-        if (labels[i].compare(0, 6, string("lines_")) == 0)
+        if (mappers[i]->IsA("vtkPointGlyphMapper"))
         {
+            vtkPointGlyphMapper *pgm = (vtkPointGlyphMapper*)mappers[i];
+            pgm->SetSpatialDimension(
+                GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
+            pgm->SetGlyphType(glyphType);
+            pgm->ColorByScalarOff();
+            prop->SetPointSize(pointSize);
+            prop->SetColor(linesColor);
+            prop->SetAmbient(0.);
+            prop->SetDiffuse(1.);
+            if(glyphType == Point)
+            {
+                prop->SetRepresentationToPoints();
+            }
+            else
+            {
+                prop->SetRepresentationToSurface();
+            }
+            if (dataScaling)
+            {
+                // need to call ScaleByVar rather than DataScalingOn, because
+                // scalingVarDim may not yet have been set correctly.
+                ScaleByVar(scalingVarName);
+            }
+            else
+            {
+                DataScalingOff();
+            }
+
+            SetScale(scale);
+        }
+        else if (labels[i].compare(0, 11, string("mesh_lines_")) == 0)
+        {
+            prop->SetAmbient(1.);
+            prop->SetDiffuse(0.);
             prop->SetColor(linesColor);
             prop->SetLineWidth(lineWidth);
-            prop->SetOpacity(opacity);
             prop->SetPointSize(pointSize);
         }
-        else if (labels[i].compare(0, 6, string("polys_")) == 0)
+        else if (labels[i].compare(0, 11, string("mesh_polys_")) == 0)
         {
+            actors[i]->SetVisibility(surfaceVis);
+            prop->SetAmbient(1.);
+            prop->SetDiffuse(0.);
+            prop->SetColor(polysColor);
             // this is to satisfy avtTransparencyActor which does
             // not differentiate properties from different actors
             prop->SetLineWidth(lineWidth);
-            actors[i]->SetVisibility(surfaceVis);
-            prop->SetColor(polysColor);
         }
     }
 }
@@ -135,7 +228,7 @@ avtMeshPlotMapper::SetSurfaceVisibility(bool val)
             v[i] = 1;
             if (actors[i] != NULL)
             {
-                if (labels[i].compare(0, 6, string("polys_")) == 0)
+                if (labels[i].compare(0, 11, string("mesh_polys_")) == 0)
                 {
                     actors[i]->SetVisibility(surfaceVis);
                     v[i] = surfaceVis ? 1 : 0;
@@ -189,6 +282,10 @@ ColorsAreDifferent(double a[3], double b[3])
 //  Programmer: Kathleen Biagas
 //  Creation:   June 30, 2016
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jun 18 09:12:22 PDT 2020
+//    Fix ambiguous if statement.
+//
 // ****************************************************************************
 
 void
@@ -201,8 +298,9 @@ avtMeshPlotMapper::SetMeshColor(double rgb[3])
         linesColor[2] = rgb[2];
         for (int i = 0; i < nMappers; ++i)
         {
-            if (actors[i] != NULL && !labels.empty() &&
-                labels[i].compare(0, 6, string("lines_")) == 0)
+            if (actors[i] != NULL && (!labels.empty() &&
+                (labels[i].compare(0, 11, string("mesh_lines_")) == 0) ||
+                (labels[i].compare(0, 12, string("mesh_points_")) == 0)))
             {
                 actors[i]->GetProperty()->SetColor(rgb);
             }
@@ -235,7 +333,7 @@ avtMeshPlotMapper::SetSurfaceColor(double rgb[3])
         for (int i = 0; i < nMappers; ++i)
         {
             if (actors[i] != NULL && !labels.empty() &&
-                labels[i].compare(0, 6, string("polys_")) == 0)
+                labels[i].compare(0, 11, string("mesh_polys_")) == 0)
             {
                 actors[i]->GetProperty()->SetColor(rgb);
             }
@@ -319,22 +417,15 @@ avtMeshPlotMapper::SetLineWidth(int lw)
 // ****************************************************************************
 
 void
-avtMeshPlotMapper::SetPointSize(int ps)
+avtMeshPlotMapper::SetPointSize(double ps)
 {
     if (pointSize != ps)
     {
         pointSize = ps;
         for (int i = 0; i < nMappers; ++i)
         {
-            // should not need to set this for polys, but avtTransparencyActor
-            // doesn't handle properties correctly in this instance, so set
-            // line width for all actors
-            //if (actors[i] != NULL && !labels.empty() && labels[i] == "lines_")
-
             if (actors[i] != NULL)
-            {
-                actors[i]->GetProperty()->SetPointSize(ps);
-            }
+                actors[i]->GetProperty()->SetPointSize(pointSize);
         }
         NotifyTransparencyActor();
     }
@@ -410,6 +501,186 @@ avtMeshPlotMapper::ActorIsShiftable(int i)
 {
     bool shiftable = true;
     if (!labels.empty() && i >= 0 && i < labels.size())
-        shiftable &= (labels[i].compare(0, 6, string("lines_")) == 0);
+        shiftable &= (labels[i].compare(0, 11, string("mesh_lines_")) == 0);
     return shiftable;
 }
+
+
+// ****************************************************************************
+// Method: avtMeshPlotMapper::SetFullFrameScaling
+//
+// Purpose:
+//   Sets a fullframe scale factor that can be used by the mapper to compensate
+//   for the stretching that fullframe mode performs on geometry.
+//
+// Arguments:
+//   useScale : True if the scale is used.
+//   s        : The fullframe scale vector.
+//
+// Returns:    True if any vtk mappers use the scale.
+//
+// Note:  Taken from avtPointMapper.
+//
+// Programmer: Kathleen Biagas
+// Creation:   June 10, 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtMeshPlotMapper::SetFullFrameScaling(bool useScale, const double *s)
+{
+    bool retval = false;
+    for (int i = 0; i < nMappers && !retval; ++i)
+    {
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+           retval = ((vtkPointGlyphMapper*)mappers[i])->
+                SetFullFrameScaling(useScale, s);
+    }
+    return retval;
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshPlotMapper::ScaleByVar
+//
+//  Purpose:
+//    Turns on data scaling for the glyph portion of this mapper.
+//
+//  Arguments:
+//    sname     The name of the variable to be used for scaling.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 10, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::ScaleByVar(const std::string &sname)
+{
+    if (sname == "" || sname == "\0")
+    {
+        DataScalingOff();
+        return;
+    }
+    scalingVarName = sname;
+    int scalingVarDim = 1;
+    if (*(GetInput()) != NULL &&
+        GetInput()->GetInfo().GetAttributes().ValidVariable(sname.c_str()))
+    {
+        scalingVarDim = GetInput()->GetInfo().GetAttributes().
+                        GetVariableDimension(sname.c_str());
+    }
+    DataScalingOn(scalingVarName, scalingVarDim);
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshPlotMapper::DataScalingOff
+//
+//  Purpose:
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 10, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::DataScalingOff(void)
+{
+    dataScaling = false;
+    scalingVarName = "";
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->DataScalingOff();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshPlotMapper::DataScalingOn
+//
+//  Purpose:
+//    Turns on the appropriate type of data scaling based on the dimension
+//    of the variable to be used in scaling.
+//
+//  Arguments:
+//    sname     The name of the scalars to be used for scaling the glyphs.
+//    varDim    The dimension of the var to be used for scaling.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 10, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::DataScalingOn(const string &sname, int varDim)
+{
+    dataScaling = true;
+    scalingVarName = sname;
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->DataScalingOn(sname, varDim);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshPlotMapper::SetScale
+//
+//  Purpose:
+//    Sets the scale of each glyph.
+//
+//  Arguments:
+//      s        The new scale.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    June 10, 2020
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::SetScale(double s)
+{
+    scale = s;
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->SetScale(scale);
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtMeshPlotMapper::SetGlyphType
+//
+// Purpose:
+//   This method sets the point glyph type.
+//
+// Programmer: Kathleen Biagas
+// Creation:   June 10, 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::SetGlyphType(GlyphType type)
+{
+    if (glyphType != type)
+    {
+        glyphType = type;
+        CustomizeMappers();
+    }
+}
+

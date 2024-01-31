@@ -162,16 +162,19 @@
 #    Remove VCellMTMD plugin, no longer needed/used. (Per Jim Schaff at UCHC).
 #
 #    Mark C. Miller, Tue May  8 21:18:35 PDT 2018
-#    Add ffp plugin (from Olivier Cessenat)
+#    Add ffp plugin (from Olivier Cessenat).
 #
 #    Mark C. Miller, Fri Apr 12 10:03:55 PDT 2019
-#    Remove Vista plugin
+#    Remove Vista plugin.
 #
 #    Eric Brugger, Wed Jun 26 08:57:57 PDT 2019
 #    Remove CCM plugin.
 #
 #    James Kress, Tue Aug 27; 15:21:30 EDT 2019
-#    Add Xolotl plugin
+#    Add Xolotl plugin.
+#
+#    Eric Brugger, Mon Jul 13 14:46:38 PDT 2020
+#    Add the SW4 plugin and remove the WPPImage plugin.
 #
 #    Kathleen Biagas, Thu Feb  6 10:55:13 PST 2020
 #    Added AVSucd plugin.
@@ -179,13 +182,34 @@
 #    Kathleen Biagas, Thu Feb 27 2020 
 #    Only add SimV2 if VISIT_ENABLE_LIBSIM is true.
 #
+#    Brad Whitlock, Wed Jul 22 17:47:11 PDT 2020
+#    I added the FMS reader.
+#
+#    Kathleen Biagas, Mon Sep 14 2020
+#    Enable Rect as an optional plugin on Windows.
+#
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
+#    Kathleen Biagas, Tue May 4, 2021
+#    Rename SW4 to sw4img to fix static builds.
+#
+#    Gabriel Wlazłowski & Andrzej Makowski, Tue 15 Sep, 2021
+#    Add WData plugin.
+#
+#    Kathleen Biagas, Mon Sep 26, 2022
+#    Remove HDF4-dependent plugins: Cosmos, RAGE, ZeusMP.
+#
+#    Kathleen Biagas, Mon Jan 30, 2023
+#    Moved setting of RUNTIME_OUTPUT_DIRECTORY and LIBRARY_OUTPUT_DIRECTORY
+#    to macro VISIT_PLUGIN_TARGET_OUTPUT_DIR.
+#
+#    Eric Brugger, Mon May 1 15:28:30 PST 2023
+#    Add HTG plugin.
+#
 #****************************************************************************
 
-IF(NOT WIN32)
-    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
-ELSE(NOT WIN32)
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
-ENDIF(NOT WIN32)
+include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
 SET(THIRDPARTY_DEPENDENT_PLUGINS)
 
@@ -292,7 +316,7 @@ CHECK_THIRDPARTY_SATISFIED(NETCDF NETCDF)
 CHECK_THIRDPARTY_SATISFIED(S3D NETCDF_CXX)
 CHECK_THIRDPARTY_SATISFIED(Exodus NETCDF)
 
-CHECK_THIRDPARTY_SATISFIED(MFIXCDF NETCDF_CXX)
+CHECK_THIRDPARTY_SATISFIED(MFIXCDF NETCDF)
 CHECK_THIRDPARTY_SATISFIED(Xdmf XDMF)
 
 CHECK_THIRDPARTY_SATISFIED(Chombo HDF5)
@@ -341,11 +365,8 @@ CHECK_THIRDPARTY_SATISFIED(Boxlib2D BOXLIB)
 CHECK_THIRDPARTY_SATISFIED(Boxlib3D BOXLIB)
 
 CHECK_THIRDPARTY_SATISFIED(FITS CFITSIO)
+CHECK_THIRDPARTY_SATISFIED(FMS FMS MFEM)
 CHECK_THIRDPARTY_SATISFIED(GDAL GDAL)
-
-CHECK_THIRDPARTY_SATISFIED(Cosmos HDF4)
-CHECK_THIRDPARTY_SATISFIED(RAGE   HDF4)
-CHECK_THIRDPARTY_SATISFIED(ZeusMP HDF4)
 
 CHECK_THIRDPARTY_SATISFIED(MDSplus MDSPLUS)
 CHECK_THIRDPARTY_SATISFIED(Mili    MILI)
@@ -357,20 +378,12 @@ CHECK_THIRDPARTY_SATISFIED(MFEM    MFEM)
 
 CHECK_THIRDPARTY_SATISFIED(OpenEXR OPENEXR)
 
-# special cases for windows
-IF(WIN32)
-    CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-ELSE()
-    IF(FASTBIT AND FASTQUERY)
-        CHECK_THIRDPARTY_SATISFIED(H5Part H5PART FASTBIT FASTQUERY)
-    ELSE()
-        CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-    ENDIF()
-    if(VISIT_PARADIS)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
-    endif()
-ENDIF()
+if(VISIT_PARADIS)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
+endif()
+
+CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
 
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
@@ -403,6 +416,7 @@ CMAT
 CTRL
 Cube
 Curve2D
+Curve3D
 DDCMD
 Dyna3D
 ExtrudedVol
@@ -413,6 +427,7 @@ GHOST
 GMV
 GULP
 Gadget
+HTG
 Image
 LAMMPS
 Lines
@@ -436,6 +451,7 @@ SAR
 SAS
 SPCTH
 STL
+sw4img
 Shapefile
 ${SIMV2_PLUGIN}
 Spheral
@@ -444,9 +460,9 @@ TSurf
 Tecplot
 VASP
 VTK
-WPPImage
 WavefrontOBJ
 WellLogs
+WData
 XSF
 XYZ
 Xmdv
@@ -455,9 +471,11 @@ lata
 volimage
 unv
 ${XDBPLUGIN}
+ZipWrapper
 )
 
-IF(TARGET vtkIOEnSight)
+# vtkIOEnSight -> VTK8, VTK::IOEnSight -> VTK9
+IF(TARGET vtkIOEnSight OR TARGET VTK::IOEnSight)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS EnSight)
 ELSE()
     IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
@@ -465,7 +483,12 @@ ELSE()
     ELSE()
         MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
     ENDIF()
-ENDIF(TARGET vtkIOEnSight)
+ENDIF()
+
+SET(OPTIONAL_DATABASE_PLUGINS
+    PICS_Tester
+    Rect
+   )
 
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS
@@ -473,17 +496,14 @@ IF (NOT WIN32)
         STAR
         TCGA
         Vis5D
-        ZipWrapper
     )
-    SET(OPTIONAL_DATABASE_PLUGINS
+    list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
-        PICS_Tester
-        Rect
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 

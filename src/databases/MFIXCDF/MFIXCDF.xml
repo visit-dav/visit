@@ -7,8 +7,11 @@
       ${NETCDF_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
-      ${NETCDF_CXX_LIB} ${NETCDF_LIB}
+      ${NETCDF_LIB}
     </LIBS>
+    <WIN32DEFINES>
+      ${NETCDF_WIN32_DEFINES}
+    </WIN32DEFINES>
     <FilePatterns>
       .nc
     </FilePatterns>

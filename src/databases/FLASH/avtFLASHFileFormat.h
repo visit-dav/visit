@@ -88,7 +88,7 @@ class     DBOptionsAttributes;
 class avtFLASHFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtFLASHFileFormat(const char *, DBOptionsAttributes *&);
+                       avtFLASHFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtFLASHFileFormat();
 
     virtual bool           HasInvariantMetaData(void) const { return false; };

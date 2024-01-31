@@ -94,6 +94,10 @@
 //    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
 //    Added hl argument for haslicense.
 //
+//    Kathleen Biagas, Tue May 3, 2022
+//    Added component-specific CXXFLAGS, LDFLAGS, LIBS and DEFINES support
+//    to Print.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -198,11 +202,59 @@ class Plugin : public PluginBase
             WriteValues(out, cxxflags, indent);
             WriteCloseTag(out, "CXXFLAGS", indent);
         }
+        if (mcxxflags.size() > 0)
+        {
+            StartOpenTag(out, "CXXFLAGS", indent);
+            WriteTagAttr(out, "components", "M");
+            FinishOpenTag(out);
+            WriteValues(out, mcxxflags, indent);
+            WriteCloseTag(out, "CXXFLAGS", indent);
+        }
+        if (ecxxflagsSer.size() > 0)
+        {
+            StartOpenTag(out, "CXXFLAGS", indent);
+            WriteTagAttr(out, "components", "ESer");
+            FinishOpenTag(out);
+            WriteValues(out, ecxxflagsSer, indent);
+            WriteCloseTag(out, "CXXFLAGS", indent);
+        }
+        if (ecxxflagsPar.size() > 0)
+        {
+            StartOpenTag(out, "CXXFLAGS", indent);
+            WriteTagAttr(out, "components", "EPar");
+            FinishOpenTag(out);
+            WriteValues(out, ecxxflagsPar, indent);
+            WriteCloseTag(out, "CXXFLAGS", indent);
+        }
 
         if (ldflags.size() > 0)
         {
             WriteOpenTag(out, "LDFLAGS", indent);
             WriteValues(out, ldflags, indent);
+            WriteCloseTag(out, "LDFLAGS", indent);
+        }
+        if (mldflags.size() > 0)
+        {
+            StartOpenTag(out, "LDFLAGS", indent);
+            WriteTagAttr(out, "components", "M");
+            FinishOpenTag(out);
+            WriteValues(out, mldflags, indent);
+            WriteCloseTag(out, "LDFLAGS", indent);
+        }
+        if (eldflagsSer.size() > 0)
+        {
+            StartOpenTag(out, "LDFLAGS", indent);
+            WriteTagAttr(out, "components", "ESer");
+            FinishOpenTag(out);
+            WriteValues(out, eldflagsSer, indent);
+            WriteCloseTag(out, "LDFLAGS", indent);
+        }
+        if (eldflagsPar.size() > 0)
+        {
+            StartOpenTag(out, "LDFLAGS", indent);
+            WriteTagAttr(out, "components", "EPar");
+            FinishOpenTag(out);
+            WriteValues(out, eldflagsPar, indent);
             WriteCloseTag(out, "LDFLAGS", indent);
         }
 
@@ -212,11 +264,59 @@ class Plugin : public PluginBase
             WriteValues(out, libs, indent);
             WriteCloseTag(out, "LIBS", indent);
         }
+        if (mlibs.size() > 0)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "M");
+            FinishOpenTag(out);
+            WriteValues(out, mlibs, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
+        if (elibsSer.size() > 0)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "ESer");
+            FinishOpenTag(out);
+            WriteValues(out, elibsSer, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
+        if (elibsPar.size() > 0)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "EPar");
+            FinishOpenTag(out);
+            WriteValues(out, elibsPar, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
 
         if (defs.size() > 0)
         {
             WriteOpenTag(out, "DEFINES", indent);
             WriteValues(out, defs, indent);
+            WriteCloseTag(out, "DEFINES", indent);
+        }
+        if (mdefs.size() > 0)
+        {
+            StartOpenTag(out, "DEFINES", indent);
+            WriteTagAttr(out, "components", "M");
+            FinishOpenTag(out);
+            WriteValues(out, mdefs, indent);
+            WriteCloseTag(out, "DEFINES", indent);
+        }
+        if (edefsSer.size() > 0)
+        {
+            StartOpenTag(out, "DEFINES", indent);
+            WriteTagAttr(out, "components", "ESer");
+            FinishOpenTag(out);
+            WriteValues(out, edefsSer, indent);
+            WriteCloseTag(out, "DEFINES", indent);
+        }
+        if (edefsPar.size() > 0)
+        {
+            StartOpenTag(out, "DEFINES", indent);
+            WriteTagAttr(out, "components", "EPar");
+            FinishOpenTag(out);
+            WriteValues(out, edefsPar, indent);
             WriteCloseTag(out, "DEFINES", indent);
         }
 

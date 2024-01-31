@@ -5,6 +5,7 @@
 #include <PyLaunchProfile.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyLaunchProfile
@@ -34,9 +35,8 @@ struct LaunchProfileObject
 // Internal prototypes
 //
 static PyObject *NewLaunchProfile(int);
-
 std::string
-PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
+PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -230,12 +230,37 @@ LaunchProfile_SetProfileName(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the profileName in the object.
-    obj->data->SetProfileName(std::string(str));
+    obj->data->SetProfileName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -254,12 +279,48 @@ LaunchProfile_SetTimeout(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeout in the object.
-    obj->data->SetTimeout((int)ival);
+    obj->data->SetTimeout(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -278,12 +339,48 @@ LaunchProfile_SetNumProcessors(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numProcessors in the object.
-    obj->data->SetNumProcessors((int)ival);
+    obj->data->SetNumProcessors(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -302,12 +399,48 @@ LaunchProfile_SetNumNodesSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numNodesSet in the object.
-    obj->data->SetNumNodesSet(ival != 0);
+    obj->data->SetNumNodesSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -326,12 +459,48 @@ LaunchProfile_SetNumNodes(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numNodes in the object.
-    obj->data->SetNumNodes((int)ival);
+    obj->data->SetNumNodes(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -350,12 +519,48 @@ LaunchProfile_SetPartitionSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the partitionSet in the object.
-    obj->data->SetPartitionSet(ival != 0);
+    obj->data->SetPartitionSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -374,12 +579,37 @@ LaunchProfile_SetPartition(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the partition in the object.
-    obj->data->SetPartition(std::string(str));
+    obj->data->SetPartition(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -398,12 +628,48 @@ LaunchProfile_SetBankSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the bankSet in the object.
-    obj->data->SetBankSet(ival != 0);
+    obj->data->SetBankSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -422,12 +688,37 @@ LaunchProfile_SetBank(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the bank in the object.
-    obj->data->SetBank(std::string(str));
+    obj->data->SetBank(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -446,12 +737,48 @@ LaunchProfile_SetTimeLimitSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeLimitSet in the object.
-    obj->data->SetTimeLimitSet(ival != 0);
+    obj->data->SetTimeLimitSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -470,12 +797,37 @@ LaunchProfile_SetTimeLimit(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeLimit in the object.
-    obj->data->SetTimeLimit(std::string(str));
+    obj->data->SetTimeLimit(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -494,12 +846,48 @@ LaunchProfile_SetLaunchMethodSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the launchMethodSet in the object.
-    obj->data->SetLaunchMethodSet(ival != 0);
+    obj->data->SetLaunchMethodSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -518,12 +906,37 @@ LaunchProfile_SetLaunchMethod(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the launchMethod in the object.
-    obj->data->SetLaunchMethod(std::string(str));
+    obj->data->SetLaunchMethod(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -542,12 +955,48 @@ LaunchProfile_SetForceStatic(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the forceStatic in the object.
-    obj->data->SetForceStatic(ival != 0);
+    obj->data->SetForceStatic(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -566,12 +1015,48 @@ LaunchProfile_SetForceDynamic(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the forceDynamic in the object.
-    obj->data->SetForceDynamic(ival != 0);
+    obj->data->SetForceDynamic(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -590,12 +1075,48 @@ LaunchProfile_SetActive(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the active in the object.
-    obj->data->SetActive(ival != 0);
+    obj->data->SetActive(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -614,31 +1135,51 @@ LaunchProfile_SetArguments(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    stringVector  &vec = obj->data->GetArguments();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetArguments() = vec;
     // Mark the arguments in the object as modified.
     obj->data->SelectArguments();
 
@@ -663,12 +1204,48 @@ LaunchProfile_SetParallel(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the parallel in the object.
-    obj->data->SetParallel(ival != 0);
+    obj->data->SetParallel(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -687,12 +1264,48 @@ LaunchProfile_SetLaunchArgsSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the launchArgsSet in the object.
-    obj->data->SetLaunchArgsSet(ival != 0);
+    obj->data->SetLaunchArgsSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -711,12 +1324,37 @@ LaunchProfile_SetLaunchArgs(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the launchArgs in the object.
-    obj->data->SetLaunchArgs(std::string(str));
+    obj->data->SetLaunchArgs(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -735,12 +1373,48 @@ LaunchProfile_SetSublaunchArgsSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sublaunchArgsSet in the object.
-    obj->data->SetSublaunchArgsSet(ival != 0);
+    obj->data->SetSublaunchArgsSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -759,12 +1433,37 @@ LaunchProfile_SetSublaunchArgs(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sublaunchArgs in the object.
-    obj->data->SetSublaunchArgs(std::string(str));
+    obj->data->SetSublaunchArgs(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -783,12 +1482,48 @@ LaunchProfile_SetSublaunchPreCmdSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sublaunchPreCmdSet in the object.
-    obj->data->SetSublaunchPreCmdSet(ival != 0);
+    obj->data->SetSublaunchPreCmdSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -807,12 +1542,37 @@ LaunchProfile_SetSublaunchPreCmd(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sublaunchPreCmd in the object.
-    obj->data->SetSublaunchPreCmd(std::string(str));
+    obj->data->SetSublaunchPreCmd(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -831,12 +1591,48 @@ LaunchProfile_SetSublaunchPostCmdSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sublaunchPostCmdSet in the object.
-    obj->data->SetSublaunchPostCmdSet(ival != 0);
+    obj->data->SetSublaunchPostCmdSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -855,12 +1651,37 @@ LaunchProfile_SetSublaunchPostCmd(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sublaunchPostCmd in the object.
-    obj->data->SetSublaunchPostCmd(std::string(str));
+    obj->data->SetSublaunchPostCmd(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -879,12 +1700,48 @@ LaunchProfile_SetMachinefileSet(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the machinefileSet in the object.
-    obj->data->SetMachinefileSet(ival != 0);
+    obj->data->SetMachinefileSet(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -903,12 +1760,37 @@ LaunchProfile_SetMachinefile(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the machinefile in the object.
-    obj->data->SetMachinefile(std::string(str));
+    obj->data->SetMachinefile(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -927,12 +1809,48 @@ LaunchProfile_SetVisitSetsUpEnv(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visitSetsUpEnv in the object.
-    obj->data->SetVisitSetsUpEnv(ival != 0);
+    obj->data->SetVisitSetsUpEnv(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -951,12 +1869,48 @@ LaunchProfile_SetCanDoHWAccel(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the canDoHWAccel in the object.
-    obj->data->SetCanDoHWAccel(ival != 0);
+    obj->data->SetCanDoHWAccel(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -975,12 +1929,48 @@ LaunchProfile_SetGPUsPerNode(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the GPUsPerNode in the object.
-    obj->data->SetGPUsPerNode((int)ival);
+    obj->data->SetGPUsPerNode(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -999,12 +1989,37 @@ LaunchProfile_SetXArguments(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the XArguments in the object.
-    obj->data->SetXArguments(std::string(str));
+    obj->data->SetXArguments(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1023,12 +2038,48 @@ LaunchProfile_SetLaunchXServers(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the launchXServers in the object.
-    obj->data->SetLaunchXServers(ival != 0);
+    obj->data->SetLaunchXServers(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1047,12 +2098,37 @@ LaunchProfile_SetXDisplay(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the XDisplay in the object.
-    obj->data->SetXDisplay(std::string(str));
+    obj->data->SetXDisplay(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1071,12 +2147,48 @@ LaunchProfile_SetNumThreads(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numThreads in the object.
-    obj->data->SetNumThreads((int)ival);
+    obj->data->SetNumThreads(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1095,12 +2207,48 @@ LaunchProfile_SetConstrainNodeProcs(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the constrainNodeProcs in the object.
-    obj->data->SetConstrainNodeProcs(ival != 0);
+    obj->data->SetConstrainNodeProcs(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1119,45 +2267,58 @@ LaunchProfile_SetAllowableNodes(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    intVector  &vec = obj->data->GetAllowableNodes();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetAllowableNodes() = vec;
     // Mark the allowableNodes in the object as modified.
     obj->data->SelectAllowableNodes();
 
@@ -1182,45 +2343,58 @@ LaunchProfile_SetAllowableProcs(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
-    intVector  &vec = obj->data->GetAllowableProcs();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetAllowableProcs() = vec;
     // Mark the allowableProcs in the object as modified.
     obj->data->SelectAllowableProcs();
 
@@ -1337,14 +2511,7 @@ LaunchProfile_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-LaunchProfile_compare(PyObject *v, PyObject *w)
-{
-    LaunchProfile *a = ((LaunchProfileObject *)v)->data;
-    LaunchProfile *b = ((LaunchProfileObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *LaunchProfile_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLaunchProfile_getattr(PyObject *self, char *name)
 {
@@ -1425,102 +2592,115 @@ PyLaunchProfile_getattr(PyObject *self, char *name)
     if(strcmp(name, "allowableProcs") == 0)
         return LaunchProfile_GetAllowableProcs(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyLaunchProfile_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyLaunchProfile_methods[i].ml_name),
+                PyString_FromString(PyLaunchProfile_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyLaunchProfile_methods, self, name);
 }
 
 int
 PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "profileName") == 0)
-        obj = LaunchProfile_SetProfileName(self, tuple);
+        obj = LaunchProfile_SetProfileName(self, args);
     else if(strcmp(name, "timeout") == 0)
-        obj = LaunchProfile_SetTimeout(self, tuple);
+        obj = LaunchProfile_SetTimeout(self, args);
     else if(strcmp(name, "numProcessors") == 0)
-        obj = LaunchProfile_SetNumProcessors(self, tuple);
+        obj = LaunchProfile_SetNumProcessors(self, args);
     else if(strcmp(name, "numNodesSet") == 0)
-        obj = LaunchProfile_SetNumNodesSet(self, tuple);
+        obj = LaunchProfile_SetNumNodesSet(self, args);
     else if(strcmp(name, "numNodes") == 0)
-        obj = LaunchProfile_SetNumNodes(self, tuple);
+        obj = LaunchProfile_SetNumNodes(self, args);
     else if(strcmp(name, "partitionSet") == 0)
-        obj = LaunchProfile_SetPartitionSet(self, tuple);
+        obj = LaunchProfile_SetPartitionSet(self, args);
     else if(strcmp(name, "partition") == 0)
-        obj = LaunchProfile_SetPartition(self, tuple);
+        obj = LaunchProfile_SetPartition(self, args);
     else if(strcmp(name, "bankSet") == 0)
-        obj = LaunchProfile_SetBankSet(self, tuple);
+        obj = LaunchProfile_SetBankSet(self, args);
     else if(strcmp(name, "bank") == 0)
-        obj = LaunchProfile_SetBank(self, tuple);
+        obj = LaunchProfile_SetBank(self, args);
     else if(strcmp(name, "timeLimitSet") == 0)
-        obj = LaunchProfile_SetTimeLimitSet(self, tuple);
+        obj = LaunchProfile_SetTimeLimitSet(self, args);
     else if(strcmp(name, "timeLimit") == 0)
-        obj = LaunchProfile_SetTimeLimit(self, tuple);
+        obj = LaunchProfile_SetTimeLimit(self, args);
     else if(strcmp(name, "launchMethodSet") == 0)
-        obj = LaunchProfile_SetLaunchMethodSet(self, tuple);
+        obj = LaunchProfile_SetLaunchMethodSet(self, args);
     else if(strcmp(name, "launchMethod") == 0)
-        obj = LaunchProfile_SetLaunchMethod(self, tuple);
+        obj = LaunchProfile_SetLaunchMethod(self, args);
     else if(strcmp(name, "forceStatic") == 0)
-        obj = LaunchProfile_SetForceStatic(self, tuple);
+        obj = LaunchProfile_SetForceStatic(self, args);
     else if(strcmp(name, "forceDynamic") == 0)
-        obj = LaunchProfile_SetForceDynamic(self, tuple);
+        obj = LaunchProfile_SetForceDynamic(self, args);
     else if(strcmp(name, "active") == 0)
-        obj = LaunchProfile_SetActive(self, tuple);
+        obj = LaunchProfile_SetActive(self, args);
     else if(strcmp(name, "arguments") == 0)
-        obj = LaunchProfile_SetArguments(self, tuple);
+        obj = LaunchProfile_SetArguments(self, args);
     else if(strcmp(name, "parallel") == 0)
-        obj = LaunchProfile_SetParallel(self, tuple);
+        obj = LaunchProfile_SetParallel(self, args);
     else if(strcmp(name, "launchArgsSet") == 0)
-        obj = LaunchProfile_SetLaunchArgsSet(self, tuple);
+        obj = LaunchProfile_SetLaunchArgsSet(self, args);
     else if(strcmp(name, "launchArgs") == 0)
-        obj = LaunchProfile_SetLaunchArgs(self, tuple);
+        obj = LaunchProfile_SetLaunchArgs(self, args);
     else if(strcmp(name, "sublaunchArgsSet") == 0)
-        obj = LaunchProfile_SetSublaunchArgsSet(self, tuple);
+        obj = LaunchProfile_SetSublaunchArgsSet(self, args);
     else if(strcmp(name, "sublaunchArgs") == 0)
-        obj = LaunchProfile_SetSublaunchArgs(self, tuple);
+        obj = LaunchProfile_SetSublaunchArgs(self, args);
     else if(strcmp(name, "sublaunchPreCmdSet") == 0)
-        obj = LaunchProfile_SetSublaunchPreCmdSet(self, tuple);
+        obj = LaunchProfile_SetSublaunchPreCmdSet(self, args);
     else if(strcmp(name, "sublaunchPreCmd") == 0)
-        obj = LaunchProfile_SetSublaunchPreCmd(self, tuple);
+        obj = LaunchProfile_SetSublaunchPreCmd(self, args);
     else if(strcmp(name, "sublaunchPostCmdSet") == 0)
-        obj = LaunchProfile_SetSublaunchPostCmdSet(self, tuple);
+        obj = LaunchProfile_SetSublaunchPostCmdSet(self, args);
     else if(strcmp(name, "sublaunchPostCmd") == 0)
-        obj = LaunchProfile_SetSublaunchPostCmd(self, tuple);
+        obj = LaunchProfile_SetSublaunchPostCmd(self, args);
     else if(strcmp(name, "machinefileSet") == 0)
-        obj = LaunchProfile_SetMachinefileSet(self, tuple);
+        obj = LaunchProfile_SetMachinefileSet(self, args);
     else if(strcmp(name, "machinefile") == 0)
-        obj = LaunchProfile_SetMachinefile(self, tuple);
+        obj = LaunchProfile_SetMachinefile(self, args);
     else if(strcmp(name, "visitSetsUpEnv") == 0)
-        obj = LaunchProfile_SetVisitSetsUpEnv(self, tuple);
+        obj = LaunchProfile_SetVisitSetsUpEnv(self, args);
     else if(strcmp(name, "canDoHWAccel") == 0)
-        obj = LaunchProfile_SetCanDoHWAccel(self, tuple);
+        obj = LaunchProfile_SetCanDoHWAccel(self, args);
     else if(strcmp(name, "GPUsPerNode") == 0)
-        obj = LaunchProfile_SetGPUsPerNode(self, tuple);
+        obj = LaunchProfile_SetGPUsPerNode(self, args);
     else if(strcmp(name, "XArguments") == 0)
-        obj = LaunchProfile_SetXArguments(self, tuple);
+        obj = LaunchProfile_SetXArguments(self, args);
     else if(strcmp(name, "launchXServers") == 0)
-        obj = LaunchProfile_SetLaunchXServers(self, tuple);
+        obj = LaunchProfile_SetLaunchXServers(self, args);
     else if(strcmp(name, "XDisplay") == 0)
-        obj = LaunchProfile_SetXDisplay(self, tuple);
+        obj = LaunchProfile_SetXDisplay(self, args);
     else if(strcmp(name, "numThreads") == 0)
-        obj = LaunchProfile_SetNumThreads(self, tuple);
+        obj = LaunchProfile_SetNumThreads(self, args);
     else if(strcmp(name, "constrainNodeProcs") == 0)
-        obj = LaunchProfile_SetConstrainNodeProcs(self, tuple);
+        obj = LaunchProfile_SetConstrainNodeProcs(self, args);
     else if(strcmp(name, "allowableNodes") == 0)
-        obj = LaunchProfile_SetAllowableNodes(self, tuple);
+        obj = LaunchProfile_SetAllowableNodes(self, args);
     else if(strcmp(name, "allowableProcs") == 0)
-        obj = LaunchProfile_SetAllowableProcs(self, tuple);
+        obj = LaunchProfile_SetAllowableProcs(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1528,7 +2708,7 @@ static int
 LaunchProfile_print(PyObject *v, FILE *fp, int flags)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)v;
-    fprintf(fp, "%s", PyLaunchProfile_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLaunchProfile_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1536,7 +2716,7 @@ PyObject *
 LaunchProfile_str(PyObject *v)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)v;
-    return PyString_FromString(PyLaunchProfile_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLaunchProfile_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1549,49 +2729,70 @@ static char *LaunchProfile_Purpose = "This class contains information needed to 
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject LaunchProfileType =
+
+VISIT_PY_TYPE_OBJ(LaunchProfileType,         \
+                  "LaunchProfile",           \
+                  LaunchProfileObject,       \
+                  LaunchProfile_dealloc,     \
+                  LaunchProfile_print,       \
+                  PyLaunchProfile_getattr,   \
+                  PyLaunchProfile_setattr,   \
+                  LaunchProfile_str,         \
+                  LaunchProfile_Purpose,     \
+                  LaunchProfile_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+LaunchProfile_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LaunchProfile",                    // tp_name
-    sizeof(LaunchProfileObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LaunchProfile_dealloc,  // tp_dealloc
-    (printfunc)LaunchProfile_print,     // tp_print
-    (getattrfunc)PyLaunchProfile_getattr, // tp_getattr
-    (setattrfunc)PyLaunchProfile_setattr, // tp_setattr
-    (cmpfunc)LaunchProfile_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LaunchProfile_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LaunchProfile_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &LaunchProfileType
+         || Py_TYPE(other) != &LaunchProfileType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    LaunchProfile *a = ((LaunchProfileObject *)self)->data;
+    LaunchProfile *b = ((LaunchProfileObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1667,7 +2868,7 @@ PyLaunchProfile_GetLogString()
 {
     std::string s("LaunchProfile = LaunchProfile()\n");
     if(currentAtts != 0)
-        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.");
+        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.", true);
     return s;
 }
 
@@ -1680,7 +2881,7 @@ PyLaunchProfile_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LaunchProfile = LaunchProfile()\n");
-        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.");
+        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.", true);
         cb(s);
     }
 }

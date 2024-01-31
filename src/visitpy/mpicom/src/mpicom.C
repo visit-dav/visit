@@ -9,7 +9,7 @@
 #include <iostream>
 #include <vector>
 #include "Buffer.h"
-
+#include "Py2and3Support.h"
 
 #if defined(_WIN32)
 # if defined(mpicom_EXPORTS)
@@ -30,15 +30,26 @@ using namespace std;
 
 // Make the initmpicom function callable from C.
 extern "C"
-{ 
-    VISITMPICOM_API void initmpicom(void);
+{
+#if defined(IS_PY3K)
+    VISITMPICOM_API PyObject * PyInit_mpicom(void);
+#else
+    void VISITMPICOM_API initmpicom(void);
+#endif
 }
 
-MPI_Comm mpi_group = MPI_COMM_WORLD;
-void *mpi_comm_ptr = &mpi_group;
+/***************************************************************************/
+// use MPI f2c API to keep a mpi handle
+// and avoid MPI_Comm data structure issues.
+/***************************************************************************/
+static int mpi_comm_main_id = -1;
+MPI_Comm
+mpi_comm_main()
+{
+    return MPI_Comm_f2c(mpi_comm_main_id);
+}
 
-#define MPI_COMM_MAIN (*((MPI_Comm *)mpi_comm_ptr))
-
+#define MPI_COMM_MAIN mpi_comm_main()
 
 /*****************************************************************************
  * Function: mpicom_error.
@@ -77,43 +88,50 @@ mpicom_error(const char *err_msg, int err_code = 0)
  * Creation:   Mon Jan  5 11:44:24 PST 2009
  *
  * Modifications:
- *
+ *   Cyrus Harrison, Tue Feb 23 16:52:16 PST 2021
+ *   Use fortran com handle (an int) instead of com address.
+ * 
  * ***************************************************************************/
 static PyObject*
 mpicom_init(PyObject *self, PyObject *args,PyObject *kwds)
 {
     PyObject *args_tuple = NULL;
-    const char  *addy_cstr = "<unknown>";
-    static char *kwlist[] = {(char*)"argv", (char*)"caddy", NULL};
 
-     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!s", kwlist,
-                                     &PyList_Type, &args_tuple, &addy_cstr))
+    int comm_handle_id = -1;
+    static char *kwlist[] = {(char*)"argv",
+                             (char*)"comm_id",
+                             NULL};
+
+     if (!PyArg_ParseTupleAndKeywords(args, kwds,
+                                      "|O!i",
+                                      kwlist,
+                                      &PyList_Type,
+                                      &args_tuple,
+                                      &comm_handle_id))
+    {
         return NULL;
+    }
 
     int inited = 0;
     MPI_Initialized(&inited);
 
-    string addy_str(addy_cstr);
-
-    if(addy_str != "<unknown>")
+    if(comm_handle_id != -1)
     {
         if(!inited)
         {
-            string emsg = "mpicom_init::";
-            emsg += "MPI not initialized: Cannot use existing";
-            emsg += "communicator @ address = ";
-            emsg += addy_str;
-            mpicom_error(emsg.c_str());
+            ostringstream oss;
+            oss << "mpicom_init::"
+                << "MPI not initialized: Cannot use existing"
+                << "communicator id = " << comm_handle_id;
+            mpicom_error(oss.str().c_str());
             return NULL;
         }
+
         // in this case we assume mpi is already initialized and we simply
         // want to set the communicator used by the mpicom module
-        // (use handy python helpers to obtain addy value)
-
-        istringstream iss(addy_str);
-        unsigned long addy = 0;
-        iss >> std::hex >> addy;
-        mpi_comm_ptr = (void*) addy;
+        // we use the fortran id since it is an integer, and is
+        // easy to pass though the python api
+        mpi_comm_main_id = comm_handle_id;
     }
     else if(args_tuple)
     {
@@ -124,7 +142,7 @@ mpicom_init(PyObject *self, PyObject *args,PyObject *kwds)
         }
         // in this case we assume  mpi is not initialized and we execute the
         // init.
-        int argc = PyList_Size(args_tuple); 
+        int argc = PyList_Size(args_tuple);
         char **argv = new char*[argc+1];
         for(int i=0; i<argc; i++)
             argv[i] = PyString_AsString(PyList_GetItem(args_tuple, i));
@@ -139,6 +157,8 @@ mpicom_init(PyObject *self, PyObject *args,PyObject *kwds)
             mpicom_error("mpicom_init:: Call to MPI_Init failed",err);
             return NULL;
         }
+
+        mpi_comm_main_id = MPI_Comm_c2f(MPI_COMM_WORLD);
     }
     else
     {
@@ -205,7 +225,7 @@ mpicom_serial(PyObject *self, PyObject *args)
  * Creation:   Mon Jan  5 11:44:24 PST 2009
  *
  * Modifications:
- *   
+ *
  * ***************************************************************************/
 static PyObject*
 mpicom_parallel(PyObject *self, PyObject *args)
@@ -217,7 +237,7 @@ mpicom_parallel(PyObject *self, PyObject *args)
 /*****************************************************************************
  * Function: mpicom_rank
  *
- * Purpose: 
+ * Purpose:
  *   Gets this processors rank.
  *
  * Programmer: Cyrus Harrison
@@ -284,7 +304,7 @@ static PyObject*
 mpicom_reduce(PyObject *self, PyObject *args, MPI_Op mpi_op)
 {
     // args:
-    //  value:long, double, long array, double array 
+    //  value:long, double, long array, double array
     //  des(optional): -1 = all, else specific proc rank
 
     PyObject *py_obj;
@@ -1083,7 +1103,7 @@ mpicom_alltoall(PyObject *self, PyObject *args)
         snd_ptr += buffers[i].BufferSize();
     }
     buffers.clear();
-    
+
     vector<char> rcv_buff(rcv_total_size);
 
     err = MPI_Alltoallv(&snd_buff[0],&snd_counts[0],&snd_displacements[0],MPI_CHAR,
@@ -1094,7 +1114,7 @@ mpicom_alltoall(PyObject *self, PyObject *args)
         mpicom_error("mpicom_alltoall::Call to MPI_Alltoallv failed",err);
         return NULL;
     }
-    
+
     // create result list
     PyObject *res_lst = PyList_New(nprocs);
     if(res_lst == NULL)
@@ -1191,21 +1211,130 @@ static PyMethodDef mpicom_funcs[] =
  *  Cyrus Harrison, Fri Apr 29 11:17:44 PDT 2011
  *  Added "MPI_PROC_NULL" value to mpicom.
  *
+ *  Cyrus Harrison, Fri Mar 20 14:09:34 PDT 2020
+ *  Python 3 Support
+ *
  ****************************************************************************/
-void
-#if __GNUC__ >= 4
-/* Ensure this function is visible even if -fvisibility=hidden was passed */
-__attribute__ ((visibility("default")))
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+// Module Init Code
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+
+struct module_state {
+    PyObject *error;
+};
+
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
 #endif
-initmpicom(void)
+//---------------------------------------------------------------------------//
+
+//---------------------------------------------------------------------------//
+// Extra Module Setup Logic for Python3
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+//---------------------------------------------------------------------------//
+static int
+mpicom_traverse(PyObject *m, visitproc visit, void *arg)
 {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+//---------------------------------------------------------------------------//
+static int 
+mpicom_clear(PyObject *m)
+{
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+//---------------------------------------------------------------------------//
+static struct PyModuleDef mpicom_module_def = 
+{
+        PyModuleDef_HEAD_INIT,
+        "mpicom",
+        NULL,
+        sizeof(struct module_state),
+        mpicom_funcs,
+        NULL,
+        mpicom_traverse,
+        mpicom_clear,
+        NULL
+};
+#endif
+
+//---------------------------------------------------------------------------//
+// The module init function signature is different between py2 and py3
+// This macro simplifies the process of returning when an init error occurs.
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+#define PY_MODULE_INIT_RETURN_ERROR return NULL
+#else
+#define PY_MODULE_INIT_RETURN_ERROR return
+#endif
+//---------------------------------------------------------------------------//
+
+
+//---------------------------------------------------------------------------//
+// Main entry point
+//---------------------------------------------------------------------------//
+extern "C" 
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+VISITMPICOM_API PyObject * PyInit_mpicom(void)
+#else
+void VISITMPICOM_API initmpicom(void)
+#endif
+//---------------------------------------------------------------------------//
+{    
+    //-----------------------------------------------------------------------//
+    // create our main module
+    //-----------------------------------------------------------------------//
+
     Buffer::PickleInit();
-    PyObject *mpicom_mod = Py_InitModule("mpicom", mpicom_funcs);
+
+#if defined(IS_PY3K)
+    PyObject *mpicom_module = PyModule_Create(&mpicom_module_def);
+#else
+    PyObject *mpicom_module = Py_InitModule((char*)"mpicom",
+                                             mpicom_funcs);
+#endif
+
+    if(mpicom_module == NULL)
+    {
+        PY_MODULE_INIT_RETURN_ERROR;
+    }
+
+    struct module_state *st = GETSTATE(mpicom_module);
+    
+    st->error = PyErr_NewException((char*)"mpicom.Error",
+                                   NULL,
+                                   NULL);
+    if (st->error == NULL)
+    {
+        Py_DECREF(mpicom_module);
+        PY_MODULE_INIT_RETURN_ERROR;
+    }
+
+    //-----------------------------------------------------------------------//
+    // init our custom types
+    //-----------------------------------------------------------------------//
 
     // create entry for MPI_PROC_NULL
     PyObject *pyobj = PyLong_FromLong((long) MPI_PROC_NULL);
-    PyObject_SetAttrString(mpicom_mod, "MPI_PROC_NULL", pyobj);
+    PyObject_SetAttrString(mpicom_module, "MPI_PROC_NULL", pyobj);
     Py_DECREF(pyobj);
+
+#if defined(IS_PY3K)
+    return mpicom_module;
+#endif
+
 }
 
 

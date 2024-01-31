@@ -1514,10 +1514,10 @@ ViewerFileServerImplementation::StartServer(const std::string &host, const strin
             "contact your system administrator.\n\n"
 
             "If none of these suggestions allow you to successfully "
-            "connect to %1 then contact visit-users@ornl.gov and provide "
-            "information about how you are trying to connect. Be sure to "
-            "include the VisIt version and platform on which you are "
-            "running.").arg(host).arg(err);
+            "connect to %1 then contact us via https://visit-help.llnl.gov "
+            "and provide information about how you are trying to connect. "
+            "Be sure to include the VisIt version and platform on which you "
+            "are running.").arg(host).arg(err);
         GetViewerMessaging()->Error(msg);
 
         delete newServer;

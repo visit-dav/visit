@@ -74,7 +74,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public final static int CHANNELINTEGRATION_INTEGRATEALONGCHANNEL = 1;
 
     public final static int TOROIDALINTEGRATION_NOTOROIDALINTEGRATION = 0;
-    public final static int TOROIDALINTEGRATION_TOROIDALTIMESAMPLE = 1;
+    public final static int TOROIDALINTEGRATION_SAMPLETOROIDALLY = 1;
     public final static int TOROIDALINTEGRATION_INTEGRATETOROIDALLY = 2;
 
     public final static int TOROIDALANGLESAMPLING_TOROIDALANGLEABSOLUTESAMPLING = 0;
@@ -1158,8 +1158,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + indent + "toroidalIntegration = ";
         if(toroidalIntegration == TOROIDALINTEGRATION_NOTOROIDALINTEGRATION)
             str = str + "TOROIDALINTEGRATION_NOTOROIDALINTEGRATION";
-        if(toroidalIntegration == TOROIDALINTEGRATION_TOROIDALTIMESAMPLE)
-            str = str + "TOROIDALINTEGRATION_TOROIDALTIMESAMPLE";
+        if(toroidalIntegration == TOROIDALINTEGRATION_SAMPLETOROIDALLY)
+            str = str + "TOROIDALINTEGRATION_SAMPLETOROIDALLY";
         if(toroidalIntegration == TOROIDALINTEGRATION_INTEGRATETOROIDALLY)
             str = str + "TOROIDALINTEGRATION_INTEGRATETOROIDALLY";
         str = str + "\n";

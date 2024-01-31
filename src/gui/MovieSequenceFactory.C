@@ -19,7 +19,7 @@ MovieSequenceFactory *MovieSequenceFactory::instance = 0;
 // ****************************************************************************
 // Method: MovieSequenceFactory::Instance
 //
-// Purpose: 
+// Purpose:
 //   Static method that makes this class a singleton.
 //
 // Returns:    The only instance of the class.
@@ -28,7 +28,7 @@ MovieSequenceFactory *MovieSequenceFactory::instance = 0;
 // Creation:   Tue Nov 14 10:29:33 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 MovieSequenceFactory *
@@ -43,7 +43,7 @@ MovieSequenceFactory::Instance()
 // ****************************************************************************
 // Method: MovieSequenceFactory::MovieSequenceFactory
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Note:       We keep a list of movie sequences and use their NewInstance
@@ -53,7 +53,7 @@ MovieSequenceFactory::Instance()
 // Creation:   Tue Nov 14 10:30:02 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 MovieSequenceFactory::MovieSequenceFactory() : sequenceTypes()
@@ -100,14 +100,14 @@ MovieSequenceFactory::MovieSequenceFactory() : sequenceTypes()
 // ****************************************************************************
 // Method: MovieSequenceFactory::~MovieSequenceFactory
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:30:59 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 MovieSequenceFactory::~MovieSequenceFactory()
@@ -120,7 +120,7 @@ MovieSequenceFactory::~MovieSequenceFactory()
 // ****************************************************************************
 // Method: MovieSequenceFactory::NumSequenceTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of sequence types.
 //
 // Returns:    Returns the number of sequence types.
@@ -129,7 +129,7 @@ MovieSequenceFactory::~MovieSequenceFactory()
 // Creation:   Tue Nov 14 10:31:11 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -141,8 +141,8 @@ MovieSequenceFactory::NumSequenceTypes() const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequenceIdForIndex
 //
-// Purpose: 
-//   Returns the sequence id for a given index into the number of registered 
+// Purpose:
+//   Returns the sequence id for a given index into the number of registered
 //   sequence types.
 //
 // Arguments:
@@ -155,7 +155,7 @@ MovieSequenceFactory::NumSequenceTypes() const
 // Creation:   Tue Nov 14 10:31:38 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -177,7 +177,7 @@ MovieSequenceFactory::SequenceIdForIndex(int index, int &id) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequenceNameToId
 //
-// Purpose: 
+// Purpose:
 //   Returns a sequence id given a sequence name.
 //
 // Arguments:
@@ -186,13 +186,13 @@ MovieSequenceFactory::SequenceIdForIndex(int index, int &id) const
 //
 // Returns:    True on success; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:32:50 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -214,7 +214,7 @@ MovieSequenceFactory::SequenceNameToId(const std::string &name, int &id) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequenceName
 //
-// Purpose: 
+// Purpose:
 //   Returns the id'th sequence name.
 //
 // Arguments:
@@ -223,13 +223,13 @@ MovieSequenceFactory::SequenceNameToId(const std::string &name, int &id) const
 //
 // Returns:    True on success; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:33:38 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -248,7 +248,7 @@ MovieSequenceFactory::SequenceName(int id, std::string &name) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequenceMenuName
 //
-// Purpose: 
+// Purpose:
 //   Returns the id'th sequence menu name.
 //
 // Arguments:
@@ -257,7 +257,7 @@ MovieSequenceFactory::SequenceName(int id, std::string &name) const
 //
 // Returns:    True on success; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:33:38 PDT 2006
@@ -284,7 +284,7 @@ MovieSequenceFactory::SequenceMenuName(int id, QString &name) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequenceProvidesMenu
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the id'th sequence provides a menu.
 //
 // Arguments:
@@ -292,13 +292,13 @@ MovieSequenceFactory::SequenceMenuName(int id, QString &name) const
 //
 // Returns:    True if the sequence provides a menu; False otherwise
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:33:38 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -316,7 +316,7 @@ MovieSequenceFactory::SequenceProvidesMenu(int id) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequenceSubMenuIndex
 //
-// Purpose: 
+// Purpose:
 //   Returns the index of the sub menu that a sequence will occupy.
 //
 // Arguments:
@@ -332,7 +332,7 @@ MovieSequenceFactory::SequenceProvidesMenu(int id) const
 // Creation:   Tue Nov 14 10:33:38 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -353,7 +353,7 @@ MovieSequenceFactory::SequenceSubMenuIndex(int id, int &index) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::SequencePixmap
 //
-// Purpose: 
+// Purpose:
 //   Finds the pixmap for the id'th sequence.
 //
 // Arguments:
@@ -362,13 +362,15 @@ MovieSequenceFactory::SequenceSubMenuIndex(int id, int &index) const
 //
 // Returns:    True on success; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:37:09 PDT 2006
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 21 2021
+//   Swap use of QString::sprintf for Qtring.arg as suggested in Qt docs.
+//
 // ****************************************************************************
 
 bool
@@ -378,14 +380,12 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
     if(it != sequenceTypes.end())
     {
         // Look in the cache for it and return
-        QString key;
-        key.sprintf("%s_%d", 
-            it->second->SequenceName().c_str(),
-            it->second->SequenceId());
-        QPixmap *p = QPixmapCache::find(key);
-        if(p != 0)
+        QString key = QString("%1_%2")
+            .arg(it->second->SequenceName().c_str())
+            .arg(it->second->SequenceId());
+
+        if(QPixmapCache::find(key, &pix))
         {
-            pix = *p;
             return true;
         }
 
@@ -397,7 +397,7 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
         {
             QPixmapCache::insert(key, pix);
         }
-      
+
         return true;
     }
 
@@ -407,7 +407,7 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
 // ****************************************************************************
 // Method: MovieSequenceFactory::Create
 //
-// Purpose: 
+// Purpose:
 //   Factory method for creating new sequences of a given type.
 //
 // Arguments:
@@ -415,13 +415,13 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
 //
 // Returns:    A new instance of the specified class.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 10:38:20 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 MovieSequence *

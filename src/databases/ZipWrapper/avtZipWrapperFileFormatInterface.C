@@ -14,8 +14,18 @@
 #include <vector>
 
 #include <sys/stat.h>
+#ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <direct.h>
+#include <shlwapi.h>
+#include <process.h>
+#else
 #include <unistd.h>
 #include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
+#endif
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -25,6 +35,7 @@
 #include <DatabasePluginManager.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
+#include <Environment.h>
 #include <ImproperUseException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
@@ -57,7 +68,7 @@ static bool atExiting = false;
 //  to gain access to private part of generic database, the file file format
 //  interface object.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Thu Jul 26 18:55:05 PDT 2007
 //
 // ****************************************************************************
@@ -73,14 +84,14 @@ class avtZWGenericDatabase : public avtGenericDatabase
 };
 
 // ****************************************************************************
-//  Class: avtZWFileFormatInterface 
+//  Class: avtZWFileFormatInterface
 //
 //  Purpose: A temporary derived class to cast an avtFileFormatInterface
 //  pointer to to gain access to a private part of avtFileFormatInterface,
 //  the file format object.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 class avtZWFileFormatInterface : public avtFileFormatInterface
 {
@@ -95,7 +106,7 @@ class avtZWFileFormatInterface : public avtFileFormatInterface
 //  Purpose: A dummied format object used solely to store information about
 //  the real format object(s) constructed by ZipWrapperFormatInterface
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Thu Jul 26 18:55:05 PDT 2007
 //
 //  Modifications:
@@ -130,11 +141,11 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
     bool                   CanCacheVariable(const char *v)
                                { return realFileFormat->CanCacheVariable(v); };
     const char            *GetType(void)
-                               { return "ZipWrapperDummy"; }; 
+                               { return "ZipWrapperDummy"; };
     bool                   HasVarsDefinedOnSubMeshes()
-                               { return realFileFormat->HasVarsDefinedOnSubMeshes(); }; 
+                               { return realFileFormat->HasVarsDefinedOnSubMeshes(); };
     bool                   PerformsMaterialSelection()
-                               { return realFileFormat->PerformsMaterialSelection(); }; 
+                               { return realFileFormat->PerformsMaterialSelection(); };
     bool                   CanDoStreaming()
                                { return realFileFormat->CanDoStreaming(); };
 
@@ -181,13 +192,13 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 };
 
 // ****************************************************************************
-//  Static Function: FreeUpCacheSlot 
+//  Static Function: FreeUpCacheSlot
 //
 //  Purpose: The Delete callback for the MRU cache. The decompressed file
 //  should be removed from disk and the interface associated with it deleted.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 static void FreeUpCacheSlot(void *item)
 {
@@ -211,7 +222,7 @@ static void FreeUpCacheSlot(void *item)
 }
 
 // ****************************************************************************
-//  Function: CleanUpAtExit 
+//  Function: CleanUpAtExit
 //
 //  Purpose: Enforces cleanup (removal of decompressed files from filesystem).
 //  For efficiency reasons, when engine process is terminating, it does NOT
@@ -223,15 +234,15 @@ static void FreeUpCacheSlot(void *item)
 //  guarentee that rest of VisIt is available. In particular, we can't
 //  issue messages to debug logs.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //    Removed debug5 lines that were commented out. Fixed algorithm for
 //    deleting objects so that after deleting the ffi object, it also deletes
 //    the pointer to the object in the list.
-// 
+//
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::CleanUpAtExit()
@@ -247,12 +258,12 @@ avtZipWrapperFileFormatInterface::CleanUpAtExit()
 }
 
 // ****************************************************************************
-//  Static Method: Initialize 
+//  Static Method: Initialize
 //
-//  Purpose: Do all the work we need to do only once for ZipWrapper instances. 
+//  Purpose: Do all the work we need to do only once for ZipWrapper instances.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
@@ -276,7 +287,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Process any read options
     //
     bool dontAtExit = false; (void) dontAtExit;
-    string userName = "$USER"; 
+    string userName = "$USER";
     for (int i = 0; rdopts != 0 && i < rdopts->GetNumberOfOptions(); ++i)
     {
         if (rdopts->GetName(i) == "TMPDIR for decompressed files")
@@ -296,9 +307,17 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Decide on root temporary directory
     if (tmpDir == "$TMPDIR" && procNum == 0)
     {
-        if (getenv("TMPDIR"))
+#ifdef WIN32
+        if (!Environment::get("TMP").empty())
+            tmpDir = Environment::get("TMP");
+        else if (!Environment::get("TEMP").empty())
+            tmpDir = Environment::get("TEMP");
+        else
+            tmpDir = Environment::get("VISITUSERHOME");
+#else
+        if (!Environment::get("TMPDIR").empty())
         {
-            tmpDir = getenv("TMPDIR");
+            tmpDir = Environment::get("TMPDIR");
         }
         else
         {
@@ -321,20 +340,21 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
             }
             // Last resort, use HOME.
             if(!foundDir)
-                tmpDir = getenv("HOME");
+                tmpDir = Environment::get("HOME");
         }
+#endif
     }
 
     // Decide on user name moniker
     if (userName == "$USER" && procNum == 0)
     {
-        if (getenv("USER"))
+        if (!Environment::get("USER").empty())
         {
-            userName = getenv("USER");
+            userName = Environment::get("USER");
         }
-        else if (getenv("USERNAME"))
+        else if (!Environment::get("USERNAME").empty())
         {
-            userName = getenv("USERNAME");
+            userName = Environment::get("USERNAME");
         }
         else
         {
@@ -364,7 +384,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
 
     char procNumStr[32];
     snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
-    tmpDir = tmpDir + "/visitzw_" + userName + "_" +
+    tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName + "_" +
              string(VisItInit::GetComponentName()) +
              (procCount > 1 ? string(procNumStr) : "");
     debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
@@ -372,7 +392,12 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Make the temporary directory
     // (will have different name on mdserver and engine)
     errno = 0;
+#ifdef WIN32
+    if(_mkdir(tmpDir.c_str()) != 0 && errno != EEXIST)
+#else
     if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
+#endif
+
     {
         static char errMsg[1024];
         snprintf(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
@@ -381,25 +406,29 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     }
 
 #ifndef MDSERVER
-    // See note in CleanUpAtExit 
+    // See note in CleanUpAtExit
     if (dontAtExit == false)
         atexit(avtZipWrapperFileFormatInterface::CleanUpAtExit);
 #endif
 }
 
 // ****************************************************************************
-//  Static Method: Finalize 
+//  Static Method: Finalize
 //
-//  Purpose: Undo anything we did during initialize. 
+//  Purpose: Undo anything we did during initialize.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::Finalize()
 {
     errno = 0;
+#ifdef WIN32
+    if (_rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+#else
     if (rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+#endif
     {
         debug5 << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
         debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
@@ -414,8 +443,8 @@ avtZipWrapperFileFormatInterface::Finalize()
 //  Purpose: Register objects getting constructed so we can keep track of and
 //  delete them in CleanUpAtExit. Also, initialize everything we need.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Wed Aug  8 14:48:03 PDT 2007
@@ -433,7 +462,7 @@ avtZipWrapperFileFormatInterface::Finalize()
 
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *const *list, int nl, int nb, const DBOptionsAttributes *rdopts,
-    CommonDatabasePluginInfo *zwinfo) : 
+    CommonDatabasePluginInfo *zwinfo) :
     inputFileBlockCount(nb),
     decompressedFilesCache(FreeUpCacheSlot)
 {
@@ -522,10 +551,10 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
 }
 
 // ****************************************************************************
-//  Method: avtZipWrapper destructor 
+//  Method: avtZipWrapper destructor
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
 {
@@ -566,7 +595,7 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
 }
 
 // ****************************************************************************
-//  Method: GetFormat 
+//  Method: GetFormat
 //
 //  Purpose: Implement avtFileFormatInterface's GetFormat method. avtFFI
 //  has a number of methods that loop over all formats requesting a format
@@ -581,8 +610,8 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
 //  it serves to store information passed to it from avtFFI for later transfer
 //  to actual file format objects.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 avtFileFormat *
 avtZipWrapperFileFormatInterface::GetFormat(int i) const
@@ -591,7 +620,7 @@ avtZipWrapperFileFormatInterface::GetFormat(int i) const
 }
 
 // ****************************************************************************
-//  Method: UpdateRealFileFormatInterface 
+//  Method: UpdateRealFileFormatInterface
 //
 //  Purpose: Transfer everything we know has been applied to the dummy file
 //  format object to the real file format object. The dummy object hangs
@@ -599,8 +628,8 @@ avtZipWrapperFileFormatInterface::GetFormat(int i) const
 //  around and query back out of it the stuff that needs to be applied to a
 //  real file format object, here.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
@@ -625,7 +654,7 @@ avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(
 }
 
 // ****************************************************************************
-//  Method: GetRealInterface 
+//  Method: GetRealInterface
 //
 //  Purpose: Given timestep and domain, this method figures out which file in
 //  the list of input files is involved, handles decompressing it and
@@ -634,8 +663,8 @@ avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(
 //  away the database after obtaining the file format interface it is here to
 //  create.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
@@ -676,7 +705,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         // Always update the interface object to whatever the dummy format thinks
         // is right before returning the object for use.
         UpdateRealFileFormatInterface(retval);
-        return retval; 
+        return retval;
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
@@ -687,6 +716,26 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     string dcmd = decompCmd;
     if (dcmd == "")
     {
+#ifdef WIN32
+        if(PathFileExists("C:\\Program Files\\7-zip\\7z.exe"))
+        {
+            dcmd = "\"C:\\Program Files\\7-zip\\7z.exe\" x -y";
+        }
+        else if(PathFileExists("C:\\Program Files (x86)\\7-zip\\7z.exe"))
+        {
+            dcmd = "\"C:\\Program Files (x86)\\7-zip\\7z.exe\" x -y";
+        }
+        else
+        {
+            // Perhaps can install 7-zip with VisIt on windows (eg installdir/7-zip).
+            // Then can perform a check here for its existence by calling
+            // GetVisItInstallationDirectory().
+
+            // For now, we want to fail out of here.
+            EXCEPTION1(InvalidFilesException, "No Decompression command found.");
+        }
+
+#else
         if (ext == ".gz")
             dcmd = "gunzip -f";
         else if (ext == ".bz")
@@ -695,18 +744,20 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
             dcmd = "bunzip2 -f";
         else if (ext == "zip")
             dcmd = "unzip -o";
+#endif
     }
 
     //
-    // We need to guard against situations where the same file could be in process of
-    // being decompressed and we are about to initiate a 'new' decompression command
-    // on it. So, we use a sort of 'locking' mechanism here by creating '.lck' files
-    // just before we begin decompressing and then removing the '.lck' files after
-    // the decompression completes. If we get here and find a .lck file for the
-    // given target, we loop, stat'ing the target and so long as the target file size
-    // is increasing and .lck exists, we wait. If .lck goes away, we know its 
-    // completed. If file size does NOT continue to grow after several successive
-    // stat's, we conclude it is somehow hung.
+    // We need to guard against situations where the same file could be in
+    // process of being decompressed and we are about to initiate a 'new'
+    // decompression command on it. So, we use a sort of 'locking' mechanism
+    // here by creating '.lck' files just before we begin decompressing and
+    // then removing the '.lck' files after the decompression completes. If we
+    // get here and find a .lck file for the given target, we loop, stat'ing
+    // the target and so long as the target file size is increasing and .lck
+    // exists, we wait. If .lck goes away, we know its completed. If file size
+    // does NOT continue to grow after several successive stat's, we conclude
+    // it is somehow hung.
     //
     off_t tsize = 0;
     int ntries = 199; // must be odd
@@ -718,8 +769,12 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     while (ntries>0)
     {
         // Wait a bit.
+#ifdef WIN32
+        Sleep(1);
+#else
         struct timespec ts = {0, 1000000000/2}; // 1/2-second
         nanosleep(&ts, 0);
+#endif
 
         // Stat the target so we can monitor its size
         errno = 0;
@@ -736,7 +791,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         else
             ntries-=2;
 
-        // Stat the lock. If its gone, we know the previos decomp command completed.
+        // Stat the lock. If its gone, we know the previos decomp command
+        // completed.
         errno = 0;
         statval = FileFunctions::VisItStat(string(dcname+".lck").c_str(), &statbuf);
         if (statval == -1 && errno == ENOENT)
@@ -748,6 +804,37 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         debug5 << "It looks like an existing decompression attempt has hung. But, proceeding anyway." << endl;
     }
 
+#ifdef WIN32
+    // no 'touch' command on Windows, so create the empty .lck file first
+    char tmpcmd[1024];
+    // Create full path
+    snprintf(tmpcmd, sizeof(tmpcmd), "%s\\%s.lck",
+             tmpDir.c_str(), dcname.c_str());
+    ofstream tmpfile(tmpcmd);
+    tmpfile.close();
+
+    // don't want to call 'system' like on *nix, because it opens a window.
+    // Since there are multiple commands to be executed, create a temporary
+    // .bat file
+    snprintf(tmpcmd, sizeof(tmpcmd), "%s\\dodecompress.bat", tmpDir.c_str());
+    ofstream tp2(tmpcmd);
+    tp2 << "@echo off " << endl;
+    tp2 << "cd " << tmpDir << endl;
+    tp2 << dcmd << " " << compressedName << " >nul 2>&1" << endl;
+    tp2 << "del " << dcname << ".lck >nul 2>&1" << endl;
+    tp2.close();
+
+    if (_spawnl(_P_WAIT, tmpcmd, tmpcmd, NULL) == -1)
+    {
+        EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
+    }
+    // delete the .bat file
+    if (unlink(tmpcmd) != 0 && errno != ENOENT)
+    {
+        debug5 << "Unable to unlink() bat file \"" << tmpcmd << "\"" << endl;
+        debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+    }
+#else
     char tmpcmd[1024];
     snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
         tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
@@ -767,8 +854,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     {
         EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
     }
+#endif
 
-    string newfname = tmpDir + "/" + dcname;
+    string newfname = tmpDir + VISIT_SLASH_STRING + dcname;
     const char *tmpstr = newfname.c_str();
 
     vector<string> dummyPlugins;
@@ -796,12 +884,12 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 }
 
 // ****************************************************************************
-//  Method: GetFilename 
+//  Method: GetFilename
 //
 //  Purpose: Implement GetFilename method for avtFileFormat class.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //
@@ -814,13 +902,13 @@ const char *
 avtZipWrapperFileFormatInterface::GetFilename(int ts)
 {
     if      (dbType == DB_TYPE_MTMD)
-        return inputFileList[0][0].c_str(); 
+        return inputFileList[0][0].c_str();
     else if (dbType == DB_TYPE_STMD)
-        return inputFileList[ts][0].c_str(); 
+        return inputFileList[ts][0].c_str();
     else if (dbType == DB_TYPE_MTSD)
-        return inputFileList[0][0].c_str(); 
+        return inputFileList[0][0].c_str();
     else if (dbType == DB_TYPE_STSD)
-        return inputFileList[ts][0].c_str(); 
+        return inputFileList[ts][0].c_str();
 
     return NULL;
 }
@@ -830,8 +918,8 @@ avtZipWrapperFileFormatInterface::GetFilename(int ts)
 //
 //  Purpose: Remove compressed file associated with specified ts,dom
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::FreeUpResources(int ts, int dom)
@@ -863,12 +951,12 @@ avtZipWrapperFileFormatInterface::FreeUpResources(int ts, int dom)
 }
 
 // ****************************************************************************
-//  Method: ActivateTimestep 
+//  Method: ActivateTimestep
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::ActivateTimestep(int ts)
@@ -884,12 +972,12 @@ avtZipWrapperFileFormatInterface::ActivateTimestep(int ts)
 }
 
 // ****************************************************************************
-//  Method: SetDatabaseMetaData 
+//  Method: SetDatabaseMetaData
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::SetDatabaseMetaData(
@@ -930,12 +1018,12 @@ avtZipWrapperFileFormatInterface::SetDatabaseMetaData(
 }
 
 // ****************************************************************************
-//  Method: SetCycleTimeInDatabaseMetaData 
+//  Method: SetCycleTimeInDatabaseMetaData
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::SetCycleTimeInDatabaseMetaData(
@@ -952,12 +1040,12 @@ avtZipWrapperFileFormatInterface::SetCycleTimeInDatabaseMetaData(
 }
 
 // ****************************************************************************
-//  Method: GetMesh 
+//  Method: GetMesh
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //
@@ -981,12 +1069,12 @@ avtZipWrapperFileFormatInterface::GetMesh(int ts, int dom, const char *meshname)
 }
 
 // ****************************************************************************
-//  Method: GetAuxiliaryData 
+//  Method: GetAuxiliaryData
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //
@@ -1011,9 +1099,9 @@ avtZipWrapperFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int 
 }
 
 // ****************************************************************************
-//  Method: avtZipWrapperFileFormatInterface::CreateCacheNAmeIncludingSelections 
+//  Method: avtZipWrapperFileFormatInterface::CreateCacheNAmeIncludingSelections
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
 //  Programmer: Hank Childs
 //  Creation:   December 20, 2011
@@ -1035,12 +1123,12 @@ avtZipWrapperFileFormatInterface::CreateCacheNameIncludingSelections(std::string
 }
 
 // ****************************************************************************
-//  Method: GetVar 
+//  Method: GetVar
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //
@@ -1053,23 +1141,23 @@ vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 {
     if      (dbType == DB_TYPE_MTMD)
-        return GetRealInterface(0,0)->GetVar(ts,dom,varname); 
+        return GetRealInterface(0,0)->GetVar(ts,dom,varname);
     else if (dbType == DB_TYPE_STMD)
-        return GetRealInterface(ts,0)->GetVar(0,dom,varname); 
+        return GetRealInterface(ts,0)->GetVar(0,dom,varname);
     else if (dbType == DB_TYPE_MTSD)
-        return GetRealInterface(0,dom)->GetVar(ts,0,varname); 
+        return GetRealInterface(0,dom)->GetVar(ts,0,varname);
     else if (dbType == DB_TYPE_STSD)
-        return GetRealInterface(ts,dom)->GetVar(0,0,varname); 
+        return GetRealInterface(ts,dom)->GetVar(0,0,varname);
     return NULL;
 }
 
 // ****************************************************************************
-//  Method: GetVectorVar 
+//  Method: GetVectorVar
 //
-//  Purpose: Forward call to real file format interface 
+//  Purpose: Forward call to real file format interface
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 31, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   July 31, 2007
 //
 //  Modifications:
 //
@@ -1082,12 +1170,12 @@ vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varname)
 {
     if      (dbType == DB_TYPE_MTMD)
-        return GetRealInterface(0,0)->GetVectorVar(ts,dom,varname); 
+        return GetRealInterface(0,0)->GetVectorVar(ts,dom,varname);
     else if (dbType == DB_TYPE_STMD)
-        return GetRealInterface(ts,0)->GetVectorVar(0,dom,varname); 
+        return GetRealInterface(ts,0)->GetVectorVar(0,dom,varname);
     else if (dbType == DB_TYPE_MTSD)
-        return GetRealInterface(0,dom)->GetVectorVar(ts,0,varname); 
+        return GetRealInterface(0,dom)->GetVectorVar(ts,0,varname);
     else if (dbType == DB_TYPE_STSD)
-        return GetRealInterface(ts,dom)->GetVectorVar(0,0,varname); 
+        return GetRealInterface(ts,dom)->GetVectorVar(0,0,varname);
     return NULL;
 }

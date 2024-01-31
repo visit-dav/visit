@@ -52,17 +52,17 @@ SubrecInfo::~SubrecInfo(void)
 //  SubrecInfo::AddSubrec
 //
 //  Purpose:
-//      Add information about a subrecord. 
+//      Add information about a subrecord.
 //
 //  Notes:
 //      The subrecords are associated with blocks of data on the mesh
-//      that may be segmented by cell type or domain. 
+//      that may be segmented by cell type or domain.
 //
 //  Arguments:
-//      SRId        The subrecord id. 
-//      numEl       The number of elements associated with this subrecord. 
-//      numDB       The number of "data blocks" associated with this subrecord. 
-//      dBRanges    The data block ranges. 
+//      SRId        The subrecord id.
+//      numEl       The number of elements associated with this subrecord.
+//      numDB       The number of "data blocks" associated with this subrecord.
+//      dBRanges    The data block ranges.
 //
 //  Programmer: Alister Maguire
 //  Creation:   May 13, 2019
@@ -85,15 +85,15 @@ SubrecInfo::AddSubrec(const int SRId,
         numDataBlocks.push_back(numDB);
 
         //
-        // Deep copy the ranges so that we don't have to keep 
-        // the subrecords in memory. 
+        // Deep copy the ranges so that we don't have to keep
+        // the subrecords in memory.
         //
         int limit = numDB * 2;
         intVector nxtRange(limit);
 
         for (int i = 0; i < limit; ++i)
         {
-            nxtRange[i] = dBRanges[i]; 
+            nxtRange[i] = dBRanges[i];
         }
 
         dataBlockRanges.push_back(nxtRange);
@@ -105,13 +105,13 @@ SubrecInfo::AddSubrec(const int SRId,
 //  SubrecInfo::GetSubrec
 //
 //  Purpose:
-//      Retrieve information about a subrecord. 
+//      Retrieve information about a subrecord.
 //
 //  Arguments:
-//      SRId        The subrecord id. 
-//      numEl       The number of elements associated with this subrecord. 
+//      SRId        The subrecord id.
+//      numEl       The number of elements associated with this subrecord.
 //      numDB       The number of "data blocks" associated with this subrecord.
-//      dBRanges    The data block ranges. 
+//      dBRanges    The data block ranges.
 //
 //  Programmer: Alister Maguire
 //  Creation:   May 13, 2019
@@ -157,31 +157,31 @@ SubrecInfo::GetSubrec(const int SRId,
 //  constructor: MiliVariableMetaData::MiliVariableMetaData
 //
 //  Purpose:
-//      Initialized the MiliVariableMetaData. 
+//      Initialized the MiliVariableMetaData.
 //
 //  Arguments:
-//      sName        The short name. 
+//      sName        The short name.
 //      lName        The long name.
-//      cSName       The class short name. 
+//      cSName       The class short name.
 //      cLName       The class long name.
-//      isMultiM     Is multi mesh or not. 
-//      isMat        Is a material var. 
-//      isGlob       Is global. 
-//      shared       Is a shared variable. 
-//      cent         centering (node/cell). 
-//      meshAssoc    ID of associated mesh (used for multi-mesh).  
-//      avtType      Avt variable type. 
+//      isMultiM     Is multi mesh or not.
+//      isMat        Is a material var.
+//      isGlob       Is global.
+//      shared       Is a shared variable.
+//      cent         centering (node/cell).
+//      meshAssoc    ID of associated mesh (used for multi-mesh).
+//      avtType      Avt variable type.
 //      aggType      Mili variable type.
 //      nType        The type of scalar (float/int/etc.)
-//      vecSize      Size of vector (if it is a vector).  
-//      cDims        Component dimensions. 
-//      vComps       Vector components (as shortnames). 
+//      vecSize      Size of vector (if it is a vector).
+//      cDims        Component dimensions.
+//      vComps       Vector components (as shortnames).
 //
-//  Notes: Global variables and material variables currently DO NOT 
+//  Notes: Global variables and material variables currently DO NOT
 //         have their number of elements ever set. This is because
-//         global variables are applied to the entire mesh, and 
+//         global variables are applied to the entire mesh, and
 //         material variables are associated with materials that
-//         are defined on the mesh. 
+//         are defined on the mesh.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -201,7 +201,7 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
                                            bool isES,
                                            avtCentering cent,
                                            int nDomains,
-                                           int meshAssoc,  
+                                           int meshAssoc,
                                            int avtType,
                                            int aggType,
                                            int nType,
@@ -209,7 +209,7 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
                                            int cDims,
                                            stringVector vComps)
 {
-    shortName         = sName; 
+    shortName         = sName;
     longName          = lName;
     classSName        = cSName;
     classLName        = cLName;
@@ -237,8 +237,8 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
     path = "";
 
     //
-    // Sand and cause are two special cases dealing with 
-    // destroyed elements. 
+    // Sand and cause are two special cases dealing with
+    // destroyed elements.
     //
     isSand        = false;
     isCause       = false;
@@ -274,16 +274,16 @@ MiliVariableMetaData::~MiliVariableMetaData()
 //  Method: MiliVariableMetaData::GetVectorComponent
 //
 //  Purpose:
-//     Get the component of a vector variable.  
+//     Get the component of a vector variable.
 //
-//  Arguments: 
-//      idx    The index of the vector component. 
+//  Arguments:
+//      idx    The index of the vector component.
 //
 //  Returns:
 //      If the index is valid, the variable name of the
-//      component is returned as a string. 
-//      Otherwise, an empty string is returned. 
-//           
+//      component is returned as a string.
+//      Otherwise, an empty string is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -305,10 +305,10 @@ MiliVariableMetaData::GetVectorComponent(int idx)
 //  Purpose:
 //      Add a subrecord index for this variable.
 //
-//  Arguments: 
-//      dom    The domain that this subrecord resides on. 
+//  Arguments:
+//      dom    The domain that this subrecord resides on.
 //      SRId   The subrecord index/ID.
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -333,16 +333,16 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 //  Method: MiliVariableMetaData::GetSubrecIds
 //
 //  Purpose:
-//      Get the subrecord indicies for a given domain. 
+//      Get the subrecord indicies for a given domain.
 //
-//  Arguments: 
-//      dom    The domain of interest. 
+//  Arguments:
+//      dom    The domain of interest.
 //
 //  Returns:
-//      A copy of the subrecord index vector 
+//      A copy of the subrecord index vector
 //      for the given domain. These indicies correspond
 //      to the subrecordInfo stored by avtMiliMetaData.
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -350,7 +350,7 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 //
 // ****************************************************************************
 
-intVector 
+intVector
 MiliVariableMetaData::GetSubrecIds(int dom)
 {
     if (dom >= 0 && dom < SRIds.size())
@@ -367,11 +367,11 @@ MiliVariableMetaData::GetSubrecIds(int dom)
 //  Method: MiliVariableMetaData::GetPath
 //
 //  Purpose:
-//      Get the visit path for a variable. 
+//      Get the visit path for a variable.
 //
 //  Returns:
-//      A reference to our path string. 
-//           
+//      A reference to our path string.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -416,7 +416,7 @@ MiliVariableMetaData::GetPath()
 //  Method: MiliVariableMetaData::PrintSelf
 //
 //  Purpose:
-//      Print the class members that are set from the .mili file. 
+//      Print the class members that are set from the .mili file.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -455,25 +455,26 @@ MiliVariableMetaData::PrintSelf(void)
 //  constructor: MiliElementSetMetaData::MiliElementSetMetaData
 //
 //  Purpose:
-//      Initialized the MiliElementSetMetaData. 
+//      Initialized the MiliElementSetMetaData.
 //
 //  Arguments:
-//      sName        The short name. 
+//      sName        The short name.
 //      lName        The long name.
-//      cSName       The class short name. 
+//      cSName       The class short name.
 //      cLName       The class long name.
-//      isMultiM     Is multi mesh or not. 
-//      isMat        Is a material var. 
-//      isGlob       Is global. 
-//      shared       Is a shared variable. 
-//      cent         centering (node/cell). 
-//      meshAssoc    ID of associated mesh (used for multi-mesh).  
-//      avtType      Avt variable type. 
+//      globalIntPt  The global integration point (Middle, Inner, or Outer).
+//      isMultiM     Is multi mesh or not.
+//      isMat        Is a material var.
+//      isGlob       Is global.
+//      shared       Is a shared variable.
+//      cent         centering (node/cell).
+//      meshAssoc    ID of associated mesh (used for multi-mesh).
+//      avtType      Avt variable type.
 //      aggType      Mili variable type.
 //      nType        The type of scalar (float/int/etc.)
-//      vecSize      Size of vector (if it is a vector).  
-//      cDims        Component dimensions. 
-//      vComps       Vector components (as shortnames). 
+//      vecSize      Size of vector (if it is a vector).
+//      cDims        Component dimensions.
+//      vComps       Vector components (as shortnames).
 //      gVecSizes    The vector sizes for each "group" in the ES.
 //      gAvtTypes    The avt types for each "group" in the ES.
 //      gMiliTypes   The mili types for each "group" in the ES.
@@ -483,19 +484,23 @@ MiliVariableMetaData::PrintSelf(void)
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      Set the integration point index based on the global integration point.
+//
 // ****************************************************************************
 
 MiliElementSetMetaData::MiliElementSetMetaData(string sName,
                                                string lName,
                                                string cSName,
                                                string cLName,
+                                               string globalIntPt,
                                                bool isMultiM,
                                                bool isMat,
                                                bool isGlob,
                                                bool shared,
                                                avtCentering cent,
                                                int nDomains,
-                                               int meshAssoc,  
+                                               int meshAssoc,
                                                int avtType,
                                                int aggType,
                                                int nType,
@@ -518,7 +523,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
                        true,
                        cent,
                        nDomains,
-                       meshAssoc,  
+                       meshAssoc,
                        avtType,
                        aggType,
                        nType,
@@ -526,23 +531,51 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
                        cDims,
                        vComps)
 {
-    groupShortNames = gNames;
-    groupVecSizes   = gVSizes;
-    groupAvtTypes   = gAvtTypes;
-    groupMiliTypes  = gMiliTypes;
-    groupIsShared   = gIsShared;
-    numGroups       = groupShortNames.size();
+    groupShortNames     = gNames;
+    groupVecSizes       = gVSizes;
+    groupAvtTypes       = gAvtTypes;
+    groupMiliTypes      = gMiliTypes;
+    groupIsShared       = gIsShared;
+    numGroups           = groupShortNames.size();
+
+    //
+    // Our current integration point options are
+    //     1. Middle: Choose the mid component.
+    //     2. Inner: Choose the first component.
+    //     3. Outer: Choose the last component.
+    //
+    if (globalIntPt == "Middle")
+    {
+        integrationPointIdx = (int)(componentDims / 2.0);
+    }
+    else if (globalIntPt == "Inner")
+    {
+        integrationPointIdx = 0;
+    }
+    else if (globalIntPt == "Outer")
+    {
+        integrationPointIdx = componentDims - 1;
+    }
+    else
+    {
+        char expected[128];
+        char received[128];
+        snprintf(expected, 128, "A global integration point of 'Middle', "
+            "'Inner', or 'Outer'.");
+        snprintf(received, 128, "%s", globalIntPt.c_str());
+        EXCEPTION2(UnexpectedValueException, expected, received);
+    }
 
     groupComponentIdxs.reserve(numGroups);
 
     int componentIdx = 0;
     int gIdx = 0;
     for (std::vector<int>::iterator it = groupVecSizes.begin();
-         it != groupVecSizes.end(); ++it, ++gIdx) 
+         it != groupVecSizes.end(); ++it, ++gIdx)
     {
 
         //
-        // Figure out the group indices. 
+        // Figure out the group indices.
         //
         std::vector<int> idxs;
         idxs.reserve(*it);
@@ -557,7 +590,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
         groupComponentIdxs.push_back(idxs);
 
         //
-        // Since we're here, figure out the paths as well. 
+        // Since we're here, figure out the paths as well.
         //
         string groupPath;
 
@@ -592,7 +625,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
 //  destructor: MiliElementSetMetaData::~MiliElementSetMetaData
 //
 //  Purpose:
-//      Destroy the object. 
+//      Destroy the object.
 //
 //  Programmer: Alister Maguire
 //  Creation:   April 26, 2019
@@ -610,12 +643,12 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 //  Method: MiliElementSetMetaData::GetPath
 //
 //  Purpose:
-//      Since this is an element set that might contain multiple groups, 
-//      this method should not be used. The path should be empty. 
+//      Since this is an element set that might contain multiple groups,
+//      this method should not be used. The path should be empty.
 //
 //  Returns:
-//      A reference to our path string (empty). 
-//           
+//      A reference to our path string (empty).
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -634,14 +667,14 @@ MiliElementSetMetaData::GetPath()
 //  Method: MiliElementSetMetaData::GetGroupPath
 //
 //  Purpose:
-//      Get the visit path for an element set group. 
+//      Get the visit path for an element set group.
 //
 //  Arguments:
-//      groupIdx    The group index of interest. 
+//      groupIdx    The group index of interest.
 //
 //  Returns:
-//      If groupIdx is valid, the group's path. Otherwise, an empty string. 
-//           
+//      If groupIdx is valid, the group's path. Otherwise, an empty string.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -654,7 +687,7 @@ MiliElementSetMetaData::GetGroupPath(int groupIdx)
 {
     if (groupIdx < groupPaths.size())
     {
-        return groupPaths[groupIdx]; 
+        return groupPaths[groupIdx];
     }
     return "";
 }
@@ -664,14 +697,14 @@ MiliElementSetMetaData::GetGroupPath(int groupIdx)
 //  Method: MiliElementSetMetaData::GetGroupPath
 //
 //  Purpose:
-//      Get the visit path for an element set group. 
+//      Get the visit path for an element set group.
 //
 //  Arguments:
-//      groupName    The group name of interest. 
+//      groupName    The group name of interest.
 //
 //  Returns:
-//      If groupName is valid, the group's path. Otherwise, an empty string. 
-//           
+//      If groupName is valid, the group's path. Otherwise, an empty string.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -697,15 +730,15 @@ MiliElementSetMetaData::GetGroupPath(string groupName)
 //  Method: MiliElementSetMetaData::GetGroupIdxByPath
 //
 //  Purpose:
-//      Retrieve a group index from a given path. 
+//      Retrieve a group index from a given path.
 //
 //  Arguments:
-//      groupPath    The group path of interest. 
+//      groupPath    The group path of interest.
 //
 //  Returns:
-//      If groupPath is valid, the associated group index is returned. 
-//      Otherwise, -1. 
-//           
+//      If groupPath is valid, the associated group index is returned.
+//      Otherwise, -1.
+//
 //  Programmer: Alister Maguire
 //  Creation:   May 6, 2019
 //
@@ -717,7 +750,7 @@ int
 MiliElementSetMetaData::GetGroupIdxByPath(const char *groupPath)
 {
     string truePath = groupPath;
-    if (strstr(groupPath, avtMiliMetaData::GetSandDir()) == groupPath) 
+    if (strstr(groupPath, avtMiliMetaData::GetSandDir()) == groupPath)
     {
         string strVPath(groupPath);
         size_t sDirPos = strVPath.find_first_of("/");
@@ -741,15 +774,15 @@ MiliElementSetMetaData::GetGroupIdxByPath(const char *groupPath)
 //  Method: MiliElementSetMetaData::GetGroupShortName
 //
 //  Purpose:
-//      Get a group short name by index. 
+//      Get a group short name by index.
 //
 //  Arguments:
-//      gIdx    The group index. 
+//      gIdx    The group index.
 //
 //  Returns:
-//      If gIdx is valid, the group short name is returned. Otherwise, 
-//      an empty string. 
-//           
+//      If gIdx is valid, the group short name is returned. Otherwise,
+//      an empty string.
+//
 //  Programmer: Alister Maguire
 //  Creation:   May 6, 2019
 //
@@ -773,14 +806,14 @@ MiliElementSetMetaData::GetGroupShortName(int gIdx)
 //  Method: MiliElementSetMetaData::GetGroupVecSize
 //
 //  Purpose:
-//      Get the vector size for a group. 
+//      Get the vector size for a group.
 //
 //  Arguments:
-//      gIdx    The group index. 
+//      gIdx    The group index.
 //
 //  Returns:
 //      If gIdx is valid, the group vec size is returned. Otherwise, -1.
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   May 6, 2019
 //
@@ -803,14 +836,14 @@ MiliElementSetMetaData::GetGroupVecSize(int gIdx)
 //  Method: MiliElementSetMetaData::GroupIsShared
 //
 //  Purpose:
-//      Determine if a particular group is shared or not. 
+//      Determine if a particular group is shared or not.
 //
 //  Arguments:
-//      gIdx    The group index. 
+//      gIdx    The group index.
 //
 //  Returns:
-//      true if the group is shared. False otherwise. 
-//           
+//      true if the group is shared. False otherwise.
+//
 //  Programmer: Alister Maguire
 //  Creation:   May 6, 2019
 //
@@ -833,15 +866,15 @@ MiliElementSetMetaData::GroupIsShared(int gIdx)
 //  Method: MiliElementSetMetaData::GetGroupVecComponents
 //
 //  Purpose:
-//      Get the vector components for the given group. 
+//      Get the vector components for the given group.
 //
 //  Arguments:
-//      gIdx    The group index. 
+//      gIdx    The group index.
 //
 //  Returns:
 //      If gIdx is valid, the group vec components are returned. Otherwise, an
-//      empty vector. 
-//           
+//      empty vector.
+//
 //  Programmer: Alister Maguire
 //  Creation:   May 6, 2019
 //
@@ -857,7 +890,7 @@ MiliElementSetMetaData::GetGroupVecComponents(int gIdx)
 
     if (gIdx >= 0 && gIdx < groupComponentIdxs.size())
     {
-        cIdxs = groupComponentIdxs[gIdx]; 
+        cIdxs = groupComponentIdxs[gIdx];
     }
 
     for (intVector::iterator it = cIdxs.begin();
@@ -874,15 +907,15 @@ MiliElementSetMetaData::GetGroupVecComponents(int gIdx)
 //  Method: MiliElementSetMetaData::GetGroupComponentIdxs
 //
 //  Purpose:
-//      Get the component indicies for a given group. 
+//      Get the component indicies for a given group.
 //
-//  Arguments: 
-//      groupName    The name of the group of interest. 
+//  Arguments:
+//      groupName    The name of the group of interest.
 //
 //  Returns:
-//      If the name is valid, a const reference to the vector containing the 
-//      component indicies for this group. Otherwise, an empty vector. 
-//           
+//      If the name is valid, a const reference to the vector containing the
+//      component indicies for this group. Otherwise, an empty vector.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -890,7 +923,7 @@ MiliElementSetMetaData::GetGroupVecComponents(int gIdx)
 //
 // ****************************************************************************
 
-intVector 
+intVector
 MiliElementSetMetaData::GetGroupComponentIdxs(string groupName)
 {
     for (int i = 0; i < groupShortNames.size(); ++i)
@@ -909,15 +942,15 @@ MiliElementSetMetaData::GetGroupComponentIdxs(string groupName)
 //  Method: MiliElementSetMetaData::GetGroupComponentIdxs
 //
 //  Purpose:
-//      Get the component indicies for a given group. 
+//      Get the component indicies for a given group.
 //
-//  Arguments: 
-//      groupIdx    The index of the group of interest. 
+//  Arguments:
+//      groupIdx    The index of the group of interest.
 //
 //  Returns:
-//      If the index is valid, a const reference to the vector containing 
-//      the component indicies for this group. Otherwise, an empty vector. 
-//           
+//      If the index is valid, a const reference to the vector containing
+//      the component indicies for this group. Otherwise, an empty vector.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -925,7 +958,7 @@ MiliElementSetMetaData::GetGroupComponentIdxs(string groupName)
 //
 // ****************************************************************************
 
-intVector 
+intVector
 MiliElementSetMetaData::GetGroupComponentIdxs(int groupIdx)
 {
     if (groupIdx < groupComponentIdxs.size())
@@ -941,15 +974,15 @@ MiliElementSetMetaData::GetGroupComponentIdxs(int groupIdx)
 //  Constructor: MiliClassMetaData::MiliClassMetaData
 //
 //  Purpose:
-//      Initialize the MiliClassMetaData. 
+//      Initialize the MiliClassMetaData.
 //
-//  Arguments: 
+//  Arguments:
 //      sName         The class' short name.
 //      lName         The class' long name.
 //      scID          The class' superclass ID.
-//      totalNEl      The total number of elements belonging to this class. 
-//      numDomains    The number of domains. 
-//           
+//      totalNEl      The total number of elements belonging to this class.
+//      numDomains    The number of domains.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1000,12 +1033,12 @@ MiliClassMetaData::~MiliClassMetaData()
 //  Method: MiliClassMetaData::SetConnectivityOffset
 //
 //  Purpose:
-//      Set the connectivity offset for this class. 
+//      Set the connectivity offset for this class.
 //
-//  Arguments: 
-//      domain     The domain. 
-//      offest     The offset. 
-//           
+//  Arguments:
+//      domain     The domain.
+//      offest     The offset.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1013,7 +1046,7 @@ MiliClassMetaData::~MiliClassMetaData()
 //
 // ****************************************************************************
 
-void 
+void
 MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 {
     if (domain >= 0 && domain < connectivityOffset.size())
@@ -1027,18 +1060,18 @@ MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 //  Method: MiliClassMetaData::GetConnectivityOffset
 //
 //  Purpose:
-//      Get the Class offset in the given domain. If we have N elements, 
-//      and a variable of this Class type, the connectivity offset 
-//      will be the starting position of this variable in our 
+//      Get the Class offset in the given domain. If we have N elements,
+//      and a variable of this Class type, the connectivity offset
+//      will be the starting position of this variable in our
 //      array of N scalars/vectors/etc. This is valuable when a scalar
-//      is not applied to all elements. 
+//      is not applied to all elements.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
-//      The connectivity offset. 
-//           
+//      The connectivity offset.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1046,7 +1079,7 @@ MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 //
 // ****************************************************************************
 
-int 
+int
 MiliClassMetaData::GetConnectivityOffset(int domain)
 {
     if (domain >= 0 && domain < connectivityOffset.size())
@@ -1061,15 +1094,15 @@ MiliClassMetaData::GetConnectivityOffset(int domain)
 //  Method: MiliClassMetaData::PopulateLabelIds
 //
 //  Purpose:
-//      Populate the class label ids and ranges. 
+//      Populate the class label ids and ranges.
 //
-//  Arguments: 
-//      domain        The domain of interest. 
-//      ids           An array of ids of size "number of 
+//  Arguments:
+//      domain        The domain of interest.
+//      ids           An array of ids of size "number of
 //                    elements on this domain".
 //      numBlocks     The number of blocks that our labels span.
-//      blockRanges   The block ranges for the labels. 
-//           
+//      blockRanges   The block ranges for the labels.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -1077,8 +1110,8 @@ MiliClassMetaData::GetConnectivityOffset(int domain)
 //
 // ****************************************************************************
 
-void 
-MiliClassMetaData::PopulateLabelIds(int domain, 
+void
+MiliClassMetaData::PopulateLabelIds(int domain,
                                     int *ids,
                                     int numBlocks,
                                     int *blockRanges)
@@ -1106,11 +1139,11 @@ MiliClassMetaData::PopulateLabelIds(int domain,
 //      Populate the class label positions. This information is needed by
 //      the vtkElementLabelArray.
 //
-//  Arguments: 
-//      domain        The domain of interest. 
-//      numBlocks     The number of blocks/segments of labels for this class. 
-//      blockRanges   The block ranges. 
-//           
+//  Arguments:
+//      domain        The domain of interest.
+//      numBlocks     The number of blocks/segments of labels for this class.
+//      blockRanges   The block ranges.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 9, 2019
 //
@@ -1118,8 +1151,8 @@ MiliClassMetaData::PopulateLabelIds(int domain,
 //
 // ****************************************************************************
 
-void 
-MiliClassMetaData::PopulateLabelPositions(int  domain, 
+void
+MiliClassMetaData::PopulateLabelPositions(int  domain,
                                           int  numBlocks,
                                           int *blockRanges)
 {
@@ -1136,7 +1169,7 @@ MiliClassMetaData::PopulateLabelPositions(int  domain,
             labelPositions[domain].rangesEnd.push_back(end);
             labelPositions[domain].idsBegin.push_back(idPos);
             labelPositions[domain].idsEnd.push_back(idPos + rangeSize - 1);
-            idPos += rangeSize; 
+            idPos += rangeSize;
         }
         labelPositions[domain].numBlocks = numBlocks;
     }
@@ -1147,15 +1180,15 @@ MiliClassMetaData::PopulateLabelPositions(int  domain,
 //  Method: MiliClassMetaData::GetLabelPositionInfoPtr
 //
 //  Purpose:
-//      Get label position info for this class. 
+//      Get label position info for this class.
 //
-//  Arguments: 
-//      domain        The domain of interest. 
+//  Arguments:
+//      domain        The domain of interest.
 //
 //  Returns:
-//      A const pointer to the label position info for this class if it 
-//      exists. Otherwise, NULL. 
-//           
+//      A const pointer to the label position info for this class if it
+//      exists. Otherwise, NULL.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 9, 2019
 //
@@ -1163,11 +1196,11 @@ MiliClassMetaData::PopulateLabelPositions(int  domain,
 //
 // ****************************************************************************
 
-const LabelPositionInfo * 
+const LabelPositionInfo *
 MiliClassMetaData::GetLabelPositionInfoPtr(int domain)
 {
     if (domain >= 0 && domain < labelPositions.size())
-    { 
+    {
         return &labelPositions[domain];
     }
     return NULL;
@@ -1180,13 +1213,13 @@ MiliClassMetaData::GetLabelPositionInfoPtr(int domain)
 //  Purpose:
 //      Get the class labels.
 //
-//  Arguments: 
-//      domain        The domain of interest. 
+//  Arguments:
+//      domain        The domain of interest.
 //      outLabels     A reference to a vector for storing the requested labels.
 //
 //  Returns:
-//      true if the retrieval was successful. Otherwise, false. 
-//           
+//      true if the retrieval was successful. Otherwise, false.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -1199,7 +1232,7 @@ MiliClassMetaData::GetElementLabels(int domain, stringVector &outLabels)
 {
     if (domain >= 0 && domain < elementLabels.size())
     {
-        if (!labelsGenerated[domain])        
+        if (!labelsGenerated[domain])
         {
             GenerateElementLabels(domain);
         }
@@ -1218,12 +1251,12 @@ MiliClassMetaData::GetElementLabels(int domain, stringVector &outLabels)
 //  Purpose:
 //      Get a pointer to the class labels.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
-//      A pointer to the desired labels if successful. Otherwise, NULL. 
-//           
+//      A pointer to the desired labels if successful. Otherwise, NULL.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -1236,7 +1269,7 @@ MiliClassMetaData::GetElementLabelsPtr(int domain)
 {
     if (domain >= 0 && domain < elementLabels.size())
     {
-        if (!labelsGenerated[domain])        
+        if (!labelsGenerated[domain])
         {
             GenerateElementLabels(domain);
         }
@@ -1252,14 +1285,14 @@ MiliClassMetaData::GetElementLabelsPtr(int domain)
 //  Method: MiliClassMetaData::GetMaxLabelLength
 //
 //  Purpose:
-//      Get the max label length for this class. 
+//      Get the max label length for this class.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
 //      The max label length on the given domain.
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -1287,19 +1320,19 @@ MiliClassMetaData::GetMaxLabelLength(int domain)
 //  Method: MiliClassMetaData::SetNumElements
 //
 //  Purpose:
-//      Set the number of elements belonging to this class 
-//      on a specified domain. 
+//      Set the number of elements belonging to this class
+//      on a specified domain.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
-//      nEl       The number of elements on this domain. 
+//  Arguments:
+//      domain    The domain of interest.
+//      nEl       The number of elements on this domain.
 //
-//  Notes: Global variables and material variables currently DO NOT 
+//  Notes: Global variables and material variables currently DO NOT
 //         have their number of elements ever set. This is because
-//         global variables are applied to the entire mesh, and 
+//         global variables are applied to the entire mesh, and
 //         material variables are associated with materials that
-//         are defined on the mesh. 
-//           
+//         are defined on the mesh.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1307,7 +1340,7 @@ MiliClassMetaData::GetMaxLabelLength(int domain)
 //
 // ****************************************************************************
 
-void 
+void
 MiliClassMetaData::SetNumElements(int domain, int nEl)
 {
     if (domain >= 0 && domain < labelIds.size())
@@ -1324,21 +1357,21 @@ MiliClassMetaData::SetNumElements(int domain, int nEl)
 //
 //  Purpose:
 //      Get the number of elements belonging to this class
-//      on a given domain. 
+//      on a given domain.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
 //      The number of elements belonging to this class on the
-//      given domain. 
+//      given domain.
 //
-//  Notes: Global variables and material variables currently DO NOT 
+//  Notes: Global variables and material variables currently DO NOT
 //         have their number of elements ever set. This is because
-//         global variables are applied to the entire mesh, and 
+//         global variables are applied to the entire mesh, and
 //         material variables are associated with materials that
-//         are defined on the mesh. 
-//           
+//         are defined on the mesh.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1346,7 +1379,7 @@ MiliClassMetaData::SetNumElements(int domain, int nEl)
 //
 // ****************************************************************************
 
-int 
+int
 MiliClassMetaData::GetNumElements(int domain)
 {
     if (domain >= 0 && domain < numDomainElements.size())
@@ -1361,15 +1394,18 @@ MiliClassMetaData::GetNumElements(int domain)
 //  Method: MiliClassMetaData::DetermineType
 //
 //  Purpose:
-//      Determine a generalized type for this class. 
+//      Determine a generalized type for this class.
 //
-//  Arguments: 
+//  Arguments:
 //      superClass    The superclass ID.
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
 //  Modifications:
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Moved the Mili superClassId M_PARTICLE from the PARTICLE to the
+//    CELL classType.
 //
 // ****************************************************************************
 
@@ -1384,6 +1420,7 @@ MiliClassMetaData::DetermineType()
         case M_NODE:
             classType = NODE;
             break;
+        case M_PARTICLE:
         case M_TRUSS:
         case M_BEAM:
         case M_TRI:
@@ -1404,11 +1441,8 @@ MiliClassMetaData::DetermineType()
         case M_SURFACE:
             classType = SURFACE;
             break;
-        case M_PARTICLE:
-            classType = PARTICLE;
-            break;
         default:
-            classType = UNKNOWN; 
+            classType = UNKNOWN;
             break;
     }
 }
@@ -1418,11 +1452,11 @@ MiliClassMetaData::DetermineType()
 //  Method: MiliClassMetaData::GenerateElementLabels
 //
 //  Purpose:
-//      Attempt to generate the class labels. 
+//      Attempt to generate the class labels.
 //
 //  Arguments:
-//      domain    The domain of interest. 
-//           
+//      domain    The domain of interest.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -1442,13 +1476,13 @@ MiliClassMetaData::GenerateElementLabels(int domain)
         else if (labelIds[domain][0] == -1)
         {
             //
-            // If we don't have label ids, just use the short name. 
+            // If we don't have label ids, just use the short name.
             //
             int numEl = numDomainElements[domain];
             for (int i = 0; i < numEl; ++i)
-            { 
+            {
                 elementLabels[domain][i] = shortName;
-                maxLabelLengths[domain]  = std::max(int(shortName.size()), 
+                maxLabelLengths[domain]  = std::max(int(shortName.size()),
                     maxLabelLengths[domain]);
             }
         }
@@ -1465,7 +1499,7 @@ MiliClassMetaData::GenerateElementLabels(int domain)
                 string sLabel = string(cLabel);
                 elementLabels[domain][pos++] = sLabel;
 
-                maxLabelLengths[domain] = std::max(int(sLabel.size()), 
+                maxLabelLengths[domain] = std::max(int(sLabel.size()),
                     maxLabelLengths[domain]);
             }
         }
@@ -1477,10 +1511,10 @@ MiliClassMetaData::GenerateElementLabels(int domain)
 // ***************************************************************************
 //  Constructor: MiliMaterialMetaData::MiliMaterialMetaData
 //
-//  Arguments: 
-//      matName    The name of this material. 
-//      matColor   The color of this material. 
-//           
+//  Arguments:
+//      matName    The name of this material.
+//      matColor   The color of this material.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1514,9 +1548,9 @@ MiliMaterialMetaData::~MiliMaterialMetaData(void)
 // ***************************************************************************
 //  Constructor: avtMiliMetaData::avtMiliMetaData
 //
-//  Arguments: 
-//      nDomains    The number of domains present in this data. 
-//           
+//  Arguments:
+//      nDomains    The number of domains present in this data.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1537,9 +1571,9 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     //
     // In mili, sanded elements are those that have been
     // "destroyed" during the simulation process. By default,
-    // we ghost them out. However, we also allow access to 
+    // we ghost them out. However, we also allow access to
     // a mesh that keeps these elements intact. These variables
-    // are all found in the sand path (see GetSandDir()). 
+    // are all found in the sand path (see GetSandDir()).
     //
     containsSand  = false;
 
@@ -1621,7 +1655,7 @@ avtMiliMetaData::~avtMiliMetaData()
     }
 
     const size_t sharedSize = sharedVariables.size();
-    for (int i = 0; i < sharedSize; ++i) 
+    for (int i = 0; i < sharedSize; ++i)
     {
         if (sharedVariables[i] != NULL)
         {
@@ -1638,11 +1672,11 @@ avtMiliMetaData::~avtMiliMetaData()
 //
 //  Purpose:
 //      Set the number of variables in our data, and instantiate
-//      the miliVariables container. 
+//      the miliVariables container.
 //
-//  Arguments: 
-//      nVars    The number of variables present in our data. 
-//           
+//  Arguments:
+//      nVars    The number of variables present in our data.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1679,12 +1713,12 @@ avtMiliMetaData::SetNumVariables(int nVars)
 //  Method: avtMiliMetaData::SetNumMaterials
 //
 //  Purpose:
-//      Set the number of materials in our data, and initialize the 
-//      miliMaterials container. 
+//      Set the number of materials in our data, and initialize the
+//      miliMaterials container.
 //
-//  Arguments: 
-//      nMats    The number of materials in our dataset. 
-//           
+//  Arguments:
+//      nMats    The number of materials in our dataset.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1721,12 +1755,12 @@ avtMiliMetaData::SetNumMaterials(int nMats)
 //  Method: avtMiliMetaData::SetNumClasses
 //
 //  Purpose:
-//      Set the number of classes in our dataset, and initialize the 
-//      miliClasses container. 
+//      Set the number of classes in our dataset, and initialize the
+//      miliClasses container.
 //
-//  Arguments: 
+//  Arguments:
 //      nClasses    The number of classes in our dataset.
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1763,15 +1797,15 @@ avtMiliMetaData::SetNumClasses(int nClasses)
 //  Method: avtMiliMetaData::AddClassMD
 //
 //  Purpose:
-//      Add a mili Class meta data object to our container. 
+//      Add a mili Class meta data object to our container.
 //
-//  Arguments: 
-//      classIdx    The index of the Clas md. 
-//      mcmd        The mili class meta data. 
+//  Arguments:
+//      classIdx    The index of the Clas md.
+//      mcmd        The mili class meta data.
 //
 //      NOTE: mcmd enters ownership of avtMiliMetaData and all
-//            memory is managed internally from then on. 
-//           
+//            memory is managed internally from then on.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1780,16 +1814,16 @@ avtMiliMetaData::SetNumClasses(int nClasses)
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddClassMD(int classIdx, 
+avtMiliMetaData::AddClassMD(int classIdx,
                             MiliClassMetaData *mcmd)
 {
     if (classIdx < 0 || classIdx >= numClasses)
     {
-        char expected[128]; 
-        char recieved[128];
+        char expected[128];
+        char received[128];
         snprintf(expected, 128, "an index betwen 0 and %d", numClasses - 1);
-        snprintf(recieved, 128, "%d", classIdx);
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        snprintf(received, 128, "%d", classIdx);
+        EXCEPTION2(UnexpectedValueException, expected, received);
     }
 
     if (miliClasses == NULL)
@@ -1812,11 +1846,11 @@ avtMiliMetaData::AddClassMD(int classIdx,
 //  Method: avtMiliMetaData::SetNumCells
 //
 //  Purpose:
-//      Set the number of cells for a given domain. 
+//      Set the number of cells for a given domain.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
-//      nCells    The number of cells on the given domain. 
+//  Arguments:
+//      domain    The domain of interest.
+//      nCells    The number of cells on the given domain.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1840,12 +1874,12 @@ avtMiliMetaData::SetNumCells(int domain, int nCells)
 //  Method: avtMiliMetaData::SetNumNodes
 //
 //  Purpose:
-//      Set the number of nodes for the given domain. 
+//      Set the number of nodes for the given domain.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
-//      nNodes    The number of nodes on the given domain. 
-//           
+//  Arguments:
+//      domain    The domain of interest.
+//      nNodes    The number of nodes on the given domain.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1862,8 +1896,8 @@ avtMiliMetaData::SetNumNodes(int domain, int nNodes)
         nodeBasedLabels[domain].resize(nNodes, string(""));
 
         //
-        // See if we have a node class. If so, tell it 
-        // how many elements it has. 
+        // See if we have a node class. If so, tell it
+        // how many elements it has.
         //
         MiliClassMetaData *nodeMD = GetClassMDByShortName("node");
 
@@ -1879,15 +1913,15 @@ avtMiliMetaData::SetNumNodes(int domain, int nNodes)
 //  Method: avtMiliMetaData::GetNumCells
 //
 //  Purpose:
-//      Get the number of cells on the given domain. 
+//      Get the number of cells on the given domain.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
-//      The number of cells on the given domain, if it's valid. 
-//      If it's not valid, 0 is returned. 
-//           
+//      The number of cells on the given domain, if it's valid.
+//      If it's not valid, 0 is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1910,15 +1944,15 @@ avtMiliMetaData::GetNumCells(int domain)
 //  Method: avtMiliMetaData::GetNumNodes
 //
 //  Purpose:
-//      Get the number of nodes on the given domain. 
+//      Get the number of nodes on the given domain.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
-//      The number of nodes on the given domain, if it's valid. 
-//      If it's not valid, 0 is returned. 
-//           
+//      The number of nodes on the given domain, if it's valid.
+//      If it's not valid, 0 is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1941,15 +1975,15 @@ avtMiliMetaData::GetNumNodes(int domain)
 //  Method: avtMiliMetaData::GetClassMDIdxByShortName
 //
 //  Purpose:
-//      Get the index of a MiliClassMetaData in our container. 
+//      Get the index of a MiliClassMetaData in our container.
 //
-//  Arguments: 
+//  Arguments:
 //      cName    The shortname of the class.
 //
 //  Returns:
-//      If valid, the index to the requested class. If not valid, 
-//      NULL is returned. 
-//           
+//      If valid, the index to the requested class. If not valid,
+//      NULL is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1966,7 +2000,7 @@ avtMiliMetaData::GetClassMDIdxByShortName(const char *cName)
     }
     for (int i = 0; i < numClasses; ++i)
     {
-        if (miliClasses[i] != NULL) 
+        if (miliClasses[i] != NULL)
         {
             if (miliClasses[i]->GetShortName() == cName)
             {
@@ -1983,11 +2017,11 @@ avtMiliMetaData::GetClassMDIdxByShortName(const char *cName)
 //
 //  Purpose:
 //      Retrieve a vector of pointers to all mili class MD
-//      that are cell based. 
+//      that are cell based.
 //
 //  Arguments:
-//      outMD    The vector to contain the class MD.  
-//           
+//      outMD    The vector to contain the class MD.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2019,11 +2053,11 @@ avtMiliMetaData::GetCellBasedClassMD(
 //
 //  Purpose:
 //      Retrieve a vector of pointers to all mili class MD
-//      that are node based. 
+//      that are node based.
 //
 //  Arguments:
-//      outMD    The vector to contain the class MD.  
-//           
+//      outMD    The vector to contain the class MD.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2054,14 +2088,14 @@ avtMiliMetaData::GetNodeBasedClassMD(
 //  Method: avtMiliMetaData::GetClassMDByShortName
 //
 //  Purpose:
-//      Get the meta data for a Class with the given name. 
+//      Get the meta data for a Class with the given name.
 //
-//  Arguments: 
-//      vName    The Class name.  
+//  Arguments:
+//      vName    The Class name.
 //
 //  Returns:
-//      If valid, the Class is returned. Otherwise, NULL is returned. 
-//           
+//      If valid, the Class is returned. Otherwise, NULL is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2078,7 +2112,7 @@ avtMiliMetaData::GetClassMDByShortName(const char *vName)
         return miliClasses[idx];
     }
 
-    return NULL; 
+    return NULL;
 }
 
 
@@ -2087,20 +2121,20 @@ avtMiliMetaData::GetClassMDByShortName(const char *vName)
 //
 //  Purpose:
 //       Retrieve two pieces of information; First, a list designating
-//       which mili superclasses are in our data and are a cell type. 
+//       which mili superclasses are in our data and are a cell type.
 //       Second, a list designating the number of Classes in our
 //       data the corresond to each superclass.
 //
 //       Example: suppose our data contains 2 Classes that are under
 //       the superclass with ID 3 and 1 Class that is under the superclass
 //       with ID 5. Our arrays would be populated as follows:
-//           cTypes   = {3, 5} 
+//           cTypes   = {3, 5}
 //           ctCounts = {2, 1}
 //
-//  Arguments: 
-//      cTypes    A reference to an array to hold superclass IDs. 
-//      ctCounts  A reference to an array to hold superclass counts. 
-//           
+//  Arguments:
+//      cTypes    A reference to an array to hold superclass IDs.
+//      ctCounts  A reference to an array to hold superclass counts.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2109,7 +2143,7 @@ avtMiliMetaData::GetClassMDByShortName(const char *vName)
 // ****************************************************************************
 
 void
-avtMiliMetaData::GetCellTypeCounts(intVector &cTypes, 
+avtMiliMetaData::GetCellTypeCounts(intVector &cTypes,
                                    intVector &ctCounts)
 {
     if (miliClasses == NULL)
@@ -2119,7 +2153,7 @@ avtMiliMetaData::GetCellTypeCounts(intVector &cTypes,
 
     //
     // First, count the occurrence of each super class
-    // that is a cell. 
+    // that is a cell.
     //
     int miliSuperClassCount[M_QTY_SUPERCLASS];
     for (int i = 0; i < M_QTY_SUPERCLASS; ++i)
@@ -2142,7 +2176,7 @@ avtMiliMetaData::GetCellTypeCounts(intVector &cTypes,
     }
 
     //
-    // Compress our information for caller's use. 
+    // Compress our information for caller's use.
     //
     for (int i = 0; i < M_QTY_SUPERCLASS; ++i)
     {
@@ -2159,15 +2193,15 @@ avtMiliMetaData::GetCellTypeCounts(intVector &cTypes,
 //  Method: avtMiliMetaData::AddVarMD
 //
 //  Purpose:
-//      Add a MiliVariableMetaData object to our container. 
+//      Add a MiliVariableMetaData object to our container.
 //
-//  Arguments: 
+//  Arguments:
 //      varIdx    Where in our container to store the object.
-//      mvmd      The MiliVariableMetaData object. 
+//      mvmd      The MiliVariableMetaData object.
 //
 //      NOTE: mvmd enters ownership of avtMiliMetaData and all
-//            memory is managed internally from then on. 
-//           
+//            memory is managed internally from then on.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2176,7 +2210,7 @@ avtMiliMetaData::GetCellTypeCounts(intVector &cTypes,
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddVarMD(int varIdx, 
+avtMiliMetaData::AddVarMD(int varIdx,
                           MiliVariableMetaData *mvmd)
 {
     string sName = mvmd->GetShortName();
@@ -2210,15 +2244,15 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
     //
     // If this is a shared variable, add some info about it
-    // for easy access in the future. 
+    // for easy access in the future.
     //
     if (mvmd->IsShared())
     {
         if (mvmd->IsElementSet())
         {
-            boolVector gIsShared = 
+            boolVector gIsShared =
                 ((MiliElementSetMetaData *)mvmd)->GetGroupIsShared();
-            stringVector gNames = 
+            stringVector gNames =
                 ((MiliElementSetMetaData *)mvmd)->GetGroupShortNames();
 
             int gIdx = 0;
@@ -2233,7 +2267,7 @@ avtMiliMetaData::AddVarMD(int varIdx,
         }
         else
         {
-            AddSharedVariableInfo(mvmd->GetShortName(), 
+            AddSharedVariableInfo(mvmd->GetShortName(),
                 varIdx, false);
         }
     }
@@ -2244,18 +2278,18 @@ avtMiliMetaData::AddVarMD(int varIdx,
 //  Method: GetVarMDByShortName
 //
 //  Purpose:
-//      Get a MiliVariableMetaData from our container given 
-//      its shortname. 
+//      Get a MiliVariableMetaData from our container given
+//      its shortname.
 //
-//  Arguments: 
-//      vName    The shortname of our desired variable. 
+//  Arguments:
+//      vName    The shortname of our desired variable.
 //      cName    The shortname of the variables class (a single
-//               variable can be associated with multiple classes). 
+//               variable can be associated with multiple classes).
 //
 //  Returns:
 //      The desired MiliVariableMetaData if it's valid. If not valid,
-//      NULL is returned. 
-//           
+//      NULL is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2273,7 +2307,44 @@ avtMiliMetaData::GetVarMDByShortName(const char *vName,
         return miliVariables[idx];
     }
 
-    return NULL; 
+    return NULL;
+}
+
+
+// ***************************************************************************
+//  Method: GetVarMDByShortName
+//
+//  Purpose:
+//      Get a vector of all MiliVariableMetaData from our container that
+//      match the given shortname.
+//
+//  Arguments:
+//      vName    The shortname of our desired variable.
+//
+//  Returns:
+//      A vector containing all MiliVariableMetaData that match the given
+//      shortname.
+//
+//  Programmer: Alister Maguire
+//  Creation:   March 25, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::vector<MiliVariableMetaData *>
+avtMiliMetaData::GetVarMDByShortName(const char *vName)
+{
+    std::vector<MiliVariableMetaData *> varMD;
+    std::vector<int> idxs = GetVarMDIdxByShortName(vName);
+
+    for (std::vector<int>::iterator idxItr = idxs.begin();
+         idxItr != idxs.end(); ++idxItr)
+    {
+        varMD.push_back(miliVariables[*idxItr]);
+    }
+
+    return varMD;
 }
 
 
@@ -2282,15 +2353,15 @@ avtMiliMetaData::GetVarMDByShortName(const char *vName,
 //
 //  Purpose:
 //      Get a MiliVariableMetaData from our container given
-//      its visit path. 
+//      its visit path.
 //
-//  Arguments: 
+//  Arguments:
 //      vPath    The visit path (ex: Primal/beams/stress)
 //
 //  Returns:
 //      The desired MiliVariableMetaData if it's valid. If not valid,
-//      NULL is returned. 
-//           
+//      NULL is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2302,7 +2373,7 @@ MiliVariableMetaData *
 avtMiliMetaData::GetVarMDByPath(const char *vPath)
 {
     int idx = -1;
-    if (strstr(vPath, GetSandDir()) == vPath) 
+    if (strstr(vPath, GetSandDir()) == vPath)
     {
         string strVPath(vPath);
         size_t sDirPos  = strVPath.find_first_of("/");
@@ -2319,22 +2390,22 @@ avtMiliMetaData::GetVarMDByPath(const char *vPath)
         return miliVariables[idx];
     }
 
-    return NULL; 
+    return NULL;
 }
 
 // ***************************************************************************
 //  Method: avtMiliMetaData::GetVarMDByIdx
 //
 //  Purpose:
-//      Get a MiliVariableMetaData given its container index. 
+//      Get a MiliVariableMetaData given its container index.
 //
-//  Arguments: 
-//      varIdx    The container index. 
-//      
+//  Arguments:
+//      varIdx    The container index.
+//
 //  Returns:
 //      The desired MiliVariableMetaData if it's valid. If not valid,
-//      NULL is returned. 
-//           
+//      NULL is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2350,7 +2421,7 @@ avtMiliMetaData::GetVarMDByIdx(int varIdx)
         return miliVariables[varIdx];
     }
 
-    return NULL; 
+    return NULL;
 }
 
 
@@ -2359,17 +2430,17 @@ avtMiliMetaData::GetVarMDByIdx(int varIdx)
 //
 //  Purpose:
 //      Get a container index to the MiliVariableMetaData having
-//      the given name. 
+//      the given name.
 //
-//  Arguments: 
-//      vName    The variable name. 
+//  Arguments:
+//      vName    The variable name.
 //      cName    The shortname of the variables class (a single
-//               variable can be associated with multiple classes). 
+//               variable can be associated with multiple classes).
 //
 //  Returns:
-//      If the name is valid, the container index is returned. Otherwise, 
-//      -1 is returned. 
-//           
+//      If the name is valid, the container index is returned. Otherwise,
+//      -1 is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2387,14 +2458,14 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
     }
     for (int i = 0; i < numVariables; ++i)
     {
-        if (miliVariables[i] != NULL) 
+        if (miliVariables[i] != NULL)
         {
             if (miliVariables[i]->GetShortName() == vName &&
                 miliVariables[i]->GetClassShortName() == cName)
             {
                 return i;
             }
-            else if (miliVariables[i]->IsElementSet() && 
+            else if (miliVariables[i]->IsElementSet() &&
                 miliVariables[i]->GetClassShortName() == cName)
             {
                 //
@@ -2404,7 +2475,7 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
                 // so that users can still request the element set itself
                 // (v.s. one of it's groups). Taking the lazy route...
                 //
-                stringVector groupNames = 
+                stringVector groupNames =
                     ((MiliElementSetMetaData *)miliVariables[i])->
                     GetGroupShortNames();
 
@@ -2424,19 +2495,86 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
 
 
 // ***************************************************************************
+//  Method: GetVarMDIdxByShortName
+//
+//  Purpose:
+//      Get a vector of container indices to the MiliVariableMetaData having
+//      the given name.
+//
+//  Arguments:
+//      vName    The variable name.
+//
+//  Returns:
+//      A vector of indices.
+//
+//  Programmer: Alister Maguire
+//  Creation:   March 25, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::vector<int>
+avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
+{
+    std::vector<int> idxs;
+
+    if (miliVariables == NULL)
+    {
+        return idxs;
+    }
+
+    for (int i = 0; i < numVariables; ++i)
+    {
+        if (miliVariables[i] != NULL)
+        {
+            if (miliVariables[i]->GetShortName() == vName)
+            {
+                idxs.push_back(i);
+            }
+            else if (miliVariables[i]->IsElementSet())
+            {
+                //
+                // If this is an element set, we need to check against
+                // all of its group names. IMPORTANT: we must check the
+                // group names after we've checked the short name (above)
+                // so that users can still request the element set itself
+                // (v.s. one of it's groups). Taking the lazy route...
+                //
+                stringVector groupNames =
+                    ((MiliElementSetMetaData *)miliVariables[i])->
+                    GetGroupShortNames();
+
+                for (stringVector::iterator gItr = groupNames.begin();
+                     gItr != groupNames.end(); ++gItr)
+                {
+                    if (vName == (*gItr))
+                    {
+                        idxs.push_back(i);
+                    }
+                }
+            }
+        }
+    }
+
+    return idxs;
+}
+
+
+// ***************************************************************************
 //  Method: avtMiliMetaData::GetVarMDIdxByPath
 //
 //  Purpose:
 //      Get a container index to the MiliVariableMetaData having
-//      the given path. 
+//      the given path.
 //
-//  Arguments: 
-//      vPath    The variable's visit path. 
+//  Arguments:
+//      vPath    The variable's visit path.
 //
 //  Returns:
 //      If the path is valid, the container index is returned. Otherwise,
-//      -1 is returned. 
-//           
+//      -1 is returned.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2449,7 +2587,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 {
     string strVPath(vPath);
 
-    if (strstr(vPath, GetSandDir()) == vPath) 
+    if (strstr(vPath, GetSandDir()) == vPath)
     {
         size_t sDirPos = strVPath.find_first_of("/");
         strVPath       = strVPath.substr(sDirPos + 1);
@@ -2461,7 +2599,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
     }
     for (int i = 0; i < numVariables; ++i)
     {
-        if (miliVariables[i] != NULL) 
+        if (miliVariables[i] != NULL)
         {
             if (miliVariables[i]->GetPath() == strVPath)
             {
@@ -2476,7 +2614,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
                 // so that users can still request the element set itself
                 // (v.s. one of it's groups). Taking the lazy route...
                 //
-                stringVector groupPaths = 
+                stringVector groupPaths =
                     ((MiliElementSetMetaData *)miliVariables[i])->
                     GetGroupPaths();
 
@@ -2501,18 +2639,18 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 //
 //  Purpose:
 //      Add subrecord information, and tell an associated variable
-//      where to find it. 
+//      where to find it.
 //
 //      IMPORTANT: this method assumes that the subrecord ids are added
-//          sequentially. This method SHOULD NOT be used for adding 
-//          subrecord ids in non-sequential order. 
+//          sequentially. This method SHOULD NOT be used for adding
+//          subrecord ids in non-sequential order.
 //
-//  Arguments: 
-//      varIdx    The index of the associated variable. 
-//      dom       The domain of interest. 
-//      SRId      The subrecord Id. 
-//      SR        A pointer to the subrecord. 
-//           
+//  Arguments:
+//      varIdx    The index of the associated variable.
+//      dom       The domain of interest.
+//      SRId      The subrecord Id.
+//      SR        A pointer to the subrecord.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2525,9 +2663,9 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
                                   int dom,
                                   int SRId,
                                   Subrecord *SR)
- 
+
 {
-    if (varIdx >= 0 && varIdx < numVariables && 
+    if (varIdx >= 0 && varIdx < numVariables &&
         miliVariables != NULL && dom < numDomains)
     {
         if (miliVariables[varIdx] != NULL)
@@ -2542,7 +2680,7 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
         else
         {
             char msg[128];
-            snprintf(msg, 128, 
+            snprintf(msg, 128,
                 "Attempting to add MD to uninitialized container!");
             EXCEPTION1(ImproperUseException, msg);
         }
@@ -2560,11 +2698,11 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
 //  Method: avtMiliMetaData::GenerateZoneBasedLabels
 //
 //  Purpose:
-//      Generated the zone based labels. 
+//      Generated the zone based labels.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
-//           
+//  Arguments:
+//      domain    The domain of interest.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -2579,13 +2717,13 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
     {
         for (int classIdx = 0; classIdx < numClasses; ++classIdx)
         {
-            stringVector *classLabels = 
+            stringVector *classLabels =
                 miliClasses[classIdx]->GetElementLabelsPtr(domain);
             if (classLabels != NULL)
             {
                 int offset = miliClasses[classIdx]->
                     GetConnectivityOffset(domain);
-                MiliClassMetaData::ClassType classType = 
+                MiliClassMetaData::ClassType classType =
                     miliClasses[classIdx]->GetClassType();
 
                 if (classType == MiliClassMetaData::CELL)
@@ -2593,7 +2731,7 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                     if ((offset + (classLabels->size())) > numCells[domain])
                     {
                         char msg[128];
-                        snprintf(msg, 128, "Number of cell labels " 
+                        snprintf(msg, 128, "Number of cell labels "
                             "exceeds number of cells?!?");
                         EXCEPTION1(ImproperUseException, msg);
                     }
@@ -2601,7 +2739,7 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                     if (zoneBasedLabels.size() == 0)
                     {
                         debug2 << "zone labels haven't been initialized yet??";
-                        zoneBasedLabels[domain].resize(numCells[domain], ""); 
+                        zoneBasedLabels[domain].resize(numCells[domain], "");
                     }
 
                     int cIdx = offset;
@@ -2614,8 +2752,8 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                             break;
                         }
                         zoneBasedLabels[domain][cIdx++] = (*labelItr);
-                        maxZoneLabelLengths[domain] = 
-                            std::max(int(labelItr->size()), 
+                        maxZoneLabelLengths[domain] =
+                            std::max(int(labelItr->size()),
                             maxZoneLabelLengths[domain]);
                     }
                 }
@@ -2630,11 +2768,11 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
 //  Method: avtMiliMetaData::GenerateNodeBasedLabels
 //
 //  Purpose:
-//      Generated the node based labels. 
+//      Generated the node based labels.
 //
-//  Arguments: 
-//      domain    The domain of interest. 
-//           
+//  Arguments:
+//      domain    The domain of interest.
+//
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
 //
@@ -2649,13 +2787,13 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
     {
         for (int classIdx = 0; classIdx < numClasses; ++classIdx)
         {
-            stringVector *classLabels = 
+            stringVector *classLabels =
                 miliClasses[classIdx]->GetElementLabelsPtr(domain);
             if (classLabels != NULL)
             {
                 int offset = miliClasses[classIdx]->
                     GetConnectivityOffset(domain);
-                MiliClassMetaData::ClassType classType = 
+                MiliClassMetaData::ClassType classType =
                     miliClasses[classIdx]->GetClassType();
 
                 if(classType == MiliClassMetaData::NODE)
@@ -2671,7 +2809,7 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                     if (nodeBasedLabels.size() == 0)
                     {
                         debug2 << "node labels haven't been initialized yet??";
-                        nodeBasedLabels[domain].resize(numNodes[domain], ""); 
+                        nodeBasedLabels[domain].resize(numNodes[domain], "");
                     }
 
                     int nIdx = offset;
@@ -2684,8 +2822,8 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                             break;
                         }
                         nodeBasedLabels[domain][nIdx++] = (*labelItr);
-                        maxNodeLabelLengths[domain] = 
-                            std::max(int(labelItr->size()), 
+                        maxNodeLabelLengths[domain] =
+                            std::max(int(labelItr->size()),
                             maxNodeLabelLengths[domain]);
                     }
                 }
@@ -2702,11 +2840,11 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
 //  Purpose:
 //      Get a pointer to the zone labels vector.
 //
-//  Arguments: 
-//      domain    The domain of interest.  
-//           
+//  Arguments:
+//      domain    The domain of interest.
+//
 //  Returns:
-//      If valid, a pointer to the labels. NULL otherwise. 
+//      If valid, a pointer to the labels. NULL otherwise.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -2739,12 +2877,12 @@ avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 //  Purpose:
 //      Get a pointer to the node labels vector.
 //
-//  Arguments: 
-//      domain    The domain of interest.  
+//  Arguments:
+//      domain    The domain of interest.
 //
 //  Returns:
-//      If valid, a pointer to the labels. NULL otherwise. 
-//           
+//      If valid, a pointer to the labels. NULL otherwise.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2774,11 +2912,11 @@ avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
 //  Method: avtMiliMetaData::GetMaxZoneLabelLength
 //
 //  Purpose:
-//      Get the maximum zone label length. 
+//      Get the maximum zone label length.
 //
-//  Arguments: 
-//      domain    The domain of interest.  
-//           
+//  Arguments:
+//      domain    The domain of interest.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2807,11 +2945,11 @@ avtMiliMetaData::GetMaxZoneLabelLength(int domain)
 //  Method: avtMiliMetaData::GetMaxNodeLabelLength
 //
 //  Purpose:
-//      Get the maximum node label length. 
+//      Get the maximum node label length.
 //
-//  Arguments: 
-//      domain    The domain of interest.  
-//           
+//  Arguments:
+//      domain    The domain of interest.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2840,15 +2978,15 @@ avtMiliMetaData::GetMaxNodeLabelLength(int domain)
 //  Method: avtMiliMetaData::GetSubrecInfo
 //
 //  Purpose:
-//      Get the subrecord info for a given domain. 
+//      Get the subrecord info for a given domain.
 //
-//  Arguments: 
-//      dom    The domain of interest.  
+//  Arguments:
+//      dom    The domain of interest.
 //
 //  Returns:
-//      If available, the requested subrecord info is returned. Otherwise, 
-//      NULL. 
-//           
+//      If available, the requested subrecord info is returned. Otherwise,
+//      NULL.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2872,15 +3010,15 @@ avtMiliMetaData::GetSubrecInfo(int dom)
 //  Method: avtMiliMetaData::AddMaterialMD
 //
 //  Purpose:
-//      Add information about a material to our meta data. 
+//      Add information about a material to our meta data.
 //
-//  Arguments: 
-//      matIdx    The index to add the MD to. 
-//      mmmd      The material meta data to add 
+//  Arguments:
+//      matIdx    The index to add the MD to.
+//      mmmd      The material meta data to add
 //
 //      NOTE: mmmd enters ownership of avtMiliMetaData and all
-//            memory is managed internally from then on. 
-//           
+//            memory is managed internally from then on.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2889,7 +3027,7 @@ avtMiliMetaData::GetSubrecInfo(int dom)
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddMaterialMD(int matIdx, 
+avtMiliMetaData::AddMaterialMD(int matIdx,
                                MiliMaterialMetaData *mmmd)
 {
     if (matIdx < 0 || matIdx > numMaterials)
@@ -2921,11 +3059,11 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 //
 //  Purpose:
 //      Retrieve the list of material names associated with
-//      this dataset. 
+//      this dataset.
 //
-//  Arguments: 
-//      matNames    The material names. 
-//           
+//  Arguments:
+//      matNames    The material names.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -2958,15 +3096,17 @@ avtMiliMetaData::GetMaterialNames(stringVector &matNames)
 //  Method: avtMiliMetaData::GetMaterialColors
 //
 //  Purpose:
-//      Get the material colors. 
+//      Get the material colors.
 //
 //  Returns:
-//      A vector of material colors. 
-//           
+//      A vector of material colors.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
 //  Modifications:
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Return an empty vector if not a single color is specified.
 //
 // ****************************************************************************
 
@@ -2978,16 +3118,29 @@ avtMiliMetaData::GetMaterialColors(stringVector &matColors)
         return;
     }
 
-    matColors.clear();    
+    matColors.clear();
     matColors.reserve(numMaterials);
 
+    string emptyString;
+    bool colorPresent = false;
     for (int i = 0; i < numMaterials; ++i)
     {
-        if (miliMaterials[i] != NULL)
+        if (miliMaterials[i] != NULL && !miliMaterials[i]->GetColor().empty())
         {
+            colorPresent = true;
             matColors.push_back(miliMaterials[i]->GetColor());
         }
+        else
+        {
+            matColors.push_back(emptyString);
+        }
     }
+
+    //
+    // If no colors are present return an empty vector.
+    //
+    if (!colorPresent)
+        matColors.clear();
 }
 
 
@@ -2997,9 +3150,9 @@ avtMiliMetaData::GetMaterialColors(stringVector &matColors)
 //  Purpose:
 //      Retrieve info about a shared variable.
 //
-//  Arguments: 
-//      shortName     The short name of the desired variable. 
-//           
+//  Arguments:
+//      shortName     The short name of the desired variable.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -3015,8 +3168,8 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
          ++sItr)
     {
         //
-        // If this is a known shared variable, just add the 
-        // indicies. 
+        // If this is a known shared variable, just add the
+        // indicies.
         //
         if ((*sItr)->shortName == shortName)
         {
@@ -3033,18 +3186,18 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 //
 //  Purpose:
 //      Add info about a shared variable. This can either be a new
-//      shared var or information about a known shared var. 
+//      shared var or information about a known shared var.
 //
 //      FYI: mili allows a single variable to be shared across
 //      multiple classes. This can complicate things when one
 //      is an element set and another is not. We keep track of
-//      some lookup info to ease future access. 
+//      some lookup info to ease future access.
 //
-//  Arguments: 
-//      shortName     The short name of our variable. 
-//      varIdx        The variable index in relation to the MD container. 
+//  Arguments:
+//      shortName     The short name of our variable.
+//      varIdx        The variable index in relation to the MD container.
 //      isES          Is this variable an element set?
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -3057,7 +3210,7 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 
 void
 avtMiliMetaData::AddSharedVariableInfo(string shortName,
-                                       int varIdx, 
+                                       int varIdx,
                                        bool isES)
 {
     bool newVar = true;
@@ -3067,8 +3220,8 @@ avtMiliMetaData::AddSharedVariableInfo(string shortName,
          ++sItr)
     {
         //
-        // If this is a known shared variable, just add the 
-        // indicies. 
+        // If this is a known shared variable, just add the
+        // indicies.
         //
         if ((*sItr)->shortName == shortName)
         {
@@ -3076,7 +3229,7 @@ avtMiliMetaData::AddSharedVariableInfo(string shortName,
             (*sItr)->variableIndicies.push_back(varIdx);
 
             //
-            // Check if this variable changes the ES status. 
+            // Check if this variable changes the ES status.
             //
             if ((*sItr)->isAllES && !isES)
             {
@@ -3088,7 +3241,7 @@ avtMiliMetaData::AddSharedVariableInfo(string shortName,
     if (newVar)
     {
         //
-        // This is a new variable. Add it. 
+        // This is a new variable. Add it.
         //
         SharedVariableInfo *newShared = new SharedVariableInfo();
         newShared->shortName = shortName;
@@ -3105,12 +3258,12 @@ avtMiliMetaData::AddSharedVariableInfo(string shortName,
 //
 //  Purpose:
 //      Determine if a string contains an element set flag. This is used
-//      to determine if a variable is an element set from its short name. 
+//      to determine if a variable is an element set from its short name.
 //
-//  Arguments: 
-//      shortName     The short name to test. 
-//      sNSize        The length of shortName.  
-//           
+//  Arguments:
+//      shortName     The short name to test.
+//      sNSize        The length of shortName.
+//
 //  Programmer: Alister Maguire
 //  Creation:   May 21, 2019
 //
@@ -3126,7 +3279,7 @@ avtMiliMetaData::ContainsESFlag(const char *shortName, int sNSize)
 
     if (sNSize < flagSize)
     {
-        return false; 
+        return false;
     }
 
     int i = 0;

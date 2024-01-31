@@ -5,6 +5,7 @@
 #include <PyDataBinningAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyDataBinningAttributes
@@ -34,9 +35,8 @@ struct DataBinningAttributesObject
 // Internal prototypes
 //
 static PyObject *NewDataBinningAttributes(int);
-
 std::string
-PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *prefix)
+PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -268,21 +268,55 @@ DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid numDimensions value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " One";
+        ss << ", Two";
+        ss << ", Three";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numDimensions in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetNumDimensions(DataBinningAttributes::NumDimensions(ival));
-    else
-    {
-        fprintf(stderr, "An invalid numDimensions value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "One, Two, Three.");
-        return NULL;
-    }
+    obj->data->SetNumDimensions(DataBinningAttributes::NumDimensions(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -301,21 +335,56 @@ DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid dim1BinBasedOn value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim1BinBasedOn in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetDim1BinBasedOn(DataBinningAttributes::BinBasedOn(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dim1BinBasedOn value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "X, Y, Z, Variable.");
-        return NULL;
-    }
+    obj->data->SetDim1BinBasedOn(DataBinningAttributes::BinBasedOn(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -334,12 +403,37 @@ DataBinningAttributes_SetDim1Var(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim1Var in the object.
-    obj->data->SetDim1Var(std::string(str));
+    obj->data->SetDim1Var(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -358,12 +452,48 @@ DataBinningAttributes_SetDim1SpecifyRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim1SpecifyRange in the object.
-    obj->data->SetDim1SpecifyRange(ival != 0);
+    obj->data->SetDim1SpecifyRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -382,12 +512,48 @@ DataBinningAttributes_SetDim1MinRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim1MinRange in the object.
-    obj->data->SetDim1MinRange(dval);
+    obj->data->SetDim1MinRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -406,12 +572,48 @@ DataBinningAttributes_SetDim1MaxRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim1MaxRange in the object.
-    obj->data->SetDim1MaxRange(dval);
+    obj->data->SetDim1MaxRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -430,12 +632,48 @@ DataBinningAttributes_SetDim1NumBins(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim1NumBins in the object.
-    obj->data->SetDim1NumBins((int)ival);
+    obj->data->SetDim1NumBins(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -454,21 +692,56 @@ DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid dim2BinBasedOn value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim2BinBasedOn in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetDim2BinBasedOn(DataBinningAttributes::BinBasedOn(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dim2BinBasedOn value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "X, Y, Z, Variable.");
-        return NULL;
-    }
+    obj->data->SetDim2BinBasedOn(DataBinningAttributes::BinBasedOn(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -487,12 +760,37 @@ DataBinningAttributes_SetDim2Var(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim2Var in the object.
-    obj->data->SetDim2Var(std::string(str));
+    obj->data->SetDim2Var(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -511,12 +809,48 @@ DataBinningAttributes_SetDim2SpecifyRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim2SpecifyRange in the object.
-    obj->data->SetDim2SpecifyRange(ival != 0);
+    obj->data->SetDim2SpecifyRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -535,12 +869,48 @@ DataBinningAttributes_SetDim2MinRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim2MinRange in the object.
-    obj->data->SetDim2MinRange(dval);
+    obj->data->SetDim2MinRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -559,12 +929,48 @@ DataBinningAttributes_SetDim2MaxRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim2MaxRange in the object.
-    obj->data->SetDim2MaxRange(dval);
+    obj->data->SetDim2MaxRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -583,12 +989,48 @@ DataBinningAttributes_SetDim2NumBins(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim2NumBins in the object.
-    obj->data->SetDim2NumBins((int)ival);
+    obj->data->SetDim2NumBins(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -607,21 +1049,56 @@ DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid dim3BinBasedOn value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim3BinBasedOn in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetDim3BinBasedOn(DataBinningAttributes::BinBasedOn(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dim3BinBasedOn value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "X, Y, Z, Variable.");
-        return NULL;
-    }
+    obj->data->SetDim3BinBasedOn(DataBinningAttributes::BinBasedOn(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -640,12 +1117,37 @@ DataBinningAttributes_SetDim3Var(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim3Var in the object.
-    obj->data->SetDim3Var(std::string(str));
+    obj->data->SetDim3Var(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -664,12 +1166,48 @@ DataBinningAttributes_SetDim3SpecifyRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim3SpecifyRange in the object.
-    obj->data->SetDim3SpecifyRange(ival != 0);
+    obj->data->SetDim3SpecifyRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -688,12 +1226,48 @@ DataBinningAttributes_SetDim3MinRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim3MinRange in the object.
-    obj->data->SetDim3MinRange(dval);
+    obj->data->SetDim3MinRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -712,12 +1286,48 @@ DataBinningAttributes_SetDim3MaxRange(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim3MaxRange in the object.
-    obj->data->SetDim3MaxRange(dval);
+    obj->data->SetDim3MaxRange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -736,12 +1346,48 @@ DataBinningAttributes_SetDim3NumBins(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim3NumBins in the object.
-    obj->data->SetDim3NumBins((int)ival);
+    obj->data->SetDim3NumBins(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -760,21 +1406,54 @@ DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid outOfBoundsBehavior value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Clamp";
+        ss << ", Discard";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outOfBoundsBehavior in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetOutOfBoundsBehavior(DataBinningAttributes::OutOfBoundsBehavior(ival));
-    else
-    {
-        fprintf(stderr, "An invalid outOfBoundsBehavior value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Clamp, Discard.");
-        return NULL;
-    }
+    obj->data->SetOutOfBoundsBehavior(DataBinningAttributes::OutOfBoundsBehavior(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -793,23 +1472,61 @@ DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 9)
+    {
+        std::stringstream ss;
+        ss << "An invalid reductionOperator value was given." << std::endl;
+        ss << "Valid values are in the range [0,8]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Average";
+        ss << ", Minimum";
+        ss << ", Maximum";
+        ss << ", StandardDeviation";
+        ss << ", Variance";
+        ss << ", Sum";
+        ss << ", Count";
+        ss << ", RMS";
+        ss << ", PDF";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the reductionOperator in the object.
-    if(ival >= 0 && ival < 9)
-        obj->data->SetReductionOperator(DataBinningAttributes::ReductionOperator(ival));
-    else
-    {
-        fprintf(stderr, "An invalid reductionOperator value was given. "
-                        "Valid values are in the range of [0,8]. "
-                        "You can also use the following names: "
-                        "Average, Minimum, Maximum, StandardDeviation, Variance, "
-                        "Sum, Count, RMS, PDF"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetReductionOperator(DataBinningAttributes::ReductionOperator(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -828,12 +1545,37 @@ DataBinningAttributes_SetVarForReduction(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the varForReduction in the object.
-    obj->data->SetVarForReduction(std::string(str));
+    obj->data->SetVarForReduction(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -852,12 +1594,48 @@ DataBinningAttributes_SetEmptyVal(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the emptyVal in the object.
-    obj->data->SetEmptyVal(dval);
+    obj->data->SetEmptyVal(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -876,21 +1654,54 @@ DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid outputType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OutputOnBins";
+        ss << ", OutputOnInputMesh";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outputType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetOutputType(DataBinningAttributes::OutputType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid outputType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "OutputOnBins, OutputOnInputMesh.");
-        return NULL;
-    }
+    obj->data->SetOutputType(DataBinningAttributes::OutputType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -909,12 +1720,48 @@ DataBinningAttributes_SetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the removeEmptyValFromCurve in the object.
-    obj->data->SetRemoveEmptyValFromCurve(ival != 0);
+    obj->data->SetRemoveEmptyValFromCurve(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -999,14 +1846,7 @@ DataBinningAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-DataBinningAttributes_compare(PyObject *v, PyObject *w)
-{
-    DataBinningAttributes *a = ((DataBinningAttributesObject *)v)->data;
-    DataBinningAttributes *b = ((DataBinningAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDataBinningAttributes_getattr(PyObject *self, char *name)
 {
@@ -1124,76 +1964,89 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeEmptyValFromCurve") == 0)
         return DataBinningAttributes_GetRemoveEmptyValFromCurve(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyDataBinningAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyDataBinningAttributes_methods[i].ml_name),
+                PyString_FromString(PyDataBinningAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyDataBinningAttributes_methods, self, name);
 }
 
 int
 PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "numDimensions") == 0)
-        obj = DataBinningAttributes_SetNumDimensions(self, tuple);
+        obj = DataBinningAttributes_SetNumDimensions(self, args);
     else if(strcmp(name, "dim1BinBasedOn") == 0)
-        obj = DataBinningAttributes_SetDim1BinBasedOn(self, tuple);
+        obj = DataBinningAttributes_SetDim1BinBasedOn(self, args);
     else if(strcmp(name, "dim1Var") == 0)
-        obj = DataBinningAttributes_SetDim1Var(self, tuple);
+        obj = DataBinningAttributes_SetDim1Var(self, args);
     else if(strcmp(name, "dim1SpecifyRange") == 0)
-        obj = DataBinningAttributes_SetDim1SpecifyRange(self, tuple);
+        obj = DataBinningAttributes_SetDim1SpecifyRange(self, args);
     else if(strcmp(name, "dim1MinRange") == 0)
-        obj = DataBinningAttributes_SetDim1MinRange(self, tuple);
+        obj = DataBinningAttributes_SetDim1MinRange(self, args);
     else if(strcmp(name, "dim1MaxRange") == 0)
-        obj = DataBinningAttributes_SetDim1MaxRange(self, tuple);
+        obj = DataBinningAttributes_SetDim1MaxRange(self, args);
     else if(strcmp(name, "dim1NumBins") == 0)
-        obj = DataBinningAttributes_SetDim1NumBins(self, tuple);
+        obj = DataBinningAttributes_SetDim1NumBins(self, args);
     else if(strcmp(name, "dim2BinBasedOn") == 0)
-        obj = DataBinningAttributes_SetDim2BinBasedOn(self, tuple);
+        obj = DataBinningAttributes_SetDim2BinBasedOn(self, args);
     else if(strcmp(name, "dim2Var") == 0)
-        obj = DataBinningAttributes_SetDim2Var(self, tuple);
+        obj = DataBinningAttributes_SetDim2Var(self, args);
     else if(strcmp(name, "dim2SpecifyRange") == 0)
-        obj = DataBinningAttributes_SetDim2SpecifyRange(self, tuple);
+        obj = DataBinningAttributes_SetDim2SpecifyRange(self, args);
     else if(strcmp(name, "dim2MinRange") == 0)
-        obj = DataBinningAttributes_SetDim2MinRange(self, tuple);
+        obj = DataBinningAttributes_SetDim2MinRange(self, args);
     else if(strcmp(name, "dim2MaxRange") == 0)
-        obj = DataBinningAttributes_SetDim2MaxRange(self, tuple);
+        obj = DataBinningAttributes_SetDim2MaxRange(self, args);
     else if(strcmp(name, "dim2NumBins") == 0)
-        obj = DataBinningAttributes_SetDim2NumBins(self, tuple);
+        obj = DataBinningAttributes_SetDim2NumBins(self, args);
     else if(strcmp(name, "dim3BinBasedOn") == 0)
-        obj = DataBinningAttributes_SetDim3BinBasedOn(self, tuple);
+        obj = DataBinningAttributes_SetDim3BinBasedOn(self, args);
     else if(strcmp(name, "dim3Var") == 0)
-        obj = DataBinningAttributes_SetDim3Var(self, tuple);
+        obj = DataBinningAttributes_SetDim3Var(self, args);
     else if(strcmp(name, "dim3SpecifyRange") == 0)
-        obj = DataBinningAttributes_SetDim3SpecifyRange(self, tuple);
+        obj = DataBinningAttributes_SetDim3SpecifyRange(self, args);
     else if(strcmp(name, "dim3MinRange") == 0)
-        obj = DataBinningAttributes_SetDim3MinRange(self, tuple);
+        obj = DataBinningAttributes_SetDim3MinRange(self, args);
     else if(strcmp(name, "dim3MaxRange") == 0)
-        obj = DataBinningAttributes_SetDim3MaxRange(self, tuple);
+        obj = DataBinningAttributes_SetDim3MaxRange(self, args);
     else if(strcmp(name, "dim3NumBins") == 0)
-        obj = DataBinningAttributes_SetDim3NumBins(self, tuple);
+        obj = DataBinningAttributes_SetDim3NumBins(self, args);
     else if(strcmp(name, "outOfBoundsBehavior") == 0)
-        obj = DataBinningAttributes_SetOutOfBoundsBehavior(self, tuple);
+        obj = DataBinningAttributes_SetOutOfBoundsBehavior(self, args);
     else if(strcmp(name, "reductionOperator") == 0)
-        obj = DataBinningAttributes_SetReductionOperator(self, tuple);
+        obj = DataBinningAttributes_SetReductionOperator(self, args);
     else if(strcmp(name, "varForReduction") == 0)
-        obj = DataBinningAttributes_SetVarForReduction(self, tuple);
+        obj = DataBinningAttributes_SetVarForReduction(self, args);
     else if(strcmp(name, "emptyVal") == 0)
-        obj = DataBinningAttributes_SetEmptyVal(self, tuple);
+        obj = DataBinningAttributes_SetEmptyVal(self, args);
     else if(strcmp(name, "outputType") == 0)
-        obj = DataBinningAttributes_SetOutputType(self, tuple);
+        obj = DataBinningAttributes_SetOutputType(self, args);
     else if(strcmp(name, "removeEmptyValFromCurve") == 0)
-        obj = DataBinningAttributes_SetRemoveEmptyValFromCurve(self, tuple);
+        obj = DataBinningAttributes_SetRemoveEmptyValFromCurve(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1201,7 +2054,7 @@ static int
 DataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyDataBinningAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDataBinningAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1209,7 +2062,7 @@ PyObject *
 DataBinningAttributes_str(PyObject *v)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
-    return PyString_FromString(PyDataBinningAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDataBinningAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1222,49 +2075,70 @@ static char *DataBinningAttributes_Purpose = "The attributes for the DataBinning
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject DataBinningAttributesType =
+
+VISIT_PY_TYPE_OBJ(DataBinningAttributesType,         \
+                  "DataBinningAttributes",           \
+                  DataBinningAttributesObject,       \
+                  DataBinningAttributes_dealloc,     \
+                  DataBinningAttributes_print,       \
+                  PyDataBinningAttributes_getattr,   \
+                  PyDataBinningAttributes_setattr,   \
+                  DataBinningAttributes_str,         \
+                  DataBinningAttributes_Purpose,     \
+                  DataBinningAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "DataBinningAttributes",                    // tp_name
-    sizeof(DataBinningAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)DataBinningAttributes_dealloc,  // tp_dealloc
-    (printfunc)DataBinningAttributes_print,     // tp_print
-    (getattrfunc)PyDataBinningAttributes_getattr, // tp_getattr
-    (setattrfunc)PyDataBinningAttributes_setattr, // tp_setattr
-    (cmpfunc)DataBinningAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)DataBinningAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    DataBinningAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &DataBinningAttributesType
+         || Py_TYPE(other) != &DataBinningAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    DataBinningAttributes *a = ((DataBinningAttributesObject *)self)->data;
+    DataBinningAttributes *b = ((DataBinningAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1340,7 +2214,7 @@ PyDataBinningAttributes_GetLogString()
 {
     std::string s("DataBinningAtts = DataBinningAttributes()\n");
     if(currentAtts != 0)
-        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.");
+        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.", true);
     return s;
 }
 
@@ -1353,7 +2227,7 @@ PyDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DataBinningAtts = DataBinningAttributes()\n");
-        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.");
+        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.", true);
         cb(s);
     }
 }

@@ -38,7 +38,7 @@ class avtparaDISFileFormat : public avtSTSDFileFormat
 {
   public:
                        avtparaDISFileFormat(const char *filename,
-                                            DBOptionsAttributes *rdatts);
+                                            const DBOptionsAttributes *rdatts);
     virtual           ~avtparaDISFileFormat() {;};
 
 

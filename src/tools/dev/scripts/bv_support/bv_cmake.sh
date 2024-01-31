@@ -96,12 +96,12 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.9/"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.9.3"}
+    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.24/"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.24.3"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_MD5_CHECKSUM="cb0f19828461904c72ed6a1e55459d03"
-    export CMAKE_SHA256_CHECKSUM="8eaf75e1e932159aae98ab5e7491499545554be62a08cbcbc7c75c84b999f28a"
+    export CMAKE_MD5_CHECKSUM="226dd564164372f9f7d1e21e38e6e8c5"
+    export CMAKE_SHA256_CHECKSUM="b53aa10fa82bff84ccdb59065927b72d3bee49f4d86261249fc0984b3b367291"
 }
 
 function bv_cmake_print
@@ -147,13 +147,6 @@ function bv_cmake_ensure
                 return 1
             fi
         fi
-    fi
-}
-
-function bv_cmake_dry_run
-{
-    if [[ "$DO_CMAKE" == "yes" ]] ; then
-        echo "Dry run option not set for cmake."
     fi
 }
 

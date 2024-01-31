@@ -10,9 +10,24 @@
 #   Kathleen Biagas, Thu Jul 18 10:41:50 PDT 2019
 #   Add special handling of tbb and embree installs for linux.
 #
+#   Kathleen Biagas, Wed Aug 17, 2022
+#   Incorporate ARSanderson's OSPRay 2.8.0 work for VTK 9.
+#
+#   Kathleen Biagas, Tue Nov 29 12:29:40 PST 2022
+#   Use cmake_path instead of GET_FILENAME_SHORTEXT and get_filename_component.
+#
+#   Kathleen Biagas, Fri Dec  2 20:16:38 PST 2022
+#   Use cmake_path to get PARENT_PATH when handling tbb and embree.
+#
 #*****************************************************************************
 
-IF(VISIT_OSPRAY)
+if(NOT EXISTS ${VISIT_OSPRAY_DIR})
+    message(STATUS "VISIT_OSPRAY_DIR is not specified or does not exits.  please check the value and re-run cmake. Otherwise ospray will not be used.")
+    return()
+endif()
+
+if(OSPRAY_VERSION VERSION_LESS_EQUAL "1.6.1")
+  IF(VISIT_OSPRAY)
 
     # -- this is a hack for TBB_ROOT
     IF(NOT DEFINED TBB_ROOT)
@@ -28,14 +43,14 @@ IF(VISIT_OSPRAY)
     # folder instead of the <...>/lib folder, we have to check both
     # possibilities
     FIND_PACKAGE(ospray REQUIRED
-                 PATHS 
+                 PATHS
                      ${OSPRAY_DIR}/lib/cmake/ospray-${OSPRAY_VERSION}
                      ${OSPRAY_DIR}/lib64/cmake/ospray-${OSPRAY_VERSION}
                  NO_DEFAULT_PATH)
     ADD_DEFINITIONS(-DVISIT_OSPRAY)
     # append additional module libraries
     IF(NOT APPLE)
-        list(APPEND OSPRAY_LIBRARIES 
+        list(APPEND OSPRAY_LIBRARIES
             ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
             ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
             ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
@@ -127,11 +142,12 @@ IF(VISIT_OSPRAY)
               # library logic will correctly install both the full verison and
               # the .so symlink, so only the .so is needed to be sent to the
               # function.
-              get_filename_component(_tmp_name ${l} NAME)
-              get_filename_component(_tmp_path ${l} PATH)
-              GET_FILENAME_SHORTEXT(_tmp_ext ${_tmp_name})
+              cmake_path(SET _tmp_path ${l})
+              cmake_path(GET _tmp_path PARENT_PATH _par_path)
+              cmake_path(GET _tmp_path FILENAME _tmp_name)
+              cmake_path(GET _tmp_name EXTENSION LAST_ONLY _tmp_ext)
               string(REPLACE "${_tmp_ext}" "" _tmp_name ${_tmp_name})
-              THIRD_PARTY_INSTALL_LIBRARY(${_tmp_path}/${_tmp_name})
+              THIRD_PARTY_INSTALL_LIBRARY(${_par_path}/${_tmp_name})
               # tbb's .so isn't a symlink, so install full version too
               if("${_name_}" MATCHES "tbb")
                   THIRD_PARTY_INSTALL_LIBRARY(${l})
@@ -148,8 +164,52 @@ IF(VISIT_OSPRAY)
     MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
     MESSAGE(STATUS "OSPRay for VisIt: ON")
 
-ELSE(VISIT_OSPRAY)
-    MESSAGE(STATUS "OSPRay for VisIt: OFF")
-ENDIF(VISIT_OSPRAY)
+  ELSE(VISIT_OSPRAY)
+      MESSAGE(STATUS "OSPRay for VisIt: OFF")
+  ENDIF(VISIT_OSPRAY)
 
+else()
+
+    if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
+        set(LIB lib64)
+    else()
+        set(LIB lib)
+    endif()
+    set(ospray_DIR ${VISIT_OSPRAY_DIR}/${LIB}/cmake/ospray-${OSPRAY_VERSION})
+    find_package(ospray ${OSPRAY_VERSION} REQUIRED
+                 PATHS ${VISIT_OSPRAY_DIR}
+                 PATH_SUFFIXES lib/cmake/opsray-${OSPRAY_VERSION}
+                               lib64/cmake/ospray-${OSPRAY_VERSION}
+                 NO_MODULE
+                 NO_DEFAULT_PATH)
+
+    if(ospray_FOUND)
+        set(HAVE_LIBOSPRAY true)
+        add_definitions(-DHAVE_OSPRAY)
+        if(VISIT_INSTALL_THIRD_PARTY)
+            # since all the libs needed for VisIt at runtime aren't
+            # enumerated in the ospray targets from find_package,
+            # just install all of them
+            set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
+            if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
+                set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
+            endif()
+            if(NOT ospray_lib_libs)
+                file(GLOB ospray_lib_libs
+                     LIST_DIRECTORIES FALSE
+                     ${LIB_SEARCH_PATH}/*)
+            endif()
+            unset(LIB_SEARCH_PATH)
+            #  install libraries
+            foreach(lib ${ospray_lib_libs})
+                THIRD_PARTY_INSTALL_LIBRARY(${lib})
+            endforeach()
+
+            if(NOT VISIT_HEADERS_SKIP_INSTALL)
+                THIRD_PARTY_INSTALL_INCLUDE(ospray ${OSPRAY_INCLUDE_DIR})
+            endif()
+        endif()
+    endif()
+
+endif()
 

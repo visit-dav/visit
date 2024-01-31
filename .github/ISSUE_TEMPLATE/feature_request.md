@@ -10,12 +10,6 @@ assignees: ''
 ### Is your feature request related to a problem?
 A clear and concise description of the problem. E.g. I'm always frustrated when [...]
 
-**Impact**
-(*Please click check boxes AFTER submitting ticket*)
-- [ ] High - User productivity significantly improved
-- [ ] Medium - User productivity partially improved
-- [ ] Low - User productivity trivially improved
-
 ### Is your feature request specific to a data set?
 Can you use one of our example data sets to demonstrate the desired feature?
   * If so, which file?

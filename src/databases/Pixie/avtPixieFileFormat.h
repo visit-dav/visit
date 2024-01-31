@@ -69,6 +69,11 @@ class DBOptionsAttributes;
 //    Added a start_no_ghost[3], count_no_ghost[3]
 //    Added reading options to select hyperslab cutting method
 //
+//    Eric Brugger, Fri May 22 13:37:44 PDT 2020
+//    Corrected a bug reading curvilinear meshes in parallel. I added
+//    isCoord to TraversalInfo and VarInfo to track if a variable is a
+//    coordinate array so that the decomposition can be done correctly.
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTSDFileFormat
@@ -79,6 +84,7 @@ class avtPixieFileFormat : public avtMTSDFileFormat
         int                level;
         std::string        path;
         bool               hasCoords;
+        bool               isCoord;
         std::string        coordX;
         std::string        coordY;
         std::string        coordZ;
@@ -95,6 +101,7 @@ class avtPixieFileFormat : public avtMTSDFileFormat
         hid_t       nativeVarType;
         std::string fileVarName;
         bool        hasCoords;
+        bool        isCoord;
         std::string coordX;
         std::string coordY;
         std::string coordZ;
@@ -102,7 +109,7 @@ class avtPixieFileFormat : public avtMTSDFileFormat
 
     typedef std::map<std::string, VarInfo> VarInfoMap;
 public:
-                       avtPixieFileFormat(const char *, DBOptionsAttributes *);
+                       avtPixieFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtPixieFileFormat();
 
     virtual void           GetCycles(std::vector<int> &);

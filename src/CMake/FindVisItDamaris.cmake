@@ -2,13 +2,11 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-# Use the DAMARIS_DIR hint from the config-site .cmake file 
+# Use the DAMARIS_DIR hint from the config-site .cmake file
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-SET_UP_THIRD_PARTY(DAMARIS lib include damaris)
-SET_UP_THIRD_PARTY(XERCESC lib include xerces-c)
-SET_UP_THIRD_PARTY(XSD lib include NO_LIBS)
+SET_UP_THIRD_PARTY(DAMARIS LIBS damaris)
+SET_UP_THIRD_PARTY(XERCESC LIBS xerces-c)
+SET_UP_THIRD_PARTY(XSD LIBS NO_LIBS)
 
 IF(DAMARIS_FOUND AND XERCESC_FOUND AND XSD_FOUND)
 
@@ -16,7 +14,7 @@ SET(BOOST_LIBS
         boost_date_time
         boost_filesystem
         boost_system)
-SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS})
+SET_UP_THIRD_PARTY(BOOST LIBS ${BOOST_LIBS})
 
 INSTALL(DIRECTORY ${DAMARIS_INCLUDE_DIR}
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/../damaris
@@ -47,9 +45,10 @@ INSTALL(DIRECTORY ${BOOST_INCLUDE_DIR}
                 DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             )
 INSTALL(FILES ${BOOST_LIBRARY_DIR}/libboost_date_time.a
-	      ${BOOST_LIBRARY_DIR}/libboost_filesystem.a
-	      ${BOOST_LIBRARY_DIR}/libboost_system.a
+              ${BOOST_LIBRARY_DIR}/libboost_filesystem.a
+              ${BOOST_LIBRARY_DIR}/libboost_system.a
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/../damaris/lib
                 PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
             )
 ENDIF(DAMARIS_FOUND AND XERCESC_FOUND AND XSD_FOUND)
+

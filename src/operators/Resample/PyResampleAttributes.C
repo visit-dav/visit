@@ -5,6 +5,7 @@
 #include <PyResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyResampleAttributes
@@ -34,9 +35,8 @@ struct ResampleAttributesObject
 // Internal prototypes
 //
 static PyObject *NewResampleAttributes(int);
-
 std::string
-PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix)
+PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -119,12 +119,48 @@ ResampleAttributes_SetUseExtents(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useExtents in the object.
-    obj->data->SetUseExtents(ival != 0);
+    obj->data->SetUseExtents(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -143,12 +179,48 @@ ResampleAttributes_SetStartX(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startX in the object.
-    obj->data->SetStartX(dval);
+    obj->data->SetStartX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -167,12 +239,48 @@ ResampleAttributes_SetEndX(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endX in the object.
-    obj->data->SetEndX(dval);
+    obj->data->SetEndX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -191,12 +299,48 @@ ResampleAttributes_SetSamplesX(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the samplesX in the object.
-    obj->data->SetSamplesX((int)ival);
+    obj->data->SetSamplesX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -215,12 +359,48 @@ ResampleAttributes_SetStartY(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startY in the object.
-    obj->data->SetStartY(dval);
+    obj->data->SetStartY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -239,12 +419,48 @@ ResampleAttributes_SetEndY(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endY in the object.
-    obj->data->SetEndY(dval);
+    obj->data->SetEndY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -263,12 +479,48 @@ ResampleAttributes_SetSamplesY(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the samplesY in the object.
-    obj->data->SetSamplesY((int)ival);
+    obj->data->SetSamplesY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -287,12 +539,48 @@ ResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the is3D in the object.
-    obj->data->SetIs3D(ival != 0);
+    obj->data->SetIs3D(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -311,12 +599,48 @@ ResampleAttributes_SetStartZ(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startZ in the object.
-    obj->data->SetStartZ(dval);
+    obj->data->SetStartZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -335,12 +659,48 @@ ResampleAttributes_SetEndZ(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endZ in the object.
-    obj->data->SetEndZ(dval);
+    obj->data->SetEndZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -359,12 +719,48 @@ ResampleAttributes_SetSamplesZ(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the samplesZ in the object.
-    obj->data->SetSamplesZ((int)ival);
+    obj->data->SetSamplesZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -383,21 +779,55 @@ ResampleAttributes_SetTieResolver(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid tieResolver value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " random";
+        ss << ", largest";
+        ss << ", smallest";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tieResolver in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetTieResolver(ResampleAttributes::TieResolver(ival));
-    else
-    {
-        fprintf(stderr, "An invalid tieResolver value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "random, largest, smallest.");
-        return NULL;
-    }
+    obj->data->SetTieResolver(ResampleAttributes::TieResolver(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -416,12 +846,37 @@ ResampleAttributes_SetTieResolverVariable(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tieResolverVariable in the object.
-    obj->data->SetTieResolverVariable(std::string(str));
+    obj->data->SetTieResolverVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -440,12 +895,48 @@ ResampleAttributes_SetDefaultValue(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the defaultValue in the object.
-    obj->data->SetDefaultValue(dval);
+    obj->data->SetDefaultValue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -464,12 +955,48 @@ ResampleAttributes_SetDistributedResample(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the distributedResample in the object.
-    obj->data->SetDistributedResample(ival != 0);
+    obj->data->SetDistributedResample(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -488,12 +1015,48 @@ ResampleAttributes_SetCellCenteredOutput(PyObject *self, PyObject *args)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cellCenteredOutput in the object.
-    obj->data->SetCellCenteredOutput(ival != 0);
+    obj->data->SetCellCenteredOutput(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -560,14 +1123,7 @@ ResampleAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ResampleAttributes_compare(PyObject *v, PyObject *w)
-{
-    ResampleAttributes *a = ((ResampleAttributesObject *)v)->data;
-    ResampleAttributes *b = ((ResampleAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyResampleAttributes_getattr(PyObject *self, char *name)
 {
@@ -611,58 +1167,71 @@ PyResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "cellCenteredOutput") == 0)
         return ResampleAttributes_GetCellCenteredOutput(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyResampleAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyResampleAttributes_methods[i].ml_name),
+                PyString_FromString(PyResampleAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyResampleAttributes_methods, self, name);
 }
 
 int
 PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "useExtents") == 0)
-        obj = ResampleAttributes_SetUseExtents(self, tuple);
+        obj = ResampleAttributes_SetUseExtents(self, args);
     else if(strcmp(name, "startX") == 0)
-        obj = ResampleAttributes_SetStartX(self, tuple);
+        obj = ResampleAttributes_SetStartX(self, args);
     else if(strcmp(name, "endX") == 0)
-        obj = ResampleAttributes_SetEndX(self, tuple);
+        obj = ResampleAttributes_SetEndX(self, args);
     else if(strcmp(name, "samplesX") == 0)
-        obj = ResampleAttributes_SetSamplesX(self, tuple);
+        obj = ResampleAttributes_SetSamplesX(self, args);
     else if(strcmp(name, "startY") == 0)
-        obj = ResampleAttributes_SetStartY(self, tuple);
+        obj = ResampleAttributes_SetStartY(self, args);
     else if(strcmp(name, "endY") == 0)
-        obj = ResampleAttributes_SetEndY(self, tuple);
+        obj = ResampleAttributes_SetEndY(self, args);
     else if(strcmp(name, "samplesY") == 0)
-        obj = ResampleAttributes_SetSamplesY(self, tuple);
+        obj = ResampleAttributes_SetSamplesY(self, args);
     else if(strcmp(name, "is3D") == 0)
-        obj = ResampleAttributes_SetIs3D(self, tuple);
+        obj = ResampleAttributes_SetIs3D(self, args);
     else if(strcmp(name, "startZ") == 0)
-        obj = ResampleAttributes_SetStartZ(self, tuple);
+        obj = ResampleAttributes_SetStartZ(self, args);
     else if(strcmp(name, "endZ") == 0)
-        obj = ResampleAttributes_SetEndZ(self, tuple);
+        obj = ResampleAttributes_SetEndZ(self, args);
     else if(strcmp(name, "samplesZ") == 0)
-        obj = ResampleAttributes_SetSamplesZ(self, tuple);
+        obj = ResampleAttributes_SetSamplesZ(self, args);
     else if(strcmp(name, "tieResolver") == 0)
-        obj = ResampleAttributes_SetTieResolver(self, tuple);
+        obj = ResampleAttributes_SetTieResolver(self, args);
     else if(strcmp(name, "tieResolverVariable") == 0)
-        obj = ResampleAttributes_SetTieResolverVariable(self, tuple);
+        obj = ResampleAttributes_SetTieResolverVariable(self, args);
     else if(strcmp(name, "defaultValue") == 0)
-        obj = ResampleAttributes_SetDefaultValue(self, tuple);
+        obj = ResampleAttributes_SetDefaultValue(self, args);
     else if(strcmp(name, "distributedResample") == 0)
-        obj = ResampleAttributes_SetDistributedResample(self, tuple);
+        obj = ResampleAttributes_SetDistributedResample(self, args);
     else if(strcmp(name, "cellCenteredOutput") == 0)
-        obj = ResampleAttributes_SetCellCenteredOutput(self, tuple);
+        obj = ResampleAttributes_SetCellCenteredOutput(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -670,7 +1239,7 @@ static int
 ResampleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyResampleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyResampleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -678,7 +1247,7 @@ PyObject *
 ResampleAttributes_str(PyObject *v)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
-    return PyString_FromString(PyResampleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -691,49 +1260,70 @@ static char *ResampleAttributes_Purpose = "Atts for Resample operator";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ResampleAttributesType =
+
+VISIT_PY_TYPE_OBJ(ResampleAttributesType,         \
+                  "ResampleAttributes",           \
+                  ResampleAttributesObject,       \
+                  ResampleAttributes_dealloc,     \
+                  ResampleAttributes_print,       \
+                  PyResampleAttributes_getattr,   \
+                  PyResampleAttributes_setattr,   \
+                  ResampleAttributes_str,         \
+                  ResampleAttributes_Purpose,     \
+                  ResampleAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ResampleAttributes",                    // tp_name
-    sizeof(ResampleAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ResampleAttributes_dealloc,  // tp_dealloc
-    (printfunc)ResampleAttributes_print,     // tp_print
-    (getattrfunc)PyResampleAttributes_getattr, // tp_getattr
-    (setattrfunc)PyResampleAttributes_setattr, // tp_setattr
-    (cmpfunc)ResampleAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ResampleAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ResampleAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ResampleAttributesType
+         || Py_TYPE(other) != &ResampleAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ResampleAttributes *a = ((ResampleAttributesObject *)self)->data;
+    ResampleAttributes *b = ((ResampleAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -809,7 +1399,7 @@ PyResampleAttributes_GetLogString()
 {
     std::string s("ResampleAtts = ResampleAttributes()\n");
     if(currentAtts != 0)
-        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.");
+        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.", true);
     return s;
 }
 
@@ -822,7 +1412,7 @@ PyResampleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ResampleAtts = ResampleAttributes()\n");
-        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.");
+        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.", true);
         cb(s);
     }
 }

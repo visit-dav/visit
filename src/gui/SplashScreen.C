@@ -5,16 +5,17 @@
 #include <SplashScreen.h>
 #include <QApplication>
 #include <QDate>
+#include <QDateTime>
 #include <QFont>
 #include <QLabel>
 #include <QLayout>
-#include <QPushButton>
-#include <QDateTime>
-#include <QTimer>
-#include <QProgressBar>
 #include <QPainter>
 #include <QPixmap>
-#include <QDesktopWidget>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QRect>
+#include <QScreen>
+#include <QTimer>
 #include <InstallationFunctions.h>
 #include <ConfigureInfo.h>
 
@@ -24,7 +25,7 @@
 // ****************************************************************************
 //  Method: SplashScreen::SplashScreen
 //
-//  Purpose: 
+//  Purpose:
 //    This is the constructor for the SplashScreen class.
 //
 //  Programmer: Sean Ahern
@@ -232,14 +233,50 @@
 //    Eric Brugger, Tue Feb 11 13:27:19 PST 2020
 //    Changed the date on the splash screen to April 2020.
 //
+//    Eric Brugger, Mon Aug  3 06:49:50 PDT 2020
+//    Changed the date on the splash screen to August 2020.
+//
+//    Eric Brugger, Mon Nov  9 13:08:19 PST 2020
+//    Changed the date on the splash screen to November 2020.
+//
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace QString.asprintf with QString.arg.
+//
+//    Eric Brugger, Mon Mar  1 14:47:30 PST 2021
+//    Changed the date on the splash screen to March 2021.
+//
+//    Eric Brugger, Thu Apr  8 08:51:53 PDT 2021
+//    Changed the date on the splash screen to April 2021.
+//
+//    Eric Brugger, Thu Jul  1 14:19:51 PDT 2021
+//    Changed the date on the splash screen to July 2021.
+//
+//    Eric Brugger, Wed Dec 15 09:48:55 PST 2021
+//    Changed the date on the splash screen to January 2022.
+//
+//    Eric Brugger, Thu May 26 15:47:49 PDT 2022
+//    Changed the date on the splash screen to June 2022.
+//
+//    Eric Brugger, Wed Sep 21 14:40:08 PDT 2022
+//    Changed the date on the splash screen to September 2022.
+//
+//    Eric Brugger, Tue Dec 20 10:06:53 PST 2022
+//    Changed the date on the splash screen to December 2022.
+//
+//    Eric Brugger, Wed Mar 15 09:47:27 PDT 2023
+//    Changed the date on the splash screen to March 2023.
+//
+//    Eric Brugger, Mon Sep 25 13:03:18 PDT 2023
+//    Changed the date on the splash screen to November 2023.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 {
 #if defined(Q_OS_MAC)
     setWindowModality(Qt::WindowModal);
-#endif    
-    
+#endif
+
     splashMode = true;
 
     // If the window manager is dumb enough to put decorations on this
@@ -253,7 +290,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 
     topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     // Create a timer to switch pictures
     timer = new QTimer(this);
@@ -319,22 +356,22 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 
     QHBoxLayout *lrLayout = new QHBoxLayout();
     topLayout->addLayout(lrLayout);
-    
+
     lLayout = new QVBoxLayout();
     rLayout = new QVBoxLayout();
     rLayout->addStretch(1);
-    
+
     lrLayout->addLayout(lLayout);
     lrLayout->addLayout(rLayout );
-    
+
 
     QString C(QString("(c) 2000-%1 LLNS. ").arg(QDate::currentDate().year()));
     C += tr("All Rights Reserved");
     C += ".";
     lLayout->addWidget(new QLabel(C, this));
 
-    QString versionText;
-    versionText.sprintf("VisIt %s, ", visitcommon::Version().c_str());
+    QString versionText = QString("VisIt %1, ")
+                          .arg(visitcommon::Version().c_str());
     versionText += QString(visitcommon::VersionControlVersionString().c_str());
 
     // Create a lookup of month names so the internationalization
@@ -352,9 +389,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 4;
+    int currentMonth = 11;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2020", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2023", this));
 
     copyrightButton = 0;
     contributorButton = 0;
@@ -381,7 +418,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 // ****************************************************************************
 // Method: SplashScreen::~SplashScreen
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the SplashScreen class.
 //
 // Programmer: Sean Ahern
@@ -398,7 +435,7 @@ SplashScreen::~SplashScreen()
 // ****************************************************************************
 // Method: SplashScreen::CreateAboutButtons
 //
-// Purpose: 
+// Purpose:
 //   Creates the extra buttons for when the window is used for the About window.
 //
 // Programmer: Brad Whitlock
@@ -407,7 +444,7 @@ SplashScreen::~SplashScreen()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Tue Jul  1 10:33:10 PDT 2008
 //   Initial Qt4 Port.
 //
@@ -449,22 +486,24 @@ SplashScreen::CreateAboutButtons()
 // ****************************************************************************
 // Method: SplashScreen::show
 //
-// Purpose: 
+// Purpose:
 //   Shows the widget.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 18 17:52:11 PST 2003
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
 SplashScreen::show()
 {
     // Figure out where to put the window
-    int     W = qApp->desktop()->width();
-    int     H = qApp->desktop()->height();
+    int     W = qApp->primaryScreen()->geometry().width();
+    int     H = qApp->primaryScreen()->geometry().height();
     move((W - pictures[0].width()) / 2, (H - pictures[0].height()) / 2);
 
     // Show the window
@@ -479,14 +518,14 @@ SplashScreen::show()
 // ****************************************************************************
 // Method: SplashScreen::hide
 //
-// Purpose: 
+// Purpose:
 //   Hides the widget.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 18 17:51:55 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -499,7 +538,7 @@ SplashScreen::hide()
 // ****************************************************************************
 // Method: SplashScreen::Progress
 //
-// Purpose: 
+// Purpose:
 //   Shows progress in the splashscreen.
 //
 // Arguments:
@@ -528,14 +567,14 @@ SplashScreen::Progress(const QString &msg, int percent)
 // ****************************************************************************
 // Method: SplashScreen::About
 //
-// Purpose: 
+// Purpose:
 //   Shows the splashscreen as an about box.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 18 17:57:09 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -548,7 +587,7 @@ SplashScreen::About()
 // ****************************************************************************
 // Method: SplashScreen::SetDisplayMode
 //
-// Purpose: 
+// Purpose:
 //   Switches between splashscreen mode and about mode.
 //
 // Programmer: Brad Whitlock
@@ -602,7 +641,7 @@ SplashScreen::SetDisplayAsSplashScreen(bool asSplash)
 // ****************************************************************************
 // Method: SplashScreen::nextPicture
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that cycles the images.
 //
 // Programmer: Sean Ahern

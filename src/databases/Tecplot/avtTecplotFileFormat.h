@@ -55,7 +55,7 @@ class vtkUnstructuredGrid;
 class avtTecplotFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtTecplotFileFormat(const char *, DBOptionsAttributes *);
+                       avtTecplotFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtTecplotFileFormat();
 
     virtual const char    *GetType(void)   { return "Tecplot"; };

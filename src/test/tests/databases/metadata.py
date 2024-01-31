@@ -38,12 +38,12 @@ def test0():
     TestText("metadata_0_04", str(md))
 
 def MakeSafe(varname):
-    ret = string.replace(varname, "/", "_")
-    ret = string.replace(ret, "(", "[")
-    ret = string.replace(ret, ")", "]")
-    ret = string.replace(ret, ":", "_")
-    ret = string.replace(ret, ",", "_")
-    ret = string.replace(ret, ";", "_")
+    ret = varname.replace("/", "_")
+    ret = ret.replace("(", "[")
+    ret = ret.replace(")", "]")
+    ret = ret.replace(":", "_")
+    ret = ret.replace(",", "_")
+    ret = ret.replace(";", "_")
     return ret
 
 def test1():

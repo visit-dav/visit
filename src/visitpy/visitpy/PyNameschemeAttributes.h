@@ -5,6 +5,7 @@
 #ifndef PY_NAMESCHEMEATTRIBUTES_H
 #define PY_NAMESCHEMEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <NameschemeAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyNameschemeAttributes_Wrap(const NameschemeAttribute
 void VISITPY_API           PyNameschemeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyNameschemeAttributes_SetDefaults(const NameschemeAttributes *atts);
 std::string VISITPY_API    PyNameschemeAttributes_GetLogString();
-std::string VISITPY_API    PyNameschemeAttributes_ToString(const NameschemeAttributes *, const char *);
+std::string VISITPY_API    PyNameschemeAttributes_ToString(const NameschemeAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyNameschemeAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyNameschemeAttributes_methods[NAMESCHEMEATTRIBUTES_NMETH];

@@ -11,7 +11,7 @@
         <key>CFBundleIconFile</key>
         <string>VisIt.icns</string>
         <key>CFBundleIdentifier</key>
-        <string>VISI</string>
+        <string>gov.llnl.visit</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleLongVersionString</key>
@@ -38,6 +38,6 @@
         <key>LSRequiresCarbon</key>
         <true/>
         <key>NSHumanReadableCopyright</key>
-        <string>Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC</string>
+        <string>Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC</string>
 </dict>
 </plist>

@@ -34,6 +34,9 @@
 #   Cyrus Harrison, Mon Dec  9 12:07:55 PST 2019
 #   Add code gen targets, change logic to guard java interface build.
 #
+#   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+#   Removed support for SeedMe.
+#
 #****************************************************************************
 
 PROJECT(JavaClient)
@@ -145,7 +148,6 @@ SET(JAVA_GEN_STATE_OBJECTS
     SaveSubWindowAttributes
     SaveSubWindowsAttributes
     SaveWindowAttributes 
-    SeedMeAttributes
     SelectionList
     SelectionProperties
     SelectionSummary
@@ -303,7 +305,6 @@ SimulationUIValues.java
 SaveSubWindowAttributes.java
 SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 
-SeedMeAttributes.java
 SelectionList.java
 SelectionProperties.java
 SelectionSummary.java
@@ -385,6 +386,7 @@ NIFGUI.java
 OpenGUI.java 
 PlotAtts.java 
 PlotTypes.java
+PlotVector.java 
 RunViewer.java 
 TryAnnotations.java 
 TryLighting.java 
@@ -428,7 +430,7 @@ ADD_CUSTOM_TARGET(main DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/java_examples_out.txt
 # Custom target for building the docs
 ADD_CUSTOM_TARGET(visit_java_docs 
     COMMAND ${CMAKE_COMMAND} -E make_directory ${JavaClient_BINARY_DIR}/docs
-    COMMAND ${Java_JAVADOC_EXECUTABLE} -d docs ${JavaClient_SOURCE_DIR}/*.java
+    COMMAND ${Java_JAVADOC_EXECUTABLE} -notimestamp -d docs ${JavaClient_SOURCE_DIR}/*.java
     COMMAND ${CMAKE_COMMAND} -E copy ${JavaClient_SOURCE_DIR}/stylesheet.css ${JavaClient_BINARY_DIR}/docs
     WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
 )

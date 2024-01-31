@@ -5,53 +5,48 @@
 #*****************************************************************************
 # Modifications:
 #
+#  Kathleen Biagas, Tue Dec 13, 2022
+#  Moved setting of vtk sources to subdir.
+#
+#  Kathleen Biagas, Tue May 5, 2023
+#  Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
-SET(AVTQTVISWINDOW_SOURCES
-VisWinRenderingWithWindow.C
-QtVisWindow.C
-vtk/vtkDashedXorGridMapper2D.C
-vtk/vtkRubberBandMapper2D.C
-)
+add_library(avtqtviswindow QtVisWindow.C VisWinRenderingWithWindow.C)
 
-IF(NOT APPLE AND X11_FOUND)
-    SET_SOURCE_FILES_PROPERTIES(
-        vtk/vtkDashedXorGridMapper2D.C  vtk/vtkRubberBandMapper2D.C 
-        PROPERTIES
-        COMPILE_FLAGS "-DHAVE_XLIB"
-    )
-ENDIF(NOT APPLE AND X11_FOUND)
+add_subdirectory(vtk)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${CMAKE_CURRENT_SOURCE_DIR}/vtk
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/avt/View
-${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
-${VISIT_SOURCE_DIR}/avt/VisWindow/Exceptions
-${VISIT_SOURCE_DIR}/avt/VisWindow/Interactors
-${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
-${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/vtkqt
-${VISIT_SOURCE_DIR}/winutil
-${VTK_INCLUDE_DIRS}
-)
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${VISIT_COMMON_INCLUDES}
+    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
+    ${VISIT_SOURCE_DIR}/avt/Database/Database
+    ${VISIT_SOURCE_DIR}/avt/Math
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
+    ${VISIT_SOURCE_DIR}/avt/Plotter
+    ${VISIT_SOURCE_DIR}/avt/View
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/Exceptions
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/Interactors
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
+    ${VISIT_SOURCE_DIR}/visit_vtk/full
+    ${VISIT_SOURCE_DIR}/vtkqt
+    ${VISIT_SOURCE_DIR}/winutil
+    ${VTK_INCLUDE_DIRS})
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+target_link_libraries(avtqtviswindow visitcommon avtviswindow_ser vtkqt ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 
-ADD_LIBRARY(avtqtviswindow ${AVTQTVISWINDOW_SOURCES})
-TARGET_LINK_LIBRARIES(avtqtviswindow visitcommon avtviswindow_ser vtkqt ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(avtqtviswindow)
+endif()
 
 VISIT_INSTALL_TARGETS(avtqtviswindow)
+

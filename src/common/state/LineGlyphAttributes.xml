@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+  <Attribute name="LineGlyphAttributes" purpose="Attributes for line glyphs" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="LineGlyphAttributes.code">
+      <Enum name="LineType">
+        Line
+        Tube
+        Ribbon
+      </Enum>
+      <Enum name="EndPointStyle">
+        None
+        Spheres
+        Cones
+      </Enum>
+      <Enum name="SizeType">
+        Absolute
+        FractionOfBBox
+      </Enum>
+      <Field name="lineType" label="Line Type" type="enum" subtype="LineType">
+        Line
+      </Field>
+      <Field name="lineWidth" label="lineWidth" type="linewidth">
+        0
+      </Field>
+      <Field name="tubeResolution" label="tubeResolution" type="int">
+        10
+      </Field>
+      <Field name="tubeRadiusSizeType" label="tubeRadiusSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="tubeRadiusAbsolute" label="Radius (Absolute)" type="double" enabler="tubeRadiusSizeType:Absolute">
+        0.125000
+      </Field>
+      <Field name="tubeRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="tubeRadiusSizeType:FractionOfBBox">
+        0.005000
+      </Field>
+      <Field name="tubeRadiusVarEnabled" label="Tube Radius by var enabled" type="bool">
+        false
+      </Field>
+      <Field name="tubeRadiusVar" label="Tube radius variable" type="variablename" vartypes="01000000000">
+        default
+      </Field>
+      <Field name="tubeRadiusVarRatio" label="Tube radius variable ration" type="double">
+        10.000000
+      </Field>
+      <Field name="tailStyle" label="Tail style" type="enum" subtype="EndPointStyle">
+        None
+      </Field>
+      <Field name="headStyle" label="Head style" type="enum" subtype="EndPointStyle">
+        None
+      </Field>
+      <Field name="endPointRadiusSizeType" label="endPointRadiusSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="endPointRadiusAbsolute" label="endPointRadiusAbsolute" type="double" enabler="endPointRadiusSizeType:Absolute">
+        0.125000
+      </Field>
+      <Field name="endPointRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="endPointRadiusSizeType:FractionOfBBox">
+        0.050000
+      </Field>
+      <Field name="endPointResolution" label="End point resolution" type="int">
+        10
+      </Field>
+      <Field name="endPointRatio" label="End point ratio" type="double">
+        5.000000
+      </Field>
+      <Field name="endPointRadiusVarEnabled" label="End point radius by var enabled" type="bool">
+        false
+      </Field>
+      <Field name="endPointRadiusVar" label="End point radius variable" type="variablename" vartypes="01000000000">
+        default
+      </Field>
+      <Field name="endPointRadiusVarRatio" label="End point radius variable ratio" type="double">
+        10.000000
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>

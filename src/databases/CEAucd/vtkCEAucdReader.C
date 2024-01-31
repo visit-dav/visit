@@ -49,6 +49,7 @@ vtkStandardNewMacro(vtkCEAucdReader);
 #define vtkDebugMacro(x) std::cout<<"" x; std::cout.flush()
 #endif
 
+using std::ifstream;
 
 static int UCD2VTK[8] =
 {
@@ -659,7 +660,7 @@ void vtkCEAucdReader::ReadGeometry(vtkInformationVector *outputVector)
          {
             vtkUnstructuredGrid * ug = vtkUnstructuredGrid::New();
             ug->Initialize();
-            this->GetExecutive()->SetOutputData (i, ug);
+            outputVector->GetInformationObject(i)->Set(vtkDataObject::DATA_OBJECT(), ug);
             ug->Delete();
          }     
 
@@ -725,7 +726,7 @@ void vtkCEAucdReader::ReadGeometry(vtkInformationVector *outputVector)
       {
          vtkUnstructuredGrid * ug = vtkUnstructuredGrid::New();
          ug->Initialize();
-         this->GetExecutive()->SetOutputData (i, ug);
+         outputVector->GetInformationObject(i)->Set(vtkDataObject::DATA_OBJECT(), ug);
          ug->Delete();
       }
 

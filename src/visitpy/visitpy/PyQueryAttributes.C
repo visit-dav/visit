@@ -5,6 +5,7 @@
 #include <PyQueryAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyQueryAttributes
@@ -34,9 +35,8 @@ struct QueryAttributesObject
 // Internal prototypes
 //
 static PyObject *NewQueryAttributes(int);
-
 std::string
-PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
+PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -51,6 +51,22 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
             snprintf(tmpStr, 1000, "%g", resultsValue[i]);
             str += tmpStr;
             if(i < resultsValue.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const floatVector &floatResultsValue = atts->GetFloatResultsValue();
+        snprintf(tmpStr, 1000, "%sfloatResultsValue = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < floatResultsValue.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%f", floatResultsValue[i]);
+            str += tmpStr;
+            if(i < floatResultsValue.size() - 1)
             {
                 snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -87,12 +103,37 @@ QueryAttributes_SetResultsMessage(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the resultsMessage in the object.
-    obj->data->SetResultsMessage(std::string(str));
+    obj->data->SetResultsMessage(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -111,45 +152,58 @@ QueryAttributes_SetResultsValue(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetResultsValue();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    doubleVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetResultsValue() = vec;
     // Mark the resultsValue in the object as modified.
     obj->data->SelectResultsValue();
 
@@ -170,16 +224,128 @@ QueryAttributes_GetResultsValue(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+QueryAttributes_SetFloatResultsValue(PyObject *self, PyObject *args)
+{
+    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+
+    floatVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        double val = PyFloat_AsDouble(args);
+        float cval = float(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ float");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ float");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            float cval = float(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ float", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ float", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more floats");
+
+    obj->data->GetFloatResultsValue() = vec;
+    // Mark the floatResultsValue in the object as modified.
+    obj->data->SelectFloatResultsValue();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryAttributes_GetFloatResultsValue(PyObject *self, PyObject *args)
+{
+    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the floatResultsValue.
+    const floatVector &floatResultsValue = obj->data->GetFloatResultsValue();
+    PyObject *retval = PyTuple_New(floatResultsValue.size());
+    for(size_t i = 0; i < floatResultsValue.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(floatResultsValue[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
 QueryAttributes_SetTimeStep(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStep in the object.
-    obj->data->SetTimeStep((int)ival);
+    obj->data->SetTimeStep(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -198,12 +364,37 @@ QueryAttributes_SetXUnits(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xUnits in the object.
-    obj->data->SetXUnits(std::string(str));
+    obj->data->SetXUnits(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -222,12 +413,37 @@ QueryAttributes_SetYUnits(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yUnits in the object.
-    obj->data->SetYUnits(std::string(str));
+    obj->data->SetYUnits(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -246,12 +462,37 @@ QueryAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the floatFormat in the object.
-    obj->data->SetFloatFormat(std::string(str));
+    obj->data->SetFloatFormat(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -270,12 +511,37 @@ QueryAttributes_SetXmlResult(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xmlResult in the object.
-    obj->data->SetXmlResult(std::string(str));
+    obj->data->SetXmlResult(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -321,6 +587,8 @@ PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH] = {
     {"GetResultsMessage", QueryAttributes_GetResultsMessage, METH_VARARGS},
     {"SetResultsValue", QueryAttributes_SetResultsValue, METH_VARARGS},
     {"GetResultsValue", QueryAttributes_GetResultsValue, METH_VARARGS},
+    {"SetFloatResultsValue", QueryAttributes_SetFloatResultsValue, METH_VARARGS},
+    {"GetFloatResultsValue", QueryAttributes_GetFloatResultsValue, METH_VARARGS},
     {"SetTimeStep", QueryAttributes_SetTimeStep, METH_VARARGS},
     {"GetTimeStep", QueryAttributes_GetTimeStep, METH_VARARGS},
     {"SetXUnits", QueryAttributes_SetXUnits, METH_VARARGS},
@@ -350,14 +618,7 @@ QueryAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-QueryAttributes_compare(PyObject *v, PyObject *w)
-{
-    QueryAttributes *a = ((QueryAttributesObject *)v)->data;
-    QueryAttributes *b = ((QueryAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *QueryAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyQueryAttributes_getattr(PyObject *self, char *name)
 {
@@ -365,6 +626,8 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
         return QueryAttributes_GetResultsMessage(self, NULL);
     if(strcmp(name, "resultsValue") == 0)
         return QueryAttributes_GetResultsValue(self, NULL);
+    if(strcmp(name, "floatResultsValue") == 0)
+        return QueryAttributes_GetFloatResultsValue(self, NULL);
     if(strcmp(name, "timeStep") == 0)
         return QueryAttributes_GetTimeStep(self, NULL);
     if(strcmp(name, "xUnits") == 0)
@@ -378,40 +641,55 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "queryInputParams") == 0)
         return QueryAttributes_GetQueryInputParams(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyQueryAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyQueryAttributes_methods[i].ml_name),
+                PyString_FromString(PyQueryAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyQueryAttributes_methods, self, name);
 }
 
 int
 PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "resultsMessage") == 0)
-        obj = QueryAttributes_SetResultsMessage(self, tuple);
+        obj = QueryAttributes_SetResultsMessage(self, args);
     else if(strcmp(name, "resultsValue") == 0)
-        obj = QueryAttributes_SetResultsValue(self, tuple);
+        obj = QueryAttributes_SetResultsValue(self, args);
+    else if(strcmp(name, "floatResultsValue") == 0)
+        obj = QueryAttributes_SetFloatResultsValue(self, args);
     else if(strcmp(name, "timeStep") == 0)
-        obj = QueryAttributes_SetTimeStep(self, tuple);
+        obj = QueryAttributes_SetTimeStep(self, args);
     else if(strcmp(name, "xUnits") == 0)
-        obj = QueryAttributes_SetXUnits(self, tuple);
+        obj = QueryAttributes_SetXUnits(self, args);
     else if(strcmp(name, "yUnits") == 0)
-        obj = QueryAttributes_SetYUnits(self, tuple);
+        obj = QueryAttributes_SetYUnits(self, args);
     else if(strcmp(name, "floatFormat") == 0)
-        obj = QueryAttributes_SetFloatFormat(self, tuple);
+        obj = QueryAttributes_SetFloatFormat(self, args);
     else if(strcmp(name, "xmlResult") == 0)
-        obj = QueryAttributes_SetXmlResult(self, tuple);
+        obj = QueryAttributes_SetXmlResult(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -419,7 +697,7 @@ static int
 QueryAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)v;
-    fprintf(fp, "%s", PyQueryAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyQueryAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -427,7 +705,7 @@ PyObject *
 QueryAttributes_str(PyObject *v)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)v;
-    return PyString_FromString(PyQueryAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyQueryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -440,49 +718,70 @@ static char *QueryAttributes_Purpose = "This class contains attributes used for 
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject QueryAttributesType =
+
+VISIT_PY_TYPE_OBJ(QueryAttributesType,         \
+                  "QueryAttributes",           \
+                  QueryAttributesObject,       \
+                  QueryAttributes_dealloc,     \
+                  QueryAttributes_print,       \
+                  PyQueryAttributes_getattr,   \
+                  PyQueryAttributes_setattr,   \
+                  QueryAttributes_str,         \
+                  QueryAttributes_Purpose,     \
+                  QueryAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+QueryAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "QueryAttributes",                    // tp_name
-    sizeof(QueryAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)QueryAttributes_dealloc,  // tp_dealloc
-    (printfunc)QueryAttributes_print,     // tp_print
-    (getattrfunc)PyQueryAttributes_getattr, // tp_getattr
-    (setattrfunc)PyQueryAttributes_setattr, // tp_setattr
-    (cmpfunc)QueryAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)QueryAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    QueryAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &QueryAttributesType
+         || Py_TYPE(other) != &QueryAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    QueryAttributes *a = ((QueryAttributesObject *)self)->data;
+    QueryAttributes *b = ((QueryAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -558,7 +857,7 @@ PyQueryAttributes_GetLogString()
 {
     std::string s("QueryAtts = QueryAttributes()\n");
     if(currentAtts != 0)
-        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.");
+        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.", true);
     return s;
 }
 
@@ -571,7 +870,7 @@ PyQueryAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("QueryAtts = QueryAttributes()\n");
-        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.");
+        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.", true);
         cb(s);
     }
 }

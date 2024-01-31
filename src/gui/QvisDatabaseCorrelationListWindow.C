@@ -25,7 +25,7 @@
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::QvisDatabaseCorrelationListWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisDatabaseCorrelationListWindow class.
 //
 // Programmer: Brad Whitlock
@@ -52,14 +52,14 @@ QvisDatabaseCorrelationListWindow::QvisDatabaseCorrelationListWindow(
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::~QvisDatabaseCorrelationListWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisDatabaseCorrelationListWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 29 12:15:28 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisDatabaseCorrelationListWindow::~QvisDatabaseCorrelationListWindow()
@@ -79,7 +79,7 @@ QvisDatabaseCorrelationListWindow::~QvisDatabaseCorrelationListWindow()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -88,7 +88,7 @@ QvisDatabaseCorrelationListWindow::~QvisDatabaseCorrelationListWindow()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
@@ -103,7 +103,7 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
 
     // Create the correlation list management widgets.
     QVBoxLayout *innerCorrelationTopLayout = new QVBoxLayout(correlationGroup);
-    innerCorrelationTopLayout->setMargin(10);
+    innerCorrelationTopLayout->setContentsMargins(10,10,10,10);
     innerCorrelationTopLayout->addSpacing(15);
     QHBoxLayout *hLayout = new QHBoxLayout();
     innerCorrelationTopLayout->addLayout(hLayout);
@@ -143,7 +143,7 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
     topLayout->addWidget(automaticCorrelationGroup, 5);
 
     QVBoxLayout *innerACTopLayout = new QVBoxLayout(automaticCorrelationGroup);
-    //innerACTopLayout->setMargin(10);
+    //innerACTopLayout->setContentsMargins(10,10,10,10);
     //innerACTopLayout->addSpacing(15);
     QGridLayout *adcLayout = new QGridLayout();
     innerACTopLayout->addLayout(adcLayout);
@@ -175,7 +175,7 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
     connect(defaultCorrelationMethod, SIGNAL(activated(int)),
             this, SLOT(defaultCorrelationMethodChanged(int)));
     adcLayout->addWidget(defaultCorrelationMethod, 2,1);
-    adcLayout->addWidget(new QLabel(tr("Default correlation method"), 
+    adcLayout->addWidget(new QLabel(tr("Default correlation method"),
                                     automaticCorrelationGroup), 2, 0);
     topLayout->addStretch(2);
 }
@@ -183,7 +183,7 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the correlation list changes and the window
 //   must update itself.
 //
@@ -276,15 +276,15 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::UpdateButtons
 //
-// Purpose: 
+// Purpose:
 //   Updates the buttons so we can't ever do something inappropriate with
 //   correlations.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 29 12:17:18 PDT 2004
@@ -338,14 +338,14 @@ QvisDatabaseCorrelationListWindow::UpdateButtons()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Sends the database correlation list to the viewer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 29 12:18:09 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -361,14 +361,14 @@ QvisDatabaseCorrelationListWindow::Apply(bool)
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the Apply button is clicked.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 29 12:18:29 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -380,7 +380,7 @@ QvisDatabaseCorrelationListWindow::apply()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::showMinimized
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window is iconified.
 //
 // Notes:      The window iconifies its correlation windows.
@@ -389,7 +389,7 @@ QvisDatabaseCorrelationListWindow::apply()
 // Creation:   Mon Mar 29 12:18:29 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -405,7 +405,7 @@ QvisDatabaseCorrelationListWindow::showMinimized()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::showNormal
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window is deiconified.
 //
 // Notes:      The window deiconifies its correlation windows.
@@ -414,7 +414,7 @@ QvisDatabaseCorrelationListWindow::showMinimized()
 // Creation:   Mon Mar 29 12:18:29 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -430,7 +430,7 @@ QvisDatabaseCorrelationListWindow::showNormal()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::newCorrelation
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to create a new
 //   database correlation.
 //
@@ -440,9 +440,12 @@ QvisDatabaseCorrelationListWindow::showNormal()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Swap use of QString::asprintf for QString::arg as suggested in Qt docs.
 //
 // ****************************************************************************
 
@@ -457,7 +460,8 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
     QString newName;
     do
     {
-        newName.sprintf("Correlation%02d", newCorrelationCounter++);
+        newName = QString("Correlation%1")
+            .arg(newCorrelationCounter++,2,10,QLatin1Char('0'));
     } while(correlationList->FindCorrelation(newName.toStdString()) != 0);
 
     //
@@ -478,7 +482,7 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::editCorrelation
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to edit an
 //   existing database correlation.
 //
@@ -488,7 +492,7 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
@@ -526,7 +530,7 @@ QvisDatabaseCorrelationListWindow::editCorrelation()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::deleteCorrelation
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to delete a
 //   database correlation.
 //
@@ -556,7 +560,7 @@ QvisDatabaseCorrelationListWindow::deleteCorrelation()
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::promptUserChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "Prompt user" button
 //   is clicked.
 //
@@ -567,7 +571,7 @@ QvisDatabaseCorrelationListWindow::deleteCorrelation()
 // Creation:   Mon Mar 29 12:21:12 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -605,7 +609,7 @@ QvisDatabaseCorrelationListWindow::highlightCorrelation(int index)
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::deleteWindow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that allows the window to safely delete its
 //   child windows.
 //
@@ -616,7 +620,7 @@ QvisDatabaseCorrelationListWindow::highlightCorrelation(int index)
 // Creation:   Mon Mar 29 12:22:30 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -641,7 +645,7 @@ QvisDatabaseCorrelationListWindow::deleteWindow(QvisWindowBase *win)
 // ****************************************************************************
 // Method: QvisDatabaseCorrelationListWindow::delayedDeleteWindows
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that lets you delete some database correlation
 //   windows.
 //
@@ -649,7 +653,7 @@ QvisDatabaseCorrelationListWindow::deleteWindow(QvisWindowBase *win)
 // Creation:   Mon Mar 29 12:23:28 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

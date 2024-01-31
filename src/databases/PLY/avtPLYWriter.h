@@ -39,7 +39,7 @@ class
 avtPLYWriter : public avtDatabaseWriter
 {
   public:
-                   avtPLYWriter(DBOptionsAttributes *);
+                   avtPLYWriter(const DBOptionsAttributes *);
     virtual       ~avtPLYWriter() {}
 
   protected:

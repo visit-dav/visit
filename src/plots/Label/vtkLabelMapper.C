@@ -294,11 +294,17 @@ vtkLabelMapper::DrawLabels2D(vtkDataSet *input, vtkRenderer *ren)
 //    Added the ability to have different colors and sizes for node vs.
 //    cell labels.
 //
+//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//    If we're in full frame mode, we need to perform some scaling.
+//
 // ****************************************************************************
 
 void
 vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 {
+    double positionScale[3];
+    GetPositionScale(positionScale);
+
     //
     // Draw all the node labels.
     //
@@ -314,9 +320,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
             this->TextMappers[index]->SetInput(labelPtr);
             labelPtr += this->MaxLabelSize;
             const double *vert = p->GetPoint(i);
-            this->LabelPositions.push_back(vert[0]);
-            this->LabelPositions.push_back(vert[1]);
-            this->LabelPositions.push_back(vert[2]);
+            this->LabelPositions.push_back(vert[0] * positionScale[0]);
+            this->LabelPositions.push_back(vert[1] * positionScale[1]);
+            this->LabelPositions.push_back(vert[2] * positionScale[2]);
         }
         p->Delete();
     }
@@ -335,9 +341,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
             this->TextMappers[index]->SetInput(labelPtr);
             labelPtr += this->MaxLabelSize;
             const double *vert = cellCenters->GetTuple3(i);
-            this->LabelPositions.push_back(vert[0]);
-            this->LabelPositions.push_back(vert[1]);
-            this->LabelPositions.push_back(vert[2]);
+            this->LabelPositions.push_back(vert[0] * positionScale[0]);
+            this->LabelPositions.push_back(vert[1] * positionScale[1]);
+            this->LabelPositions.push_back(vert[2] * positionScale[2]);
         }
     }
 }
@@ -378,12 +384,18 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //    Brad Whitlock, Sat Apr 21 21:40:29 PDT 2012
 //    Favor double instead of float.
 //
+//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//    If we're in full frame mode, we need to perform some scaling.
+//
 // ****************************************************************************
 
 void
 vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     vtkRenderer *ren)
 {
+    double positionScale[3];
+    GetPositionScale(positionScale);
+
     //
     // Figure out the world coordinates of the window that is being displayed.
     //
@@ -460,6 +472,18 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
                     bin_y_size + minMeshY;
     int bin_x_n = int(ceil (win_dx / bin_x_size)) + 1;
     int bin_y_n = int(ceil (win_dy / bin_y_size)) + 1;
+
+    //
+    // If we're using full frame scaling, we need to adjust the number of
+    // cells in the Y direction. Scaling in the X direction is not needed
+    // (I believe this is because VisIt is sneaky and only scales the Y
+    // axis).
+    //
+    if (UseFullFrameScaling)
+    {
+        bin_y_n /= FullFrameScaling[1];
+    }
+
     int bin_x_y = bin_x_n * bin_y_n;
 
     //
@@ -509,9 +533,9 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
             this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
             this->TextMappers[index]->SetInput(labelPtr);
             index++;
-            this->LabelPositions.push_back(labelVert[0]);
-            this->LabelPositions.push_back(labelVert[1]);
-            this->LabelPositions.push_back(labelVert[2]);
+            this->LabelPositions.push_back(labelVert[0] * positionScale[0]);
+            this->LabelPositions.push_back(labelVert[1] * positionScale[1]);
+            this->LabelPositions.push_back(labelVert[2] * positionScale[2]);
         }
         p->Delete();
     }
@@ -555,9 +579,9 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
             this->TextMappers[index]->SetTextProperty(this->CellLabelProperty);
             this->TextMappers[index]->SetInput(labelPtr);
             index++;
-            this->LabelPositions.push_back(labelVert[0]);
-            this->LabelPositions.push_back(labelVert[1]);
-            this->LabelPositions.push_back(labelVert[2]);
+            this->LabelPositions.push_back(labelVert[0] * positionScale[0]);
+            this->LabelPositions.push_back(labelVert[1] * positionScale[1]);
+            this->LabelPositions.push_back(labelVert[2] * positionScale[2]);
         }
     }
 
@@ -1041,6 +1065,9 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   can construct a point transformation matrix that we know will always be
 //   correct, regardless of how VTK camera has been set.
 //
+//   Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//   If we're in full frame mode, we need to perform some scaling.
+//
 // ****************************************************************************
 
 void
@@ -1163,6 +1190,9 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
         }
         visitTimer->StopTimer(stageTimer, "Binning 3D labels");
 
+        double positionScale[3];
+        GetPositionScale(positionScale);
+
         //
         // Draw the labels that came from nodes.
         //
@@ -1183,9 +1213,9 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
             else
                 this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
             index++;
-            this->LabelPositions.push_back(info->realPoint[0]);
-            this->LabelPositions.push_back(info->realPoint[1]);
-            this->LabelPositions.push_back(info->realPoint[2]);
+            this->LabelPositions.push_back(info->realPoint[0] * positionScale[0]);
+            this->LabelPositions.push_back(info->realPoint[1] * positionScale[1]);
+            this->LabelPositions.push_back(info->realPoint[2] * positionScale[2]);
         }
         visitTimer->StopTimer(stageTimer, "Drawing binned 3D labels");
     }
@@ -1419,6 +1449,43 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
 }
 
 // ****************************************************************************
+// Method: vtkLabelMapper::GetPositionScale
+//
+// Purpose:
+//     Get a scale to apply to our position. Currently, this will use
+//     the full frame scaling if it's enabled.
+//
+// Arguments:
+//     scale    A pointer to a 3D array. We will put the scale factor here.
+//
+// Programmer: Alister Maguire
+// Creation:   May 20, 2021
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkLabelMapper::GetPositionScale(double *scale)
+{
+    if (UseFullFrameScaling)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            scale[i] = FullFrameScaling[i];
+        }
+    }
+    else
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            scale[i] = 1.;
+        }
+    }
+}
+
+
+// ****************************************************************************
 // Method: vtkLabelMapper::DrawAllCellLabels3D
 //
 // Notes:  Taken from avtLabelRenderer
@@ -1440,6 +1507,9 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
 //   Brad Whitlock, Tue Apr 25 10:26:22 PDT 2006
 //   I made it use our own transformation matrix to transform the points.
 //
+//   Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//   If we're in full frame mode, we need to perform some scaling.
+//
 // ****************************************************************************
 
 
@@ -1459,14 +1529,16 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
     vprime[1] /= vprime[3]; \
     vprime[2] /= vprime[3]; \
     } \
+    double positionScale[3]; \
+    GetPositionScale(positionScale); \
     ZBUFFER_PREDICATE_START \
       this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New()); \
       this->TextMappers[index]->SetInput(labelString); \
       this->TextMappers[index]->SetTextProperty(TEXT_PROPERTY); \
       index++; \
-      this->LabelPositions.push_back(vert[0]); \
-      this->LabelPositions.push_back(vert[1]); \
-      this->LabelPositions.push_back(vert[2]); \
+      this->LabelPositions.push_back(vert[0] * positionScale[0]); \
+      this->LabelPositions.push_back(vert[1] * positionScale[1]); \
+      this->LabelPositions.push_back(vert[2] * positionScale[2]); \
     ZBUFFER_PREDICATE_END \
     }
 

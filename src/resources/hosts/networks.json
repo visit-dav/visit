@@ -1,426 +1,452 @@
 {
   "hosts": [
     {
+      "network": "anl",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_anl_cooley.xml"
-        }, 
+        },
         {
           "name": "host_anl_mcs_login.xml"
-        }, 
+        },
         {
           "name": "host_anl_theta.xml"
         }
-      ], 
-      "network": "anl"
-    }, 
+      ]
+    },
     {
+      "network": "arl",
       "files": [
         {
           "name": "customlauncher"
         }
-      ], 
-      "network": "arl"
-    }, 
+      ]
+    },
     {
+      "network": "asu",
       "files": [
         {
           "name": "customlauncher"
         }
-      ], 
-      "network": "asu"
-    }, 
+      ]
+    },
     {
+      "network": "awe",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_awe_blackthorn.xml"
-        }, 
+        },
         {
           "name": "host_awe_pillowb.xml"
-        }, 
+        },
         {
           "name": "host_awe_sprig.xml"
-        }, 
+        },
         {
           "name": "host_awe_sprucea.xml"
-        }, 
+        },
         {
           "name": "host_awe_spruceb.xml"
         }
-      ], 
-      "network": "awe"
-    }, 
+      ]
+    },
     {
+      "network": "chombo",
       "files": [
         {
           "name": "config"
-        }, 
+        },
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "guiconfig"
-        }, 
+        },
         {
           "name": "visitrc"
         }
-      ], 
-      "network": "chombo"
-    }, 
+      ]
+    },
     {
+      "network": "clemson",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_clemson_insight.xml"
         }
-      ], 
-      "network": "clemson"
-    }, 
+      ]
+    },
     {
+      "network": "cscs",
       "files": [
         {
           "name": "host_daint.xml"
-        }, 
+        },
         {
           "name": "host_dora.xml"
         }
-      ], 
-      "network": "cscs"
-    }, 
+      ]
+    },
     {
+      "network": "eth_zurich",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_eth_zurich_euler.xml"
         }
-      ], 
-      "network": "eth_zurich"
-    }, 
+      ]
+    },
     {
+      "network": "kaust",
+      "files": [
+        {
+          "name": "customlauncher"
+        },
+        {
+          "name": "host_kaust_ibex.xml"
+        },
+        {
+          "name": "host_kaust_shaheen.xml"
+        }
+      ]
+    },
+    {
+      "network": "lanl",
       "files": [
         {
           "name": "host_lanl_lightshow.xml"
         }
-      ], 
-      "network": "lanl"
-    }, 
+      ]
+    },
     {
+      "network": "llnl",
       "files": [
         {
           "name": "config"
-        }, 
+        },
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_llnl_ansel.xml"
-        }, 
+        },
         {
           "name": "host_llnl_borax.xml"
-        }, 
+        },
+        {
+          "name": "host_llnl_boraxo.xml"
+        },
         {
           "name": "host_llnl_lassen.xml"
-        }, 
+        },
         {
           "name": "host_llnl_oslic.xml"
-        }, 
+        },
         {
           "name": "host_llnl_pascal.xml"
-        }, 
+        },
+        {
+          "name": "host_llnl_poodle.xml"
+        },
         {
           "name": "host_llnl_quartz.xml"
-        }, 
+        },
+        {
+          "name": "host_llnl_ruby.xml"
+        },
         {
           "name": "host_llnl_rzalastor.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rzansel.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rzgenie.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rzhasgpu.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rztopaz.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rztrona.xml"
-        }, 
+        },
+        {
+          "name": "host_llnl_rzwhippet.xml"
+        },
         {
           "name": "host_llnl_surface.xml"
-        }, 
+        },
         {
           "name": "host_llnl_syrah.xml"
-        }, 
+        },
         {
           "name": "host_llnl_vulcan.xml"
-        }, 
+        },
         {
           "name": "host_slac_red.xml"
         }
-      ], 
-      "network": "llnl"
-    }, 
+      ]
+    },
     {
+      "network": "llnl_closed",
       "files": [
         {
           "name": "host_lanl_closed_trinity.xml"
-        }, 
+        },
         {
           "name": "host_llnl_closed_agate.xml"
-        }, 
+        },
         {
-          "name": "host_llnl_closed_cmax.xml"
-        }, 
+          "name": "host_llnl_closed_bengal.xml"
+        },
         {
           "name": "host_llnl_closed_jade.xml"
-        }, 
+        },
         {
           "name": "host_llnl_closed_jadeita.xml"
-        }, 
+        },
         {
-          "name": "host_llnl_closed_max.xml"
-        }, 
+          "name": "host_llnl_closed_magma.xml"
+        },
         {
           "name": "host_llnl_closed_mica.xml"
-        }, 
-        {
-          "name": "host_llnl_closed_sequoia.xml"
-        }, 
-        {
-          "name": "host_llnl_closed_shark.xml"
-        }, 
+        },
         {
           "name": "host_llnl_closed_sierra.xml"
-        }, 
+        },
         {
-          "name": "host_llnl_closed_zin.xml"
-        }, 
-        {
-          "name": "host_llnl_closed_zindev.xml"
+          "name": "host_llnl_closed_tron.xml"
         }
-      ], 
-      "network": "llnl_closed"
-    }, 
+      ]
+    },
     {
+      "network": "llnl_rz",
       "files": [
         {
           "name": "host_llnl_rzalastor.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rzansel.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rzgenie.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rzhasgpu.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rztopaz.xml"
-        }, 
+        },
         {
           "name": "host_llnl_rztrona.xml"
+        },
+        {
+          "name": "host_llnl_rzwhippet.xml"
+        },
+        {
+          "name": "host_llnl_rzwiz.xml"
         }
-      ], 
-      "network": "llnl_rz"
-    }, 
+      ]
+    },
     {
+      "network": "lrz",
       "files": [
         {
           "name": "host_lrz_linux_cluster.xml"
-        }, 
+        },
         {
           "name": "host_lrz_supermuc_ng.xml"
         }
-      ], 
-      "network": "lrz"
-    }, 
+      ]
+    },
     {
+      "network": "lsu",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_lsu_philip.xml"
         }
-      ], 
-      "network": "lsu"
-    }, 
+      ]
+    },
     {
+      "network": "ncar",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_ncar_caldera.xml"
-        }, 
+        },
         {
           "name": "host_ncar_cheyenne.xml"
-        }, 
+        },
         {
           "name": "host_ncar_geyser.xml"
         }
-      ], 
-      "network": "ncar"
-    }, 
+      ]
+    },
     {
+      "network": "nci",
+      "files": [
+        {
+          "name": "customlauncher"
+        },
+        {
+          "name": "host_gadi.xml"
+        }
+      ]
+    },
+    {
+      "network": "ncsa",
       "files": [
         {
           "name": "host_blue_waters.xml"
         }
-      ], 
-      "network": "ncsa"
-    }, 
+      ]
+    },
     {
+      "network": "nersc",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
-          "name": "host_nersc_cori.xml"
+          "name": "host_nersc_perlmutter.xml"
         }
-      ], 
-      "network": "nersc"
-    }, 
+      ]
+    },
     {
+      "network": "nics",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_beacon004_mic0.xml"
-        }, 
+        },
         {
           "name": "host_nics_kraken.xml"
-        }, 
+        },
         {
           "name": "host_nics_nautilus.xml"
         }
-      ], 
-      "network": "nics"
-    }, 
+      ]
+    },
     {
+      "network": "ohio",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
-          "name": "host_owens_hpc_osc_edu.xml"
+          "name": "host_osc_owens.xml"
+        },
+        {
+          "name": "host_osc_pitzer.xml"
         }
-      ], 
-      "network": "ohio"
-    }, 
+      ]
+    },
     {
+      "network": "ornl",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
-          "name": "host_ornl_photon.xml"
-        }, 
+          "name": "host_ornl_andes.xml"
+        },
         {
-          "name": "host_ornl_rhea.xml"
-        }, 
+          "name": "host_ornl_frontier.xml"
+        },
         {
           "name": "host_ornl_summit.xml"
         }
-      ], 
-      "network": "ornl"
-    }, 
+      ]
+    },
     {
+      "network": "princeton",
       "files": [
         {
           "name": "config"
-        }, 
+        },
         {
           "name": "host_princeton_artemis.xml"
-        }, 
+        },
         {
           "name": "host_princeton_hecate.xml"
-        }, 
+        },
         {
           "name": "host_princeton_orbital.xml"
-        }, 
+        },
         {
           "name": "host_princeton_tiger.xml"
-        }, 
+        },
         {
           "name": "host_princeton_tigressdata.xml"
         }
-      ], 
-      "network": "princeton"
-    }, 
+      ]
+    },
     {
+      "network": "sandia",
       "files": [
         {
-          "name": "customlauncher"
-        }, 
+          "name": "host_sandia_attaway.xml"
+        },
         {
-          "name": "host_sandia_glory.xml"
-        }, 
+          "name": "host_sandia_chama.xml"
+        },
         {
-          "name": "host_sandia_redsky.xml"
+          "name": "host_sandia_eclipse.xml"
+        },
+        {
+          "name": "host_sandia_ghost.xml"
+        },
+        {
+          "name": "host_sandia_skybridge.xml"
+        },
+        {
+          "name": "host_sandia_uno.xml"
         }
-      ], 
-      "network": "sandia"
-    }, 
+      ]
+    },
     {
-      "files": [
-        {
-          "name": "customlauncher"
-        }, 
-        {
-          "name": "host_lanl_closed_cielo.xml"
-        }, 
-        {
-          "name": "host_sandia_closed_redsky-s.xml"
-        }, 
-        {
-          "name": "host_sandia_closed_unity.xml"
-        }, 
-        {
-          "name": "host_sandia_closed_whitney.xml"
-        }
-      ], 
-      "network": "sandia_closed"
-    }, 
-    {
+      "network": "umich",
       "files": [
         {
           "name": "host_umich_flux.xml"
         }
-      ], 
-      "network": "umich"
-    }, 
+      ]
+    },
     {
+      "network": "utah",
       "files": [
         {
           "name": "customlauncher"
-        }, 
+        },
         {
           "name": "host_utah_chpc_ash.xml"
-        }, 
+        },
         {
           "name": "host_utah_chpc_ember.xml"
-        }, 
+        },
         {
           "name": "host_utah_chpc_prism.xml"
         }
-      ], 
-      "network": "utah"
+      ]
     }
   ]
 }

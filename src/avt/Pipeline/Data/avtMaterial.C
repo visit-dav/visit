@@ -18,6 +18,7 @@
 
 #include <climits>
 #include <cassert>
+#include <cmath>
 
 using std::string;
 using std::vector;
@@ -416,11 +417,20 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
 //    Hank Childs, Wed Feb 18 09:36:38 PST 2004
 //    Added the "all materials" list to the Initialize call.
 //
+//    Cyrus Harrison, Wed Feb 17 10:43:50 PST 2021
+//    Formatted the args to make it easer to interpret what data
+//    is needed.
+//
 // ****************************************************************************
 
-avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
-                         const int *ml, int mixl, const int *mixm,
-                         const int *mixn, const int *mixz,
+avtMaterial::avtMaterial(int nMats,
+                         const vector<string> &mats,
+                         int nzon,
+                         const int *ml,
+                         int mixl,
+                         const int *mixm,
+                         const int *mixn,
+                         const int *mixz,
                          const float *mixv)
 {
     int i;
@@ -1942,8 +1952,15 @@ avtMaterial::AssertSelfIsValid() const
                     assert(mix_zone[midx] < nZones+1); // one-origin
                 midx = mix_next[midx]-1; 
             }
-            float const eps = 1.0e-5;
-            assert(((1-eps) <= vfsum) && (vfsum <= (1+eps)));
+            constexpr float eps = 1.0e-5;
+            float vfsum_err = fabs(1.f - vfsum);
+            if(vfsum_err >= eps)
+            {
+                debug5 << "Zone " << z << " vfsum=" << vfsum
+                       << ", vfsum_err=" << vfsum_err
+                       << ", which exceeds eps=" << eps << endl;
+                assert(vfsum_err <= eps);
+            }
         }
     }
 }

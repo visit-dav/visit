@@ -14,7 +14,6 @@
 #include <vtkCellType.h>
 #include <vtkCharArray.h>
 #include <vtkCompositeDataIterator.h>
-#include <vtkConfigure.h>
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
 #include <vtkDataArray.h>
@@ -72,7 +71,7 @@ using namespace ExodusDBOptions;
 
 static int VisItNCErr;
 static map<string, int> messageCounts;
-#define supressMessage "further warnings regarding this error will be supressed"
+#define suppressMessage "further warnings regarding this error will be suppressed"
 #define CheckNCError2(ERR, FN, THELINE, THEFILE)                                                \
     if (ERR != NC_NOERR)                                                                        \
     {                                                                                           \
@@ -90,8 +89,8 @@ static map<string, int> messageCounts;
         }                                                                                       \
         else if (messageCounts[msg] == 6)                                                       \
         {                                                                                       \
-            if (!avtCallback::IssueWarning(supressMessage))                                     \
-                cerr << supressMessage << endl;                                                 \
+            if (!avtCallback::IssueWarning(suppressMessage))                                     \
+                cerr << suppressMessage << endl;                                                 \
         }                                                                                       \
     }                                                                                           \
     else                                                                                        \
@@ -129,6 +128,12 @@ static int CompareStrings(void const *_a, void const *_b)
 // optionally, sort it.
 //
 // Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 29 11:19:52 PDT 2020
+//    Don't err out if len_string isn't present. Files created with newer
+//    versions of exodus libraries don't have this dim.
+//
 // ****************************************************************************
 
 char **GetStringListFromExodusIINCvar(int exfid, char const *var_name, bool sort_results = false)
@@ -137,9 +142,9 @@ char **GetStringListFromExodusIINCvar(int exfid, char const *var_name, bool sort
     char **retval = (char**) malloc(1 * sizeof(char*));
     retval[0] = 0;
 
-    int len_string_dimid;
+    int len_string_dimid = -1;
     ncerr = nc_inq_dimid(exfid, "len_string", &len_string_dimid);
-    if (ncerr != NC_NOERR) return retval;
+    if (ncerr != NC_NOERR) len_string_dimid = -1;
 
     int len_name_dimid = -1;
     ncerr = nc_inq_dimid(exfid, "len_name", &len_name_dimid);
@@ -1447,7 +1452,7 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //    detection.
 // ****************************************************************************
 
-avtExodusFileFormat::avtExodusFileFormat(const char *name, DBOptionsAttributes *rdatts)
+avtExodusFileFormat::avtExodusFileFormat(const char *name, const DBOptionsAttributes *rdatts)
    : avtMTSDFileFormat(&name, 1)
 {
     fileList = -1;
@@ -1583,6 +1588,25 @@ avtExodusFileFormat::GetNTimesteps(void)
     return ntimes;
 }
 
+// ****************************************************************************
+//  Method: avtExodusFileFormat::GetTimesteps
+//
+//  Purpose:
+//      Get the times for each timestep.
+//
+//  Arguments:
+//      ntimes A place to put the number of times numbers.
+//      times  A place to put the times numbers.
+//
+//  Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+//
+//  Modifications:
+//      Eric Brugger, Tue Feb  7 11:45:02 PST 2023
+//      I modified the routine to handle the case where "time_whole" array
+//      had zero length.
+//
+// ****************************************************************************
+//
 void
 avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
 {
@@ -1616,15 +1640,24 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
         EXCEPTION2(UnexpectedValueException, vndims, 1);
     }
 
-    // Compute length of times array
+    // Get the length of the times array
     size_t len = 1;
-    for (int i = 0; i < vndims; i++)
+    VisItNCErr = nc_inq_dim(ncExIIId, vdimids[0], 0, &len);
+    CheckNCError(nc_inq_dim);
+
+    // Handle the case where the times variable has zero length.
+    if (len == 0)
     {
-        size_t dlen;
-        VisItNCErr = nc_inq_dim(ncExIIId, vdimids[i], 0, &dlen);
-        CheckNCError(nc_inq_dim);
-        if (dlen == 0) dlen = 1;
-        len *= dlen;
+        if (ntimes)
+        {
+            *ntimes = 1;
+        }
+        if (times)
+        {
+            times->resize(1);
+            times->operator[](0) = 0.0;
+        }
+        return;
     }
 
     if (len > (size_t) INT_MAX) len = (size_t) INT_MAX;
@@ -1640,7 +1673,7 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
             double *atimes = &(times->operator[](0));
             float *vals = new float[len];
             VisItNCErr = nc_get_var_float(ncExIIId, timesVarId, vals);
-            CheckNCError(nc_inq_dimid);
+            CheckNCError(nc_get_var_float);
             for (size_t i = 0; i < len; i++)
                 atimes[i] = vals[i];
             delete [] vals;
@@ -1648,7 +1681,7 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
         else if (vtype == NC_DOUBLE)
         {
             VisItNCErr = nc_get_var_double(ncExIIId, timesVarId, &(times->operator[](0)));
-            CheckNCError(nc_inq_dimid);
+            CheckNCError(nc_get_var_double);
         }
         else
         {
@@ -3152,7 +3185,7 @@ ConvertGlobalElementIdsToInt(vtkDataArray *da)
 static vtkDataArray *
 EnsureGlobalElementIdsAreInt(vtkDataArray *da)
 {
-#if VISIT_VERSION_GE(3,3,0)
+#if VISIT_VERSION_GE(3,5,0)
 #error EITHER FIX GLOBAL ELEMENT ID BASED GHOST-ZONE COMM OR UPDATE THIS VERSION TRIGGER
 #endif
 

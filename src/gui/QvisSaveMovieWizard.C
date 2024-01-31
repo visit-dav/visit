@@ -697,6 +697,9 @@ QvisSaveMovieWizard::GetDefaultNumFrames()
 //   Brad Whitlock, Tue Oct  7 13:21:55 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -731,8 +734,13 @@ QvisSaveMovieWizard::CreateMovieTypePage()
 
     pageLayout->addStretch(10);
     r2->setChecked(true);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page0_buttongroup, SIGNAL(buttonClicked(int)),
             this, SLOT(page0_movieTypeChanged(int)));
+#else
+    connect(page0_buttongroup, SIGNAL(idClicked(int)),
+            this, SLOT(page0_movieTypeChanged(int)));
+#endif
 
     // Add the page.
     setPage(Page_MovieType, page0);
@@ -753,6 +761,9 @@ QvisSaveMovieWizard::CreateMovieTypePage()
 //
 //   Brad Whitlock, Thu Oct  9 10:28:27 PDT 2008
 //   Qt 4.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -788,8 +799,13 @@ QvisSaveMovieWizard::CreateNewTemplatePromptPage()
     buttonLayout->addWidget(r3);
 
     pageLayout->addStretch(10);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page1_buttongroup, SIGNAL(buttonClicked(int)),
             this, SLOT(page1_newTemplateChanged(int)));
+#else
+    connect(page1_buttongroup, SIGNAL(idClicked(int)),
+            this, SLOT(page1_newTemplateChanged(int)));
+#endif
 
     // Add the page.
     setPage(Page_TemplateAction, page1);
@@ -836,7 +852,7 @@ QvisSaveMovieWizard::CreateChooseTemplatePage()
 
     QWidget *page2_description_vbox = new QWidget(page2);
     QVBoxLayout *vbox = new QVBoxLayout(page2_description_vbox);
-    vbox->setMargin(0);
+    vbox->setContentsMargins(0,0,0,0);
     vbox->setSpacing(10);
     hCenterLayout->addWidget(page2_description_vbox);
     hCenterLayout->setStretchFactor(page2_description_vbox, 10);
@@ -911,6 +927,9 @@ QvisSaveMovieWizard::CreateChooseNewSourcesPage()
 //   Cyrus Harrison, Fri Nov  7 16:14:21 PST 2008
 //   Qt4 Refactor.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -982,8 +1001,13 @@ QvisSaveMovieWizard::CreateViewportPage()
     viewportLayout->addWidget(new QLabel(tr("Compositing"), viewportProps), 2, 0);
 
     page4_compositingMode = new QButtonGroup(this);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page4_compositingMode, SIGNAL(buttonClicked(int)),
             this, SLOT(page4_compositingModeChanged(int)));
+#else
+    connect(page4_compositingMode, SIGNAL(idClicked(int)),
+            this, SLOT(page4_compositingModeChanged(int)));
+#endif
     QRadioButton *rb0 = new QRadioButton(tr("Overlay"), viewportProps);
     page4_compositingMode->addButton(rb0, 0);
     viewportLayout->addWidget(rb0, 3, 0);
@@ -1265,6 +1289,9 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
 //   Brad Whitlock, Fri Oct 10 16:26:54 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1284,8 +1311,13 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
     buttonLayout->addStretch(5);
 
     page8_buttongroup = new QButtonGroup(this);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page8_buttongroup, SIGNAL(buttonClicked(int)),
             this, SLOT(page8_settingsOkayChanged(int)));
+#else
+    connect(page8_buttongroup, SIGNAL(idClicked(int)),
+            this, SLOT(page8_settingsOkayChanged(int)));
+#endif
 
     QRadioButton *r1 = new QRadioButton(tr("Yes"), page8);
     page8_buttongroup->addButton(r1, 0);
@@ -1346,6 +1378,9 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   Cameron Christensen, Friday, September 28, 2012
 //   Added screen capture.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1364,7 +1399,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     formatAndResolution->setTitle(tr("Format and resolution"));
     pageLayout->addWidget(formatAndResolution);
     QVBoxLayout *f2innerLayout = new QVBoxLayout(formatAndResolution);
-    f2innerLayout->setMargin(10);
+    f2innerLayout->setContentsMargins(10,10,10,10);
     QGridLayout *f2layout = new QGridLayout(0);
     f2innerLayout->addLayout(f2layout);
     f2layout->setSpacing(5);
@@ -1394,8 +1429,13 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->setRowMinimumHeight(1, 15);
 
     page9_sizeTypeButtonGroup = new QButtonGroup(page9);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page9_sizeTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(page9_sizeTypeChanged(int)));
+#else
+    connect(page9_sizeTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(page9_sizeTypeChanged(int)));
+#endif
     QRadioButton *rb = new QRadioButton(tr("Use current window size"),
         formatAndResolution);
     page9_sizeTypeButtonGroup->addButton(rb, 0);
@@ -1666,7 +1706,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
     connect(outputSelectButton, SIGNAL(clicked()),
             this, SLOT(page11_selectOutputDirectory()));
     oLayout->setSpacing(0);
-    oLayout->setMargin(0);
+    oLayout->setContentsMargins(0,0,0,0);
     oLayout->setStretchFactor(page11_outputDirectoryLineEdit, 100);
     outputDirectoryLabel->setBuddy(outputDirectoryParent);
     gLayout->addWidget(outputDirectoryParent, 0, 1);
@@ -1704,6 +1744,9 @@ QvisSaveMovieWizard::CreateFilenamePage()
 //   Brad Whitlock, Thu Oct  9 09:38:06 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1721,8 +1764,13 @@ QvisSaveMovieWizard::CreateEmailPage()
     buttonLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     page12_buttongroup = new QButtonGroup(this);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page12_buttongroup, SIGNAL(buttonClicked(int)),
             this, SLOT(page12_emailNotificationChanged(int)));
+#else
+    connect(page12_buttongroup, SIGNAL(idClicked(int)),
+            this, SLOT(page12_emailNotificationChanged(int)));
+#endif
     QRadioButton *r1 = new QRadioButton(tr("Yes"), page12);
     page12_buttongroup->addButton(r1, 0);
     buttonLayout->addWidget(r1);
@@ -1774,6 +1822,9 @@ QvisSaveMovieWizard::CreateEmailPage()
 //   Brad Whitlock, Thu Oct  9 10:20:25 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1795,8 +1846,13 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
     hCenterLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     page13_buttongroup = new QButtonGroup(this);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page13_buttongroup, SIGNAL(buttonClicked(int)),
             this, SLOT(page13_generationMethodChanged(int)));
+#else
+    connect(page13_buttongroup, SIGNAL(idClicked(int)),
+            this, SLOT(page13_generationMethodChanged(int)));
+#endif
     QRadioButton *r1 = new QRadioButton(tr("Now, use currently allocated processors"),
         page13);
     page13_buttongroup->addButton(r1, 0);
@@ -1839,6 +1895,9 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
 //   Brad Whitlock, Mon Oct 13 16:37:43 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1855,8 +1914,11 @@ QvisSaveMovieWizard::CreateYesNoPage(QWizardPage **page, QButtonGroup **bg,
     buttonLayout->addStretch(5);
 
     *bg = new QButtonGroup(this);
-    connect(*bg, SIGNAL(buttonClicked(int)),
-            this, slot);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    connect(*bg, SIGNAL(buttonClicked(int)), this, slot);
+#else
+    connect(*bg, SIGNAL(idClicked(int)), this, slot);
+#endif
 
     QRadioButton *r1 = new QRadioButton(tr("Yes"), *page);
     (*bg)->addButton(r1, 0);
@@ -2611,6 +2673,9 @@ QvisSaveMovieWizard::page4_UpdateViews(int flags)
 //   Brad Whitlock, Tue Oct 14 11:47:18 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -2672,8 +2737,7 @@ QvisSaveMovieWizard::page5_Update(int flags)
                     if(sscanf(digits.c_str(), "%d", &number) == 1)
                     {
                         QString pre(name.substr(0, name.size()-digits.size()).c_str());
-                        QString idx;
-                        idx.sprintf("%05d", number);
+                        QString idx = QString("%1").arg(number,5,10,QLatin1Char('0'));
                         itemKey = pre + idx;
                     }
                 }
@@ -2879,6 +2943,9 @@ QvisSaveMovieWizard::page7_Update()
 //   Cameron Christensen, Friday, September 28, 2012
 //   Added Screen Capture
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -2930,15 +2997,15 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         QString tmp;
         if(useCurrent[i] > 0)
         {
-            QString scale; scale.sprintf("%dx",  int(scales[i]));
+            QString scale = QString("%1x").arg(int(scales[i]));
             tmp = QString(FormatToMenuName(formats[i].c_str())) +
                   QString(" ") + tr("Current") + QString(" ") +
                   scale;
         }
         else
         {
-            tmp.sprintf("%s %dx%d",
-                FormatToMenuName(formats[i].c_str()), w[i], h[i]);
+            tmp = QString("%1 %2x%3")
+                .arg(FormatToMenuName(formats[i].c_str())).arg(w[i]).arg(h[i]);
         }
         s += tmp;
         int stereoType = movieAtts->GetStereoFlags()[i];
@@ -3015,11 +3082,11 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
             QString res;
             if(useCurrent[i] > 0)
             {
-                res.sprintf(" %dx", int(scales[i]));
+                res = QString(" %1x").arg(int(scales[i]));
                 res = tr("Current") + res;
             }
             else
-                res.sprintf("%dx%d", w[i], h[i]);
+                res = QString("%1x%2").arg(w[i]).arg(h[i]);
             QTreeWidgetItem *item = new QTreeWidgetItem(page9_outputFormats);
             item->setText(0, FormatToMenuName(formats[i].c_str()));
             item->setText(1, res);
@@ -4468,6 +4535,9 @@ QvisSaveMovieWizard::page9_addOutput()
 //   Cameron Christensen, Friday, September 28, 2012
 //   Added Screen Capture
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -4492,9 +4562,8 @@ QvisSaveMovieWizard::page9_removeOutput()
         for(size_t i = 0; i < formats.size(); ++i)
         {
             QString fmt(FormatToMenuName(formats[i].c_str()));
-            QString res;  res.sprintf("%dx%d", widths[i], heights[i]);
-            QString res2;
-            res2.sprintf(" %dx", int(scales[i]));
+            QString res = QString("%1x%2").arg(widths[i]).arg(heights[i]);
+            QString res2 = QString(" %1x").arg(int(scales[i]));
             res2 = tr("Current") + res2;
             QString stereo(tr("off"));
             if(stereoFlags[i] == 1)

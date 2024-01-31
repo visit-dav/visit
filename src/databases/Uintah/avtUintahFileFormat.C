@@ -60,7 +60,7 @@ const double NAN_REPLACE_VAL = 1.0E9;
 //
 // ****************************************************************************
 avtUintahFileFormat::avtUintahFileFormat(const char *filename,
-                                         DBOptionsAttributes* attrs) :
+                                         const DBOptionsAttributes* attrs) :
   avtMTMDFileFormat(filename)
 {
   // int t1 = visitTimer->StartTimer();
@@ -337,7 +337,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function getGridData could not be located in the library!!!");
   }
 
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,0,0)
   variableExists = (bool (*)(DataArchive*, std::string)) dlsym(libHandle, "variableExists");
   if((error = dlerror()) != NULL)
   {
@@ -345,7 +345,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   }
 #endif
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,5,1)
   getNumberParticles = (unsigned int (*)(DataArchive*, GridP*, int, int, int, int)) dlsym(libHandle, "getNumberParticles");
   if((error = dlerror()) != NULL)
   {
@@ -773,7 +773,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
     avtScalarMetaData *scalar;
 
-#if (VISIT_APP_VERSION_CHECK(2, 1, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,1,0)
     scalar = new avtScalarMetaData();
     scalar->name = "Patch/Id";
     scalar->meshName = mesh_for_this_var;
@@ -784,7 +784,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 #endif
 
     scalar = new avtScalarMetaData();
-    scalar->name = "Patch/Rank";
+    scalar->name = "Patch/ProcId";
     scalar->meshName = mesh_for_this_var;
     scalar->centering = cent;
     scalar->hasDataExtents = false;
@@ -976,10 +976,9 @@ avtUintahFileFormat::GetGlobalDomainNumber(int level, int local_patch)
 //
 // NOTE: The cache variable for the mesh MUST be called "any_mesh",
 // which is a problem when there are multiple meshes or one of them is
-// actually named "any_mesh" (see
-// https://visitbugs.ornl.gov/issues/52). Thus, for each mesh we keep
-// around our own cache variable and if this function finds it then it
-// just uses it again instead of recomputing it.
+// actually named "any_mesh" (see https://github.com/visit-dav/visit/issues/138
+// Thus, for each mesh we keep around our own cache variable and if this
+// function finds it then it just uses it again instead of recomputing it.
 //
 // ****************************************************************************
 void
@@ -1388,7 +1387,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
         //todo: this returns an array of doubles. Need to return
         //expected datatype to avoid unnecessary conversion.
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,0,0)
         if( variableExists(archive, "p.particleID") )
 #endif
         {
@@ -1680,7 +1679,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 
   // Patch based data ids and bounds
   if( strncmp(varname, "Patch/Id", 8) == 0 ||
-      strncmp(varname, "Patch/Rank", 10) == 0 ||
+      strncmp(varname, "Patch/ProcId", 12) == 0 ||
       strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
       strncmp(varname, "Patch/Bounds/High", 17) == 0 )
   {
@@ -1786,9 +1785,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
           pd->data = new double[pd->num * pd->components];
 
           // Patch processor rank
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,5,1)
           double value = patchInfo.getProcId();
-#elif (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+#elif LIB_VERSION_LE(UINTAH, 2,2,0)
           double value = patchInfo.getProcRankId();
 #else
           double value = patchInfo.getProcId();
@@ -1882,9 +1881,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         phigh[i] += nhigh[i];
     }
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,5,1)
     double rank = patchInfo.getProcId();
-#elif (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+#elif LIB_VERSION_LE(UINTAH, 2,2,0)
     double rank = patchInfo.getProcRankId();
 #else
     double rank = patchInfo.getProcId();
@@ -1904,7 +1903,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         gd->components = 1;
         gd->data = new double[gd->num * gd->components];
 
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,0,0)
         gd->data[0] = patchInfo.getPatchId();
 #endif
       }
@@ -2431,8 +2430,8 @@ avtUintahFileFormat::addMeshNodeRankSIL( avtDatabaseMetaData *md,
     for( unsigned int i=0, j=1; i<nNodes; ++i, ++j ) {
       char msg[128];
       sprintf( msg, "Ranks_%04d_%04d",
-	       i*nRanksPerGroup,
-	       std::min(j*nRanksPerGroup, nProcs)-1 );
+               i*nRanksPerGroup,
+               std::min(j*nRanksPerGroup, nProcs)-1 );
       node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
     }
 

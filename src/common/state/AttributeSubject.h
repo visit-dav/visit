@@ -39,6 +39,9 @@
 //   Burlen Loring, Thu Sep 24 11:35:22 PDT 2015
 //   I removed a compiler warning.
 //
+//   Kathleen Biagas, Tue April 26, 2022
+//   Added DeprecationMessage.
+//
 // ****************************************************************************
 
 class STATE_API AttributeSubject : public AttributeGroup, public Subject
@@ -50,9 +53,16 @@ public:
     virtual const std::string TypeName() const;
     virtual void Notify();
     virtual AttributeSubject *CreateCompatible(const std::string &) const;
-    virtual AttributeSubject *NewInstance(bool) const { return 0; };
+    virtual AttributeSubject *NewInstance(bool) const { return 0; }
 
-    virtual bool VarChangeRequiresReset(void) { return false; };
+    virtual bool VarChangeRequiresReset(void) { return false; }
+
+    // Construct a deprecation message from type name and passed args.
+    std::string DeprecationMessage(const std::string &oldField,
+                                   const std::string &version) const;
+    std::string DeprecationMessage(const std::string &oldField,
+                                   const std::string &newField,
+                                   const std::string &version) const;
 };
 
 #endif

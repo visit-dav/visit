@@ -5,6 +5,7 @@
 #ifndef PY_CRACKSCLIPPERATTRIBUTES_H
 #define PY_CRACKSCLIPPERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CracksClipperAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyCracksClipperAttributes_Wrap(const CracksClipperAttributes *att
 void           PyCracksClipperAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCracksClipperAttributes_SetDefaults(const CracksClipperAttributes *atts);
 std::string    PyCracksClipperAttributes_GetLogString();
-std::string    PyCracksClipperAttributes_ToString(const CracksClipperAttributes *, const char *);
+std::string    PyCracksClipperAttributes_ToString(const CracksClipperAttributes *, const char *, const bool=false);
 PyObject *     PyCracksClipperAttributes_getattr(PyObject *self, char *name);
 int            PyCracksClipperAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyCracksClipperAttributes_methods[CRACKSCLIPPERATTRIBUTES_NMETH];

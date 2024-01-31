@@ -30,6 +30,7 @@
 #include <SpreadsheetTable.h>
 
 // Need these?
+#include <QEnterEvent>
 #include <QCloseEvent>
 
 #include <QvisColorTableButton.h>
@@ -85,7 +86,7 @@
 // ****************************************************************************
 // Method: SpreadsheetViewer::SpreadsheetViewer
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the SpreadsheetViewer class.
 //
 // Arguments:
@@ -122,10 +123,13 @@
 //   Brad Whitlock, Thu Jul  7 18:06:45 PDT 2016
 //   Ensure that the color table atts are set into the color table button.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
-    QMainWindow(parent), Observer((Subject*)p->GetPlotAtts()), 
+    QMainWindow(parent), Observer((Subject*)p->GetPlotAtts()),
     cachedAtts(), menuPopulator()
 {
     // Initialize the color table button if we've not done that before
@@ -152,7 +156,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     setCentralWidget(top);
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 #if defined(Q_OS_MAC)
     QWidget *menuContainer = new QWidget(top);
     QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);
@@ -169,7 +173,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     layout->addWidget(controls3D, 10);
     QVBoxLayout *inner3D = new QVBoxLayout(controls3D);
     inner3D->addSpacing(10);
-    inner3D->setMargin(10);
+    inner3D->setContentsMargins(10,10,10,10);
     QGridLayout *layout3D = new QGridLayout(0);
     inner3D->addLayout(layout3D);
     layout3D->setSpacing(5);
@@ -194,11 +198,16 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     layout3D->addWidget(normalLabel, 1, 0);
 
     normalButtonGroup = new QButtonGroup (0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(normalButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(normalChanged(int)));
+#else
+    connect(normalButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(normalChanged(int)));
+#endif
     normalRadioButtons = new QWidget(controls3D);
     QHBoxLayout *nLayout = new QHBoxLayout(normalRadioButtons);
-    nLayout->setMargin(0);
+    nLayout->setContentsMargins(0,0,0,0);
     layout3D->addWidget(normalRadioButtons, 1, 1);
     QRadioButton *rb = new QRadioButton(tr("X"), normalRadioButtons);
     normalButtonGroup->addButton(rb, 0);
@@ -286,7 +295,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     varLabel = new QLabel(tr("Variable"), top);
     varLayout->addWidget(varLabel, 0, 0);
     // Have to display metadata -- the list of variables.
-    varButton = new QvisVariableButton(false, false, true, 
+    varButton = new QvisVariableButton(false, false, true,
         QvisVariableButton::Scalars, top);
     connect(varButton, SIGNAL(activated(const QString &)),
             this, SLOT(changedVariable(const QString &)));
@@ -351,7 +360,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
 // ****************************************************************************
 // Method: SpreadsheetViewer::~SpreadsheetViewer
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the SpreadsheetViewer class.
 //
 // Programmer: Brad Whitlock
@@ -388,7 +397,7 @@ SpreadsheetViewer::~SpreadsheetViewer()
 // ****************************************************************************
 // Method: SpreadsheetViewer::setAllowRender
 //
-// Purpose: 
+// Purpose:
 //   Sets whether the window will respond to render events from the vis window.
 //
 // Arguments:
@@ -414,7 +423,7 @@ SpreadsheetViewer::setAllowRender(bool val)
 // ****************************************************************************
 // Method: SpreadsheetViewer::render
 //
-// Purpose: 
+// Purpose:
 //   This method tells the window to update itself using the specified
 //   VTK dataset.
 //
@@ -429,7 +438,7 @@ SpreadsheetViewer::setAllowRender(bool val)
 //   Gunther H. Weber, Fri Sep 14 14:04:10 PDT 2007
 //   Select appropriate picks the first time a data set is rendered (i.e.,
 //   input is NULL).
-// 
+//
 //   Brad Whitlock, Wed Apr 23 11:13:35 PDT 2008
 //   Added tr().
 //
@@ -449,8 +458,8 @@ SpreadsheetViewer::render(vtkDataSet *ds)
         raise();
 
         // If input is NULL then there may be picks in the attributes that need
-        // to be highlighted 
-        bool needPickUpdate = !input; 
+        // to be highlighted
+        bool needPickUpdate = !input;
         bool sliceIndexSet = false;
 
         // Set the input pointer
@@ -511,14 +520,14 @@ SpreadsheetViewer::render(vtkDataSet *ds)
 // ****************************************************************************
 // Method: SpreadsheetViewer::updateVariableMenus
 //
-// Purpose: 
+// Purpose:
 //   Updates the menu populator using the plot as input.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 20 18:07:31 PST 2007
 //
 // Modifications:
-//   
+//
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying to
 //    PopulateVariableLists
@@ -549,7 +558,7 @@ SpreadsheetViewer::updateVariableMenus()
 // ****************************************************************************
 // Method: SpreadsheetViewer::enterEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the mouse enters the window.
 //
 // Arguments:
@@ -562,11 +571,11 @@ SpreadsheetViewer::updateVariableMenus()
 // Creation:   Tue Feb 20 18:08:05 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-SpreadsheetViewer::enterEvent(QEvent *e)
+SpreadsheetViewer::enterEvent(QEnterEvent *e)
 {
     QMainWindow::enterEvent(e);
     updateVariableMenus();
@@ -575,7 +584,7 @@ SpreadsheetViewer::enterEvent(QEvent *e)
 // ****************************************************************************
 // Method: SpreadsheetViewer::closeEvent
 //
-// Purpose: 
+// Purpose:
 //   Minimize the window instead of closing it.
 //
 // Arguments:
@@ -585,7 +594,7 @@ SpreadsheetViewer::enterEvent(QEvent *e)
 // Creation:   Wed Mar 28 18:49:50 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -598,7 +607,7 @@ SpreadsheetViewer::closeEvent(QCloseEvent *e)
 // ****************************************************************************
 // Method: SpreadsheetViewer::setColorTable
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the plot needs to tell the window the name of
 //   the color table to use.
 //
@@ -628,9 +637,9 @@ SpreadsheetViewer::setColorTable(const char *ctName)
     bool colorTableChanged = false;
 
     if (plotAtts->GetColorTableName() == "Default")
-        colorTableChanged = colorLUT->SetColorTable(NULL, namesMatch); 
+        colorTableChanged = colorLUT->SetColorTable(NULL, namesMatch);
     else
-        colorTableChanged = colorLUT->SetColorTable(ctName, namesMatch); 
+        colorTableChanged = colorLUT->SetColorTable(ctName, namesMatch);
 
     if(colorTableChanged)
     {
@@ -645,7 +654,7 @@ SpreadsheetViewer::setColorTable(const char *ctName)
 // ****************************************************************************
 // Method: SpreadsheetViewer::PickPointsChanged()
 //
-// Purpose: 
+// Purpose:
 //    Determine based on current plotAtts and cached attributes if the list
 //    of pick points changed.
 //
@@ -698,7 +707,7 @@ SpreadsheetViewer::PickPointsChanged() const
 // ****************************************************************************
 // Method: SpreadsheetViewer::Update
 //
-// Purpose: 
+// Purpose:
 //   This method implements the Observer interface and allows the window to
 //   display SpreadsheetAttributes.
 //
@@ -708,7 +717,7 @@ SpreadsheetViewer::PickPointsChanged() const
 // Modifications:
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
-//   
+//
 //   Hank Childs, Tue Sep  4 10:53:55 PDT 2007
 //   Highlight and label pick points in spreadsheet. This functionality
 //   required changes to handling other events as well (such as invalidating
@@ -751,7 +760,7 @@ SpreadsheetViewer::Update(Subject *)
             {
                 // Invalidate pointer to data set so that pick information
                 // is not applied to the incorrect subset
-                input = 0; 
+                input = 0;
             }
             break;
         case SpreadsheetAttributes::ID_formatString:
@@ -887,7 +896,7 @@ SpreadsheetViewer::Update(Subject *)
             zTabs->setCurrentIndex(plotAtts->GetSliceIndex());
             zTabs->blockSignals(false);
         }
-   
+
         kSlider->blockSignals(true);
         kSlider->setValue(plotAtts->GetSliceIndex());
         kSlider->blockSignals(false);
@@ -899,7 +908,7 @@ SpreadsheetViewer::Update(Subject *)
 // ****************************************************************************
 // Method: SpreadsheetViewer::updateSpreadsheet
 //
-// Purpose: 
+// Purpose:
 //   This method takes the input VTK dataset and makes sure that the spreadsheet
 //   properly displays the VTK dataset.
 //
@@ -962,7 +971,7 @@ SpreadsheetViewer::updateSpreadsheet()
 // ****************************************************************************
 // Method: SpreadsheetViewer::GetBaseIndexFromMetaData
 //
-// Purpose: 
+// Purpose:
 //   Set the base_index from the plot's metadata.
 //
 // Arguments:
@@ -972,7 +981,7 @@ SpreadsheetViewer::updateSpreadsheet()
 // Creation:   Fri May  8 09:13:33 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1005,7 +1014,7 @@ SpreadsheetViewer::GetBaseIndexFromMetaData(int *base_index) const
 // ****************************************************************************
 // Method: SpreadsheetViewer::displayStructuredGrid
 //
-// Purpose: 
+// Purpose:
 //   This method updates the spreadsheet so it displays the data as a
 //   structured grid.
 //
@@ -1026,7 +1035,7 @@ SpreadsheetViewer::GetBaseIndexFromMetaData(int *base_index) const
 //   I fixed a logic error that produced all zeros in the table.
 //
 //   Brad Whitlock, Fri May  8 09:09:29 PDT 2009
-//   Set the mesh's base index differently if there are no base_index or 
+//   Set the mesh's base index differently if there are no base_index or
 //   realDims field data arrays. We use the mesh's cell and node origins.
 //
 //   Brad Whitlock, Mon Dec  6 14:29:41 PST 2010
@@ -1146,7 +1155,7 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
         }
 
         // Detect whether we have a 1D curve.
-        bool isCurve = (dims[1] == 1 && dims[2] == 1 && 
+        bool isCurve = (dims[1] == 1 && dims[2] == 1 &&
                         input->IsA("vtkRectilinearGrid"));
 
         // Make sure that each table can access the VTK data.
@@ -1159,13 +1168,13 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
         {
             tables[t]->blockSignals(true);
 
-            // Tell the table about our data so it can display it 
+            // Tell the table about our data so it can display it
             // appropriately.
             if(isCurve)
                 tables[t]->setCurveData((vtkRectilinearGrid *)input);
             else
             {
-                tables[t]->setDataArray(arr, ghostArray, missingDataArray, dims, 
+                tables[t]->setDataArray(arr, ghostArray, missingDataArray, dims,
                     dMode, offset + t, base_index);
             }
             tables[t]->setFormatString(plotAtts->GetFormatString().c_str());
@@ -1185,7 +1194,7 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 // ****************************************************************************
 // Method: SpreadsheetViewer::displayUnstructuredGrid
 //
-// Purpose: 
+// Purpose:
 //   Displays the input data as an unstructured grid.
 //
 // Programmer: Brad Whitlock
@@ -1193,7 +1202,7 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 //
 // Modifications:
 //   Brad Whitlock, Fri May  8 09:09:29 PDT 2009
-//   Set the mesh's base index differently if there is no base_index  
+//   Set the mesh's base index differently if there is no base_index
 //   field data array. We use the mesh's cell and node origins.
 //
 //   Brad Whitlock, Thu Jan  5 14:09:44 PST 2012
@@ -1232,11 +1241,11 @@ SpreadsheetViewer::displayUnstructuredGrid()
         // We only need one tab for unstructured data.
         setNumberOfTabs(1, base_index[0], false);
 
-        // Tell the table about our data so it can display it 
+        // Tell the table about our data so it can display it
         // appropriately.
         int dims[] = {1,1,1};
         dims[1] = arr->GetNumberOfTuples();
-        tables[0]->setDataArray(arr, 0, missingDataArray, dims, 
+        tables[0]->setDataArray(arr, 0, missingDataArray, dims,
                 SpreadsheetTable::UCDNode, 0, base_index);
         tables[0]->setFormatString(plotAtts->GetFormatString().c_str());
         tables[0]->setRenderInColor(plotAtts->GetUseColorTable());
@@ -1251,11 +1260,11 @@ SpreadsheetViewer::displayUnstructuredGrid()
         // Make sure that we have the right number of tabs.
         setNumberOfTabs(1, base_index[0], false);
 
-        // Tell the table about our data so it can display it 
+        // Tell the table about our data so it can display it
         // appropriately.
         int dims[] = {1,1,1};
         dims[1] = arr->GetNumberOfTuples();
-        tables[0]->setDataArray(arr, ghostArray, missingDataArray, dims, 
+        tables[0]->setDataArray(arr, ghostArray, missingDataArray, dims,
                 SpreadsheetTable::UCDCell, 0, base_index);
         tables[0]->setFormatString(plotAtts->GetFormatString().c_str());
         tables[0]->setRenderInColor(plotAtts->GetUseColorTable());
@@ -1292,12 +1301,12 @@ SpreadsheetViewer::displayUnstructuredGrid()
 #define END_MINMAX \
         QString fmt, tmp;\
         fmt = tr("Min = ") + QString(plotAtts->GetFormatString().c_str());\
-        tmp.sprintf(fmt.toStdString().c_str(), minValue);\
+        tmp = QString::asprintf(fmt.toStdString().c_str(), minValue);\
         minButton->setText(tmp);\
         minButton->setEnabled(true);\
         debug5 << mName << "min=" << minValue << ", minCell=[" << minCell[0] << "," << minCell[1] << "," << minCell[2] << "]" << endl;\
         fmt = tr("Max = ") + QString(plotAtts->GetFormatString().c_str());\
-        tmp.sprintf(fmt.toStdString().c_str(), maxValue);\
+        tmp = QString::asprintf(fmt.toStdString().c_str(), maxValue);\
         maxButton->setText(tmp);\
         maxButton->setEnabled(true);\
         debug5 << mName << "max=" << maxValue << ", maxCell=[" << maxCell[0] << "," << maxCell[1] << "," << maxCell[2] << "]" << endl;
@@ -1306,7 +1315,7 @@ SpreadsheetViewer::displayUnstructuredGrid()
 // ****************************************************************************
 // Method: SpreadsheetViewer::calculateMinMaxCells
 //
-// Purpose: 
+// Purpose:
 //   Calculates the min,max of the dataset and where they are located within
 //   the spreadsheet.
 //
@@ -1327,7 +1336,7 @@ SpreadsheetViewer::displayUnstructuredGrid()
 // ****************************************************************************
 
 void
-SpreadsheetViewer::calculateMinMaxCells(int meshDims[3], 
+SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
     bool structured)
 {
     const char *mName = "SpreadsheetViewer::calculateMinMaxCells: ";
@@ -1455,7 +1464,7 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
         }
     }
     else if(arr != 0)
-    { 
+    {
         // Unstructured
         vtkIdType index = 0;
         BEGIN_MINMAX
@@ -1482,14 +1491,14 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
 // ****************************************************************************
 // Method: SpreadsheetViewer::updateMinMaxButtons
 //
-// Purpose: 
+// Purpose:
 //   Updates the min,max buttons with the min,max values.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 20 14:13:43 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1502,7 +1511,7 @@ SpreadsheetViewer::updateMinMaxButtons()
 // ****************************************************************************
 // Method: SpreadsheetViewer::setNumberOfTabs
 //
-// Purpose: 
+// Purpose:
 //   Makes sure that the window has the correct number of tabs for the
 //   dataset that will be displayed.
 //
@@ -1518,7 +1527,7 @@ SpreadsheetViewer::updateMinMaxButtons()
 // Modifications:
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
-//   
+//
 //   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
 //   Add support for setting spreadsheet font
 //
@@ -1611,11 +1620,11 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
         if(!structured)
             name = tr("Unstructured");
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
-            name.sprintf("i=%d", i+base+offset);
+            name = QString("i=%1").arg(i+base+offset);
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
-            name.sprintf("j=%d", i+base+offset);
+            name = QString("j=%1").arg(i+base+offset);
         else
-            name.sprintf("k=%d", i+base+offset);
+            name = QString("k=%1").arg(i+base+offset);
         zTabs->setTabText(i, name);
     }
     zTabs->blockSignals(false);
@@ -1636,7 +1645,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
 // ****************************************************************************
 // Method: SpreadsheetViewer::updateSliderLabel
 //
-// Purpose: 
+// Purpose:
 //   Updates the slider label based on the slice index.
 //
 // Programmer: Brad Whitlock
@@ -1684,26 +1693,32 @@ SpreadsheetViewer::updateSliderLabel()
     QString kl;
     if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
     {
-        kl.sprintf("i=%d [%d,%d]", base_index[0] + plotAtts->GetSliceIndex(), 
-            base_index[0], base_index[0] + nTablesForSlider - 1);
+        kl = QString("i=%1 [%2,%3]")
+             .arg(base_index[0] + plotAtts->GetSliceIndex())
+             .arg(base_index[0])
+             .arg(base_index[0] + nTablesForSlider - 1);
     }
     else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
     {
-        kl.sprintf("j=%d [%d,%d]", base_index[1] + plotAtts->GetSliceIndex(), 
-            base_index[1], base_index[1] + nTablesForSlider - 1);
+        kl = QString("j=%1 [%2,%3]")
+             .arg(base_index[1] + plotAtts->GetSliceIndex())
+             .arg(base_index[1])
+             .arg(base_index[1] + nTablesForSlider - 1);
     }
     else
     {
-        kl.sprintf("k=%d [%d,%d]", base_index[2] + plotAtts->GetSliceIndex(), 
-            base_index[2], base_index[2] + nTablesForSlider - 1);
-    } 
+        kl = QString("k=%1 [%2,%3]")
+             .arg(base_index[2] + plotAtts->GetSliceIndex())
+             .arg(base_index[2])
+             .arg(base_index[2] + nTablesForSlider - 1);
+    }
     kLabel->setText(kl);
 }
 
 // ****************************************************************************
 // Method: SpreadsheetViewer::clear
 //
-// Purpose: 
+// Purpose:
 //   Disassociates the VTK data from the spreadsheets and redraws the active
 //   spreadsheet so it is cleared.
 //
@@ -1736,7 +1751,7 @@ SpreadsheetViewer::clear()
 // ****************************************************************************
 // Method: SpreadsheetViewer::updateMenuEnabledState
 //
-// Purpose: 
+// Purpose:
 //   Sets the enabled state of the window's menus based on the table's
 //   number of selections.
 //
@@ -1786,21 +1801,21 @@ SpreadsheetViewer::updateMenuEnabledState(int tableIndex)
 // ****************************************************************************
 // Method: SpreadsheetViewer::GetPickIJK
 //
-// Purpose: 
+// Purpose:
 //   Determine the IJK from the pick element.
 //
 // Arguments:
 //   pickId   : The pick element.
 //   pickType : 0 == zone, otherwise, node pick.
 //   ijk      : The return ijk values.
-//   
-// Returns:    
+//
+// Returns:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue May 26 11:05:30 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1861,15 +1876,15 @@ SpreadsheetViewer::GetPickIJK(int pickId, int pickType, int *ijk) const
 // ****************************************************************************
 // Method: SpreadSheetViewer::moveSliceToCurrentPick()
 //
-// Purpose: 
+// Purpose:
 //   Moves the displayed slice to the current pick point
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //;   Whether the slice was moved
 //
-// Note:       
+// Note:
 //
 // Programmer: Gunther H. Weber
 // Creation:   Mon Sep 10 15:05:01 PDT 2007
@@ -1937,7 +1952,7 @@ SpreadsheetViewer::moveSliceToCurrentPick()
                     debug1 << mName << "Setting slice index to: " << ijk[sliceAxis] << endl;
                     // Set the slice index that we calculated into the plotAtts.
                     plotAtts->SetSliceIndex(ijk[sliceAxis]);
- 
+
                     // Issue a Notify from the main event loop.
                     QTimer::singleShot(0, this, SLOT(postNotify()));
                     retval = true;
@@ -1951,14 +1966,14 @@ SpreadsheetViewer::moveSliceToCurrentPick()
 // ****************************************************************************
 // Method: SpreadSheetViewer::selectPickPoints
 //
-// Purpose: 
+// Purpose:
 //   Updates pick points in spreadsheet.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Gunther H. Weber
 // Creation:   Mon Sep 10 15:05:01 PDT 2007
@@ -2033,7 +2048,7 @@ SpreadsheetViewer::selectPickPoints()
 #ifndef SINGLE_TAB_WINDOW
             else if (ijk[0] != -1)
 #else
-            // In single slice mode we only need to handle the current 
+            // In single slice mode we only need to handle the current
             // pick if the spreadsheet is visible
             else if (ijk[0] != -1 && ijk[sliceAxis] == plotAtts->GetSliceIndex())
 #endif
@@ -2060,7 +2075,7 @@ SpreadsheetViewer::selectPickPoints()
 
 #ifndef SINGLE_TAB_WINDOW
                 debug1 << mName << "Setting current cell (" << row << ", " << col << ")"
-                       << std::endl; 
+                       << std::endl;
                 QModelIndex id = tables[activeTable]->model()->index(row, col);
                 tables[activeTable]->selectionModel()->setCurrentIndex(id, QItemSelectionModel::ClearAndSelect);
 #else
@@ -2078,7 +2093,7 @@ SpreadsheetViewer::selectPickPoints()
 #endif
             }
 
-            // Now, go through the old picks 
+            // Now, go through the old picks
             const std::vector<double>& pastPicks = plotAtts->GetPastPicks();
             const std::vector<std::string>& pastPickLetters = plotAtts->GetPastPickLetters();
             size_t numOldPicks = pastPicks.size() / 2;
@@ -2143,7 +2158,7 @@ SpreadsheetViewer::selectPickPoints()
 // ****************************************************************************
 // Method: SpreadsheetViewer::formatChanged
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when the format is changed and causes the spreadsheets
 //   to update using the new format.
 //
@@ -2151,7 +2166,7 @@ SpreadsheetViewer::selectPickPoints()
 // Creation:   Tue Feb 20 14:16:07 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2166,7 +2181,7 @@ SpreadsheetViewer::formatChanged()
 // ****************************************************************************
 // Method: SpreadsheetViewer::sliderChanged
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when the slider changes. We use it to set the active
 //   slice index in the plot attributes and also make sure that the right
 //   spreadshset page is visible.
@@ -2211,14 +2226,14 @@ SpreadsheetViewer::sliderChanged(int slice)
 // ****************************************************************************
 // Method: SpreadsheetViewer::sliderPressed
 //
-// Purpose: 
+// Purpose:
 //   Sets a flag that tells us to ignore updates while the slider is moving.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 22 13:43:02 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2234,7 +2249,7 @@ SpreadsheetViewer::sliderPressed()
 // ****************************************************************************
 // Method: SpreadsheetViewer::sliderReleased
 //
-// Purpose: 
+// Purpose:
 //   Sets a flag that tells us not to ignore updates.
 //
 // Programmer: Brad Whitlock
@@ -2260,9 +2275,9 @@ SpreadsheetViewer::sliderReleased()
 // ****************************************************************************
 // Method: SpreadsheetViewer::tabChanged
 //
-// Purpose: 
-//   This slot is called when the active tab changes. We use it to set the 
-//   active slice index in the plot attributes and also make sure that the 
+// Purpose:
+//   This slot is called when the active tab changes. We use it to set the
+//   active slice index in the plot attributes and also make sure that the
 //   right spreadshset page is visible.
 //
 // Arguments:
@@ -2298,7 +2313,7 @@ SpreadsheetViewer::tabChanged(int index)
 // ****************************************************************************
 // Method: SpreadsheetViewer::normalChanged
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when we want to change how the data are sliced.
 //
 // Arguments:
@@ -2308,7 +2323,7 @@ SpreadsheetViewer::tabChanged(int index)
 // Creation:   Tue Feb 20 14:18:06 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2325,7 +2340,7 @@ SpreadsheetViewer::normalChanged(int val)
 // ****************************************************************************
 // Method: SpreadsheetViewer::colorTableCheckBoxToggled
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when we want to change whether colors are used in
 //   the spreadsheet.
 //
@@ -2336,7 +2351,7 @@ SpreadsheetViewer::normalChanged(int val)
 // Creation:   Tue Feb 20 14:18:34 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2349,7 +2364,7 @@ SpreadsheetViewer::colorTableCheckBoxToggled(bool val)
 // ****************************************************************************
 // Method: SpreadsheetViewer::tracerCheckBoxToggled
 //
-// Purpose: 
+// Purpose:
 //   This slot turns the highlight plane on/off.
 //
 // Arguments:
@@ -2359,7 +2374,7 @@ SpreadsheetViewer::colorTableCheckBoxToggled(bool val)
 // Creation:   Tue Feb 20 14:19:17 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2372,7 +2387,7 @@ SpreadsheetViewer::tracerCheckBoxToggled(bool val)
 // ****************************************************************************
 // Method: SpreadsheetViewer::outlineCheckBoxToggled
 //
-// Purpose: 
+// Purpose:
 //   This slot turns the patch outline on/off.
 //
 // Arguments:
@@ -2382,7 +2397,7 @@ SpreadsheetViewer::tracerCheckBoxToggled(bool val)
 // Creation:   Tue Oct 16 20:40:50 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2395,7 +2410,7 @@ SpreadsheetViewer::outlineCheckBoxToggled(bool val)
 // ****************************************************************************
 // Method: SpreadsheetViewer::showCurrentCellOutlineCheckBoxToggled
 //
-// Purpose: 
+// Purpose:
 //   This slot turns the current cell on/off.
 //
 // Arguments:
@@ -2405,7 +2420,7 @@ SpreadsheetViewer::outlineCheckBoxToggled(bool val)
 // Creation:   Wed Nov 28 15:27:10 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2418,7 +2433,7 @@ SpreadsheetViewer::showCurrentCellOutlineCheckBoxToggled(bool val)
 // ****************************************************************************
 // Method: SpreadsheetViewer::minClicked
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when the min button is clicked and we make the
 //   window highlight the min value in the spreadsheet.
 //
@@ -2475,7 +2490,7 @@ SpreadsheetViewer::minClicked()
 // ****************************************************************************
 // Method: SpreadsheetViewer::maxClicked
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when the max button is clicked and we make the
 //   window highlight the max value in the spreadsheet.
 //
@@ -2532,14 +2547,14 @@ SpreadsheetViewer::maxClicked()
 // ****************************************************************************
 // Method: SpreadsheetViewer::postNotify
 //
-// Purpose: 
+// Purpose:
 //   This slot is used to force a plot attributes notify from the main event loop.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 20 14:20:42 PST 2007
 //
 // Modifications:
-//   
+//
 //    Hank Childs, Thu Sep 20 11:18:18 PDT 2007
 //    Make sure the active plots stay the same.
 //
@@ -2578,7 +2593,7 @@ SpreadsheetViewer::postNotify()
 // ****************************************************************************
 // Method: SpreadsheetViewer::selectedColorTable
 //
-// Purpose: 
+// Purpose:
 //   This slot is called when we change the color table name.
 //
 // Arguments:
@@ -2588,7 +2603,7 @@ SpreadsheetViewer::postNotify()
 // Creation:   Tue Feb 20 14:21:14 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2602,7 +2617,7 @@ SpreadsheetViewer::selectedColorTable(bool, const QString &ctName)
 // ****************************************************************************
 // Method: SpreadsheetViewer::changedVariable
 //
-// Purpose: 
+// Purpose:
 //   This slot if called when we select a new variable from the variable button.
 //
 // Arguments:
@@ -2612,7 +2627,7 @@ SpreadsheetViewer::selectedColorTable(bool, const QString &ctName)
 // Creation:   Thu Feb 22 13:23:45 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2630,7 +2645,7 @@ SpreadsheetViewer::changedVariable(const QString &newVar)
 // ****************************************************************************
 // Method: SpreadsheetViewer::saveAsText
 //
-// Purpose: 
+// Purpose:
 //   This slot saves the selected cells to a text file.
 //
 // Programmer: Brad Whitlock
@@ -2654,7 +2669,7 @@ SpreadsheetViewer::saveAsText()
     if(nTables > 0)
     {
         // Get the name of the file that the user wants to save
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save as"), 
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save as"),
             tr("selection.txt"), tr("Text (*.txt)"));
 
         // If the user chose to save a file, write it out.
@@ -2686,7 +2701,7 @@ SpreadsheetViewer::saveAsText()
 // ****************************************************************************
 // Method: SpreadsheetViewer::copySelectionToClipboard
 //
-// Purpose: 
+// Purpose:
 //   This slot saves the selected cells to the clipboard so they can be
 //   pasted into other applications.
 //
@@ -2694,7 +2709,7 @@ SpreadsheetViewer::saveAsText()
 // Creation:   Thu Feb 22 13:24:45 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2713,14 +2728,14 @@ SpreadsheetViewer::copySelectionToClipboard()
 // ****************************************************************************
 // Method: SpreadsheetViewer::selectAll
 //
-// Purpose: 
+// Purpose:
 //   This slot selects all cells in the active table.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 22 13:25:30 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2736,14 +2751,14 @@ SpreadsheetViewer::selectAll()
 // ****************************************************************************
 // Method: SpreadsheetViewer::selectNone
 //
-// Purpose: 
+// Purpose:
 //   This slot clears the selection from the active table.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 22 13:25:48 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2759,7 +2774,7 @@ SpreadsheetViewer::selectNone()
 // ****************************************************************************
 // Method: SpreadsheetViewer::operationSum
 //
-// Purpose: 
+// Purpose:
 //   This slot calculates the sum of the selected cells and displays the sum
 //   in a message box.
 //
@@ -2779,8 +2794,8 @@ SpreadsheetViewer::operationSum()
     {
         SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         double sum = t->selectedCellsSum();
-        QString sumStr;
-        sumStr.sprintf(plotAtts->GetFormatString().c_str(), sum);
+        QString sumStr =
+            QString::asprintf(plotAtts->GetFormatString().c_str(), sum);
         QString msg(tr("The sum of the selected cells is: %1.").arg(sumStr));
         QMessageBox::information(this, tr("Sum results"), msg, QMessageBox::Ok);
     }
@@ -2789,8 +2804,8 @@ SpreadsheetViewer::operationSum()
 // ****************************************************************************
 // Method: SpreadsheetViewer::operationAverage
 //
-// Purpose: 
-//   This slot calculates the average of the selected cells and displays the 
+// Purpose:
+//   This slot calculates the average of the selected cells and displays the
 //   average in a message box.
 //
 // Programmer: Brad Whitlock
@@ -2799,7 +2814,10 @@ SpreadsheetViewer::operationSum()
 // Modifications:
 //   Brad Whitlock, Wed Apr 23 11:35:09 PDT 2008
 //   Support for internationalization.
-//   
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Correct use of QString::asprintf to proper form.
+//
 // ****************************************************************************
 
 void
@@ -2809,8 +2827,8 @@ SpreadsheetViewer::operationAverage()
     {
         SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         double avg = t->selectedCellsAverage();
-        QString avgStr;
-        avgStr.sprintf(plotAtts->GetFormatString().c_str(), avg);
+        QString avgStr =
+            QString::asprintf(plotAtts->GetFormatString().c_str(), avg);
         QString msg(tr("The average value of the selected cells is: %1.").arg(avgStr));
         QMessageBox::information(this, "Average results", msg, QMessageBox::Ok);
     }
@@ -2819,24 +2837,24 @@ SpreadsheetViewer::operationAverage()
 // ****************************************************************************
 // Method: SpreadsheetViewer::GetDataVsCoordinate
 //
-// Purpose: 
+// Purpose:
 //   Extract data and make a curve.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May  8 16:53:13 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
-SpreadsheetViewer::GetDataVsCoordinate(double *curve, const vtkIdType *indices, 
+SpreadsheetViewer::GetDataVsCoordinate(double *curve, const vtkIdType *indices,
     int nvals, int coord) const
 {
     const char *mName = "SpreadsheetViewer::GetDataVsCoordinate: ";
@@ -2929,7 +2947,7 @@ SpreadsheetViewer::GetDataVsCoordinate(double *curve, const vtkIdType *indices,
                 vtkIdType nodeId = K*dims[1]*dims[0] + J*dims[0] + I;
 
                 curve[i*2  ] = sgrid->GetPoint(nodeId)[comp];
-                curve[i*2+1] = arr->GetTuple1(indices[i]); 
+                curve[i*2+1] = arr->GetTuple1(indices[i]);
             }
         }
         else
@@ -2949,7 +2967,7 @@ SpreadsheetViewer::GetDataVsCoordinate(double *curve, const vtkIdType *indices,
 // ****************************************************************************
 // Method: SpreadsheetViewer::DisplayCurve
 //
-// Purpose: 
+// Purpose:
 //   Display curve data in a new window.
 //
 // Arguments:
@@ -2960,7 +2978,7 @@ SpreadsheetViewer::GetDataVsCoordinate(double *curve, const vtkIdType *indices,
 // Creation:   Fri May  8 16:52:44 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2974,14 +2992,14 @@ SpreadsheetViewer::DisplayCurve(const double *vals, int nvals)
 // ****************************************************************************
 // Method: SpreadsheetViewer::operationCurveX
 //
-// Purpose: 
+// Purpose:
 //   Extract a row of data, match it with the X values and make a curve.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May  8 16:52:04 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3022,14 +3040,14 @@ SpreadsheetViewer::operationCurveX1()
 // ****************************************************************************
 // Method: SpreadsheetViewer::operationCurveY
 //
-// Purpose: 
+// Purpose:
 //   Extract a column of data, match it with the X values and make a curve.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May  8 16:52:04 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3070,7 +3088,7 @@ SpreadsheetViewer::operationCurveY1()
 // ****************************************************************************
 // Method: SpreadsheetViewer::tableSelectionChanged
 //
-// Purpose: 
+// Purpose:
 //   This slot is called by any table when its selection changes. We use it to
 //   ensure that the menus are updated appropriately for the active table.
 //

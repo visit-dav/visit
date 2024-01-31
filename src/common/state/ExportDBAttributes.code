@@ -1,0 +1,74 @@
+Target: xml2python
+Function: PyExportDBAttributes_ToString
+Declaration: std::string PyExportDBAttributes_ToString(const ExportDBAttributes *, const char *, const bool);
+Definition:
+
+
+// ****************************************************************************
+// Module: PyExportDBAttributes_ToString
+//
+// Purpose: 
+//   Custom to string method. Custom b/c of handled for opts dict.
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon May 11 14:14:38 PDT 2020
+//
+// ****************************************************************************
+std::string
+PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix, const bool /* forLogging */)
+{
+    std::string str;
+    char tmpStr[1000];
+
+    if(atts->GetAllTimes())
+        snprintf(tmpStr, 1000, "%sallTimes = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sallTimes = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sdirname = \"%s\"\n", prefix, atts->GetDirname().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sfilename = \"%s\"\n", prefix, atts->GetFilename().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%stimeStateFormat = \"%s\"\n", prefix, atts->GetTimeStateFormat().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sdb_type = \"%s\"\n", prefix, atts->GetDb_type().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sdb_type_fullname = \"%s\"\n", prefix, atts->GetDb_type_fullname().c_str());
+    str += tmpStr;
+    {   const stringVector &variables = atts->GetVariables();
+        snprintf(tmpStr, 1000, "%svariables = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < variables.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", variables[i].c_str());
+            str += tmpStr;
+            if(i < variables.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    if(atts->GetWriteUsingGroups())
+        snprintf(tmpStr, 1000, "%swriteUsingGroups = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%swriteUsingGroups = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
+    str += tmpStr;
+
+    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(), false);
+    if((!db_opts_dict_str.empty()) && // make sure its not an empty string
+       (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
+    {
+        str += "DBExportOpts = ";
+        str += db_opts_dict_str;
+        str += "\n";
+    }
+
+    return str;
+}
+

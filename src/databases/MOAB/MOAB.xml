@@ -1,15 +1,28 @@
 <?xml version="1.0"?>
   <Plugin name="MOAB" type="database" label="MOAB" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" filePatternsStrict="false">
-    <CXXFLAGS>
-      ${MOAB_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${MOAB_MPI_INCLUDE_DIR} ${HDF5_MPI_INCLUDE_DIR}
+    <CXXFLAGS components="M,ESer">
+      ${MOAB_INCLUDE_DIR}
+      ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
+    <CXXFLAGS components="EPar">
+      ${MOAB_MPI_INCLUDE_DIR}
+      ${HDF5_MPI_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS components="M,ESer">
+      ${MOAB_LIBRARY_DIR}
+      ${HDF5_LIBRARY_DIR}
+    </LDFLAGS>
+    <LDFLAGS components="EPar">
+      ${MOAB_MPI_LIBRARY_DIR}
+      ${HDF5_MPI_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS components="M,ESer">
-      ${MOAB_LIBRARY_DIR}/${MOAB_LIB}
-      ${HDF5_LIBRARY_DIR}/${HDF5_LIB}
+      ${MOAB_LIB}
+      ${HDF5_LIB}
     </LIBS>
     <LIBS components="EPar">
-      ${MOAB_MPI_LIBRARY_DIR}/${MOAB_MPI_LIB}
-      ${HDF5_MPI_LIBRARY_DIR}/${HDF5_MPI_LIB}
+      ${MOAB_MPI_LIB}
+      ${HDF5_MPI_LIB}
     </LIBS>
     <FilePatterns>
       *.h5m

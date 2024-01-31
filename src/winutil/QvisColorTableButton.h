@@ -41,6 +41,9 @@ class ColorTableAttributes;
 //   Kathleen Biagas, Mon Aug  4 15:51:11 PDT 2014
 //   Change colorTableNames to a QSringList, add mappedColorTableNames
 //   to aid in grouping.  Add category argument to addColorTable.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed category from addColorTable() and removed mappedColorTableNames.
 //
 // ****************************************************************************
 
@@ -61,7 +64,7 @@ public:
 
     // Methods to set the list of internal color tables.
     static void clearAllColorTables();
-    static void addColorTable(const QString &ctName, const QString &ctCategory);
+    static void addColorTable(const QString &ctName);
     static void updateColorTableButtons();
     static void setColorTableAttributes(ColorTableAttributes *cAtts);
 signals:
@@ -84,7 +87,6 @@ private:
     static ColorTableButtonVector  buttons;
 
     static QStringList             colorTableNames;
-    static QMap<QString, QStringList> mappedColorTableNames;
     static ColorTableAttributes   *colorTableAtts;
 };
 

@@ -44,7 +44,7 @@ static void *xmalloc(size_t size);
  *  Creation:   Thu Jun 1 13:38:54 PST 2006 */
 avtGGCMFileFormat::avtGGCMFileFormat(
         const char *filename,
-        DBOptionsAttributes *db)
+        const DBOptionsAttributes *db)
                 :
         avtMTSDFileFormat(&filename,1),
         fn_grid(NULL),

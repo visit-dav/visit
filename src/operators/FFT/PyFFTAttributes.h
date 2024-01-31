@@ -5,6 +5,7 @@
 #ifndef PY_FFTATTRIBUTES_H
 #define PY_FFTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FFTAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyFFTAttributes_Wrap(const FFTAttributes *attr);
 void           PyFFTAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyFFTAttributes_SetDefaults(const FFTAttributes *atts);
 std::string    PyFFTAttributes_GetLogString();
-std::string    PyFFTAttributes_ToString(const FFTAttributes *, const char *);
+std::string    PyFFTAttributes_ToString(const FFTAttributes *, const char *, const bool=false);
 PyObject *     PyFFTAttributes_getattr(PyObject *self, char *name);
 int            PyFFTAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyFFTAttributes_methods[FFTATTRIBUTES_NMETH];

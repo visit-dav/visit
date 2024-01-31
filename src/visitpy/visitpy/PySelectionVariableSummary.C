@@ -5,6 +5,7 @@
 #include <PySelectionVariableSummary.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PySelectionVariableSummary
@@ -34,9 +35,8 @@ struct SelectionVariableSummaryObject
 // Internal prototypes
 //
 static PyObject *NewSelectionVariableSummary(int);
-
 std::string
-PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const char *prefix)
+PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -80,12 +80,37 @@ SelectionVariableSummary_SetName(PyObject *self, PyObject *args)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->SetName(std::string(str));
+    obj->data->SetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -104,12 +129,48 @@ SelectionVariableSummary_SetMinimum(PyObject *self, PyObject *args)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minimum in the object.
-    obj->data->SetMinimum(dval);
+    obj->data->SetMinimum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -128,12 +189,48 @@ SelectionVariableSummary_SetMaximum(PyObject *self, PyObject *args)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maximum in the object.
-    obj->data->SetMaximum(dval);
+    obj->data->SetMaximum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -152,35 +249,60 @@ SelectionVariableSummary_SetHistogram(PyObject *self, PyObject *args)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
 
-    double *dvals = obj->data->GetHistogram();
-    if(!PyArg_ParseTuple(args, "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3], &dvals[4], &dvals[5], &dvals[6], &dvals[7], &dvals[8], &dvals[9], &dvals[10], &dvals[11], &dvals[12], &dvals[13], &dvals[14], &dvals[15], &dvals[16], &dvals[17], &dvals[18], &dvals[19], &dvals[20], &dvals[21], &dvals[22], &dvals[23], &dvals[24], &dvals[25], &dvals[26], &dvals[27], &dvals[28], &dvals[29], &dvals[30], &dvals[31], &dvals[32], &dvals[33], &dvals[34], &dvals[35], &dvals[36], &dvals[37], &dvals[38], &dvals[39], &dvals[40], &dvals[41], &dvals[42], &dvals[43], &dvals[44], &dvals[45], &dvals[46], &dvals[47], &dvals[48], &dvals[49], &dvals[50], &dvals[51], &dvals[52], &dvals[53], &dvals[54], &dvals[55], &dvals[56], &dvals[57], &dvals[58], &dvals[59], &dvals[60], &dvals[61], &dvals[62], &dvals[63], &dvals[64], &dvals[65], &dvals[66], &dvals[67], &dvals[68], &dvals[69], &dvals[70], &dvals[71], &dvals[72], &dvals[73], &dvals[74], &dvals[75], &dvals[76], &dvals[77], &dvals[78], &dvals[79], &dvals[80], &dvals[81], &dvals[82], &dvals[83], &dvals[84], &dvals[85], &dvals[86], &dvals[87], &dvals[88], &dvals[89], &dvals[90], &dvals[91], &dvals[92], &dvals[93], &dvals[94], &dvals[95], &dvals[96], &dvals[97], &dvals[98], &dvals[99], &dvals[100], &dvals[101], &dvals[102], &dvals[103], &dvals[104], &dvals[105], &dvals[106], &dvals[107], &dvals[108], &dvals[109], &dvals[110], &dvals[111], &dvals[112], &dvals[113], &dvals[114], &dvals[115], &dvals[116], &dvals[117], &dvals[118], &dvals[119], &dvals[120], &dvals[121], &dvals[122], &dvals[123], &dvals[124], &dvals[125], &dvals[126], &dvals[127], &dvals[128], &dvals[129], &dvals[130], &dvals[131], &dvals[132], &dvals[133], &dvals[134], &dvals[135], &dvals[136], &dvals[137], &dvals[138], &dvals[139], &dvals[140], &dvals[141], &dvals[142], &dvals[143], &dvals[144], &dvals[145], &dvals[146], &dvals[147], &dvals[148], &dvals[149], &dvals[150], &dvals[151], &dvals[152], &dvals[153], &dvals[154], &dvals[155], &dvals[156], &dvals[157], &dvals[158], &dvals[159], &dvals[160], &dvals[161], &dvals[162], &dvals[163], &dvals[164], &dvals[165], &dvals[166], &dvals[167], &dvals[168], &dvals[169], &dvals[170], &dvals[171], &dvals[172], &dvals[173], &dvals[174], &dvals[175], &dvals[176], &dvals[177], &dvals[178], &dvals[179], &dvals[180], &dvals[181], &dvals[182], &dvals[183], &dvals[184], &dvals[185], &dvals[186], &dvals[187], &dvals[188], &dvals[189], &dvals[190], &dvals[191], &dvals[192], &dvals[193], &dvals[194], &dvals[195], &dvals[196], &dvals[197], &dvals[198], &dvals[199], &dvals[200], &dvals[201], &dvals[202], &dvals[203], &dvals[204], &dvals[205], &dvals[206], &dvals[207], &dvals[208], &dvals[209], &dvals[210], &dvals[211], &dvals[212], &dvals[213], &dvals[214], &dvals[215], &dvals[216], &dvals[217], &dvals[218], &dvals[219], &dvals[220], &dvals[221], &dvals[222], &dvals[223], &dvals[224], &dvals[225], &dvals[226], &dvals[227], &dvals[228], &dvals[229], &dvals[230], &dvals[231], &dvals[232], &dvals[233], &dvals[234], &dvals[235], &dvals[236], &dvals[237], &dvals[238], &dvals[239], &dvals[240], &dvals[241], &dvals[242], &dvals[243], &dvals[244], &dvals[245], &dvals[246], &dvals[247], &dvals[248], &dvals[249], &dvals[250], &dvals[251], &dvals[252], &dvals[253], &dvals[254], &dvals[255]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetHistogram();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 256)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 256)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 256)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 256 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the histogram in the object as modified.
     obj->data->SelectHistogram();
@@ -230,14 +352,7 @@ SelectionVariableSummary_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-SelectionVariableSummary_compare(PyObject *v, PyObject *w)
-{
-    SelectionVariableSummary *a = ((SelectionVariableSummaryObject *)v)->data;
-    SelectionVariableSummary *b = ((SelectionVariableSummaryObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySelectionVariableSummary_getattr(PyObject *self, char *name)
 {
@@ -250,34 +365,47 @@ PySelectionVariableSummary_getattr(PyObject *self, char *name)
     if(strcmp(name, "histogram") == 0)
         return SelectionVariableSummary_GetHistogram(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySelectionVariableSummary_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySelectionVariableSummary_methods[i].ml_name),
+                PyString_FromString(PySelectionVariableSummary_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySelectionVariableSummary_methods, self, name);
 }
 
 int
 PySelectionVariableSummary_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
-        obj = SelectionVariableSummary_SetName(self, tuple);
+        obj = SelectionVariableSummary_SetName(self, args);
     else if(strcmp(name, "minimum") == 0)
-        obj = SelectionVariableSummary_SetMinimum(self, tuple);
+        obj = SelectionVariableSummary_SetMinimum(self, args);
     else if(strcmp(name, "maximum") == 0)
-        obj = SelectionVariableSummary_SetMaximum(self, tuple);
+        obj = SelectionVariableSummary_SetMaximum(self, args);
     else if(strcmp(name, "histogram") == 0)
-        obj = SelectionVariableSummary_SetHistogram(self, tuple);
+        obj = SelectionVariableSummary_SetHistogram(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -285,7 +413,7 @@ static int
 SelectionVariableSummary_print(PyObject *v, FILE *fp, int flags)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
-    fprintf(fp, "%s", PySelectionVariableSummary_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySelectionVariableSummary_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -293,7 +421,7 @@ PyObject *
 SelectionVariableSummary_str(PyObject *v)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
-    return PyString_FromString(PySelectionVariableSummary_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySelectionVariableSummary_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -306,49 +434,70 @@ static char *SelectionVariableSummary_Purpose = "Contains a summary of a variabl
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject SelectionVariableSummaryType =
+
+VISIT_PY_TYPE_OBJ(SelectionVariableSummaryType,         \
+                  "SelectionVariableSummary",           \
+                  SelectionVariableSummaryObject,       \
+                  SelectionVariableSummary_dealloc,     \
+                  SelectionVariableSummary_print,       \
+                  PySelectionVariableSummary_getattr,   \
+                  PySelectionVariableSummary_setattr,   \
+                  SelectionVariableSummary_str,         \
+                  SelectionVariableSummary_Purpose,     \
+                  SelectionVariableSummary_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SelectionVariableSummary",                    // tp_name
-    sizeof(SelectionVariableSummaryObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SelectionVariableSummary_dealloc,  // tp_dealloc
-    (printfunc)SelectionVariableSummary_print,     // tp_print
-    (getattrfunc)PySelectionVariableSummary_getattr, // tp_getattr
-    (setattrfunc)PySelectionVariableSummary_setattr, // tp_setattr
-    (cmpfunc)SelectionVariableSummary_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)SelectionVariableSummary_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SelectionVariableSummary_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &SelectionVariableSummaryType
+         || Py_TYPE(other) != &SelectionVariableSummaryType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    SelectionVariableSummary *a = ((SelectionVariableSummaryObject *)self)->data;
+    SelectionVariableSummary *b = ((SelectionVariableSummaryObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -424,7 +573,7 @@ PySelectionVariableSummary_GetLogString()
 {
     std::string s("SelectionVariableSummary = SelectionVariableSummary()\n");
     if(currentAtts != 0)
-        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.");
+        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.", true);
     return s;
 }
 
@@ -437,7 +586,7 @@ PySelectionVariableSummary_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SelectionVariableSummary = SelectionVariableSummary()\n");
-        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.");
+        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.", true);
         cb(s);
     }
 }

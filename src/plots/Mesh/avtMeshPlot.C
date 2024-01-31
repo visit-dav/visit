@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                              avtMeshPlot.C                                //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtMeshPlot.C
+// ****************************************************************************
 
 #include <avtMeshPlot.h>
 
@@ -12,13 +12,14 @@
 
 #include <ColorAttribute.h>
 #include <MeshAttributes.h>
+#include <PointGlyphAttributes.h>
 
 #include <avtColorTables.h>
 #include <avtMeshFilter.h>
-#include <avtSmoothPolyDataFilter.h>
 #include <avtMeshPlotMapper.h>
+#include <avtSmoothPolyDataFilter.h>
 #include <avtVariableLegend.h>
-#include <avtVariablePointGlyphMapper.h>
+#include <avtVertexExtractor.h>
 
 #include <DebugStream.h>
 
@@ -90,6 +91,9 @@
 //    can sometimes avoid it (and get better performance), but we don't
 //    know that until we're about to execute it.
 //
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Add vertexExtractor, remove glyphMapper.
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -99,11 +103,9 @@ avtMeshPlot::avtMeshPlot()
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
     ghostAndFaceFilter->GhostDataMustBeRemoved();
+    vertexExtractor = nullptr;
 
     mapper = new avtMeshPlotMapper();
-
-    glyphMapper = new avtVariablePointGlyphMapper;
-    glyphMapper->ColorByScalarOff();
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Mesh");
@@ -160,6 +162,9 @@ avtMeshPlot::avtMeshPlot()
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
 //    Added glyphMapper, removed glyphPoints.
 //
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Add vertexExtractor, remove glyphMapper.
+//
 // ****************************************************************************
 
 avtMeshPlot::~avtMeshPlot()
@@ -184,10 +189,10 @@ avtMeshPlot::~avtMeshPlot()
         delete smooth;
         smooth = NULL;
     }
-    if (glyphMapper != NULL)
+    if (vertexExtractor != nullptr)
     {
-        delete glyphMapper;
-        glyphMapper = NULL;
+        delete vertexExtractor;
+        vertexExtractor = nullptr;
     }
 
     //
@@ -227,6 +232,11 @@ avtMeshPlot::Create()
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed to the Set... method (Get is now done in avtPlot.C)
 //
+//    Mark C. Miller, Tue Dec 15 19:50:23 PST 2020
+//    Fix logic to set non-unit multipler only when...
+//       a) topo dim is zero...meaning its a point mesh and a glyphed plot
+//       b) spatial dim is 2 or 3...meaning glyphs are sets of 3D faces
+//    Set multipler to count of faces of each 2 or 3D glyph type.
 // ****************************************************************************
 
 void
@@ -234,11 +244,53 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
     if (*dob)
     {
-        int dim = dob->GetInfo().GetAttributes().GetSpatialDimension();
-        if (dim == 0)
-            cellCountMultiplierForSRThreshold = 6.0;
-        else
+        int tdim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
+
+        if (tdim > 0)
+        {
             cellCountMultiplierForSRThreshold = 1.0;
+            return;
+        }
+
+        int sdim = dob->GetInfo().GetAttributes().GetSpatialDimension();
+        if (sdim < 2)
+        {
+            cellCountMultiplierForSRThreshold = 1.0;
+            return;
+        }
+
+        // 2D glyphs are polydata often comprised of multiple tris or quads
+        // but can include lines and points.
+        if (sdim == 2)
+        {
+            switch (atts.GetPointType())
+            {
+                case Box:            cellCountMultiplierForSRThreshold = 1.0; break;
+                case Axis:           cellCountMultiplierForSRThreshold = 1.5; break;
+                case Icosahedron:    cellCountMultiplierForSRThreshold = 10.0; break;
+                case Octahedron:     cellCountMultiplierForSRThreshold = 5.0; break;
+                case Tetrahedron:    cellCountMultiplierForSRThreshold = 1.0; break;
+                case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+                case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+                case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            }
+            return;
+        }
+
+        if (sdim == 3)
+        {
+            switch (atts.GetPointType())
+            {
+                case Box:            cellCountMultiplierForSRThreshold = 6.0; break;
+                case Axis:           cellCountMultiplierForSRThreshold = 3.0; break;
+                case Icosahedron:    cellCountMultiplierForSRThreshold = 20.0; break;
+                case Octahedron:     cellCountMultiplierForSRThreshold = 8.0; break;
+                case Tetrahedron:    cellCountMultiplierForSRThreshold = 4.0; break;
+                case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+                case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+                case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            }
+        }
     }
 }
 
@@ -303,6 +355,9 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //    Glyph types now in central location, can pass pointType directly to
 //    mapper.
 //
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Remove glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -321,17 +376,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     {
         SetMeshColor(fgColor);
     }
-    else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
-                               static_cast<unsigned char>(bgColor[1]*255),
-                               static_cast<unsigned char>(bgColor[2]*255)};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
-        SetMeshColor(rgb);
-    }
     else // MeshAttributes::MeshCustom
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
@@ -342,14 +386,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     {
         SetOpaqueColor(bgColor);
     }
-    else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex+1, rgb))
-            ct->GetControlPointColor("distinct", this->instanceIndex+1, rgb);
-        SetOpaqueColor(rgb);
-    }
     else // MeshAttributes::OpaqueCustom
     {
         SetOpaqueColor(atts.GetOpaqueColor().GetColor());
@@ -359,20 +395,20 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     //
     // Setup glyphMapper
     //
-    glyphMapper->SetScale(atts.GetPointSize());
+    mapper->SetScale(atts.GetPointSize());
 
     if (atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "default" &&
         atts.GetPointSizeVar() != "" &&
         atts.GetPointSizeVar() != "\0")
     {
-        glyphMapper->ScaleByVar(atts.GetPointSizeVar());
+        mapper->ScaleByVar(atts.GetPointSizeVar());
     }
     else
     {
-        glyphMapper->DataScalingOff();
+        mapper->DataScalingOff();
     }
-    glyphMapper->SetGlyphType(atts.GetPointType());
+    mapper->SetGlyphType(atts.GetPointType());
 
     SetPointGlyphSize();
 
@@ -431,6 +467,8 @@ avtMeshPlot::SetMeshColor(const unsigned char *col)
 //  Creation:     March 24, 2003
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Remove glyphMapper.
 //
 // ****************************************************************************
 
@@ -440,7 +478,6 @@ avtMeshPlot::SetMeshColor(const double *col)
     double rgb[3];
     std::copy(col,col+3,rgb);
     mapper->SetMeshColor(rgb);
-    glyphMapper->ColorBySingleColor(rgb);
 
     if (wireframeRenderingIsInappropriate)
     {
@@ -613,19 +650,15 @@ avtMeshPlot::SetRenderOpaque()
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
 //    Changed test from PointMesh to topologicalDimension == 0.
 //
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Remove glyphMapper.
+//
 // ****************************************************************************
 
 avtMapperBase *
 avtMeshPlot::GetMapper(void)
 {
-    if (topologicalDim != 0)
-    {
-        return mapper;
-    }
-    else
-    {
-        return glyphMapper;
-    }
+    return mapper;
 }
 
 
@@ -737,6 +770,9 @@ avtMeshPlot::ApplyOperators(avtDataObject_p input)
 //    case, it only needs to be set if we're going to attempt to smooth
 //    the geometry before applying the mesh filter.
 //
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Add vertexExtractor.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -744,7 +780,25 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
 
-    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
+    int topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
+
+    if (topoDim > 0 && atts.GetPointType() != Point)
+    {
+        // vertexExtractor will pull all vertex cells into a separate dataset
+        // for rendering via vtkPointGlyphMapper.
+        if (vertexExtractor == nullptr)
+        {
+            vertexExtractor = new avtVertexExtractor();
+        }
+        vertexExtractor->SetInput(dob);
+        vertexExtractor->SetLabelPrefix("mesh");
+        vertexExtractor->SetConvertAllPoints(false);
+        vertexExtractor->SetKeepNonVertex(true);
+        vertexExtractor->SetPointGlyphAtts((PointGlyphAttributes*)(atts.CreateCompatible("PointGlyph")));
+        dob = vertexExtractor->GetOutput();
+    }
+
+    if (topoDim > 0)
     {
         // Turn off facelist filter if user wants to see internal zones in 3d.
         if (atts.GetShowInternal() &&
@@ -1015,6 +1069,9 @@ avtMeshPlot::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Thu Jan  8 11:18:13 CST 2009
 //    Release data from the smooth filter.
 //
+//    Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//    Add vertexExtractor.
+//
 // ****************************************************************************
 
 void
@@ -1033,6 +1090,10 @@ avtMeshPlot::ReleaseData(void)
     if (smooth != NULL)
     {
         smooth->ReleaseData();
+    }
+    if (vertexExtractor != nullptr)
+    {
+        vertexExtractor->ReleaseData();
     }
 }
 
@@ -1143,14 +1204,14 @@ avtMeshPlot::ShouldRenderOpaque(void)
 //   Kathleen Biagas, Wed Apr  3 16:09:31 PDT 2019
 //   Send the pointsize to the regular mapper as well.
 //
+//   Kathleen Biagas, Wed Jun 10 13:00:59 PDT 2020
+//   Remove glyphMapper.
+//
 // ****************************************************************************
 
 void
 avtMeshPlot::SetPointGlyphSize()
 {
-    // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point)
-        glyphMapper->SetPointSize(atts.GetPointSizePixels());
     mapper->SetPointSize(atts.GetPointSizePixels());
 }
 

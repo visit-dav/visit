@@ -14,7 +14,6 @@
 #include <vtkLookupTable.h>
 #include <vtkProperty.h>
 #include <vtkVisItGlyph3D.h>
-#include <vtkVisItPolyDataNormals.h>
 
 #include <avtExtents.h>
 
@@ -68,6 +67,11 @@
 //    Kathleen Biagas, Thu Feb 7 12:58:49 PST 2013
 //    We don't want to own glyph, so don't up the ref count.
 //
+//    Alister Maguire, Mon Apr 27 13:20:17 PDT 2020
+//    Removed normalsFilter as the required deep copy within seems to cause
+//    issues with picking, and ommitting the filter doesn't change the
+//    rendering in any noticable way.
+//
 // ****************************************************************************
 
 avtVectorGlyphMapper::avtVectorGlyphMapper(vtkAlgorithmOutput *g)
@@ -81,7 +85,6 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkAlgorithmOutput *g)
     scaleByMagnitude  = true;
     autoScale         = true;
     glyphFilter       = 0;
-    normalsFilter     = NULL;
     nGlyphFilters     = 0;
     lut = NULL;
     setMin = setMax = false;
@@ -116,17 +119,6 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
             }
         }
         delete [] glyphFilter;
-    }
-    if (normalsFilter != NULL)
-    {
-        for (int i = 0 ; i < nGlyphFilters ; i++)
-        {
-            if (normalsFilter[i] != NULL)
-            {
-                normalsFilter[i]->Delete();
-            }
-        }
-        delete [] normalsFilter;
     }
 }
 
@@ -212,10 +204,6 @@ avtVectorGlyphMapper::CustomizeMappers(void)
                 if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
                     glyphFilter[i]->SetTreatVectorsAs2D(1);
             }
-            if (normalsFilter[i] != NULL)
-            {
-                normalsFilter[i]->SetNormalTypeToCell();
-            }
         }
     }
          
@@ -286,25 +274,12 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
         }
         delete [] glyphFilter;
     }
-    if (normalsFilter != NULL)
-    {
-        for (int i = 0 ; i < nGlyphFilters ; i++)
-        {
-            if (normalsFilter[i] != NULL)
-            {
-                normalsFilter[i]->Delete();
-            }
-        }
-        delete [] normalsFilter;
-    }
 
-    nGlyphFilters     = nDoms;
-    glyphFilter       = new vtkVisItGlyph3D*[nGlyphFilters];
-    normalsFilter      = new vtkVisItPolyDataNormals*[nGlyphFilters];
+    nGlyphFilters = nDoms;
+    glyphFilter   = new vtkVisItGlyph3D*[nGlyphFilters];
     for (int i = 0 ; i < nGlyphFilters ; i++)
     {
         glyphFilter[i] = NULL;
-        normalsFilter[i] = NULL;
     }
 }
 
@@ -342,6 +317,11 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
 //    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
 //    Changed signature of InsertFilters.
 //
+//    Alister Maguire, Mon Apr 27 13:20:17 PDT 2020
+//    Removed normalsFilter as the required deep copy within seems to cause
+//    issues with picking, and ommitting the filter doesn't change the
+//    rendering in any noticable way.
+//
 // ****************************************************************************
 
 vtkAlgorithmOutput *
@@ -360,22 +340,9 @@ avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         //
         glyphFilter[dom] = vtkVisItGlyph3D::New();
     }
-    if (normalsFilter[dom] == NULL)
-    {
-        normalsFilter[dom] = vtkVisItPolyDataNormals::New();
-    }
 
     glyphFilter[dom]->SetInputData(ds);
-
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
-    {
-        normalsFilter[dom]->SetInputConnection(glyphFilter[dom]->GetOutputPort());
-        return normalsFilter[dom]->GetOutputPort();
-    }
-    else
-    {
-        return glyphFilter[dom]->GetOutputPort();
-    }
+    return glyphFilter[dom]->GetOutputPort();
 }
 
 
@@ -1006,41 +973,6 @@ avtVectorGlyphMapper::SetLimitsMode(const int lm)
     SetMappersMinMax();
 }
 
-// ****************************************************************************
-//  Method: avtVectorGlyphMapper::GetVarRange
-//
-//  Purpose:
-//      Gets the range of the variable. (Artificial limits ignored).
-//
-//  Arguments:
-//      rmin          The minimum in the range.
-//      rmax          The maximum in the range.
-//
-//  Returns:    True if the extents were found, false otherwise.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 22, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-bool
-avtVectorGlyphMapper::GetVarRange(double &rmin, double &rmax)
-{
-    if (mappers == NULL)
-    {
-        //
-        // We have been asked for the range before the input has been set.
-        //
-        rmin = 0.;
-        rmax = 1.;
-        return false;
-    }
-
-    bool rv = avtMapper::GetRange(rmin, rmax);
-    return rv;
-}
 
 // ****************************************************************************
 // Method: avtVectorGlyphMapper::SetFullFrameScaling

@@ -5,6 +5,7 @@
 #ifndef PY_THRESHOLDOPATTRIBUTES_H
 #define PY_THRESHOLDOPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ThresholdOpAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyThresholdOpAttributes_Wrap(const ThresholdOpAttribu
 void VISITPY_API           PyThresholdOpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyThresholdOpAttributes_SetDefaults(const ThresholdOpAttributes *atts);
 std::string VISITPY_API    PyThresholdOpAttributes_GetLogString();
-std::string VISITPY_API    PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *, const char *);
+std::string VISITPY_API    PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyThresholdOpAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyThresholdOpAttributes_methods[THRESHOLDOPATTRIBUTES_NMETH];

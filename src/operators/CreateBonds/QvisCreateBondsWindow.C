@@ -29,14 +29,14 @@ using std::string;
 // ****************************************************************************
 // Method: QvisCreateBondsWindow::QvisCreateBondsWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: Jeremy Meredith
 // Creation:   August 29, 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisCreateBondsWindow::QvisCreateBondsWindow(const int type,
@@ -53,14 +53,14 @@ QvisCreateBondsWindow::QvisCreateBondsWindow(const int type,
 // ****************************************************************************
 // Method: QvisCreateBondsWindow::~QvisCreateBondsWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Jeremy Meredith
 // Creation:   August 29, 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisCreateBondsWindow::~QvisCreateBondsWindow()
@@ -71,7 +71,7 @@ QvisCreateBondsWindow::~QvisCreateBondsWindow()
 // ****************************************************************************
 // Method: QvisCreateBondsWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Jeremy Meredith
@@ -116,24 +116,24 @@ QvisCreateBondsWindow::CreateWindowContents()
     listLayout->addWidget(noteLabel);
 
     bondsTree = new QTreeWidget(bondsTreeGroup);
-    
+
     QTreeWidgetItem *header = new QTreeWidgetItem();
     header->setText(0,tr("1st"));
     header->setText(1,tr("2nd"));
     header->setText(2,tr("Min"));
     header->setText(3,tr("Max"));
     bondsTree->setHeaderItem(header);
-    
+
     bondsTree->setSelectionMode(QAbstractItemView::SingleSelection);
-    
+
     bondsTree->setColumnWidth(0, 50);
     bondsTree->setColumnWidth(1, 50);
-    
+
     bondsTree->setRootIsDecorated(false);
     bondsTree->header()->setSectionsClickable(false);
     bondsTree->header()->setSectionsMovable(false);
     bondsTree->setAllColumnsShowFocus(true);
-    
+
     listLayout->addWidget(bondsTree);
 
 
@@ -168,7 +168,7 @@ QvisCreateBondsWindow::CreateWindowContents()
     QVBoxLayout *bondDetailsTopLayout = new QVBoxLayout(bondsDetailsGroup);
     QHBoxLayout *bondDetailsLayout = new QHBoxLayout();
     bondDetailsTopLayout->addLayout(bondDetailsLayout);
-    
+
     firstElement = new QvisElementButton(bondsDetailsGroup);
     secondElement = new QvisElementButton(bondsDetailsGroup);
     bondDetailsLayout->addWidget(new QLabel(tr("1st:"), bondsDetailsGroup));
@@ -181,7 +181,7 @@ QvisCreateBondsWindow::CreateWindowContents()
     bondDetailsLayout2->addWidget(new QLabel(tr("Min:"), bondsDetailsGroup));
     minDist = new QLineEdit(bondsDetailsGroup);
     bondDetailsLayout2->addWidget(minDist);
-    
+
     bondDetailsLayout2->addWidget(new QLabel(tr("Max:"), bondsDetailsGroup));
     maxDist = new QLineEdit(bondsDetailsGroup);
     bondDetailsLayout2->addWidget(maxDist);
@@ -212,12 +212,12 @@ QvisCreateBondsWindow::CreateWindowContents()
 
     QGridLayout *advLayout = new QGridLayout(advTab);
 
-    
+
     elementVariableLabel = new QLabel(tr("Variable for atomic number"),
                                       advTab);
     advLayout->addWidget(elementVariableLabel,0,0);
     int elementVariableMask = QvisVariableButton::Scalars;
-    elementVariable = new QvisVariableButton(true, true, true, 
+    elementVariable = new QvisVariableButton(true, true, true,
                                              elementVariableMask, advTab);
     connect(elementVariable, SIGNAL(activated(const QString&)),
             this, SLOT(elementVariableChanged(const QString&)));
@@ -293,7 +293,7 @@ QvisCreateBondsWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisCreateBondsWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Jeremy Meredith
@@ -303,7 +303,7 @@ QvisCreateBondsWindow::CreateWindowContents()
 //    Jeremy Meredith, Mon Feb 11 16:52:55 EST 2008
 //    Changed to use IDs.  Added support for atomic number of -1 means "any".
 //    Clear selection after regenerating list if nothing used to be selected.
-//   
+//
 //    Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
 //    Qt4 Port.
 //
@@ -341,7 +341,7 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
             update_bonds_list = true;
             break;
           case CreateBondsAttributes::ID_maxBondsClamp:
-            maxBonds->setText(QString().sprintf("%d",atts->GetMaxBondsClamp()));
+            maxBonds->setText(QString("%1").arg(atts->GetMaxBondsClamp()));
             break;
           case CreateBondsAttributes::ID_addPeriodicBonds:
             addPeriodicBonds->blockSignals(true);
@@ -418,8 +418,8 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
             QTreeWidgetItem *item = new QTreeWidgetItem(bondsTree);
             item->setText(0,el1);
             item->setText(1,el2);
-            item->setText(2,QString().sprintf("%.4f",atts->GetMinDist()[i]));
-            item->setText(3,QString().sprintf("%.4f",atts->GetMaxDist()[i]));
+            item->setText(2,QString("%1").arg(atts->GetMinDist()[i],0,'f',4));
+            item->setText(3,QString("%1").arg(atts->GetMaxDist()[i],0,'f',4));
             if (old_index == i)
                 new_item = item;
         }
@@ -438,7 +438,7 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisCreateBondsWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: Jeremy Meredith
@@ -589,8 +589,8 @@ void QvisCreateBondsWindow::UpdateWindowSingleItem()
 
     firstElement->setElementNumber(atts->GetAtomicNumber1()[index]);
     secondElement->setElementNumber(atts->GetAtomicNumber2()[index]);
-    minDist->setText(QString().sprintf("%.4f",atts->GetMinDist()[index]));
-    maxDist->setText(QString().sprintf("%.4f",atts->GetMaxDist()[index]));
+    minDist->setText(QString("%1").arg(atts->GetMinDist()[index],0,'f',4));
+    maxDist->setText(QString("%1").arg(atts->GetMaxDist()[index],0,'f',4));
 
     delButton->setEnabled(index>=0 && index<=n-1);
     upButton->setEnabled(index>0 && index<=n-1);
@@ -657,7 +657,7 @@ void QvisCreateBondsWindow::minDistTextChanged(const QString &txt)
         return;
 
     atts->GetMinDist()[index] = minDist->displayText().toFloat();
-    item->setText(2, QString().sprintf("%.4f",atts->GetMinDist()[index]));
+    item->setText(2, QString("%1").arg(atts->GetMinDist()[index],0,'f',4));
     atts->SelectMinDist();
 }
 
@@ -668,9 +668,9 @@ void QvisCreateBondsWindow::maxDistTextChanged(const QString &txt)
     int index = bondsTree->indexOfTopLevelItem(item);
     if (index < 0 || index >= n)
         return;
-    
+
     atts->GetMaxDist()[index] = maxDist->displayText().toFloat();
-    item->setText(3, QString().sprintf("%.4f",atts->GetMaxDist()[index]));
+    item->setText(3, QString("%1").arg(atts->GetMaxDist()[index],0,'f',4));
     atts->SelectMaxDist();
 }
 
@@ -896,9 +896,9 @@ void QvisCreateBondsWindow::bondsTreeDel()
     atts->SelectAtomicNumber2();
     atts->SelectMinDist();
     atts->SelectMaxDist();
-    
+
     // if we deleted the last one, we want to select the new last element.
-    if(n-1 > 0 && index == n-1) 
+    if(n-1 > 0 && index == n-1)
         bondsTree->setCurrentItem(bondsTree->topLevelItem(index-1));
 }
 

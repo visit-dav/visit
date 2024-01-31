@@ -11,6 +11,8 @@
 #
 #  Modifications:
 #
+#    Mark C. Miller, Mon Jan 11 10:32:17 PST 2021
+#    Replace AssertEqual() with TestValueEQ()
 # ----------------------------------------------------------------------------
 
 def TestMeshPlot():
@@ -29,7 +31,7 @@ def TestMeshPlot():
 
     # Check dimensionality.
     ext_len = len(GetQueryOutputValue())
-    AssertEqual("Verifying 3D lines", ext_len, 6)
+    TestValueEQ("Verifying 3D lines", ext_len, 6)
 
     # Check the rendering.
     Test("mesh_plot_00")
@@ -46,7 +48,7 @@ def TestMeshPlot():
 
     # Check dimensionality.
     ext_len = len(GetQueryOutputValue())
-    AssertEqual("Verifying 2D lines", ext_len, 4)
+    TestValueEQ("Verifying 2D lines", ext_len, 4)
 
     # Check the rendering.
     Test("mesh_plot_01")

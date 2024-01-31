@@ -8,6 +8,8 @@
 
 #include <avtTransparencyActor.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <float.h>
 #include <cstring>
 #include <limits>
@@ -23,7 +25,7 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkDepthSortPolyData2.h>
+#include <vtkDepthSortPolyData.h>
 #include <vtkDoubleArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkMatrix4x4.h>
@@ -35,6 +37,7 @@
 #include <vtkParallelImageSpaceRedistributor.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItPolyDataNormals.h>
 
 #include <ColorAttribute.h>
@@ -539,7 +542,7 @@ avtTransparencyActor::avtTransparencyActor() :
     axisSort = vtkAxisDepthSort::New();
     axisSort->SetInputConnection(appender->GetOutputPort());
 
-    depthSort = vtkDepthSortPolyData2::New();
+    depthSort = vtkDepthSortPolyData::New();
     depthSort->SetDepthSortModeToBoundsCenter();
     depthSort->SetInputConnection(appender->GetOutputPort());
 
@@ -549,7 +552,7 @@ avtTransparencyActor::avtTransparencyActor() :
     distribute->SetCommunicator(VISIT_MPI_COMM);
     distribute->SetInputConnection(appender->GetOutputPort());
 
-    distributeDepthSort = vtkDepthSortPolyData2::New();
+    distributeDepthSort = vtkDepthSortPolyData::New();
     distributeDepthSort->SetDepthSortModeToBoundsCenter();
     distributeDepthSort->SetInputConnection(distribute->GetOutputPort());
 #endif
@@ -1996,7 +1999,11 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
             //
             prepDS->Allocate(pd);
             vtkIdType ncells = pd->GetNumberOfCells();
+#if LIB_VERSION_LE(VTK,8,1,0)
             vtkIdType  *cellPts = NULL;
+#else
+            const vtkIdType  *cellPts = NULL;
+#endif
             vtkIdType   myCellPts[100];
             vtkIdType   npts = 0;
             vector<vtkIdType> ptIds;

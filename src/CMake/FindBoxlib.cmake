@@ -20,16 +20,17 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed VISIT_MSVC_VER from Windows handling.
 #
+#   Kathleen Biagas, Thu July 15, 2021
+#   Add BOXLIB_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
+#
 #****************************************************************************/
 
 # Use the BOXLIB_DIR hint from the config-site .cmake file 
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
 IF (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB lib include BoxLib2D BoxLib3D)
+  SET_UP_THIRD_PARTY(BOXLIB LIBS BoxLib2D BoxLib3D)
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB lib include box2D box3D)
+  SET_UP_THIRD_PARTY(BOXLIB LIBS box2D box3D)
 ENDIF (WIN32)
 
 IF(BOXLIB_FOUND)
@@ -40,9 +41,12 @@ IF(BOXLIB_FOUND)
   LIST(GET BOXLIB_LIB 1 tmp)
   SET(BOXLIB_3D_LIB ${tmp} CACHE STRING "3D boxlib" FORCE)
 
+  if(WIN32)
+     set(BOXLIB_WIN32_DEFINES "BL_FORT_USE_UPPERCASE")
+  endif()
+
   # unset unneeded vars.
   UNSET(tmp)
   UNSET(BOXLIB_LIB CACHE)
 ENDIF(BOXLIB_FOUND)
-
 

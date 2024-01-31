@@ -67,18 +67,11 @@ function bv_boxlib_ensure
         fi
     fi
 }
-
-function bv_boxlib_dry_run
-{
-    if [[ "$DO_BOXLIB" == "yes" ]] ; then
-        echo "Dry run option not set for boxlib."
-    fi
-}
 # *************************************************************************** #
 #                         Function 8.8, build_boxlib                          #
 # *************************************************************************** #
 
-function apply_boxlib_patch
+function apply_nan_inf_patch
 {
     patch -p0 << \EOF
 diff -c a/Src/C_BaseLib/FArrayBox.cpp ccse-1.3.5/Src/C_BaseLib/FArrayBox.cpp
@@ -105,6 +98,62 @@ EOF
 
     return 0;
 
+}
+
+function apply_darwin_patch_1
+{
+    patch -p0 << \EOF
+--- ccse-1.3.5/Src/C_BaseLib/VisMF.cpp	2021-03-30 08:21:05.000000000 -0700
++++ VisMF.cpp.new	2021-03-30 08:21:16.000000000 -0700
+@@ -200,16 +200,20 @@
+     {
+         ar[i].resize(M);
+ 
++        std::string line;
++        std::string delimiter = ",";
++        is >> line;
++
+         for (long j = 0; j < M; j++)
+         {
++            std::string nextValue = line.substr(0, line.find(delimiter));
++            line = line.substr(line.find(delimiter) + 1);
+ #ifdef BL_USE_FLOAT
+-            is >> dtemp >> ch;
++            dtemp = std::atof(nextValue.c_str()); 
+             ar[i][j] = static_cast<Real>(dtemp);
+ #else
+-            is >> ar[i][j] >> ch;
++            ar[i][j] = std::atof(nextValue.c_str());
+ #endif
+-	    if ( ch != ',' ) 
+-	      BoxLib::Error("Expected a ',' got something else");
+         }
+     }
+ 
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "darwin patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_boxlib_patch
+{
+    apply_nan_inf_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_darwin_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0;
 }
 
 function build_boxlib
@@ -143,6 +192,7 @@ function build_boxlib
     #
     info "Building Boxlib. . . (~4 minutes)"
 
+    set -x
     if [[ "$OPSYS" == "AIX" ]]; then
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
               CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
@@ -174,7 +224,7 @@ function build_boxlib
               DEBUG="FALSE" DIM=2 USE_MPI="FALSE" \
               BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
     fi
-
+    set +x
     #
     # Create dynamic library for Darwin
     #

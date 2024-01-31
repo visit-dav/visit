@@ -115,8 +115,8 @@ class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisQueryWindow(const QString &caption = QString::null,
-                    const QString &shortName = QString::null,
+    QvisQueryWindow(const QString &caption = QString(),
+                    const QString &shortName = QString(),
                     QvisNotepadArea *n = 0);
     virtual ~QvisQueryWindow();
     virtual void CreateWindowContents();

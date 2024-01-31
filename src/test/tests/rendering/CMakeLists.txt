@@ -13,7 +13,7 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
     annotation axistitles bigdata colortexture compositing
     evalcubic image legends lighting line2d line3d offscreensave
     renderpoints saveformats scalable2 scalable shadows specular text2d
-    text3d timeslider transparency tuvok viewChange view volume)
+    text3d timeslider transparency tuvok viewChange view volume ospray)
 
 SET(TEST_EXTRA_ARGS)
 IF (NOT HAVE_OSMESA)

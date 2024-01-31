@@ -70,7 +70,9 @@ QvisCoordSwapWindow::~QvisCoordSwapWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -84,7 +86,7 @@ QvisCoordSwapWindow::CreateWindowContents()
     newCoord1 = new QWidget(central);
     newCoord1ButtonGroup= new QButtonGroup(newCoord1);
     QHBoxLayout *newCoord1Layout = new QHBoxLayout(newCoord1);
-    newCoord1Layout->setMargin(0);
+    newCoord1Layout->setContentsMargins(0,0,0,0);
     newCoord1Layout->setSpacing(10);
     QRadioButton *newCoord1CoordCoord1 = new QRadioButton(tr("Coord1"), newCoord1);
     newCoord1ButtonGroup->addButton(newCoord1CoordCoord1,0);
@@ -95,8 +97,13 @@ QvisCoordSwapWindow::CreateWindowContents()
     QRadioButton *newCoord1CoordCoord3 = new QRadioButton(tr("Coord3"), newCoord1);
     newCoord1ButtonGroup->addButton(newCoord1CoordCoord3,2);
     newCoord1Layout->addWidget(newCoord1CoordCoord3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(newCoord1ButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(newCoord1Changed(int)));
+#else
+    connect(newCoord1ButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(newCoord1Changed(int)));
+#endif
     mainLayout->addWidget(newCoord1, 0,1);
 
     newCoord2Label = new QLabel(tr("New Coordinate 2"), central);
@@ -104,7 +111,7 @@ QvisCoordSwapWindow::CreateWindowContents()
     newCoord2 = new QWidget(central);
     newCoord2ButtonGroup= new QButtonGroup(newCoord2);
     QHBoxLayout *newCoord2Layout = new QHBoxLayout(newCoord2);
-    newCoord2Layout->setMargin(0);
+    newCoord2Layout->setContentsMargins(0,0,0,0);
     newCoord2Layout->setSpacing(10);
     QRadioButton *newCoord2CoordCoord1 = new QRadioButton(tr("Coord1"), newCoord2);
     newCoord2ButtonGroup->addButton(newCoord2CoordCoord1,0);
@@ -115,8 +122,13 @@ QvisCoordSwapWindow::CreateWindowContents()
     QRadioButton *newCoord2CoordCoord3 = new QRadioButton(tr("Coord3"), newCoord2);
     newCoord2ButtonGroup->addButton(newCoord2CoordCoord3,2);
     newCoord2Layout->addWidget(newCoord2CoordCoord3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(newCoord2ButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(newCoord2Changed(int)));
+#else
+    connect(newCoord2ButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(newCoord2Changed(int)));
+#endif
     mainLayout->addWidget(newCoord2, 1,1);
 
     newCoord3Label = new QLabel(tr("New Coordinate 3"), central);
@@ -124,7 +136,7 @@ QvisCoordSwapWindow::CreateWindowContents()
     newCoord3 = new QWidget(central);
     newCoord3ButtonGroup= new QButtonGroup(newCoord3);
     QHBoxLayout *newCoord3Layout = new QHBoxLayout(newCoord3);
-    newCoord3Layout->setMargin(0);
+    newCoord3Layout->setContentsMargins(0,0,0,0);
     newCoord3Layout->setSpacing(10);
     QRadioButton *newCoord3CoordCoord1 = new QRadioButton(tr("Coord1"), newCoord3);
     newCoord3ButtonGroup->addButton(newCoord3CoordCoord1,0);
@@ -135,8 +147,13 @@ QvisCoordSwapWindow::CreateWindowContents()
     QRadioButton *newCoord3CoordCoord3 = new QRadioButton(tr("Coord3"), newCoord3);
     newCoord3ButtonGroup->addButton(newCoord3CoordCoord3,2);
     newCoord3Layout->addWidget(newCoord3CoordCoord3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(newCoord3ButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(newCoord3Changed(int)));
+#else
+    connect(newCoord3ButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(newCoord3Changed(int)));
+#endif
     mainLayout->addWidget(newCoord3, 2,1);
 
 }

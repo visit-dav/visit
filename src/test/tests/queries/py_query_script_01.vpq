@@ -22,7 +22,7 @@ class TestQuery(SimplePythonQuery):
     def post_execute(self):
         if mpicom.rank() == 0:
             res = "Input Vars:\n"
-            for i in xrange(len(self.input_var_names)):
+            for i in range(len(self.input_var_names)):
                 res+= " %s(found=%s)\n" % (self.input_var_names[i],self.input_vars_ok[i])
             res += "Input Arguments:\n"
             for r in self.arguments:

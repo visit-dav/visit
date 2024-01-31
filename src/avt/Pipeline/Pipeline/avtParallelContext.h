@@ -22,13 +22,15 @@ class AttributeGroup;
 // Notes:    This class does the typical AVT parallel operations but does it
 //           on ranks specified by an internal communicator. By accessing parallel
 //           operations through this class, algorithms will use the right
-//           communicator without us having to expose MPI communicators all 
+//           communicator without us having to expose MPI communicators all
 //           over the place.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug  4 15:43:45 PDT 2015
 //
 // Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
 //
 // ****************************************************************************
 
@@ -89,9 +91,9 @@ public:
     avtParallelContext CreateGroupsOfN(int N);
 
     /**
-      Assume that we have group ids [0,nGroups], let's make a new parallel 
+      Assume that we have group ids [0,nGroups], let's make a new parallel
       context where this rank joins a specified group. If multiple ranks passed
-      a groupId of 5 then those ranks would join the new communicator. Other 
+      a groupId of 5 then those ranks would join the new communicator. Other
       groupIds would join other communicators.
      */
     avtParallelContext Split(int groupId, int nGroups);
@@ -113,9 +115,13 @@ public:
     void    SumDoubleArray(double *, double *,int);
     void    SumDoubleArrayInPlace(double *, int);
     void    SumIntArrayAcrossAllProcessors(int *, int *, int);
-    void    SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG*, VISIT_LONG_LONG*, int);
+    void    SumLongLongArrayAcrossAllProcessors(long long*, long long*, int);
     bool    ThisProcessorHasMinimumValue(double);
     bool    ThisProcessorHasMaximumValue(double);
+    int     UnifyLogicalAndValue(int);
+    int     UnifyLogicalOrValue(int);
+    int     UnifyBitwiseAndValue(int);
+    int     UnifyBitwiseOrValue(int);
     void    UnifyMinMax(double *, int, int=0);
     int     UnifyMaximumValue(int);
     float   UnifyMaximumValue(float);
@@ -130,7 +136,7 @@ public:
     void    UnifyMaximumDoubleArrayAcrossAllProcessors(double *, double *, int);
 
     void    BroadcastInt(int &i);
-    void    BroadcastLongLong(VISIT_LONG_LONG &i);
+    void    BroadcastLongLong(long long &i);
     void    BroadcastIntArray(int *array, int nArray);
     void    BroadcastIntVector(std::vector<int>&, int myrank);
     void    BroadcastIntVectorFromAny(std::vector<int> &, int, int);
@@ -153,6 +159,14 @@ public:
     void    CollectIntArraysOnRank(int *&, int *&, int *, int, int root);
     void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
     void    CollectDoubleArraysOnRootProc(double *&, int *&, double *, int);
+    void    CollectFloatVectorsOnRootProc(std::vector<float> &recvBuf,
+                                       std::vector<int> &recvCounts,
+                                       const std::vector<float> &sendBuf,
+                                       int root = 0);
+    void    CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
+                                       std::vector<int> &recvCounts,
+                                       const std::vector<double> &sendBuf,
+                                       int root = 0);
 
     int     GetUniqueMessageTag();
     void    GetUniqueMessageTags(int *tags, int ntags);
@@ -166,7 +180,7 @@ public:
     void    TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
     void    CancelRequest(void *req);
 
- 
+
     static void Init();
 private:
     class PrivateData;

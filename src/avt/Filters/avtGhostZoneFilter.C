@@ -40,15 +40,16 @@
 //    Hank Childs, Sun Oct 28 11:17:32 PST 2007
 //    Initialize ghostZoneTypesToRemove.
 //
+//    Kevin Griffin, Thu Jul 30 08:43:20 PDT 2020
+//    Using member initialization list instead of assignments.
+//
 // ****************************************************************************
 
-avtGhostZoneFilter::avtGhostZoneFilter()
-{
-    ghostDataMustBeRemoved = false;
-    ghostNodeTypesToRemove = 0xFF; // remove all types if must be removed
-    ghostZoneTypesToRemove = 0xFF; // remove all types if must be removed
-}
-
+avtGhostZoneFilter::avtGhostZoneFilter():
+    ghostDataMustBeRemoved(false),
+    ghostNodeTypesToRemove(0xFF),
+    ghostZoneTypesToRemove(0xFF),
+    confirmRegion(false) { }
 
 // ****************************************************************************
 //  Method: avtGhostZoneFilter destructor
@@ -291,9 +292,10 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
         debug5 << "Domain " << domain << " contains only ghost nodes.  Removing" << endl;
         return NULL;
     }
-    bool allLogBndGhost = allLogBndZonesGhost || allLogBndNodesGhost;
     
 #if 0
+    bool allLogBndGhost = allLogBndZonesGhost || allLogBndNodesGhost;
+    
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID && 
         !ghostDataMustBeRemoved && !allLogBndGhost)
     {
@@ -318,6 +320,7 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     vtkDataSetRemoveGhostCells *filter = vtkDataSetRemoveGhostCells::New();
     filter->SetGhostNodeTypesToRemove(ghostNodeTypesToRemove);
     filter->SetGhostZoneTypesToRemove(ghostZoneTypesToRemove);
+    filter->SetForceConfirmRegion(confirmRegion);
     filter->SetInputData(in_ds);
 
     //
@@ -432,6 +435,24 @@ void
 avtGhostZoneFilter::SetGhostZoneTypesToRemove(unsigned char t)
 {
     ghostZoneTypesToRemove = t;
+}
+
+// ****************************************************************************
+//  Method: avtGhostZoneFilter::SetConfirmRegion
+//
+//  Purpose:
+//      Sets the flag to force checking (if true) to make sure that the zones
+//      planned to be removed are uniformly of the type to remove.
+//
+//  Programmer: Kevin Griffin
+//  Creation:   July 30, 2020
+//
+// ****************************************************************************
+
+void
+avtGhostZoneFilter::SetConfirmRegion(bool b)
+{
+    confirmRegion = b;
 }
 
 

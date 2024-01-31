@@ -16,14 +16,14 @@ QvisTabBar::QvisTabBar(QWidget *parent) :
     QTabBar(parent)
 {
 }
- 
+
 void QvisTabBar::mouseDoubleClickEvent(QMouseEvent *e)
 {
     if (e->button () != Qt::LeftButton) {
         QTabBar::mouseDoubleClickEvent (e);
         return;
     }
- 
+
     int idx = currentIndex ();
     bool ok = true;
     QString newName = QInputDialog::getText (
@@ -32,7 +32,7 @@ void QvisTabBar::mouseDoubleClickEvent(QMouseEvent *e)
                 QLineEdit::Normal,
                 tabText (idx),
                 &ok);
- 
+
     if (ok) {
         setTabText (idx, newName);
     }
@@ -41,8 +41,8 @@ void QvisTabBar::mouseDoubleClickEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: VisItSimStripChart::VisItSimStripChart
 //
-// Purpose: 
-//   This is the constructor for the VisItSimStripChart and initializes the 
+// Purpose:
+//   This is the constructor for the VisItSimStripChart and initializes the
 //   limits and window size.
 // Arguments:
 //   parent : the widget this stip chart is attached too.
@@ -93,7 +93,7 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
         SC_Info[i].setScrollView(sc);
 
         addTab(sc, SC_Info[i].getName());
-    }   
+    }
 
     // default to the first strip chart as current
     currentStripChart = 0;
@@ -109,14 +109,14 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
 // ****************************************************************************
 // Method: VisItSimStripChart::~QvisStripChartTabWidget
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for QvisStripChartTabWidget
 //
 // Programmer: Shelly Prevost
 // Creation:   Oct. 27, 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 QvisStripChartTabWidget::~QvisStripChartTabWidget()
 {
@@ -125,10 +125,10 @@ QvisStripChartTabWidget::~QvisStripChartTabWidget()
 // ****************************************************************************
 // Method: VisItSimStripChart::updateCurrentTabData
 //
-// Purpose: 
+// Purpose:
 //   When the tab is change by clicking on another tab or
 //   programatically the tab is changed all the associated widgets
-//   in the manager must be updated with the current values for 
+//   in the manager must be updated with the current values for
 //   the new strip chart.
 //
 // Programmer: Shelly Prevost
@@ -137,7 +137,7 @@ QvisStripChartTabWidget::~QvisStripChartTabWidget()
 // Modifications:
 //
 // ****************************************************************************
-void 
+void
 QvisStripChartTabWidget::updateCurrentTabData()
 {
     currentStripChart = currentIndex();
@@ -146,12 +146,12 @@ QvisStripChartTabWidget::updateCurrentTabData()
 // ****************************************************************************
 // Method: QvisStripChartTabWidget::nameToIndex
 //
-// Purpose: 
-//    This method attemps to match the input string SC_Name with 
+// Purpose:
+//    This method attemps to match the input string SC_Name with
 //    the name of one of the strip charts. If it finds a match
 //    it returns the index to that strip chart, if not then it
 //    returns -1.
-//   
+//
 // Arguments:
 //   SC_Name : the name of the strip chart widget wanted.
 //
@@ -159,28 +159,28 @@ QvisStripChartTabWidget::updateCurrentTabData()
 // Creation:   Oct. 27, 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 int
 QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 {
     int ST_Index = -1;
-    
+
     for (unsigned int i=0; i<SC_Info.size(); ++i)
     {
         if (SC_Name == tabText(i))
             ST_Index = i;
     }
-    
+
     return ST_Index;
 }
 
 // ****************************************************************************
 // Method: VisItSimStripChart::setEnableLogScale
 //
-// Purpose: 
+// Purpose:
 //    Enables the log plot of data for the current strip chart.
-//   
+//
 // Arguments:
 //   enable :  sets the state of the log plotting for the current strip chart.
 //
@@ -188,9 +188,9 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
+//
 // ****************************************************************************
-// void 
+// void
 // QvisStripChartTabWidget::setEnableLogScale( bool enable )
 // {
 //     stripCharts[currentStripChart]->setEnableLogScale( enable );
@@ -199,16 +199,16 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 // ****************************************************************************
 // Method: VisItSimStripChart::getEnableLogScale
 //
-// Purpose: 
+// Purpose:
 //   Returns the state for the currently displayed strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
+//
 // ****************************************************************************
-// bool 
+// bool
 // QvisStripChartTabWidget::getEnableLogScale()
 // {
 //     return stripCharts[currentStripChart]->getEnableLogScale();
@@ -217,16 +217,16 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 // ****************************************************************************
 // Method: VisItSimStripChart::pick()
 //
-// Purpose: 
-//    Pass through method to call the pick method for the current 
-//    strip chart. 
+// Purpose:
+//    Pass through method to call the pick method for the current
+//    strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
-// **************************************************************************** 
+//
+// ****************************************************************************
 void
 QvisStripChartTabWidget::pick()
 {
@@ -236,16 +236,16 @@ QvisStripChartTabWidget::pick()
 // ****************************************************************************
 // Method: VisItSimStripChart::zoom
 //
-// Purpose: 
+// Purpose:
 //    Pass through method to call the zoom method for the current
-//    strip chart. 
+//    strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
-// **************************************************************************** 
+//
+// ****************************************************************************
 void
 QvisStripChartTabWidget::zoom()
 {
@@ -255,16 +255,16 @@ QvisStripChartTabWidget::zoom()
 // ****************************************************************************
 // Method: VisItSimStripChart::reset()
 //
-// Purpose: 
-//    Pass through method to call the reset method for the current 
-//    strip chart. 
+// Purpose:
+//    Pass through method to call the reset method for the current
+//    strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
-// **************************************************************************** 
+//
+// ****************************************************************************
 void
 QvisStripChartTabWidget::reset()
 {
@@ -274,16 +274,16 @@ QvisStripChartTabWidget::reset()
 // ****************************************************************************
 // Method: VisItSimStripChart::clear()
 //
-// Purpose: 
-//    Pass through method to call the clear method for the current 
-//    strip chart. 
+// Purpose:
+//    Pass through method to call the clear method for the current
+//    strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
-// **************************************************************************** 
+//
+// ****************************************************************************
 void
 QvisStripChartTabWidget::clear()
 {
@@ -293,16 +293,16 @@ QvisStripChartTabWidget::clear()
 // ****************************************************************************
 // Method: VisItSimStripChart::clear
 //
-// Purpose: 
-//    Pass through method to call the clear method for the specific 
-//    strip chart. 
+// Purpose:
+//    Pass through method to call the clear method for the specific
+//    strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
-// **************************************************************************** 
+//
+// ****************************************************************************
 void
 QvisStripChartTabWidget::clear( const unsigned int index )
 {
@@ -312,7 +312,7 @@ QvisStripChartTabWidget::clear( const unsigned int index )
 // ****************************************************************************
 // Method: VisItSimStripChart::setCurveTitle
 //
-// Purpose: 
+// Purpose:
 //   Tabs method allows the curve name to be set programatically.
 //
 // Arguments:
@@ -323,7 +323,7 @@ QvisStripChartTabWidget::clear( const unsigned int index )
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisStripChartTabWidget::setCurveTitle(const unsigned int curveIndex,
@@ -335,7 +335,7 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int curveIndex,
 // ****************************************************************************
 // Method: VisItSimStripChart::setTabLabel
 //
-// Purpose: 
+// Purpose:
 //   Tabs method allows the tab label to be set programatically.
 //
 // Arguments:
@@ -346,7 +346,7 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int curveIndex,
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
@@ -368,7 +368,7 @@ QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
 // ****************************************************************************
 // Method: VisItSimStripChart::setTabLabel
 //
-// Purpose: 
+// Purpose:
 //   Tabs method allows the tab label to be set programatically.
 //
 // Arguments:
@@ -379,7 +379,7 @@ QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisStripChartTabWidget::setTabLabel(const unsigned int tabIndex,
@@ -398,12 +398,12 @@ QvisStripChartTabWidget::setTabLabel(const unsigned int tabIndex,
         setTabText(tabIndex, newLabel);
         stripCharts[tabIndex]->setTitle( newLabel );
     }
-}   
+}
 
 // ****************************************************************************
 // Method: VisItSimStripChart::setCurveTitle
 //
-// Purpose: 
+// Purpose:
 //   Tabs method allows the curve name to be set programatically.
 //
 // Arguments:
@@ -415,7 +415,7 @@ QvisStripChartTabWidget::setTabLabel(const unsigned int tabIndex,
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisStripChartTabWidget::setCurveTitle(const unsigned int tabIndex,
@@ -428,8 +428,10 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int tabIndex,
 // ****************************************************************************
 // Method: VisItSimStripChart::addDataPoint
 //
-// Purpose: 
-//   
+// Purpose:
+//   This is a pass through method that call the function with the
+//   same name in the strip chart.
+//
 // Arguments:
 //   tabIndex   : index of the tab page
 //   curveIndex : index of the curve
@@ -440,9 +442,9 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int tabIndex,
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
-void 
+void
 QvisStripChartTabWidget::addDataPoint( const unsigned int tabIndex,
                                        const unsigned int curveIndex,
                                        const double x, const double y )
@@ -450,3 +452,31 @@ QvisStripChartTabWidget::addDataPoint( const unsigned int tabIndex,
     stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
 }
 
+// ****************************************************************************
+// Method: VisItSimStripChart::addDataPoints
+//
+// Purpose:
+//   This is a pass through method that call the function with the
+//   same name in the strip chart.
+//
+// Arguments:
+//   tabIndex   : index of the tab page
+//   curveIndex : index of the curve
+//   npts : number of points
+//   x    : data x value, i.e. the cycle
+//   y    : data y value, i.e. the current value of the variable being plotted.
+//
+// Programmer: Allen Sanderson
+// Creation:   29 May 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartTabWidget::addDataPoints( const unsigned int tabIndex,
+                                        const unsigned int curveIndex,
+                                        const unsigned int npts,
+                                        const double *x, const double *y )
+{
+    stripCharts[tabIndex]->addDataPoints(curveIndex, npts, x, y);
+}

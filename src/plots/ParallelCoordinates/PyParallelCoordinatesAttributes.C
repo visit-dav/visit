@@ -5,6 +5,7 @@
 #include <PyParallelCoordinatesAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 
@@ -36,9 +37,8 @@ struct ParallelCoordinatesAttributesObject
 // Internal prototypes
 //
 static PyObject *NewParallelCoordinatesAttributes(int);
-
 std::string
-PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *atts, const char *prefix)
+PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -177,31 +177,51 @@ ParallelCoordinatesAttributes_SetScalarAxisNames(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetScalarAxisNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetScalarAxisNames() = vec;
     // Mark the scalarAxisNames in the object as modified.
     obj->data->SelectScalarAxisNames();
 
@@ -226,31 +246,51 @@ ParallelCoordinatesAttributes_SetVisualAxisNames(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetVisualAxisNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetVisualAxisNames() = vec;
     // Mark the visualAxisNames in the object as modified.
     obj->data->SelectVisualAxisNames();
 
@@ -275,45 +315,58 @@ ParallelCoordinatesAttributes_SetExtentMinima(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetExtentMinima();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    doubleVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetExtentMinima() = vec;
     // Mark the extentMinima in the object as modified.
     obj->data->SelectExtentMinima();
 
@@ -338,45 +391,58 @@ ParallelCoordinatesAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetExtentMaxima();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    doubleVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetExtentMaxima() = vec;
     // Mark the extentMaxima in the object as modified.
     obj->data->SelectExtentMaxima();
 
@@ -401,12 +467,48 @@ ParallelCoordinatesAttributes_SetDrawLines(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawLines in the object.
-    obj->data->SetDrawLines(ival != 0);
+    obj->data->SetDrawLines(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -502,12 +604,48 @@ ParallelCoordinatesAttributes_SetDrawContext(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawContext in the object.
-    obj->data->SetDrawContext(ival != 0);
+    obj->data->SetDrawContext(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -526,12 +664,48 @@ ParallelCoordinatesAttributes_SetContextGamma(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the contextGamma in the object.
-    obj->data->SetContextGamma(fval);
+    obj->data->SetContextGamma(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -550,12 +724,48 @@ ParallelCoordinatesAttributes_SetContextNumPartitions(PyObject *self, PyObject *
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the contextNumPartitions in the object.
-    obj->data->SetContextNumPartitions((int)ival);
+    obj->data->SetContextNumPartitions(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -651,12 +861,48 @@ ParallelCoordinatesAttributes_SetDrawLinesOnlyIfExtentsOn(PyObject *self, PyObje
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawLinesOnlyIfExtentsOn in the object.
-    obj->data->SetDrawLinesOnlyIfExtentsOn(ival != 0);
+    obj->data->SetDrawLinesOnlyIfExtentsOn(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -675,12 +921,48 @@ ParallelCoordinatesAttributes_SetUnifyAxisExtents(PyObject *self, PyObject *args
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the unifyAxisExtents in the object.
-    obj->data->SetUnifyAxisExtents(ival != 0);
+    obj->data->SetUnifyAxisExtents(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -699,12 +981,48 @@ ParallelCoordinatesAttributes_SetLinesNumPartitions(PyObject *self, PyObject *ar
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the linesNumPartitions in the object.
-    obj->data->SetLinesNumPartitions((int)ival);
+    obj->data->SetLinesNumPartitions(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -723,12 +1041,48 @@ ParallelCoordinatesAttributes_SetFocusGamma(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the focusGamma in the object.
-    obj->data->SetFocusGamma(fval);
+    obj->data->SetFocusGamma(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -747,21 +1101,55 @@ ParallelCoordinatesAttributes_SetDrawFocusAs(PyObject *self, PyObject *args)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid drawFocusAs value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " IndividualLines";
+        ss << ", BinsOfConstantColor";
+        ss << ", BinsColoredByPopulation";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawFocusAs in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDrawFocusAs(ParallelCoordinatesAttributes::FocusRendering(ival));
-    else
-    {
-        fprintf(stderr, "An invalid drawFocusAs value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "IndividualLines, BinsOfConstantColor, BinsColoredByPopulation.");
-        return NULL;
-    }
+    obj->data->SetDrawFocusAs(ParallelCoordinatesAttributes::FocusRendering(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -826,14 +1214,7 @@ ParallelCoordinatesAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ParallelCoordinatesAttributes_compare(PyObject *v, PyObject *w)
-{
-    ParallelCoordinatesAttributes *a = ((ParallelCoordinatesAttributesObject *)v)->data;
-    ParallelCoordinatesAttributes *b = ((ParallelCoordinatesAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
 {
@@ -875,56 +1256,69 @@ PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ParallelCoordinatesAttributes::BinsColoredByPopulation));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyParallelCoordinatesAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyParallelCoordinatesAttributes_methods[i].ml_name),
+                PyString_FromString(PyParallelCoordinatesAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyParallelCoordinatesAttributes_methods, self, name);
 }
 
 int
 PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "scalarAxisNames") == 0)
-        obj = ParallelCoordinatesAttributes_SetScalarAxisNames(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetScalarAxisNames(self, args);
     else if(strcmp(name, "visualAxisNames") == 0)
-        obj = ParallelCoordinatesAttributes_SetVisualAxisNames(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetVisualAxisNames(self, args);
     else if(strcmp(name, "extentMinima") == 0)
-        obj = ParallelCoordinatesAttributes_SetExtentMinima(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetExtentMinima(self, args);
     else if(strcmp(name, "extentMaxima") == 0)
-        obj = ParallelCoordinatesAttributes_SetExtentMaxima(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetExtentMaxima(self, args);
     else if(strcmp(name, "drawLines") == 0)
-        obj = ParallelCoordinatesAttributes_SetDrawLines(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetDrawLines(self, args);
     else if(strcmp(name, "linesColor") == 0)
-        obj = ParallelCoordinatesAttributes_SetLinesColor(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetLinesColor(self, args);
     else if(strcmp(name, "drawContext") == 0)
-        obj = ParallelCoordinatesAttributes_SetDrawContext(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetDrawContext(self, args);
     else if(strcmp(name, "contextGamma") == 0)
-        obj = ParallelCoordinatesAttributes_SetContextGamma(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetContextGamma(self, args);
     else if(strcmp(name, "contextNumPartitions") == 0)
-        obj = ParallelCoordinatesAttributes_SetContextNumPartitions(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetContextNumPartitions(self, args);
     else if(strcmp(name, "contextColor") == 0)
-        obj = ParallelCoordinatesAttributes_SetContextColor(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetContextColor(self, args);
     else if(strcmp(name, "drawLinesOnlyIfExtentsOn") == 0)
-        obj = ParallelCoordinatesAttributes_SetDrawLinesOnlyIfExtentsOn(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetDrawLinesOnlyIfExtentsOn(self, args);
     else if(strcmp(name, "unifyAxisExtents") == 0)
-        obj = ParallelCoordinatesAttributes_SetUnifyAxisExtents(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetUnifyAxisExtents(self, args);
     else if(strcmp(name, "linesNumPartitions") == 0)
-        obj = ParallelCoordinatesAttributes_SetLinesNumPartitions(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetLinesNumPartitions(self, args);
     else if(strcmp(name, "focusGamma") == 0)
-        obj = ParallelCoordinatesAttributes_SetFocusGamma(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetFocusGamma(self, args);
     else if(strcmp(name, "drawFocusAs") == 0)
-        obj = ParallelCoordinatesAttributes_SetDrawFocusAs(self, tuple);
+        obj = ParallelCoordinatesAttributes_SetDrawFocusAs(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -932,7 +1326,7 @@ static int
 ParallelCoordinatesAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
-    fprintf(fp, "%s", PyParallelCoordinatesAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyParallelCoordinatesAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -940,7 +1334,7 @@ PyObject *
 ParallelCoordinatesAttributes_str(PyObject *v)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
-    return PyString_FromString(PyParallelCoordinatesAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyParallelCoordinatesAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -953,49 +1347,70 @@ static char *ParallelCoordinatesAttributes_Purpose = "This class contains the pl
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ParallelCoordinatesAttributesType =
+
+VISIT_PY_TYPE_OBJ(ParallelCoordinatesAttributesType,         \
+                  "ParallelCoordinatesAttributes",           \
+                  ParallelCoordinatesAttributesObject,       \
+                  ParallelCoordinatesAttributes_dealloc,     \
+                  ParallelCoordinatesAttributes_print,       \
+                  PyParallelCoordinatesAttributes_getattr,   \
+                  PyParallelCoordinatesAttributes_setattr,   \
+                  ParallelCoordinatesAttributes_str,         \
+                  ParallelCoordinatesAttributes_Purpose,     \
+                  ParallelCoordinatesAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ParallelCoordinatesAttributes",                    // tp_name
-    sizeof(ParallelCoordinatesAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ParallelCoordinatesAttributes_dealloc,  // tp_dealloc
-    (printfunc)ParallelCoordinatesAttributes_print,     // tp_print
-    (getattrfunc)PyParallelCoordinatesAttributes_getattr, // tp_getattr
-    (setattrfunc)PyParallelCoordinatesAttributes_setattr, // tp_setattr
-    (cmpfunc)ParallelCoordinatesAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ParallelCoordinatesAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ParallelCoordinatesAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ParallelCoordinatesAttributesType
+         || Py_TYPE(other) != &ParallelCoordinatesAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ParallelCoordinatesAttributes *a = ((ParallelCoordinatesAttributesObject *)self)->data;
+    ParallelCoordinatesAttributes *b = ((ParallelCoordinatesAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1071,7 +1486,7 @@ PyParallelCoordinatesAttributes_GetLogString()
 {
     std::string s("ParallelCoordinatesAtts = ParallelCoordinatesAttributes()\n");
     if(currentAtts != 0)
-        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.");
+        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.", true);
     return s;
 }
 
@@ -1084,7 +1499,7 @@ PyParallelCoordinatesAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ParallelCoordinatesAtts = ParallelCoordinatesAttributes()\n");
-        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.");
+        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.", true);
         cb(s);
     }
 }

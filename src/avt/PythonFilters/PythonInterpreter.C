@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "Python.h"
+#include <Py2and3Support.h>
 #include "PythonInterpreter.h"
 #include <fstream>
 #include <sstream>
@@ -76,7 +77,7 @@ PythonInterpreter::Initialize(int argc, char **argv)
 
 
     // setup up __main__ and capture StdErr
-    PyRun_SimpleString("import os,sys,traceback,StringIO\n");
+    PyRun_SimpleString("import os,sys,traceback\n");
     if(CheckError())
         return false;
 
@@ -90,12 +91,49 @@ PythonInterpreter::Initialize(int argc, char **argv)
     traceModule = PyImport_AddModule("traceback");
     PyObject *traceDict = PyModule_GetDict(traceModule);
     tracePrintException = PyDict_GetItemString(traceDict,"print_exception");
-    // get ref to StringIO.StringIO class
-    sioModule   = PyImport_AddModule("StringIO");
-    PyObject *sioDict= PyModule_GetDict(sioModule);
-    sioClass = PyDict_GetItemString(sioDict,"StringIO");
-    running = true;
+
+    // python2:
+    //  get ref to StringIO.StringIO class
+    // python3:
+    //  get ref to io.StringIO class
+    //
+#ifdef IS_PY3K
+    const char *sio_module_name = "io";
+    PyRun_SimpleString("import io\n");
+    if(CheckError())
+        return false;
+#else
+    const char *sio_module_name = "StringIO";
+    PyRun_SimpleString("import StringIO\n");
+    if(CheckError())
+        return false;
+#endif
+
+    sioModule = PyImport_ImportModule(sio_module_name);
     
+    if(sioModule == NULL)
+    {
+        return false;
+    }
+    
+    PyObject *sioDict = PyModule_GetDict(sioModule);
+    
+    if(sioDict == NULL)
+    {
+        return false;
+    }
+
+    // input the class
+    sioClass = PyDict_GetItemString(sioDict,"StringIO");
+
+
+    if(sioClass == NULL)
+    {
+        return false;
+    }
+
+    running = true;
+
     return true;
 }
 
@@ -168,6 +206,30 @@ PythonInterpreter::AddSystemPath(const std::string &path)
 {
     return RunScript("sys.path.insert(1,r'" + path + "')\n");
 }
+
+#ifdef _WIN32
+// ****************************************************************************
+//  Method: PythonInterpreter::AddDLLPath
+//
+//  Purpose:
+//      Adds passed path to "os.add_dll_directory"
+//
+//  Arguments:
+//      path      Path to DLLs  (eg VisIt's third party dlls)
+//
+//  Programmer:   Kathleen Biagas 
+//  Creation:     January 24, 2024 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+PythonInterpreter::AddDLLPath(const std::string &path)
+{
+    return RunScript("os.add_dll_directory(r'" + path + "')\n");
+}
+#endif
 
 // ****************************************************************************
 //  Method: PythonInterpreter::RunScript
@@ -441,6 +503,10 @@ PythonInterpreter::PyObjectToInteger(PyObject *py_obj, int &res)
 //  Programmer:   Cyrus Harrison
 //  Creation:     April 15, 2009
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Mar 26 06:28:25 PDT 2020
+//    Python 3 port.
+//
 // ****************************************************************************
 
 bool
@@ -450,7 +516,9 @@ PythonInterpreter::PyObjectToString(PyObject *py_obj, std::string &res)
     if(py_obj_str == NULL)
         return false;
 
-    res = PyString_AS_STRING(py_obj_str);
+    char *str_val = PyString_AsString(py_obj_str);
+    res = std::string(str_val);
+    PyString_AsString_Cleanup(str_val);
     Py_DECREF(py_obj_str);
     return true;
 }
@@ -464,6 +532,11 @@ PythonInterpreter::PyObjectToString(PyObject *py_obj, std::string &res)
 //
 //  Programmer:   Cyrus Harrison
 //  Creation:     April 15, 2009
+//
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Mar 26 06:28:25 PDT 2020
+//    Python 3 port.
 //
 // ****************************************************************************
 
@@ -512,7 +585,10 @@ PythonInterpreter::PyTracebackToString(PyObject *py_etype,
     }
 
     // convert python string object to std::string
-    res = PyString_AS_STRING(py_str);
+    
+    char *str_val = PyString_AsString(py_str);
+    res = std::string(str_val);
+    PyString_AsString_Cleanup(str_val);
 
     Py_DECREF(py_buffer);
     Py_DECREF(py_res);

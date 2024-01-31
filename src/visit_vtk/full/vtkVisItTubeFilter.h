@@ -52,6 +52,8 @@
 #include "vtkPolyDataAlgorithm.h"
 #include <visit_vtk_exports.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #define VTK_VARY_RADIUS_OFF 0
 #define VTK_VARY_RADIUS_BY_SCALAR 1
 #define VTK_VARY_RADIUS_BY_VECTOR 2
@@ -213,18 +215,30 @@ protected:
 
   // Helper methods
   int GeneratePoints(vtkIdType offset, vtkIdType inCellId,
+#if LIB_VERSION_LE(VTK, 8,1,0)
                      vtkIdType npts, vtkIdType *pts,
-                     vtkPoints *inPts, vtkPoints *newPts, 
+#else
+                     vtkIdType npts, const vtkIdType *pts,
+#endif
+                     vtkPoints *inPts, vtkPoints *newPts,
                      vtkPointData *pd, vtkPointData *outPD,
                      vtkFloatArray *newNormals,
                      vtkDataArray *inScalars, bool cellScalars,
-                     double range[2], vtkDataArray *inVectors, double maxNorm, 
+                     double range[2], vtkDataArray *inVectors, double maxNorm,
                      vtkDataArray *inNormals);
-  void GenerateStrips(vtkIdType offset, vtkIdType npts, vtkIdType *pts, 
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  void GenerateStrips(vtkIdType offset, vtkIdType npts, vtkIdType *pts,
+#else
+  void GenerateStrips(vtkIdType offset, vtkIdType npts, const vtkIdType *pts,
+#endif
                       vtkIdType inCellId, vtkCellData *cd, vtkCellData *outCD,
                       vtkCellArray *newStrips);
-  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts, vtkIdType *pts, 
-                             vtkPoints *inPts, 
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts, vtkIdType *pts,
+#else
+  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts, const vtkIdType *pts,
+#endif
+                             vtkPoints *inPts,
                              vtkDataArray *inScalars, bool cellScalars,
                             vtkFloatArray *newTCoords);
   vtkIdType ComputeOffset(vtkIdType offset,vtkIdType npts);
@@ -233,8 +247,8 @@ protected:
   double Theta;
 
 private:
-  vtkVisItTubeFilter(const vtkVisItTubeFilter&);  // Not implemented.
-  void operator=(const vtkVisItTubeFilter&);  // Not implemented.
+  vtkVisItTubeFilter(const vtkVisItTubeFilter&) = delete;
+  void operator=(const vtkVisItTubeFilter&) = delete;
 };
 
 #endif

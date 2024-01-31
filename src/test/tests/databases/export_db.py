@@ -16,8 +16,8 @@
 #    Hank Childs, Thu Sep 15 16:33:48 PDT 2005
 #    Add test for exporting CMFEs as secondary variables ('6587)
 #
-#    Kathleen Bonnell, Tue May  2 08:58:01 PDT 2006 
-#    Corrected exported database names (from .visit to .vtk). 
+#    Kathleen Bonnell, Tue May  2 08:58:01 PDT 2006
+#    Corrected exported database names (from .visit to .vtk).
 #
 #    Hank Childs, Wed Mar 28 11:33:16 PDT 2007
 #    Uncommented tests for '6366, which were previously checked in, but
@@ -38,7 +38,7 @@
 #    options.
 #
 #    Alister Maguire, Thu Apr 26 13:31:31 PDT 2018
-#    Added test for bov compression. 
+#    Added test for bov compression.
 #
 #    Kathleen Biagas, Wed May 16, 2018
 #    Use python's gzip instead of subprocess('gunzip') so test will run
@@ -47,11 +47,24 @@
 #
 #    Mark C. Miller, Wed Apr 10 10:24:32 PDT 2019
 #    Add tetrahedralize test
+#
+#    Mark C. Miller, Mon Jan 11 10:32:17 PST 2021
+#    Replace AssertTrue() with TestValueEQ(..., True)
+#
+#    Kathleen Biagas, Thu Jun 24, 2021
+#    Moved test for exporting and plotting different formats to new function.
+#    Added testing of the export-and-plot with changed dirname. (#5462)
+#    Removed cleanup_files since temporary files are written to the _run dir
+#    which gets removed on exit (unless --no-cleanup specified).
+#
+#    Eric Brugger, Mon May 1 15:28:30 PST 2023
+#    Added HTG export test.
+#
 # ----------------------------------------------------------------------------
-import string
 import time
 import os.path
 import subprocess
+import fnmatch
 
 def test0():
     OpenDatabase(silo_data_path("globe.silo"))
@@ -114,22 +127,114 @@ def test0():
 #    CloseDatabase(silo_data_path("wave.visit"))
 
 def VTK_check_binary(filename):
-    f = open(filename, "rt")
+    if (sys.version_info > (3, 0)):
+        f = open(filename, "rt", encoding='utf-8', errors='ignore')
+    else:
+        f = open(filename, "rt")
     line = ""
     for i in (0,1,2):
         line = f.readline()
     b = "BINARY" == line[0:6]
     return b
 
-def cleanup_files():
-    exts = ("*.ply", "*.raw", "*.stl", "*.silo", "*.tec", "*.okc", "*.visit", "*.xyz", "*.obj")
-    files = os.listdir(".")
-    for f in files:
-        for e in exts:
-            pattern = e[1:]
-            if f[-len(pattern):] == pattern:
-                os.unlink(f)
-                break
+
+# Test exporting some surfaces in other formats and plotting the results.
+# e = ExportDBAttributes
+# v = View3D
+# a = AnnotationAttributes
+# count = current test number (used for test names)
+# usingWriteGroups = True or False
+
+def export_and_plot(e, v, a, count, usingWriteGroups):
+
+    # formats fields:
+    # {DBName: (no-write-group exported name to read, write-group exported name to read, plot type, var name)}
+
+    formats = { "PLY":          ("export_PLY.ply",          "*.ply",         "Subset",      "PLY_mesh"),
+                "RAW":          ("export_RAW.raw",          "*.raw",         "Subset",      "mesh"),
+                "STL":          ("export_STL.stl",          "*.stl",         "Subset",      "STL_mesh"),
+                "Silo":         ("export_Silo.silo",        "wg_Silo.silo",  "Pseudocolor", "u"),
+                "Tecplot":      ("export_Tecplot.tec",      "*.tec",         "Pseudocolor", "u"),
+                "VTK":          ("export_VTK.visit",        "wg_VTK.visit",  "Pseudocolor", "u"),
+                "WavefrontOBJ": ("export_WavefrontOBJ.obj", "*.obj",         "Subset",      "OBJMesh"),
+                "XYZ":          ("export_XYZ.xyz",          "*.xyz",         "Subset",      "mesh"),
+                "Xmdv":         ("export_Xmdv.visit",       "wg_Xmdv.visit", "Pseudocolor", "u")
+              }
+
+    keys = sorted(formats.keys())
+    test_name_base="export_db_%d"%(2 if usingWriteGroups else 1)
+   
+    # do all the exports
+    for f in keys:
+        export_name="%s_%s"%("wg" if usingWriteGroups else "export", f)
+        e.db_type = f
+        e.db_type_fullname = f + "_1.0"
+        e.filename = export_name
+        ExportDatabase(e)
+        time.sleep(1)
+
+    # now attempt to read the exported files
+    if usingWriteGroups:
+        files = sorted(fnmatch.filter(os.listdir(e.dirname), "wg_*"))
+    for f in keys:
+        # Add the exported data in window 2.
+        AddWindow()
+
+        pattern = formats[f][1] if usingWriteGroups else formats[f][0]
+        filelist=""
+        opendbs = []
+
+        if pattern[0] == '*':
+            # Read all of the filenames
+            ext = pattern[2:]
+            for datafile in files:
+                if datafile[-len(ext):] == ext:
+                    if OpenDatabase(datafile):
+                        AddPlot(formats[f][2], formats[f][3])
+                        opendbs = opendbs + [datafile]
+                        filelist = filelist + datafile + "\n"
+            DrawPlots()
+        else:
+            if OpenDatabase(pjoin(e.dirname, pattern)):
+                md = GetMetaData(pattern)
+                AddPlot(formats[f][2], formats[f][3])
+                DrawPlots()
+                if usingWriteGroups:
+                    opendbs = opendbs + [pattern]
+                    filelist = filelist + pattern + "\n"
+            else:
+                if not usingWriteGroups:
+                    files = os.listdir(e.dirname)
+                    files.sort()
+                    s = ""
+                    for fn in files:
+                        if pattern in fn:
+                            s = fn + "\n"
+                    TestText("files", s)
+                else:
+                    filelist = "ERROR: " + "\n".join(os.listdir("."))
+
+        t = CreateAnnotationObject("Text2D")
+        t.text = f
+        t.position = (0.01, 0.91)
+        t.height = 0.07
+        SetView3D(v)
+        SetAnnotationAttributes(a)
+        Test("%s_%02d"%(test_name_base, count))
+        if usingWriteGroups:
+            TestText("%s_%02dfn"%(test_name_base, count),filelist)
+        count=count+1
+
+        # Clean up window 2
+        DeleteAllPlots()
+        #if not usingWriteGroups:
+        #    CloseDatabase(pattern)
+        #else:
+        #    for db in opendbs:
+        #        CloseDatabase(db)
+        DeleteWindow()
+
+    return count
 
 def test1():
     TestSection("Test export of some surfaces.")
@@ -176,7 +281,7 @@ def test1():
     ExportDatabase(e, opts)
     time.sleep(1)
     line = "The binary_VTK.0.vtk file is NOT binary.\n\n"
-    visitfile = string.join(open("binary_VTK.visit").readlines())
+    visitfile = " ".join(open("binary_VTK.visit").readlines())
     if VTK_check_binary("binary_VTK/binary_VTK.0.vtk"):
         line = "The binary_VTK.0.vtk file is binary.\n\n"
     s = line + visitfile
@@ -199,55 +304,21 @@ def test1():
     DeleteWindow()
 
     # Test exporting some surfaces in other formats and plotting the results.
-    formats = {
-"PLY":  ("export_PLY",  "export_PLY.ply",   "export_db_1_03", "Subset", "PLY_mesh"),
-"RAW":  ("export_RAW",  "export_RAW.raw",   "export_db_1_04", "Subset", "mesh"),
-"STL":  ("export_STL",  "export_STL.stl",   "export_db_1_05", "Subset", "STL_mesh"),
-"Silo": ("export_Silo", "export_Silo.silo", "export_db_1_06", "Pseudocolor", "u"),
-"Tecplot": ("export_Tecplot", "export_Tecplot.tec", "export_db_1_07", "Pseudocolor", "u"),
-"WavefrontOBJ": ("export_OBJ", "export_OBJ.obj", "export_db_1_08", "Subset", "OBJMesh"),
-"XYZ":  ("export_XYZ", "export_XYZ.xyz", "export_db_1_09", "Subset", "mesh"),
-"Xmdv": ("export_Xmdv", "export_Xmdv.visit", "export_db_1_10", "Pseudocolor", "u")
-}
-    keys = sorted(formats.keys())
-    for f in keys:
-        e.db_type = f
-        e.db_type_fullname = f + "_1.0"
-        e.filename = formats[f][0]
-        ExportDatabase(e)
-        time.sleep(1)
 
-        # Add the exported data in window 2.
-        AddWindow()
-        if OpenDatabase(formats[f][1]):
-            md = GetMetaData(formats[f][1])
-            AddPlot(formats[f][3], formats[f][4])
-            DrawPlots()
-        else:
-            files = os.listdir(".")
-            files.sort()
-            s = ""
-            for fn in files:
-                if formats[f][0] in fn:
-                    s = fn + "\n"
-            TestText("files", s)
-        t = CreateAnnotationObject("Text2D")
-        t.text = f
-        t.position = (0.01, 0.91)
-        t.height = 0.07
-        SetView3D(v)
-        SetAnnotationAttributes(a)
-        Test(formats[f][2])
-        # Clean up window 2
-        DeleteAllPlots()
-    #    CloseDatabase(formats[f][1])
-        DeleteWindow()
+    count = 3
+    count = export_and_plot(e, v, a, count, False)
+
+    # change directory and retry the export_and_plot
+    edir = pjoin(TestEnv.params["run_dir"], "exports")
+    if not os.path.isdir(edir):
+        os.mkdir(edir)
+    e.dirname=edir
+
+    export_and_plot(e, v, a, count, False)
 
     # Clean up window 1
     DeleteAllPlots()
 #    CloseDatabase(maindb)
-    if not platform.system() == "Windows":
-        cleanup_files()
 
 def test2(writeGroupSize):
     TestSection("Test export with write groups (parallel).")
@@ -287,71 +358,22 @@ def test2(writeGroupSize):
     a = GetAnnotationAttributes()
 
     # Test exporting some surfaces in other formats and plotting the results.
-    formats = {
-"PLY":  ("wg_PLY",  "*.ply",   "export_db_2_01", "Subset", "PLY_mesh"),
-"RAW":  ("wg_RAW",  "*.raw",   "export_db_2_02", "Subset", "mesh"),
-"STL":  ("wg_STL",  "*.stl",   "export_db_2_03", "Subset", "STL_mesh"),
-"Silo": ("wg_Silo", "wg_Silo.silo", "export_db_2_04", "Pseudocolor", "u"),
-"Tecplot": ("wg_Tecplot", "*.tec", "export_db_2_05", "Pseudocolor", "u"),
-"VTK":  ("wg_VTK", "wg_VTK.visit", "export_db_2_06", "Pseudocolor", "u"),
-"WavefrontOBJ": ("wg_OBJ", "*.obj", "export_db_2_07", "Subset", "OBJMesh"),
-"XYZ":  ("wg_XYZ", "*.xyz", "export_db_2_08", "Subset", "mesh"),
-"Xmdv": ("wg_Xmdv", "wg_Xmdv.visit", "export_db_2_09", "Pseudocolor", "u")
-}
-    keys = sorted(formats.keys())
-    for f in keys:
-        e = ExportDBAttributes()
-        e.db_type = f
-        e.db_type_fullname = f + "_1.0"
-        e.filename = formats[f][0]
-        e.writeUsingGroups = 1
-        e.groupSize = writeGroupSize
-        ExportDatabase(e)
-        time.sleep(1)
+    e = ExportDBAttributes()
+    e.writeUsingGroups = 1
+    e.groupSize = writeGroupSize
+    count = 1
+    count = export_and_plot(e, v, a, count, True)
 
-        # Add the exported database in window 2.
-        AddWindow()
-        pattern = formats[f][1]
-        filelist=""
-        opendbs = []
-        if pattern[0] == '*':
-            # Read all of the filenames
-            files = sorted(os.listdir("."))
-            ext = pattern[2:]
-            for datafile in files:
-                if datafile[-len(ext):] == ext:
-                    OpenDatabase(datafile)
-                    AddPlot(formats[f][3], formats[f][4])
-                    opendbs = opendbs + [datafile]
-                    filelist = filelist + datafile + "\n"
-        else:
-            if OpenDatabase(formats[f][1]):
-                md = GetMetaData(formats[f][1])
-                AddPlot(formats[f][3], formats[f][4])
-                opendbs = opendbs + [formats[f][1]]
-                filelist = filelist + formats[f][1] + "\n"
-            else:
-                filelist = "ERROR: " + string.join(os.listdir("."), "\n")
-        DrawPlots()
-        t = CreateAnnotationObject("Text2D")
-        t.text = f
-        t.position = (0.01, 0.91)
-        t.height = 0.07
-        SetView3D(v)
-        SetAnnotationAttributes(a)
-        Test(formats[f][2])
-        TestText(formats[f][2] + "fn", filelist)
+    # change directory and retry the export_and_plot
+    edir = pjoin(TestEnv.params["run_dir"], "exports_2")
+    if not os.path.isdir(edir):
+        os.mkdir(edir)
+    e.dirname=edir
 
-        # Clean up window 2
-        DeleteAllPlots()
-#        for db in opendbs:
-#            CloseDatabase(db)
-        DeleteWindow()
+    export_and_plot(e, v, a, count, True)
 
     # Clean up window 1
     DeleteAllPlots()
-    if not platform.system() == "Windows":
-        cleanup_files()
 #    CloseDatabase(maindb)
 
 def test3():
@@ -485,8 +507,8 @@ def test_bov():
     opts["Compression"] = "None"
     ExportDatabase(e, opts)
     time.sleep(1)
-    AssertTrue("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"))
-    AssertTrue("test_bov_uncompressed exists", os.path.isfile("test_bov_uncompressed"))
+    TestValueEQ("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"), True)
+    TestValueEQ("test_bov_uncompressed.bof exists", os.path.isfile("test_bov_uncompressed.bof"), True)
     ReplaceDatabase("test_bov_uncompressed.bov")
     Test("export_db_5_01")
 
@@ -497,16 +519,12 @@ def test_bov():
     opts["Compression"] = "gzip"
     ExportDatabase(e, opts)
     time.sleep(1)
-    AssertTrue("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"))
-    AssertTrue("test_bov_gzip.gz exists", os.path.isfile("test_bov_gzip.gz"))
-    with gzip.open("test_bov_gzip.gz", "rb") as f_in:
-        with open("test_bov_gzip", "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out);
+    TestValueEQ("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"), True)
+    TestValueEQ("test_bov_gzip.bof.gz exists", os.path.isfile("test_bov_gzip.bof.gz"), True)
     ReplaceDatabase("test_bov_gzip.bov")
     Test("export_db_5_02")
 
     DeleteAllPlots()
-
 
 def test_vtk_tetrahedralize():
     dbs_noext = ["ucd3d", "specmix_ucd"]
@@ -537,19 +555,56 @@ def test_vtk_tetrahedralize():
         TestText("export_db_vtk_tets_%s"%db_noext, "Ratio of exported zone count to original is %d"%(nzNew/nzOrig))
         DeleteAllPlots()
 
+def test_htg():
+    TestSection("Test htg export.")
+    OpenDatabase(silo_data_path("globe.silo"))
+    AddPlot("Pseudocolor", "dx")
+    AddOperator("Resample")
+    resample = ResampleAttributes()
+    resample.useExtents = 0
+    resample.startX = -10
+    resample.endX = 10
+    resample.samplesX = 16
+    resample.startY = -10
+    resample.endY = 10
+    resample.samplesY = 16
+    resample.is3D = 1
+    resample.startZ = -10
+    resample.endZ = 10
+    resample.samplesZ = 16
+    resample.defaultValue = -10000
+    resample.distributedResample = 0
+    resample.cellCenteredOutput = 1
+    SetOperatorOptions(resample)
+    DrawPlots()
+
+    e = ExportDBAttributes()
+    e.db_type = "HTG"
+    e.filename = "globe"
+    opts = GetExportOptions("HTG")
+    opts['Blank value'] = -10000
+    ExportDatabase(e, opts)
+
+    htg_text = Path('globe.dx.htg').read_text()
+
+    TestText("globe.dx.htg", htg_text)
+
+    DeleteAllPlots()
+
 def main():
     test0()
     test1()
     if GetEngineProperties(GetEngineList()[0]).numProcessors > 1:
-        # We just use 2 processors normally so let's set the write group size 
-        # to 1 so each rank will write its own data using a different write 
-        # group. For certain formats, there will be 1 data file per write 
+        # We just use 2 processors normally so let's set the write group size
+        # to 1 so each rank will write its own data using a different write
+        # group. For certain formats, there will be 1 data file per write
         # group, or in this case 2 output files.
         test2(1)
     test3()
     test4()
     test_bov()
     test_vtk_tetrahedralize()
+    test_htg()
 
 main()
 Exit()

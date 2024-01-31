@@ -5,6 +5,7 @@
 #ifndef PY_MULTICURVEATTRIBUTES_H
 #define PY_MULTICURVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MultiCurveAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyMultiCurveAttributes_Wrap(const MultiCurveAttributes *attr);
 void           PyMultiCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMultiCurveAttributes_SetDefaults(const MultiCurveAttributes *atts);
 std::string    PyMultiCurveAttributes_GetLogString();
-std::string    PyMultiCurveAttributes_ToString(const MultiCurveAttributes *, const char *);
+std::string    PyMultiCurveAttributes_ToString(const MultiCurveAttributes *, const char *, const bool=false);
 PyObject *     PyMultiCurveAttributes_getattr(PyObject *self, char *name);
 int            PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH];

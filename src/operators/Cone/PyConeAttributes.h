@@ -5,6 +5,7 @@
 #ifndef PY_CONEATTRIBUTES_H
 #define PY_CONEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ConeAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyConeAttributes_Wrap(const ConeAttributes *attr);
 void           PyConeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyConeAttributes_SetDefaults(const ConeAttributes *atts);
 std::string    PyConeAttributes_GetLogString();
-std::string    PyConeAttributes_ToString(const ConeAttributes *, const char *);
+std::string    PyConeAttributes_ToString(const ConeAttributes *, const char *, const bool=false);
 PyObject *     PyConeAttributes_getattr(PyObject *self, char *name);
 int            PyConeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyConeAttributes_methods[CONEATTRIBUTES_NMETH];

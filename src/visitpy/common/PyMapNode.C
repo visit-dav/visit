@@ -2,6 +2,12 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <string>
+#include <sstream>
+
+#include <Python.h>
+#include <Py2and3Support.h>
+
 #include <PyMapNode.h>
 #include <PyVariant.h>
 #include <DebugStream.h>
@@ -11,6 +17,7 @@
 // VisIt module helper method.
 //
 ///////////////////////////////////////////////////////////////////////////////
+
 
 // ****************************************************************************
 // Method: PyMapNode_Wrap
@@ -88,10 +95,13 @@ PyMapNode_Wrap(const MapNode &node)
 //   Kathleen Biagas, Mon Jun  5 17:25:15 PDT 2017
 //   Allow for PyLong.
 //
+//   Cyrus Harrison, Wed Dec 18 16:57:30 PST 2019
+//   Support for Python 2 and Python 3
+//
 // ****************************************************************************
 
 bool
-PyDict_To_MapNode(PyObject *obj, MapNode &mn)
+PyDict_To_MapNode(PyObject *obj, MapNode &mn, std::string& errmsg)
 {
     if (!PyDict_Check(obj))
         return false;
@@ -104,7 +114,11 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
     {
         std::string mkey;
         if (PyString_Check(key))
-            mkey = PyString_AS_STRING(key);
+        {
+            char *key_cstr = PyString_AsString(key);
+            mkey = key_cstr;
+            PyString_AsString_Cleanup(key_cstr);
+        }
         else
         {
             return false;
@@ -188,7 +202,9 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
             else if (PyString_Check(item))
             {
                  stringVector mval;
-                 mval.push_back(PyString_AS_STRING(item));
+                 char *item_cstr = PyString_AsString(item);
+                 mval.push_back(std::string(item_cstr));
+                 PyString_AsString_Cleanup(item_cstr);
                  for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
                  {
                      item = PySequence_GetItem(value, i);
@@ -198,7 +214,9 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                                 << "contain same type." << endl;
                          return false;
                      }
-                     mval.push_back(PyString_AS_STRING(item));
+                     item_cstr = PyString_AsString(item);
+                     mval.push_back(std::string(item_cstr));
+                     PyString_AsString_Cleanup(item_cstr);
                  }
                  mn[mkey] = mval;
             }
@@ -224,7 +242,9 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
         }
         else if (PyString_Check(value))
         {
-            mn[mkey] = (std::string) PyString_AS_STRING(value);
+            char *value_cstr = PyString_AsString(value);
+            mn[mkey] = std::string(value_cstr);
+            PyString_AsString_Cleanup(value_cstr);
         }
         else if (PyDict_Check(value))
         {
@@ -234,9 +254,20 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
         }
         else
         {
-            debug3 << "PyDict_To_MapNode: type "
+            std::stringstream ss;
+
+            ss << "PyDict_To_MapNode: argument named \""
+                   << mkey
+                   << "\" at position " 
+                   << pos 
+                   << " with type "
                    << value->ob_type->tp_name
                    << " not currently implemented." << endl;
+            debug3 << ss.str();
+
+            if (errmsg != PyMapNode_VoidString)
+                errmsg += ss.str();
+
             return false;
         }
     }

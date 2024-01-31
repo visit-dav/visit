@@ -14,6 +14,7 @@
 #include <clocale>
 #include <iomanip>
 #include <visit-config.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: ConfigManager::ConfigManager
@@ -208,6 +209,9 @@ ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
 //   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
 //   Set precision for floats and doubles (to highest value that doesn't
 //   convert '0.009' to '0.00899999999'.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -358,6 +362,18 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
             const stringVector &svec = node->AsStringVector();
             for(size_t i = 0; i < svec.size(); ++i)
                 WriteQuotedStringData(out, svec[i]);
+       }
+       break;
+    case BOOL_VECTOR_NODE:
+       { // new scope
+            const boolVector &bvec = node->AsBoolVector();
+            for(size_t i = 0; i < bvec.size(); ++i)
+            {
+                if (bvec[i])
+                    out << "\"true\" ";
+                else
+                    out << "\"false\" ";
+            }
        }
        break;
     default:
@@ -770,6 +786,9 @@ ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 //
 //   Dave Pugmire, Wed Aug 18 09:54:43 EDT 2010
 //   Support variable names with leading and trailing spaces in sessionfiles.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -1105,6 +1124,17 @@ ConfigManager::ReadFieldData(std::istream& in,
             retval = new DataNode(tagName, sv);
         }
         break;
+    case BOOL_VECTOR_NODE:
+        { // new scope
+            boolVector temp;
+            if(minSize > 0)
+            {
+                for (i = 0; i < minSize; ++i)
+                    temp.push_back(sv[i] == "\"true\"");
+                retval = new DataNode(tagName, temp);
+            }
+        }
+        break;
     default:
         break;
     }
@@ -1131,6 +1161,11 @@ ConfigManager::ReadFieldData(std::istream& in,
 //    Mark C. Miller, Tue Mar 31 18:54:53 PDT 2015
 //    Incorporate changes as per Brad's guidance to force locale to en_US
 //    when reading.
+//
+//    Alister Maguire, Wed Jun 24 15:37:46 PDT 2020
+//    Changed setlocale from en_US to en_US.UTF-8 for Ubuntu compatibility,
+//    and added a check to see if it succeeded or not.
+//
 // ****************************************************************************
 
 bool
@@ -1140,7 +1175,14 @@ ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
     std::string current_locale = setlocale(LC_ALL, 0);
 
     // Force US locale.
-    setlocale(LC_ALL, "en_US");
+    const char * result = setlocale(LC_ALL, "en_US.UTF-8");
+
+    // Did we succeed?
+    if (result == NULL)
+    {
+        debug1 << "setlocale failed! This may result in erroneous reads..."
+            << endl;
+    }
 
     // Read the settings.
     bool te = false;
@@ -1434,6 +1476,8 @@ ConfigManager::WriteMapNode(std::ostream &out, const MapNode &mn, int indentLeve
 // Creation:   November 28, 2018
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -1633,6 +1677,17 @@ ConfigManager::ReadMapNodeFieldData(std::istream& in, MapNode &mn,
         {
             RemoveLeadAndTailQuotes(sv);
             mn[tagName] = sv;
+        }
+        break;
+    case BOOL_VECTOR_NODE:
+        { // new scope
+            boolVector temp;
+            if(minSize > 0)
+            {
+                for (i = 0; i < minSize; ++i)
+                    temp.push_back(sv[i] == "true");
+                mn[tagName] = temp;
+            }
         }
         break;
     default:

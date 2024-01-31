@@ -13,7 +13,8 @@
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QTextStream>
@@ -35,7 +36,7 @@
 // ****************************************************************************
 // Method: QvisCommandWindow::QvisCommandWindow
 //
-// Purpose: 
+// Purpose:
 //   QvisCommandWindow constructor.
 //
 // Programmer: Brad Whitlock
@@ -57,7 +58,7 @@
 // ****************************************************************************
 
 QvisCommandWindow::QvisCommandWindow(const QString &captionString,
-    const QString &shortName, QvisNotepadArea *n) : 
+    const QString &shortName, QvisNotepadArea *n) :
     QvisPostableWindow(captionString, shortName, n)
 {
     executeButtonsGroup = 0;
@@ -83,7 +84,7 @@ QvisCommandWindow::QvisCommandWindow(const QString &captionString,
 // ****************************************************************************
 // Method: QvisCommandWindow::~QvisCommandWindow
 //
-// Purpose: 
+// Purpose:
 //   QvisCommandWindow destructor.
 //
 // Programmer: Brad Whitlock
@@ -94,7 +95,7 @@ QvisCommandWindow::QvisCommandWindow(const QString &captionString,
 //   Delete new widgets.
 //
 //   Cyrus Harrison, Wed Aug 27 08:31:25 PDT 2008
-//   Ensured all of button groups have parents, so we don't need to 
+//   Ensured all of button groups have parents, so we don't need to
 //   explicitly delete them.
 //
 //   Cyrus Harrison, Mon Feb  8 15:40:54 PST 2010
@@ -114,7 +115,7 @@ QvisCommandWindow::~QvisCommandWindow()
 // ****************************************************************************
 // Method: QvisCommandWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the window contents.
 //
 // Programmer: Brad Whitlock
@@ -142,6 +143,12 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Cyrus Harrison, Mon Feb  8 15:40:54 PST 2010
 //   Added python syntax highlighter.
 //
+//   Kathleen Biagas, Thu Jan 21 2021
+//   Swap use of QString::asprintf for simpler QString.setNum.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -152,7 +159,7 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(macroBox);
 
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
-    innerMacroLayout->setMargin(10);
+    innerMacroLayout->setContentsMargins(10,10,10,10);
     innerMacroLayout->addSpacing(15);
     QHBoxLayout *macroLayout = new QHBoxLayout();
     innerMacroLayout->addLayout(macroLayout);
@@ -197,7 +204,7 @@ QvisCommandWindow::CreateWindowContents()
     mLayout->addWidget(macroStorageComboBox, 0, 1);
     mLayout->addWidget(new QLabel(tr("Store commands in"),macroBox), 0, 0);
 
-    macroAppendCheckBox = new QCheckBox(tr("Append commands to existing text"), 
+    macroAppendCheckBox = new QCheckBox(tr("Append commands to existing text"),
                                         macroBox);
     connect(macroAppendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(macroAppendClicked(bool)));
@@ -208,16 +215,31 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(tabWidget, 1000);
 
     executeButtonsGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(executeButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(executeClicked(int)));
+#else
+    connect(executeButtonsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(executeClicked(int)));
+#endif
 
     clearButtonsGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(clearButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(clearClicked(int)));
+#else
+    connect(clearButtonsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(clearClicked(int)));
+#endif
 
     addMacroButtonsGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(addMacroButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(macroCreate(int)));
+#else
+    connect(addMacroButtonsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(macroCreate(int)));
+#endif
 
     // Create the tabs that let us edit command scripts.
     editors       = new QTextEdit*[MAXTABS];
@@ -231,7 +253,7 @@ QvisCommandWindow::CreateWindowContents()
     {
         QWidget *widget = new QWidget(central);
         QVBoxLayout *vlayout = new QVBoxLayout(widget);
-        vlayout->setMargin(10);
+        vlayout->setContentsMargins(10,10,10,10);
         vlayout->setSpacing(5);
         editors[i]  = new QTextEdit(widget);
         editors[i]->setReadOnly(false);
@@ -268,14 +290,14 @@ QvisCommandWindow::CreateWindowContents()
         addMacroButtonsGroup->addButton(addMacroButtons[i], i);
 
         // Add the top vbox as a new tab.
-        n.sprintf("%d", i+1);
+        n.setNum(i+1);
         tabWidget->addTab(widget, n);
     }
 
     // Create the Macros tab.
     macroTab = new QWidget(central);
     QVBoxLayout *macro_tab_vlayout = new QVBoxLayout(macroTab);
-    macro_tab_vlayout->setMargin(10);
+    macro_tab_vlayout->setContentsMargins(10,10,10,10);
     macro_tab_vlayout->setSpacing(5);
     macroEdit = new QTextEdit(macroTab);
     macroEdit->setWordWrapMode(QTextOption::NoWrap);
@@ -307,7 +329,7 @@ QvisCommandWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisCommandWindow::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we're saving settings. We save the scripts
 //   if the window has been created.
 //
@@ -347,7 +369,7 @@ QvisCommandWindow::CreateNode(DataNode *node)
 // ****************************************************************************
 // Method: QvisCommandWindow::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Reads the macro storage mode and append mode from the log.
 //
 // Programmer: Brad Whitlock
@@ -390,7 +412,7 @@ QvisCommandWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // ****************************************************************************
 // Method: QvisCommandWindow::UpdateMacroCheckBoxes
 //
-// Purpose: 
+// Purpose:
 //   Updates the macro check boxes.
 //
 // Note:       If anymore code is added to this method, you must check to
@@ -427,7 +449,7 @@ QvisCommandWindow::UpdateMacroCheckBoxes()
 // ****************************************************************************
 // Method: QvisCommandWindow::fileName
 //
-// Purpose: 
+// Purpose:
 //   Creates a filename for a script.
 //
 // Arguments:
@@ -437,21 +459,23 @@ QvisCommandWindow::UpdateMacroCheckBoxes()
 // Creation:   Wed Jun 22 16:38:05 PST 2005
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 21 2021
+//   Swap use of QString::asprintf for QString::arg as suggested in Qt docs.
+//
 // ****************************************************************************
 
 QString
 QvisCommandWindow::fileName(int index) const
 {
-    QString n;
-    n.sprintf("%sscript%d.py", GetUserVisItDirectory().c_str(), index);
+    QString n =
+      QString("%1script%2.py").arg(GetUserVisItDirectory().c_str()).arg(index);
     return n;
 }
 
 // ****************************************************************************
 // Method: QvisCommandWindow::RCFileName
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the "visitrc" file.
 //
 // Returns:    The name of the visitrc file.
@@ -460,7 +484,7 @@ QvisCommandWindow::fileName(int index) const
 // Creation:   Fri Jun 15 14:08:47 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -472,7 +496,7 @@ QvisCommandWindow::RCFileName() const
 // ****************************************************************************
 // Method: QvisCommandWindow::LoadScripts
 //
-// Purpose: 
+// Purpose:
 //   Loads the scripts into the window.
 //
 // Programmer: Brad Whitlock
@@ -487,6 +511,9 @@ QvisCommandWindow::RCFileName() const
 //
 //   Brad Whitlock, Wed Aug 18 10:57:20 PDT 2010
 //   Set maxUserMacro.
+//
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
 // ****************************************************************************
 
@@ -517,7 +544,7 @@ QvisCommandWindow::LoadScripts()
     QFile file(RCFileName());
     if(file.open(QIODevice::ReadOnly))
     {
-        QRegExp rx("^def user_macro_([0-9]{1,})");
+        QRegularExpression rx("^def user_macro_([0-9]{1,})");
         QTextStream stream(&file);
         QString lines;
         while(!stream.atEnd())
@@ -527,9 +554,10 @@ QvisCommandWindow::LoadScripts()
             lines += "\n";
 
             // See if the string contains the regex. If so, get the number.
-            if(s.contains(rx))
+            QRegularExpressionMatch regexMatch;
+            if(s.contains(rx, &regexMatch))
             {
-                QStringList list(rx.capturedTexts());
+                QStringList list(regexMatch.capturedTexts());
                 if(list.size() == 2)
                 {
                     bool ok = false;
@@ -548,7 +576,7 @@ QvisCommandWindow::LoadScripts()
 // ****************************************************************************
 // Method: QvisCommandWindow::SaveScripts
 //
-// Purpose: 
+// Purpose:
 //   Saves the window's scripts.
 //
 // Programmer: Brad Whitlock
@@ -584,7 +612,7 @@ QvisCommandWindow::SaveScripts()
 // ****************************************************************************
 // Method: CreateMacroFromText
 //
-// Purpose: 
+// Purpose:
 //   Converts the supplied text to a macro, prompting the user for names, and
 //   adds the new macro text to the macro tab.
 //
@@ -629,7 +657,7 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
     }
     while(macroName.isEmpty());
 
-    // Now, make a func name from the macro name, replacing any non 
+    // Now, make a func name from the macro name, replacing any non
     // alpha/digit/space with '_'. The user can always edit the function name
     // before it gets applied.
     std::string fname("user_macro_");
@@ -668,7 +696,7 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
 // ****************************************************************************
 // Method: QvisCommandWindow::executeClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets called when we click on one of the
 //   execute buttons.
 //
@@ -693,7 +721,7 @@ QvisCommandWindow::executeClicked(int index)
 // ****************************************************************************
 // Method: QvisCommandWindow::clearClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that clears the text for a line edit when
 //   its clear button gets clicked.
 //
@@ -716,7 +744,7 @@ QvisCommandWindow::clearClicked(int index)
 // ****************************************************************************
 // Method: QvisCommandWindow::textChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that makes sure that the execute buttons are
 //   only enabled when the text edit is not empty.
 //
@@ -753,7 +781,7 @@ TEXT_CHANGED(7)
 // ****************************************************************************
 // Method: void QvisCommandWindow::macroRecordClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we click on the button
 //   to start recording a macro.
 //
@@ -766,7 +794,7 @@ TEXT_CHANGED(7)
 // Creation:   Fri Jan 6 15:14:45 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -782,14 +810,14 @@ QvisCommandWindow::macroRecordClicked()
 // ****************************************************************************
 // Method: QvisCommandWindow::macroPauseClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that pauses macro recording.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan 6 15:15:42 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -801,14 +829,14 @@ QvisCommandWindow::macroPauseClicked()
 // ****************************************************************************
 // Method: QvisCommandWindow::macroEndClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that ends macro recording.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan 6 15:17:49 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -835,7 +863,7 @@ QvisCommandWindow::macroStorageActivated(int val)
 // ****************************************************************************
 // Method: QvisCommandWindow::acceptRecordedMacro
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that pastes a recorded macro into the active
 //   tab's line edit.
 //
@@ -910,14 +938,14 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
 // ****************************************************************************
 // Method: QvisCommandWindow::macroClearClicked
 //
-// Purpose: 
+// Purpose:
 //   Clear the macros tab.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jun 15 14:14:53 PST 2007
 //
 // Modifications:
-//   
+//
 //    Hank Childs, Wed May  7 11:44:01 PDT 2008
 //    Add a warning so users know that simply clicking clear will not suffice
 //    in clearing out their macros.
@@ -936,7 +964,7 @@ QvisCommandWindow::macroClearClicked()
 // ****************************************************************************
 // Method: QvisCommandWindow::macroUpdateClicked
 //
-// Purpose: 
+// Purpose:
 //   Update the macros by executing the visitrc again.
 //
 // Programmer: Brad Whitlock
@@ -945,13 +973,17 @@ QvisCommandWindow::macroClearClicked()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-// 
+//
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
 //   Kathleen Bonnell, Thu Aug 5 14:12:10 PDT 2010
 //   On windows, escape the rcFileName's backslashes before adding it as an
 //   arg for the command.
+//
+//   Kathleen Biagas, Tue Apr 20 2021
+//   On windows, convert the rcFileName's backslashes to forward slashes
+//   before adding it as an arg for the command. (Python 3 change).
 //
 // ****************************************************************************
 
@@ -976,15 +1008,11 @@ QvisCommandWindow::macroUpdateClicked()
            // the changes that have been put into place.
            QString command("ClearMacros()\nSource(\"%1\")\n");
 #ifdef WIN32
-           // On windows, the string passed to the python commands needs to 
-           // have it's back-slash's escaped.
-           QString tmp(rcFileName);
-           tmp.replace("\\", "\\\\");
-           command = command.arg(tmp);
-           
-#else
-           command = command.arg(rcFileName);
+           // On windows, the path-string passed to the python commands needs
+           // to have it's back-slash's converted.
+           rcFileName.replace("\\", "/");
 #endif
+           command = command.arg(rcFileName);
            emit runCommand(command);
         }
         else
@@ -1006,15 +1034,15 @@ QvisCommandWindow::macroUpdateClicked()
 // ****************************************************************************
 // Method: QvisCommandWindow::macroCreate
 //
-// Purpose: 
+// Purpose:
 //   Creates a macro from the code defined in the specified tab.
 //
 // Arguments:
 //   tab : The tab whose code will become a macro.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jun 15 14:19:28 PST 2007

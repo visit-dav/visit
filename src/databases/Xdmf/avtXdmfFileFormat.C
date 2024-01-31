@@ -6,6 +6,8 @@
 //                            avtXdmfFileFormat.C                            //
 // ************************************************************************* //
 
+#include <visit-config.h> // for LIB_VERSION_LE
+
 #include <avtXdmfFileFormat.h>
 
 #include <vtkCharArray.h>
@@ -32,7 +34,6 @@
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidDBTypeException.h>
@@ -62,6 +63,10 @@ using std::string;
 //
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
+//
+//  Modifications:
+//    Kathleen Biagas, Thu May 6, 2021
+//    Support time stored as TIME_LIST for TEMPORAL_COLLECTION.
 //
 // ****************************************************************************
 
@@ -97,22 +102,42 @@ avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
     grid.SetElement(gridElement);
     grid.UpdateInformation();
 
-    if (grid.GetGridType() == XDMF_GRID_COLLECTION) {
-        if (grid.GetCollectionType() == XDMF_GRID_COLLECTION_TEMPORAL) {
+    if (grid.GetGridType() == XDMF_GRID_COLLECTION)
+    {
+        if (grid.GetCollectionType() == XDMF_GRID_COLLECTION_TEMPORAL)
+        {
+            bool getTimeFromChild = true;
+            if(grid.GetTime())
+            {
+                XdmfInt32 tt = grid.GetTime()->GetTimeType();
+                if (tt == XDMF_TIME_LIST)
+                {
+                    XdmfArray *tA = grid.GetTime()->GetArray();
+                    if(tA)
+                    {
+                        getTimeFromChild = false;
+                        for(XdmfInt64 i = 0; i < tA->GetNumberOfElements(); ++i)
+                            timesteps.push_back(tA->GetValueAsFloat64(i));
+                    }
+                }
+            }
             firstGrid = "/Xdmf/Domain/Grid/Grid";
             XdmfGrid childGrid;
-            for (int i = 0; i < grid.GetNumberOfChildren(); ++i) {
+            for (int i = 0; i < grid.GetNumberOfChildren(); ++i)
+            {
                 std::stringstream gridLocation;
                 gridLocation << firstGrid << "[" << i + 1 << "]";
                 childGrid.SetDOM(dom);
                 childGrid.SetElement(dom->FindElementByPath(gridLocation.str().c_str()));
                 childGrid.UpdateInformation();
-                timesteps.push_back(childGrid.GetTime()->GetValue());
+                if (getTimeFromChild)
+                    timesteps.push_back(childGrid.GetTime()->GetValue());
             }
             numGrids = 1;
         }
         else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL ||
-                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET) {
+                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET)
+        {
             numGrids = 1;
             timesteps.push_back(grid.GetTime()->GetValue());
         }
@@ -1930,13 +1955,18 @@ vtkStructuredGrid* avtXdmfFileFormat::ReadStructuredGrid(XdmfGrid* grid)
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Kathleen Biagas,
+//  VTK-9 support, api changes to vtkCellArray, offsets and connectivity
+//  are now stored in separate arrays.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
 {
     vtkUnstructuredGrid * data = vtkUnstructuredGrid::New();
 
-    if (grid->GetTopology()->GetTopologyType() == XDMF_MIXED) {
+    if (grid->GetTopology()->GetTopologyType() == XDMF_MIXED)
+    {
         // We have cells with mixed types.
         XdmfInt64 conn_length = grid->GetTopology()->GetConnectivity()->GetNumberOfElements();
         XdmfInt64* xmfConnections = new XdmfInt64[conn_length];
@@ -1948,19 +1978,30 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         /* Create Cell Array */
         vtkCellArray* cells = vtkCellArray::New();
 
+#if LIB_VERSION_LE(VTK,8,1,0)
         /* Get the pointer. Make it Big enough ... too big for now */
         vtkIdType* cells_ptr = cells->WritePointer(numCells, conn_length);
+#else
+        vtkIdType offset = 0;
+        vtkNew<vtkIdTypeArray> offsets;
+        offsets->SetNumberOfTuples(numCells+1);
 
+        vtkIdType connIndex = 0;
+        vtkNew<vtkIdTypeArray> conn;
+        conn->SetNumberOfTuples(static_cast<vtkIdType>(conn_length)); 
+#endif
         /* xmfConnections : N p1 p2 ... pN */
         /* i.e. Triangles : 3 0 1 2    3 3 4 5   3 6 7 8 */
         vtkIdType index = 0;
         int sub = 0;
         XdmfTopology top;
-        for (vtkIdType cc = 0; cc < numCells; cc++) {
+        for (vtkIdType cc = 0; cc < numCells; cc++)
+        {
             top.SetTopologyType(xmfConnections[index]);
             int vtk_cell_typeI = this->GetVTKCellType(xmfConnections[index++]);
             XdmfInt32 numPointsPerCell = top.GetNodesPerElement();
-            if (numPointsPerCell == -1) {
+            if (numPointsPerCell == -1)
+            {
                 // encountered an unknown cell.
                 cells->Delete();
                 delete[] cell_types;
@@ -1968,7 +2009,8 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
                 return NULL;
             }
 
-            if (numPointsPerCell == 1) {
+            if (numPointsPerCell == 1)
+            {
                 // cell type does not have a fixed number of points in which case the
                 // next entry in xmfConnections tells us the number of points.
                 numPointsPerCell = xmfConnections[index++];
@@ -1976,45 +2018,66 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
             }
 
             cell_types[cc] = vtk_cell_typeI;
+#if LIB_VERSION_LE(VTK,8,1,0)
             *cells_ptr++ = numPointsPerCell;
-            for (vtkIdType i = 0; i < numPointsPerCell; i++) {
+            for (vtkIdType i = 0; i < numPointsPerCell; i++)
+            {
                 *cells_ptr++ = xmfConnections[index++];
             }
+#else
+            offsets->SetValue(cc, offset);
+            offset += numPointsPerCell;
+            for (vtkIdType i = 0; i < numPointsPerCell; i++)
+            {
+                conn->SetValue(connIndex++, xmfConnections[index++]);
+            }
+#endif
         }
+#if LIB_VERSION_LE(VTK,8,1,0)
         // Resize the Array to the Proper Size
         cells->GetData()->Resize(index - sub);
+#else
+        offsets->SetValue(numCells,offset); // final offset value
+        conn->Resize(connIndex);
+        cells->SetData(offsets,conn);
+#endif
         data->SetCells(cell_types, cells);
         cells->Delete();
         delete[] cell_types;
         delete[] xmfConnections;
     }
-    else {
+    else
+    {
         XdmfTopology * topology = grid->GetTopology();
 
         XdmfInt32 topologyType = topology->GetTopologyType();
         int vtkCellType = this->GetVTKCellType(topologyType);
 
         XdmfGrid * newGrid = NULL;
-        if (vtkCellType == VTK_EMPTY_CELL) {
-          if(topologyType == XDMF_HEX_64) {
-            vtkCellType = VTK_HEXAHEDRON;
-            XdmfHex64Generator generator;
-            XdmfGrid * newGrid = generator.Split(grid,
-                                   NULL,
-                                   false);
-            topology = newGrid->GetTopology();
-          }
-          else if(topologyType == XDMF_HEX_125) {
-            vtkCellType = VTK_HEXAHEDRON;
-            XdmfHex125Generator generator;
-            newGrid = generator.Split(grid,
-                                   NULL,
-                                   false);
-            topology = newGrid->GetTopology();
-          }
-          else {
-            EXCEPTION0( InvalidSourceException);
-          }
+        if (vtkCellType == VTK_EMPTY_CELL)
+        {
+            if(topologyType == XDMF_HEX_64)
+            {
+                vtkCellType = VTK_HEXAHEDRON;
+                XdmfHex64Generator generator;
+                XdmfGrid * newGrid = generator.Split(grid,
+                                       NULL,
+                                       false);
+                topology = newGrid->GetTopology();
+            }
+            else if(topologyType == XDMF_HEX_125)
+            {
+                vtkCellType = VTK_HEXAHEDRON;
+                XdmfHex125Generator generator;
+                newGrid = generator.Split(grid,
+                                     NULL,
+                                     false);
+                topology = newGrid->GetTopology();
+            }
+            else
+            {
+                EXCEPTION0( InvalidSourceException);
+            }
         }
 
         XdmfInt32 nodesPerElement = topology->GetNodesPerElement();
@@ -2024,18 +2087,41 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         /* Create Cell Array */
         vtkCellArray * cells = vtkCellArray::New();
 
+        XdmfInt32 arrayOffset = 0;
+#if LIB_VERSION_LE(VTK,8,1,0)
         /* Get the pointer */
         vtkIdType * cells_ptr = cells->WritePointer(numCells, numCells * (1 + nodesPerElement));
 
-        XdmfInt32 arrayOffset = 0;
-        for(vtkIdType i=0; i<numCells; ++i) {
-          *cells_ptr++ = nodesPerElement;
-          topology->GetConnectivity()->GetValues(arrayOffset,
-                                                 cells_ptr,
-                                                 nodesPerElement);
-          cells_ptr += nodesPerElement;
-          arrayOffset += nodesPerElement;
+        for(vtkIdType i=0; i<numCells; ++i)
+        {
+            *cells_ptr++ = nodesPerElement;
+            topology->GetConnectivity()->GetValues(arrayOffset,
+                                                   cells_ptr,
+                                                   nodesPerElement);
+            cells_ptr += nodesPerElement;
+            arrayOffset += nodesPerElement;
         }
+#else
+        vtkNew<vtkIdTypeArray> conn;
+        conn->SetNumberOfTuples(nodesPerElement*numCells);
+        vtkIdType *conn_ptr = conn->WritePointer(0,nodesPerElement*numCells);
+
+        vtkNew<vtkIdTypeArray> offsets;
+        offsets->SetNumberOfTuples(numCells+1);
+        vtkIdType offset = 0; 
+
+        for(vtkIdType i=0; i<numCells; ++i)
+        {
+            offsets->SetValue(i, offset);
+            offset += nodesPerElement;
+            topology->GetConnectivity()->GetValues(arrayOffset, conn_ptr, nodesPerElement);
+            conn_ptr += nodesPerElement;
+            arrayOffset += nodesPerElement;
+        }
+        offsets->SetValue(numCells,offset); // final offset value
+
+        cells->SetData(offsets,conn); 
+#endif
         data->SetCells(vtkCellType, cells);
         cells->Delete();
         delete newGrid;

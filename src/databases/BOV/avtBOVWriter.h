@@ -45,7 +45,7 @@ class
 avtBOVWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtBOVWriter(DBOptionsAttributes *);
+                   avtBOVWriter(const DBOptionsAttributes *);
     virtual       ~avtBOVWriter();
 
   protected:

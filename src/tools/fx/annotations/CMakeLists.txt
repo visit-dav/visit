@@ -11,6 +11,9 @@
 #   Remove use of VTK_DEFINTIONS in compiler. It initializes some vtk
 #   modules, which is now being done in avt/Plotter/vtk/InitVTKRendering.C.
 #
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -25,16 +28,22 @@ ADD_EXECUTABLE(text2polys text2polys.C arial_font.C)
 ADD_EXECUTABLE(time_annotation time_annotation.C arial_font.C)
 
 # Specify the libraries to link against
-TARGET_LINK_LIBRARIES(text2polys vtkIOLegacy)
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    TARGET_LINK_LIBRARIES(text2polys vtkIOLegacy)
 
-TARGET_LINK_LIBRARIES(time_annotation
-    vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle
-    vtksys vtkIOImage)
+    TARGET_LINK_LIBRARIES(time_annotation
+        vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle
+        vtksys vtkIOImage)
+else()
+    TARGET_LINK_LIBRARIES(text2polys VTK::IOLegacy)
+
+    TARGET_LINK_LIBRARIES(time_annotation
+        VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle
+        VTK::vtksys VTK::IOImage)
+endif()
 
 if(HAVE_OSMESA)
     target_link_libraries(time_annotation ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(time_annotation ${EGL_LIBRARIES})
 endif()
 
 VISIT_INSTALL_TARGETS(text2polys time_annotation)

@@ -5,6 +5,7 @@
 #ifndef PY_VIEW3DATTRIBUTES_H
 #define PY_VIEW3DATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <View3DAttributes.h>
 #include <visitpy_exports.h>
 

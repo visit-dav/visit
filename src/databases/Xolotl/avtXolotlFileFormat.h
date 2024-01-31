@@ -31,7 +31,7 @@ class DBOptionsAttributes;
 class avtXolotlFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtXolotlFileFormat(const char *, DBOptionsAttributes *);
+                       avtXolotlFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtXolotlFileFormat();
 
     void               Initialize();
@@ -58,22 +58,27 @@ class avtXolotlFileFormat : public avtMTSDFileFormat
     int                    nx, ny, nz;
     int                    hx, hy, hz;
     int                    varMaxes[5];
+    int                    normalSize = 0, superSize = 0, totalSize = 0, phaseSpaceMaxDims = 0;
 
     std::vector<int>       isurface;
     std::vector<int>       cycleNumbers;
     std::vector<double>    times;
-    std::vector<double>    network;
     std::vector<double>    oneDGrid;
+    std::vector<std::string>    variablesInPhaseSpace;
     std::vector< std::vector<double> >    concentrations;
     hsize_t                networkSize;
     hsize_t                networkParams;
     hid_t                  concentrationsGroup;
+    hid_t                  networkGroup;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     void                   PopulateHeaderGroupMetaData();
+    void                   PopulateNetworkGroupMetaData();
     void                   PopulateConcentrationGroupMetaData();
     void                   GetPositionsOfVariableFromCompositionTable(int *variableIndexes, const char *vn);
+    int                    First(int arr[], int n, int x);
     static int             GroupInfo(hid_t loc_id, const char *name, const H5L_info_t *linfo, void *opdata);
+    template < typename T> std::pair<bool, int > findInVector(const std::vector<T>  & vecOfElements, const T  & element);
 };
 
 

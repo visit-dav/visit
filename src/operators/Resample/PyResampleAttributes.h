@@ -5,6 +5,7 @@
 #ifndef PY_RESAMPLEATTRIBUTES_H
 #define PY_RESAMPLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ResampleAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyResampleAttributes_Wrap(const ResampleAttributes *attr);
 void           PyResampleAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyResampleAttributes_SetDefaults(const ResampleAttributes *atts);
 std::string    PyResampleAttributes_GetLogString();
-std::string    PyResampleAttributes_ToString(const ResampleAttributes *, const char *);
+std::string    PyResampleAttributes_ToString(const ResampleAttributes *, const char *, const bool=false);
 PyObject *     PyResampleAttributes_getattr(PyObject *self, char *name);
 int            PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyResampleAttributes_methods[RESAMPLEATTRIBUTES_NMETH];

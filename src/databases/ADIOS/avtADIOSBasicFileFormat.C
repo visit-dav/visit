@@ -22,7 +22,6 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <avtDatabaseMetaData.h>
-#include <DBOptionsAttributes.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 #include <DebugStream.h>

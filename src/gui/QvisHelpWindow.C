@@ -43,7 +43,7 @@
 // ****************************************************************************
 // Method: QvisHelpWindow::QvisHelpWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisHelpWindow class.
 //
 // Arguments:
@@ -76,8 +76,8 @@ QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
     // Set the help path from an environment variable.
     helpPath = QString(GetVisItResourcesDirectory(VISIT_RESOURCES_HELP).c_str());
 
-    // Create a path to locate the manual from the helpPath. 
-    manualPath = QString("manual") + QString(VISIT_SLASH_STRING) + 
+    // Create a path to locate the manual from the helpPath.
+    manualPath = QString("manual") + QString(VISIT_SLASH_STRING) +
         QString("index.html");
 
     firstShow = true;
@@ -87,14 +87,14 @@ QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
 // ****************************************************************************
 // Method: QvisHelpWindow::~QvisHelpWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisHelpWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 12 12:57:38 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisHelpWindow::~QvisHelpWindow()
@@ -104,21 +104,21 @@ QvisHelpWindow::~QvisHelpWindow()
 // ****************************************************************************
 // Method: QvisHelpWindow::SetLocale
 //
-// Purpose: 
+// Purpose:
 //   Set the locale to be used when searching for help files.
 //
 // Arguments:
 //   s : The locale to use.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Apr 21 15:25:26 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -130,7 +130,7 @@ QvisHelpWindow::SetLocale(const QString &s)
 // ****************************************************************************
 // Method: QvisHelpWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the help window.
 //
 // Programmer: Brad Whitlock
@@ -196,7 +196,7 @@ QvisHelpWindow::CreateWindowContents()
     helpIndexTab = new QWidget(helpTabs);
     QVBoxLayout *helpIndexLayout = new QVBoxLayout(helpIndexTab);
     helpIndexLayout->setSpacing(5);
-    helpIndexLayout->setMargin(5);
+    helpIndexLayout->setContentsMargins(5,5,5,5);
     helpTabs->addTab(helpIndexTab, tr("&Index"));
     a = new QAction(this);
     a->setShortcut(QKeySequence(Qt::Key_Alt, Qt::Key_I));
@@ -216,7 +216,7 @@ QvisHelpWindow::CreateWindowContents()
     helpBookmarksTab = new QWidget(helpTabs);
     QVBoxLayout *helpBookmarksLayout = new QVBoxLayout(helpBookmarksTab);
     helpBookmarksLayout->setSpacing(10);
-    helpBookmarksLayout->setMargin(5);
+    helpBookmarksLayout->setContentsMargins(5,5,5,5);
     helpTabs->addTab(helpBookmarksTab, tr("&Bookmarks"));
     a = new QAction(this);
     a->setShortcut(QKeySequence(Qt::Key_Alt, Qt::Key_B));
@@ -225,7 +225,7 @@ QvisHelpWindow::CreateWindowContents()
     QWidget *bookmarkHBox = new QWidget(helpBookmarksTab);
     QHBoxLayout *bookmarkHBoxLayout = new QHBoxLayout(bookmarkHBox);
     bookmarkHBoxLayout->setSpacing(20);
-    bookmarkHBoxLayout->setMargin(0);
+    bookmarkHBoxLayout->setContentsMargins(0,0,0,0);
     helpBookmarksLayout->addWidget(bookmarkHBox);
     addBookmarkButton = new QPushButton(tr("Add"), bookmarkHBox);
     bookmarkHBoxLayout->addWidget(addBookmarkButton);
@@ -251,19 +251,19 @@ QvisHelpWindow::CreateWindowContents()
     connect(helpBrowser, SIGNAL(anchorClicked(const QUrl &)),
             this, SLOT(anchorClicked(const QUrl &)));
 
-    QAction *backAction = tb->addAction(QIcon(backIcon), tr("Back"), 
+    QAction *backAction = tb->addAction(QIcon(backIcon), tr("Back"),
         helpBrowser, SLOT(backward()));
     backAction->setShortcut(QKeySequence(Qt::Key_Control, Qt::Key_Left));
     connect(helpBrowser, SIGNAL(backwardAvailable(bool)),
             backAction, SLOT(setEnabled(bool)));
 
-    QAction *forwardAction = tb->addAction(QIcon(forwardIcon), tr("Forward"), 
+    QAction *forwardAction = tb->addAction(QIcon(forwardIcon), tr("Forward"),
         helpBrowser, SLOT(forward()));
     forwardAction->setShortcut(QKeySequence(Qt::Key_Control, Qt::Key_Right));
     connect(helpBrowser, SIGNAL(forwardAvailable(bool)),
             forwardAction, SLOT(setEnabled(bool)));
 
-    QAction *homeAction = tb->addAction(QIcon(homeIcon), tr("Home"), 
+    QAction *homeAction = tb->addAction(QIcon(homeIcon), tr("Home"),
         helpBrowser, SLOT(home()));
     homeAction->setShortcut(QKeySequence(Qt::Key_Control, Qt::Key_Home));
 
@@ -298,18 +298,18 @@ QvisHelpWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisHelpWindow::ReleaseNotesFile
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the release notes file.
 //
 // Returns:    The name of the release notes file.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Apr 21 15:05:10 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -325,7 +325,7 @@ QvisHelpWindow::ReleaseNotesFile() const
 // ****************************************************************************
 // Method: QvisHelpWindow::LoadHelp
 //
-// Purpose: 
+// Purpose:
 //   Loads the help index file and populates the help widgets with information
 //   from the index file.
 //
@@ -363,7 +363,7 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Brad Whitlock, Thu Jun 19 16:39:30 PDT 2008
 //   Qt 4.
 //
-//   Kathleen Bonnell, Sat Aug 28 13:17:45 MST 2010 
+//   Kathleen Bonnell, Sat Aug 28 13:17:45 MST 2010
 //   Added ultrawrapper document.
 //
 //   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
@@ -440,7 +440,7 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
 // ****************************************************************************
 // Method: QvisHelpWindow::BuildContents
 //
-// Purpose: 
+// Purpose:
 //   Scans through the contents of the XML tree and populates the contents
 //   tab and the index.
 //
@@ -474,7 +474,7 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
                 thisItem = new QTreeWidgetItem(helpContents);
             else
                 thisItem = new QTreeWidgetItem(parentItem);
-        
+
             thisItem->setText(0, node.toElement().attribute("topic"));
             thisItem->setData(0, Qt::UserRole, node.toElement().attribute("doc"));
 
@@ -498,7 +498,7 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
 // ****************************************************************************
 // Method: QvisHelpWindow::BuildIndex
 //
-// Purpose: 
+// Purpose:
 //   Populates the index list box.
 //
 // Programmer: Brad Whitlock
@@ -545,7 +545,7 @@ QvisHelpWindow::BuildIndex()
 // ****************************************************************************
 // Method: QvisHelpWindow::AddToIndex
 //
-// Purpose: 
+// Purpose:
 //   Adds a topic to the index.
 //
 // Arguments:
@@ -565,7 +565,7 @@ void
 QvisHelpWindow::AddToIndex(const QString &topic, const QString &doc)
 {
     // filter out the items we don't want in the index.
-    if(topic == "Overview" || doc == QString::null)
+    if(topic == "Overview" || doc.isEmpty())
         return;
 
     const char *filters[] = {"Setting the ", "Setting ", "Changing the ",
@@ -613,14 +613,14 @@ QvisHelpWindow::AddToIndex(const QString &topic, const QString &doc)
 // ****************************************************************************
 // Method: QvisHelpWindow::BuildBookmarks
 //
-// Purpose: 
+// Purpose:
 //   Adds all of the book marks to the bookmark widget.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 12 13:24:22 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -644,7 +644,7 @@ QvisHelpWindow::BuildBookmarks()
 // ****************************************************************************
 // Method: QvisHelpWindow::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Writes the window's extra information to the config file.
 //
 // Arguments:
@@ -656,6 +656,9 @@ QvisHelpWindow::BuildBookmarks()
 // Modifications:
 //   Brad Whitlock, Thu Jun 19 15:20:40 PDT 2008
 //   Qt 4.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -678,8 +681,7 @@ QvisHelpWindow::CreateNode(DataNode *parentNode)
         for(it = bookmarks.begin(); it != bookmarks.end(); ++it, ++i)
         {
             // Create a node for the bookmark.
-            QString bmName;
-            bmName.sprintf("Bookmark%d", i);
+            QString bmName = QString("Bookmark%1").arg(i);
             DataNode *bmNode = new DataNode(bmName.toStdString());
 
             // Add the topic and the doc to the bookmark node.
@@ -694,7 +696,7 @@ QvisHelpWindow::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: QvisHelpWindow::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Reads window attributes from the DataNode representation of the config
 //   file.
 //
@@ -707,7 +709,10 @@ QvisHelpWindow::CreateNode(DataNode *parentNode)
 // Modifications:
 //   Brad Whitlock, Thu Jun 19 15:20:46 PDT 2008
 //   Qt 4.
-//  
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -731,8 +736,7 @@ QvisHelpWindow::SetFromNode(DataNode *parentNode, const int *borders)
     bool bmFound = false;
     do
     {
-        QString bmName;
-        bmName.sprintf("Bookmark%d", i);
+        QString bmName = QString("Bookmark%1").arg(i);
         DataNode *bmNode = winNode->GetNode(bmName.toStdString());
         bmFound = (bmNode != 0);
         if(bmFound)
@@ -758,7 +762,7 @@ QvisHelpWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // ****************************************************************************
 // Method: QvisHelpWindow::TopicFromDoc
 //
-// Purpose: 
+// Purpose:
 //   Returns the topic name given the document name.
 //
 // Arguments:
@@ -796,7 +800,7 @@ QvisHelpWindow::TopicFromDoc(const QString &doc)
 // ****************************************************************************
 // Method: QvisHelpWindow::TopicFromDocHelper
 //
-// Purpose: 
+// Purpose:
 //   This is a helper function for TopicFromDoc that recursively searches
 //   the contents for the topic associated with the doc.
 //
@@ -842,7 +846,7 @@ QvisHelpWindow::TopicFromDocHelper(QString &str, const QString &doc,
 // ****************************************************************************
 // Method: QvisHelpWindow::completeFileName
 //
-// Purpose: 
+// Purpose:
 //   Prepends the help directory to the filename and returns the string.
 //
 // Arguments:
@@ -862,15 +866,15 @@ QvisHelpWindow::TopicFromDocHelper(QString &str, const QString &doc,
 QString
 QvisHelpWindow::CompleteFileName(const QString &page) const
 {
-    QString file(helpPath + QString(VISIT_SLASH_STRING) + 
-                 locale + QString(VISIT_SLASH_STRING) + 
+    QString file(helpPath + QString(VISIT_SLASH_STRING) +
+                 locale + QString(VISIT_SLASH_STRING) +
                  page);
     if(!QFile(file).exists())
     {
         // The page did not exist for the desired locale, revert to the
         // en_US page.
-        file = QString(helpPath + QString(VISIT_SLASH_STRING) + 
-                       QString("en_US") + QString(VISIT_SLASH_STRING) + 
+        file = QString(helpPath + QString(VISIT_SLASH_STRING) +
+                       QString("en_US") + QString(VISIT_SLASH_STRING) +
                        page);
     }
 
@@ -884,7 +888,7 @@ QvisHelpWindow::CompleteFileName(const QString &page) const
 // ****************************************************************************
 // Method: QvisHelpWindow::show
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that shows the window.
 //
 // Programmer: Brad Whitlock
@@ -939,7 +943,7 @@ QvisHelpWindow::show()
 // ****************************************************************************
 // Method: QvisHelpWindow::activeTabChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the active tab changes.
 //
 // Programmer: Brad Whitlock
@@ -984,7 +988,7 @@ QvisHelpWindow::activateBookmarkTab()
 // ****************************************************************************
 // Method: QvisHelpWindow::openHelp
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when an item in the contents
 //   listview is clicked. We display the page associated with the item.
 //
@@ -1074,7 +1078,7 @@ QvisHelpWindow::openHelp(const QString& entry)
                                                 query_nospaces, -1, Qt::MatchContains | Qt::MatchRecursive);
         words.pop_back();
     }
-        
+
     if(list.size() == 0)
     {
         displayTitle(entry + " help not found...");
@@ -1112,7 +1116,7 @@ QvisHelpWindow::openHelp(const QString& entry)
 // ****************************************************************************
 // Method: QvisHelpWindow::topicExpanded
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when an item in the contents
 //   listview is expanded. We display the page associated with the item and
 //   make sure the item gets selected.
@@ -1150,7 +1154,7 @@ QvisHelpWindow::topicExpanded(QTreeWidgetItem *item)
 // ****************************************************************************
 // Method: QvisHelpWindow::topicCollapsed
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when an item in the contents
 //   listview is collapsed. We display the page associated with the item and
 //   make sure the item gets selected.
@@ -1188,7 +1192,7 @@ QvisHelpWindow::topicCollapsed(QTreeWidgetItem *item)
 // ****************************************************************************
 // Method: QvisHelpWindow::displayNoHelp
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays a "not found" message.
 //
 // Programmer: Brad Whitlock
@@ -1197,14 +1201,14 @@ QvisHelpWindow::topicCollapsed(QTreeWidgetItem *item)
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayNoHelp()
 {
     QString html = QString("<html><body background=\"#ffffff\"><center><b><h1>") +
-                   tr("Help topic not found!") + 
+                   tr("Help topic not found!") +
                    QString("</h1></b></center></body></html>");
     helpBrowser->setText(html);
     helpFile = "none";
@@ -1213,7 +1217,7 @@ QvisHelpWindow::displayNoHelp()
 // ****************************************************************************
 // Method: QvisHelpWindow::displayTitle
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays a title.
 //
 // Arguments:
@@ -1225,14 +1229,14 @@ QvisHelpWindow::displayNoHelp()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayTitle(const QString &title)
 {
     QString html = QString("<html><body background=\"#ffffff\"><center><b><h1>") +
-                   title + 
+                   title +
                    QString("</h1></b></center></body></html>");
     helpBrowser->setText(html);
     helpFile = "none";
@@ -1241,7 +1245,7 @@ QvisHelpWindow::displayTitle(const QString &title)
 // ****************************************************************************
 // Method: QvisHelpWindow::displayCopyright
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays VisIt's copyright information.
 //
 // Programmer: Brad Whitlock
@@ -1268,7 +1272,7 @@ QvisHelpWindow::displayCopyright()
 // ****************************************************************************
 // Method: QvisHelpWindow::displayContributors
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays VisIt's contributors.
 //
 // Programmer: Brad Whitlock
@@ -1290,7 +1294,7 @@ QvisHelpWindow::displayContributors()
 // ****************************************************************************
 // Method: QvisHelpWindow::displayReleaseNotesHelper
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that display's VisIt's release notes for the
 //   current version of VisIt.
 //
@@ -1360,7 +1364,7 @@ QvisHelpWindow::displayReleaseNotesIfAvailable()
 // ****************************************************************************
 // Method: QvisHelpWindow::displayHome
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays the VisIt home page.
 //
 // Programmer: Brad Whitlock
@@ -1369,7 +1373,7 @@ QvisHelpWindow::displayReleaseNotesIfAvailable()
 // Modifications:
 //   Brad Whitlock, Thu Feb 17 12:11:49 PDT 2005
 //   Added code to synchronize the contents.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1383,7 +1387,7 @@ QvisHelpWindow::displayHome()
 // ****************************************************************************
 // Method: QvisHelpWindow::displayPage
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays a help HTML page.
 //
 // Arguments:
@@ -1431,7 +1435,7 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
 // ****************************************************************************
 // Method: QvisHelpWindow::synchronizeContents
 //
-// Purpose: 
+// Purpose:
 //   Synchronizes the contents to the page being displayed.
 //
 // Arguments:
@@ -1479,7 +1483,7 @@ QvisHelpWindow::synchronizeContents(const QString &page)
 // ****************************************************************************
 // Method: QvisHelpWindow::increaseFontSize
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that increases the font size of the help page.
 //
 // Programmer: Brad Whitlock
@@ -1489,7 +1493,7 @@ QvisHelpWindow::synchronizeContents(const QString &page)
 //   Brad Whitlock, Tue Sep 10 16:29:49 PST 2002
 //   I added code to make the page redraw with the new font size.
 //
-//   Kathleen Bonnell, Wed Jun 27 12:42:47 PDT 2007 
+//   Kathleen Bonnell, Wed Jun 27 12:42:47 PDT 2007
 //   Removed Q_WS_WIN specific code.
 //
 //   Brad Whitlock, Thu Jun 19 15:09:21 PDT 2008
@@ -1508,7 +1512,7 @@ QvisHelpWindow::increaseFontSize()
 // ****************************************************************************
 // Method: QvisHelpWindow::decreaseFontSize
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that decreases the font size of the help page.
 //
 // Programmer: Brad Whitlock
@@ -1517,8 +1521,8 @@ QvisHelpWindow::increaseFontSize()
 // Modifications:
 //   Brad Whitlock, Tue Sep 10 16:29:49 PST 2002
 //   I added code to make the page redraw with the new font size.
-//   
-//   Kathleen Bonnell, Wed Jun 27 12:42:47 PDT 2007 
+//
+//   Kathleen Bonnell, Wed Jun 27 12:42:47 PDT 2007
 //   Removed Q_WS_WIN specific code.
 //
 //   Brad Whitlock, Thu Jun 19 15:09:33 PDT 2008
@@ -1541,7 +1545,7 @@ QvisHelpWindow::decreaseFontSize()
 // ****************************************************************************
 // Method: QvisHelpWindow::displayIndexTopic
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays the help topic when an item in
 //   the index list is clicked.
 //
@@ -1574,7 +1578,7 @@ QvisHelpWindow::displayIndexTopic()
 // ****************************************************************************
 // Method: QvisHelpWindow::lookForIndexTopic
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user types into the
 //   index text field. The purpose is to try and match what the user types
 //   with a help document. If there is a match, we display the help page.
@@ -1597,7 +1601,7 @@ QvisHelpWindow::displayIndexTopic()
 void
 QvisHelpWindow::lookForIndexTopic(const QString &topic)
 {
-    if(topic == QString::null || topic == "")
+    if(topic.isEmpty())
         return;
 
     // Search through the helpIndex widget for a suitable match to the
@@ -1637,7 +1641,7 @@ QvisHelpWindow::lookForIndexTopic(const QString &topic)
 // ****************************************************************************
 // Method: QvisHelpWindow::displayBookmarkTopic
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that displays a bookmarked topic.
 //
 // Programmer: Brad Whitlock
@@ -1669,7 +1673,7 @@ QvisHelpWindow::displayBookmarkTopic()
 // ****************************************************************************
 // Method: QvisHelpWindow::addBookmark
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that adds a bookmark to the bookmark list.
 //
 // Programmer: Brad Whitlock
@@ -1678,7 +1682,7 @@ QvisHelpWindow::displayBookmarkTopic()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Brad Whitlock, Thu Jun 19 15:30:47 PDT 2008
 //   Qt 4.
 //
@@ -1687,12 +1691,12 @@ QvisHelpWindow::displayBookmarkTopic()
 void
 QvisHelpWindow::addBookmark()
 {
-    if(helpFile != "none" && helpFile != QString::null && helpFile != "")
+    if(!helpFile.isEmpty() && helpFile != "none")
     {
-        // Search through the help contents for the topic that matches the 
+        // Search through the help contents for the topic that matches the
         // active page.
         QString helpTopic = TopicFromDoc(helpFile);
-        if(helpTopic != QString::null && helpTopic != "")
+        if(!helpTopic.isEmpty())
         {
             IndexMap::ConstIterator it = bookmarks.find(helpTopic);
             if(it == bookmarks.end())
@@ -1724,7 +1728,7 @@ QvisHelpWindow::addBookmark()
 // ****************************************************************************
 // Method: QvisHelpWindow::removeBookmark
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that removes the currently selected bookmark.
 //
 // Programmer: Brad Whitlock
@@ -1768,22 +1772,22 @@ QvisHelpWindow::removeBookmark()
 // ****************************************************************************
 // Method: QvisHelpWindow::anchorClicked
 //
-// Purpose: 
+// Purpose:
 //   Set the source of the help browser when a link is clicked. For external
 //   links, we open the user's default web browser.
 //
 // Arguments:
 //   link : The link that was clicked.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 31 10:31:35 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

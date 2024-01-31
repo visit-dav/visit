@@ -7,7 +7,12 @@ function bv_tbb_initialize
 
 function bv_tbb_enable
 {
-    DO_TBB="yes"
+    # separate tbb not required by ospray for vtk-9
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        DO_TBB="no"
+    else
+        DO_TBB="yes"
+    fi
 }
 
 function bv_tbb_disable
@@ -79,9 +84,8 @@ function bv_tbb_host_profile
         #   TBB related projects. I want to keep it set here since I am afraid of breaking other packages
         #   other than ospray
         if [[ "$USE_SYSTEM_TBB" == "no" ]]; then
-            echo "SETUP_APP_VERSION(TBB ${TBB_VERSION})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/\${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/\${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(TBB_ROOT ${TBB_INSTALL_DIR})" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${TBB_INSTALL_DIR})" >> $HOSTCONF
@@ -104,13 +108,6 @@ function bv_tbb_ensure
             DO_TBB="no"
             error "Unable to build TBB.  ${TBB_FILE} not found."
         fi
-    fi
-}
-
-function bv_tbb_dry_run
-{
-    if [[ "$DO_TBB" == "yes" ]] ; then
-        echo "Dry run option not set for TBB."
     fi
 }
 

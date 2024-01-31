@@ -34,15 +34,18 @@
 //    Also, added helper function to calculate volume or area.
 //
 //    Jeremy Meredith, Tue Jun 18 11:56:22 EDT 2013
-//    Output actual volumes/areas, not VF's, and return total vol/area, 
+//    Output actual volumes/areas, not VF's, and return total vol/area,
 //    in ReconstructCell.
+//
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Removed MIRConnectivity as it isn't used.
 //
 // ****************************************************************************
 class CellReconstructor
 {
   public:
     CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
-                      MIRConnectivity&, ZooMIR&);
+                      ZooMIR&);
     virtual ~CellReconstructor();
     virtual double ReconstructCell(int, int, int, vtkIdType*, double*) = 0;
 
@@ -53,7 +56,6 @@ class CellReconstructor
     ResampledMat                           &rm;
     int                                     nPoints;
     int                                     nCells;
-    MIRConnectivity                        &conn;
     ZooMIR                                 &mir;
     int                                     nMaterials;
 
@@ -63,7 +65,7 @@ class CellReconstructor
     int           cellid;
     int           celltype;
     vtkIdType    *ids;
-    int           nids; 
+    int           nids;
 
     int           nodeIndices[MAX_NODES_PER_ZONE];
     int           nodeIndexLimit[MAX_NODES_PER_ZONE];

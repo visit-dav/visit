@@ -4,7 +4,12 @@
 
 #include <avtSimV2Writer.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
@@ -13,6 +18,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDataAttributes.h>
@@ -577,7 +583,12 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         int cellCount = 0;
         for(vtkIdType i = 0; i < ct->GetNumberOfTuples(); ++i)
         {
-            vtkIdType npts, *pts = 0;
+            vtkIdType npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+            vtkIdType *pts = 0;
+#else
+            const vtkIdType *pts = 0;
+#endif
             ds->GetCellPoints(i, npts, pts);
 
             // Store the cell type in terms of the VISIT simulation types.
@@ -748,11 +759,21 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
 
         // Count the number of points in the line cells because we will have
         // to split them if there are more than 2 points.
+#if LIB_VERSION_LE(VTK,8,1,0)
+        vtkIdType *pts = 0;
+#else
+        const vtkIdType *pts = 0;
+#endif
+        vtkIdType npts;
         int beamCells = 0;
         for(vtkIdType i = 0; i < ds->GetLines()->GetNumberOfCells(); ++i)
         {
-            vtkIdType *pts = 0, npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
             ds->GetLines()->GetCell(i, npts, pts);
+#else
+            // GetCell is very slow in VTK 9, so use new GetCellAtId
+            ds->GetLines()->GetCellAtId(i, npts, pts);
+#endif
             beamCells += npts-1;
         }
 
@@ -768,9 +789,12 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         for(vtkIdType i = 0; i < ds->GetVerts()->GetNumberOfCells(); ++i)
         {
             *connPtr++ = VISIT_CELL_POINT;
-
-            vtkIdType *pts = 0, npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
             ds->GetVerts()->GetCell(i, npts, pts);
+#else
+            // GetCell is very slow in VTK 9, so use new GetCellAtId
+            ds->GetLines()->GetCellAtId(i, npts, pts);
+#endif
 
             *connPtr++ = pts[0];
             ++cellCount;
@@ -779,8 +803,12 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         // Get the lines and make beam cells from them.
         for(vtkIdType i = 0; i < ds->GetLines()->GetNumberOfCells(); ++i)
         {
-            vtkIdType *pts = 0, npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
             ds->GetLines()->GetCell(i, npts, pts);
+#else
+            // GetCell is very slow in VTK 9, so use new GetCellAtId
+            ds->GetLines()->GetCellAtId(i, npts, pts);
+#endif
 
             //
             // Note: This will end up changing the connectivity for line cells that
@@ -798,10 +826,23 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         }
         
         // Get the polys and make triangles or quads from them.
-        vtkIdType *pts = 0, npts;
-        ds->GetPolys()->InitTraversal();
-        while(ds->GetPolys()->GetNextCell(npts, pts) != 0)
+        vtkCellArray *polys = ds->GetPolys();
+#if LIB_VERSION_LE(VTK,8,1,0)
+        polys->InitTraversal();
+        while(polys->GetNextCell(npts, pts) != 0)
         {
+#else
+        auto iter = vtk::TakeSmartPointer(polys->NewIterator());
+        for(iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+        {
+             iter->GetCurrentCell(npts,pts);
+#endif
+
+            // TODO: This is creating VTK-8 version connectivity array
+            // simv2 will need to be updated to handle VTK -9 style
+            // where offsets are stored separately from connectivity
+            // and this code will need to be updated accordingly
+
             if(npts == 3)
             {
                 *connPtr++ = VISIT_CELL_TRI;

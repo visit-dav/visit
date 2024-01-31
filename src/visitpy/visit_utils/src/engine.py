@@ -12,14 +12,12 @@
 
 """
 
-
 import sys
 import os
 import math
+
 from .host_profile import *
-
 from .common import VisItException, hostname, require_visit
-
 
 try:
     import visit
@@ -35,7 +33,37 @@ def supported_hosts():
     return res
 
 def open(**kwargs):
-    """ Launch VisIt compute engine on the current host. """
+    """ Launch VisIt compute engine on the current host.
+
+    Example usage:
+    
+    Launch engine with 36 MPI tasks using default options for this host:
+
+      engine.open(nprocs=36)
+
+    Launch engine with 36 MPI tasks using a specific partition:
+
+      engine.open(nprocs=36, part="pbatch")
+
+    Launch engine with 36 MPI tasks, ask for 60 minute time limit:
+
+      engine.open(nprocs=36, rtime=60)
+
+    If you already have a slurm batch allocation, you can use:
+
+      engine.open(method="slurm")
+
+    This reads the SLURM_JOB_NUM_NODES and SLURM_CPUS_ON_NODE 
+    env vars and uses these values to launch with srun.
+
+    If you already have a lsf batch allocation, you can use:
+
+      engine.open(method="lsf")
+
+    This reads the LSB_DJOB_NUMPROC env var and uses it
+    the to launch with mpirun.
+
+    """
     args = {"ppn":1,"part":None,"bank":None,"rtime":None,"vdir":None}
     if "method" not in kwargs:
         hname = hostname(False)
@@ -65,6 +93,15 @@ def open(**kwargs):
         args["nprocs"]   = nprocs
         args["ppn"]      = ppn
         kwargs["method"] = "srun"
+    elif kwargs["method"] == "lsf":
+        args["host"] = hostname(False)
+        if "LSB_DJOB_NUMPROC" in os.environ:
+            nprocs = int(os.environ["LSB_DJOB_NUMPROC"])
+        else:
+            raise VisItException("engine.open(method='lsf') requires "
+                                 "LSB_DJOB_NUMPROC env vars")
+        args["nprocs"]   = nprocs
+        kwargs["method"] = "mpirun"
     else:
         args["host"] = hostname(False)
     args.update(kwargs)

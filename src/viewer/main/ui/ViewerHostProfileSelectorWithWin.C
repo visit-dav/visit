@@ -64,10 +64,10 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     waitingOnUser = false;
 
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     QGridLayout *layout = new QGridLayout;
     topLayout->addLayout(layout);
-    layout->setMargin(10);
+    layout->setContentsMargins(10,10,10,10);
     layout->setSpacing(5);
     layout->setRowStretch(0, 100);
     layout->setRowStretch(1, 0);
@@ -92,7 +92,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     QWidget *np = new QWidget(this);
     layout->addWidget(np,            1,1);
     QHBoxLayout *npLayout = new QHBoxLayout(np);
-    npLayout->setMargin(1);
+    npLayout->setContentsMargins(1,1,1,1);
     npLayout->setSpacing(1);
 
     numProcs = new QSpinBox(np);
@@ -112,7 +112,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     QWidget *nn = new QWidget(this);
     layout->addWidget(nn,            1,3);
     QHBoxLayout *nnLayout = new QHBoxLayout(nn);
-    nnLayout->setMargin(1);
+    nnLayout->setContentsMargins(1,1,1,1);
     nnLayout->setSpacing(1);
 
     numNodes = new QSpinBox(nn);
@@ -143,7 +143,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     topLayout->addLayout(buttonLayout);
-    buttonLayout->setMargin(10);
+    buttonLayout->setContentsMargins(10,10,10,10);
 
     okayButton = new QPushButton(tr("OK"), this);
     buttonLayout->addWidget(okayButton, 0);

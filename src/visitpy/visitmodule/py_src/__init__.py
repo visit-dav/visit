@@ -1,3 +1,5 @@
+"""Main init for the pyside_visithook module."""
+
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
@@ -9,7 +11,6 @@
 # Programmer: Cyrus Harrison
 # Creation: Tue Apr  3 13:40:18 PDT
 #
-#
 # Modifications:
 #   Brad Whitlock, Tue May  1 16:49:40 PDT 2012
 #   Add writescript.
@@ -17,60 +18,20 @@
 #   Cyrus Harrison, Wed May  2 14:07:07 PDT 2012
 #   Avoid creating pyc files when importing the visit module
 #
+#   Cyrus Harrison, Wed Feb 24 10:12:20 PST 2021
+#   Moved PySide logic into visit_utils.builtin
+#
+#   Mark C. Miller, Thu Mar 31 17:33:22 PDT 2022
+#   Restructured this file a bit putting a docstring on the first line.
+#   This makes help(visit) after import visit do something more reasonable.
 ###############################################################################
+
+# The frontend is responsible for loading the actual visit module.
+# The dont_write_bytecode setting effects imports that follow.
 import sys
 __system_bytecode_setting = sys.dont_write_bytecode
-sys.dont_write_bytecode = True
-
-#
-# note: the frontend is responsible for loading the actual visit module
-#
+sys.dont_write_bytecode = True                      # effects imports to follow
 
 from .frontend import *
-from .evalfuncs import *
-from .writescript import *
-
-try:
-    import PySide2
-    import pyside_hook
-    import pyside_gui
-    from . import pyside_support
-
-    class KeyPressEater(PySide2.QtCore.QObject):
-        def eventFilter(self, obj, event):
-            if event.type() == PySide2.QtCore.QEvent.KeyPress:
-                return True
-            elif event.type() == PySide2.QtCore.QEvent.MouseButtonPress:
-                return True
-            elif event.type() == PySide2.QtCore.QEvent.MouseButtonRelease:
-                return True
-            elif event.type() == PySide2.QtCore.QEvent.MouseButtonDblClick:
-                return True
-            elif event.type() == PySide2.QtCore.QEvent.MouseMove:
-                return True
-            else:
-                return PySide2.QtCore.QObject.eventFilter(self, obj, event)
-
-    def __VisIt_PySide_Idle_Hook__():
-      a = KeyPressEater()
-      app = PySide2.QtCore.QEventLoop();
-      PySide2.QtCore.QCoreApplication.instance().installEventFilter(a)
-      app.processEvents(PySide2.QtCore.QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents);
-      PySide2.QtCore.QCoreApplication.instance().removeEventFilter(a)
-
-    def IsPySideViewerEnabled(): return True
-except ImportError:
-    def IsPySideViewerEnabled(): return False
-    pass
-
-sys.dont_write_bytecode = __system_bytecode_setting
-
-
-
-
-
-
-
-
-
-
+from visit_utils.builtin import *
+sys.dont_write_bytecode = __system_bytecode_setting # reset to initial value

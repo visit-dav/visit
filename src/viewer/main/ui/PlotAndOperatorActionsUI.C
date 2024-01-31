@@ -50,7 +50,7 @@
 // ****************************************************************************
 // Method: AddOperatorActionUI::AddOperatorActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the AddOperator action.
 //
 // Arguments:
@@ -70,6 +70,9 @@
 //
 //   Brad Whitlock, Fri Sep 12 12:20:02 PDT 2014
 //   Do the menu name translation here instead of in the plugin.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -91,7 +94,7 @@ AddOperatorActionUI::AddOperatorActionUI(ViewerActionLogic *L) :
         info = pluginMgr->GetViewerPluginInfo(pluginMgr->GetEnabledID(i));
         if(info)
         {
-            if(!GetViewerProperties()->GetNowin() && 
+            if(!GetViewerProperties()->GetNowin() &&
                info->XPMIconData() != 0 &&
                info->GetUserSelectable())
             {
@@ -102,10 +105,10 @@ AddOperatorActionUI::AddOperatorActionUI(ViewerActionLogic *L) :
                 {
                     // Create a pixmap for the operator or get its pixmap from
                     // the pixmap cache.
-                    QString key;
-                    key.sprintf("operator_icon_%s", info->GetName());
+                    QString key =
+                        QString("operator_icon_%1").arg(info->GetName());
                     QPixmap pix;
-                    if(!QPixmapCache::find(key, pix))
+                    if(!QPixmapCache::find(key, &pix))
                     {
                         pix = QPixmap(info->XPMIconData());
                         QPixmapCache::insert(key, pix);
@@ -128,14 +131,14 @@ AddOperatorActionUI::AddOperatorActionUI(ViewerActionLogic *L) :
 // ****************************************************************************
 // Method: AddOperatorActionUI::~AddOperatorActionUI
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the AddOperatorActionUI class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 17 09:20:04 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AddOperatorActionUI::~AddOperatorActionUI()
@@ -145,7 +148,7 @@ AddOperatorActionUI::~AddOperatorActionUI()
 // ****************************************************************************
 // Method: AddOperatorActionUI::Enabled()
 //
-// Purpose: 
+// Purpose:
 //   This method indicates when the action is enabled.
 //
 // Returns:    A bool indicating when the action is enabled.
@@ -172,7 +175,7 @@ AddOperatorActionUI::Enabled() const
 // ****************************************************************************
 // Method: AddOperatorActionUI::ChoiceEnabled
 //
-// Purpose: 
+// Purpose:
 //   This method indicates when individual choices in the action are enabled.
 //
 // Returns:    true
@@ -181,7 +184,7 @@ AddOperatorActionUI::Enabled() const
 // Creation:   Mon Mar 17 09:22:55 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -193,7 +196,7 @@ AddOperatorActionUI::ChoiceEnabled(int) const
 // ****************************************************************************
 // Method: AddOperatorActionUI::ConstructToolbar
 //
-// Purpose: 
+// Purpose:
 //   Adds the action's operators to the toolbar.
 //
 // Arguments:
@@ -221,7 +224,7 @@ AddOperatorActionUI::ConstructToolbar(QToolBar *toolbar)
 // ****************************************************************************
 // Method: RemoveLastOperatorActionUI::RemoveLastOperatorActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the RemoveLastOperatorActionUI class.
 //
 // Arguments:
@@ -231,7 +234,7 @@ AddOperatorActionUI::ConstructToolbar(QToolBar *toolbar)
 // Creation:   Thu Mar 20 12:41:50 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 RemoveLastOperatorActionUI::RemoveLastOperatorActionUI(ViewerActionLogic *L) : ViewerActionUISingle(L)
@@ -244,7 +247,7 @@ RemoveLastOperatorActionUI::RemoveLastOperatorActionUI(ViewerActionLogic *L) : V
 // ****************************************************************************
 // Method: RemoveLastOperatorActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns when this action is enabled.
 //
 // Returns:    Returns true when the action is enabled; false otherwise.
@@ -255,7 +258,7 @@ RemoveLastOperatorActionUI::RemoveLastOperatorActionUI(ViewerActionLogic *L) : V
 // Modifications:
 //   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
 //   I removed the disabling of the action in curve windows.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -271,7 +274,7 @@ RemoveLastOperatorActionUI::Enabled() const
 // ****************************************************************************
 // Method: RemoveAllOperatorsActionUI::RemoveAllOperatorsActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the RemoveAllOperatorsActionUI class.
 //
 // Arguments:
@@ -281,10 +284,10 @@ RemoveLastOperatorActionUI::Enabled() const
 // Creation:   Thu Mar 20 12:41:50 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-RemoveAllOperatorsActionUI::RemoveAllOperatorsActionUI(ViewerActionLogic *L) : 
+RemoveAllOperatorsActionUI::RemoveAllOperatorsActionUI(ViewerActionLogic *L) :
     ViewerActionUISingle(L)
 {
     SetAllText(tr("Remove all operators"));
@@ -295,7 +298,7 @@ RemoveAllOperatorsActionUI::RemoveAllOperatorsActionUI(ViewerActionLogic *L) :
 // ****************************************************************************
 // Method: RemoveAllOperatorsActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns when this action is enabled.
 //
 // Returns:    True if the action is enabled; false otherwise.
@@ -309,7 +312,7 @@ RemoveAllOperatorsActionUI::RemoveAllOperatorsActionUI(ViewerActionLogic *L) :
 //
 //   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
 //   I removed the disabling of the action in curve windows.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -325,7 +328,7 @@ RemoveAllOperatorsActionUI::Enabled() const
 // ****************************************************************************
 // Method: AddPlotActionUI::AddPlotActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the AddPlotActionUI class.
 //
 // Arguments:
@@ -384,10 +387,10 @@ AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(
                 // the pixmap cache.
                 if(!GetViewerProperties()->GetNowin())
                 {
-                    QString key;
-                    key.sprintf("plot_icon_%s", info->GetName());
+                    QString key =
+                     QString("plot_icon_%1").arg(info->GetName());
                     QPixmap pix;
-                    if(!QPixmapCache::find(key, pix))
+                    if(!QPixmapCache::find(key, &pix))
                     {
                         pix = QPixmap(info->XPMIconData());
                         QPixmapCache::insert(key, pix);
@@ -418,7 +421,7 @@ AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(
 // ****************************************************************************
 // Method: AddPlotActionUI::~AddPlotActionUI
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the AddPlotActionUI class.
 //
 // Note:       We manually delete the menus because they have no parent widget.
@@ -427,7 +430,7 @@ AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(
 // Creation:   Thu Mar 20 12:42:34 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AddPlotActionUI::~AddPlotActionUI()
@@ -439,7 +442,7 @@ AddPlotActionUI::~AddPlotActionUI()
 // ****************************************************************************
 // Method: AddPlotActionUI::Update
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the action needs to be updated.
 //
 // Programmer: Brad Whitlock
@@ -551,7 +554,7 @@ AddPlotActionUI::Update()
 
                     int varCount = menuPopulator.UpdateSingleVariableMenu(
                         pluginEntries[i].varMenu,
-                        pluginEntries[i].varTypes, this, 
+                        pluginEntries[i].varTypes, this,
                         SLOT(addPlot(int, const QString &)));
                     bool hasEntries = (varCount > 0);
 
@@ -569,7 +572,7 @@ AddPlotActionUI::Update()
 // ****************************************************************************
 // Method: AddPlotActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   This method lets callers know if the action's menu should be enabled.
 //
 // Programmer: Brad Whitlock
@@ -581,7 +584,7 @@ AddPlotActionUI::Update()
 //
 //   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
 //   I removed the disabling of the action in curve windows.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -595,7 +598,7 @@ AddPlotActionUI::Enabled() const
 // ****************************************************************************
 // Method: AddPlotActionUI::ChoiceEnabled
 //
-// Purpose: 
+// Purpose:
 //   This method lets callers know a choice in the action's menu should
 //   be enabled.
 //
@@ -606,7 +609,7 @@ AddPlotActionUI::Enabled() const
 // Creation:   Thu Mar 20 12:46:09 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -618,7 +621,7 @@ AddPlotActionUI::ChoiceEnabled(int i) const
 // ****************************************************************************
 // Method: AddPlotActionUI::CreatePlotMenu
 //
-// Purpose: 
+// Purpose:
 //   This method creates the i'th plot menu.
 //
 // Arguments:
@@ -628,7 +631,7 @@ AddPlotActionUI::ChoiceEnabled(int i) const
 // Creation:   Fri Nov 19 15:09:34 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -648,7 +651,7 @@ AddPlotActionUI::CreatePlotMenu(int i)
 // ****************************************************************************
 // Method: AddPlotActionUI::DeletePlotMenu
 //
-// Purpose: 
+// Purpose:
 //   This method deletes the i'th plot menu.
 //
 // Arguments:
@@ -658,7 +661,7 @@ AddPlotActionUI::CreatePlotMenu(int i)
 // Creation:   Fri Nov 19 15:09:34 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -674,7 +677,7 @@ AddPlotActionUI::DeletePlotMenu(int i)
 // ****************************************************************************
 // Method: AddPlotActionUI::ConstructMenu
 //
-// Purpose: 
+// Purpose:
 //   This method constructs a menu that contains the plots that are available.
 //
 // Arguments:
@@ -688,7 +691,7 @@ AddPlotActionUI::DeletePlotMenu(int i)
 //   Qt 4.
 //
 //   Mark C. Miller, Thu Jun  8 15:10:46 PDT 2017
-//   Add logic to catch the aboutToShow() signal indicating the menu is 
+//   Add logic to catch the aboutToShow() signal indicating the menu is
 //   about to be shown.
 // ****************************************************************************
 
@@ -720,7 +723,7 @@ AddPlotActionUI::ConstructMenu(QMenu *menu)
 // ****************************************************************************
 // Method: AddPlotActionUI::RemoveFromMenu
 //
-// Purpose: 
+// Purpose:
 //   Removes the action from the menu.
 //
 // Arguments:
@@ -730,7 +733,7 @@ AddPlotActionUI::ConstructMenu(QMenu *menu)
 // Creation:   Thu Mar 20 12:47:43 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -768,7 +771,7 @@ AddPlotActionUI::addPlotAboutToShow()
 // ****************************************************************************
 // Method: AddPlotActionUI::ConstructToolbar
 //
-// Purpose: 
+// Purpose:
 //   Adds the action's plots to the toolbar.
 //
 // Arguments:
@@ -805,7 +808,7 @@ AddPlotActionUI::ConstructToolbar(QToolBar *toolbar)
 // ****************************************************************************
 // Method: AddPlotActionUI::addPlot
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function, which is private to this class, that is called
 //   when the user makes a selection from one of the variable menus.
 //
@@ -841,7 +844,7 @@ AddPlotActionUI::addPlot(int index, const QString &var)
 // ****************************************************************************
 // Method: AddPlotActionUI::changeMenuIconSize
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the vis window changes its icon size.
 //
 // Arguments:
@@ -897,7 +900,7 @@ AddPlotActionUI::changeMenuIconSize(bool large)
 // ****************************************************************************
 // Method: DrawPlotsActionUI::DrawPlotsActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the DrawPlotsActionUI class.
 //
 // Arguments:
@@ -907,7 +910,7 @@ AddPlotActionUI::changeMenuIconSize(bool large)
 // Creation:   Fri Mar 21 15:55:52 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 DrawPlotsActionUI::DrawPlotsActionUI(ViewerActionLogic *L) : ViewerActionUISingle(L)
@@ -918,14 +921,14 @@ DrawPlotsActionUI::DrawPlotsActionUI(ViewerActionLogic *L) : ViewerActionUISingl
 // ****************************************************************************
 // Method: DrawPlotsActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the action is enabled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 21 15:51:48 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -941,7 +944,7 @@ DrawPlotsActionUI::Enabled() const
 // ****************************************************************************
 // Method: HideActivePlotsActionUI::HideActivePlotsActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the HideActivePlotsActionUI class.
 //
 // Arguments:
@@ -951,7 +954,7 @@ DrawPlotsActionUI::Enabled() const
 // Creation:   Fri Mar 21 15:54:54 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 HideActivePlotsActionUI::HideActivePlotsActionUI(ViewerActionLogic *L) : ViewerActionUISingle(L)
@@ -963,14 +966,14 @@ HideActivePlotsActionUI::HideActivePlotsActionUI(ViewerActionLogic *L) : ViewerA
 // ****************************************************************************
 // Method: HideActivePlotsActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the action is enabled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 21 15:51:48 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -986,7 +989,7 @@ HideActivePlotsActionUI::Enabled() const
 // ****************************************************************************
 // Method: DeleteActivePlotsActionUI::DeleteActivePlotsActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the DeleteActivePlotsActionUI class.
 //
 // Arguments:
@@ -996,7 +999,7 @@ HideActivePlotsActionUI::Enabled() const
 // Creation:   Fri Mar 21 15:50:38 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 DeleteActivePlotsActionUI::DeleteActivePlotsActionUI(ViewerActionLogic *L) :
@@ -1009,14 +1012,14 @@ DeleteActivePlotsActionUI::DeleteActivePlotsActionUI(ViewerActionLogic *L) :
 // ****************************************************************************
 // Method: DeleteActivePlotsActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the action is enabled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 21 15:51:48 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1032,7 +1035,7 @@ DeleteActivePlotsActionUI::Enabled() const
 // ****************************************************************************
 // Method: CopyPlotActionUI::CopyPlotActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the CopyPlotActionUI class.
 //
 // Arguments:
@@ -1042,7 +1045,7 @@ DeleteActivePlotsActionUI::Enabled() const
 // Creation:   Fri Sept 28 15:38:54 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 CopyPlotActionUI::CopyPlotActionUI(ViewerActionLogic *L) : ViewerActionUISingle(L)
@@ -1054,14 +1057,14 @@ CopyPlotActionUI::CopyPlotActionUI(ViewerActionLogic *L) : ViewerActionUISingle(
 // ****************************************************************************
 // Method: CopyPlotActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the action is enabled.
 //
 // Programmer: Ellen Tarwater
 // Creation:   Fri Sept 28 15:54:27 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1077,7 +1080,7 @@ CopyPlotActionUI::Enabled() const
 // ****************************************************************************
 // Method: SetPlotFollowsTimeActionUI::SetPlotFollowsTimeActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the SetPlotFollowsTimeActionUI class.
 //
 // Arguments:
@@ -1102,14 +1105,14 @@ SetPlotFollowsTimeActionUI::SetPlotFollowsTimeActionUI(ViewerActionLogic *L) :
 // ****************************************************************************
 // Method: SetPlotFollowsTimeActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the action is enabled.
 //
 // Programmer: Ellen Tarwater
 // Creation:   Thurs, Dec 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool

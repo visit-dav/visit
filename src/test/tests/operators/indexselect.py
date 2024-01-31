@@ -59,6 +59,9 @@
 #    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
 #    Use FilledBoundary plot for materials instead of Subset.
 #
+#    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#    Changed Pseudocolor CurrentPlot to ActualData.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -438,7 +441,7 @@ atts.zIncr = 1
 atts.useWholeCollection = 1
 SetOperatorOptions(atts)
 pc = PseudocolorAttributes()
-pc.limitsMode = pc.CurrentPlot
+pc.limitsMode = pc.ActualData
 SetPlotOptions(pc)
 DrawPlots()
 ResetView()
@@ -474,7 +477,7 @@ atts.yIncr = 1
 atts.zIncr = 1
 SetOperatorOptions(atts)
 pc = PseudocolorAttributes()
-pc.limitsMode = pc.CurrentPlot
+pc.limitsMode = pc.ActualData
 SetPlotOptions(pc)
 DrawPlots()
 ResetView()

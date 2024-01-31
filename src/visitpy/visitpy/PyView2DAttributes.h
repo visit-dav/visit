@@ -5,6 +5,7 @@
 #ifndef PY_VIEW2DATTRIBUTES_H
 #define PY_VIEW2DATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <View2DAttributes.h>
 #include <visitpy_exports.h>
 

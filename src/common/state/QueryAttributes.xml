@@ -16,7 +16,8 @@
     <Field name="resultsMessage" label="resultsMessage" type="string">
     </Field>
     <Field name="resultsValue" label="resultsValue" type="doubleVector">
-      0.000000
+    </Field>
+    <Field name="floatResultsValue" label="floatResultsValue" type="floatVector">
     </Field>
     <Field name="timeStep" label="timeStep" type="int">
       0
@@ -62,10 +63,19 @@
     </Function>
     <Function name="SetResultsValues" user="true" member="true">
     </Function>
+    <Function name="Move Assignment" user="true" member="true">
+    </Function>
+    <Function name="Move Constructor" user="true" member="true">
+    </Function>
+    <Function name="Move" user="true" member="true" access="private">
+    </Function>
     <Include file="source" quoted="false">
       stdio.h
     </Include>
     <Include file="header" quoted="false">
       visitstream.h
+    </Include>
+    <Include file="source" quoted="false">
+      DebugStream.h
     </Include>
   </Attribute>

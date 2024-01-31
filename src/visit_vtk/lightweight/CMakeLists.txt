@@ -47,6 +47,7 @@ vtkVisItUtility.C
 )
 
 INCLUDE_DIRECTORIES(
+${VISIT_BINARY_DIR}/include
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/common/misc
@@ -61,6 +62,12 @@ ADD_LIBRARY(lightweight_visit_vtk
     ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
 )
 
-TARGET_LINK_LIBRARIES(lightweight_visit_vtk visitcommon vtkCommonCore vtkFiltersCore vtkIOCore vtkIOLegacy)
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonCore vtkFiltersCore vtkIOCore vtkIOLegacy)
+else()
+    set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
+endif()
+
+target_link_libraries(lightweight_visit_vtk visitcommon ${vtklibs})
 
 VISIT_INSTALL_TARGETS(lightweight_visit_vtk)

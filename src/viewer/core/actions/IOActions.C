@@ -125,7 +125,13 @@ ExportDBAction::GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networ
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Fri Apr 23 2021
+//   ExportDatabases has new signature with return atts.
+//   Add location of export to message returned to user.
+//
+//   Cyrus Harrison, Mon Jun 13 12:08:19 PDT 2022
+//   Fix how path is display when dirname is empty.
+//
 // ****************************************************************************
 
 void
@@ -197,11 +203,26 @@ ExportDBAction::Execute()
                             return;
                         }
                         else if(GetViewerEngineManager()->ExportDatabases(
-                                key, networkIds, exportAtts, timeSuffix))
+                                key, networkIds, &exportAtts,
+                                timeSuffix, exportAtts))
                         {
+                            std::string host = key.OriginalHostName();
+                            if (host == "localhost")
+                                host = "";
+                            else
+                                host += ":";
+                            std::string path = exportAtts.GetDirname();
+                            // don't add '/' if dir name is empty,
+                            // b/c it will make it look like we wrote
+                            // to the root file system
+                            if(!path.empty())
+                              path += "/";
                             GetViewerMessaging()->Message(
-                                TR("Exported database time state %1").
-                                arg(i));
+                                TR("Exported database time state %1 to %2%3%4").
+                                arg(i).
+                                arg(host).
+                                arg(path).
+                                arg(exportAtts.GetFilename()));
                         }
                         else
                             status = 1;
@@ -232,9 +253,25 @@ ExportDBAction::Execute()
             plist->SetTimeSliderState(state);
         }
         // Do export of current time state.
-        else if (GetViewerEngineManager()->ExportDatabases(key, networkIds, exportAtts, ""))
+        else if (GetViewerEngineManager()->ExportDatabases(key,
+                 networkIds, &exportAtts, "", exportAtts))
         {
-            GetViewerMessaging()->Message(TR("Exported database"));
+            std::string host = key.OriginalHostName();
+            if (host == "localhost")
+                host = "";
+            else
+                host += ":";
+            std::string path = exportAtts.GetDirname();
+            // don't add '/' if dir name is empty,
+            // b/c it will make it look like we wrote
+            // to the root file system
+            if(!path.empty())
+              path += "/";
+            GetViewerMessaging()->Message(
+                TR("Exported database to %1%2%3").
+                arg(host).
+                arg(path).
+                arg(exportAtts.GetFilename()));
         }
         else
         {

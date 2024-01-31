@@ -31,7 +31,7 @@
 #    are always sorted.
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 #
@@ -42,7 +42,7 @@ def TestWindowInformation(testname):
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
     # Only use the first 5 or so lines from the string.
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     s = ""
     for i in range(5):
         if(i < len(lines)):
@@ -104,7 +104,8 @@ Test("timesliders02")
 TestWindowInformation("timesliders03")
 
 # Change the time state for the second time slider.
-SetTimeSliderState(TimeSliderGetNStates() / 2)
+# note: py3 div creates float
+SetTimeSliderState(int(TimeSliderGetNStates() / 2))
 Test("timesliders04")
 TestWindowInformation("timesliders05")
 

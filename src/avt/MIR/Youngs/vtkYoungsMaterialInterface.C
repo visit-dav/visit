@@ -11,6 +11,8 @@
 
 #include "vtkYoungsMaterialInterface.h"
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCell.h>
 #include <vtkEmptyCell.h>
 #include <vtkPolygon.h>
@@ -225,6 +227,12 @@ int vtkYoungsMaterialInterface::CellProduceInterface( int dim, int np, double fr
 
 }
 
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK 9's change in storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
                                         vtkDataSet **output)
 {
@@ -491,8 +499,12 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
             cell.nEdges = vtkcell->GetNumberOfEdges();
             for(int i=0;i<cell.nEdges;i++)
             {
+#if LIB_VERSION_LE(VTK,9,1,0)
                 int tmp[4];
                 int * edgePoints = tmp;
+#else
+                const vtkIdType *edgePoints = nullptr;
+#endif
                 cell3D->GetEdgePoints(i,edgePoints);
                 cell.edges[i][0] = edgePoints[0];
                 DBG_ASSERT( cell.edges[i][0]>=0 && cell.edges[i][0]<cell.np );
@@ -942,8 +954,12 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
                             nextCell.nEdges = vtkcell->GetNumberOfEdges();
                             for(int i=0;i<nextCell.nEdges;i++)
                             {
+#if LIB_VERSION_LE(VTK,8,1,0)
                                 int tmp[4];
                                 int * edgePoints = tmp;
+#else
+                                const vtkIdType * edgePoints = nullptr;
+#endif
                                 cell3D->GetEdgePoints(i,edgePoints);
                                 nextCell.edges[i][0] = edgePoints[0];
                                 DBG_ASSERT( nextCell.edges[i][0]>=0 && nextCell.edges[i][0]<nextCell.np );
@@ -1036,6 +1052,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         ugOutput->SetPoints( points );
         points->Delete();
 
+#if LIB_VERSION_LE(VTK,8,1,0)
         // set cell connectivity
         vtkIdTypeArray* cellArrayData = vtkIdTypeArray::New();
         cellArrayData->SetNumberOfValues( Mats[m].cellArrayCount );
@@ -1067,6 +1084,55 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         cellArray->Delete();
         cellTypes->Delete();
         cellLocations->Delete();
+#else
+        // set cell connectivity
+        //
+        // Mats[m].cells is arranged in the old VTK (pre v9) way:
+        //   c1_nids, c1_id_1, c1_id_2, ... c1_id_n-1, c2_nids, c2_id_1 ...
+        //
+        // VTK (v9+) connectivity array only contains the point ids for each cell
+        // with offsets into that array separately and cellLocations aren't needed
+
+        int conn_size = Mats[m].cellArrayCount - Mats[m].cellCount;
+
+        vtkNew<vtkIdTypeArray> offsets;
+        offsets->SetNumberOfValues(Mats[m].cellCount+1);
+        vtkIdType oid = 0;
+        offsets->SetValue(oid++, 0);
+
+        vtkNew<vtkIdTypeArray> connectivity;
+        connectivity->SetNumberOfValues(conn_size);
+
+        const vtkIdType *data = &Mats[m].cells[0];
+        const vtkIdType * const dEnd = data + Mats[m].cellArrayCount;
+        vtkIdType offset = 0;
+        vtkIdType cid = 0;
+        while(data < dEnd)
+        {
+            vtkIdType numPts = *data++;
+            offset += numPts;
+            offsets->SetValue(oid++, offset);
+            while(numPts-- > 0)
+            {
+                connectivity->SetValue(cid++, *data++);
+            }
+        }
+
+        vtkCellArray* cellArray = vtkCellArray::New();
+        cellArray->SetData(offsets, connectivity);
+
+        // set cell types
+        vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+        cellTypes->SetNumberOfValues( Mats[m].cellCount );
+        unsigned char* cellTypesPtr = cellTypes->WritePointer(0,Mats[m].cellCount);
+        for(vtkIdType i=0;i<Mats[m].cellCount;i++)
+            cellTypesPtr[i] = Mats[m].cellTypes[i];
+
+        // attach conectivity arrays to data set
+        ugOutput->SetCells( cellTypes, cellArray );
+        cellArray->Delete();
+        cellTypes->Delete();
+#endif
 
         // attach point arrays
         for(int i=0;i<nPointData-1;i++)

@@ -641,7 +641,11 @@ ViewerPlot::SetCacheIndex(int newCacheIndex)
             queryAtts->Notify();
         }
         if (FollowsTime())
+        {
             cacheIndex = newCacheIndex;
+            for (int i = 0; i < nOperators; ++i)
+                operators[i]->SetCacheIndex(cacheIndex);
+        }
     }
 }
 
@@ -874,6 +878,10 @@ ViewerPlot::SetKeyframeMode(bool kfMode)
         databaseAtts->ClearAtts();
     }
 
+    // Update the operators.
+    for (int i = 0; i < nOperators; ++i)
+        operators[i]->SetKeyframeMode(kfMode);
+
     // Resize the cache so it will handle the right number if indices.
     ResizeCache(cs);
 
@@ -953,6 +961,12 @@ ViewerPlot::ResizeCache(int cs)
             beginCacheIndex = 0;
         if(endCacheIndex >= cacheSize)
             endCacheIndex = cacheSize-1;
+
+        //
+        // Resize the operator caches.
+        //
+        for (int i = 0; i < nOperators; ++i)
+            operators[i]->UpdateCacheSize(cacheSize);
     }
 }
 
@@ -1587,6 +1601,9 @@ ViewerPlot::GetMetaData() const
 //
 // Modifications:
 //
+//    Mark C. Miller, Wed Nov  4 12:03:59 PST 2020
+//    Add bg/fg color into to plot meta data.
+//
 // ****************************************************************************
 
 avtPlotMetaData
@@ -1612,9 +1629,25 @@ ViewerPlot::GetPlotMetaData() const
             actualSpatial = *dAtts.GetThisProcsOriginalSpatialExtents();
         }
     }
+
+    /* Get bg/fg color info from window. Even though this-> object
+       appears to have it also, it is not reliably kept up to date. */
+    int windowId = viewerPlotList?viewerPlotList->GetWindowId():0;
+    ViewerWindowManager *vwm = ViewerWindowManager::Instance();
+    ViewerWindow *w = vwm->GetWindow(windowId);
+    WindowAttributes winAtts = w->GetWindowAttributes();
+    AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+
+    double bgc[4];
+    double fgc[4];
+    ColorAttribute const &bgca = annotAtts.GetBackgroundColor();
+    bgca.GetRgba(bgc);
+    ColorAttribute const &fgca = annotAtts.GetForegroundColor();
+    fgca.GetRgba(fgc);
+
     return avtPlotMetaData(GetMetaData(), GetVariableName(),
                            GetVarType(), GetSILRestriction(),
-                           actualSpatial, originalSpatial);
+                           actualSpatial, originalSpatial, bgc, fgc);
 }
 
 // ****************************************************************************
@@ -1830,7 +1863,6 @@ ViewerPlot::SetVariableName(const std::string &name)
     // Save the new variable name.
     variableName = name;
 
-
     if (curPlotAtts->VarChangeRequiresReset())
     {
         const avtDatabaseMetaData *md;
@@ -1865,6 +1897,7 @@ ViewerPlot::SetVariableName(const std::string &name)
         ExpressionList *exprs = NULL;
         if (md != 0)
             exprs = info->GetCreatedExpressions(md);
+
         if (exprs)
         {
             for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
@@ -1898,6 +1931,25 @@ ViewerPlot::SetVariableName(const std::string &name)
                 }
             }
             delete exprs;
+        }
+        // No operator expressions but the attributes may still need
+        // to be updated so handle the update separately. Some
+        // operator GUIs may want the new current (aka primary,
+        // default) variable.
+
+	// Note: Currently the only place UpdateOperatorAtts is called
+	// is when the plot variable name is set or changes, i.e. this
+	// function. However, there maybe other instances where it
+	// could be called.
+        else
+        {
+            int nOps = GetNOperators();
+            for (int opId = 0 ; opId < nOps ; opId++)
+            {
+                ViewerOperator *op = GetOperator(opId);
+                if (op->GetPluginID() == id)
+                  op->UpdateOperatorAtts();
+            }
         }
     }
 
@@ -2355,6 +2407,9 @@ ViewerPlot::SetErrorFlag(bool val)
 //    I modified the warning message that warns about applying the same
 //    operator multiple times to only apply to the slice operator.
 //
+//    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Add operator keyframing.
+//
 // ****************************************************************************
 
 int
@@ -2388,7 +2443,8 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
     // Create the operator.
     //
     ViewerOperator *oper = GetOperatorFactory()->
-        CreateOperator(type, this, fromDefault);
+        CreateOperator(type, viewerPlotList->GetKeyframeMode(),
+            cacheIndex, cacheSize, this, fromDefault);
 
     //
     // Expand the list of operators if necessary.
@@ -5829,6 +5885,9 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 //   Brad Whitlock, Tue Oct 20 11:59:21 PDT 2009
 //   I made it set the plot description.
 //
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Add operator keyframing.
+//
 // ****************************************************************************
 
 void
@@ -5851,12 +5910,25 @@ ViewerPlot::InitializePlot(Plot &plot) const
     plot.SetEmbeddedPlotId(embeddedPlotId);
 
     // Set the keyframe indices.
-    int j, nIndices;
+    int i, j, nIndices;
     const int *indices = plotAtts->GetIndices(nIndices);
     intVector ivec;
     for (j = 0; j < nIndices; j++)
         ivec.push_back(indices[j]);
     plot.SetKeyframes(ivec);
+
+    // Set the operator keyframe indices.
+    ivec.clear();
+    intVector ivec2;
+    for (i = 0; i < nOperators; i++)
+    {
+        indices = operators[i]->GetKeyframeIndices(nIndices);
+        ivec.push_back(nIndices);
+        for (j = 0; j < nIndices; j++)
+            ivec2.push_back(indices[j]);
+    }
+    plot.SetNumKeyframesPerOperator(ivec);
+    plot.SetOperatorKeyframes(ivec2);
 
     // Set the database keyframe indices.
     ivec.clear();
@@ -6703,4 +6775,3 @@ ViewerPlot::PlotHasBeenGlyphed()
     }
     return beenGlyphed;
 }
-

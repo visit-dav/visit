@@ -3,6 +3,9 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "vtkVisItClipper.h"
+
+#include <visit-config.h> // for LIB_VERSION_LE
+
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
 #include <vtkClipDataSet.h>
@@ -153,6 +156,9 @@ AdjustPercentToZeroCrossing(double p0[3], double p1[3],
 //    Kathleen Biagas, Tue Aug 14 11:24:22 MST 2012
 //    Added precomputeClipScalars.
 //
+//    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//    replaced removeWholeCells with cellClipStrategy.
+//
 // ****************************************************************************
 
 vtkVisItClipper::FilterState::FilterState()
@@ -166,7 +172,7 @@ vtkVisItClipper::FilterState::FilterState()
 
     this->otherOutput = NULL;
 
-    this->removeWholeCells = false;
+    this->cellStrategy = REMOVE_PARTIAL_CELL;
     this->insideOut = false;
     this->useZeroCrossings = false;
     this->computeInsideAndOut = false;
@@ -398,23 +404,86 @@ vtkVisItClipper::SetInsideOut(bool io)
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper::SetRemoveWholeCells
+//  Method:  vtkVisItClipper::SetCellClipStrategy
 //
 //  Purpose:
-//    Tell the clipper if you want it to treat cells as atomic, and
-//    simply remove any cell not entirely within the region.
+//    Set the cell clip strategy. This is the strategy used when the clip
+//    boundary intersects with the cell.
+//
+//      1. REMOVE_PARTIAL_CELL
+//         Remove the section of the cell that exists outside of the clip
+//         boundary, and keep the rest intact.
+//
+//      2. REMOVE_WHOLE_CELL
+//         Remove the entire cell.
+//
+//      3. KEEP_WHOLE_CELL
+//         Keep the entire cell.
 //
 //  Arguments:
-//    lcw        the new setting
+//    strategy        The cell clip strategy.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 29, 2006
+//  Programmer:  Alister Maguire
+//  Creation:    November 13, 2020
 //
 // ****************************************************************************
 void
-vtkVisItClipper::SetRemoveWholeCells(bool rwc)
+vtkVisItClipper::SetCellClipStrategy(cellClipStrategy strategy)
 {
-    state.removeWholeCells = rwc;
+    state.cellStrategy = strategy;
+}
+
+// ****************************************************************************
+//  Method:  vtkVisItClipper::SetCellClipStrategyToRemovePartial
+//
+//  Purpose:
+//    Set the cell clip strategy to REMOVE_PARTIAL_CELL.
+//    When a clip boundary intersects a cell, remove the section of
+//    the cell that exists outside of the clip boundary, and keep
+//    the rest intact.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    November 13, 2020
+//
+// ****************************************************************************
+void
+vtkVisItClipper::SetCellClipStrategyToRemovePartial()
+{
+    state.cellStrategy = REMOVE_PARTIAL_CELL;
+}
+
+// ****************************************************************************
+//  Method:  vtkVisItClipper::SetCellClipStrategyToRemoveWhole
+//
+//  Purpose:
+//    Set the cell clip strategy to REMOVE_WHOLE_CELL.
+//    When a clip boundary intersects a cell, remove the entire cell.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    November 13, 2020
+//
+// ****************************************************************************
+void
+vtkVisItClipper::SetCellClipStrategyToRemoveWhole()
+{
+    state.cellStrategy = REMOVE_WHOLE_CELL;
+}
+
+// ****************************************************************************
+//  Method:  vtkVisItClipper::SetCellClipStrategyToKeepWhole
+//
+//  Purpose:
+//    Set the cell clip strategy to KEEP_WHOLE_CELL.
+//    When a clip boundary intersects a cell, keep the entire cell.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    November 13, 2020
+//
+// ****************************************************************************
+void
+vtkVisItClipper::SetCellClipStrategyToKeepWhole()
+{
+    state.cellStrategy = KEEP_WHOLE_CELL;
 }
 
 vtkUnstructuredGrid*
@@ -470,7 +539,11 @@ public:
         nCellPts = (dims[2] <= 1) ? 4 : 8;
     }
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
     inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+#else
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+#endif
     {
         const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
         const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
@@ -563,9 +636,15 @@ public:
         return pd->GetCellType(cellId);
     }
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
     inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
         vtkIdType *cellPts = NULL;
+#else
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    {
+        const vtkIdType *cellPts = NULL;
+#endif
         pd->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -586,10 +665,15 @@ public:
     {
         return ug->GetCellType(cellId);
     }
-
+#if LIB_VERSION_LE(VTK, 8,1,0)
     inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
         vtkIdType *cellPts = NULL;
+#else
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    {
+        const vtkIdType *cellPts = NULL;
+#endif
         ug->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -615,7 +699,11 @@ public:
         return cellPoints.GetCellType(cellId);
     }
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
     inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+#else
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+#endif
     {
         return cellPoints.GetCellPoints(cellId, nCellPts);
     }
@@ -661,7 +749,11 @@ public:
         return cellPoints.GetCellType(cellId);
     }
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
     inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+#else
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+#endif
     {
         return cellPoints.GetCellPoints(cellId, nCellPoints);
     }
@@ -723,6 +815,9 @@ private:
 //    Added clipper argument, for access to the ModifyClip method.
 //    Evaluation clip function if precomputeClipScalars is false.
 //
+//    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//    Updated to clip cells based on the cellClipStrategy.
+//
 // ****************************************************************************
 
 template <typename Bridge, typename ScalarAccess>
@@ -760,7 +855,11 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
         clipper->ModifyClip(input, cellId);
         int cellType = bridge.GetCellType(cellId);
         vtkIdType nCellPts = 0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
         vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
+#else
+        const vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
+#endif
 
         // If it's something we can't clip, save it for later
         switch (cellType)
@@ -822,8 +921,47 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
                 lookup_case *= 2;
         }
 
-        if (state.removeWholeCells && lookup_case != 0)
-            lookup_case = ((1 << nCellPts) - 1);
+        //
+        // Determine how to handle clipping this cell. This is
+        // really only relevant when the clip boundary intersects
+        // the cell.
+        //
+        switch(state.cellStrategy)
+        {
+            case (vtkVisItClipper::REMOVE_PARTIAL_CELL):
+            {
+                //
+                // No extra work needed for this case.
+                //
+                break;
+            }
+            case (vtkVisItClipper::REMOVE_WHOLE_CELL):
+            {
+                //
+                // Choose the last case, which removes the entire cell.
+                //
+                if (lookup_case != 0)
+                {
+                    lookup_case = ((1 << nCellPts) - 1);
+                }
+                break;
+            }
+            case (vtkVisItClipper::KEEP_WHOLE_CELL):
+            {
+                //
+                // A lookup_case of 0 means that we're inside the "keep"
+                // portion of the clip boundary, and a lookup_case of
+                // ((1 << nCellPts)-1) means that we're inside the "remove"
+                // section. Anything in between is a cell that's instersected
+                // by the clip boundary. We're keeping these intact here.
+                //
+                if (lookup_case > 0 && lookup_case < ((1 << nCellPts) - 1))
+                {
+                    lookup_case = 0;
+                }
+                break;
+            }
+        }
 
         unsigned char  *splitCase = NULL;
         int             numOutput = 0;

@@ -35,11 +35,15 @@
 //    Alister Maguire, Mon Feb 24 14:25:20 MST 2020
 //    Removed canApplyToDirectDatabaseQOT. It now defaults to true.
 //
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false. There are cases where the
+//    variable is derived from the mesh, which DDQOT can't handle yet.
+//
 // ****************************************************************************
 
 avtUnaryMathExpression::avtUnaryMathExpression()
 {
-    ;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

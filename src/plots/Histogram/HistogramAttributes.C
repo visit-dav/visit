@@ -1457,9 +1457,15 @@ HistogramAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj) const
 {
+    if (limitsMode != obj.GetLimitsMode())
+        return true;
+    if (minFlag != obj.GetMinFlag())
+        return true;
+    if (maxFlag != obj.GetMaxFlag())
+        return true;
     if (minFlag && (min != obj.GetMin()))
         return true;
-    if (minFlag && (max != obj.GetMax()))
+    if (maxFlag && (max != obj.GetMax()))
         return true;
     if (useBinWidths != obj.GetUseBinWidths())
         return true;
@@ -1479,6 +1485,10 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
         return true;
     if ( binScale != obj.GetBinScale() )
         return true;
+    if (normalizeHistogram != obj.GetNormalizeHistogram())
+        return true;
+    if (computeAsCDF != obj.GetComputeAsCDF())
+        return true;
     return false;
 }
 
@@ -1486,37 +1496,5 @@ bool
 HistogramAttributes::VarChangeRequiresReset()
 {
     return true;
-}
-
-// ****************************************************************************
-// Method: HistogramAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
-//
-// Programmer: Kathleen Biagas
-// Creation:   April 4, 2018
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-HistogramAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("HistogramAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
 }
 

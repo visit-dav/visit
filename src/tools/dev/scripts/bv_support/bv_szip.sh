@@ -66,13 +66,6 @@ function bv_szip_ensure
     fi
 }
 
-function bv_szip_dry_run
-{
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        echo "Dry run option not set for szip."
-    fi
-}
-
 # *************************************************************************** #
 #                          Function 8.0, build_szip                           #
 # *************************************************************************** #
@@ -102,20 +95,20 @@ function build_szip
     fi
 
     extra_ac_flags=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" LIBS=\"-lm\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" ${cf_szip} \
-        ${extra_ac_flags}"
-
+    set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip} \
                 ${extra_ac_flags}
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "SZIP configure failed.  Giving up"

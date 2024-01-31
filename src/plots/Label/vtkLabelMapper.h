@@ -31,6 +31,9 @@ class vtkTextProperty;
 //
 // Modifications:
 //
+//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//    Added GetPositionScale.
+//
 // ****************************************************************************
 
 class vtkLabelMapper : public vtkLabelMapperBase
@@ -66,6 +69,8 @@ protected:
     void ClearZBuffer();
     void InitializeZBuffer(vtkDataSet *, vtkRenderer *, bool, bool);
 
+    void GetPositionScale(double *);
+
     template <typename T>
     double *TransformPoints(T inputPoints,
                            const unsigned char *quantizedNormalIndices,
@@ -83,8 +88,8 @@ protected:
     static bool            zBufferWarningIssued;
 
 private:
-    vtkLabelMapper(const vtkLabelMapper&) VTK_DELETE_FUNCTION;
-    void operator=(const vtkLabelMapper&) VTK_DELETE_FUNCTION;
+    vtkLabelMapper(const vtkLabelMapper&) = delete;
+    void operator=(const vtkLabelMapper&) = delete;
 };
 
 #endif

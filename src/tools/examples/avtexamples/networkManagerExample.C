@@ -28,6 +28,7 @@
 #include <VisItException.h>
 #include <visitstream.h>
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,16 @@ using std::vector;
 int
 main(int argc, char *argv[])
 {
+    string dataDir("/usr/gapps/visit/data");
+    for(int i = 1; i < argc; ++i)
+    {
+        if(std::strcmp(argv[i], "-datadir") == 0 && (i+1) < argc)
+        {
+            dataDir = string(argv[i+1]);
+            break;
+        }
+    }
+
     //
     // Initialize VisIt.
     //
@@ -73,6 +84,7 @@ main(int argc, char *argv[])
     //
     // Create the network manager.
     //
+    cerr << "Creating the NetworkManager." << endl;
     NetworkManager *netmgr = new NetworkManager;
 
     netmgr->SetDatabasePluginManager(dbmgr);
@@ -86,8 +98,8 @@ main(int argc, char *argv[])
     // Open the file.
     //
     cerr << "Opening a silo file." << endl; 
-    netmgr->StartNetwork("Silo_1.0", "/usr/gapps/visit/data/curv2d.silo",
-                         "d", 0);
+    string filename = dataDir + "/curv2d.silo";
+    netmgr->StartNetwork("Silo_1.0", filename.c_str(), "d", 0);
 
     //
     // Add an operator.

@@ -5,6 +5,7 @@
 #include <PyavtLabelMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyavtLabelMetaData
@@ -34,13 +35,12 @@ struct avtLabelMetaDataObject
 // Internal prototypes
 //
 static PyObject *NewavtLabelMetaData(int);
-
 std::string
-PyavtLabelMetaData_ToString(const avtLabelMetaData *atts, const char *prefix)
+PyavtLabelMetaData_ToString(const avtLabelMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     return str;
 }
@@ -95,14 +95,7 @@ avtLabelMetaData_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-avtLabelMetaData_compare(PyObject *v, PyObject *w)
-{
-    avtLabelMetaData *a = ((avtLabelMetaDataObject *)v)->data;
-    avtLabelMetaData *b = ((avtLabelMetaDataObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *avtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtLabelMetaData_getattr(PyObject *self, char *name)
 {
@@ -115,6 +108,17 @@ PyavtLabelMetaData_getattr(PyObject *self, char *name)
 
     PyavtLabelMetaData_ExtendSetGetMethodTable();
 
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtLabelMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtLabelMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtLabelMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtLabelMetaData_methods, self, name);
 }
 
@@ -126,20 +130,21 @@ PyavtLabelMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else
         PyErr_Clear();
 
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -147,7 +152,7 @@ static int
 avtLabelMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtLabelMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtLabelMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -155,7 +160,7 @@ PyObject *
 avtLabelMetaData_str(PyObject *v)
 {
     avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
-    return PyString_FromString(PyavtLabelMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtLabelMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -168,49 +173,70 @@ static char *avtLabelMetaData_Purpose = "Contains label metadata attributes";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject avtLabelMetaDataType =
+
+VISIT_PY_TYPE_OBJ(avtLabelMetaDataType,         \
+                  "avtLabelMetaData",           \
+                  avtLabelMetaDataObject,       \
+                  avtLabelMetaData_dealloc,     \
+                  avtLabelMetaData_print,       \
+                  PyavtLabelMetaData_getattr,   \
+                  PyavtLabelMetaData_setattr,   \
+                  avtLabelMetaData_str,         \
+                  avtLabelMetaData_Purpose,     \
+                  avtLabelMetaData_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+avtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "avtLabelMetaData",                    // tp_name
-    sizeof(avtLabelMetaDataObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)avtLabelMetaData_dealloc,  // tp_dealloc
-    (printfunc)avtLabelMetaData_print,     // tp_print
-    (getattrfunc)PyavtLabelMetaData_getattr, // tp_getattr
-    (setattrfunc)PyavtLabelMetaData_setattr, // tp_setattr
-    (cmpfunc)avtLabelMetaData_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)avtLabelMetaData_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    avtLabelMetaData_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &avtLabelMetaDataType
+         || Py_TYPE(other) != &avtLabelMetaDataType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    avtLabelMetaData *a = ((avtLabelMetaDataObject *)self)->data;
+    avtLabelMetaData *b = ((avtLabelMetaDataObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -286,7 +312,7 @@ PyavtLabelMetaData_GetLogString()
 {
     std::string s("avtLabelMetaData = avtLabelMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.");
+        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.", true);
     return s;
 }
 
@@ -299,7 +325,7 @@ PyavtLabelMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtLabelMetaData = avtLabelMetaData()\n");
-        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.");
+        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.", true);
         cb(s);
     }
 }

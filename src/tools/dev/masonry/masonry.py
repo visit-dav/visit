@@ -12,6 +12,11 @@ import datetime
 import json
 import errno
 import webbrowser
+import time
+
+import glob
+import re
+import plistlib  # Generate and parse macOS .plist files
 
 from os.path import join as pjoin
 
@@ -22,7 +27,9 @@ __all__ = ["Context",
            "cmake",
            "make",
            "inorder",
-           "view_log"]
+           "notarize",
+           "view_log",
+           "log_to_text"]
 # ----------------------------------------------------------------------------
 #  Method: mkdir_p
 #
@@ -95,6 +102,63 @@ def _decode_dict(data):
         rv[key] = value
     return rv
 
+# ----------------------------------------------------------------------------
+#  Method: filter_files 
+#
+#  Programmer: Kevin Griffin
+#  Date:       Fri Dec 18 2020
+#
+#  Generates a list of binary files, frameworks, and bundles on macOS for code signing. 
+#  Items in the list are placed in the correct order for proper inside/out code signing. 
+#
+# ----------------------------------------------------------------------------
+def filter_files(sub_dir):
+    filtered_files = []
+    app_bundles = []
+    app_frameworks = []
+
+    files = glob.glob(pjoin(sub_dir, "*"))
+
+    # RE Patterns
+    headers_pattern = re.compile(r'/Headers/')
+    framework_pattern = re.compile(r'\.framework', flags=re.IGNORECASE)
+    bundle_pattern = re.compile(r'\.app', flags=re.IGNORECASE)
+    binary_pattern = re.compile(r'\.dylib|\.so|\.a', flags=re.IGNORECASE)
+
+    # Search for binaries
+    for f in files:
+        if headers_pattern.search(f) is not None:
+            continue
+
+        basename = os.path.basename(f)
+        endpos = len(basename)
+        pos = endpos - len(".app")
+
+        # Add app bundles last to ensure proper inside/out signing
+        if pos > 0 and bundle_pattern.search(basename, pos, endpos) is not None:
+            app_bundles.append(f)
+        else:
+            pos = endpos - len(".framework")
+            if pos > 0 and framework_pattern.search(basename, pos, endpos) is not None:
+                app_frameworks.append(f)
+
+        if os.path.isdir(f):
+            filtered_files += filter_files(f)
+        else:
+            if basename.find('.') == -1:
+                filtered_files.append(f)
+            else:
+                pos = endpos - len(".dylib") # length of the longest binary extension
+                if pos < 0:
+                    pos = 0
+
+                if binary_pattern.search(basename, pos, endpos) is not None:
+                    filtered_files.append(f)
+
+    filtered_files += app_frameworks
+    filtered_files += app_bundles
+    return filtered_files
+
 def json_loads(jsons):
     if os.path.isfile(jsons):
         jsons=open(jsons).load()
@@ -132,7 +196,7 @@ def timedelta(t_start,t_end):
             "minutes":minutes,
             "seconds": seconds}
 
-def sexe(cmd,ret_output=False,echo = False,env=None):
+def shexe(cmd,ret_output=False,echo = False,env=None):
         """ Helper for executing shell commands. """
         kwargs = {"shell":True}
         if not env is None:
@@ -142,8 +206,9 @@ def sexe(cmd,ret_output=False,echo = False,env=None):
         if ret_output:
             kwargs["stdout"] = subprocess.PIPE
             kwargs["stderr"] = subprocess.STDOUT
+            kwargs["universal_newlines"] = True
             p = subprocess.Popen(cmd,**kwargs)
-            res =p.communicate()[0]
+            res = p.communicate()[0]
             return p.returncode,res
         else:
             return subprocess.call(cmd,**kwargs),""
@@ -205,11 +270,12 @@ class Context(object):
             ofile = open(ofname,"w")
             ofile.write(json.dumps(result,indent=2))
             ofile.close()
-            # create link
-            lastlink = pjoin(self.log_dir,"last.json")
-            if os.path.islink(lastlink):
-                os.unlink(lastlink)
-            os.symlink(ofname,lastlink)
+            if not sys.platform.startswith('win'):
+                # if not on windows, create syml link
+                lastlink = pjoin(self.log_dir,"last.json")
+                if os.path.islink(lastlink):
+                    os.unlink(lastlink)
+                os.symlink(ofname,lastlink)
         except Exception as e:
             print("<logging error> failed to write results to %s" % ofname)
             raise e
@@ -236,6 +302,217 @@ class Action(object):
             jsons = open(jsons).read()
         params = json_loads(jsons)
         return cls.load_dict(params)
+
+class NotarizeAction(Action):
+    def __init__(self,
+                 build_dir,
+                 build_type,
+                 build_version,
+                 build_arch,
+                 entitlements,
+                 cert,
+                 bundle_id,
+                 username,
+                 password,
+                 asc_provider,
+                 type="notarize",
+                 description=None,
+                 halt_on_error=True,
+                 env=None):
+        super(NotarizeAction,self).__init__()
+        self.params["build_dir"] = build_dir
+        self.params["build_type"] = build_type
+        self.params["build_version"] = build_version
+        self.params["build_arch"] = build_arch
+        self.params["entitlements"] = entitlements
+        self.params["cert"] = cert
+        self.params["bundle_id"] = bundle_id
+        self.params["username"] = username
+        self.params["password"] = password
+        self.params["asc_provider"] = asc_provider
+        self.params["type"] = type
+        self.params["description"] = description
+        self.params["halt_on_error"] = halt_on_error
+        self.params["env"] = env
+
+    def execute(self,base,key,tag,parent_res):
+        t_start = timenow();
+        res = {"action":
+               {"key": key,
+                "type":self.params["type"],
+                "name":tag,
+                "description": self.params["description"],
+                "build_dir": self.params["build_dir"],
+                "build_type": self.params["build_type"],
+                "build_version": self.params["build_version"],
+                "build_arch": self.params["build_arch"],
+                "entitlements": self.params["entitlements"],
+                "cert": self.params["cert"],
+                "bundle_id": self.params["bundle_id"],
+                "username": self.params["username"],
+                "password": self.params["password"],
+                "asc_provider": self.params["asc_provider"],
+                "env": self.params["env"],
+                "start_time":  timestamp(t_start),
+                "halt_on_error": self.params["halt_on_error"],
+                "finish_time":  None,
+                "elapsed_time": None,
+                "output": None}
+                }
+        parent_res["trigger"]["active_actions"] = [res]
+        base.log(key=key,result=parent_res)
+        cwd = os.path.abspath(os.getcwd())
+        env = os.environ.copy()
+
+        if not self.params["env"] is None:
+            env.update(self.params["env"])
+
+        try:
+            build_dir = pjoin(self.params["build_dir"], "build.%s" % self.params["build_type"])
+            bundle_dir = pjoin(build_dir, "_CPack_Packages/Darwin/Bundle")
+
+            ######################################
+            # Inside/Out Code Signing
+            ######################################
+            sub_dirs_base = pjoin(bundle_dir, "VisIt-%s/VisIt.app/Contents/Resources/%s/%s" % (self.params["build_version"], 
+                                                                                               self.params["build_version"], 
+                                                                                               self.params["build_arch"]))
+            sub_dirs = [pjoin(sub_dirs_base, "bin")]
+            sub_dirs.append(pjoin(sub_dirs_base, "lib"))
+            sub_dirs.append(pjoin(sub_dirs_base, "plugins"))
+            sub_dirs.append(pjoin(sub_dirs_base, "libsim"))
+
+            # Get the list of binaries in each directory and sign them
+            for sub_dir in sub_dirs:
+                binaries = filter_files(sub_dir)
+                for binary in binaries:
+                    cmd = 'codesign --force --options runtime --timestamp'
+                    cmd += ' --entitlements %s' % self.params["entitlements"]
+                    cmd += ' -s "%s" %s' % (self.params["cert"], binary)
+                    rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                    print("[res: %s]" % rout)
+
+            # codesign VisIt.app
+            visit_app = pjoin(bundle_dir, "VisIt-%s/VisIt.app" % self.params["build_version"])
+            cmd = 'codesign --force --options runtime --timestamp'
+            cmd += ' --entitlements %s' % self.params["entitlements"]
+            cmd += ' -s "%s" %s' % (self.params["cert"], visit_app) 
+            rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+            print("[res: %s]" % rout)
+
+            # Create DMG to upload to Apple
+            notarize_dir = pjoin(self.params["build_dir"], "notarize.%s" % self.params["build_type"])
+            if not os.path.isdir(notarize_dir):
+                os.makedirs(notarize_dir)
+            os.chdir(notarize_dir)
+
+            src_folder = pjoin(bundle_dir, "VisIt-%s" % self.params["build_version"])
+            temp_dmg = pjoin(notarize_dir, "VisIt.dmg")
+            if os.path.isfile(temp_dmg):
+                print("[removing existing temporary dmg file: {0}]".format(temp_dmg))
+                os.remove(temp_dmg)
+
+            cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
+
+            ##########################################################################
+            # NOTE (cyrush) 2021-05-27
+            # the dmg creation process is unreliable, it can often fail with:
+            #   hdiutil: create failed - Resource busy 
+            # but then works fine on subsequent tries, so we try here multiple times
+            ##########################################################################
+
+            dmg_created = False
+            dmg_create_max_attempts = 5
+            dmg_create_attempts = 0
+            dmg_create_output = ""
+            while not dmg_created and dmg_create_attempts < dmg_create_max_attempts:
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                print("[res: %s]" % rout)
+                dmg_create_output = rout
+                if rcode == 0:
+                    dmg_created = True
+                else:
+                    dmg_create_attempts += 1
+
+            if not dmg_created:
+                msg = "[error creating VisIt dmg for notarization ({0} attempts)]".format(dmg_create_attempts)
+                raise RuntimeError(msg, cmd, dmg_create_output)
+
+            ######################################
+            # Upload to Apple Notary Service 
+            ######################################
+
+            cmd = "xcrun altool --notarize-app"
+            cmd += " --primary-bundle-id %s" % self.params["bundle_id"]
+            cmd += " --username %s" % self.params["username"]
+            cmd += " --password %s" % self.params["password"]
+            cmd += " --asc-provider %s" % self.params["asc_provider"]
+            cmd += " --file %s" % temp_dmg 
+            cmd += " --output-format xml"
+            rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+            if rcode != 0:
+                raise RuntimeError("[error submitting VisIt dmg for notarization]", cmd)
+
+            pl = plistlib.readPlistFromString(rout)
+            uuid = pl["notarization-upload"]["RequestUUID"]
+            print("[uuid: %s]" % uuid)
+
+            # Check status of notarization request
+            cmd = "xcrun altool --notarization-info %s" % uuid
+            cmd += " --username %s" % self.params["username"]
+            cmd += " --password %s" % self.params["password"]
+            cmd += " --output-format xml"
+
+            status = "in progress"
+            while status == "in progress":
+                time.sleep(30)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                pl = plistlib.readPlistFromString(rout)
+                status = pl["notarization-info"]["Status"]
+                status = status.strip()
+                print("[status: %s]" % status)
+             
+            ###################################
+            # Staple notarization ticket to app bundle
+            ###################################
+
+            if status == "success":
+                cmd = "xcrun stapler staple %s" % visit_app
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                print("[stapler: %s]" % rout)
+                if rcode != 0:
+                    raise RuntimeError("[error stapling VisIt (bad network or on VPN?)]", cmd)
+
+                # Create new DMG with stapled containing notarized app
+                dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
+                cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                print("[hdiutil: %s]" % rout)
+                if rcode != 0:
+                    raise RuntimeError("[error creating stapled VisIt.stpl.dmg]", cmd)
+
+                dmg_release = pjoin(notarize_dir, "VisIt-%s.dmg" % self.params["build_version"])
+                cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                print("[hdiutil:convert: %s]" % rout)
+                if rcode != 0:
+                    raise RuntimeError("[error creating final VisIt-{0}.dmg]".format(self.params["build_version"]), cmd)
+            else:
+                raise RuntimeError("Notarization Failed!")
+        except KeyboardInterrupt as e:
+            res["action"]["error"] = "notarize command interrupted by user (ctrl-c)"
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            print(e)
+            res["action"]["error"] = str(e)
+
+        t_end = timenow()
+        res["action"]["finish_time"]  = timestamp(t_end)
+        res["action"]["elapsed_time"] = timedelta(t_start,t_end) 
+        os.chdir(cwd)
+        parent_res["trigger"]["active_actions"] = []
+        base.log(key=key,result=parent_res)
+        return res
 
 class ShellAction(Action):
     def __init__(self,
@@ -284,7 +561,7 @@ class ShellAction(Action):
 
             print("[chdir to: %s]" % self.params["working_dir"])
             os.chdir(self.params["working_dir"])
-            rcode, rout = sexe(self.params["cmd"],
+            rcode, rout = shexe(self.params["cmd"],
                                ret_output=True,
                                echo=True,
                                env=env)
@@ -441,6 +718,26 @@ git     = GitAction
 cmake   = CMakeAction
 make    = MakeAction
 inorder = InorderTrigger
+notarize = NotarizeAction
+
+
+def log_to_text(fname):
+    log = json.load(open(fname))
+    for t in log["trigger"]["results"]:
+        for k, v in t.items():
+            print()
+            print("++++++++++++++++++++++++++++++")
+            print(k)
+            print("++++++++++++++++++++++++++++++")
+            print()
+            for kk,vv in v.items():
+                if kk == "output":
+                    print("========")
+                    print("{0}: output:".format(kk))
+                    print("========")
+                    print(vv.replace("\\n","\n"))
+                else:
+                    print("{0}: {1}".format(kk,vv))
 
 
 def view_log(fname):
@@ -450,9 +747,13 @@ def view_log(fname):
     subprocess.call("cp -fr %s/* %s" % (html_src,log_dir),shell=True)
     os.chdir(log_dir)
     try:
+        if sys.version_info[0] == 2:
+            svr_cmd = "SimpleHTTPServer"
+        else:
+            svr_cmd = "http.server"
         child = subprocess.Popen([sys.executable, 
                                   '-m',
-                                  'SimpleHTTPServer',
+                                  svr_cmd,
                                   str(port)])
         url = 'http://localhost:8000/view_log.html?log=%s' % log_fname
         webbrowser.open(url)

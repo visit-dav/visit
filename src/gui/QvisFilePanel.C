@@ -11,10 +11,10 @@
 #include <QLabel>
 #include <QMenu>
 #include <QTreeWidget>
-#include <QTreeWidgetItem> 
+#include <QTreeWidgetItem>
 #include <QLayout>
 #include <QPushButton>
-#include <QLineEdit> 
+#include <QLineEdit>
 #include <QTimer>
 
 #include <QvisFilePanel.h>
@@ -159,7 +159,7 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 // ****************************************************************************
 // Method: QvisFilePanel::QvisFilePanel
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisFilePanel class.
 //
 // Arguments:
@@ -220,7 +220,7 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent) :
-   QGroupBox(tr("Selected Files"),parent), SimpleObserver(), GUIBase(), 
+   QGroupBox(tr("Selected Files"),parent), SimpleObserver(), GUIBase(),
    displayInfo(),
    timeStateFormat()
 {
@@ -229,7 +229,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     fileTree = new QTreeWidget(this);
     fileTree->header()->hide();
@@ -241,9 +241,9 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
     connect(fileTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)),
             this, SLOT(openFileDblClick(QTreeWidgetItem *)));
     /*
-    connect(fileListView, 
+    connect(fileListView,
             SIGNAL(rightButtonClicked(QListViewItem *,const QPoint &,int)),
-            this, 
+            this,
             SLOT(showFilePopup(QListViewItem *, const QPoint &, int)));
     */
     connect(fileTree, SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
@@ -257,7 +257,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
 
     // Create the file opening buttons.
     QHBoxLayout *buttonLayout = new QHBoxLayout(0);
-    buttonLayout->setMargin(0);
+    buttonLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(buttonLayout);
     topLayout->setStretchFactor(buttonLayout, 10);
     openButton = new QPushButton(tr("Open"));
@@ -297,7 +297,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisFilePanel::~QvisFilePanel
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisFilePanel class.
 //
 // Programmer: Brad Whitlock
@@ -329,11 +329,11 @@ QvisFilePanel::~QvisFilePanel()
 // ****************************************************************************
 // Method: QvisFilePanel::SetTimeStateFormat
 //
-// Purpose: 
+// Purpose:
 //   Sets the display mode for the file panel. We can make it display files
 //   using cycle information or we can make it use time information.
 //
-// Arguments: 
+// Arguments:
 //   m : The new timestate display mode.
 //
 // Notes:      This method resets the text on the expanded databases, which
@@ -434,7 +434,7 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
 // ****************************************************************************
 // Method: QvisFilePanel::GetTimeStateFormat
 //
-// Purpose: 
+// Purpose:
 //   Returns the time state format.
 //
 // Returns:    The time state format.
@@ -443,7 +443,7 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
 // Creation:   Mon Oct 13 17:19:20 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const TimeFormat &
@@ -455,7 +455,7 @@ QvisFilePanel::GetTimeStateFormat() const
 // ****************************************************************************
 // Method: QvisFilePanel::Update
 //
-// Purpose: 
+// Purpose:
 //   This method tells the widget to update itself when the subject
 //   changes.
 //
@@ -486,7 +486,7 @@ QvisFilePanel::Update(Subject *TheChangedSubject)
 // ****************************************************************************
 // Method: QvisFilePanel::UpdateFileList
 //
-// Purpose: 
+// Purpose:
 //   This method updates the widget to reflect the new state stored
 //   in the FileServerList that this widget is watching.
 //
@@ -531,7 +531,7 @@ QvisFilePanel::UpdateFileList(bool doAll)
 // ****************************************************************************
 // Method: QvisFilePanel::RepopulateFileList
 //
-// Purpose: 
+// Purpose:
 //   Clears out the selected files and refills the list with the new list
 //   of selected files.
 //
@@ -637,8 +637,8 @@ QvisFilePanel::RepopulateFileList()
             char separator = fileServer->GetSeparator(hpos->first);
             QualifiedFilename hostOnly(hpos->first, "(host)", "(host)");
             hostOnly.separator = separator;
-            
-            QTreeWidgetItem *newFile = new QvisFilePanelItem(root, 
+
+            QTreeWidgetItem *newFile = new QvisFilePanelItem(root,
                                                              QString(hpos->first.c_str()),
                                                              hostOnly,
                                                              QvisFilePanelItem::HOST_NODE);
@@ -692,7 +692,7 @@ QvisFilePanel::RepopulateFileList()
         {
             // Create the root for the host list.
             QualifiedFilename rootName(f[0].host, "(host)", "(host)");
-            QTreeWidgetItem *root = new QvisFilePanelItem(fileTree, 
+            QTreeWidgetItem *root = new QvisFilePanelItem(fileTree,
                                                           QString(f[0].host.c_str()),
                                                           rootName,
                                                           QvisFilePanelItem::ROOT_NODE);
@@ -733,7 +733,7 @@ QvisFilePanel::RepopulateFileList()
 // ****************************************************************************
 // Method: QvisFilePanel::UpdateWindowInfo
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the GlobalAttributes subject that this
 //   widget watches is updated.
 //
@@ -815,7 +815,7 @@ QvisFilePanel::UpdateWindowInfo(bool doAll)
         {
             OpenActiveSourceInFileServer();
         }
-    
+
         //
         // If the active source, time slider, or time slider states change then
         // we need to update the file selection. Note - without this code, the
@@ -842,7 +842,7 @@ QvisFilePanel::UpdateWindowInfo(bool doAll)
 // ****************************************************************************
 // Method: QvisFilePanel::ExpandDatabases
 //
-// Purpose: 
+// Purpose:
 //   This method traverses the listviewitem tree and looks for the
 //   selected file. When it finds the selected file, it turns it into
 //   a database if the file has more than 1 state.
@@ -895,7 +895,7 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
     // iterator is invalidated.
     QList<QvisFilePanelItem*> items;
     QTreeWidgetItemIterator itr(fileTree);
-    while(*itr) 
+    while(*itr)
     {
         items.append((QvisFilePanelItem*)*itr);
         ++itr;
@@ -955,7 +955,7 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
                         for(j = 0; j < item->childCount(); ++j, ++it)
                         {
                             // Reset the label so that it shows the right values.
-                            (*it)->setText(0, CreateItemLabel(md, j,useVirtualDBInfo)); 
+                            (*it)->setText(0, CreateItemLabel(md, j,useVirtualDBInfo));
                         }
 
                         // Remember that the item now has the correct information
@@ -1015,14 +1015,14 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::ExpandDatabaseItem(QvisFilePanelItem *item)
 {
     //
-    // It could be that this method is being called on the child timestate of 
+    // It could be that this method is being called on the child timestate of
     // a previously expanded database. If that is the case, then the parent
     // will exist and it will have the same filename as the item.
     //
@@ -1043,7 +1043,7 @@ QvisFilePanel::ExpandDatabaseItem(QvisFilePanelItem *item)
 // ****************************************************************************
 // Method: QvisFilePanel::ExpandDatabaseItemUsingMetaData
 //
-// Purpose: 
+// Purpose:
 //   Expands a database item as a database, which means that it uses the
 //   number of time states to display the database.
 //
@@ -1066,7 +1066,7 @@ QvisFilePanel::ExpandDatabaseItem(QvisFilePanelItem *item)
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -1087,7 +1087,7 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisFilePanelItem *item)
             for(int i = 0; i < md->GetNumStates(); ++i)
             {
                 QvisFilePanelItem *fi = new QvisFilePanelItem(
-                                   item, 
+                                   item,
                                    CreateItemLabel(md, i, useVirtualDBInfo),
                                    item->file, QvisFilePanelItem::FILE_NODE, i);
                 fi->setExpanded(false);
@@ -1113,7 +1113,7 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisFilePanelItem *item)
 // ****************************************************************************
 // Method: QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition
 //
-// Purpose: 
+// Purpose:
 //   Expands a database item as a virtual database when possible. Otherwise, if
 //   the virtual database has more time states than files, it is displayed
 //   as a database.
@@ -1127,7 +1127,7 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisFilePanelItem *item)
 // Modifications:
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -1167,7 +1167,7 @@ QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisFilePanelItem *ite
 // ****************************************************************************
 // Method: QvisFilePanel::CreateItemLabel
 //
-// Purpose: 
+// Purpose:
 //   Creates the label for the item at the requested database timestate.
 //
 // Arguments:
@@ -1178,7 +1178,7 @@ QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisFilePanelItem *ite
 //
 // Returns:    A string to use in the file panel to help display the file.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 13 15:42:17 PST 2003
@@ -1250,7 +1250,7 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
 // ****************************************************************************
 // Method: QvisFilePanel::FormattedCycleString
 //
-// Purpose: 
+// Purpose:
 //   Returns a formatted cycle string.
 //
 // Arguments:
@@ -1258,27 +1258,28 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
 //
 // Returns:    A formatted cycle string.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 14 11:31:42 PDT 2003
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg as suggested in Qt docs.
+//
 // ****************************************************************************
 
 QString
 QvisFilePanel::FormattedCycleString(const int cycle) const
 {
-    QString retval;
-    retval.sprintf("%04d", cycle);
+    QString retval = QString("%1").arg(cycle,4,10,QLatin1Char('0'));
     return retval;
 }
 
 // ****************************************************************************
 // Method: QvisFilePanel::FormattedTimeString
 //
-// Purpose: 
+// Purpose:
 //   Returns a formatted time string.
 //
 // Arguments:
@@ -1292,7 +1293,9 @@ QvisFilePanel::FormattedCycleString(const int cycle) const
 // Creation:   Mon Oct 13 16:03:37 PST 2003
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg as suggested in Qt docs.
+//
 // ****************************************************************************
 
 QString
@@ -1301,9 +1304,7 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
     QString retval("?");
     if(accurate)
     {
-        QString formatString;
-        formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
-        retval.sprintf(formatString.toStdString().c_str(), t);
+        retval = QString("%1").arg(t,0,'g',timeStateFormat.GetPrecision());
     }
     return retval;
 }
@@ -1311,7 +1312,7 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
 // ****************************************************************************
 // Method: QvisFilePanel::DisplayVirtualDBInformation
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not we should display a virtual database as a
 //   virtual database. Sometimes, virtual databases have more states than
 //   files. In that case, we want to show them as databases instead of
@@ -1321,7 +1322,7 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
 // Creation:   Mon Dec 29 11:28:59 PDT 2003
 //
 // Modifications:
-//   
+//
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
@@ -1347,7 +1348,7 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 // ****************************************************************************
 // Method: QvisFilePanel::UpdateFileSelection
 //
-// Purpose: 
+// Purpose:
 //   Highlights the selected file in the file list view.
 //
 // Programmer: Brad Whitlock
@@ -1380,10 +1381,10 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 //   Cyrus Harrison, Thu Dec  4 08:09:20 PST 2008
-//   Made sure the current item is visible via scroll to item. 
-// 
+//   Made sure the current item is visible via scroll to item.
+//
 //   Jeremy Meredith, Tue Feb  5 16:00:12 EST 2013
 //   This can take a while if we have lots and lots of time steps.
 //   Don't update the selection if the file panel is not visible.  We
@@ -1481,14 +1482,14 @@ QvisFilePanel::UpdateFileSelection()
             {
                 // Check if the current item is for the current time state.
                 bool currentTimeState = item->timeState == dbStateForActiveSource;
-                
+
                 // If we have information for this file and it turns out that
                 // the file is not expanded, then check to see if the item is
                 // the root of the database.
                 if(HaveFileInformation(item->file) && !FileIsExpanded(item->file))
                 {
                     //
-                    // The time states are not expanded. If the time state 
+                    // The time states are not expanded. If the time state
                     // that we're looking at is not -1 then it is a time
                     // step in the database but since the file is not
                     // expanded, we want to instead highlight the parent.
@@ -1555,7 +1556,7 @@ QvisFilePanel::UpdateFileSelection()
 // ****************************************************************************
 // Method: QvisFilePanel::HighlightedItemIsInvalid
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the currently highlighted item is an invalid selection.
 //
 // Returns:    True if the highlighted item is not valid; false otherwise.
@@ -1564,13 +1565,13 @@ QvisFilePanel::UpdateFileSelection()
 // Creation:   Tue Apr 13 14:00:08 PST 2004
 //
 // Modifications:
-//   
+//
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 bool
@@ -1615,14 +1616,14 @@ QvisFilePanel::HighlightedItemIsInvalid() const
 // ****************************************************************************
 // Method: QvisFilePanel::UpdateReplaceButtonEnabledState
 //
-// Purpose: 
+// Purpose:
 //   This method updates the enabled state of the Replace button.
 //
 // Arguments:
 //
 // Returns:    True if the button was enabled; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 20 16:17:55 PST 2004
@@ -1633,7 +1634,7 @@ QvisFilePanel::HighlightedItemIsInvalid() const
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 //   Cyrus Harrison, Tue Apr 14 14:24:08 PDT 2009
 //   Refactored to use common CheckIfReplaceIsValid() method.
 //
@@ -1650,9 +1651,9 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
 // ****************************************************************************
 // Method: QvisFilePanel::CheckIfReplaceIsValid
 //
-// Purpose: 
+// Purpose:
 //   This method tells us if replace/replace selected are valid operations.
-// 
+//
 //
 //   Note: Refactored from UpdateReplaceButtonEnabledState(), so the core
 //    logic could be used both in UpdateReplaceButtonEnabledState() and
@@ -1664,7 +1665,7 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
 // Creation:   Tue Apr 14 14:23:11 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1730,7 +1731,7 @@ QvisFilePanel::CheckIfReplaceIsValid()
 // ****************************************************************************
 // Method: QvisFilePanel::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Removes the windowInfo or fileserver subjects that this widget
 //   observes.
 //
@@ -1782,7 +1783,7 @@ QvisFilePanel::ConnectWindowInformation(WindowInformation *wi)
 // ****************************************************************************
 // Method: QvisFilePanel::OpenFile
 //
-// Purpose: 
+// Purpose:
 //   Tells the file server to open the selected file and notify all
 //   observers that the file was opened.
 //
@@ -1857,7 +1858,7 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 // ****************************************************************************
 // Method: QvisFilePanel::ReplaceFile
 //
-// Purpose: 
+// Purpose:
 //   Tells the file server to replace the current file with the
 //   selected file and notify all observers that the file changed.
 //
@@ -2019,7 +2020,7 @@ QvisFilePanel::RemoveExpandedFile(const QualifiedFilename &filename)
 // Creation:   Fri May 16 12:40:29 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2031,7 +2032,7 @@ QvisFilePanel::SetFileExpanded(const QualifiedFilename &filename, bool val)
 // ****************************************************************************
 // Method: QvisFilePanel::HaveFileInformation
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not we have file information for a file.
 //
 // Arguments:
@@ -2043,7 +2044,7 @@ QvisFilePanel::SetFileExpanded(const QualifiedFilename &filename, bool val)
 // Creation:   Fri May 16 13:11:19 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2074,7 +2075,7 @@ bool
 QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename) const
 {
     bool retval = true;
-    FileDisplayInformationMap::const_iterator pos = 
+    FileDisplayInformationMap::const_iterator pos =
         displayInfo.find(filename.FullName());
     if(pos != displayInfo.end())
         retval = pos->second.expanded;
@@ -2106,7 +2107,7 @@ QvisFilePanel::FileShowsCorrectData(const QualifiedFilename &filename)
 // ****************************************************************************
 // Method: QvisFilePanel::SetFileShowsCorrectData
 //
-// Purpose: 
+// Purpose:
 //   Sets the flag that indicates whether or not we're showing the right
 //   cycles for a file.
 //
@@ -2132,7 +2133,7 @@ QvisFilePanel::SetFileShowsCorrectData(const QualifiedFilename &filename,
 // ****************************************************************************
 // Method: QvisFilePanel::contextMenuEvent
 //
-// Purpose: 
+// Purpose:
 //   Shows file popup menu.
 //
 //
@@ -2148,7 +2149,7 @@ QvisFilePanel::contextMenuEvent(QContextMenuEvent *e)
 {
     QvisFilePanelItem *file_item=(QvisFilePanelItem*)fileTree->currentItem();
     if(file_item == NULL || !file_item->isFile())
-        return;    
+        return;
 
     // update popup menu with proper commands
     bool file_opened_before = fileServer->HaveOpenedFile(file_item->file);
@@ -2227,7 +2228,7 @@ QvisFilePanel::SetAllowFileSelectionChange(bool val)
 //
 // ****************************************************************************
 
-bool 
+bool
 QvisFilePanel::GetAllowFileSelectionChange() const
 {
     return allowFileSelectionChange;
@@ -2236,7 +2237,7 @@ QvisFilePanel::GetAllowFileSelectionChange() const
 // ****************************************************************************
 // Method: QvisFilePanel::UpdateOpenButtonState
 //
-// Purpose: 
+// Purpose:
 //   Updates the text and enabled state of the Open button based on what
 //   file is currently selected in the list view.
 //
@@ -2246,7 +2247,7 @@ QvisFilePanel::GetAllowFileSelectionChange() const
 // Modifications:
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2269,7 +2270,7 @@ QvisFilePanel::UpdateOpenButtonState()
 // ****************************************************************************
 // Method: QvisFilePanel::internalUpdateFileList
 //
-// Purpose: 
+// Purpose:
 //   Updates the file list.
 //
 // Note:       This method should only be called on a timer because updating
@@ -2279,7 +2280,7 @@ QvisFilePanel::UpdateOpenButtonState()
 // Creation:   Fri Dec 19 17:02:15 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2292,7 +2293,7 @@ QvisFilePanel::internalUpdateFileList()
 // ****************************************************************************
 // Method: QvisFilePanel::fileCollapsed
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that collapses a file and thus removes it
 //   from the expanded files list.
 //
@@ -2312,7 +2313,7 @@ QvisFilePanel::internalUpdateFileList()
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2351,7 +2352,7 @@ QvisFilePanel::fileCollapsed(QTreeWidgetItem *item)
 // ****************************************************************************
 // Method: QvisFilePanel::fileExpanded
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that expands a file thus adding it to the
 //   expanded file list.
 //
@@ -2372,10 +2373,10 @@ QvisFilePanel::fileCollapsed(QTreeWidgetItem *item)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
-// 
+//
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2404,7 +2405,7 @@ QvisFilePanel::fileExpanded(QTreeWidgetItem *item)
 // ****************************************************************************
 // Method: QvisFilePanel::highlightFile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the enabled flag on the
 //   open, replace, overlay buttons depending on whether or not the
 //   highlighted file is the active file.
@@ -2450,7 +2451,7 @@ QvisFilePanel::fileExpanded(QTreeWidgetItem *item)
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2474,7 +2475,7 @@ QvisFilePanel::highlightFile(QTreeWidgetItem *item)
 // ****************************************************************************
 // Method: QvisFilePanel::UpdateOpenButtonState
 //
-// Purpose: 
+// Purpose:
 //   Updates the state of the Open button based on what item is highlighted.
 //
 // Arguments:
@@ -2486,7 +2487,7 @@ QvisFilePanel::highlightFile(QTreeWidgetItem *item)
 // Modifications:
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2516,7 +2517,7 @@ QvisFilePanel::UpdateOpenButtonState(QvisFilePanelItem *fileItem)
 // ****************************************************************************
 // Method: QvisFilePanel::openFile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that opens a file when the Open button
 //   is clicked.
 //
@@ -2539,7 +2540,7 @@ QvisFilePanel::UpdateOpenButtonState(QvisFilePanelItem *fileItem)
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2596,7 +2597,7 @@ QvisFilePanel::openFile()
 // ****************************************************************************
 // Method: QvisFilePanel::openFileDblClick
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that opens a file when the filename
 //   is double clicked.
 //
@@ -2634,7 +2635,7 @@ QvisFilePanel::openFile()
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2654,7 +2655,7 @@ QvisFilePanel::openFileDblClick(QTreeWidgetItem *item)
 
             //
             // If the correlation for the active time slider does not use the
-            // database that we just double-clicked, 
+            // database that we just double-clicked,
             //
             WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
             int activeTS = windowInfo->GetActiveTimeSlider();
@@ -2697,7 +2698,7 @@ QvisFilePanel::openFileDblClick(QTreeWidgetItem *item)
 // ****************************************************************************
 // Method: QvisFilePanel::replaceFile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that replaces a file when the Replace
 //   button is clicked.
 //
@@ -2725,7 +2726,7 @@ QvisFilePanel::openFileDblClick(QTreeWidgetItem *item)
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2748,7 +2749,7 @@ QvisFilePanel::replaceFile()
 // ****************************************************************************
 // Method: QvisFilePanel::replaceSelected
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that replaces active when the Replace
 //   Selected menu option from the file popup menu is clicked.
 //
@@ -2756,7 +2757,7 @@ QvisFilePanel::replaceFile()
 // Creation:   Tue Apr 14 16:43:13 PDT 2009
 //
 // Modifications:
-// 
+//
 // ****************************************************************************
 
 void
@@ -2781,7 +2782,7 @@ QvisFilePanel::replaceSelected()
 // ****************************************************************************
 // Method: QvisFilePanel::overlayFile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that overlays a file when the Overlay
 //   button is clicked.
 //
@@ -2794,7 +2795,7 @@ QvisFilePanel::replaceSelected()
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 //   Brad Whitlock, Thu Jul 24 09:16:23 PDT 2008
 //   Make it possible to overlay at a particular time step.
 //
@@ -2820,14 +2821,14 @@ QvisFilePanel::overlayFile()
 // ****************************************************************************
 // Method: QvisFilePanel::closeFile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that overlays a file when the Overlay
 //   button is clicked. TODO
 //
 // Programmer: Cyrus Harrison
 // Creation:   Tue Apr 14 16:43:13 PDT 2009
 //
-// Modifications: 
+// Modifications:
 //
 //   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
 //   Added extra parameter telling ClearFile whether or not we want it
@@ -2856,7 +2857,7 @@ QvisFilePanel::closeFile()
 // ****************************************************************************
 // Method: FileTree::FileTree
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the FileTree class.
 //
 // Programmer: Brad Whitlock
@@ -2881,14 +2882,14 @@ FileTree::FileTree(QvisFilePanel *fp)
 // ****************************************************************************
 // Method: FileTree::~FileTree
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the FileTree class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 16:49:42 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 FileTree::~FileTree()
@@ -2899,7 +2900,7 @@ FileTree::~FileTree()
 // ****************************************************************************
 // Method: FileTree::Add
 //
-// Purpose: 
+// Purpose:
 //   Adds the specified file to the file tree. This includes building the path
 //   nodes in the file tree that need to be built.
 //
@@ -2956,7 +2957,7 @@ FileTree::Add(const QualifiedFilename &fileName, char separator_)
                 directory += fileName.path[index];
                 if(index == len - 1)
                     mode = PROCESS_MODE;
-                else 
+                else
                     ++index;
             }
         }
@@ -2998,7 +2999,7 @@ FileTree::Add(const QualifiedFilename &fileName, char separator_)
 // ****************************************************************************
 // Method: FileTree::Reduce
 //
-// Purpose: 
+// Purpose:
 //   Simplifies the file tree. This means condensing nodes with only one child
 //   into its parent node.
 //
@@ -3059,14 +3060,14 @@ FileTree::Reduce()
 // ****************************************************************************
 // Method: FileTree::Size
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of nodes in the file tree. This includes the root node.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 16:51:59 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -3078,14 +3079,14 @@ FileTree::Size() const
 // ****************************************************************************
 // Method: FileTree::TreeContainsDirectories
 //
-// Purpose: 
+// Purpose:
 //   Searches the file tree to determine if it contains directories.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 16:52:22 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -3104,7 +3105,7 @@ FileTree::TreeContainsDirectories() const
 // ****************************************************************************
 // Method: FileTree::AddElementsToTreeItem
 //
-// Purpose: 
+// Purpose:
 //   This method adds adds the appropriate list view items for the file tree
 //   to the parent list view item.
 //
@@ -3126,7 +3127,7 @@ FileTree::TreeContainsDirectories() const
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -3140,14 +3141,14 @@ FileTree::AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
 // ****************************************************************************
 // Method: FileTree::AddElementsToTree
 //
-// Purpose: 
+// Purpose:
 //   This method adds adds the appropriate list view items for the file tree
 //   to the parent list view.
 //
 // Arguments:
 //   item : The list view that will be the parent of the new nodes.
 //   fileIndex : The index of the file being added.
-// 
+//
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 16:52:52 PST 2001
 //
@@ -3157,7 +3158,7 @@ FileTree::AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -3171,7 +3172,7 @@ FileTree::AddElementsToTree(QTreeWidget *tree, int &fileIndex,
 // ****************************************************************************
 // Method: FileTree::HasNodeNameExceeding
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the nodes in the tree have a node name that exceeds the
 //   specified length.
 //
@@ -3179,7 +3180,7 @@ FileTree::AddElementsToTree(QTreeWidget *tree, int &fileIndex,
 // Creation:   Thu Aug 5 17:34:58 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -3191,7 +3192,7 @@ FileTree::HasNodeNameExceeding(int len) const
 // ****************************************************************************
 // Method: FileTree::operator <<
 //
-// Purpose: 
+// Purpose:
 //   Prints the FileTree to a stream.
 //
 // Arguments:
@@ -3201,7 +3202,7 @@ FileTree::HasNodeNameExceeding(int len) const
 // Creation:   Thu Jul 29 10:08:20 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ostream &
@@ -3216,7 +3217,7 @@ operator <<(ostream &os, const FileTree &t)
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::FileTreeNode
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the FileTree::FileTreeNode class.
 //
 // Arguments:
@@ -3226,7 +3227,7 @@ operator <<(ostream &os, const FileTree &t)
 // Creation:   Thu Mar 22 16:55:21 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 FileTree::FileTreeNode::FileTreeNode(int nodeT) : nodeName()
@@ -3239,14 +3240,14 @@ FileTree::FileTreeNode::FileTreeNode(int nodeT) : nodeName()
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::~FileTreeNode
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the FileTree::FileTreeNode class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 16:56:05 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 FileTree::FileTreeNode::~FileTreeNode()
@@ -3257,14 +3258,14 @@ FileTree::FileTreeNode::~FileTreeNode()
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::Destroy
 //
-// Purpose: 
+// Purpose:
 //   Recursively (indirect) destroys all child nodes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 16:56:32 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3284,7 +3285,7 @@ FileTree::FileTreeNode::Destroy()
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::Add
 //
-// Purpose: 
+// Purpose:
 //   Adds a new node of the specified type to the current node.
 //
 // Arguments:
@@ -3374,7 +3375,7 @@ FileTree::FileTreeNode::Add(int nType, const std::string &name,
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::Find
 //
-// Purpose: 
+// Purpose:
 //   Searches for the node with the given path name.
 //
 // Arguments:
@@ -3386,7 +3387,7 @@ FileTree::FileTreeNode::Add(int nType, const std::string &name,
 // Creation:   Thu Mar 22 16:58:52 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 FileTree::FileTreeNode *
@@ -3410,7 +3411,7 @@ FileTree::FileTreeNode::Find(const std::string &path)
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::Reduce
 //
-// Purpose: 
+// Purpose:
 //   Simplifies the file tree.
 //
 // Programmer: Brad Whitlock
@@ -3485,7 +3486,7 @@ FileTree::FileTreeNode::Reduce()
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::Size
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of children in the node.
 //
 // Returns:    The number of children in the node.
@@ -3494,7 +3495,7 @@ FileTree::FileTreeNode::Reduce()
 // Creation:   Thu Mar 22 17:00:21 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -3514,7 +3515,7 @@ FileTree::FileTreeNode::Size() const
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::HasChildrenOfType
 //
-// Purpose: 
+// Purpose:
 //   Recursively determines whether the node has any children of the
 //   specified type.
 //
@@ -3527,7 +3528,7 @@ FileTree::FileTreeNode::Size() const
 // Creation:   Thu Mar 22 17:00:48 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -3551,8 +3552,8 @@ FileTree::FileTreeNode::HasChildrenOfType(int type)
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::HasNodeNameExceeding
 //
-// Purpose: 
-//   Returns whether any of the nodes in the tree have a node name that is 
+// Purpose:
+//   Returns whether any of the nodes in the tree have a node name that is
 //   longer than the specified length.
 //
 // Arguments:
@@ -3562,7 +3563,7 @@ FileTree::FileTreeNode::HasChildrenOfType(int type)
 // Creation:   Thu Aug 5 17:32:29 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -3577,14 +3578,14 @@ FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
         if(children[i]->HasNodeNameExceeding(len))
             return true;
     }
- 
+
     return false;
 }
 
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::AddElementsToTreeItem
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets used to represent the file tree.
 //
 // Arguments:
@@ -3618,7 +3619,10 @@ FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg as suggested in Qt docs.
+//
 // ****************************************************************************
 
 void
@@ -3659,7 +3663,7 @@ FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
             // Add a directory node.
             QString temp;
             if(nodeName == fileName.path && nodeName[0] != separator)
-                temp.sprintf("%c%s", separator, nodeName.c_str());
+                temp = QString("%1%2").arg(separator).arg(nodeName.c_str());
             else
                 temp = QString(nodeName.c_str());
             root = new QvisFilePanelItem(item, temp, fileName,
@@ -3677,13 +3681,13 @@ FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
                                                folderPixmap, databasePixmap,
                                                filePanel);
         }
-    }        
+    }
 }
 
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::AddElementsToTree
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets used to represent the file tree.
 //
 // Arguments:
@@ -3706,7 +3710,7 @@ FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -3755,7 +3759,7 @@ FileTree::FileTreeNode::AddElementsToTree(QTreeWidget *tree,
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::NumberedFilename
 //
-// Purpose: 
+// Purpose:
 //   Creates a string that contains the file index and the filename.
 //
 // Arguments:
@@ -3767,7 +3771,9 @@ FileTree::FileTreeNode::AddElementsToTree(QTreeWidget *tree,
 // Creation:   Thu Mar 22 17:04:48 PST 2001
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg as suggested in Qt docs.
+//
 // ****************************************************************************
 
 QString
@@ -3775,11 +3781,11 @@ FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
 {
     QString label;
     if(fileIndex < 10)
-        label.sprintf("  %d: %s", fileIndex, nodeName.c_str());
+        label = QString("  %1: %2").arg(fileIndex).arg(nodeName.c_str());
     else if(fileIndex < 100)
-        label.sprintf(" %d: %s", fileIndex, nodeName.c_str());
+        label = QString(" %1: %2").arg(fileIndex).arg(nodeName.c_str());
     else
-        label.sprintf("%d: %s", fileIndex, nodeName.c_str());
+        label = QString("%1: %2").arg(fileIndex).arg(nodeName.c_str());
 
     return label;
 }
@@ -3787,7 +3793,7 @@ FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
 // ****************************************************************************
 // Method: FileTree::FileTreeNode::Print
 //
-// Purpose: 
+// Purpose:
 //   Prints the node to a stream.
 //
 // Arguments:
@@ -3798,7 +3804,7 @@ FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
 // Creation:   Thu Jul 29 10:08:58 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

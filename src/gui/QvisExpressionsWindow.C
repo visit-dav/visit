@@ -21,11 +21,16 @@
 #include <QTextEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include <QSplitter>
 
 #include <QNarrowLineEdit.h>
 #include <QvisVariableButton.h>
 #include <QvisPythonFilterEditor.h>
+
+#include <DebugStream.h>
 
 #define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
 #define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
@@ -162,6 +167,20 @@
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added "divide" function under the "Math" menu.
 //
+//    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
+//    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
+//    and zone_centers under the Mesh menu
+// 
+//    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
+//    Moved curl, divergence, gradient exprs, and laplacian
+//    from misc. submenu to vector submenu.
+// 
+//    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
+//    Added "ghost_zoneid" expression under mesh submenu.
+//
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width to misc submenu.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -256,6 +275,7 @@ const char *expr_trig[] = {
     "acos",
     "asin",
     "atan",
+    "atan2",
     "cos",
     "cosh",
     "deg2rad",
@@ -272,8 +292,14 @@ const char *expr_vector[] = {
     "color4",
     "colorlookup",
     "cross",
+    "curl",
+    "divergence",
     "dot",
+    "gradient",
     "hsvcolor",
+    "ij_gradient",
+    "ijk_gradient",
+    "Laplacian",
     "magnitude",
     "normalize",
     NULL
@@ -320,11 +346,15 @@ const char *expr_mesh[] = {
     "cylindrical_theta",
     "external_cell",
     "external_node",
+    "ghost_zoneid",
     "global_nodeid",
     "global_zoneid",
+    "logical_nodeid",
+    "logical_zoneid",
     "max_coord",
     "min_coord",
     "nodeid",
+    "node_domain",
     "polar",
     "polar_radius",
     "polar_theta",
@@ -333,6 +363,8 @@ const char *expr_mesh[] = {
     "revolved_volume",
     "volume",
     "zoneid",
+    "zone_centers",
+    "zone_domain",
     "zonetype_label",
     "zonetype_rank",
     NULL
@@ -342,20 +374,15 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
-    "curl",
+    "crack_width",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
     "cycle",
-    "divergence",
     "enumerate",
     "gauss_curvature",
-    "gradient",
-    "ij_gradient",
-    "ijk_gradient",
     "isnan",
     "lambda2",
-    "Laplacian",
     "map",
     "mean_curvature",
     "nodal_constant",
@@ -552,6 +579,11 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    changed an erroneous pointer-based string comparison to a true
 //    string based comparison.
 //
+//    Eddie Rusu, Tue Jun 23 14:02:35 PDT 2020
+//    Added FinalizeExpressionNameChange that detects when a user has finished
+//    editing an expression's name to detect for duplicate expression names
+//    in the gui.
+//
 // ****************************************************************************
 
 void
@@ -574,7 +606,7 @@ QvisExpressionsWindow::CreateWindowContents()
     delButton = new QPushButton(tr("Delete"), f1);
     listLayout->addWidget(delButton, 2,1);
 
-    displayAllVars = new QCheckBox(tr("Display expressions from database"), f1);
+    displayAllVars = new QCheckBox(tr("Display expressions from database\nand auto-generated expressions"), f1);
     listLayout->addWidget(displayAllVars, 3,0, 1,2);
 
     mainSplitter->addWidget(f1);
@@ -616,8 +648,7 @@ QvisExpressionsWindow::CreateWindowContents()
     // tab 2 -> python filter editor
     CreatePythonFilterEditor();
     editorTabs->addTab(pyEditorWidget, tr("Python expression editor"));
-
-
+    editorTabs->setCurrentIndex(0);
     definitionLayout->addWidget(editorTabs,row,0,1,2);
     definitionLayout->setColumnStretch(1, 10);
 
@@ -627,8 +658,8 @@ QvisExpressionsWindow::CreateWindowContents()
 
     connect(exprListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(nameEdit, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
+    connect(nameEdit, SIGNAL(editingFinished()),
+            this, SLOT(FinalizeExpressionNameChange()));
 
     connect(newButton, SIGNAL(pressed()),
             this, SLOT(addExpression()));
@@ -664,7 +695,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     stdEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(stdEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     stdDefinitionEditLabel = new QLabel(tr("Definition"), stdEditorWidget);
@@ -728,7 +759,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     pyEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(pyEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     pyArgsEditLabel = new QLabel(tr("Arguments"), pyEditorWidget);
@@ -934,6 +965,13 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Added a call to update() to remove the visual artificats present during
 //    the first draw of the expressions window.
 //
+//    Kathleen Biagas, Thu Jan 11, 2024
+//    Fixed problem with stdEditor not being the default open tab when
+//    Expression window first opened.  Calling setEnabled with a value of
+//    on the tabs widget seems to be changing which tab is considered current.
+//    Capture currentIndex before setting enablement of the tabs, then reset
+//    it afterwards.
+//
 // ****************************************************************************
 
 void
@@ -951,14 +989,19 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
         enable = false;
     }
 
+
     nameEdit->setEnabled(enable);
     delButton->setEnabled(enable);
 
     typeList->setEnabled(enable);
     notHidden->setEnabled(enable);
 
+    // calling setTableEnbled with a value of false seems to change the
+    // current index, so capture that information and reset it after.
+    int ci = editorTabs->currentIndex();
     editorTabs->setTabEnabled(0, enable && stdExprActive);
     editorTabs->setTabEnabled(1, enable && pyExprActive);
+    editorTabs->setCurrentIndex(ci);
     editorTabs->update();
     
     this->update();
@@ -1079,6 +1122,9 @@ QvisExpressionsWindow::apply()
 //    Brad Whitlock, Thu Oct 27 14:42:53 PDT 2011
 //    Make the name active so we can change it.
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 
 void
@@ -1102,7 +1148,7 @@ QvisExpressionsWindow::addExpression()
     e.SetDefinition("");
     exprList->AddExpressions(e);
 
-    exprList->Notify();
+    UpdateWindow(false); // Add the expression to the expression box
 
     for (int i=0; i<exprListBox->count(); i++)
     {
@@ -1139,6 +1185,9 @@ QvisExpressionsWindow::addExpression()
 //    Cyrus Harrison, Mon Jul 21 16:22:30 PDT 2008
 //    Fixed a crash when last expression was deleted. 
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 void
 QvisExpressionsWindow::delExpression()
@@ -1149,7 +1198,7 @@ QvisExpressionsWindow::delExpression()
         return;
 
     exprList->RemoveExpressions(indexMap[index]);
-    exprList->Notify();
+    UpdateWindow(false);
 
     // try to select sensible expression:
     // if del expr was last expr: before
@@ -1240,62 +1289,70 @@ QvisExpressionsWindow::pyFilterSourceChanged()
     UpdatePythonExpression();
 }
 
-
 // ****************************************************************************
-//  Method:  QvisExpressionsWindow::nameTextChanged
+//  Method:  QvisExpressionsWindow::FinalizeExpressionNameChange
 //
 //  Purpose:
-//    Slot function when any change happens to the expression names.
+//    When the user finishes editting the name of an expression in the gui,
+//    this function will check that name is unique. If it is not unique, then
+//    it will automatically update the name by appending a number to the end.
 //
-//  Arguments:
-//    text       the new text.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    October 10, 2004
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Oct 25 12:40:31 PDT 2004
-//    Always access the expression list by index, just in case there
-//    are two expressions with the same name.
-//
-//    Jeremy Meredith, Mon Oct 17 10:42:08 PDT 2005
-//    Never allow an empty name to get into the expression list.  This
-//    could cause crashes.  ('6295)
-//
-//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
-//    Initial Qt4 Port.
-//
+//  Programmer:  Eddie Rusu
+//  Creation:    Tue Jun 23 14:02:35 PDT 2020
 // ****************************************************************************
 void
-QvisExpressionsWindow::nameTextChanged(const QString &text)
+QvisExpressionsWindow::FinalizeExpressionNameChange()
 {
+    // Get the text from the currently selected item in the expression box
     int index = exprListBox->currentRow();
-
     if (index <  0)
         return;
+    QString text_from_expr_list = exprListBox->item(index)->text();
 
-    Expression &e = (*exprList)[indexMap[index]];
-
-    QString newname = text.trimmed();
-
-    if (newname.isEmpty())
+    // Get the text from the nameEdit field, automatically converting empty text to unnamed%1.
+    QString text_from_line_edit = nameEdit->text().trimmed();
+    if (text_from_line_edit.isEmpty())
     {
         int newid = 1;
         bool okay = false;
         while (!okay)
         {
-            newname = tr("unnamed%1").arg(newid);
-            if ((*exprList)[newname.toStdString().c_str()])
+            text_from_line_edit = tr("unnamed%1").arg(newid);
+            if ((*exprList)[text_from_line_edit.toStdString().c_str()])
                 newid++;
             else
                 okay = true;
         }
     }
 
-    e.SetName(newname.toStdString());
-    BlockAllSignals(true);
-    exprListBox->item(index)->setText(newname);
-    BlockAllSignals(false);
+    // If the name has indeed changed, then update the list
+    if (text_from_expr_list != text_from_line_edit)
+    {
+        // Need to make sure that the new name is not already taken. If it is, then append a number
+        // on the end. Increment that number however many times is necessary until we get a unique
+        // name.
+        std::string new_name_string = text_from_line_edit.toStdString();
+        int newid = 1;
+        bool okay = (*exprList)[new_name_string.c_str()] ? false : true;
+        while (!okay)
+        {
+            text_from_line_edit = tr((new_name_string + "%1").c_str()).arg(newid);
+            if ((*exprList)[text_from_line_edit.toStdString().c_str()])
+                newid++;
+            else
+                okay = true;
+        }
+
+        // Update the expression list with the new name
+        Expression &e = (*exprList)[indexMap[index]];
+        e.SetName(text_from_line_edit.toStdString());
+        BlockAllSignals(true);
+        exprListBox->item(index)->setText(text_from_line_edit);
+        BlockAllSignals(false);
+
+        // Update the textbox at the top with the expression's name
+        nameEdit->setText(text_from_line_edit);
+    }
 }
 
 // ****************************************************************************
@@ -1469,6 +1526,9 @@ QvisExpressionsWindow::UpdatePythonExpression()
 //    Cyrus Harrison,Thu Apr  8 12:40:22 PDT 2010
 //    Resolved issue w/ incorrectly flagging non python expressions.
 //
+//    Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//    Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
 // ****************************************************************************
 bool
 QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
@@ -1498,13 +1558,13 @@ QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
     // look for instances of <ws>* , <ws>* " [anything] " <ws>* )
     // all instances of " within the python expression should be escaped.
 
-    QRegExp regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
-    int match_pos = 0;
-    while((match_pos = regx.indexIn(edef, match_pos)) != -1)
+    QRegularExpression regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
+    QRegularExpressionMatchIterator iter = regx.globalMatch(edef);
+    while(iter.hasNext())
     {
-        args_stop_idx = regx.pos(1);
-        res_script    = regx.cap(2);
-        match_pos    += regx.matchedLength();
+        QRegularExpressionMatch match = iter.next();
+        args_stop_idx = match.capturedStart(1);
+        res_script    = match.captured(2);
     }
 
     if(args_stop_idx == -1)
@@ -1618,12 +1678,18 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added divide expression with optional arguments.
 //
+//    Justin Privitera, Thu 03 Mar 2022 10:41:04 AM PST
+//    Removed angle brackets from constantvalue field 
+//    in all 4 constant functions.
+//
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width.
+//
 // ****************************************************************************
 
 QString
 QvisExpressionsWindow::ExpandFunction(const QString &func_name)
 {
-
     QString res;
     bool doParens = (func_name.length() >= 2);
 
@@ -1745,7 +1811,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
              func_name == "point_constant" ||
              func_name == "nodal_constant" )
     {
-        res += QString("(<meshvar>, <constantvalue>)");
+        res += QString("(<meshvar>, constantvalue)");
         doParens = false;
     }
     else if(func_name == "average_over_time" || func_name == "min_over_time"
@@ -1812,6 +1878,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "divide")
     {
         res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
+        doParens = false;
+    }
+    else if (func_name == "crack_width")
+    {
+        res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
         doParens = false;
     }
 

@@ -5,6 +5,7 @@
 #ifndef PY_GLOBALLINEOUTATTRIBUTES_H
 #define PY_GLOBALLINEOUTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <GlobalLineoutAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyGlobalLineoutAttributes_Wrap(const GlobalLineoutAtt
 void VISITPY_API           PyGlobalLineoutAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyGlobalLineoutAttributes_SetDefaults(const GlobalLineoutAttributes *atts);
 std::string VISITPY_API    PyGlobalLineoutAttributes_GetLogString();
-std::string VISITPY_API    PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *, const char *);
+std::string VISITPY_API    PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyGlobalLineoutAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyGlobalLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH];

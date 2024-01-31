@@ -37,7 +37,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtExtrudedVolFileFormat::avtExtrudedVolFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtExtrudedVolFileFormat::avtExtrudedVolFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1)
 {
     ifstream ifile(filename);

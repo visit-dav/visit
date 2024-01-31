@@ -33,11 +33,15 @@
 //    Gunther H. Weber, Thu Jul 22 16:14:00 PDT 2010
 //    Added initializaition for width.
 //
+//    Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtMeanFilterExpression::avtMeanFilterExpression()
 {
     haveIssuedWarning = false;
+    canApplyToDirectDatabaseQOT = false;
     width[0] = 1;
     width[1] = 1;
     width[2] = 1;

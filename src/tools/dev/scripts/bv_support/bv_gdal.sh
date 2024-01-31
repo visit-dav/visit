@@ -68,13 +68,6 @@ function bv_gdal_ensure
     fi
 }
 
-function bv_gdal_dry_run
-{
-    if [[ "$DO_GDAL" == "yes" ]] ; then
-        echo "Dry run option not set for gdal."
-    fi
-}
-
 # *************************************************************************** #
 #                         Function 8.6, build_gdal                            #
 # *************************************************************************** #
@@ -157,7 +150,11 @@ function build_gdal
             EXTRA_FLAGS="F77=\"\" --enable-static --without-ld-shared  --without-libtool --without-expat"
         fi
     else
-        EXTRA_FLAGS="--enable-static --disable-shared --with-hide-internal-symbols"
+        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+            EXTRA_FLAGS="--enable-shared --disable-static --with-hide-internal-symbols"
+        else
+            EXTRA_FLAGS="--enable-static --disable-shared --with-hide-internal-symbols"
+        fi
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -172,7 +169,7 @@ function build_gdal
             apply_gdal_linux_x86_64_patch
         fi
     fi
-
+    set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
                 CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
@@ -183,6 +180,7 @@ function build_gdal
                 --with-hdf5=no --with-pg=no --with-curl=no \
                 --without-jasper --without-python \
                 --without-sqlite3 --without-xml2 --with-geos=no
+    set +x
     if [[ $? != 0 ]] ; then
         warn "GDAL configure failed.  Giving up"
         return 1

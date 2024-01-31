@@ -76,8 +76,8 @@ class QvisMeshPlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisMeshPlotWindow(const int type, MeshAttributes *_meshAtts,
-                       const QString &caption = QString::null,
-                       const QString &shortName = QString::null,
+                       const QString &caption = QString(),
+                       const QString &shortName = QString(),
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisMeshPlotWindow();
     virtual void CreateWindowContents();

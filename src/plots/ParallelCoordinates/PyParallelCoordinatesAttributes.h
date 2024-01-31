@@ -5,6 +5,7 @@
 #ifndef PY_PARALLELCOORDINATESATTRIBUTES_H
 #define PY_PARALLELCOORDINATESATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ParallelCoordinatesAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyParallelCoordinatesAttributes_Wrap(const ParallelCoordinatesAtt
 void           PyParallelCoordinatesAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyParallelCoordinatesAttributes_SetDefaults(const ParallelCoordinatesAttributes *atts);
 std::string    PyParallelCoordinatesAttributes_GetLogString();
-std::string    PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *, const char *);
+std::string    PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *, const char *, const bool=false);
 PyObject *     PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name);
 int            PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyParallelCoordinatesAttributes_methods[PARALLELCOORDINATESATTRIBUTES_NMETH];

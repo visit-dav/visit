@@ -97,6 +97,9 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //    Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //    signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -123,9 +126,14 @@ QvisHistogramPlotWindow::CreateWindowContents()
     basedOnGroup->addButton(basedOnBasedOnManyVarsForSingleZone,0);
     basedOnGroup->addButton(basedOnBasedOnManyZonesForSingleVar,1);
     
-    
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(basedOnGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(basedOnChanged(int)));
+#else
+    connect(basedOnGroup, SIGNAL(idClicked(int)),
+            this, SLOT(basedOnChanged(int)));
+#endif
+
     mainLayout->addWidget(basedOnWidget, 0,1);
     basedOnLabel->setEnabled(false);
     basedOnWidget->setEnabled(false);
@@ -159,7 +167,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     QWidget     *binScaleWidget = new QWidget(histGroupBox);
     QHBoxLayout *binScaleLayout = new QHBoxLayout(binScaleWidget);    
-    binScaleLayout->setMargin(0);
+    binScaleLayout->setContentsMargins(0,0,0,0);
 
     QRadioButton *binLinearScale = new QRadioButton(tr("Linear"), binScaleWidget);
     QRadioButton *binLogScale = new QRadioButton(tr("Log"), binScaleWidget);
@@ -174,8 +182,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
     binScaleLayout->addWidget(binLogScale);
     binScaleLayout->addWidget(binSqrtScale);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(binScaleGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(binScaleChanged(int)));    
+            this, SLOT(binScaleChanged(int)));
+#else
+    connect(binScaleGroup, SIGNAL(idClicked(int)),
+            this, SLOT(binScaleChanged(int)));
+#endif
 
     hgLayout->addWidget(binScaleWidget, 1, 1, 1, 2);
 
@@ -186,7 +199,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     histogramTypeWidget = new QWidget(central);
     QHBoxLayout *histogramTypeLayout = new QHBoxLayout(histogramTypeWidget);
-    histogramTypeLayout->setMargin(0);
+    histogramTypeLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *histogramTypeBinContributionFrequency =
       new QRadioButton(tr("Frequency"), histogramTypeWidget);
@@ -200,8 +213,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
     histogramTypeLayout->addWidget(histogramTypeBinContributionFrequency);
     histogramTypeLayout->addWidget(histogramTypeBinContributionWeighted);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(histogramTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(histogramTypeChanged(int)));
+#else
+    connect(histogramTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(histogramTypeChanged(int)));
+#endif
 
     hgLayout->addWidget(histogramTypeWidget, 2, 1, 1, 2);
 
@@ -212,7 +230,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(weightingGroup, 3, 0, 3, 5);
 
     QGridLayout *weightingLayout = new QGridLayout(weightingGroup);
-    weightingLayout->setMargin(5);
+    weightingLayout->setContentsMargins(5,5,5,5);
     weightingLayout->setSpacing(10);
 
 
@@ -221,7 +239,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     
     weightTypeWidget = new QWidget(histGroupBox);
     QHBoxLayout *weightTypeLayout = new QHBoxLayout(weightTypeWidget);
-    weightTypeLayout->setMargin(0);
+    weightTypeLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *weightTypeVolumeArea =
       new QRadioButton(tr("Area (2D) / Volume (3D)"), weightTypeWidget);
@@ -234,8 +252,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
     weightTypeLayout->addWidget(weightTypeVolumeArea);
     weightTypeLayout->addWidget(weightTypeVariable);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(weightTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(weightTypeChanged(int)));
+#else
+    connect(weightTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(weightTypeChanged(int)));
+#endif
     weightingLayout->addWidget(weightTypeWidget, 1,1);
 
     weightVariableLabel = new QLabel(tr("Variable to Weight By"), histGroupBox);
@@ -279,7 +302,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(dataGroup, 6, 0, 3, 5);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -302,8 +325,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(dataScaleGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(dataScaleChanged(int)));
+#else
+    connect(dataScaleGroup, SIGNAL(idClicked(int)),
+            this, SLOT(dataScaleChanged(int)));
+#endif
 
     //
     // Create the Limits stuff
@@ -312,7 +340,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -330,7 +358,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
     minLineEdit = new QLineEdit(central);
-    connect(minLineEdit, SIGNAL(returnPressed()),
+    connect(minLineEdit, SIGNAL(editingFinished()),
             this, SLOT(minProcessText())); 
     limitsLayout->addWidget(minLineEdit, 1, 1);
 
@@ -340,7 +368,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
+    connect(maxLineEdit, SIGNAL(editingFinished()),
             this, SLOT(maxProcessText())); 
     limitsLayout->addWidget(maxLineEdit, 1, 3);
 
@@ -393,7 +421,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     QWidget     *outputTypeWidget = new QWidget(styleGroupBox);
     QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputTypeWidget);
-    outputTypeLayout->setMargin(0);
+    outputTypeLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *outputTypeOutputTypeCurve = new QRadioButton(tr("Curve"), outputTypeWidget);
     QRadioButton *outputTypeOutputTypeBlock = new QRadioButton(tr("Block"), outputTypeWidget);
@@ -405,8 +433,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
     outputTypeLayout->addWidget(outputTypeOutputTypeCurve);
     outputTypeLayout->addWidget(outputTypeOutputTypeBlock,1);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(outputTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(outputTypeChanged(int)));
+#else
+    connect(outputTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(outputTypeChanged(int)));
+#endif
 
     sgLayout->addWidget(outputTypeWidget, 0,1);
 
@@ -740,7 +773,9 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(minLineEdit, val))
+        {
             atts->SetMin(val);
+        }
         else
         {
             ResettingError(tr("minimum"),
@@ -754,7 +789,9 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(maxLineEdit, val))
+        {
             atts->SetMax(val);
+        }
         else
         {
             ResettingError(tr("maximum"),

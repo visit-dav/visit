@@ -44,7 +44,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtSTLWriter::avtSTLWriter(DBOptionsAttributes *atts) : avtDatabaseWriter()
+avtSTLWriter::avtSTLWriter(const DBOptionsAttributes *atts) : avtDatabaseWriter()
 {
     doBinary = atts->GetBool("Binary format");
 }

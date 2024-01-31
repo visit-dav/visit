@@ -10,13 +10,13 @@
 #define AVT_TECPLOT_WRITER_H
 
 #include <avtDatabaseWriter.h>
-#include <DBOptionsAttributes.h>
 
 #include <string>
 #include <vector>
 #include <visitstream.h>
 #include <visit_gzstream.h>
 
+class DBOptionsAttributes;
 class vtkPoints;
 class vtkPolyData;
 class vtkRectilinearGrid;
@@ -48,7 +48,7 @@ class vtkUnstructuredGrid;
 class avtTecplotWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtTecplotWriter(DBOptionsAttributes *);
+                   avtTecplotWriter(const DBOptionsAttributes *);
     virtual       ~avtTecplotWriter();
 
   protected:

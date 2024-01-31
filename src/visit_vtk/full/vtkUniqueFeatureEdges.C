@@ -4,7 +4,12 @@
 
 #include "vtkUniqueFeatureEdges.h"
 
+#include <visit-config.h>
+
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkEdgeTable.h>
@@ -22,8 +27,8 @@
 
 vtkStandardNewMacro(vtkUniqueFeatureEdges);
 
-// Construct object with feature angle = 30; all types of edges, except 
-// manifold edges, are extracted 
+// Construct object with feature angle = 30; all types of edges, except
+// manifold edges, are extracted
 vtkUniqueFeatureEdges::vtkUniqueFeatureEdges()
 {
   this->FeatureAngle = 30.0;
@@ -47,8 +52,8 @@ vtkUniqueFeatureEdges::~vtkUniqueFeatureEdges()
 // Generate feature edges for mesh
 //
 //  This is pretty much exactly like vtkFeatureEdges, with the addtion
-//  of a vtkEdgeTable to prevent inserting duplicate edges.  Also, compare 
-//  ghostLevels[cellId] against output->UpdateGhostLevel instead of 0. 
+//  of a vtkEdgeTable to prevent inserting duplicate edges.  Also, compare
+//  ghostLevels[cellId] against output->UpdateGhostLevel instead of 0.
 //  And there is no edge 'coloring'.   KSB
 //
 //  Modifications:
@@ -58,7 +63,7 @@ vtkUniqueFeatureEdges::~vtkUniqueFeatureEdges()
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkNormals has been deprecated in VTK 4.0, use vtkFloatArray instead.
 //
-//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002  
+//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002
 //    Fix memory leak. (delete edgeTable).
 //
 //    Hank Childs, Fri Jul 30 08:02:44 PDT 2004
@@ -72,6 +77,9 @@ vtkUniqueFeatureEdges::~vtkUniqueFeatureEdges()
 //
 //    Eric Brugger, Wed Jan  9 12:32:37 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -97,13 +105,18 @@ int vtkUniqueFeatureEdges::RequestData(
   vtkCellArray *newLines;
   vtkPolyData *Mesh;
   int i;
-  vtkIdType j, numNei, cellId;
+  vtkIdType j, numNei;
   vtkIdType numBEdges, numNonManifoldEdges, numFedges, numManifoldEdges;
   double n[3], x1[3], x2[3];
   double cosAngle = 0;
   vtkIdType lineIds[2];
-  vtkIdType npts, *pts;
-  vtkCellArray *inPolys, *inStrips, *newPolys;
+  vtkIdType npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  vtkIdType *pts;
+#else
+  const vtkIdType *pts;
+#endif
+  vtkCellArray *inPolys, *newPolys;
   vtkDataArray *polyNormals = NULL;
   vtkIdType numPts, numCells, numPolys, numStrips, nei;
   vtkIdList *neighbors;
@@ -166,9 +179,16 @@ int vtkUniqueFeatureEdges::RequestData(
       {
       newPolys->Allocate(newPolys->EstimateSize(numStrips,5));
       }
-    inStrips = input->GetStrips();
+#if LIB_VERSION_LE(VTK, 8,1,0)
+    vtkCellArray *inStrips = input->GetStrips();
     for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); )
       {
+#else
+    auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
+    for (inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell())
+      {
+      inStrips->GetCurrentCell(npts,pts);
+#endif
       vtkTriangleStrip::DecomposeStrip(npts, pts, newPolys);
       }
     Mesh->SetPolys(newPolys);
@@ -211,12 +231,22 @@ int vtkUniqueFeatureEdges::RequestData(
     polyNormals->SetNumberOfComponents(3);
     polyNormals->Allocate(newPolys->GetNumberOfCells());
 
-    for (cellId=0, newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts);
-    cellId++)
+#if LIB_VERSION_LE(VTK, 8,1,0)
+	vtkIdType cellId = 0;
+    for (newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts); cellId++)
       {
       vtkPolygon::ComputeNormal(inPts,npts,pts,n);
       polyNormals->InsertTuple(cellId,n);
       }
+#else
+    auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
+    for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal(); npIter->GoToNextCell())
+      {
+      npIter->GetCurrentCell(npts,pts);
+      vtkPolygon::ComputeNormal(inPts,npts,pts,n);
+      polyNormals->InsertTuple(npIter->GetCurrentCellId(),n);
+      }
+#endif
 
     cosAngle = cos( vtkMath::RadiansFromDegrees( this->FeatureAngle ) );
     }
@@ -228,9 +258,18 @@ int vtkUniqueFeatureEdges::RequestData(
   vtkIdType progressInterval=numCells/20+1;
 
   numBEdges = numNonManifoldEdges = numFedges = numManifoldEdges = 0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  vtkIdType cellId;
   for (cellId=0, newPolys->InitTraversal();
        newPolys->GetNextCell(npts,pts) && !abort; cellId++)
     {
+#else
+  auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
+  for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal() && !abort; npIter->GoToNextCell())
+    {
+    npIter->GetCurrentCell(npts,pts);
+    vtkIdType cellId = npIter->GetCurrentCellId();
+#endif
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
       this->UpdateProgress ((double)cellId / numCells);
@@ -283,7 +322,7 @@ int vtkUniqueFeatureEdges::RequestData(
           continue;
           }
         }
-      else if ( this->FeatureEdges && 
+      else if ( this->FeatureEdges &&
                 numNei == 1 && (nei=neighbors->GetId(0)) > cellId )
         {
         if ( vtkMath::Dot(polyNormals->GetTuple(nei),
@@ -354,7 +393,7 @@ int vtkUniqueFeatureEdges::RequestData(
     }
 
   Mesh->Delete();
- 
+
   edgeTable->Delete();
   output->SetPoints(newPts);
   newPts->Delete();
@@ -380,7 +419,7 @@ void vtkUniqueFeatureEdges::CreateDefaultLocator()
 // default an instance of vtkMergePoints is used.
 void vtkUniqueFeatureEdges::SetLocator(vtkPointLocator *locator)
 {
-  if ( this->Locator != locator ) 
+  if ( this->Locator != locator )
     {
     if ( this->Locator )
       {
@@ -448,15 +487,15 @@ void vtkUniqueFeatureEdges::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
-  os << indent << "Feature Angle: " 
+  os << indent << "Feature Angle: "
                << this->FeatureAngle << "\n";
-  os << indent << "Boundary Edges: " 
+  os << indent << "Boundary Edges: "
                << (this->BoundaryEdges ? "On\n" : "Off\n");
-  os << indent << "Feature Edges: " 
-               << (this->FeatureEdges ? "On\n" : "Off\n"); 
-  os << indent << "Non-Manifold Edges: " 
+  os << indent << "Feature Edges: "
+               << (this->FeatureEdges ? "On\n" : "Off\n");
+  os << indent << "Non-Manifold Edges: "
                << (this->NonManifoldEdges ? "On\n" : "Off\n");
-  os << indent << "Manifold Edges: " 
+  os << indent << "Manifold Edges: "
                << (this->ManifoldEdges ? "On\n" : "Off\n");
 
   if ( this->Locator )

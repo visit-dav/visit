@@ -93,6 +93,12 @@ class JobSubmitter_salloc_NERSC(JobSubmitter_sbatch_NERSC):
 #   Eric Brugger, Mon Aug 12 16:06:46 PDT 2019
 #   Changed GetIPAddress to handle the new location and output from ifconfig.
 #
+#   Cyrus Harrison, Fri Dec 11 09:34:38 PST 2020
+#   Python 3 port (avoid using old string methods)
+#
+#   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+#   Python 3 universal_newlines for Popen
+#
 ###############################################################################
 
 class NERSCLauncher(MainLauncher):
@@ -104,12 +110,16 @@ class NERSCLauncher(MainLauncher):
 
     # Get the IP address for eth0.
     def GetIPAddress(self):
-        p = subprocess.Popen(["/usr/bin/ifconfig"], stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        p = subprocess.Popen(["/usr/bin/ifconfig"],
+                             universal_newlines=True,
+                             stdin=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
         output = p.communicate()
-        iplines = [x for x in string.split(output[0], "\n") if string.find(x, "inet ") != -1]
-        start = string.find(iplines[0], "inet ")
-        end = string.find(iplines[0], "netmask")
-        IP = string.replace(iplines[0][start + 4:end], " ", "")
+        iplines = [x for x in output[0].split("\n") if x.find("inet ") != -1]
+        start = iplines[0].find("inet ")
+        end = iplines[0].find("netmask")
+        IP = iplines[0][start + 4:end].replace(" ", "")
         return IP
 
     def Customize(self):
@@ -127,8 +137,8 @@ class NERSCLauncher(MainLauncher):
             # with an IP address.
             #
             if self.parallelArgs.parallel and \
-               (string.find(self.generalArgs.exe_name, "_par") != -1 or \
-                string.find(self.generalArgs.exe_name, "_ser") != -1):
+               (self.generalArgs.exe_name.find("_par") != -1 or \
+                self.generalArgs.exe_name.find("_ser") != -1):
                 self.generalArgs.host = self.GetIPAddress()
                 self.generalArgs.guesshost = 0
                 self.generalArgs.sshtunneling = 0

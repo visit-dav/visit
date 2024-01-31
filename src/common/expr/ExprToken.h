@@ -9,7 +9,7 @@
 #include <string>
 #include <stdlib.h>
 #include <ExprParseTreeNode.h>
-#include <Token.h>
+#include <VisItToken.h>
 
 enum TokenType {
     TT_NoToken    = 0,

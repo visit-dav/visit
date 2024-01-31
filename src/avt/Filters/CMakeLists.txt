@@ -52,6 +52,18 @@
 #   Remove avtPolylineToRibbonFilter, avtPolylineToTubeFilter,
 #   avtPolylineAddEndPointsFilter, avtPointToGlyphFilter.
 #
+#   Kathleen Biagas, Thu Jun  4 16:30:37 PDT 2020
+#   Add avtVertexExtractor, avtLineGlyphFilter.C
+#
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   I replaced vtkh with vtkm.
+#
+#   Kathleen Biagas, Wed Mar 15, 2023 
+#   Only link with pthread if not on Windows.
+#
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change pthread to Threads::Threads.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -70,6 +82,7 @@ avtGhostZoneFilter.C
 avtImageCommunicator.C
 avtImageCompositer.C
 avtLinearTransformFilter.C
+avtLineGlyphFilter.C
 avtLineoutFilter.C
 avtLineScanFilter.C
 avtLineToPolylineFilter.C
@@ -100,6 +113,7 @@ avtTimeLoopCollectorFilter.C
 avtTimeLoopFilter.C
 avtTransform.C
 avtValueImageCompositer.C
+avtVertexExtractor.C
 avtVertexNormalsFilter.C
 avtVoxelExtractor.C
 avtWarpFilter.C
@@ -119,7 +133,7 @@ IF(VISIT_SLIVR)
     ADD_DEFINITIONS(-DVISIT_SLIVR)
 ENDIF()
 
-IF(VISIT_OSPRAY)
+if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     LIST(APPEND AVTFILTERS_SOURCES
          avtOSPRayCommon.C
          avtOSPRayImageCompositor.C
@@ -143,7 +157,7 @@ IF(VISIT_OSPRAY)
         LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
         ADD_DEFINITIONS(-DVISIT_OSPRAY_ICET)
     ENDIF()
-ENDIF()
+endif() # VTK VERSION == 8.1.0
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -167,13 +181,17 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
-${VTKh_INCLUDE_DIRS}
 ${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VISIT_OSPRAY)
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
+  if(VISIT_OSPRAY)
     include_directories(${OSPRAY_INCLUDE_DIR})
+  endif()
+else()
+    set(vtklibs VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
 endif()
 
 # Add link directories
@@ -181,24 +199,42 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
-IF(VISIT_OSPRAY) 
+TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts ${vtklibs})
+IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
     IF(ICET_FOUND)
         TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
     ENDIF()
 ENDIF() 
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+    if(NOT WIN32)
+        target_link_libraries(avtfilters_ser Threads::Threads)
+    endif()
+    if(VTKm_ENABLE_KOKKOS)
+        target_link_libraries(avtfilters_ser amdhip64)
+    endif()
+endif()
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
-    IF(VISIT_OSPRAY) 
+    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts ${vtklibs})
+    IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
         IF(ICET_FOUND)
             TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
         ENDIF()
     ENDIF()
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+        if(NOT WIN32)
+            target_link_libraries(avtfilters_par Threads::Threads)
+        endif()
+        if(VTKm_ENABLE_KOKKOS)
+            target_link_libraries(avtfilters_par amdhip64)
+        endif()
+    endif()
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)

@@ -132,7 +132,7 @@ function configure_support_files
         fi
 
         if [ ! -d $bv_PREFIX ]; then
-            echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
+            echo "Failed to detect or fetch support files, Quitting..."
             exit 2
         fi
     fi

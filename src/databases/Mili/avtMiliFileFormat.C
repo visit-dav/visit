@@ -7,6 +7,9 @@
 // ************************************************************************* //
 
 #include <avtMiliFileFormat.h>
+#include <avtMiliOptions.h>
+
+#include <visit-config.h> // For LIB_VERSION_LE
 
 #include <limits>
 #include <visitstream.h>
@@ -27,6 +30,7 @@
 #include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtCommonDataFunctions.h>
+#include <DBOptionsAttributes.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -46,18 +50,18 @@
 //      doubles, etc.).
 //
 //  Arguments:
-//      dbid         The database id. 
-//      ts           The desired timestate. 
-//      srId         The subrecord ID. 
-//      numVars      The number of requested state variables. 
-//      shortNames   The state variable short names. 
+//      dbid         The database id.
+//      ts           The desired timestate.
+//      srId         The subrecord ID.
+//      numVars      The number of requested state variables.
+//      shortNames   The state variable short names.
 //      vType        The variable type (int/double/etc.).
-//      dataSize     The size of the data to be retrieved. 
-//      dataBuffer   The buffer store the retrieved data. 
+//      dataSize     The size of the data to be retrieved.
+//      dataBuffer   The buffer store the retrieved data.
 //
 //  Notes:
-//      This method is largely based off of the one originally 
-//      written by Hank Childs in 2004. 
+//      This method is largely based off of the one originally
+//      written by Hank Childs in 2004.
 //
 //  Programmer: Alister Maguire
 //  Creation:   April 9, 2019
@@ -67,13 +71,13 @@
 // ****************************************************************************
 
 static void
-ReadMiliResults(Famid  &dbid, 
-                int     ts, 
-                int     srId, 
+ReadMiliResults(Famid  &dbid,
+                int     ts,
+                int     srId,
                 int     numVars,
-                char  **shortNames, 
-                int     vType, 
-                int     dataSize, 
+                char  **shortNames,
+                int     vType,
+                int     dataSize,
                 float  *dataBuff)
 {
     void *readBuff = NULL;
@@ -117,8 +121,8 @@ ReadMiliResults(Famid  &dbid,
             break;
         }
     }
-    
-    int rval = mc_read_results(dbid, ts, srId, numVars, 
+
+    int rval = mc_read_results(dbid, ts, srId, numVars,
                                shortNames, readBuff);
 
     if (rval != OK)
@@ -151,7 +155,7 @@ ReadMiliResults(Famid  &dbid,
        case M_FLOAT4:
        {
             //
-            // No copy needed. 
+            // No copy needed.
             //
          break;
        }
@@ -202,19 +206,26 @@ ReadMiliResults(Famid  &dbid,
 // ****************************************************************************
 //  Constructor:  avtMiliFileFormat::avtMiliFileFormat
 //
-//  This method was re-written from its original version. 
+//  This method was re-written from its original version.
 //
 //  Arguments:
-//    fpath      The path to a .mili json file. 
+//    fpath      The path to a .mili json file.
+//    opts       The database read options.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 15, 2019
 //
 //  Modifications
-//     
+//
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      Added DBOptionsAttribtues and added checks for setting the
+//      globalIntegrationPoint value. Options are "Inner", "Middle",
+//      and "Outer".
+//
 // ****************************************************************************
 
-avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
+avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
+                                     const DBOptionsAttributes *opts)
     : avtMTMDFileFormat(fpath)
 {
     dims       = 0;
@@ -223,6 +234,29 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     nTimesteps = 0;
     datasets   = NULL;
     materials  = NULL;
+    globalIntegrationPoint = "Middle";
+
+    if (opts != NULL)
+    {
+        for (int i = 0; i < opts->GetNumberOfOptions(); ++i)
+        {
+            if (opts->GetName(i) == MiliDBOptions::MILI_READ_OPT_INTEGRATION_POINT)
+            {
+                int ipEnum = opts->GetEnum(
+                    MiliDBOptions::MILI_READ_OPT_INTEGRATION_POINT);
+
+                std::vector<std::string> enumStrings = opts->GetEnumStrings(
+                    MiliDBOptions::MILI_READ_OPT_INTEGRATION_POINT);
+
+                globalIntegrationPoint = enumStrings[ipEnum];
+            }
+            else
+            {
+                debug1 << "Ignoring unknown option \"" << opts->GetName(i)
+                       << "\"" << endl;
+            }
+        }
+    }
 
     LoadMiliInfoJson(fpath);
 
@@ -241,7 +275,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     fampath[pSize] = '\0';
 
     //
-    // Extract and set the family root. 
+    // Extract and set the family root.
     //
     string lastSub = "";
     size_t lastPos = root.find_last_of(".");
@@ -291,7 +325,7 @@ avtMiliFileFormat::~avtMiliFileFormat()
     {
         for (int i = 0; i < nDomains; ++i)
         {
-            for (int j = 0; j < nMeshes; ++j) 
+            for (int j = 0; j < nMeshes; ++j)
             {
                 if (datasets[i][j] != NULL)
                 {
@@ -312,7 +346,7 @@ avtMiliFileFormat::~avtMiliFileFormat()
     {
         for (int i = 0; i < nDomains; ++i)
         {
-            for (int j = 0; j < nMeshes; ++j) 
+            for (int j = 0; j < nMeshes; ++j)
             {
                 if (materials[i][j] != NULL)
                 {
@@ -328,7 +362,7 @@ avtMiliFileFormat::~avtMiliFileFormat()
 
 
     //
-    // Delete the mili meta data. 
+    // Delete the mili meta data.
     //
     if (miliMetaData != NULL)
     {
@@ -361,7 +395,7 @@ avtMiliFileFormat::~avtMiliFileFormat()
 //      Returns the actual cycle numbers for each time step.
 //
 //  Arguments:
-//   cycles      the output vector of cycle numbers 
+//   cycles      the output vector of cycle numbers
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 9, 2019
@@ -384,7 +418,7 @@ avtMiliFileFormat::GetCycles(intVector &outCycles)
 //      Returns the actual times for each time step.
 //
 //  Arguments:
-//   outTimes   the output vector of times 
+//   outTimes   the output vector of times
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 9, 2019
@@ -420,7 +454,7 @@ avtMiliFileFormat::GetNTimesteps()
 //  Method:  avtMiliFileFormat::CanCacheVariable
 //
 //  Purpose:
-//      Determine if a variable can be cached. 
+//      Determine if a variable can be cached.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    January 29, 2019
@@ -453,7 +487,7 @@ avtMiliFileFormat::OpenDB(int dom)
     int openDBTimer = visitTimer->StartTimer();
 
     //
-    // Multi-proc databases have larger numbers attached to their names. 
+    // Multi-proc databases have larger numbers attached to their names.
     //
     char const * const root_fmtstrs[] = {
         "%s%.3d",
@@ -469,7 +503,7 @@ avtMiliFileFormat::OpenDB(int dom)
         int rval;
         if (nDomains == 1)
         {
-            debug3 << "MILI: Attempting mc_open on root=\"" << famroot << 
+            debug3 << "MILI: Attempting mc_open on root=\"" << famroot <<
                 "\", path=\"" << fampath << "\"." << endl;
 
             rval = mc_open(famroot, fampath, rFlag, &(dbid[dom]) );
@@ -485,11 +519,11 @@ avtMiliFileFormat::OpenDB(int dom)
             for (int i = 0; i < 4; i++)
             {
                 snprintf(famname, 128, root_fmtstrs[i], famroot, dom);
-                debug3 << "MILI: Attempting mc_open on root=\"" << famname 
+                debug3 << "MILI: Attempting mc_open on root=\"" << famname
                     << "\", path=\"" << fampath << "\"." << endl;
 
                 rval = mc_open(famname, fampath, rFlag, &(dbid[dom]) );
-                if (rval == OK) 
+                if (rval == OK)
                 {
                     break;
                 }
@@ -514,18 +548,18 @@ avtMiliFileFormat::OpenDB(int dom)
 //  Arguments:
 //    timestep   The timestep of interest.
 //    dom        The domain of interested.
-//    meshId     The mesh id of interest. 
+//    meshId     The mesh id of interest.
 //
 //  Programmer:  Alister Maguire
-//  Creation:    
+//  Creation:
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 vtkPoints *
-avtMiliFileFormat::GetNodePositions(int timestep, 
-                                    int dom, 
+avtMiliFileFormat::GetNodePositions(int timestep,
+                                    int dom,
                                     int meshId)
 {
     //
@@ -541,10 +575,10 @@ avtMiliFileFormat::GetNodePositions(int timestep,
     vtkPoints *vtkNodePos = NULL;
 
     //
-    // There are datasets whose nodes remain constant throughout time. 
+    // There are datasets whose nodes remain constant throughout time.
     // In these cases, we will not have a "nodpos" to retrieve and
     // will instead rely on the initial positions retrieved during
-    // ReadMesh. 
+    // ReadMesh.
     //
     if (nodpos != NULL)
     {
@@ -554,14 +588,14 @@ avtMiliFileFormat::GetNodePositions(int timestep,
         int subrec   = nodpos->GetSubrecIds(dom)[0];
         float *fPts = new float[nPts];
 
-        ReadMiliResults(dbid[dom], timestep+1, subrec, 1, 
+        ReadMiliResults(dbid[dom], timestep+1, subrec, 1,
             &npCharPtr, vType, nPts, fPts);
 
         vtkNodePos = vtkPoints::New();
         vtkNodePos->SetNumberOfPoints(numNodes);
 
         float *vtkNPPtr = (float *) vtkNodePos->GetVoidPointer(0);
-        float *fPtsPtr  = fPts; 
+        float *fPtsPtr  = fPts;
 
         for (int pt = 0 ; pt < numNodes; pt++)
         {
@@ -623,7 +657,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     {
         EXCEPTION1(InvalidVariableException, mesh);
     }
-    
+
     char *check = 0;
     int meshId;
     int offset = 4;
@@ -643,7 +677,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     --meshId;
 
     //
-    // Actually read in the mesh if we haven't already.  
+    // Actually read in the mesh if we haven't already.
     //
     if (!meshRead[dom])
     {
@@ -682,9 +716,9 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
     //
     // If our dataset contains sand, and the user has not requested
-    // the sand mesh, we need to ghost out the sanded elements. 
-    // FYI: sand elements are those that have been "destroyed" 
-    // during the simulation. 
+    // the sand mesh, we need to ghost out the sanded elements.
+    // FYI: sand elements are those that have been "destroyed"
+    // during the simulation.
     //
     if (!isSandMesh && miliMetaData[meshId]->ContainsSand())
     {
@@ -700,11 +734,11 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         int numVars = miliMetaData[meshId]->GetNumVariables();
         int nCells  = miliMetaData[meshId]->GetNumCells(dom);
         int nNodes  = miliMetaData[meshId]->GetNumNodes(dom);
-        
+
         float *sandBuffer = new float[nCells];
 
         //
-        // Begin by assuming the status of every cell is good. 
+        // Begin by assuming the status of every cell is good.
         //
         for (int i = 0; i < nCells; ++i)
         {
@@ -713,7 +747,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
         //
         // Because sand can appear on multiple variables, we need
-        // to check them all and populate the buffer iteratively.  
+        // to check them all and populate the buffer iteratively.
         //
         for (int i = 0 ; i < numVars; i++)
         {
@@ -724,14 +758,14 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             {
                 continue;
             }
-            
+
             if (varMD->IsSand())
             {
                 avtCentering centering = varMD->GetCentering();
 
                 if (centering != AVT_ZONECENT)
                 {
-                    debug1 << "MILI: Sanded variable is not " << 
+                    debug1 << "MILI: Sanded variable is not " <<
                         "zone centered?!?" << endl;
                     continue;
                 }
@@ -740,13 +774,13 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 intVector SRIds = varMD->GetSubrecIds(dom);
                 int vType       = varMD->GetNumType();
 
-                string className = varMD->GetClassShortName(); 
+                string className = varMD->GetClassShortName();
                 int start = miliMetaData[meshId]->
                     GetClassMDByShortName(className.c_str())->
                     GetConnectivityOffset(dom);
 
                 //
-                // Create a copy of our name to pass into mili. 
+                // Create a copy of our name to pass into mili.
                 //
                 char charName[128];
                 snprintf(charName, 128, "%s", varName.c_str());
@@ -766,7 +800,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         for (int i = 0; i < nNodes; ++i)
         {
             ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i], 
+            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
 
@@ -782,21 +816,25 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
-    
+
         for (int i = 0; i < nCells; ++i)
         {
             ghostZonePtr[i] = 0;
 
             //
-            // Element status > .5 is good. 
+            // Element status > .5 is good.
             //
             if (sandBuffer[i] > 0.5)
             {
                 vtkIdType nCellPts = 0;
+#if LIB_VERSION_LE(VTK,8,1,0)
                 vtkIdType *cellPts = NULL;
+#else
+                const vtkIdType *cellPts = nullptr;
+#endif
 
                 rv->GetCellPoints(i, nCellPts, cellPts);
-                
+
                 if (nCellPts && cellPts)
                 {
                     for (int j = 0; j < nCellPts; ++j)
@@ -813,15 +851,15 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
             }
         }
-    
-        delete [] sandBuffer; 
+
+        delete [] sandBuffer;
 
         rv->GetPointData()->AddArray(ghostNodes);
         rv->GetCellData()->AddArray(ghostZones);
         ghostNodes->Delete();
         ghostZones->Delete();
     }
-    
+
 
     visitTimer->StopTimer(gmTimer, "MILI: Getting Mesh");
     visitTimer->DumpTimings();
@@ -834,16 +872,16 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 //  Method: avtMiliFileFormat::ExtractMeshIdFromPath
 //
 //  Purpose:
-//      Extract the mesh id from a variable path. 
+//      Extract the mesh id from a variable path.
 //
 //  Arguments:
-//      varPath    The variable path. 
+//      varPath    The variable path.
 //
 //  Returns:
-//      The mesh id found from the path. 
+//      The mesh id found from the path.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019 
+//  Creation:   Jan 15, 2019
 //
 // ****************************************************************************
 
@@ -865,15 +903,23 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 //  Method: avtMiliFileFormat::ReadMesh
 //
 //  Purpose:
-//      Read the given domain of the mesh. 
+//      Read the given domain of the mesh.
 //
 //  Arguments:
-//      dom    The domain of interest. 
+//      dom    The domain of interest.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
 //  Modifications
+//
+//    Alister Maguire, Thu Aug 13 08:41:53 PDT 2020
+//    Fixed a bug preventing numClassesPerCellType to be adjusted
+//    correctly.
+// 
+//    Justin Privitera, Tue Jun 27 15:15:14 PDT 2023
+//    Throw an exception to prevent crashing mysteriously when 
+//    GetClassMDByShortName returns NULL.
 //
 // ****************************************************************************
 
@@ -894,7 +940,7 @@ avtMiliFileFormat::ReadMesh(int dom)
     {
         //
         // Perform an mc call to retrieve the number of nodes
-        // on this domain, and update our meta data. 
+        // on this domain, and update our meta data.
         //
         char nodeSName[] = "node";
         int classIdx     = 0;
@@ -915,16 +961,16 @@ avtMiliFileFormat::ReadMesh(int dom)
         miliMetaData[meshId]->SetNumNodes(dom, nNodes);
 
         //
-        // Might as well retrieve the node label info here. Note 
-        // that this does NOT create the labels, as that tends 
-        // to be very expensive. We save that for when requested. 
+        // Might as well retrieve the node label info here. Note
+        // that this does NOT create the labels, as that tends
+        // to be very expensive. We save that for when requested.
         //
         RetrieveNodeLabelInfo(meshId, nodeSName, dom);
 
         //
         // Mili has its own definitions for cell types. The
         // heirarchy is CellType->ClassType->...
-        // We need to extract data one Class type at a time. 
+        // We need to extract data one Class type at a time.
         //
         intVector numClassesPerCellType;
         intVector miliCellTypes;
@@ -934,8 +980,8 @@ avtMiliFileFormat::ReadMesh(int dom)
         int numCellTypes = miliCellTypes.size();
 
         //
-        // Now determine the number of cells for each class and 
-        // get some basic info for future mc calls. 
+        // Now determine the number of cells for each class and
+        // get some basic info for future mc calls.
         //
         int offset    = 0;
         int nDomCells = 0;
@@ -943,42 +989,56 @@ avtMiliFileFormat::ReadMesh(int dom)
         stringVector classNames;
         for (int i = 0 ; i < numCellTypes ; i++)
         {
+            int adjustedNumClassesPerCellType = numClassesPerCellType[i];
             for (int j = 0 ; j < numClassesPerCellType[i]; j++)
             {
                 int nCells = 0;
                 char shortName[1024];
                 char longName[1024];
- 
-                int rval = mc_get_class_info(dbid[dom], meshId, 
+
+                int rval = mc_get_class_info(dbid[dom], meshId,
                                              miliCellTypes[i], j,
                                              shortName, longName, &nCells);
 
                 //
-                // If we're working with multi-domain data, the current 
-                // cell type might not exist on this domain. 
+                // If we're working with multi-domain data, the current
+                // cell type might not exist on this domain.
                 //
                 if (rval != OK)
                 {
-                    numClassesPerCellType[i] = 0;
-                    continue; 
+                    --adjustedNumClassesPerCellType;
+                    continue;
                 }
 
                 numCellsPerClass.push_back(nCells);
                 classNames.push_back(string(shortName));
                 nDomCells += nCells;
 
-                miliMetaData[meshId]->GetClassMDByShortName(shortName)->
-                    SetConnectivityOffset(dom, offset);
-                miliMetaData[meshId]->GetClassMDByShortName(shortName)->
-                    SetNumElements(dom, nCells);
+                MiliClassMetaData *mcmd = miliMetaData[meshId]->
+                    GetClassMDByShortName(shortName);
+                if (mcmd)
+                {
+                    mcmd->SetConnectivityOffset(dom, offset);
+                    mcmd->SetNumElements(dom, nCells);
+                }
+                else
+                {
+                    char msg[128];
+                    snprintf(msg, 128, "MiliClassMetaData for shortName \"%s\""
+                             " not found. This suggests that this class is "
+                             "missing from the top level mili file.", shortName);
+                    EXCEPTION1(ImproperUseException, msg);
+                }
+                
                 offset += nCells;
             }
+            numClassesPerCellType[i] = adjustedNumClassesPerCellType;
         }
 
         miliMetaData[meshId]->SetNumCells(dom, nDomCells);
 
         //
-        // Global variables are applied to the entire mesh. 
+        // Global variables are applied to the entire mesh.
         //
         MiliClassMetaData *globalClass = miliMetaData[meshId]->GetClassMDByShortName("glob");
         if (globalClass != NULL)
@@ -988,14 +1048,14 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         //
         // Material variables are applied to all materials (technically, each element should
-        // belong to a material, right?). 
+        // belong to a material, right?).
         //
         MiliClassMetaData *matClass = miliMetaData[meshId]->GetClassMDByShortName("mat");
         if (matClass != NULL)
         {
             matClass->SetNumElements(dom, nDomCells);
         }
-       
+
         //
         // Allocate an appropriately sized dataset using that connectivity
         // information.
@@ -1005,7 +1065,7 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         //
         // Now that we have the needed counts, retrieve the connectivity
-        // and build our dataset. 
+        // and build our dataset.
         //
         int cellIdx = 0;
         int cpcIdx  = 0;
@@ -1017,16 +1077,16 @@ avtMiliFileFormat::ReadMesh(int dom)
             {
                 //
                 // class_conns is a mili defined array which maps mili
-                // cell types to their number of nodes. 
+                // cell types to their number of nodes.
                 //
                 int connCount = class_conns[miliCellTypes[i]];
                 int nCells    = numCellsPerClass[cpcIdx];
 
                 //
-                // Load all of the info for a single mili cell type. 
+                // Load all of the info for a single mili cell type.
                 //
                 // conn: list of nodes defining each element.
-                // mat:  materials that each element belongs to. 
+                // mat:  materials that each element belongs to.
                 // part: Not used...
                 //
                 int *conn       = new int[nCells * connCount];
@@ -1036,7 +1096,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 strcpy(shortName, classNames[cpcIdx].c_str());
                 cpcIdx++;
 
-                int rval = mc_load_conns(dbid[dom], meshId, 
+                int rval = mc_load_conns(dbid[dom], meshId,
                     shortName, conn, mats, part);
 
                 if (rval != OK)
@@ -1049,7 +1109,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 // in memory without offsetting the original.
                 //
                 int *connPtr = conn;
-    
+
                 for (int k = 0 ; k < nCells ; ++k)
                 {
                     matList[cellIdx] = mats[k];
@@ -1061,7 +1121,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                     {
                         verts[cc] = (vtkIdType)connPtr[cc];
                     }
-                    
+
                     switch (miliCellTypes[i])
                     {
                         case M_TRUSS:
@@ -1073,8 +1133,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                         case M_BEAM:
                         {
                             //
-                            // Beams are lines that have a third point to 
-                            // define the normal. Since we don't need to 
+                            // Beams are lines that have a third point to
+                            // define the normal. Since we don't need to
                             // visualize it, we just drop the normal point.
                             //
                             datasets[dom][meshId]->InsertNextCell(VTK_LINE,
@@ -1114,8 +1174,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                         case M_HEX:
                         {
                             //
-                            // If all of the node ids are equal, this is 
-                            // actually a particle (Mili hack). 
+                            // If all of the node ids are equal, this is
+                            // actually a particle (Mili hack).
                             //
                             bool isParticle = true;
                             int prevNode    = connPtr[0];
@@ -1128,7 +1188,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                                 }
                                 prevNode = connPtr[nIdx];
                             }
-                            
+
                             if (isParticle)
                             {
                                 vtkIdType vert[1];
@@ -1137,9 +1197,9 @@ avtMiliFileFormat::ReadMesh(int dom)
                                                          VTK_VERTEX,
                                                          1, vert);
                             }
-                            else if (connPtr[2] == connPtr[3] && 
+                            else if (connPtr[2] == connPtr[3] &&
                                      connPtr[4] == connPtr[5] &&
-                                     connPtr[5] == connPtr[6] && 
+                                     connPtr[5] == connPtr[6] &&
                                      connPtr[6] == connPtr[7])
                             {
                                 vtkIdType tet[4];
@@ -1175,7 +1235,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 }
 
                 //
-                // Retrieve label info for this class. 
+                // Retrieve label info for this class.
                 //
                 RetrieveZoneLabelInfo(meshId, shortName, dom,
                                       nCells);
@@ -1187,21 +1247,21 @@ avtMiliFileFormat::ReadMesh(int dom)
         }
 
         //
-        // Create our avtMaterial. 
+        // Create our avtMaterial.
         //
         int numMats = miliMetaData[meshId]->GetNumMaterials();
         stringVector matNames;
         miliMetaData[meshId]->GetMaterialNames(matNames);
         avtMaterial *avtMat = new avtMaterial(numMats, matNames,
-                                              nDomCells, matList, 0, 
-                                              NULL, NULL, 
+                                              nDomCells, matList, 0,
+                                              NULL, NULL,
                                               NULL, NULL);
 
         materials[dom][meshId] = avtMat;
         delete [] matList;
 
         //
-        // Read initial nodal position information, if available. 
+        // Read initial nodal position information, if available.
         //
         vtkPoints *initialNodePos = vtkPoints::New();
         initialNodePos->SetNumberOfPoints(nNodes);
@@ -1218,7 +1278,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 {
                     int q = p*3, r = p*2;
                     //
-                    // Store the coordinates in reverse so we 
+                    // Store the coordinates in reverse so we
                     // don't mess up at node 1.
                     //
                     nodePosPtr[q+2] = 0.0;
@@ -1237,7 +1297,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         }
 
         //
-        // Grab the subrecord info while we're here. 
+        // Grab the subrecord info while we're here.
         //
         PopulateSubrecordInfo(dom, meshId);
 
@@ -1254,10 +1314,10 @@ avtMiliFileFormat::ReadMesh(int dom)
 //
 //  Purpose:
 //      Retrieve the needed information from the subrecords, and
-//      store it for later requests. 
+//      store it for later requests.
 //
 //  Programmer: Alister Maguire
-//  Creation:   January 28, 2019 
+//  Creation:   January 28, 2019
 //
 //  Modifications:
 //
@@ -1278,11 +1338,11 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
         debug1 << "MILI: Cannot query QTY_SREC_FMTS! This is bad..." << endl;
         return;
     }
-    else if (srec_qty > 1) 
+    else if (srec_qty > 1)
     {
         //
         // According to Kevin, the state record format count is never
-        // actually greater than 1. 
+        // actually greater than 1.
         //
         debug1 << "MILI: Encountered multiple state record formats! Is this in "
                << "use now???";
@@ -1296,7 +1356,7 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
     int substates = 0;
     rval = mc_query_family(dbid[dom], QTY_SUBRECS, (void *) &sRFId, NULL,
                            (void *) &substates);
-    
+
     if (rval != OK)
     {
         debug1 << "MILI: Cannot query QTY_SUBRECS! This is bad..." << endl;
@@ -1305,7 +1365,7 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
 
     //
     // This seems like it should be terrible in performance, but it's
-    // actually pretty fast. 
+    // actually pretty fast.
     //
     for (int srId = 0 ; srId < substates ; srId++)
     {
@@ -1317,24 +1377,24 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
         {
             continue;
         }
-        
+
         for (int varIdx = 0 ; varIdx < sr.qty_svars ; varIdx++)
         {
              State_variable sv;
              memset(&sv, 0, sizeof(sv));
 
              mc_get_svar_def(dbid[dom], sr.svar_names[varIdx], &sv);
-             
+
              //
-             // Look for this variable in our metadata. 
+             // Look for this variable in our metadata.
              //
              int MDVarIdx = miliMetaData[meshId]->
-                 GetVarMDIdxByShortName(sv.short_name, sr.class_name); 
+                 GetVarMDIdxByShortName(sv.short_name, sr.class_name);
 
              if (MDVarIdx != -1)
              {
                  //
-                 // Add the subrecord info to our metadata. 
+                 // Add the subrecord info to our metadata.
                  //
                  miliMetaData[meshId]->AddVarSubrecInfo(MDVarIdx,
                                                         dom,
@@ -1343,13 +1403,13 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
              }
 
              //
-             // Mili calls needed to free memory. 
+             // Mili calls needed to free memory.
              //
              mc_cleanse_st_variable(&sv);
         }
 
         //
-        // Mili calls needed to free memory. 
+        // Mili calls needed to free memory.
         //
         mc_cleanse_subrec(&sr);
     }
@@ -1357,17 +1417,17 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
     visitTimer->StopTimer(popSubrecTimer, "MILI: PopulateSubrecordInfo");
 }
 
-                
+
 // ****************************************************************************
 //  Method:  avtMiliFileFormat::GetVar
 //
 //  Purpose:
-//      Retrieve the data for the given varPath. 
+//      Retrieve the data for the given varPath.
 //
 //  Arguments:
 //    timestep   The time step of interest.
-//    dom        The domain of interest. 
-//    varPath    The variable path of interest.         
+//    dom        The domain of interest.
+//    varPath    The variable path of interest.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
@@ -1377,22 +1437,22 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
 // ****************************************************************************
 
 vtkDataArray *
-avtMiliFileFormat::GetVar(int timestep, 
-                          int dom, 
+avtMiliFileFormat::GetVar(int timestep,
+                          int dom,
                           const char *varPath)
 {
     int gvTimer = visitTimer->StartTimer();
     int meshId  = ExtractMeshIdFromPath(varPath);
 
     //
-    // Labels are special cases that we need to handle 
-    // separately. 
+    // Labels are special cases that we need to handle
+    // separately.
     //
     if (strcmp("OriginalZoneLabels", varPath) == 0)
     {
         int maxSize = miliMetaData[meshId]->GetMaxZoneLabelLength(dom) + 1;
 
-        const stringVector *miliZoneLabels = 
+        const stringVector *miliZoneLabels =
             miliMetaData[meshId]->GetZoneBasedLabelsPtr(dom);
 
         std::vector<MiliClassMetaData *> cellMD;
@@ -1405,7 +1465,7 @@ avtMiliFileFormat::GetVar(int timestep,
     {
         int maxSize = miliMetaData[meshId]->GetMaxNodeLabelLength(dom) + 1;
 
-        const stringVector *miliNodeLabels = 
+        const stringVector *miliNodeLabels =
             miliMetaData[meshId]->GetNodeBasedLabelsPtr(dom);
 
         std::vector<MiliClassMetaData *> nodeMD;
@@ -1414,7 +1474,7 @@ avtMiliFileFormat::GetVar(int timestep,
         return GenerateLabelArray(dom, maxSize, miliNodeLabels, nodeMD);
     }
 
-    MiliVariableMetaData *varMD = 
+    MiliVariableMetaData *varMD =
         miliMetaData[meshId]->GetVarMDByPath(varPath);
 
     if (varMD == NULL)
@@ -1438,25 +1498,25 @@ avtMiliFileFormat::GetVar(int timestep,
     //
     // If our variable doesn't cover the entire dataset, we want
     // the "empty space" to be rendered grey. Nan values will
-    // be mapped to grey. 
+    // be mapped to grey.
     //
     for (int i = 0; i < numTuples; ++i)
-    { 
+    {
         fltArray->SetTuple1(i, std::numeric_limits<float>::quiet_NaN());
     }
 
     string shortName = "";
     bool isShared    = false;
 
-    if (varMD->IsElementSet())     
+    if (varMD->IsElementSet())
     {
         //
         // If this is an element set, we need to retrieve the requested
-        // group info. 
+        // group info.
         //
-        int gIdx = 
+        int gIdx =
             ((MiliElementSetMetaData *)varMD)->GetGroupIdxByPath(varPath);
-        shortName = 
+        shortName =
             ((MiliElementSetMetaData *)varMD)->GetGroupShortName(gIdx);
         isShared =
             ((MiliElementSetMetaData *)varMD)->GroupIsShared(gIdx);
@@ -1470,10 +1530,10 @@ avtMiliFileFormat::GetVar(int timestep,
     if (isShared)
     {
         //
-        // If this is a shared variable, we need to retrieve data from 
-        // each of the classes that share this variable. 
+        // If this is a shared variable, we need to retrieve data from
+        // each of the classes that share this variable.
         //
-        SharedVariableInfo *sharedInfo = 
+        SharedVariableInfo *sharedInfo =
             miliMetaData[meshId]->GetSharedVariableInfo(shortName.c_str());
 
         if (sharedInfo != NULL)
@@ -1483,28 +1543,28 @@ avtMiliFileFormat::GetVar(int timestep,
             for (std::vector<int>::iterator itr = varIdxs->begin();
                  itr != varIdxs->end(); ++itr)
             {
-                int curIdx = (*itr); 
-                MiliVariableMetaData *sharedVarMD = 
+                int curIdx = (*itr);
+                MiliVariableMetaData *sharedVarMD =
                     miliMetaData[meshId]->GetVarMDByIdx(curIdx);
 
                 if (sharedVarMD->IsElementSet())
                 {
-                    GetElementSetVar(timestep, 
-                                     dom, 
-                                     meshId, 
+                    GetElementSetVar(timestep,
+                                     dom,
+                                     meshId,
                                      shortName,
-                                     sharedVarMD, 
+                                     sharedVarMD,
                                      fltArray);
                 }
                 else
                 {
-                    GetVar(timestep, 
-                           dom, 
-                           meshId, 
-                           sharedVarMD, 
+                    GetVar(timestep,
+                           dom,
+                           meshId,
+                           sharedVarMD,
                            fltArray);
                 }
-              
+
             }
 
             visitTimer->StopTimer(gvTimer, "MILI: GetVar");
@@ -1512,7 +1572,7 @@ avtMiliFileFormat::GetVar(int timestep,
             return fltArray;
         }
 
-        debug1 << "MILI: Missing shared variable info?!?"; 
+        debug1 << "MILI: Missing shared variable info?!?";
         debug1 << "MILI: returning incomplete array...";
 
         return fltArray;
@@ -1521,14 +1581,14 @@ avtMiliFileFormat::GetVar(int timestep,
     {
         //
         // We can arrive here when an element set has one shared group
-        // and another non-shared group that is to be treated as a 
-        // scalar. 
+        // and another non-shared group that is to be treated as a
+        // scalar.
         //
-        GetElementSetVar(timestep, 
-                         dom, 
-                         meshId, 
+        GetElementSetVar(timestep,
+                         dom,
+                         meshId,
                          shortName,
-                         varMD, 
+                         varMD,
                          fltArray);
 
         visitTimer->StopTimer(gvTimer, "MILI: GetVar");
@@ -1536,8 +1596,8 @@ avtMiliFileFormat::GetVar(int timestep,
     }
 
     //
-    // If we're here, we must have a regular scalar that isn't 
-    // shared. Just get the variable. 
+    // If we're here, we must have a regular scalar that isn't
+    // shared. Just get the variable.
     //
     GetVar(timestep, dom, meshId, varMD, fltArray);
 
@@ -1545,172 +1605,180 @@ avtMiliFileFormat::GetVar(int timestep,
     return fltArray;
 }
 
-                
+
 // ****************************************************************************
 //  Method:  avtMiliFileFormat::GetVar
 //
 //  Purpose:
-//      Retrieve the data for the given variable. 
+//      Retrieve the data for the given variable.
 //
 //  Arguments:
 //    timestep   The time step of interest.
-//    dom        The domain of interest. 
-//    meshId     The mesh id for this variable. 
-//    varMD      The variable metadata. 
-//    fltArray   The vtk array to read into. 
+//    dom        The domain of interest.
+//    meshId     The mesh id for this variable.
+//    varMD      The variable metadata.
+//    fltArray   The vtk array to read into.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 15, 2019
 //
 //  Modifications
+//    Eric Brugger, Mon Oct 17 08:44:34 PDT 2022
+//    I fixed a bug where material variables weren't being read properly.
+//    They are only stored with domain 0, so the domain needs to be set to
+//    0 when reading a material variable.
+//
+//    Eric Brugger, Thu Jan  5 15:25:33 PST 2023
+//    I fixed a bug where variables that were only defined on a portion of
+//    the nodes weren't being placed on the correct nodes. This was handled
+//    properly for zonal variables. I fixed the bug by unifying the handling
+//    of nodal and zonal variables.
 //
 // ****************************************************************************
 
 void
-avtMiliFileFormat::GetVar(int timestep, 
-                          int dom, 
-                          int meshId, 
+avtMiliFileFormat::GetVar(int timestep,
+                          int dom,
+                          int meshId,
                           MiliVariableMetaData *varMD,
                           vtkFloatArray *fltArray)
 {
     if (fltArray == NULL)
     {
-        debug1 << "MILI: GetVar recieved a null array?! "
+        debug1 << "MILI: GetVar received a null array?! "
                << "This shouldn't happen...";
         char msg[128];
         snprintf(msg, 128, "Data array must be initialized!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    //
+    // Material variables are only defined on domain 0. The variable
+    // domVar handles this case by being defined as 0 for a material
+    // variable and the normal domain number in other cases.
+    //
+    int domVar = varMD->IsMatVar() ? 0 : dom;
+
+    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(domVar);
 
     if (SRInfo == NULL)
     {
         EXCEPTION1(InvalidVariableException, varMD->GetLongName());
     }
 
-    intVector SRIds    = varMD->GetSubrecIds(dom);
-    int nSRs           = SRIds.size();
+    intVector SRIds    = varMD->GetSubrecIds(domVar);
     int vType          = varMD->GetNumType();
     string vShortName  = varMD->GetShortName();
 
     //
-    // Create a copy of our name to pass into mili. 
+    // Create a copy of our name to pass into mili.
     //
     char charName[128];
     snprintf(charName, 128, "%s", vShortName.c_str());
     char *namePtr = (char *) charName;
 
+    int nVals = 0;
     if (varMD->GetCentering() == AVT_NODECENT)
     {
-        int nNodes = miliMetaData[meshId]->GetNumNodes(dom);
+        nVals = miliMetaData[meshId]->GetNumNodes(dom);
+    }
+    else
+    {
+        nVals = miliMetaData[meshId]->GetNumCells(dom);
+    }
 
-        float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
+    //
+    // We have two special cases to consider.
+    // Material variables:
+    //   We receive a single value for a given number of materials,
+    //   and we must apply each of those values to their respective
+    //   materials.
+    // Global variables:
+    //   We receive a single value that is applied to all cells.
+    //
+    int dBuffSize = 0;
+    float *dataBuffer = NULL;
+    bool isMatVar = varMD->IsMatVar();
+    bool isGlobal = varMD->IsGlobal();
 
-        ReadMiliResults(dbid[dom], timestep + 1, SRIds[0], 1,
-            &namePtr, vType, nNodes, fArrPtr);
+    if (isMatVar)
+    {
+        dBuffSize  = materials[domVar][meshId]->GetNMaterials();
+        dataBuffer = new float[dBuffSize];
+    }
+    else if (isGlobal)
+    {
+        dBuffSize  = 1;
+        dataBuffer = new float[dBuffSize];
+    }
+    else
+    {
+        dBuffSize  = nVals;
+        dataBuffer = new float[dBuffSize];
+    }
+
+    //
+    // Nans for empty space (rendered grey).
+    //
+    for (int i = 0 ; i < dBuffSize; i++)
+    {
+        dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
+    }
+
+    //
+    // Read the data into our buffer.
+    //
+    string className = varMD->GetClassShortName();
+    int start = miliMetaData[meshId]->
+        GetClassMDByShortName(className.c_str())->
+        GetConnectivityOffset(domVar);
+
+    ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+        vType, 1, timestep + 1, domVar, dataBuffer);
+
+    if (isMatVar)
+    {
+        //
+        // This is a material variable. We need to distribute the
+        // values across the array by material ID.
+        //
+        const int *matList = materials[dom][meshId]->GetMatlist();
+
+        for (int i = 0; i < nVals; ++i)
+        {
+            if (!visitIsNan(dataBuffer[matList[i]]))
+            {
+                fltArray->SetTuple1(i, dataBuffer[matList[i]]);
+            }
+        }
+    }
+    else if (isGlobal)
+    {
+        //
+        // This is a global var. Just apply it to all cells.
+        //
+        for (int i = 1; i < nVals; ++i)
+        {
+            fltArray->SetTuple1(i, dataBuffer[0]);
+        }
     }
     else
     {
         //
-        // Cell centered variable. 
+        // Nothing special here. Just copy the values over.
         //
-        int nCells = miliMetaData[meshId]->GetNumCells(dom);
-        
-        float *dataBuffer = NULL;
-
-        //
-        // We have two special cases to consider.
-        // Material variables: 
-        //   We receive a single value for a given number of materials, 
-        //   and we must apply each of those values to their respective 
-        //   materials. 
-        // Global variables:
-        //   We recieve a single value that is applied to all cells. 
-        //
-        int dBuffSize = 0;
-        bool isMatVar = varMD->IsMatVar();
-        bool isGlobal = varMD->IsGlobal();
-
-        if (isMatVar)
+        for (int i = 0; i < nVals; ++i)
         {
-            dBuffSize  = materials[dom][meshId]->GetNMaterials();
-            dataBuffer = new float[dBuffSize]; 
-        }
-        else if (isGlobal)
-        {
-            dBuffSize  = 1;
-            dataBuffer = new float[1]; 
-        }
-        else
-        {
-            dBuffSize  = nCells;
-            dataBuffer = new float[dBuffSize];
-        }
-
-        //
-        // Nans for empty space (redered grey).
-        //
-        for (int i = 0 ; i < dBuffSize; i++)
-        {
-            dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
-        }
-
-        //
-        // Read the data into our buffer. 
-        //
-        string className = varMD->GetClassShortName(); 
-        int start = miliMetaData[meshId]->
-            GetClassMDByShortName(className.c_str())->
-            GetConnectivityOffset(dom);
-
-        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start, 
-            vType, 1, timestep + 1, dom, dataBuffer);
-
-        if (isMatVar)
-        {
-            //
-            // This is a material variable. We need to distribute the 
-            // values across cells by material ID. 
-            //
-            const int *matList = materials[dom][meshId]->GetMatlist();
-
-            for (int i = 0; i < nCells; ++i)
-            { 
-                if (!visitIsNan(dataBuffer[matList[i]]))
-                {
-                    fltArray->SetTuple1(i, dataBuffer[matList[i]]);
-                }
+            if (!visitIsNan(dataBuffer[i]))
+            {
+                fltArray->SetTuple1(i, dataBuffer[i]);
             }
         }
-        else if (isGlobal)
-        {
-            //
-            // This is a global var. Just apply it to all cells. 
-            //
-            for (int i = 0; i < nCells; ++i)
-            { 
-                fltArray->SetTuple1(i, dataBuffer[0]);
-            }
-        }
-        else
-        {
-            //
-            // Nothing special here. Just copy the values over. 
-            //
-            for (int i = 0; i < nCells; ++i)
-            { 
-                if (!visitIsNan(dataBuffer[i]))
-                {
-                    fltArray->SetTuple1(i, dataBuffer[i]);
-                }
-            }
-        }
+    }
 
-        if (dataBuffer != NULL)
-        {
-            delete [] dataBuffer;
-        }
+    if (dataBuffer != NULL)
+    {
+        delete [] dataBuffer;
     }
 }
 
@@ -1719,28 +1787,47 @@ avtMiliFileFormat::GetVar(int timestep,
 //  Method:  avtMiliFileFormat::GetVectorVar
 //
 //  Purpose:
-//      Retrieve the variable data from the given varPath. 
+//      Retrieve the variable data from the given varPath.
 //
 //  Arguments:
-//    timestep   The time step of interest. 
-//    dom        The domain of interest. 
-//    varPath    The variable path to look up and retrieve. 
+//    timestep   The time step of interest.
+//    dom        The domain of interest.
+//    varPath    The variable path to look up and retrieve.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
 //
 //  Modifications
 //
+//  Mark C. Miller, Wed Sep 14 23:29:22 PDT 2022
+//  Add logic to handle get for init_mesh_coords.
+//
+//  Mark C. Miller, Fri Sep 16 11:28:10 PDT 2022
+//  Support init_mesh_coords on main mesh and sand mesh.
 // ****************************************************************************
 
 vtkDataArray *
-avtMiliFileFormat::GetVectorVar(int timestep, 
-                                int dom, 
+avtMiliFileFormat::GetVectorVar(int timestep,
+                                int dom,
                                 const char *varPath)
 {
     int gvvTimer = visitTimer->StartTimer();
     int meshId   = ExtractMeshIdFromPath(varPath);
-    
+
+    if (string(varPath).find("Primal/node/init_mesh_coords") != std::string::npos)
+    {
+        if (!datasets[dom][meshId] && datasets[dom][meshId]->GetPoints() == NULL)
+        {
+            debug1 << "MILI: Unable to find nodes! This shouldn't happen..";
+            char msg[128];
+            snprintf(msg, 128, "Unable to load nodes from Mili!");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->ShallowCopy(datasets[dom][meshId]->GetPoints()->GetData());
+        return rv;
+    }
+
     MiliVariableMetaData *varMD = miliMetaData[meshId]->
         GetVarMDByPath(varPath);
 
@@ -1754,9 +1841,9 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 
     if (varMD->IsElementSet())
     {
-        int gIdx = 
+        int gIdx =
             ((MiliElementSetMetaData *)varMD)->GetGroupIdxByPath(varPath);
-        shortName = 
+        shortName =
             ((MiliElementSetMetaData *)varMD)->GetGroupShortName(gIdx);
         vecSize =
             ((MiliElementSetMetaData *)varMD)->GetGroupVecSize(gIdx);
@@ -1765,7 +1852,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     {
         vecSize   = varMD->GetVectorSize();
         shortName = varMD->GetShortName();
-    }    
+    }
 
     int numTuples = 0;
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -1787,7 +1874,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     //
     // If our variable doesn't cover the entire dataset, we want
     // the "empty space" to be rendered grey. Nan values will
-    // be mapped to grey. 
+    // be mapped to grey.
     //
     for (int i = 0; i < arrSize; ++i)
     {
@@ -1797,10 +1884,10 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     if (varMD->IsShared())
     {
         //
-        // If this is a shared variable, we need to retrieve data from 
-        // each of the classes that share this variable. 
+        // If this is a shared variable, we need to retrieve data from
+        // each of the classes that share this variable.
         //
-        SharedVariableInfo *sharedInfo = 
+        SharedVariableInfo *sharedInfo =
             miliMetaData[meshId]->GetSharedVariableInfo(shortName.c_str());
 
         if (sharedInfo != NULL)
@@ -1810,33 +1897,33 @@ avtMiliFileFormat::GetVectorVar(int timestep,
             for (std::vector<int>::iterator itr = varIdxs->begin();
                  itr != varIdxs->end(); ++itr)
             {
-                int curIdx = (*itr); 
-                MiliVariableMetaData *sharedVarMD = 
+                int curIdx = (*itr);
+                MiliVariableMetaData *sharedVarMD =
                     miliMetaData[meshId]->GetVarMDByIdx(curIdx);
 
                 if (sharedVarMD->IsElementSet())
                 {
-                    GetElementSetVar(timestep, 
-                                     dom, 
-                                     meshId, 
+                    GetElementSetVar(timestep,
+                                     dom,
+                                     meshId,
                                      shortName,
-                                     sharedVarMD, 
+                                     sharedVarMD,
                                      fltArray);
 
                 }
                 else
                 {
-                    GetVectorVar(timestep, 
-                                 dom, 
-                                 meshId, 
-                                 sharedVarMD, 
+                    GetVectorVar(timestep,
+                                 dom,
+                                 meshId,
+                                 sharedVarMD,
                                  fltArray);
                 }
             }
         }
         else
-        { 
-            debug1 << "MILI: Missing shared variable info?!?"; 
+        {
+            debug1 << "MILI: Missing shared variable info?!?";
             debug1 << "MILI: returning incomplete array...";
 
             return fltArray;
@@ -1846,7 +1933,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     {
         GetVectorVar(timestep, dom, meshId, varMD, fltArray);
     }
-    
+
     //
     // If we have a symmetric tensor, put that in the form of a normal
     // tensor.
@@ -1887,14 +1974,14 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //  Method:  avtMiliFileFormat::GetVectorVar
 //
 //  Purpose:
-//      Retrieve a vector variable from mili. 
+//      Retrieve a vector variable from mili.
 //
 //  Arguments:
-//    timestep   The time step of interest. 
-//    dom        The domain of interest. 
-//    meshId     The mesh id associated with this variable. 
-//    varMD      The variable meta data. 
-//    fltArray   The vtk array to read into. 
+//    timestep   The time step of interest.
+//    dom        The domain of interest.
+//    meshId     The mesh id associated with this variable.
+//    varMD      The variable meta data.
+//    fltArray   The vtk array to read into.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 15, 2019
@@ -1904,9 +1991,9 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 // ****************************************************************************
 
 void
-avtMiliFileFormat::GetVectorVar(int timestep, 
-                                int dom, 
-                                int meshId, 
+avtMiliFileFormat::GetVectorVar(int timestep,
+                                int dom,
+                                int meshId,
                                 MiliVariableMetaData *varMD,
                                 vtkFloatArray *fltArray)
 {
@@ -1917,11 +2004,11 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     {
         debug1 << "Mili: an element set is not being handled properly!";
         debug1 << "Mili: it should be directed to GetElementSetVar";
-        return; 
+        return;
     }
-  
+
     //
-    // Create a copy of our name to pass into mili. 
+    // Create a copy of our name to pass into mili.
     //
     char charName[128];
     snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
@@ -1944,14 +2031,14 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 
         int nNodes     = miliMetaData[meshId]->GetNumNodes(dom);
         float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
-        
+
         ReadMiliResults(dbid[dom], timestep+1, SRIds[0], 1,
             &namePtr, vType, nNodes * vecSize, fArrPtr);
     }
     else
     {
         //
-        // Cell centered variable. 
+        // Cell centered variable.
         //
         int nCells    = miliMetaData[meshId]->GetNumCells(dom);
         int dBuffSize = 0;;
@@ -1960,10 +2047,10 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         if (isGlobal)
         {
             //
-            // A global vector will be a single vector of size vecSize. 
+            // A global vector will be a single vector of size vecSize.
             //
             dBuffSize  = vecSize;
-            dataBuffer = new float[dBuffSize]; 
+            dataBuffer = new float[dBuffSize];
         }
         else
         {
@@ -1972,7 +2059,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         }
 
         //
-        // Nans for empty space (rendered grey). 
+        // Nans for empty space (rendered grey).
         //
         for (int i = 0 ; i < dBuffSize; i++)
         {
@@ -1980,9 +2067,9 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         }
 
         //
-        // Read the data into our buffer. 
+        // Read the data into our buffer.
         //
-        string className = varMD->GetClassShortName(); 
+        string className = varMD->GetClassShortName();
         int start = miliMetaData[meshId]->
             GetClassMDByShortName(className.c_str())->
             GetConnectivityOffset(dom);
@@ -1993,11 +2080,11 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         if (isGlobal)
         {
             //
-            // This vector is global. Just apply it to every cell. 
+            // This vector is global. Just apply it to every cell.
             //
             float *fltArrayPtr = (float *) fltArray->GetVoidPointer(0);
             for (int i = 0; i < nCells; ++i)
-            { 
+            {
                 for (int j = 0; j < vecSize; ++j)
                 {
                     fltArrayPtr[i*vecSize + j] = dataBuffer[j];
@@ -2007,7 +2094,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         else
         {
             //
-            // Nothing special here. Just copy over the elements. 
+            // Nothing special here. Just copy over the elements.
             //
             float *fltArrayPtr = (float *) fltArray->GetVoidPointer(0);
             for (int i = 0 ; i < dBuffSize; i++)
@@ -2031,68 +2118,71 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //  Method:  avtMiliFileFormat::GetElementSetVar
 //
 //  Purpose:
-//      Retrieve and element set variable from mili. 
+//      Retrieve and element set variable from mili.
 //
-//      Element Sets (ESs) are special cases that need particular 
+//      Element Sets (ESs) are special cases that need particular
 //      attention. There are two details of importance:
 //
 //      1. An element set is basically a 3D array, but we collapse
 //         it down to a 2D array. Consider an element set es_x, which
-//         consists of an array of length 4 and 3 integration points. 
+//         consists of an array of length 4 and 3 integration points.
 //         es_x[i][j][k] would retrieve the kth integration point from
 //         the jth component of the ith cell, where 0 <= i < numCells,
-//         0 <= j < 4, and 0 <= k < 3. Since we only wish to display 
-//         one integration point at a time, the user decides which 
-//         one to display, and we collapse arr[][][] down to arr[][][c], 
-//         where c is the index of the desired integration point. 
+//         0 <= j < 4, and 0 <= k < 3. Since we only wish to display
+//         one integration point at a time, the user decides which
+//         one to display, and we collapse arr[][][] down to arr[][][c],
+//         where c is the index of the desired integration point.
 //
 //      2. An element set can contain multiple "groups" within its data.
-//         If we consider again es_x from above, we might find that 
-//         the components defined in the range 0 <= j < 3 belong to a 
-//         group named "stress" and that the remaining component, j = 3, 
+//         If we consider again es_x from above, we might find that
+//         the components defined in the range 0 <= j < 3 belong to a
+//         group named "stress" and that the remaining component, j = 3,
 //         belongs to a group named "eps". Even though es_x is considered
 //         a single variable, we visualize these groups separetely (which
 //         also means that each group can be shared separately). In reality
-//         we treat each group as if it is a distinct variable of its own. 
+//         we treat each group as if it is a distinct variable of its own.
 //
 //  Arguments:
-//    timestep       The time step of interest. 
-//    dom            The domain of interest. 
-//    meshId         The mesh id associated with this variable. 
-//    groupName      The name of the element set's group of interest. 
-//    varMD          The variable meta data. 
-//    fltArray       The vtk array to read into. 
+//    timestep       The time step of interest.
+//    dom            The domain of interest.
+//    meshId         The mesh id associated with this variable.
+//    groupName      The name of the element set's group of interest.
+//    varMD          The variable meta data.
+//    fltArray       The vtk array to read into.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    May 8, 2019
 //
 //  Modifications
 //
+//      Alister Maguire, Wed Mar 24 15:20:59 PDT 2021
+//      Get the integration point index from the meta data now.
+//
 // ****************************************************************************
 
 void
-avtMiliFileFormat::GetElementSetVar(int timestep, 
-                                    int dom, 
-                                    int meshId, 
+avtMiliFileFormat::GetElementSetVar(int timestep,
+                                    int dom,
+                                    int meshId,
                                     string groupName,
                                     MiliVariableMetaData *varMD,
                                     vtkFloatArray *fltArray)
 {
     //
-    // As of now, element sets are always cell centered. 
+    // As of now, element sets are always cell centered.
     //
     if (varMD->GetCentering() != AVT_ZONECENT)
     {
         debug1 << "Mili: Encountered a node centered element set!";
         debug1 << "Mili: We aren't equiped for this... bailing";
-        return; 
+        return;
     }
 
     SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
     intVector SRIds    = varMD->GetSubrecIds(dom);
 
     //
-    // Create a copy of our name to pass into mili. 
+    // Create a copy of our name to pass into mili.
     //
     char charName[128];
     snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
@@ -2106,7 +2196,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     float *dataBuffer = new float[dBuffSize];
 
     //
-    // Nans for empty space (rendered grey).   
+    // Nans for empty space (rendered grey).
     //
     for (int i = 0 ; i < dBuffSize; i++)
     {
@@ -2114,9 +2204,9 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     }
 
     //
-    // Read the data into our buffer. 
+    // Read the data into our buffer.
     //
-    string className = varMD->GetClassShortName(); 
+    string className = varMD->GetClassShortName();
     int start = miliMetaData[meshId]->
         GetClassMDByShortName(className.c_str())->
         GetConnectivityOffset(dom);
@@ -2125,21 +2215,16 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         vType, dataSize, timestep + 1, dom, dataBuffer);
 
     //
-    // We need to determine which of the components have been asked for, 
-    // as element sets contain groups that are visualized separately. 
+    // We need to determine which of the components have been asked for,
+    // as element sets contain groups that are visualized separately.
     //
-    intVector compIdxs = 
+    intVector compIdxs =
         ((MiliElementSetMetaData *) varMD)->GetGroupComponentIdxs(
         groupName);
 
     int retVecSize = compIdxs.size();
-
-    //
-    //TODO: we need to determine how to let the user choose
-    //      the integration point. 
-    //      Let's take the mid integration point for now.
-    //
-    int targetIP = (int)(compDims / 2);
+    int targetIP   = ((MiliElementSetMetaData *) varMD)->
+        GetIntegrationPointIdx();
 
     for (int i = 0 ; i < nCells; i++)
     {
@@ -2148,15 +2233,15 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 
         //
         // Element sets are specialized vectors such that each
-        // element in the vector is a list of integration points. 
+        // element in the vector is a list of integration points.
         //
-        for (int j = 0; j < compIdxs.size(); ++j)
+        for (size_t j = 0; j < compIdxs.size(); ++j)
         {
             int idx = (i * dataSize) + (compIdxs[j] * compDims);
             idx += targetIP;
             if (visitIsNan(dataBuffer[idx]))
-            { 
-                nanFound = true; 
+            {
+                nanFound = true;
                 break;
             }
             vecPts[j] = dataBuffer[idx];
@@ -2178,22 +2263,22 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 //  Method:  avtMiliFileFormat::ReadMiliVarToBuffer
 //
 //  Purpose:
-//      Read mili variable data into a given buffer. 
+//      Read mili variable data into a given buffer.
 //
-//      IMPORTANT: The caller is responsible for all memory management of 
+//      IMPORTANT: The caller is responsible for all memory management of
 //      the buffer. This includes allocating the appropriate amount of
-//      space to hold the variable data. 
+//      space to hold the variable data.
 //
 //  Arguments:
-//      varName      The variable's short name. 
-//      SRIds        The variable's subrecord ids. 
-//      SRInfo       The subrecord info that includes this variable. 
-//      start        The start position of the data. 
-//      vType        The type of value (int, float, etc). 
+//      varName      The variable's short name.
+//      SRIds        The variable's subrecord ids.
+//      SRInfo       The subrecord info that includes this variable.
+//      start        The start position of the data.
+//      vType        The type of value (int, float, etc).
 //      varSize      The size of the variable (vec vs single, etc).
-//      ts           The timestep (in mili format => one based). 
+//      ts           The timestep (in mili format => one based).
 //      dom          The variable's domain.
-//      dataBuffer   The buffer to read into. 
+//      dataBuffer   The buffer to read into.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Feb 25, 2019
@@ -2208,7 +2293,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 void
 avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                                        const intVector &SRIds,
-                                       SubrecInfo *SRInfo, 
+                                       SubrecInfo *SRInfo,
                                        int start,
                                        int vType,
                                        int varSize,
@@ -2222,10 +2307,10 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
     }
 
     //
-    // Loop over the subrecords, and retreive the variable
-    // data from mili. 
+    // Loop over the subrecords, and retrieve the variable
+    // data from mili.
     //
-    for (int i = 0 ; i < SRIds.size(); i++)
+    for (size_t i = 0 ; i < SRIds.size(); i++)
     {
         int nTargetEl = 0;
         int nBlocks   = 0;
@@ -2238,7 +2323,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                           blockRanges);
 
         //
-        // We only have one block to read. 
+        // We only have one block to read.
         //
         if (nBlocks == 1)
         {
@@ -2250,21 +2335,13 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
             float *dbPtr   = dataBuffer;
 
             ReadMiliResults(dbid[dom], ts, SRId,
-                1, &varName, vType, resultSize, 
+                1, &varName, vType, resultSize,
                 dbPtr + (curStart * varSize));
         }
         else if (nBlocks > 1)
         {
-            int totalBlocksSize = 0;
-            for (int b = 0; b < nBlocks; ++b)
-            {
-                int curStart = blockRanges[b * 2];
-                int stop     = blockRanges[b * 2 + 1];
-                totalBlocksSize += stop - curStart + 1;
-            }
-
-            float *MBBuffer = new float[totalBlocksSize * varSize];
-            int resultSize = totalBlocksSize * varSize;
+            int resultSize = nTargetEl * varSize;
+            float *MBBuffer = new float[resultSize];
 
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, MBBuffer);
@@ -2276,7 +2353,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
             //
             for (int b = 0; b < nBlocks; ++b)
             {
-                for (int c = blockRanges[b * 2] - 1; 
+                for (int c = blockRanges[b * 2] - 1;
                      c <= blockRanges[b * 2 + 1] - 1; ++c)
                 {
                     for (int k = 0; k < varSize; ++k)
@@ -2301,17 +2378,17 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 //  Method:  avtMiliFileFormat::AddMiliVariableToMetaData
 //
 //  Purpose:
-//      Add a mili variable to visit's meta-data structures.  
+//      Add a mili variable to visit's meta-data structures.
 //
 //  Arguments:
 //    avtMD          The meta-data structure to populate
 //    meshId         The associated mesh.
 //    avtType        The variable avt type (material, vector, etc).
-//    doSand         Whether or not to build the sand mesh. 
-//    varPath        The variable's visit path. 
-//    centering      The variable centering (node/zone). 
+//    doSand         Whether or not to build the sand mesh.
+//    varPath        The variable's visit path.
+//    centering      The variable centering (node/zone).
 //    compIdxs       The vector component indicies (for element sets,
-//                   we may only use some of the total available). 
+//                   we may only use some of the total available).
 //    vComps         The vector component names.
 //
 //  Programmer:  Alister Maguire
@@ -2319,13 +2396,17 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 //
 //  Modifications
 //
+//      Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
+//      Simplified the process for creating symmetric tensor component
+//      expressions. They are now function calls.
+//
 // ****************************************************************************
 
-void 
+void
 avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                                              int                  meshId,
                                              int                  avtType,
-                                             bool                 doSand,  
+                                             bool                 doSand,
                                              string               varPath,
                                              avtCentering         centering,
                                              const intVector     &compIdxs,
@@ -2333,7 +2414,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 {
     //
     // Create a container for all mesh paths that the current
-    // variable must be added to. 
+    // variable must be added to.
     //
     stringVector meshPaths;
     stringVector meshNames;
@@ -2377,7 +2458,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             if (vecSize == 1)
             {
                 refAvtType = AVT_SCALAR_VAR;
-            } 
+            }
             else if (vecSize == 6)
             {
                 refAvtType = AVT_SYMMETRIC_TENSOR_VAR;
@@ -2389,18 +2470,18 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             else
             {
                 //
-                // Default to treating it as an array and 
-                // just display the components. 
+                // Default to treating it as an array and
+                // just display the components.
                 //
                 refAvtType = AVT_ARRAY_VAR;
             }
         }
-        else if (dims == 2)      
+        else if (dims == 2)
         {
             if (vecSize == 1)
             {
                 refAvtType = AVT_SCALAR_VAR;
-            } 
+            }
             else if (vecSize == 3)
             {
                 refAvtType = AVT_SYMMETRIC_TENSOR_VAR;
@@ -2412,8 +2493,8 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             else
             {
                 //
-                // Default to treating it as an array and 
-                // just display the components. 
+                // Default to treating it as an array and
+                // just display the components.
                 //
                 refAvtType = AVT_ARRAY_VAR;
             }
@@ -2424,14 +2505,14 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             return;
         }
     }
-    
+
     switch (refAvtType)
     {
         case AVT_SCALAR_VAR:
         {
             for (int i = 0; i < numMeshes; ++i)
             {
-                AddScalarVarToMetaData(avtMD, meshPaths[i], 
+                AddScalarVarToMetaData(avtMD, meshPaths[i],
                     meshNames[i], centering);
             }
             break;
@@ -2441,23 +2522,23 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             for (int i = 0; i < numMeshes; ++i)
             {
                 string mPath = meshPaths[i];
-                AddVectorVarToMetaData(avtMD, mPath, meshNames[i], 
+                AddVectorVarToMetaData(avtMD, mPath, meshNames[i],
                     centering, vecSize);
 
                 //
-                // Add expressions for displaying each component. 
+                // Add expressions for displaying each component.
                 //
                 for (intVector::const_iterator idxItr = compIdxs.begin();
                      idxItr != compIdxs.end(); ++idxItr)
                 {
                     //
-                    // Add the x, y, z expressions. 
+                    // Add the dimensional expressions.
                     //
                     char name[1024];
-                    snprintf(name, 1024, "%s/%s", mPath.c_str(), 
+                    snprintf(name, 1024, "%s/%s", mPath.c_str(),
                         vComps[(*idxItr)].c_str());
                     Expression expr = ScalarExpressionFromVec(mPath.c_str(),
-                                                              name, 
+                                                              name,
                                                               (*idxItr));
                     avtMD->AddExpression(&expr);
                 }
@@ -2471,55 +2552,18 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                 string mPath = meshPaths[i];
 
                 //
-                // When we come across a vector of length 6, we change it 
-                // to a normal vector of length 9 and render it as a 
-                // symmetric tensor. 
+                // When we come across a vector of length 6, we change it
+                // to a normal vector of length 9 and render it as a
+                // symmetric tensor.
                 //
                 AddSymmetricTensorVarToMetaData(avtMD, mPath,
                     meshNames[i], centering, 9);
 
-                //
-                // Now we add the individual components. 
-                //
-                int multDimIdxs[] = {1, 2, 0};
+                AddSymmetricTensorComponentExpressions(avtMD,
+                                                       mPath,
+                                                       vComps,
+                                                       compIdxs);
 
-                for (int j = 0; j < 3; ++j)
-                {
-                    int cIdx = compIdxs[j];
-
-                    // 
-                    // First, get the "single-dim" values: xx, yy, zz. 
-                    // 
-                    Expression singleDim;
-                    singleDim.SetType(Expression::ScalarMeshVar);
-          
-                    char singleDef[256];
-                    snprintf(singleDef, 256, "<%s>[%d][%d]", 
-                        mPath.c_str(), cIdx, cIdx);
-                    singleDim.SetDefinition(singleDef);
-
-                    string singleName = mPath + "/" + vComps[cIdx];
-                    singleDim.SetName(singleName);
-
-                    avtMD->AddExpression(&singleDim);
-
-                    //
-                    // Next, get the "multi-dim" values: xy, yz, zx
-                    //
-                    int mltDIdx = cIdx + 3;
-                    Expression multDim;
-                    multDim.SetType(Expression::ScalarMeshVar);
-
-                    char multDef[256];
-                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(), 
-                        cIdx, multDimIdxs[cIdx]);
-                    multDim.SetDefinition(multDef);
-
-                    string multName = mPath + "/" + vComps[mltDIdx];
-                    multDim.SetName(multName);
-
-                    avtMD->AddExpression(&multDim);
-                }
             }
             break;
         }
@@ -2529,48 +2573,13 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             {
                 string mPath = meshPaths[i];
 
-                AddTensorVarToMetaData(avtMD, mPath, 
+                AddTensorVarToMetaData(avtMD, mPath,
                     meshNames[i], centering, vecSize);
 
-                //
-                // Now we add the individual components. 
-                //
-                int multDimIdxs[] = {1, 2, 0};
-
-                for (int j = 0; j < 3; ++j)
-                {
-                    int cIdx = compIdxs[j];
- 
-                    // 
-                    // First, get the "single-dim" values: xx, yy, zz. 
-                    // 
-                    Expression singleDim;
-                    singleDim.SetType(Expression::ScalarMeshVar);
-
-                    char singleDef[256];
-                    snprintf(singleDef, 256, "<%s>[%d][%d]", 
-                        mPath.c_str(), cIdx, cIdx);
-                    singleDim.SetDefinition(singleDef);
-
-                    string singleName = mPath + "/" + vComps[cIdx];
-                    singleDim.SetName(singleName);
-
-                    avtMD->AddExpression(&singleDim);
-
-                    //
-                    // Next, get the "multi-dim" values: xy, yz, zx
-                    //
-                    int mltDIdx = cIdx + 3;
-                    Expression multDim;
-                    char multDef[256];
-                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(), 
-                        cIdx, multDimIdxs[cIdx]);
-                    string multName = mPath + "/" + vComps[mltDIdx];
-                    multDim.SetName(multName);
-                    multDim.SetDefinition(multDef);
-                    multDim.SetType(Expression::ScalarMeshVar);
-                    avtMD->AddExpression(&multDim);
-                }
+                AddSymmetricTensorComponentExpressions(avtMD,
+                                                       mPath,
+                                                       vComps,
+                                                       compIdxs);
             }
             break;
         }
@@ -2581,8 +2590,8 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                 string mPath = meshPaths[i];
 
                 //
-                // For array vars, we just want to display the 
-                // individual components. 
+                // For array vars, we just want to display the
+                // individual components.
                 //
                 stringVector compNames;
 
@@ -2591,17 +2600,17 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int cIdx = compIdxs[j];
                     compNames.push_back(vComps[cIdx]);
                     char name[1024];
-                    snprintf(name, 1024, "%s/%s", mPath.c_str(), 
+                    snprintf(name, 1024, "%s/%s", mPath.c_str(),
                         vComps[cIdx].c_str());
                     Expression expr = ScalarExpressionFromVec(
                                           mPath.c_str(),
-                                          name, 
+                                          name,
                                           cIdx);
                     avtMD->AddExpression(&expr);
                 }
 
                 AddArrayVarToMetaData(avtMD, mPath, compNames, meshNames[i],
-                    centering); 
+                    centering);
             }
             break;
         }
@@ -2614,10 +2623,299 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 
 
 // ****************************************************************************
+//  Method:  avtMiliFileFormat::AddMiliDerivedVariables
+//
+//  Purpose:
+//      Adds a number of derived variables as expressions.
+//
+//  Arguments:
+//    md          A pointer to the atDatabaseMetaData.
+//    meshId      The id of the mesh to add the derived variables to.
+//    meshName    The name of the mesh to add the derived variables to.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    July 15, 2020
+//
+//  Modifications
+//
+//      Alister Maguire, Thu Mar 25 13:55:53 PDT 2021
+//      Added support for stress and strain derivations and the sand mesh.
+//
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Only add pressure for stress.
+// 
+//      Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//      Added derived variables volumetric strain and relative volume.
+//
+//      Mark C. Miller, Wed Sep 14 23:28:17 PDT 2022
+//      Handle displacements only on main mesh.
+//      Just define the existence of init_mesh_coords vector variable here.
+//
+//      Mark C. Miller, Fri Sep 16 11:26:22 PDT 2022
+//      Handle displacements on sand mesh too...they are same as main mesh.
+//
+//      Mark C. Miller, Tue Nov  8 18:11:00 PST 2022
+//      Ensure correct initial mesh coords are used for strain exprs.
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
+                                           const int meshId,
+                                           const std::string meshName)
+{
+    //
+    // If this is the sand mesh, we need to put it into that path.
+    //
+    std::string meshPath = "";
+    std::size_t sandPos  = meshName.find("sand_mesh");
+
+    if (sandPos != std::string::npos)
+    {
+        meshPath = "sand_mesh/";
+    }
+
+    std::string derivedNodePath = meshPath + "Derived/node";
+
+    //
+    // First, check if node displacement exists. If not, add it now.
+    // Do this only for the main mesh, not the sand mesh.
+    //
+    MiliVariableMetaData *noddisp = miliMetaData[meshId]->
+        GetVarMDByShortName("noddisp", "node");
+
+    if (noddisp == NULL)
+    {
+        //
+        // Node displacement is the difference between the node positions
+        // at the current time step and the initial mesh coordinates.
+        // The initial mesh coordinates are read via mc_load_nodes and
+        // stored as the points for the cached datasets.
+        //
+        std::string initMeshCoordsName = meshPath + "Primal/node/init_mesh_coords";
+        AddVectorVarToMetaData(md, initMeshCoordsName, meshName, AVT_NODECENT, 3);
+
+        Expression nodeDisp;
+        std::string nodeDispName = derivedNodePath + "/displacement";
+        nodeDisp.SetName(nodeDispName);
+        nodeDisp.SetDefinition(
+           "displacement(" + meshName + ",<" + initMeshCoordsName + ">)");
+        nodeDisp.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&nodeDisp);
+
+        std::string dimDispNames[] = {"dispx", "dispy", "dispz"};
+        for (int d = 0; d < dims; ++d)
+        {
+            char name[1024];
+            snprintf(name, 1024, "%s/%s", nodeDispName.c_str(),
+                dimDispNames[d].c_str());
+            Expression expr = ScalarExpressionFromVec(nodeDispName.c_str(),
+                                                      name,
+                                                      d);
+            md->AddExpression(&expr);
+        }
+    }
+
+    //
+    // Next, let's handle derivations of stress and strain. If they already
+    // exist in the database, we can build off of them.
+    // NOTE: since stress and strain can be shared, they might exist across
+    // multiple Classes. We need to grab them all and look for the one that
+    // contains the VisIt path.
+    //
+    std::vector< std::vector<MiliVariableMetaData *> > varMDVecs;
+    varMDVecs.reserve(2);
+    varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("stress"));
+    varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("strain"));
+
+    //
+    // If strain isn't defined in the dataset, we need to derive it ourselves.
+    //
+    bool mustDeriveStrain = false;
+    if (varMDVecs[1].size() == 0)
+    {
+        mustDeriveStrain = true;
+    }
+
+    //
+    // Iterate over stress and strain meta data vectors.
+    //
+    for (std::vector< std::vector<MiliVariableMetaData *> >::iterator vecIt =
+         varMDVecs.begin(); vecIt != varMDVecs.end(); ++vecIt)
+    {
+
+        //
+        // Iterate over the variable metadata. If shared, these will be multiple
+        // Classes containing the same variable.
+        //
+        for (std::vector<MiliVariableMetaData *>::iterator mdItr =
+             vecIt->begin(); mdItr != vecIt->end(); ++mdItr)
+        {
+            std::string varPath = (*mdItr)->GetPath();
+
+            //
+            // If the variable is shared, only one of them will have a
+            // defined path within VisIt. Since they're all included in that
+            // one path, we can skip the ones without paths.
+            //
+            if (varPath == "")
+            {
+                continue;
+            }
+
+            //
+            // To construct the derived path, we replace "Primal" with
+            // "Derived".
+            //
+            std::size_t primalPos = varPath.find("Primal/");
+            std::string derivedPath;
+
+            if (primalPos != std::string::npos)
+            {
+                derivedPath = meshPath + "Derived/" +
+                    varPath.substr(primalPos + 7);
+            }
+            else
+            {
+                derivedPath = meshPath + "Derived/" + varPath;
+            }
+
+            bool needPressure = false;
+
+            //
+            // Currently, we only add pressure for stress.
+            //
+            if ((*mdItr)->GetShortName() == "stress")
+            {
+                needPressure = true;
+            }
+
+            AddStressStrainDerivations(md, (*mdItr)->GetShortName(),
+                varPath, derivedPath, needPressure);
+
+            //
+            // If we've added one, we've added them all.
+            //
+            break;
+        }
+    }
+
+    std::string varName;
+    std::string varPath;
+    std::string varPathBase = "Derived/Shared/";
+
+    std::string initCoordsName = meshPath + "Primal/node/init_mesh_coords";
+
+    //
+    // Relative volume.
+    //
+    varName = "relative_volume";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression relVol;
+    relVol.SetName(varPath);
+    relVol.SetDefinition("relative_volume(" + meshName +
+        ",<" + initCoordsName + ">)");
+    relVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&relVol);
+
+    //
+    // Volumetric Strain.
+    //
+    varName = "volumetric_strain";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression eVol;
+    eVol.SetName(varPath);
+    eVol.SetDefinition("strain_volumetric(" + meshName +
+        ",<" + initCoordsName + ">)");
+    eVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&eVol);
+
+    if (mustDeriveStrain)
+    {
+        varPathBase = "Derived/Shared/strain/";
+
+        std::vector<std::string> tensorCompNames;
+        tensorCompNames.push_back("x");
+        tensorCompNames.push_back("y");
+        tensorCompNames.push_back("z");
+        tensorCompNames.push_back("xy");
+        tensorCompNames.push_back("xz");
+        tensorCompNames.push_back("yz");
+
+        //
+        // Green lagrange strain.
+        //
+        varName = "green_lagrange";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainGreen;
+        strainGreen.SetName(varPath);
+        strainGreen.SetDefinition("strain_green_lagrange(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainGreen.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainGreen);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+
+        //
+        // Infinitesimal strain.
+        //
+        varName = "infinitesimal";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainInfinitesimal;
+        strainInfinitesimal.SetName(varPath);
+        strainInfinitesimal.SetDefinition("strain_infinitesimal(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainInfinitesimal.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainInfinitesimal);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+
+        //
+        // Almansi strain.
+        //
+        varName = "almansi";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainAlmansi;
+        strainAlmansi.SetName(varPath);
+        strainAlmansi.SetDefinition("strain_almansi(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainAlmansi.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainAlmansi);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+
+        //
+        // Strain rate.
+        //
+        std::string nodeVelName = meshPath + "Primal/node/nodvel";
+        varName = "rate";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainRate;
+        strainRate.SetName(varPath);
+        strainRate.SetDefinition("strain_rate(" + meshName +
+            ",<" + nodeVelName + ">)");
+        strainRate.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainRate);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtMiliFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
-//      Retrieves metadata about the database. 
+//      Retrieves metadata about the database.
 //
 //  Arguments:
 //    md         The meta-data structure to populate
@@ -2627,14 +2925,20 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //  Creation:    Jan 16, 2019
 //
 //  Modifications
-//
 //      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
 //      Added checks to determine if shared variables have been added
-//      or not.  
+//      or not.
 //
 //      Alister Maguire, Fri Sep 13 08:37:45 MST 2019
-//      We don't need to add the OriginalZone/NodeLabels for the 
-//      sand mesh. 
+//      We don't need to add the OriginalZone/NodeLabels for the
+//      sand mesh.
+//
+//      Alister Maguire, Tue Jul 21 10:52:18 PDT 2020
+//      No need to add the materials for each mesh. Only add to the
+//      non-sand mesh.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Don't add any material colors if no material colors were specified.
 //
 // ****************************************************************************
 
@@ -2662,8 +2966,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         //
         // mili indexing is 1 based.
         //
-        mesh->cellOrigin           = 1; 
-        mesh->nodeOrigin           = 1; 
+        mesh->cellOrigin           = 1;
+        mesh->nodeOrigin           = 1;
         mesh->spatialDimension     = dims;
         mesh->topologicalDimension = dims;
         mesh->blockTitle           = "processors";
@@ -2672,7 +2976,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         md->Add(mesh);
 
         //
-        // Adding material to the meta data. 
+        // Adding material to the meta data.
         //
         int numMats = miliMetaData[meshId]->GetNumMaterials();
         stringVector matColors;
@@ -2680,31 +2984,38 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         stringVector matNames;
         miliMetaData[meshId]->GetMaterialNames(matNames);
-        AddMaterialToMetaData(md, 
-                              matName, 
-                              meshName, 
-                              numMats, 
-                              matNames, 
-                              matColors);
+        if (matColors.empty())
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames);
+        else
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames,
+                                  matColors);
 
-        AddLabelVarToMetaData(md, 
-                              "OriginalZoneLabels", 
-                              meshName, 
-                              AVT_ZONECENT, 
+        AddLabelVarToMetaData(md,
+                              "OriginalZoneLabels",
+                              meshName,
+                              AVT_ZONECENT,
                               dims);
 
         bool hideFromGui = false;
-        AddLabelVarToMetaData(md, 
-                              "OriginalNodeLabels", 
-                              meshName, 
-                              AVT_NODECENT, 
-                              dims, 
+        AddLabelVarToMetaData(md,
+                              "OriginalNodeLabels",
+                              meshName,
+                              AVT_NODECENT,
+                              dims,
                               hideFromGui);
 
         //
         // If the dataset contains sanded elements, the default mesh
         // will have them ghosted, but we need to give the option
-        // of a mesh that does contain them. 
+        // of a mesh that does contain them.
         //
         bool doSand = miliMetaData[meshId]->ContainsSand();
         if  (doSand)
@@ -2718,7 +3029,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             // mili indexing is 1 based.
             //
             sandMesh->cellOrigin           = 1;
-            sandMesh->nodeOrigin           = 1; 
+            sandMesh->nodeOrigin           = 1;
             sandMesh->spatialDimension     = dims;
             sandMesh->topologicalDimension = dims;
             sandMesh->blockTitle           = "processors";
@@ -2726,13 +3037,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             sandMesh->hasSpatialExtents    = false;
 
             md->Add(sandMesh);
-
-            AddMaterialToMetaData(md, 
-                                  matName, 
-                                  sandMeshName, 
-                                  numMats, 
-                                  matNames, 
-                                  matColors);
+            AddMiliDerivedVariables(md, meshId, std::string(sandMeshName));
         }
 
         //
@@ -2757,31 +3062,31 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
             if (varMD->IsElementSet())
             {
-                const boolVector groupShared = 
+                const boolVector groupShared =
                     ((MiliElementSetMetaData *)varMD)->GetGroupIsShared();
-                
+
                 //
                 // Element sets can contain groups of vector components
-                // that are treated as distinct variables. We need to 
-                // check for this and add them individually. 
+                // that are treated as distinct variables. We need to
+                // check for this and add them individually.
                 //
-                for (int j = 0; j < groupShared.size(); ++j)
+                for (size_t j = 0; j < groupShared.size(); ++j)
                 {
                     bool addVarNow = true;
                     SharedVariableInfo *sharedInfo = NULL;
 
                     if (groupShared[j])
                     {
-                        string sName = 
+                        string sName =
                             ((MiliElementSetMetaData *)varMD)->GetGroupShortName(j);
 
-                        sharedInfo = 
+                        sharedInfo =
                             miliMetaData[meshId]->GetSharedVariableInfo(
                             sName.c_str());
 
                         //
                         // If this ES is shared with non-ES variables, let's
-                        // be lazy and wait for the non-ES to add them. 
+                        // be lazy and wait for the non-ES to add them.
                         //
                         if (!sharedInfo->isAllES)
                         {
@@ -2791,16 +3096,16 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
                     if (addVarNow)
                     {
-                        string varPath = 
+                        string varPath =
                             ((MiliElementSetMetaData *)varMD)->GetGroupPath(j);
-                        intVector compIdxs = 
+                        intVector compIdxs =
                             ((MiliElementSetMetaData *)varMD)->
                             GetGroupComponentIdxs(j);
 
                         AddMiliVariableToMetaData(md,
                                                   meshId,
                                                   avtType,
-                                                  doSand,  
+                                                  doSand,
                                                   varPath,
                                                   centering,
                                                   compIdxs,
@@ -2808,7 +3113,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
                         //
                         // If this is a shared variable, let's signify that we
-                        // no longer need to add it. 
+                        // no longer need to add it.
                         //
                         if (sharedInfo != NULL)
                         {
@@ -2820,7 +3125,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             else
             {
                 string varPath = varMD->GetPath();
-                intVector compIdxs; 
+                intVector compIdxs;
                 compIdxs.reserve(vComps.size());
 
                 const int vSize = vComps.size();
@@ -2831,13 +3136,13 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
                 if (varMD->IsShared())
                 {
-                    SharedVariableInfo *sharedInfo = 
+                    SharedVariableInfo *sharedInfo =
                         miliMetaData[meshId]->GetSharedVariableInfo(
                         varMD->GetShortName().c_str());
 
                     //
                     // Check to see if one of the shared vars has already been
-                    // added. It only needs to occur once. 
+                    // added. It only needs to occur once.
                     //
                     if (!sharedInfo->isLive)
                     {
@@ -2845,7 +3150,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         AddMiliVariableToMetaData(md,
                                                   meshId,
                                                   avtType,
-                                                  doSand,  
+                                                  doSand,
                                                   varPath,
                                                   centering,
                                                   compIdxs,
@@ -2857,7 +3162,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     AddMiliVariableToMetaData(md,
                                               meshId,
                                               avtType,
-                                              doSand,  
+                                              doSand,
                                               varPath,
                                               centering,
                                               compIdxs,
@@ -2865,7 +3170,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 }
             }
         }
-        //TODO: add derived types when given the OK. 
+        AddMiliDerivedVariables(md, meshId, std::string(meshName));
     }
 
     //
@@ -2887,7 +3192,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Purpose:
 //      Gets the auxiliary data specified.
 //
-//      Note: much of this has remained from the original plugin. 
+//      Note: much of this has remained from the original plugin.
 //
 //  Arguments:
 //      varName    The variable of interest.
@@ -2905,20 +3210,20 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Modifications
 //
 // ****************************************************************************
- 
+
 void *
-avtMiliFileFormat::GetAuxiliaryData(const char *varName, 
-                                    int         ts, 
-                                    int         dom, 
-                                    const char *auxType, 
+avtMiliFileFormat::GetAuxiliaryData(const char *varName,
+                                    int         ts,
+                                    int         dom,
+                                    const char *auxType,
                                     void       *typeArgs,
-                                    DestructorFunction &df) 
+                                    DestructorFunction &df)
 {
     //
-    // If we know that the request can't be handled, just 
-    // leave. 
+    // If we know that the request can't be handled, just
+    // leave.
     //
-    if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) && 
+    if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
          (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") != 0) )
     {
         return NULL;
@@ -2928,14 +3233,14 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     {
         ReadMesh(dom);
     }
-    
+
     if (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") == 0)
     {
         //
-        // Retrieve the node/zone labels. 
+        // Retrieve the node/zone labels.
         //
         string strVarName(varName);
-        if(strVarName != "OriginalZoneLabels" && 
+        if(strVarName != "OriginalZoneLabels" &&
            strVarName != "OriginalNodeLabels" )
         {
             EXCEPTION1(InvalidVariableException, varName);
@@ -2947,7 +3252,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     else if (strcmp(auxType, AUXILIARY_DATA_MATERIAL) == 0)
     {
         //
-        // Retrieve the materials. 
+        // Retrieve the materials.
         //
         if (strstr(varName, "materials") != varName)
         {
@@ -2964,7 +3269,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
             EXCEPTION1(InvalidVariableException, varName)
         }
         --meshId;
- 
+
         avtMaterial *myCopy = materials[dom][meshId];
         avtMaterial *mat    = new avtMaterial(myCopy->GetNMaterials(),
                                               myCopy->GetMaterials(),
@@ -2988,27 +3293,31 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
 //  Function: avtMiliFileFormat::ExtractJsonVariable
 //
 //  Purpose:
-//      Extract a mili variable from our .mili json file. 
+//      Extract a mili variable from our .mili json file.
 //
-//  Arguments: 
-//      jDoc         The json document (needed for element sets). 
+//  Arguments:
+//      jDoc         The json document (needed for element sets).
 //      val          A json Value type to extract from.
-//      shortName    The variable's short name.        
-//      cShortName   The variable's class' short name. 
-//      cLongName    The Variable's class' long name. 
-//      meshId       The associated mesh ID. 
+//      shortName    The variable's short name.
+//      cShortName   The variable's class' short name.
+//      cLongName    The Variable's class' long name.
+//      meshId       The associated mesh ID.
 //      isMatVar     Is this a material variable?
 //      isGlobal     Is this a global variable?
-//      sharedMap    Map variable names to shared status. 
-//           
+//      sharedMap    Map variable names to shared status.
+//
 //  Author: Alister Maguire
 //  Date:   January 29, 2019
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      When we create metadata for element sets, we now pass in a global
+//      integration point. NOTE: This may change in the near future.
+//
 // ****************************************************************************
 
-MiliVariableMetaData * 
+MiliVariableMetaData *
 avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
                                        const rapidjson::Value &val,
                                        string shortName,
@@ -3056,7 +3365,7 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
 
         if (val.HasMember("vector_size"))
         {
-            vecSize = val["vector_size"].GetInt(); 
+            vecSize = val["vector_size"].GetInt();
         }
 
         if (val.HasMember("dims"))
@@ -3067,7 +3376,7 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
                 compDims = 1;
             }
         }
-  
+
         if (val.HasMember("num_type"))
         {
             numType = val["num_type"].GetInt();
@@ -3090,11 +3399,11 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
         // "real_names" should only really appear with element sets,
         // but older datasets treated element sets as separate variables
         // (name_in, name_mid, name_out). In those older cases, we need
-        // to treat them like normal variables, but they still have 
-        // "real_names" defined. 
+        // to treat them like normal variables, but they still have
+        // "real_names" defined.
         //
-        if (val.HasMember("real_names") && 
-            avtMiliMetaData::ContainsESFlag(shortName.c_str(), 
+        if (val.HasMember("real_names") &&
+            avtMiliMetaData::ContainsESFlag(shortName.c_str(),
                                             shortName.size()))
         {
             const rapidjson::Value &rN    = val["real_names"];
@@ -3105,16 +3414,16 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
             intVector    groupAggTypes;
             intVector    groupVectorSizes;
             boolVector   groupIsShared;
- 
+
             if (rN.IsArray())
             {
                 for (rapidjson::SizeType i = 0; i < rN.Size(); ++i)
                 {
                     string groupName = rN[i].GetString();
-                    groupNames.push_back(groupName);  
+                    groupNames.push_back(groupName);
 
                     //
-                    // Determine if this group is shared or not.  
+                    // Determine if this group is shared or not.
                     //
                     if (sharedMap[groupName] > 1)
                     {
@@ -3148,10 +3457,11 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
                     }
                 }
             }
-            return new MiliElementSetMetaData(shortName, 
+            return new MiliElementSetMetaData(shortName,
                                               longName,
                                               cShortName,
                                               cLongName,
+                                              globalIntegrationPoint,
                                               isMulti,
                                               isMatVar,
                                               isGlobal,
@@ -3173,14 +3483,14 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
         }
 
         //
-        // Determine if this variable is shared or not.  
+        // Determine if this variable is shared or not.
         //
         if (sharedMap[shortName] > 1)
         {
-            isShared = true; 
+            isShared = true;
         }
 
-        return new MiliVariableMetaData(shortName, 
+        return new MiliVariableMetaData(shortName,
                                         longName,
                                         cShortName,
                                         cLongName,
@@ -3208,16 +3518,16 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
 //  Function: avtMiliFileFormat::CountJsonClassVariables
 //
 //  Purpose:
-//      Count the total number of variables that belong to all 
-//      mili Classes within the .mili json file, and count the 
+//      Count the total number of variables that belong to all
+//      mili Classes within the .mili json file, and count the
 //      occurences of shared variables. The sharedMap will
 //      map the variable short name to its number of occurences
-//      (a single count for its own existence).  
+//      (a single count for its own existence).
 //
-//  Arguments: 
-//      jDoc         The json document. 
-//      sharedCount  A map which identifies which variables are shared. 
-//           
+//  Arguments:
+//      jDoc         The json document.
+//      sharedCount  A map which identifies which variables are shared.
+//
 //  Author: Alister Maguire
 //  Date:   January 29, 2019
 //
@@ -3229,21 +3539,21 @@ int
 avtMiliFileFormat::CountJsonClassVariables(const rapidjson::Document &jDoc,
                                            StrToIntMap &sharedMap)
 {
-    const rapidjson::Value &jClasses = jDoc["Classes"]; 
+    const rapidjson::Value &jClasses = jDoc["Classes"];
     int numClassVars = 0;
     for (rapidjson::Value::ConstMemberIterator cItr = jClasses.MemberBegin();
          cItr != jClasses.MemberEnd(); ++cItr)
-    { 
+    {
         const rapidjson::Value &val = cItr->value;
         if (val.IsObject())
-        { 
+        {
             if (val.HasMember("variables"))
             {
                 const rapidjson::Value &cVars = val["variables"];
 
                 if (cVars.IsArray())
                 {
-                    numClassVars += cVars.Size(); 
+                    numClassVars += cVars.Size();
 
                     for (rapidjson::SizeType i = 0; i < cVars.Size(); ++i)
                     {
@@ -3258,38 +3568,38 @@ avtMiliFileFormat::CountJsonClassVariables(const rapidjson::Document &jDoc,
                             {
                                 std::vector<string> comps;
 
-                                const rapidjson::Value &vC = 
+                                const rapidjson::Value &vC =
                                     var["vector_components"];
 
                                 if (vC.IsArray())
                                 {
-                                    for (rapidjson::SizeType i = 0; 
+                                    for (rapidjson::SizeType i = 0;
                                          i < vC.Size(); ++i)
                                     {
                                         comps.push_back(vC[i].GetString());
                                     }
                                 }
                             }
-                           
+
                             //
                             // Element sets are often comprised of multiple
-                            // variables. We need to check for this. 
+                            // variables. We need to check for this.
                             //
                             const char *cName = varName.c_str();
-                            int nameSize      = varName.size(); 
+                            int nameSize      = varName.size();
 
                             if (var.HasMember("real_names") &&
                                 avtMiliMetaData::ContainsESFlag(cName,
                                                                 nameSize))
                             {
                                 const rapidjson::Value &rN = var["real_names"];
- 
+
                                 if (rN.IsArray())
                                 {
-                                    for (rapidjson::SizeType i = 0; 
+                                    for (rapidjson::SizeType i = 0;
                                          i < rN.Size(); ++i)
                                     {
-                                        string name = rN[i].GetString(); 
+                                        string name = rN[i].GetString();
 
                                         if (sharedMap.find(name) ==
                                             sharedMap.end())
@@ -3317,7 +3627,7 @@ avtMiliFileFormat::CountJsonClassVariables(const rapidjson::Document &jDoc,
                         }
                     }
                 }
-            }   
+            }
         }
     }
     return numClassVars;
@@ -3328,14 +3638,14 @@ avtMiliFileFormat::CountJsonClassVariables(const rapidjson::Document &jDoc,
 //  Function: avtMiliFileFormat::ExtractJsonClasses
 //
 //  Purpose:
-//      Extract mili Class information from our .mili json file. 
+//      Extract mili Class information from our .mili json file.
 //
-//  Arguments: 
-//      jDoc        The json document. 
-//      meshId      The current mesh ID. 
+//  Arguments:
+//      jDoc        The json document.
+//      meshId      The current mesh ID.
 //      sharedMap   A map that associates mili variables with the number of
-//                  times they are shared (1 is shared only with itself). 
-//           
+//                  times they are shared (1 is shared only with itself).
+//
 //  Author: Alister Maguire
 //  Date:   January 29, 2019
 //
@@ -3343,16 +3653,16 @@ avtMiliFileFormat::CountJsonClassVariables(const rapidjson::Document &jDoc,
 //
 // ****************************************************************************
 
-void 
+void
 avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
                                       int meshId,
                                       StrToIntMap &sharedMap)
 {
-    const rapidjson::Value &jClasses = jDoc["Classes"]; 
+    const rapidjson::Value &jClasses = jDoc["Classes"];
 
     //
-    // Keep track of how many variables and classes 
-    // we've added. 
+    // Keep track of how many variables and classes
+    // we've added.
     //
     int varIdx   = 0;
     int classIdx = 0;
@@ -3361,8 +3671,8 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
     if (jClasses.HasMember("count"))
     {
         //
-        // Counts may be in scientific notation. We need to retrieve 
-        // as a double and cast to int. 
+        // Counts may be in scientific notation. We need to retrieve
+        // as a double and cast to int.
         //
         double dbl = jClasses["count"].GetDouble();
         cCount = (int) dbl;
@@ -3370,21 +3680,21 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 
     //
     // Set the number of classes and initialize our
-    // class container. 
+    // class container.
     //
     miliMetaData[meshId]->SetNumClasses(cCount);
 
     rapidjson::Value::ConstMemberIterator cItr;
     for (cItr = jClasses.MemberBegin(); cItr != jClasses.MemberEnd(); ++cItr)
-    { 
+    {
         const rapidjson::Value &val = cItr->value;
         string sName = cItr->name.GetString();
 
         if (val.IsObject())
-        { 
+        {
             //
             // Check for special cases. As of now, these are material
-            // and global variables. 
+            // and global variables.
             //
             string matFlag  = "mat";
             string globFlag = "glob";
@@ -3399,16 +3709,15 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
             {
                 isGlobal = true;
             }
- 
+
             string lName = "";
             int scID     = -1;
-            int elCount  = 0;
 
             if (val.HasMember("LongName"))
             {
                 lName = val["LongName"].GetString();
             }
-               
+
             if (val.HasMember("SuperClass"))
             {
                 scID= val["SuperClass"].GetInt();
@@ -3418,18 +3727,18 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
                 EXCEPTION2(UnexpectedValueException, "Superclass ID", "");
             }
 
-            MiliClassMetaData *miliClass = 
+            MiliClassMetaData *miliClass =
                 new MiliClassMetaData(sName,
                                       lName,
                                       scID,
                                       nDomains);
-       
+
             if (val.HasMember("variables"))
             {
                 const rapidjson::Value &cVars = val["variables"];
-                
+
                 //
-                // Extract the class variable meta data. 
+                // Extract the class variable meta data.
                 //
                 for (rapidjson::SizeType i = 0; i < cVars.Size(); ++i)
                 {
@@ -3439,28 +3748,28 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
                     {
                         string varName = cVars[i].GetString();
                         const rapidjson::Value &var = jVars[cVars[i]];
-                        
+
                         MiliVariableMetaData *varMD = ExtractJsonVariable(jDoc,
-                            var, varName, sName, lName, meshId, isMatVar, 
+                            var, varName, sName, lName, meshId, isMatVar,
                             isGlobal, sharedMap);
 
                         if (varMD != NULL)
                         {
                             miliClass->AddMiliVariable(varName);
                             miliMetaData[meshId]->AddVarMD(varIdx, varMD);
-          
+
                             varIdx++;
                         }
                     }
                 }
             }
             //
-            // Cache the mili class md. 
+            // Cache the mili class md.
             //
             miliMetaData[meshId]->AddClassMD(classIdx, miliClass);
             classIdx++;
         }
-    } 
+    }
 }
 
 
@@ -3468,28 +3777,31 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //  Function: avtMiliFileFormat::LoadMiliInfoJson
 //
 //  Purpose:
-//      Extract mili meta data from a json file. 
+//      Extract mili meta data from a json file.
 //
-//  Arguments: 
-//      fpath    The name and path of the file to open. 
-//           
+//  Arguments:
+//      fpath    The name and path of the file to open.
+//
 //  Author: Alister Maguire
 //  Date:   April 9, 2019
 //
 //  Modifications:
-//
 //      Alister Maguire, Tue Jul  9 13:31:59 PDT 2019
 //      Check that we have the correct file format. JSON tends to hang when
-//      it tries to open non-json files. 
+//      it tries to open non-json files.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Remove the code that assigns a random color to a material if no
+//      material color is specified.
 //
 // ****************************************************************************
 void
 avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 {
-    int jsonTimer1 = visitTimer->StartTimer(); 
+    int jsonTimer1 = visitTimer->StartTimer();
 
     //
-    // First, we need to open the file and make sure that it's the 
+    // First, we need to open the file and make sure that it's the
     // newer JSON format.
     //
     std::ifstream jfile(fpath);
@@ -3516,10 +3828,10 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     if (jDoc.HasMember("Domains"))
     {
         //
-        // Counts may be in scientific notation. We need to retrieve 
-        // as a double and cast to int. 
+        // Counts may be in scientific notation. We need to retrieve
+        // as a double and cast to int.
         //
-        double dbl = jDoc["Domains"].GetDouble(); 
+        double dbl = jDoc["Domains"].GetDouble();
         nDomains   = (int) dbl;
     }
     else
@@ -3537,7 +3849,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     else
     {
         //
-        // Older formats don't seem to include this info. 
+        // Older formats don't seem to include this info.
         //
         nMeshes = 1;
     }
@@ -3553,20 +3865,20 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
         snprintf(msg, 128, "Mili file is missing dims!!");
         EXCEPTION1(ImproperUseException, msg);
     }
-    
+
     miliMetaData = new avtMiliMetaData *[nMeshes];
 
-    for (int i = 0; i < nMeshes; ++i) 
+    for (int i = 0; i < nMeshes; ++i)
     {
         miliMetaData[i] = NULL;
     }
 
     //
-    //TODO: It's yet unlcear how meshes will be distinguished in 
+    //TODO: It's yet unlcear how meshes will be distinguished in
     //      the mili files. According to Kevin, this might not
     //      even be possible for mili to contain multiple meshes
-    //      right now. We're putting the logistics of this on 
-    //      the backburner. 
+    //      right now. We're putting the logistics of this on
+    //      the backburner.
     //
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
@@ -3575,16 +3887,16 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
         if (jDoc.HasMember("Materials"))
         {
             //
-            // We only need space for 3 floating points (RGB). 
+            // We only need space for 3 floating points (RGB).
             //
-            const rapidjson::Value &jMats = jDoc["Materials"]; 
+            const rapidjson::Value &jMats = jDoc["Materials"];
             int   nMats = 0;
 
             if (jMats.HasMember("count"))
             {
                 //
-                // Counts may be in scientific notation. We need to retrieve 
-                // as a double and cast to int. 
+                // Counts may be in scientific notation. We need to retrieve
+                // as a double and cast to int.
                 //
                 double dbl = jMats["count"].GetDouble();
                 nMats      = (int) dbl;
@@ -3593,21 +3905,20 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
             miliMetaData[meshId]->SetNumMaterials(nMats);
 
             //
-            // Retrieve material meta-data. 
+            // Retrieve material meta-data.
             //
             int matCount = 0;
             rapidjson::Value::ConstMemberIterator jItr;
             for (jItr = jMats.MemberBegin(); jItr != jMats.MemberEnd(); ++jItr)
-            { 
+            {
                 string name = jItr->name.GetString();
                 const rapidjson::Value &mat = jItr->value;
 
-                string matName = "";
-                std::stringstream colorSS;
-                colorSS << "#";
-                  
                 if (mat.IsObject())
                 {
+                    string matName = "";
+                    string colorString;
+
                     if (mat.HasMember("name"))
                     {
                         matName = mat["name"].GetString();
@@ -3625,40 +3936,34 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
                         //
                         // Mili stores its mat color as a float rgb. We
-                        // need to convert this to a hex string. 
+                        // need to convert this to a hex string.
                         //
                         if (mColors.IsArray())
                         {
-                            for (rapidjson::SizeType i = 0; 
+                            std::stringstream colorSS;
+                            colorSS << "#";
+
+                            for (rapidjson::SizeType i = 0;
                                  i < mColors.Size(); ++i)
                             {
                                 int iVal = (int) floor(
                                     mColors[i].GetFloat() * 256);
 
-                                colorSS << std::hex << 
+                                colorSS << std::hex <<
                                     std::max(0, std::min(255, iVal));
                             }
-                            
-                        }
-                    }
-                    else
-                    {
-                        //
-                        // If this material doesn't have a color, 
-                        // assign a random color. 
-                        //
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            int randInt = (rand() % static_cast<int> (256));
-                            colorSS << std::hex << randInt;
+
+                            colorString = string(colorSS.str());
                         }
                     }
 
-                    MiliMaterialMetaData *miliMaterial = 
-                        new MiliMaterialMetaData(matName,
-                                                 string(colorSS.str()));
+                    //
+                    // An empty color string indicates no color.
+                    //
+                    MiliMaterialMetaData *miliMaterial =
+                        new MiliMaterialMetaData(matName, colorString);
 
-                    miliMetaData[meshId]->AddMaterialMD(matCount++, 
+                    miliMetaData[meshId]->AddMaterialMD(matCount++,
                                                         miliMaterial);
                 }
             }
@@ -3680,8 +3985,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
             if (jStates.HasMember("count"))
             {
                 //
-                // Counts may be in scientific notation. We need to retrieve 
-                // as a double and cast to int. 
+                // Counts may be in scientific notation. We need to retrieve
+                // as a double and cast to int.
                 //
                 double dbl = jStates["count"].GetDouble();
                 nTimesteps = (int) dbl;
@@ -3704,7 +4009,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                 }
             }
         }
-    }        
+    }
 
     dbid.resize(nDomains, -1);
     meshRead.resize(nDomains, false);
@@ -3725,7 +4030,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     }
 
     jfile.close();
-    
+
     visitTimer->StopTimer(jsonTimer1, "MILI: Loading Mili Json Data");
     visitTimer->DumpTimings();
 }
@@ -3740,11 +4045,11 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //      data structures to implement a reverse mapping between
 //      a zone label and a zone id.
 //
-//  Arguments: 
-//      meshId          The mesh ID. 
-//      shortName       The class shortname.  
-//      dom             The domain ID. 
-//      nElemsInClass   The number of elements in this mili class. 
+//  Arguments:
+//      meshId          The mesh ID.
+//      shortName       The class shortname.
+//      dom             The domain ID.
+//      nElemsInClass   The number of elements in this mili class.
 //
 //  Author: Alister Maguire
 //  Date:   April 9, 2019
@@ -3753,13 +4058,13 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //
 // ****************************************************************************
 
-void 
-avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId, 
-                                         char *shortName, 
-                                         const int dom, 
+void
+avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
+                                         char *shortName,
+                                         const int dom,
                                          const int nElemsInClass)
 {
-    int numBlocks    = 0; 
+    int numBlocks    = 0;
     int *blockRanges = NULL;
     int *elemList    = new int[nElemsInClass];
     int *labelIds    = new int[nElemsInClass];
@@ -3769,33 +4074,33 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
         elemList[i] = -1;
         labelIds[i] = -1;
     }
-    
+
     int loadZoneLabels = visitTimer->StartTimer();
 
     //
     // Check for labels
     //
     int nExpectedLabels = nElemsInClass;
-    int rval = mc_load_conn_labels(dbid[dom], meshId, shortName, 
-                                   nExpectedLabels, &numBlocks, 
+    int rval = mc_load_conn_labels(dbid[dom], meshId, shortName,
+                                   nExpectedLabels, &numBlocks,
                                    &blockRanges, elemList, labelIds);
 
     if (rval != OK)
     {
         debug1 << "MILI: mc_load_conn_labels failed at " << shortName << "!\n";
-        numBlocks   = 0; 
+        numBlocks   = 0;
         blockRanges = NULL;
     }
 
-    MiliClassMetaData *miliClass = 
+    MiliClassMetaData *miliClass =
         miliMetaData[meshId]->GetClassMDByShortName(shortName);
-    miliClass->PopulateLabelIds(dom, 
+    miliClass->PopulateLabelIds(dom,
                                 labelIds,
                                 numBlocks,
                                 blockRanges);
 
     //
-    // Mili mallocs blockRanges using C style. 
+    // Mili mallocs blockRanges using C style.
     //
     if (blockRanges != NULL)
     {
@@ -3803,6 +4108,8 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
     }
     delete [] elemList;
     delete [] labelIds;
+
+    visitTimer->StopTimer(loadZoneLabels, "MILI: Loading zone labels");
 }
 
 
@@ -3810,18 +4117,18 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
 //  Function: RetrieveNodeLabelInfo
 //
 //  Purpose:
-//      Retrieve node label info and populate data structures 
-//      to implement a reverse mapping between a node label 
+//      Retrieve node label info and populate data structures
+//      to implement a reverse mapping between a node label
 //      and a node id
 //
-//  Arguments: 
-//      meshId        The mesh ID. 
-//      shortName     The class shortname. 
-//      dom           The domain of interest. 
-//           
+//  Arguments:
+//      meshId        The mesh ID.
+//      shortName     The class shortname.
+//      dom           The domain of interest.
+//
 //  Notes:
 //      Much of this method is based on a method from the original
-//      plugin that was authored by Matt Larsen in 2017.  
+//      plugin that was authored by Matt Larsen in 2017.
 //
 //  Author: Alister Maguire
 //  Date:   April 9, 2019
@@ -3830,14 +4137,13 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
 //
 // ****************************************************************************
 
-void 
-avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId, 
-                                         char *shortName, 
+void
+avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
+                                         char *shortName,
                                          const int dom)
 {
-    int nLabeledNodes = 0;
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
-    int numBlocks     = 0; 
+    int numBlocks     = 0;
     int *blockRanges  = NULL;
     int *elemList     = new int[nNodes];
     int *labelIds     = new int[nNodes];
@@ -3848,25 +4154,25 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
         elemList[i] = -1;
     }
 
-    int rval = mc_load_node_labels(dbid[dom], meshId, shortName, 
+    int rval = mc_load_node_labels(dbid[dom], meshId, shortName,
                                    &numBlocks, &blockRanges, labelIds);
 
     if (rval != OK)
     {
         debug1 << "MILI: mc_load_node_labels failed!\n";
-        numBlocks   = 0; 
+        numBlocks   = 0;
         blockRanges = NULL;
     }
 
-    MiliClassMetaData *miliClass = 
+    MiliClassMetaData *miliClass =
         miliMetaData[meshId]->GetClassMDByShortName(shortName);
-    miliClass->PopulateLabelIds(dom, 
+    miliClass->PopulateLabelIds(dom,
                                 labelIds,
                                 numBlocks,
                                 blockRanges);
 
     //
-    // Mili mallocs blockRanges using C style. 
+    // Mili mallocs blockRanges using C style.
     //
     if (blockRanges != NULL)
     {
@@ -3881,15 +4187,15 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
 //  Function: avtMiliFileFormat::GenerateLabelArray
 //
 //  Purpose:
-//      Generate a vtkElementLabelArray that contains mili labels. 
+//      Generate a vtkElementLabelArray that contains mili labels.
 //
-//  Arguments: 
-//      dom              The domain of interest. 
-//      maxLabelLength   The maximum label lenght. 
-//      labels           The labels to add. 
+//  Arguments:
+//      dom              The domain of interest.
+//      maxLabelLength   The maximum label lenght.
+//      labels           The labels to add.
 //
 //  Returns:
-//      A vtkElementLabelArray. 
+//      A vtkElementLabelArray.
 //
 //  Author: Alister Maguire
 //  Date:   May 20, 2019
@@ -3919,7 +4225,7 @@ avtMiliFileFormat::GenerateLabelArray(int dom,
         const char * elLabel = (*labels)[i].c_str();
         const int cSize      = (*labels)[i].size();
         for(int j = 0; j < maxLabelLength; ++j)
-        {   
+        {
             if(j < cSize)
             {
                 ptr[offset + j] = elLabel[j];
@@ -3930,14 +4236,14 @@ avtMiliFileFormat::GenerateLabelArray(int dom,
             }
         }
     }
-    
+
     //
     // Add the data so we can do reverse lookups.
     //
     std::vector<MiliClassMetaData *>::iterator mdItr;
     for (mdItr = labelMD.begin(); mdItr != labelMD.end(); ++mdItr)
     {
-        const LabelPositionInfo *posInfo = 
+        const LabelPositionInfo *posInfo =
             (*mdItr)->GetLabelPositionInfoPtr(dom);
         vtkLabels->AddName((*mdItr)->GetShortName(),
                            posInfo->rangesBegin,
@@ -3954,13 +4260,13 @@ avtMiliFileFormat::GenerateLabelArray(int dom,
 //  Function: avtMiliFileFormat::CreateGenericExpression
 //
 //  Purpose:
-//      Helper function for creating generic expressions. 
+//      Helper function for creating generic expressions.
 //
-//  Arguments: 
-//      name        The expression's name. 
-//      definition  The expression's definition. 
+//  Arguments:
+//      name        The expression's name.
+//      definition  The expression's definition.
 //      eType       The type of expression.
-//           
+//
 //  Author: Alister Maguire
 //  Date:   April 9, 2019
 //
@@ -3984,12 +4290,13 @@ avtMiliFileFormat::CreateGenericExpression(const char *name,
 //  Function: avtMiliFileFormat::ScalarExpressionFromVec
 //
 //  Purpose:
-//      Create a scalar expression from a vector. 
+//      Create a scalar expression from a vector.
 //
-//  Arguments: 
+//  Arguments:
 //      vecPath      The vector's path in the visit menu.
-//      scalarPath   The new path to use for the scalar.   
-//           
+//      scalarPath   The new path to use for the scalar.
+//      dim          The dimension of the vector to use for this variable.
+//
 //  Author: Alister Maguire
 //  Date:   April 9, 2019
 //
@@ -3997,12 +4304,199 @@ avtMiliFileFormat::CreateGenericExpression(const char *name,
 //
 // ****************************************************************************
 Expression
-avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath, 
-                                           const char *scalarPath, 
+avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
+                                           const char *scalarPath,
                                            int dim)
 {
     char def[256];
     snprintf(def, 256, "<%s>[%d]", vecPath, dim);
     Expression::ExprType eType = Expression::ScalarMeshVar;
     return CreateGenericExpression(scalarPath, def, eType);
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::AddStressStrainDerivations
+//
+//  Purpose:
+//      Add derivatives for stress or strain variables.
+//
+//  Arguments:
+//    md               A pointer to the atDatabaseMetaData.
+//    varName          The name of the stress/strain variable.
+//    varPath          The VisIt path of the stress/strain variable.
+//    derivedPath      The path for the derived variables.
+//    includePressure  Should we include the pressure derivation? This should
+//                     only be true when stress/strain comes from the database.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    March 25, 2021
+//
+//  Modifications
+//
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Added missing component (1) for the principal tensor expressions.
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddStressStrainDerivations(avtDatabaseMetaData *md,
+                                              std::string varName,
+                                              std::string varPath,
+                                              std::string derivedPath,
+                                              bool includePressure)
+{
+    //
+    // We can only include pressure if the stress/strain variables
+    // are not derived.
+    //
+    if (includePressure)
+    {
+        Expression pressure;
+        pressure.SetName(derivedPath + "/pressure");
+        pressure.SetDefinition("-trace(<" + varPath + ">)/3");
+        pressure.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&pressure);
+    }
+
+    Expression effTensor;
+    effTensor.SetName(derivedPath + "/eff_" + varName.c_str());
+    effTensor.SetDefinition("effective_tensor(<" + varPath + ">)");
+    effTensor.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&effTensor);
+
+    Expression pDev1;
+    pDev1.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/1");
+    pDev1.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[0]");
+    pDev1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev1);
+
+    Expression pDev2;
+    pDev2.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/2");
+    pDev2.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[1]");
+    pDev2.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev2);
+
+    Expression pDev3;
+    pDev3.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/3");
+    pDev3.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[2]");
+    pDev3.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev3);
+
+    Expression maxShear;
+    maxShear.SetName(derivedPath + "/max_shear_" + varName.c_str());
+    maxShear.SetDefinition("tensor_maximum_shear(<" + varPath + ">)");
+    maxShear.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&maxShear);
+
+    Expression pTensor1;
+    pTensor1.SetName(derivedPath + "/prin_" + varName.c_str() + "/1");
+    pTensor1.SetDefinition("principal_tensor(<" + varPath + ">)[0]");
+    pTensor1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor1);
+
+    Expression pTensor2;
+    pTensor2.SetName(derivedPath + "/prin_" + varName.c_str() + "/2");
+    pTensor2.SetDefinition("principal_tensor(<" + varPath + ">)[1]");
+    pTensor2.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor2);
+
+    Expression pTensor3;
+    pTensor3.SetName(derivedPath + "/prin_" + varName.c_str() + "/3");
+    pTensor3.SetDefinition("principal_tensor(<" + varPath + ">)[2]");
+    pTensor3.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor3);
+}
+
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::AddSymmetricTensorComponentExpressions
+//
+//  Purpose:
+//      Create expression variables for all components of a symmetric tensor.
+//
+//      NOTE: the components will be added in the following order:
+//          {0, 0}
+//          {1, 1}
+//          {2, 2}
+//          {0, 1}
+//          {0, 2}
+//          {1, 2}
+//
+//  Arguments:
+//    md             A pointer to the atDatabaseMetaData.
+//    varPath        The VisIt path of the tensor variable.
+//    compNames      The names for each component.
+//    firstCompIdxs  An optional vector containing the first dimension's
+//                   indices. If empty, the 0 dimension indices are assumed
+//                   to match those in the description.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    March 26, 2021
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddSymmetricTensorComponentExpressions(
+                                                     avtDatabaseMetaData *md,
+                                                     std::string varPath,
+                                                     stringVector compNames,
+                                                     intVector firstCompIdxs)
+{
+    //
+    // In the general case, we're working with a standard symmetric tensor and
+    // we'll assume the standard layout.
+    //
+    if (firstCompIdxs.size() == 0)
+    {
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(1);
+        firstCompIdxs.push_back(2);
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(1);
+    }
+
+    //
+    // Now we add the individual components.
+    //
+    int multDimIdxs[] = {1, 2, 0};
+
+    for (int j = 0; j < 3; ++j)
+    {
+        int cIdx = firstCompIdxs[j];
+
+        //
+        // First, get the "single-dim" values: xx, yy, zz.
+        //
+        Expression singleDim;
+        singleDim.SetType(Expression::ScalarMeshVar);
+
+        char singleDef[256];
+        snprintf(singleDef, 256, "<%s>[%d][%d]",
+            varPath.c_str(), cIdx, cIdx);
+        singleDim.SetDefinition(singleDef);
+
+        string singleName = varPath + "/" + compNames[cIdx];
+        singleDim.SetName(singleName);
+
+        md->AddExpression(&singleDim);
+
+        //
+        // Next, get the "multi-dim" values: xy, yz, zx
+        //
+        int mltDIdx = cIdx + 3;
+        Expression multDim;
+        char multDef[256];
+        snprintf(multDef, 256, "<%s>[%d][%d]", varPath.c_str(),
+            cIdx, multDimIdxs[cIdx]);
+        string multName = varPath + "/" + compNames[mltDIdx];
+        multDim.SetName(multName);
+        multDim.SetDefinition(multDef);
+        multDim.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&multDim);
+    }
 }

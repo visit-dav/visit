@@ -38,7 +38,7 @@ class avtXmdvFileFormat : public avtSTSDFileFormat
 {
   public:
                        avtXmdvFileFormat(const char *filename, 
-                                         DBOptionsAttributes *);
+                                         const DBOptionsAttributes *);
     virtual           ~avtXmdvFileFormat() {;};
 
     virtual const char    *GetType(void)   { return "Xmdv"; };

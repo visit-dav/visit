@@ -209,6 +209,9 @@ class WindowInformation;
 //   Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
 //   Removed updateVisIt related logic.
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -285,7 +288,6 @@ signals:
     void activateMeshManagementWindow();
     void activateSelectionsWindow();
     void activateSetupHostProfilesAndConfig();
-    void activateSeedMeWindow();
 
     void saveSettings();
     void saveWindow();

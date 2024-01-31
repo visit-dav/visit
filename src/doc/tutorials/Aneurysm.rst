@@ -12,8 +12,9 @@ This tutorial provides a short introduction to VisIt's features while exploring 
 Open the dataset
 ----------------
 
-This tutorial uses the `aneurysm <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ dataset.
-1. `Download <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ the aneurysm dataset.
+This tutorial uses the `aneurysm <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_ dataset.
+
+1. Download `the aneurysm dataset <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_.
 2. Click on the *Open* icon to bring up the File open window.
 3. Navigate your file system to the folder containing "aneurysm.visit".
 4. Highlight the file "aneurysm.visit" and then click *OK*.
@@ -241,7 +242,7 @@ two scalar values using the Isovolume operator.
 2. Remove the Isosurface operator.
 3. Go to *Operators->Selection->Isovolume*.
 4. Open the Isovolume operator attributes window.
-5. Set the *Lower bound* to "10" and the *Upper Bound* to "20".
+5. Set the *Lower bound* to "10" and the *Upper bound* to "20".
 6. Click *Apply* and *Dismiss*.
 7. Click *Draw* and press the *Play* button to animate the plot over time.
 
@@ -265,11 +266,11 @@ simulated "velocity" vector field.
 
 1. Go to *Add->Vector->velocity*. 
 2. Open the Vector plot attributes window.
-3. Go to the *Vectors* tab.
+3. Go to the *Sampling* tab.
 4. Set *Stride* to "5".
 5. Go to the *Color* section on the *Data* tab.
 6. Change the *Magnitude* to *Spectral*, and check the *Invert* option.
-7. Go to the *Glyphs* tab.
+7. Go to the *Geometry* tab.
 8. In the *Scale* section, set the *Scale* to "0.5".
 9. In the *Style* section, set *Arrow body* to *Cylinder*.
 10. In the *Rendering* section, set *Geometry Quality* to *High*.
@@ -328,7 +329,7 @@ coordinates of this node to seed a set of streamlines.
 Plotting streamlines of velocity
 """"""""""""""""""""""""""""""""
 
-1. Go to *Add->Pseudocolor->operators->IntergralCurve->velocity*.
+1. Go to *Add->Pseudocolor->operators->IntegralCurve->velocity*.
 
 .. figure:: images/Aneurysm-CreateStreamlinePlot.png
 
@@ -389,7 +390,7 @@ We will modify our previous IntergralCurve options to create pathlines.
 
 1. Set the time slider controls to the first timestep.
 2. Open the IntegralCurve attributes window.
-3. Go to the *Apperance* tab.
+3. Go to the *Appearance* tab.
 4. In the *Streamlines vs Pathlines* section select *Pathline*.
 5. In the *Pathlines Options* section set *How to perform interpolation over time* to *Mesh is static over time*.
 
@@ -405,128 +406,6 @@ that originate at our seed points.
 .. figure:: images/Aneurysm-Pathlines.png
 
    The pathlines of velocity.
-
-Publishing to SeedMe.org
-------------------------
-
-Required setup
-~~~~~~~~~~~~~~
-
-* `Sign-in <https://www.seedme.org/user>`_ or `Sign-up <https://www.seedme.org/user/register>`_ at SeedMe.org.
-* `Download <https://www.seedme.org/user>`_ your "API Key file", then move it to your `Home directory <https://en.wikipedia.org/wiki/Home_directory>`_.
-
-Sharing automation script
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In this section we will render and save pathline trace in 20 steps. Then
-upload and share the rendered 20 images as a sequence and instuct SeedMe to
-encode a video from these set of images at 2 frames per second. A sample
-video can be seen `here <https://www.seedme.org/node/49054#videos>`__.
-
-A detailed example with a brief explanation in the comments can be seen
-`here <https://bitbucket.org/seedme/seedme-python-client/src/master/demo.py?at=master&fileviewer=file-view-default>`__.
-
-1. Go to *Controls->Command*.
-2. Find an empty tab.
-3. Paste the following Python snippet into this tab. ::
-
-    #
-    # file: aneurysm_seedme.py
-    # info:
-    # Example showing how to use SeedMe to publish a pathline animation 
-    #
-
-    ##############################################################################
-    # To do : Set the following four variables
-    ##############################################################################
-    seedme_apikey_path = '/absolute/path/to/seedme.txt'
-    my_rendered_image_path = "/absolute/path/for/images/" # does not traverse recursively
-    my_content_privacy = "public" # private (default), group, public
-    my_share_list = "one@example.com, two@example.com" # comma delimited emails
- 
- 
-    # Set save window attributes including path where the rendered images will be saved
-    sa = SaveWindowAttributes()
-    sa.outputToCurrentDirectory = 0
-    sa.outputDirectory = my_rendered_image_path
-    sa.fileName = "pathline"
-    sa.family = 1
-    sa.format = sa.PNG
-    sa.width = 512
-    sa.height = 512
-    sa.screenCapture = 0
-    sa.saveTiled = 0
-    sa.quality = 80
-    sa.progressive = 0
-    sa.binary = 0
-    sa.stereo = 0
-    sa.compression = sa.PackBits  # None, PackBits, Jpeg, Deflate
-    sa.forceMerge = 0
-    sa.resConstraint = sa.ScreenProportions  # NoConstraint, EqualWidthHeight, ScreenProportions
-    sa.advancedMultiWindowSave = 0
-    SetSaveWindowAttributes(sa)
- 
- 
-    # Now save this pathline visualization in 20 frames (images)
-    # Animate our pathlines by cropping based on time
-    iatts = IntegralCurveAttributes()
-    iatts.cropValue = iatts.Time
-    iatts.cropEndFlag = 1
-
-    nsteps = 20 # Number of steps
-    final_time = .995
-    for i in range(nsteps+1):
-        iatts.cropEnd = final_time * i /nsteps
-        SetOperatorOptions(iatts)
-        SaveWindow() # will save images at the sa.outputDirectory provided above
- 
- 
-    # ----------------------------------------------------------------------------------#
-    # Upload and share content at SeedMe.org                                                         
-    # Instruct the seedme module to upload 20 images then encode a video from it
-    # seedme module ships with VisIt 2.9.x +                                                          
-    # ----------------------------------------------------------------------------------#
-    import seedme
- 
-    # Set path to the APIKey file
-    obj.set_auth_via_file(seedme_apikey_path)
- 
-    # Create a dictionary for rendered image sequence
-    my_seq = {
-           "filepath": my_rendered_image_path,
-           "title": "Pathline",
-           "description": "Pathlines show the path massless tracer particles would take if advected by the vector field at each timestep of the simulation.",
-           "fps": 2,
-           "encode": True,
-          }
- 
-    # Create seedme object
-    obj = seedme.SeedMe()
- 
-    # Create a new collection using create_collection method
-    # composed with title and sequence with public access, shared with two people
-    result=obj.create_collection(title="Aneurysm vis",
-                                 privacy=my_content_privacy,  # string = One of private(default), group, public
-                                 sharing=my_share_list, # string = Comma delimited emails
-                                 notify=True, # Boolean = False(default) send email notification to above two emails
-                                 sequences=my_seq, # upload sequence
-                                 )
- 
-    # create_collection returns the result as a string in json format
-    print result
- 
-    url = obj.get_url(result)
-    # Visit this url on your web browser
-    print("\n\nThe url for this collection is: " + url)
-
-4. Click *Execute*.
-
-To view your shared content `login <https://www.seedme.org/user>`_ to SeedMe.org
-then navigate to `My collections <https://www.seedme.org/collections>`_.
-
-------------
-
-To learn more about the SeedMe Python API review the example `demo.py <https://bitbucket.org/seedme/seedme-python-client/src/master/demo.py?at=master&fileviewer=file-view-default>`_.
 
 Calculating the flux of a velocity field through a surface
 ----------------------------------------------------------
@@ -544,8 +423,8 @@ through the 3D mesh.
 1. Delete any existing plots.
 2. Go to *Add->Vector->velocity*.
 3. Open the Vector plot attributes window.
-4. Go to the *Vectors* tab and set the *Fixed number* to "40".
-5. Go to the *Glyphs* tab. 
+4. Go to the *Sampling* tab and set the *Fixed number* to "40".
+5. Go to the *Geometry* tab. 
 6. Set *Arrow body* to *Cylinder*.
 7. Set *Geometry Quality* to *High*.
 
@@ -603,7 +482,7 @@ cell-by-cell basis.
 2. Click *New*.
 3. Change the *Name* to "normals" and the *Type* to *Vector mesh variable*.
 4. Go to *Insert function->Miscellaneous->cell_surface_normal* in the *Standard editor* tab.
-5. Go to *Insert variable->Mesh->Mesh* in the *Standard editor* tab.
+5. Go to *Insert variable->Meshes->Mesh* in the *Standard editor* tab.
 
 .. figure:: images/Aneurysm-Expressions.png
 
@@ -616,7 +495,7 @@ You will then get the error message saying: *The 'normals' expression failed bec
 
 8. Go to *Operators->Analysis->DeferExpression*.
 9. Open the DeferExpression operator attributes window.
-10. Go to *Variables->Vector->normals*.
+10. Go to *Variables->Vectors->normals*.
 
 .. figure:: images/Aneurysm-DeferExpression.png
 

@@ -1,17 +1,44 @@
-#/bin/csh -f
-set dirname="visit_data_files"
+#!/bin/sh
+dname="visit_data_files"
 
-# Make the files if they have not been created.
-if ! -e globe.silo then
-    make test
-endif
+# Accept 'force' argument
+force=0
+if [ "$(echo $1 | grep -i force)" ]; then
+    force=1
+fi
+
+# Check we're in the right place
+if [ ! -e silo_pdb_test_data/globe.silo ]; then
+    echo "Ensure you are running this from top-level data directory"
+    echo "and that you have git-lfs pull'ed the reqired archives"
+    echo "and that those archives have been expanded"
+    exit 1
+fi
 
 # Make a destination directory for the files.
-if -e $dirname then
-   rm -rf $dirname
-endif
-mkdir $dirname
-cd $dirname
+if [ -e $dname ]; then
+    if [ $force -eq 1 ]; then
+        rm -rf $dname
+    else
+        echo "There appears to already be a directory named \"$dname\" here."
+        echo "Please remove that first."
+        exit 1
+    fi
+fi
+mkdir $dname
+
+# Remove any old tarball
+if [ -e $dname.tar.gz ]; then
+    if [ $force -eq 1 ]; then
+        rm -rf $dname.tar.gz
+    else
+        echo "There appears to already be a directory named \"$dname.tar.gz\" here."
+        echo "Please remove that first."
+        exit 1
+    fi
+fi
+
+cd $dname
 
 # Copy protein databank data files
 cp ../ProteinDataBank_test_data/1NTS.pdb .
@@ -19,71 +46,60 @@ cp ../ProteinDataBank_test_data/1UZ9.pdb .
 cp ../ProteinDataBank_test_data/crotamine.pdb .
 
 # Copy PDB data files.
-cp ../db{A,B,C}00.pdb .
+cp ../pdb_test_data/db{A,B,C}00.pdb .
 
 # Copy ANALYZE test data
 cp ../ANALYZE_test_data/* .
 
 # Copy Silo files
-cp ../bigsil.silo .
-cp ../csg.silo .
-cp ../curv2d.silo .
-cp ../curv2d_colmajor.silo .
-cp ../curv3d.silo .
-cp ../curv3d_colmajor.silo .
-cp ../emptydomains.silo .
-cp ../fullframe.silo .
-cp ../galaxy0000.silo .
-cp ../ghost1.silo .
-cp ../global_node.silo .
-cp ../globe.silo .
-cp ../globe_mat0.silo .
-cp ../globe_matcolors.silo .
-cp ../lowfrac.silo .
-cp ../meshorigin.silo .
-cp ../multi_curv2d.silo .
-cp ../multi_curv3d.silo .
-cp ../multi_point2d.silo .
-cp ../multi_rect2d.silo .
-cp ../multi_rect3d.silo .
-cp ../multi_ucd3d.silo .
-cp ../noise.silo .
-cp ../noise2d.silo .
-cp ../odd_multi.silo .
-cp ../one_quad.silo .
-cp ../poly3d.silo .
-cp ../quad_disk.silo .
-cp ../rect2d.silo .
-cp ../rect3d.silo .
-cp ../sid97.silo .
-cp ../specmix_quad.silo .
-cp ../specmix_ucd.silo .
-cp ../thinplane.silo .
-cp ../tire.silo .
-cp ../ucd2d.silo .
-cp ../ucd3d.silo .
-cp ../wave????.silo .
-cp ../wave.visit .
-
-# Try and find CThead_mid.silo, one of Brad's files.
-if -e /home/whitlocb/data/CThead_mid.silo then
-    # Hoth
-    cp /home/whitlocb/data/CThead_mid.silo .
-endif
-if -e /Users/whitlocb/home/data/CThead_mid.silo then
-    # Dantooine
-    cp /home/whitlocb/home/data/CThead_mid.silo .
-endif
+cp ../silo_pdb_test_data/bigsil.silo .
+cp ../silo_pdb_test_data/csg.silo .
+cp ../silo_pdb_test_data/curv2d.silo .
+cp ../silo_pdb_test_data/curv2d_colmajor.silo .
+cp ../silo_pdb_test_data/curv3d.silo .
+cp ../silo_pdb_test_data/curv3d_colmajor.silo .
+cp ../silo_pdb_test_data/emptydomains.silo .
+cp ../silo_pdb_test_data/fullframe.silo .
+cp ../silo_pdb_test_data/galaxy0000.silo .
+cp ../silo_pdb_test_data/ghost1.silo .
+cp ../silo_pdb_test_data/global_node.silo .
+cp ../silo_pdb_test_data/globe.silo .
+cp ../silo_pdb_test_data/globe_mat0.silo .
+cp ../silo_pdb_test_data/globe_matcolors.silo .
+cp ../silo_pdb_test_data/lowfrac.silo .
+cp ../silo_pdb_test_data/meshorigin.silo .
+cp ../silo_pdb_test_data/multi_curv2d.silo .
+cp ../silo_pdb_test_data/multi_curv3d.silo .
+cp ../silo_pdb_test_data/multi_point2d.silo .
+cp ../silo_pdb_test_data/multi_rect2d.silo .
+cp ../silo_pdb_test_data/multi_rect3d.silo .
+cp ../silo_pdb_test_data/multi_ucd3d.silo .
+cp ../silo_pdb_test_data/noise.silo .
+cp ../silo_pdb_test_data/noise2d.silo .
+cp ../silo_pdb_test_data/odd_multi.silo .
+cp ../silo_pdb_test_data/one_quad.silo .
+cp ../silo_pdb_test_data/poly3d.silo .
+cp ../silo_pdb_test_data/quad_disk.silo .
+cp ../silo_pdb_test_data/rect2d.silo .
+cp ../silo_pdb_test_data/rect3d.silo .
+cp ../silo_pdb_test_data/sid97.silo .
+cp ../silo_pdb_test_data/specmix_quad.silo .
+cp ../silo_pdb_test_data/specmix_ucd.silo .
+cp ../silo_pdb_test_data/thinplane.silo .
+cp ../silo_pdb_test_data/tire.silo .
+cp ../silo_pdb_test_data/ucd2d.silo .
+cp ../silo_pdb_test_data/ucd3d.silo .
+cp ../silo_pdb_test_data/wave????.silo .
+cp ../silo_pdb_test_data/wave.visit .
+cp ../silo_pdb_test_data/CThead_mid.silo .
+mkdir hdf5
+cp ../silo_hdf5_test_data/globe.silo hdf5/.
+cp ../silo_hdf5_test_data/noise.silo hdf5/.
+cp ../silo_hdf5_test_data/multi_ucd3d.silo hdf5/.
+cp ../silo_hdf5_test_data/csg.silo hdf5/.
 
 # Make the tar file
 cd ..
-if -e $dirname.tar then
-    rm -f $dirname.tar
-endif
-if -e $dirname.tar.gz then
-    rm -f $dirname.tar.gz
-endif
-tar cf $dirname.tar $dirname
-gzip $dirname.tar
-echo "The VisIt data distribution is done: $dirname.tar.gz" 
-rm -rf $dirname
+tar cvf - $dname | gzip --best > $dname.tar.gz
+echo "The VisIt data distribution is done: $dname.tar.gz" 
+rm -rf $dname

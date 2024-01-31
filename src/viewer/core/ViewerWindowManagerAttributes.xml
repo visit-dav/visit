@@ -12,8 +12,6 @@
     </Function>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
-    <Function name="ProcessOldVersions" user="true" member="true">
-    </Function>
     <Function name="RemoveActionFromNode" user="true" member="true">
     </Function>
     <Function name="RemoveActionFromNode2" user="true" member="true">

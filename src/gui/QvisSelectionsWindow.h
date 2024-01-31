@@ -52,8 +52,8 @@ class GUI_API QvisSelectionsWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisSelectionsWindow(const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+    QvisSelectionsWindow(const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea * notepad = 0);
     virtual ~QvisSelectionsWindow();
     virtual void CreateWindowContents();

@@ -25,12 +25,18 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"5.0.0"}
+    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
-    export LLVM_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
-    export LLVM_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136da"
+    export BV_LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
+    export BV_LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
+
+    export BV_CLANG_URL=${BV_LLVM_URL}
+    export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
+    export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
+    export BV_CLANG_MD5_CHECKSUM="4e419bd4e3b55aa06d872320f754bd85"
+    export BV_CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
 }
 
 function bv_llvm_print
@@ -67,6 +73,8 @@ function bv_llvm_initialize_vars
     else
         LLVM_LIB="${LLVM_LIB_DIR}/libLLVM.${SO_EXT}"
     fi
+    # needed for clang and pyside
+    export LLVM_INSTALL_DIR="${VISIT_LLVM_DIR}"
 }
 
 function bv_llvm_selected
@@ -92,97 +100,9 @@ function bv_llvm_ensure
     fi
 }
 
-function bv_llvm_dry_run
-{
-    if [[ "$DO_LLVM" == "yes" ]] ; then
-        echo "Dry run option not set for llvm."
-    fi
-}
-
 function apply_llvm_patch
 {
-    # fixes a bug in LLVM 5.0.0
-    # where if the LLVM_BUILD_LLVM_DYLIB CMake var is set to ON,
-    # CMake will fail when checking an internal variable that is empty
-    # patch based on https://reviews.llvm.org/D31445
-
-    patch -p0 << \EOF
-*** tools/llvm-shlib/CMakeLists.txt.original     2018-06-14 16:16:13.185286160 -0500
---- tools/llvm-shlib/CMakeLists.txt      2018-06-14 16:16:59.773283611 -0500
-***************
-*** 36,42 ****
-
-  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
-
-! list(REMOVE_DUPLICATES LIB_NAMES)
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
-    configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
---- 36,44 ----
-
-  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
-
-! if(LIB_NAMES)
-!     list(REMOVE_DUPLICATES LIB_NAMES)
-! endif()
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
-    configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for tools/llvm-shlib/CMakeLists.txt failed"
-        return 1
-    fi
-
-    # fixes a bug in LLVM 5.0.0
-    # a vector<char> is cast to a vector<unsigned char>. This patch comes
-    # from http://lists.busybox.net/pipermail/buildroot/2018-May/221648.html
-    # This is presumably fixed in LLVM 6.0.0.
-
-    patch -p0 << \EOF
---- include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h.orig	2019-07-26 13:23:06.588925000 -0700
-+++ include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h	2019-07-26 13:23:53.990216000 -0700
-@@ -713,8 +713,8 @@
- 
-   uint32_t getTrampolineSize() const { return RemoteTrampolineSize; }
- 
--  Expected<std::vector<char>> readMem(char *Dst, JITTargetAddress Src,
--                                      uint64_t Size) {
-+  Expected<std::vector<uint8_t>> readMem(char *Dst, JITTargetAddress Src,
-+                                         uint64_t Size) {
-     // Check for an 'out-of-band' error, e.g. from an MM destructor.
-     if (ExistingError)
-       return std::move(ExistingError);
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h failed"
-        return 1
-    fi
-
-    # fixes a bug in LLVM 5.0.0
-    # where a static_assert fails with icc 19.0.4.227. This patch removes
-    # the static_assert since it isn't critical for it to run.
-
-    patch -p0 << \EOF
-diff -c lib/IR/Attributes.cpp.orig lib/IR/Attributes.cpp
-*** lib/IR/Attributes.cpp.orig	Fri Nov 22 12:13:23 2019
---- lib/IR/Attributes.cpp	Fri Nov 22 12:13:45 2019
-***************
-*** 810,817 ****
-    static_assert(Attribute::EndAttrKinds <=
-                      sizeof(AvailableFunctionAttrs) * CHAR_BIT,
-                  "Too many attributes");
--   static_assert(attrIdxToArrayIdx(AttributeList::FunctionIndex) == 0U,
--                 "function should be stored in slot 0");
-    for (Attribute I : Sets[0]) {
-      if (!I.isStringAttribute())
-        AvailableFunctionAttrs |= 1ULL << I.getKindAsEnum();
---- 810,815 ----
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for lib/IR/Attributes.cpp failed"
-        return 1
-    fi
+    info "Currently no patches for llvm"
 }
 
 function build_llvm
@@ -195,6 +115,27 @@ function build_llvm
     if [[ $untarred_llvm == -1 ]] ; then
         warn "Unable to prepare LLVM build directory. Giving Up!"
         return 1
+    fi
+
+    # download clang
+    if ! test -f ${BV_CLANG_FILE} ; then
+        download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${BV_CLANG_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract clang
+    if ! test -d clang ; then
+        info "Extracting clang ..."
+        uncompress_untar ${BV_CLANG_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${BV_CLANG_FILE}"
+            return 1
+        fi
+        # llvm build system expects the directory to be named clang
+        mv ${BV_CLANG_BUILD_DIR} clang
     fi
 
     #
@@ -238,40 +179,78 @@ function build_llvm
     rm -f CMakeCache.txt */CMakeCache.txt
 
     info "Configuring LLVM . . ."
+
+    llvm_opts=""
+    # standard cmake options
+    llvm_opts="${llvm_opts} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_LLVM_DIR}"
+    llvm_opts="${llvm_opts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    llvm_opts="${llvm_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    llvm_opts="${llvm_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    llvm_opts="${llvm_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    llvm_opts="${llvm_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    llvm_opts="${llvm_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+
+    # python?
     if [[ $DO_PYTHON == "yes" ]] ; then
-        LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
+        llvm_opts="${llvm_opts} -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
     fi
 
     #
     # Determine the LLVM_TARGET_TO_BUILD.
     #
     if [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
-        LLVM_TARGET="PowerPC"
+        llvm_opts="${llvm_opts} -DLLVM_TARGETS_TO_BUILD:STRING=PowerPC"
     else
-        LLVM_TARGET="X86"
+        llvm_opts="${llvm_opts} -DLLVM_TARGETS_TO_BUILD:STRING=X86"
     fi
 
-    # LLVM documentation states thet BUILD_SHARED_LIBS is not to be used
-    # in conjuction with LLVM_BUILD_LLVM_DYLIB, and should only be used
-    # by LLVM developers.
-    ${CMAKE_COMMAND} \
-        -DCMAKE_INSTALL_PREFIX:PATH="${VISIT_LLVM_DIR}" \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-        -DBUILD_SHARED_LIBS:BOOL=OFF \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DLLVM_TARGETS_TO_BUILD=${LLVM_TARGET} \
-        -DLLVM_ENABLE_RTTI:BOOL=ON \
-        -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
-        $LLVM_CMAKE_PYTHON \
-        ../${BV_LLVM_SRC_DIR}
-    if [[ $? != 0 ]] ; then
-        warn "LLVM cmake failed.  Giving up"
-        return 1
+    llvm_opts="${llvm_opts} -DLLVM_ENABLE_RTTI:BOOL=ON"
+    llvm_opts="${llvm_opts} -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON"
+
+    # turn off things we don't need?
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_DOCS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_EXAMPLES:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_GO_TESTS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_TESTS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_UTILS:BOOL=OFF"
+
+
+    # options for building libclang
+    llvm_opts="${llvm_opts} -DLLVM_ENABLE_PROJECTS:STRING=clang"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_LIBCLANG_BUILD:BOOL=ON"
+    # turning off unnecessary tools
+    llvm_opts="${llvm_opts} -DCLANG_BUILD_TOOLS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_ENABLE_ARCMT:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_ENABLE_STATIC_ANALYZER:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANBUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANVIEW:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_PLUGIN_SUPPORT:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_ARCMT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_CHECK_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_DIFF_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_VS_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUNC_MAPPING_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUZZER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_REFACTOR_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_RENAME_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_C_ARCMT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_C_INDEX_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_DIAGTOOL_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_DRIVER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_HANDLE_CXX_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_BUILD_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_VIEW_BUILD:BOOL=OFF"
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_COMMAND}\"" ${llvm_opts} ../${BV_LLVM_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "LLVM configuration failed"
 
     info "Building LLVM . . ."
     ${MAKE} ${MAKE_OPT_FLAGS}

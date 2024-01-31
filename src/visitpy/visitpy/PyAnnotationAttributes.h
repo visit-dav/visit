@@ -5,6 +5,7 @@
 #ifndef PY_ANNOTATIONATTRIBUTES_H
 #define PY_ANNOTATIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AnnotationAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyAnnotationAttributes_Wrap(const AnnotationAttribute
 void VISITPY_API           PyAnnotationAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
 std::string VISITPY_API    PyAnnotationAttributes_GetLogString();
-std::string VISITPY_API    PyAnnotationAttributes_ToString(const AnnotationAttributes *, const char *);
+std::string VISITPY_API    PyAnnotationAttributes_ToString(const AnnotationAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAnnotationAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAnnotationAttributes_methods[ANNOTATIONATTRIBUTES_NMETH];

@@ -156,6 +156,80 @@ TensorViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     *(TensorAttributes*)atts = *defaultAtts;
 }
 // ****************************************************************************
+// Method: TensorViewerEnginePluginInfo::SupportsAnimation
+//
+// Purpose:
+//   Tell VisIt that this plot supports animation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+TensorViewerEnginePluginInfo::SupportsAnimation() const
+{
+    return true;
+}
+
+// ****************************************************************************
+// Method: TensorViewerEnginePluginInfo::AnimationReset
+//
+// Purpose:
+//   Resets the plot's animation.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed as a result of reset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+bool
+TensorViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlotMetaData &)
+{
+    TensorAttributes *cAtts = (TensorAttributes *)atts;
+    cAtts->SetAnimationStep(0);
+    return true;
+}
+
+// ****************************************************************************
+// Method: TensorViewerEnginePluginInfo::AnimationStep
+//
+// Purpose:
+//   Take an animation step.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+TensorViewerEnginePluginInfo::AnimationStep(AttributeSubject *atts, const avtPlotMetaData &)
+{
+    TensorAttributes *cAtts = (TensorAttributes *)atts;
+    cAtts->SetAnimationStep(cAtts->GetAnimationStep()+1);
+    return true;
+}
+
+// ****************************************************************************
 //  Method: TensorViewerEnginePluginInfo::GetMenuName
 //
 //  Purpose:

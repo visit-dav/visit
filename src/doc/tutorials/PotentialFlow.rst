@@ -6,15 +6,16 @@ Potential Flow
 .. toctree::
     :maxdepth: 2
 
-This tutorial demonstrates VisIt's features while exploring results from simple simulations of `potential flow <https://en.wikipedia.org/wiki/Potential_flow>`_ around an obstruction, specifically an airfoil. Potential flow assumes irrotational flow. That is, there is no rotational motion in the flow, no vortices or eddies. This assumption is valid for low velocities and certain types of gases/fluids and obstructions. When the flow does involve rotation, a more complex solution involving Navier-Stokes equations is required.
+This tutorial demonstrates VisIt's features while exploring results from simple simulations of `potential based flow <https://en.wikipedia.org/wiki/Potential_flow>`_ around an obstruction, specifically an airfoil. Potential flow assumes irrotational flow. That is, there is no rotational motion in the flow, no vortices or eddies. This assumption is valid for low velocities and certain types of gases/fluids and obstructions. When the flow does involve rotation, a more complex solution involving Navier-Stokes equations is required.
 
 The potential flow solver is a mini-app developed using the `MFEM <http://www.mfem.org/>`_ finite element library. The example is available for this tutorial thanks to Aaron Fischer and Mark Miller of `LLNL <http://www.llnl.gov>`_. The data set includes VTK output files for a set of solutions where the angle of attack of the velocity varies from -5 degrees to 25 degrees.
 
 Open the dataset
 ----------------
 
-This tutorial uses the `potential flow <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ dataset.
-1. `Download <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ the potential flow dataset.
+This tutorial uses the `potential flow <https://visit-dav.github.io/largedata/datarchives/potential_flow>`_ dataset.
+
+1. `Download <https://visit-dav.github.io/largedata/datarchives/potential_flow>`_ the potential flow dataset.
 2. Click on the *Open* icon to bring up the File open window.
 3. Navigate your file system to the folder containing "potential_flow_ang_sweep.visit".
 4. Highlight the file "potential_flow_ang_sweep.visit" and then click *OK*.
@@ -203,7 +204,6 @@ Plotting streamlines of velocity
 7. Set *Samples along line* to "10".
 8. Click *Apply* and *Dismiss*.
 9. Click *Draw* on the Main GUI
-10. In IntegralCurve operator attributes, click *Apply* again (for good measure) and then *Dismiss*.
 
 .. figure:: images/PotentialFlow-Streamline-Atts.png
 

@@ -5,6 +5,7 @@
 #include <PyIndexSelectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyIndexSelectAttributes
@@ -34,9 +35,8 @@ struct IndexSelectAttributesObject
 // Internal prototypes
 //
 static PyObject *NewIndexSelectAttributes(int);
-
 std::string
-PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *prefix)
+PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -144,21 +144,55 @@ IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid maxDim value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OneD";
+        ss << ", TwoD";
+        ss << ", ThreeD";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxDim in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetMaxDim(IndexSelectAttributes::Dimension(ival));
-    else
-    {
-        fprintf(stderr, "An invalid maxDim value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "OneD, TwoD, ThreeD.");
-        return NULL;
-    }
+    obj->data->SetMaxDim(IndexSelectAttributes::Dimension(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -177,21 +211,55 @@ IndexSelectAttributes_SetDim(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid dim value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OneD";
+        ss << ", TwoD";
+        ss << ", ThreeD";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dim in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDim(IndexSelectAttributes::Dimension(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dim value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "OneD, TwoD, ThreeD.");
-        return NULL;
-    }
+    obj->data->SetDim(IndexSelectAttributes::Dimension(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -210,12 +278,48 @@ IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xAbsMax in the object.
-    obj->data->SetXAbsMax((int)ival);
+    obj->data->SetXAbsMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -234,12 +338,48 @@ IndexSelectAttributes_SetXMin(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xMin in the object.
-    obj->data->SetXMin((int)ival);
+    obj->data->SetXMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -258,12 +398,48 @@ IndexSelectAttributes_SetXMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xMax in the object.
-    obj->data->SetXMax((int)ival);
+    obj->data->SetXMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -282,12 +458,48 @@ IndexSelectAttributes_SetXIncr(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xIncr in the object.
-    obj->data->SetXIncr((int)ival);
+    obj->data->SetXIncr(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -306,12 +518,48 @@ IndexSelectAttributes_SetXWrap(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xWrap in the object.
-    obj->data->SetXWrap(ival != 0);
+    obj->data->SetXWrap(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -330,12 +578,48 @@ IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yAbsMax in the object.
-    obj->data->SetYAbsMax((int)ival);
+    obj->data->SetYAbsMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -354,12 +638,48 @@ IndexSelectAttributes_SetYMin(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yMin in the object.
-    obj->data->SetYMin((int)ival);
+    obj->data->SetYMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -378,12 +698,48 @@ IndexSelectAttributes_SetYMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yMax in the object.
-    obj->data->SetYMax((int)ival);
+    obj->data->SetYMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -402,12 +758,48 @@ IndexSelectAttributes_SetYIncr(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yIncr in the object.
-    obj->data->SetYIncr((int)ival);
+    obj->data->SetYIncr(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -426,12 +818,48 @@ IndexSelectAttributes_SetYWrap(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yWrap in the object.
-    obj->data->SetYWrap(ival != 0);
+    obj->data->SetYWrap(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -450,12 +878,48 @@ IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zAbsMax in the object.
-    obj->data->SetZAbsMax((int)ival);
+    obj->data->SetZAbsMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -474,12 +938,48 @@ IndexSelectAttributes_SetZMin(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zMin in the object.
-    obj->data->SetZMin((int)ival);
+    obj->data->SetZMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -498,12 +998,48 @@ IndexSelectAttributes_SetZMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zMax in the object.
-    obj->data->SetZMax((int)ival);
+    obj->data->SetZMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -522,12 +1058,48 @@ IndexSelectAttributes_SetZIncr(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zIncr in the object.
-    obj->data->SetZIncr((int)ival);
+    obj->data->SetZIncr(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -546,12 +1118,48 @@ IndexSelectAttributes_SetZWrap(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zWrap in the object.
-    obj->data->SetZWrap(ival != 0);
+    obj->data->SetZWrap(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -570,12 +1178,48 @@ IndexSelectAttributes_SetUseWholeCollection(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useWholeCollection in the object.
-    obj->data->SetUseWholeCollection(ival != 0);
+    obj->data->SetUseWholeCollection(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -594,12 +1238,37 @@ IndexSelectAttributes_SetCategoryName(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the categoryName in the object.
-    obj->data->SetCategoryName(std::string(str));
+    obj->data->SetCategoryName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -618,12 +1287,37 @@ IndexSelectAttributes_SetSubsetName(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the subsetName in the object.
-    obj->data->SetSubsetName(std::string(str));
+    obj->data->SetSubsetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -698,14 +1392,7 @@ IndexSelectAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-IndexSelectAttributes_compare(PyObject *v, PyObject *w)
-{
-    IndexSelectAttributes *a = ((IndexSelectAttributesObject *)v)->data;
-    IndexSelectAttributes *b = ((IndexSelectAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyIndexSelectAttributes_getattr(PyObject *self, char *name)
 {
@@ -764,66 +1451,79 @@ PyIndexSelectAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "subsetName") == 0)
         return IndexSelectAttributes_GetSubsetName(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyIndexSelectAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyIndexSelectAttributes_methods[i].ml_name),
+                PyString_FromString(PyIndexSelectAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyIndexSelectAttributes_methods, self, name);
 }
 
 int
 PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "maxDim") == 0)
-        obj = IndexSelectAttributes_SetMaxDim(self, tuple);
+        obj = IndexSelectAttributes_SetMaxDim(self, args);
     else if(strcmp(name, "dim") == 0)
-        obj = IndexSelectAttributes_SetDim(self, tuple);
+        obj = IndexSelectAttributes_SetDim(self, args);
     else if(strcmp(name, "xAbsMax") == 0)
-        obj = IndexSelectAttributes_SetXAbsMax(self, tuple);
+        obj = IndexSelectAttributes_SetXAbsMax(self, args);
     else if(strcmp(name, "xMin") == 0)
-        obj = IndexSelectAttributes_SetXMin(self, tuple);
+        obj = IndexSelectAttributes_SetXMin(self, args);
     else if(strcmp(name, "xMax") == 0)
-        obj = IndexSelectAttributes_SetXMax(self, tuple);
+        obj = IndexSelectAttributes_SetXMax(self, args);
     else if(strcmp(name, "xIncr") == 0)
-        obj = IndexSelectAttributes_SetXIncr(self, tuple);
+        obj = IndexSelectAttributes_SetXIncr(self, args);
     else if(strcmp(name, "xWrap") == 0)
-        obj = IndexSelectAttributes_SetXWrap(self, tuple);
+        obj = IndexSelectAttributes_SetXWrap(self, args);
     else if(strcmp(name, "yAbsMax") == 0)
-        obj = IndexSelectAttributes_SetYAbsMax(self, tuple);
+        obj = IndexSelectAttributes_SetYAbsMax(self, args);
     else if(strcmp(name, "yMin") == 0)
-        obj = IndexSelectAttributes_SetYMin(self, tuple);
+        obj = IndexSelectAttributes_SetYMin(self, args);
     else if(strcmp(name, "yMax") == 0)
-        obj = IndexSelectAttributes_SetYMax(self, tuple);
+        obj = IndexSelectAttributes_SetYMax(self, args);
     else if(strcmp(name, "yIncr") == 0)
-        obj = IndexSelectAttributes_SetYIncr(self, tuple);
+        obj = IndexSelectAttributes_SetYIncr(self, args);
     else if(strcmp(name, "yWrap") == 0)
-        obj = IndexSelectAttributes_SetYWrap(self, tuple);
+        obj = IndexSelectAttributes_SetYWrap(self, args);
     else if(strcmp(name, "zAbsMax") == 0)
-        obj = IndexSelectAttributes_SetZAbsMax(self, tuple);
+        obj = IndexSelectAttributes_SetZAbsMax(self, args);
     else if(strcmp(name, "zMin") == 0)
-        obj = IndexSelectAttributes_SetZMin(self, tuple);
+        obj = IndexSelectAttributes_SetZMin(self, args);
     else if(strcmp(name, "zMax") == 0)
-        obj = IndexSelectAttributes_SetZMax(self, tuple);
+        obj = IndexSelectAttributes_SetZMax(self, args);
     else if(strcmp(name, "zIncr") == 0)
-        obj = IndexSelectAttributes_SetZIncr(self, tuple);
+        obj = IndexSelectAttributes_SetZIncr(self, args);
     else if(strcmp(name, "zWrap") == 0)
-        obj = IndexSelectAttributes_SetZWrap(self, tuple);
+        obj = IndexSelectAttributes_SetZWrap(self, args);
     else if(strcmp(name, "useWholeCollection") == 0)
-        obj = IndexSelectAttributes_SetUseWholeCollection(self, tuple);
+        obj = IndexSelectAttributes_SetUseWholeCollection(self, args);
     else if(strcmp(name, "categoryName") == 0)
-        obj = IndexSelectAttributes_SetCategoryName(self, tuple);
+        obj = IndexSelectAttributes_SetCategoryName(self, args);
     else if(strcmp(name, "subsetName") == 0)
-        obj = IndexSelectAttributes_SetSubsetName(self, tuple);
+        obj = IndexSelectAttributes_SetSubsetName(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -831,7 +1531,7 @@ static int
 IndexSelectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
-    fprintf(fp, "%s", PyIndexSelectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyIndexSelectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -839,7 +1539,7 @@ PyObject *
 IndexSelectAttributes_str(PyObject *v)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
-    return PyString_FromString(PyIndexSelectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyIndexSelectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -852,49 +1552,70 @@ static char *IndexSelectAttributes_Purpose = "This class contains attributes for
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject IndexSelectAttributesType =
+
+VISIT_PY_TYPE_OBJ(IndexSelectAttributesType,         \
+                  "IndexSelectAttributes",           \
+                  IndexSelectAttributesObject,       \
+                  IndexSelectAttributes_dealloc,     \
+                  IndexSelectAttributes_print,       \
+                  PyIndexSelectAttributes_getattr,   \
+                  PyIndexSelectAttributes_setattr,   \
+                  IndexSelectAttributes_str,         \
+                  IndexSelectAttributes_Purpose,     \
+                  IndexSelectAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "IndexSelectAttributes",                    // tp_name
-    sizeof(IndexSelectAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)IndexSelectAttributes_dealloc,  // tp_dealloc
-    (printfunc)IndexSelectAttributes_print,     // tp_print
-    (getattrfunc)PyIndexSelectAttributes_getattr, // tp_getattr
-    (setattrfunc)PyIndexSelectAttributes_setattr, // tp_setattr
-    (cmpfunc)IndexSelectAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)IndexSelectAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    IndexSelectAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &IndexSelectAttributesType
+         || Py_TYPE(other) != &IndexSelectAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    IndexSelectAttributes *a = ((IndexSelectAttributesObject *)self)->data;
+    IndexSelectAttributes *b = ((IndexSelectAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -970,7 +1691,7 @@ PyIndexSelectAttributes_GetLogString()
 {
     std::string s("IndexSelectAtts = IndexSelectAttributes()\n");
     if(currentAtts != 0)
-        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.");
+        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.", true);
     return s;
 }
 
@@ -983,7 +1704,7 @@ PyIndexSelectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("IndexSelectAtts = IndexSelectAttributes()\n");
-        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.");
+        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.", true);
         cb(s);
     }
 }

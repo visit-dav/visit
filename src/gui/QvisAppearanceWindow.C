@@ -21,7 +21,7 @@
 // ****************************************************************************
 // Method: QvisAppearanceWindow::QvisAppearanceWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisAppearanceWindow class.
 //
 // Programmer: Brad Whitlock
@@ -47,14 +47,14 @@ QvisAppearanceWindow::QvisAppearanceWindow(AppearanceAttributes *subj,
 // ****************************************************************************
 // Method: QvisAppearanceWindow::~QvisAppearanceWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisAppearanceWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 6 12:28:27 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisAppearanceWindow::~QvisAppearanceWindow()
@@ -65,7 +65,7 @@ QvisAppearanceWindow::~QvisAppearanceWindow()
 // ****************************************************************************
 // Method: QvisAppearanceWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -103,7 +103,7 @@ QvisAppearanceWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
 
     int row = 0;
-    
+
     useSysDefaultCheckBox = new QCheckBox(central);
     connect(useSysDefaultCheckBox , SIGNAL(toggled(bool)),
             this, SLOT(useSysDefaultChanged(bool)));
@@ -111,7 +111,7 @@ QvisAppearanceWindow::CreateWindowContents()
       tr("Use default system appearance"));
     mainLayout->addWidget(useSysDefaultCheckBox,row,0,1,3);
     row++;
-    
+
     // Create the background color button.
     backgroundColorButton = new QvisColorButton(central);
     connect(backgroundColorButton, SIGNAL(selectedColor(const QColor &)),
@@ -131,7 +131,7 @@ QvisAppearanceWindow::CreateWindowContents()
     foregroundColorLabel->setBuddy(foregroundColorButton);
     mainLayout->addWidget(foregroundColorLabel, row, 0);
     row++;
-    
+
     // Create the style combo box.
     styleComboBox = new QComboBox(central);
     for(int i = 0; i < styleNames.size(); ++i)
@@ -171,7 +171,7 @@ QvisAppearanceWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisAppearanceWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the appearance attributes are updated.
 //
 // Arguments:
@@ -299,14 +299,14 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             break;
         }
     }
-    
+
     UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
 // Method: QvisAppearanceWindow::UpdateWindowSensitivity
 //
-// Purpose: 
+// Purpose:
 //   This method is called to update window sensitivity
 //
 //
@@ -331,13 +331,13 @@ QvisAppearanceWindow::UpdateWindowSensitivity()
     styleComboBox->setEnabled(val);
     styleLabel->setEnabled(val);
     orientationComboBox->setEnabled(val);
-    orientationLabel->setEnabled(val);   
+    orientationLabel->setEnabled(val);
 }
 
 // ****************************************************************************
 // Method: QvisAppearanceWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   This method gets the current values from line edits.
 //
 // Arguments:
@@ -360,7 +360,7 @@ QvisAppearanceWindow::GetCurrentValues(int which)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method applies the changes to the appearance.
 //
 // Programmer: Brad Whitlock
@@ -389,14 +389,14 @@ QvisAppearanceWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the apply button is clicked.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 6 13:16:09 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -408,7 +408,7 @@ QvisAppearanceWindow::apply()
 // ****************************************************************************
 // Method: QvisAppearanceWindow::ColorsNotTooClose
 //
-// Purpose: 
+// Purpose:
 //   Prevents bad colors from being used together.
 //
 // Arguments:
@@ -423,7 +423,7 @@ QvisAppearanceWindow::apply()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-// 
+//
 // ****************************************************************************
 
 bool
@@ -459,8 +459,8 @@ QvisAppearanceWindow::ColorsNotTooClose(const QColor &c0, const char *c1str)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::useSysDefaultChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the 
+// Purpose:
+//   This is a Qt slot function that is called when the user changes the
 //   the "Use System Default Appearance" Check Box.
 //
 // Arguments:
@@ -485,7 +485,7 @@ QvisAppearanceWindow::useSysDefaultChanged(bool val)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::backgroundChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the GUI
 //   background color via the color button.
 //
@@ -499,6 +499,9 @@ QvisAppearanceWindow::useSysDefaultChanged(bool val)
 //   Brad Whitlock, Fri Oct 3 10:03:19 PDT 2003
 //   Prevented bad colors from being used together.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Swap use of asprintf for getting the hex directly from QColor::name.
+//
 // ****************************************************************************
 
 void
@@ -508,8 +511,7 @@ QvisAppearanceWindow::backgroundChanged(const QColor &bg)
 
     if(ColorsNotTooClose(bg, atts->GetForeground().c_str()))
     {
-        QString tmp;
-        tmp.sprintf("#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
+        QString tmp(bg.name());
         atts->SetBackground(tmp.toStdString());
         SetUpdate(false);
         Apply();
@@ -519,7 +521,7 @@ QvisAppearanceWindow::backgroundChanged(const QColor &bg)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::foregroundChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the GUI
 //   foreground color via the color button.
 //
@@ -532,7 +534,10 @@ QvisAppearanceWindow::backgroundChanged(const QColor &bg)
 // Modifications:
 //   Brad Whitlock, Fri Oct 3 10:03:19 PDT 2003
 //   Prevented bad colors from being used together.
-//   
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Swap use of asprintf for getting the hex directly from QColor::name.
+//
 // ****************************************************************************
 
 void
@@ -542,8 +547,7 @@ QvisAppearanceWindow::foregroundChanged(const QColor &fg)
 
     if(ColorsNotTooClose(fg, atts->GetBackground().c_str()))
     {
-        QString tmp;
-        tmp.sprintf("#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
+        QString tmp(fg.name());
         atts->SetForeground(tmp.toStdString());
         SetUpdate(false);
         Apply();
@@ -553,7 +557,7 @@ QvisAppearanceWindow::foregroundChanged(const QColor &fg)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::styleChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the style.
 //
 // Arguments:
@@ -583,7 +587,7 @@ QvisAppearanceWindow::styleChanged(int index)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::fontNameChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the Font... button is
 //   clicked.
 //
@@ -608,7 +612,7 @@ QvisAppearanceWindow::fontNameChanged(const QString &newFont)
 // ****************************************************************************
 // Method: QvisAppearanceWindow::orientationChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the orientation is changed.
 //
 // Arguments:
@@ -618,7 +622,7 @@ QvisAppearanceWindow::fontNameChanged(const QString &newFont)
 // Creation:   Tue Jan 29 13:21:26 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

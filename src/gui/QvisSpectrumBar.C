@@ -13,6 +13,7 @@
 #include <QStyle>
 #include <QStyleOption>
 #include <QTimer>
+#include <QTransform>
 
 // Some constants for paging modes.
 #define NO_PAGING      -1
@@ -35,7 +36,7 @@
 // Purpose:
 //   This is a "private" class that contains the control point.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   2001
@@ -43,7 +44,7 @@
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
 //   Added support for alpha values.
-//   
+//
 // ****************************************************************************
 typedef struct
 {
@@ -61,7 +62,7 @@ static int ControlPointCompare(const void *c1, const void *c2);
 //   This is a "private" class that contains the control point list used in
 //   the QvisSpectrumBar class.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 10:00:33 PDT 2001
@@ -69,7 +70,7 @@ static int ControlPointCompare(const void *c1, const void *c2);
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
 //   Added support for alpha values.
-//   
+//
 // ****************************************************************************
 
 class ControlPointList
@@ -117,7 +118,7 @@ private:
 // ****************************************************************************
 // Method: QvisSpectrumBar::QvisSpectrumBar
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisSpectrumBar class.
 //
 // Arguments:
@@ -171,7 +172,7 @@ QvisSpectrumBar::QvisSpectrumBar(QWidget *parent) : QWidget(parent)
 // ****************************************************************************
 // Method: QvisSpectrumBar::~QvisSpectrumBar
 //
-// Purpose: 
+// Purpose:
 //   The destructor for the QvisSpectrumBar class.
 //
 // Programmer: Brad Whitlock
@@ -193,14 +194,14 @@ QvisSpectrumBar::~QvisSpectrumBar()
 // ****************************************************************************
 // Method: QvisSpectrumBar::sizeHint
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's preferred size.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 10:07:43 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSize
@@ -210,21 +211,21 @@ QvisSpectrumBar::sizeHint() const
 
     if(orientation == VerticalLeft || orientation == VerticalRight)
         retval = QSize(100, 250);
-        
-    return retval;    
+
+    return retval;
 }
 
 // ****************************************************************************
 // Method: QvisSpectrumBar::sizePolicy
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's size policy. This is how the widget prefers to grow.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 10:25:27 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSizePolicy
@@ -234,14 +235,14 @@ QvisSpectrumBar::sizePolicy() const
 
     if(orientation == VerticalLeft || orientation == VerticalRight)
         retval = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-        
-    return retval;    
+
+    return retval;
 }
 
 // ****************************************************************************
 // Method: QvisSpectrumBar::equalSpacing
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating whether or not the widget's control points are
 //   in equal spacing mode.
 //
@@ -249,7 +250,7 @@ QvisSpectrumBar::sizePolicy() const
 // Creation:   Wed Jan 3 10:26:04 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -261,7 +262,7 @@ QvisSpectrumBar::equalSpacing() const
 // ****************************************************************************
 // Method: QvisSpectrumBar::smoothing
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating whether or not the colors are interpolated
 //   between control points.
 //
@@ -283,7 +284,7 @@ QvisSpectrumBar::smoothing() const
 // ****************************************************************************
 // Method: QvisSpectrumBar::continuousUpdate
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating whether or not update signals are emitted during
 //   mouse dragging of control points.
 //
@@ -291,7 +292,7 @@ QvisSpectrumBar::smoothing() const
 // Creation:   Wed Jan 3 10:27:47 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -303,7 +304,7 @@ QvisSpectrumBar::continuousUpdate() const
 // ****************************************************************************
 // Method: QvisSpectrumBar::controlPointColor
 //
-// Purpose: 
+// Purpose:
 //   Returns the color of a control point.
 //
 // Arguments:
@@ -315,7 +316,7 @@ QvisSpectrumBar::continuousUpdate() const
 // Modifications:
 //    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //    Added alpha support.
-//   
+//
 // ****************************************************************************
 
 QColor
@@ -333,7 +334,7 @@ QvisSpectrumBar::controlPointColor(int index) const
 // ****************************************************************************
 // Method: QvisSpectrumBar::controlPointPosition
 //
-// Purpose: 
+// Purpose:
 //   Returns the position of a control point. This is a value between 0. and 1.
 //
 // Arguments:
@@ -343,7 +344,7 @@ QvisSpectrumBar::controlPointColor(int index) const
 // Creation:   Wed Jan 3 10:29:19 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 float
@@ -353,14 +354,14 @@ QvisSpectrumBar::controlPointPosition(int index) const
 
     if(index >= 0 && index < controlPoints->NumControlPoints())
         retval = controlPoints->Position(index);
-    
+
     return retval;
 }
 
 // ****************************************************************************
 // Method: QvisSpectrumBar::numControlPoints
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of control points.
 //
 // Returns:    The number of control points.
@@ -369,7 +370,7 @@ QvisSpectrumBar::controlPointPosition(int index) const
 // Creation:   Wed Jan 3 10:36:33 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -381,7 +382,7 @@ QvisSpectrumBar::numControlPoints() const
 // ****************************************************************************
 // Method: QvisSpectrumBar::activeControlPoint
 //
-// Purpose: 
+// Purpose:
 //   Returns the index of the active control point.
 //
 // Returns:    The index of the active control point.
@@ -390,7 +391,7 @@ QvisSpectrumBar::numControlPoints() const
 // Creation:   Sat Feb 3 21:53:27 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -402,7 +403,7 @@ QvisSpectrumBar::activeControlPoint() const
 // ****************************************************************************
 // Method: QvisSpectrumBar::setEqualSpacing
 //
-// Purpose: 
+// Purpose:
 //   Sets the widget's equal spacing mode.
 //
 // Arguments:
@@ -412,7 +413,7 @@ QvisSpectrumBar::activeControlPoint() const
 // Creation:   Wed Jan 3 10:52:58 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -428,7 +429,7 @@ QvisSpectrumBar::setEqualSpacing(bool val)
 // ****************************************************************************
 // Method: QvisSpectrumBar::setSmoothing
 //
-// Purpose: 
+// Purpose:
 //   Sets the widget's color smoothing mode.
 //
 // Arguments:
@@ -467,7 +468,7 @@ QvisSpectrumBar::setSmoothing(QvisSpectrumBar::SmoothingMethod val)
 // ****************************************************************************
 // Method: QvisSpectrumBar::setContinuousUpdate
 //
-// Purpose: 
+// Purpose:
 //   Sets the flag that is used to determine whether or not to emit signals
 //   while moving a control point by dragging the mouse.
 //
@@ -478,7 +479,7 @@ QvisSpectrumBar::setSmoothing(QvisSpectrumBar::SmoothingMethod val)
 // Creation:   Wed Jan 3 10:54:17 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -490,7 +491,7 @@ QvisSpectrumBar::setContinuousUpdate(bool val)
 // ****************************************************************************
 // Method: QvisSpectrumBar::suppressUpdates
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's suppressUpdates flag.
 //
 // Returns:    The widget's suppressUpdates flag.
@@ -499,7 +500,7 @@ QvisSpectrumBar::setContinuousUpdate(bool val)
 // Creation:   Wed Mar 28 10:20:39 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -511,7 +512,7 @@ QvisSpectrumBar::suppressUpdates() const
 // ****************************************************************************
 // Method: QvisSpectrumBar::setSuppressUpdates
 //
-// Purpose: 
+// Purpose:
 //   Sets the flag that is used to determine whether or not updates should be
 //   suppressed.
 //
@@ -522,7 +523,7 @@ QvisSpectrumBar::suppressUpdates() const
 // Creation:   Wed Mar 28 10:18:15 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -534,7 +535,7 @@ QvisSpectrumBar::setSuppressUpdates(bool val)
 // ****************************************************************************
 // Method: QvisSpectrumBar::addControlPoint
 //
-// Purpose: 
+// Purpose:
 //   Adds a new control point to the widget.
 //
 // Arguments:
@@ -549,7 +550,7 @@ QvisSpectrumBar::setSuppressUpdates(bool val)
 // Modifications:
 //    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //    Added alpha support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -633,14 +634,14 @@ QvisSpectrumBar::addControlPoint(const QColor &color, float position)
 // ****************************************************************************
 // Method: QvisSpectrumBar::alignControlPoints
 //
-// Purpose: 
+// Purpose:
 //   Sets the position of all of the control points so they have equal spacing.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Feb 5 14:12:47 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -681,7 +682,7 @@ QvisSpectrumBar::alignControlPoints()
 // ****************************************************************************
 // Method: QvisSpectrumBar::removeControlPoint
 //
-// Purpose: 
+// Purpose:
 //   Removes the control point with the highest rank.
 //
 // Programmer: Brad Whitlock
@@ -692,7 +693,7 @@ QvisSpectrumBar::alignControlPoints()
 // Modifications:
 //   Kathleen Bonnell, Tue Dec 28 16:20:47 PST 2004
 //   Cast args for QColor constructor to int to prevent comiler warnings.
-//   
+//
 //   Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //   Added alpha support.
 //
@@ -730,7 +731,7 @@ QvisSpectrumBar::removeControlPoint()
 // ****************************************************************************
 // Method: QvisSpectrumBar::setRawColors
 //
-// Purpose: 
+// Purpose:
 //   Sets a palette of colors into the widget. This puts the widget into a
 //   mode in which the control points disappear so the color palette can
 //   be displayed.
@@ -745,7 +746,7 @@ QvisSpectrumBar::removeControlPoint()
 // Modifications:
 //    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //    Added alpha support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -769,7 +770,7 @@ QvisSpectrumBar::setRawColors(unsigned char *colors, int ncolors)
 // ****************************************************************************
 // Method: QvisSpectrumBar::setEditMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the spectrumbar's edit mode. When edit mode is set to false, the
 //   control points are not drawn and the widget's spectrum cannot be modified.
 //
@@ -808,7 +809,7 @@ QvisSpectrumBar::setEditMode(bool val)
             delete [] raw;
         }
     }
-    
+
     controlPoints->SetEditMode(val);
     update();
 }
@@ -816,7 +817,7 @@ QvisSpectrumBar::setEditMode(bool val)
 // ****************************************************************************
 // Method: QvisSpectrumBar::setControlPointColor
 //
-// Purpose: 
+// Purpose:
 //   Sets the color of a control point.
 //
 // Arguments:
@@ -831,7 +832,7 @@ QvisSpectrumBar::setEditMode(bool val)
 // Modifications:
 //    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //    Added alpha support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -858,7 +859,7 @@ QvisSpectrumBar::setControlPointColor(int index, const QColor &color)
 // ****************************************************************************
 // Method: QvisSpectrumBar::setControlPointPosition
 //
-// Purpose: 
+// Purpose:
 //   Sets the position of a control point.
 //
 // Arguments:
@@ -871,7 +872,7 @@ QvisSpectrumBar::setControlPointColor(int index, const QColor &color)
 // Creation:   Wed Jan 3 11:08:12 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -894,14 +895,14 @@ QvisSpectrumBar::setControlPointPosition(int index, float position)
 // ****************************************************************************
 // Method: QvisSpectrumBar::setOrientation
 //
-// Purpose: 
+// Purpose:
 //   Sets the widget's orientation.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 11:09:31 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -913,7 +914,7 @@ QvisSpectrumBar::setOrientation(QvisSpectrumBar::ControlOrientation)
 // ****************************************************************************
 // Method: QvisSpectrumBar::drawControls
 //
-// Purpose: 
+// Purpose:
 //   Draws all of the control points in descending rank.
 //
 // Programmer: Brad Whitlock
@@ -933,6 +934,9 @@ QvisSpectrumBar::setOrientation(QvisSpectrumBar::ControlOrientation)
 //   Brad Whitlock, Mon Jun  2 10:58:21 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -940,7 +944,7 @@ QvisSpectrumBar::drawControls(QPainter &paint)
 {
 
 #if defined(Q_OS_MAC)
-    QBrush brush(palette().brush(QPalette::Background));
+    QBrush brush(palette().brush(QPalette::Window));
 #else
     QBrush brush(palette().brush(QPalette::Button));
 #endif
@@ -991,7 +995,7 @@ QvisSpectrumBar::drawControls(QPainter &paint)
 // ****************************************************************************
 // Method: QvisSpectrumBar::controlPointLocation
 //
-// Purpose: 
+// Purpose:
 //   Returns the position of the upper left corner of a control point.
 //
 // Arguments:
@@ -1005,7 +1009,7 @@ QvisSpectrumBar::drawControls(QPainter &paint)
 // Modifications:
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap. Fixed margin.
-//   
+//
 // ****************************************************************************
 
 QPoint
@@ -1041,7 +1045,7 @@ QvisSpectrumBar::controlPointLocation(int index) const
     {
         x = controlsArea.x();
         y = (int)(pos *(spectrumArea.height() - offset)) + offset/2;
-    }        
+    }
 
     return QPoint(x, y);
 }
@@ -1049,7 +1053,7 @@ QvisSpectrumBar::controlPointLocation(int index) const
 // ****************************************************************************
 // Method: QvisSpectrumBar::drawControlPoint
 //
-// Purpose: 
+// Purpose:
 //   Draws a control point.
 //
 // Arguments:
@@ -1066,7 +1070,7 @@ QvisSpectrumBar::controlPointLocation(int index) const
 //   shadhow_thick : The shadow thickness.
 //   orient : The control point orientation.
 //   selected : Whether or not the control point is selected.
-//   
+//
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 11:15:16 PDT 2001
 //
@@ -1214,7 +1218,7 @@ QvisSpectrumBar::drawControlPoint(QPainter &paint, const QBrush &top,
 // ****************************************************************************
 // Method: QvisSpectrumBar::drawBox
 //
-// Purpose: 
+// Purpose:
 //   Draws a highlighted box that looks like the edges of a button.
 //
 // Arguments:
@@ -1263,7 +1267,7 @@ QvisSpectrumBar::drawBox(QPainter &paint, const QRect &r,
 // ****************************************************************************
 // Method: QvisSpectrumBar::drawArrow
 //
-// Purpose: 
+// Purpose:
 //   Draws an arrow.
 //
 // Note:       This code was copied from Qt 2.3.0 and trimmed down to be
@@ -1296,7 +1300,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
     QVector<QPoint> bTop;       // top shadow.
     QVector<QPoint> bBot;       // bottom shadow.
     QVector<QPoint> bLeft;      // left shadow.
-    QMatrix  matrix;           // xform matrix
+    QTransform  transform;      // xform matrix
     bool vertical = orientation == HorizontalTop ||
                     orientation == HorizontalBottom;
     bool horizontal = !vertical;
@@ -1370,16 +1374,16 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 
     if(orientation == HorizontalBottom || orientation == VerticalRight)
     {
-        matrix.translate(x, y);
+        transform.translate(x, y);
         if(vertical)
         {
-            matrix.translate(0, h - 1);
-            matrix.rotate(-90);
+            transform.translate(0, h - 1);
+            transform.rotate(-90);
         }
         else
         {
-            matrix.translate(w - 1, h - 1);
-            matrix.rotate(180);
+            transform.translate(w - 1, h - 1);
+            transform.rotate(180);
         }
 
         if(down)
@@ -1389,11 +1393,11 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
     }
     else
     {
-        matrix.translate(x, y);
+        transform.translate(x, y);
         if(vertical)
         {
-            matrix.translate(w-1, 0);
-            matrix.rotate(90);
+            transform.translate(w-1, 0);
+            transform.rotate(90);
         }
         if(down)
             colspec = horizontal ? 0x2443 : 0x2434;
@@ -1415,13 +1419,13 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 
     QPen     savePen   = p.pen();     // save current pen
     QBrush   saveBrush = p.brush();   // save current brush
-    QMatrix wxm = p.worldMatrix();
+    QTransform wxm = p.worldTransform(); // save current transform
     QPen     pen(Qt::NoPen);
     QBrush   brush(pal.base());
 
     p.setPen(pen);
     p.setBrush(brush);
-    p.setWorldMatrix(matrix, true);   // set transformation matrix
+    p.setWorldTransform(transform, true);   // set transformation matrix
     p.drawPolygon(bFill);             // fill arrow
     p.setBrush(Qt::NoBrush);          // don't fill
 
@@ -1432,7 +1436,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
     p.setPen(CBOT);
     p.drawLines(bBot);
 
-    p.setWorldMatrix(wxm);
+    p.setWorldTransform(wxm);            // restore transform
     p.setBrush(saveBrush);            // restore brush
     p.setPen(savePen);                // restore pen
 
@@ -1445,7 +1449,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 // ****************************************************************************
 // Method: QvisSpectrumBar::drawSpectrum
 //
-// Purpose: 
+// Purpose:
 //   Draws the color spectrum into an internal pixmap.
 //
 // Programmer: Brad Whitlock
@@ -1497,7 +1501,7 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
         QColor darkAlphaColor(0,0,0,255);
 
         int prevAlphPos = -1;
-        
+
         // Draw the spectrum based on the orientation of the widget.
         bool horiz = (orientation == HorizontalTop || orientation == HorizontalBottom);
         for(int i = 0; i < range; ++i, cptr += 4)
@@ -1572,8 +1576,8 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
         }
 
         // Draw the sunken bevel around the spectrum.
-        drawBox(paint, spectrumArea, 
-                palette().color(QPalette::Dark), 
+        drawBox(paint, spectrumArea,
+                palette().color(QPalette::Dark),
                 palette().color(QPalette::Light));
 
         // Delete the color array.
@@ -1583,7 +1587,7 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 // ****************************************************************************
 // Method: QvisSpectrumBar::evalCubicSpline
 //
-// Purpose: 
+// Purpose:
 //   Interpolates color control points using cubic spline.
 //
 // Arguments:
@@ -1594,13 +1598,15 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 //
 // Returns:    The new y value.
 //
-// Note:       
+// Note:
+//    This function is very similar to ColorControlPointList::EvalCubicSpline.
+//    It would be wise to make changes in both places.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 27 14:02:56 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 #define EVAL_MIN(A,B) (((A)<(B))?(A):(B))
@@ -1609,7 +1615,7 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 float
 QvisSpectrumBar::evalCubicSpline(float t, const float *allX, const float *allY, int n) const
 {
-    if(t <= allX[0]) 
+    if(t <= allX[0])
         return allY[0];
     if(t >= allX[n-1])
         return allY[n-1];
@@ -1643,20 +1649,22 @@ QvisSpectrumBar::evalCubicSpline(float t, const float *allX, const float *allY, 
 // ****************************************************************************
 // Method: QvisSpectrumBar::getColorsCubicSpline
 //
-// Purpose: 
+// Purpose:
 //   Gets the colors using cubic spline interpolation.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
+//    This function is very similar to ColorControlPointList::GetColorsCubicSpline.
+//    It would be wise to make changes in both places.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 27 14:02:56 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 inline unsigned char
@@ -1715,14 +1723,14 @@ QvisSpectrumBar::getColorsCubicSpline(unsigned char *rgba, int ncolors) const
 // ****************************************************************************
 // Method: QvisSpectrumBar::getRawColors
 //
-// Purpose: 
+// Purpose:
 //   Figures out the raw colors that will be used to draw the spectrum.
 //
 // Arguments:
 //     w     : The widget for which we're getting raw colors.
 //     range : The number of available color slots.
 //
-// Returns:    
+// Returns:
 //     This function returns a block of memory range*3 bytes long.
 //     Colors are arranged in the memory as rgbrgbrgb... where each
 //     color channel is one byte.
@@ -1781,7 +1789,7 @@ QvisSpectrumBar::getRawColors(int range)
         for(i = 0; i < range; ++i)
         {
             /* The desired index into the colors we have. */
-            int src_index = (int)(((float)i /(float)(range - 1)) * 
+            int src_index = (int)(((float)i /(float)(range - 1)) *
                (this->controlPoints->NumColorValues() - 1)) * 4;
 
             row[i * 4]     = (unsigned char)(controlPoints->ColorValue(src_index) * 255.);
@@ -1810,7 +1818,7 @@ QvisSpectrumBar::getRawColors(int range)
     qsort((void *)oldpts, npoints, sizeof(ControlPoint), ControlPointCompare);
 
     /*******************************************
-     * Phase III -- Process the control points. 
+     * Phase III -- Process the control points.
      ******************************************/
     if(equalSpacing() || smoothing() == None)
     {
@@ -1840,13 +1848,13 @@ QvisSpectrumBar::getRawColors(int range)
                     }
                     else
                     {
-                        newpts[i].color[0] = (oldpts[i].color[0] + 
+                        newpts[i].color[0] = (oldpts[i].color[0] +
                             oldpts[i-1].color[0])*0.5;
-                        newpts[i].color[1] = (oldpts[i].color[1] + 
+                        newpts[i].color[1] = (oldpts[i].color[1] +
                             oldpts[i-1].color[1])*0.5;
-                        newpts[i].color[2] = (oldpts[i].color[2] + 
+                        newpts[i].color[2] = (oldpts[i].color[2] +
                             oldpts[i-1].color[2])*0.5;
-                        newpts[i].color[3] = (oldpts[i].color[3] + 
+                        newpts[i].color[3] = (oldpts[i].color[3] +
                             oldpts[i-1].color[3])*0.5;
                     }
                 }
@@ -1858,7 +1866,7 @@ QvisSpectrumBar::getRawColors(int range)
             memcpy((char *)newpts,(char *)oldpts, sizeof(ControlPoint));
             for(i = 1; i < npoints - 1; i++)
             {
-                newpts[i].position = oldpts[i-1].position + 
+                newpts[i].position = oldpts[i-1].position +
                    ((oldpts[i].position - oldpts[i-1].position) * 0.5);
                 memcpy((char *)newpts[i].color,
                       (char *)oldpts[i].color,
@@ -1982,7 +1990,7 @@ QvisSpectrumBar::getRawColors(int range)
 // ****************************************************************************
 // Method: QvisSpectrumBar::paintEvent
 //
-// Purpose: 
+// Purpose:
 //   Handles paint events for the widget.
 //
 // Arguments:
@@ -2019,7 +2027,7 @@ QvisSpectrumBar::paintEvent(QPaintEvent *e)
     {
         QStyleOption so;
         so.initFrom(this);
-        style()->drawPrimitive(QStyle::PE_FrameFocusRect, 
+        style()->drawPrimitive(QStyle::PE_FrameFocusRect,
                                &so,
                                &paint);
     }
@@ -2028,7 +2036,7 @@ QvisSpectrumBar::paintEvent(QPaintEvent *e)
 // ****************************************************************************
 // Method: QvisSpectrumBar::resizeEvent
 //
-// Purpose: 
+// Purpose:
 //   Handles resize events for the widget.
 //
 // Programmer: Brad Whitlock
@@ -2037,7 +2045,7 @@ QvisSpectrumBar::paintEvent(QPaintEvent *e)
 // Modifications:
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap.
-//   
+//
 //   Hank Childs, Thu Jun  8 13:52:35 PDT 2006
 //   Fix compiler warning for casting.
 //
@@ -2084,7 +2092,7 @@ QvisSpectrumBar::resizeEvent(QResizeEvent *)
 // ****************************************************************************
 // Method: QvisSpectrumBar::paletteChange
 //
-// Purpose: 
+// Purpose:
 //   This method forces the widget to redraw when the palette is changed.
 //
 // Programmer: Brad Whitlock
@@ -2109,7 +2117,7 @@ QvisSpectrumBar::paletteChange(const QPalette &)
 // ****************************************************************************
 // Method: QvisSpectrumBar::keyPressEvent
 //
-// Purpose: 
+// Purpose:
 //   Handles keypress events for the widgets.
 //
 // Arguments:
@@ -2217,7 +2225,7 @@ QvisSpectrumBar::keyPressEvent(QKeyEvent *e)
 // ****************************************************************************
 // Method: QvisSpectrumBar::colorSelected
 //
-// Purpose: 
+// Purpose:
 //   This routine is called when we want to select a color. It emits signals
 //   that could be used for a popup menu.
 //
@@ -2228,7 +2236,7 @@ QvisSpectrumBar::keyPressEvent(QKeyEvent *e)
 // Creation:   Wed Mar 13 17:55:29 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2238,7 +2246,7 @@ QvisSpectrumBar::colorSelected(int index)
     QPoint p(controlPointLocation(index));
     // Figure out the center of the control point.
     QPoint pc(p.x() + slider.width() / 2, p.y() + slider.height() / 2);
-    
+
     emit selectColor(index);
     emit selectColor(index, mapToGlobal(pc));
 }
@@ -2246,7 +2254,7 @@ QvisSpectrumBar::colorSelected(int index)
 // ****************************************************************************
 // Method: QvisSpectrumBar::mousePressEvent
 //
-// Purpose: 
+// Purpose:
 //   Handles mouse press events for the widget.
 //
 // Arguments:
@@ -2269,7 +2277,7 @@ QvisSpectrumBar::colorSelected(int index)
 void
 QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
 {
-    // Check to see if a slider was clicked. If so, we need to 
+    // Check to see if a slider was clicked. If so, we need to
     // set the active slider and update the controls.
     int   new_sel, current_sel;
     float fpos, fwidth;
@@ -2281,7 +2289,7 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
     // slider as numbers in the range [0.,1.].
     if(orientation == HorizontalTop || orientation == HorizontalBottom)
     {
-        fpos = ((float)(e->x() - controlsArea.x() - slider.width()/2) / 
+        fpos = ((float)(e->x() - controlsArea.x() - slider.width()/2) /
                (float)(controlsArea.width() - slider.width()));
         fwidth = (float)slider.width() /
                 (float)(controlsArea.width() - slider.width());
@@ -2353,7 +2361,7 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: QvisSpectrumBar::mouseMoveEvent
 //
-// Purpose: 
+// Purpose:
 //   Handles mouse move events for the widget.
 //
 // Arguments:
@@ -2374,7 +2382,7 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
 //
 // ****************************************************************************
 
-void 
+void
 QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
 {
     // If the widget is doing paging events, ignore mouse motion.
@@ -2393,7 +2401,7 @@ QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
     // Figure the position of the event as a number in the range [0.,1.].
     if(orientation == HorizontalTop || orientation == HorizontalBottom)
     {
-        fpos = ((float)(e->x() - controlsArea.x() - slider.width()/2) / 
+        fpos = ((float)(e->x() - controlsArea.x() - slider.width()/2) /
                (float)(controlsArea.width() - slider.width()));
     }
     else
@@ -2405,7 +2413,7 @@ QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
     // Clamp the position to [0, 1.]
     if(fpos < 0.) fpos = 0.;
     if(fpos > 1.) fpos = 1.;
-        
+
     // If the position is different than the current position, udpate the
     // control area and emit a signal.
     if(fpos != controlPoints->Position(current_sel))
@@ -2427,7 +2435,7 @@ QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: QvisSpectrumBar::mouseReleaseEvent
 //
-// Purpose: 
+// Purpose:
 //   Handles mouse release events for the widget.
 //
 // Note:       Emits controlPointMoved signal.
@@ -2441,7 +2449,7 @@ QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
 //
 // ****************************************************************************
 
-void 
+void
 QvisSpectrumBar::mouseReleaseEvent(QMouseEvent *)
 {
     // If we're doing some paging, stop the timer.
@@ -2473,7 +2481,7 @@ QvisSpectrumBar::mouseReleaseEvent(QMouseEvent *)
 // ****************************************************************************
 // Method: QvisSpectrumBar::updateControlPoints
 //
-// Purpose: 
+// Purpose:
 //   Changes the active control point.
 //
 // Note:       Emits activeControlPointChanged signal.
@@ -2509,7 +2517,7 @@ QvisSpectrumBar::updateControlPoints()
 // ****************************************************************************
 // Method: QvisSpectrumBar::moveControlPointRedraw
 //
-// Purpose: 
+// Purpose:
 //   Moves a control point to a new position and redraws the controls.
 //
 // Arguments:
@@ -2574,7 +2582,7 @@ QvisSpectrumBar::moveControlPointRedraw(int index, float pos, bool redrawSpectru
 // ****************************************************************************
 // Method: QvisSpectrumBar::moveControlPoint
 //
-// Purpose: 
+// Purpose:
 //   Moves a control point in the specified manner.
 //
 // Arguments:
@@ -2614,7 +2622,7 @@ QvisSpectrumBar::moveControlPoint(int changeType)
         increment = 1. /(float)controlsArea.height();
         page_increment = (float)slider.height() * increment;
     }
-                 
+
     // Change the value by the appropriate amount
     float old_position = controlPoints->Position(index);
     float new_position = controlPoints->Position(index);
@@ -2662,7 +2670,7 @@ QvisSpectrumBar::moveControlPoint(int changeType)
 // ****************************************************************************
 // Method: QvisSpectrumBar::handlePaging
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called by the widget's timer in order
 //   to move the control point by paging.
 //
@@ -2670,7 +2678,7 @@ QvisSpectrumBar::moveControlPoint(int changeType)
 // Creation:   Wed Jan 3 11:29:46 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2692,14 +2700,14 @@ const ControlPoint ControlPointList::defaultControlPoint2 = {0, 1., {0., 0., 1.}
 // ****************************************************************************
 // Method: ControlPointList::ControlPointList
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ControlPointList class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 11:30:38 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ControlPointList::ControlPointList()
@@ -2707,7 +2715,7 @@ ControlPointList::ControlPointList()
     editable = true;
     nvals = 0;
     colorvals = NULL;
-    
+
     nels = 2;
     total_nels = CPLIST_INCREMENT;
     list = new ControlPoint[CPLIST_INCREMENT];
@@ -2720,14 +2728,14 @@ ControlPointList::ControlPointList()
 // ****************************************************************************
 // Method: ControlPointList::~ControlPointList
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ControlPointList class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 11:31:01 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ControlPointList::~ControlPointList()
@@ -2738,14 +2746,14 @@ ControlPointList::~ControlPointList()
 // ****************************************************************************
 // Method: ControlPointList::Clear
 //
-// Purpose: 
+// Purpose:
 //   Frees memory used by the class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 11:31:20 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2761,7 +2769,7 @@ ControlPointList::Clear()
 // ****************************************************************************
 // Method: ControlPointList::ColorValue
 //
-// Purpose: 
+// Purpose:
 //   Returns the color value for the specified index.
 //
 // Arguments:
@@ -2790,7 +2798,7 @@ ControlPointList::ColorValue(int index) const
 // ****************************************************************************
 // Method: ControlPointList::operator []
 //
-// Purpose: 
+// Purpose:
 //   Returns a reference to the specified control point.
 //
 // Arguments:
@@ -2802,7 +2810,7 @@ ControlPointList::ColorValue(int index) const
 // Creation:   Wed Jan 3 11:32:24 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const ControlPoint &
@@ -2817,7 +2825,7 @@ ControlPointList::operator [](int index) const
 // ****************************************************************************
 // Method: ControlPointList::Position
 //
-// Purpose: 
+// Purpose:
 //   Returns the position of the specified control point.
 //
 // Arguments:
@@ -2829,7 +2837,7 @@ ControlPointList::operator [](int index) const
 // Creation:   Wed Jan 3 11:33:12 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 float
@@ -2844,7 +2852,7 @@ ControlPointList::Position(int index) const
 // ****************************************************************************
 // Method: ControlPointList::SetPosition
 //
-// Purpose: 
+// Purpose:
 //   Sets the position of a control point.
 //
 // Arguments:
@@ -2855,7 +2863,7 @@ ControlPointList::Position(int index) const
 // Creation:   Wed Jan 3 11:34:02 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2868,7 +2876,7 @@ ControlPointList::SetPosition(int index, float pos)
 // ****************************************************************************
 // Method: ControlPointList::NumControlPoints
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of control points.
 //
 // Returns:    The number of control points.
@@ -2877,7 +2885,7 @@ ControlPointList::SetPosition(int index, float pos)
 // Creation:   Wed Jan 3 11:34:49 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -2889,7 +2897,7 @@ ControlPointList::NumControlPoints() const
 // ****************************************************************************
 // Method: ControlPointList::NumColorValues
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of color values.
 //
 // Returns:    The number of color values.
@@ -2898,7 +2906,7 @@ ControlPointList::NumControlPoints() const
 // Creation:   Wed Jan 3 11:35:25 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -2910,7 +2918,7 @@ ControlPointList::NumColorValues() const
 // ****************************************************************************
 // Method: ControlPointList::CanBeEdited
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the control point list can be edited.
 //
 // Returns:    Whether or not the control point list can be edited.
@@ -2919,7 +2927,7 @@ ControlPointList::NumColorValues() const
 // Creation:   Wed Jan 3 11:36:10 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2931,7 +2939,7 @@ ControlPointList::CanBeEdited() const
 // ****************************************************************************
 // Method: ControlPointList::SetEditMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the list's edit mode.
 //
 // Arguments:
@@ -2941,7 +2949,7 @@ ControlPointList::CanBeEdited() const
 // Creation:   Wed Jan 3 11:36:44 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2953,7 +2961,7 @@ ControlPointList::SetEditMode(bool val)
 // ****************************************************************************
 // Method: ControlPointList::SetColor
 //
-// Purpose: 
+// Purpose:
 //   Sets the color for the specified control point.
 //
 // Arguments:
@@ -2968,7 +2976,7 @@ ControlPointList::SetEditMode(bool val)
 // Modifications:
 //    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //    Added alpha support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2986,7 +2994,7 @@ ControlPointList::SetColor(int index, float r, float g, float b, float a)
 // ****************************************************************************
 // Method: ControlPointList::SetColorValues
 //
-// Purpose: 
+// Purpose:
 //   Sets the color values for the list.
 //
 // Arguments:
@@ -2999,10 +3007,10 @@ ControlPointList::SetColor(int index, float r, float g, float b, float a)
 // Creation:   Wed Jan 3 11:38:11 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 ControlPointList::SetColorValues(const float *colors, int ncolors)
 {
     // If there are already raw colors in the list, free them.
@@ -3026,7 +3034,7 @@ ControlPointList::SetColorValues(const float *colors, int ncolors)
 // Creation:   Wed Jan 3 11:39:19 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3061,7 +3069,7 @@ ControlPointList::Add(const ControlPoint *cpt)
 // ****************************************************************************
 // Method: ControlPointList::Rank
 //
-// Purpose: 
+// Purpose:
 //   Finds the index of the control point with a given rank.
 //
 // Arguments:
@@ -3073,7 +3081,7 @@ ControlPointList::Add(const ControlPoint *cpt)
 // Creation:   Wed Jan 3 11:40:44 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -3101,7 +3109,7 @@ ControlPointList::Rank(int rank) const
 // Creation:   Wed Jan 3 11:41:29 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3130,7 +3138,7 @@ ControlPointList::DeleteHighestRank()
 // ****************************************************************************
 // Method: ControlPointList::ChangeSelectedIndex
 //
-// Purpose: 
+// Purpose:
 //   Finds the control point that is being selected.
 //
 // Arguments:
@@ -3146,7 +3154,10 @@ ControlPointList::DeleteHighestRank()
 // Creation:   Wed Jan 3 11:42:16 PDT 2001
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Mon Jun 22 16:28:50 PDT 2020
+//    Modified how position is determined in the equal case, to fix selection
+//    of control points.  Was: (index*(1.-offset))+(offset*0.5)
+//
 // ****************************************************************************
 
 int
@@ -3167,7 +3178,7 @@ ControlPointList::ChangeSelectedIndex(float pos, float width, int equal)
         index = Rank(i);
 
         if(equal)
-            position = (index *(1. - offset)) +(offset * 0.5);
+            position = (index *offset) +(offset * 0.5);
         else
             position = list[index].position;
 
@@ -3179,20 +3190,20 @@ ControlPointList::ChangeSelectedIndex(float pos, float width, int equal)
         }
     }
 
-    // If we found a control point, adjust the ranks so it 
+    // If we found a control point, adjust the ranks so it
     // has the highest rank.
     if(retval >= 0)
     {
         GiveHighestRank(retval);
     }
-    
+
     return retval;
 }
 
 // ****************************************************************************
 // Method: ControlPointList::GiveHighestRank
 //
-// Purpose: 
+// Purpose:
 //   Gives the highest rank to the specified control point.
 //
 // Arguments:
@@ -3202,7 +3213,7 @@ ControlPointList::ChangeSelectedIndex(float pos, float width, int equal)
 // Creation:   Wed Jan 3 11:44:43 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3221,14 +3232,14 @@ ControlPointList::GiveHighestRank(int index)
 // ****************************************************************************
 // Method: ControlPointList::Sort
 //
-// Purpose: 
+// Purpose:
 //   Sorts the list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 3 11:45:34 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3240,7 +3251,7 @@ ControlPointList::Sort()
 // ****************************************************************************
 // Function: ControlPointCompare
 //
-// Purpose: 
+// Purpose:
 //   Compare two control_pt variables. This is used as a callback for qsort.
 //
 // Arguments:
@@ -3252,7 +3263,7 @@ ControlPointList::Sort()
 // Creation:   Wed Jan 3 11:45:59 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static int

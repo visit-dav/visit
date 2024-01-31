@@ -22,9 +22,6 @@
 #include <limits>
 #include <set>
 
-#if defined (_MSC_VER) && (_MSC_VER < 1800) && !defined(round)
-inline double round(double x) {return (x-floor(x)) > 0.5 ? ceil(x) : floor(x);}
-#endif
 
 enum blendDirection {FRONT_TO_BACK = 0, BACK_TO_FRONT = 1};
 

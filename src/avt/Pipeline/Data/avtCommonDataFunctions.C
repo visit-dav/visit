@@ -21,6 +21,7 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
@@ -116,6 +117,11 @@ void GetDataMajorEigenvalueRange(vtkDataSet *, double *, const char *, bool, boo
 //    Fixed the code to find extents of transformed rect grids -- it was
 //    only working for special cases before.  I also made it clearer.
 //
+//    Kathleen Biagas, Friday June 30, 2023
+//    VTK9 change: To preserve previsous behavior, call GetCellsBounds for
+//    PolyData instead of GetBounds.  The latter now returns extents of the
+//    points set (which may not be fully connected to cells).
+//
 // ****************************************************************************
 
 void 
@@ -155,8 +161,19 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
         else if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
         {
             double bounds[6];
-            ds->GetBounds(bounds);
-
+#if LIB_VERSION_GE(VTK,9,1,0)
+            // VTK-9, GetBounds for PolyData now returns extents of the
+            // point set, not the geometry so we must use GetCellsBounds
+            // here to preserve previous behavior
+            if (ds->GetDataObjectType() == VTK_POLY_DATA)
+            {
+                ((vtkPolyData*)ds)->GetCellsBounds(bounds);
+            }
+            else
+#endif
+            {
+                ds->GetBounds(bounds);
+            }
             //
             // If we have gotten extents from another data rep, then merge the
             // extents.  Otherwise copy them over.
@@ -351,12 +368,15 @@ CGetDataExtents(avtDataRepresentation &data, void *g, bool &success)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numCells = (VISIT_LONG_LONG*)sum;
+    long long *numCells = (long long*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -449,6 +469,12 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    being converted to polydata properly. Maybe this routine should use the
 //    facelist filter.
 //
+//    Kathleen Biagas, Fri Aug 28 07:46:40 PDT 2020
+//    Use vtkGeometryFilter, which handles higher-order elements.
+//
+//    Kathleen Biagas, Wed Apr 13 16:25:44 PDT 2022
+//    Don't use vtkGeometryFilter if input has no cells.
+//
 // ****************************************************************************
 
 void
@@ -460,55 +486,48 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
     }
 
     vtkDataSet *ds = data.GetDataVTK();
-    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
+        ds->GetNumberOfCells() > 0)
     {
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
-        vtkPolyData *out_pd = vtkPolyData::New();
-        int avtTopoDim = 2;
+#if LIB_VERSION_GE(VTK,9,1,0)
+        // KSB 7-20-22 look for singleton PointData arrays (constant-expressions).
+        // With VTK-9.1, vtkGeometryFilter will convert these single-tuple PD arrays
+        // into nPoints-tuples PD arrays (via CopyAllocate and CopyData vs old
+        // behavior of PassData for PointData).
+        // Easiest fix at the moment seems to be to remove the singletons before using
+        // vtkGeometryFilter and replace them aftewards.
 
-        if (dataAndKey)
+        std::vector<vtkDataArray*> singletons;
+        vtkPointData *pd = ds->GetPointData();
+        vtkIdType nPts = ds->GetNumberOfPoints();
+        if (nPts > 1)
         {
-            int intVal;
-            if (sscanf((char*)dataAndKey, "avtTopoDim=%d", &intVal) == 1)
-                avtTopoDim = intVal;
-        }
-
-        out_pd->SetPoints(ugrid->GetPoints());
-        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
-        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
-        out_pd->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
-        vtkIdType ncells = ugrid->GetNumberOfCells();
-        out_pd->Allocate(ncells);
-        for (vtkIdType i = 0 ; i < ncells ; i++)
-        {
-            int cellTopoDim = ugrid->GetCell(i)->GetCellDimension();
-            if (cellTopoDim > avtTopoDim)
+            for (int i = 0; i < pd->GetNumberOfArrays(); ++i)
             {
-                vtkIdType *pts = NULL;
-                static bool issuedWarning = false;
-                if (!issuedWarning)
+                vtkDataArray *array = pd->GetArray(i);
+                if (array->GetNumberOfTuples() == 1)
                 {
-                    avtCallback::IssueWarning("Encountered a cell of topological "
-                        "dimension greater than the underlying dataset in which "
-                        "it is embedded. This occurs most often when there is an "
-                        "error in the file format reader. This cell and any others "
-                        "like it are being discarded.  Please contact a VisIt "
-                        "developer to resolve this issue.  (This warning will be "
-                        "issued only once per session.)");
-                    issuedWarning = true;
+                    // ensure the array isn't deleted when removed from pd
+                    array->Register(NULL);
+                    singletons.push_back(array);
+                    pd->RemoveArray(i);
                 }
-                out_pd->InsertNextCell(VTK_EMPTY_CELL, 0, pts);
-            }
-            else
-            {
-                vtkIdType *pts, npts;
-                ugrid->GetCellPoints(i, npts, pts);
-                out_pd->InsertNextCell(ugrid->GetCellType(i), npts, pts);
             }
         }
+#endif
+        vtkNew<vtkGeometryFilter> geoFilter;
+        geoFilter->SetInputData(ds);
+        geoFilter->Update();
+        vtkPolyData *out_pd = geoFilter->GetOutput();
+        out_pd->Register(NULL);
+
+#if LIB_VERSION_GE(VTK,9,1,0)
+        for(size_t i = 0; i < singletons.size(); ++i)
+            out_pd->GetPointData()->AddArray(singletons[i]); 
+
+#endif
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
-        out_pd->Delete();
     }
 }
 
@@ -2876,12 +2895,15 @@ CGetVariableCentering(avtDataRepresentation &data, void *arg, bool &success)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
+    long long *numNodes = (long long*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -2970,12 +2992,15 @@ CGetNumberOfOriginalNodes(avtDataRepresentation &data, void *arg, bool &)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numZones = (VISIT_LONG_LONG*)sum;
+    long long *numZones = (long long*)sum;
     //
     // realZones  stored in numZones[0]
     // ghostZones stored in numZones[1]
@@ -3103,12 +3128,15 @@ CGetNumberOfRealOriginalZones(avtDataRepresentation &data, void *arg, bool &dumm
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
+    long long *numNodes = (long long*)sum;
     //
     // realNodes  stored in numNodes[0]
     // ghostNodes stored in numNodes[1]
@@ -3677,10 +3705,13 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
 //    Brad Whitlock, Tue Jul 21 13:01:47 PDT 2015
 //    Support non-standard memory layout.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 template <typename Array> static void
-PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
+PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, long long *numVals)
 {
     double mult = nbins/(max-min);  // This is actually needed to help the compiler.  2X difference.
     for (int i = 0 ; i < ntups ; i++)
@@ -3727,7 +3758,7 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     int nbins = static_cast<int>(cha->numVals.size());
     double min = cha->min;
     double max = cha->max;
-    VISIT_LONG_LONG *numVals = &(cha->numVals[0]);
+    long long *numVals = &(cha->numVals[0]);
  
     if(arr->HasStandardMemoryLayout())
     {
@@ -3746,3 +3777,168 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     }
 }
 
+
+// ****************************************************************************
+//  Method: CGetTopologicalDimension
+//
+//  Purpose:
+//      Calculates topological dimension.
+//
+//  Arguments:
+//    data      The data from which to calculate topological dimension.
+//    info      Contains the reported topo dim and a place to store the
+//              actual topo dim.
+//    success   Indicates success or failure of this operation.
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   April 5, 2022
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jun 14 11:36:07 PDT 2022
+//    Add logic for structured grids embedded in higher spatial dimensions.
+// ****************************************************************************
+
+void 
+CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success)
+{
+    // for mixed topology data, this will report the largest
+    if (data.Valid())
+    {
+        typedef struct {const int *repDim; int *dim;} tmpstruct;
+        const int *reportedDim = ((tmpstruct*)info)->repDim;
+        int *newDim = ((tmpstruct*)info)->dim;
+
+        vtkDataSet *ds = data.GetDataVTK();
+
+        if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            int localDim = -1;
+            vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(ds);
+            if (ug->GetNumberOfPoints() > 0)
+            {
+                if (ug->GetNumberOfCells() == 0)
+                {
+                    // assume point mesh
+                    localDim = 0;
+                }
+                else
+                {
+                    vtkCell *cell = ug->GetCell(0);
+                    localDim = cell->GetCellDimension();
+                    // 3 is max, so stop if we reach it
+                    for(vtkIdType i = 1; i < ug->GetNumberOfCells() && localDim < 3; ++i)
+                    {
+                        cell = ug->GetCell(i);
+                        if(cell->GetCellDimension() > localDim)
+                            localDim = cell->GetCellDimension();
+                    }
+                }
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+            else
+            {
+                success |= false;
+            }
+        }
+        else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            int localDim = -1;
+            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
+            int *dims = sg->GetDimensions();
+            if (dims[0] > 1 && dims[1] > 1 && dims[2] > 1)
+            {
+                localDim = 3; // All 3 dims > 1 node thick
+            }
+            else if ((dims[0] == 1 && dims[1] > 1 && dims[2] > 1) ||
+                     (dims[1] == 1 && dims[0] > 1 && dims[2] > 1) ||
+                     (dims[2] == 1 && dims[0] > 1 && dims[1] > 1))
+            {
+                localDim = 2; // One dim is just 1 node thick
+            }
+            else if ((dims[0] == 1 && dims[1] == 1 && dims[2] > 1) ||
+                     (dims[0] == 1 && dims[2] == 1 && dims[1] > 1) ||
+                     (dims[1] == 1 && dims[2] == 1 && dims[0] > 1))
+            {
+                localDim = 1; // Two dims are just one node thick
+            }
+            else
+            {
+                success |= false;
+            }
+            if(localDim != -1)
+            {
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+        }
+        else if (ds->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+            int localDim = -1;
+            if(pd->GetNumberOfPolys() > 0 || pd->GetNumberOfStrips() > 0)
+            {
+                localDim = 2;
+            }
+            else if(pd->GetNumberOfLines() > 0)
+            {
+                localDim = 1;
+            }
+            else if(pd->GetNumberOfVerts() > 0)
+            {
+                localDim = 0;
+            }
+            else
+            {
+                success |= false;
+            }
+            if(localDim != -1)
+            {
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+        }
+        else
+        {
+            // assume reported dim is correct
+            success = true;
+            *newDim = *reportedDim;
+        }
+    }
+    else
+    {
+        success = false;
+    }
+}

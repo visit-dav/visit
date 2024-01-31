@@ -5,6 +5,7 @@
 #ifndef PY_AXISATTRIBUTES_H
 #define PY_AXISATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AxisAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyAxisAttributes_Wrap(const AxisAttributes *attr);
 void VISITPY_API           PyAxisAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxisAttributes_SetDefaults(const AxisAttributes *atts);
 std::string VISITPY_API    PyAxisAttributes_GetLogString();
-std::string VISITPY_API    PyAxisAttributes_ToString(const AxisAttributes *, const char *);
+std::string VISITPY_API    PyAxisAttributes_ToString(const AxisAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAxisAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAxisAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAxisAttributes_methods[AXISATTRIBUTES_NMETH];

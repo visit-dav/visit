@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ***************************************************************************
-//                              avtRectFileFormat.C                           
+//  avtRectFileFormat.C
 //
 //  Purpose:  Sample database which reads multi-domain multi-timestep files
 //
@@ -29,27 +29,16 @@
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
+#include <FileFunctions.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
-#include "visit_gzstream.h"
+#include <visit_gzstream.h>
 
 
 using std::vector;
 using std::string;
 
-static string GetDirName(const char *path);
-
-#if defined(_WIN32)
-// Define >> for strings since Windows does not seem to have it.
-ifstream &operator >> (ifstream &s, string &str)
-{
-    char tmp[1000];
-    s >> tmp;
-    str = string(tmp);
-    return s;
-}
-#endif
 
 // ****************************************************************************
 //  Constructor:  avtRectFileFormat::avtRectFileFormat
@@ -63,11 +52,16 @@ ifstream &operator >> (ifstream &s, string &str)
 //  Modifications:
 //    Mark C. Miller, Thu Feb 12 01:18:59 PST 2009
 //    Removed setting of gridType here. It is set in ReadVizFile
+//
+//    Kathleen Biagas, Mon Sep 14, 2020
+//    Use FileFunctions::Dirname for correct processing on Windows.
+//
 // ****************************************************************************
+
 avtRectFileFormat::avtRectFileFormat(const char *fname)
     : avtMTMDFileFormat(fname)
 {
-    dirname = GetDirName(fname);
+    dirname = FileFunctions::Dirname(string(fname));
     filename = fname;
 
     visit_ifstream ifile(filename.c_str());
@@ -166,7 +160,12 @@ avtRectFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //
 //    Mark C. Miller, Thu Feb 12 11:09:38 PST 2009
 //    Handle 1D (and 2D though it was not tested) case of grid
+//
+//    Kathleen Biagas, Mon Sep 14, 2020
+//    Use VISIT_SLASH_STRING when constructing paths.
+//
 // ****************************************************************************
+
 vtkDataSet *
 avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
 {
@@ -236,7 +235,8 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     // Open the file
     //
     char fname[256];
-    sprintf(fname, "%sgrid/domain%04d", dirname.c_str(), dom);
+    sprintf(fname, "%s%sgrid%sdomain%04d", dirname.c_str(), VISIT_SLASH_STRING,
+            VISIT_SLASH_STRING, dom);
     ifstream in(fname, ios::in);
     if (in.fail())
     {
@@ -246,7 +246,7 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     //
     // Create the VTK objects and connect them up.
     //
-    vtkStructuredGrid    *sgrid   = vtkStructuredGrid::New(); 
+    vtkStructuredGrid    *sgrid   = vtkStructuredGrid::New();
     vtkPoints            *points  = vtkPoints::New();
     sgrid->SetPoints(points);
     points->Delete();
@@ -302,7 +302,12 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  7, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Sep 14, 2020
+//    Use VISIT_SLASH_STRING when constructing paths.
+//
 // ****************************************************************************
+
 vtkDataArray *
 avtRectFileFormat::GetVar(int ts, int dom, const char *name)
 {
@@ -314,8 +319,9 @@ avtRectFileFormat::GetVar(int ts, int dom, const char *name)
             // Open the file
             //
             char fname[256];
-            sprintf(fname, "%s%s%04d/domain%04d", dirname.c_str(),
-                    basename.c_str(), ts, dom);
+            sprintf(fname, "%s%s%s%04d%sdomain%04d", dirname.c_str(),
+                    VISIT_SLASH_STRING, basename.c_str(), ts,
+                    VISIT_SLASH_STRING, dom);
 
             ifstream in(fname, ios::in);
             if (!in)
@@ -359,7 +365,7 @@ avtRectFileFormat::GetVar(int ts, int dom, const char *name)
 //    Returns the actual cycle numbers for each time step.
 //
 //  Arguments:
-//   cycles      the output vector of cycle numbers 
+//   cycles      the output vector of cycle numbers
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  7, 2003
@@ -621,39 +627,3 @@ avtRectFileFormat::ReadVizFile(istream &in)
     }
 }
 
-// ****************************************************************************
-//  Method:  GetDirName
-//
-//  Purpose:
-//    Returns the directory from a full path name
-//
-//  Arguments:
-//    path       the full path name
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    April  7, 2003
-//
-// ****************************************************************************
-string 
-GetDirName(const char *path)
-{
-    string dir = "";
-
-    int len = strlen(path);
-    const char *last = path + (len-1);
-    while (*last != '/' && last > path)
-    {
-        last--;
-    }
-
-    if (*last != '/')
-    {
-        return "";
-    }
-
-    char str[1024];
-    strcpy(str, path);
-    str[last-path+1] = '\0';
-
-    return str;
-}

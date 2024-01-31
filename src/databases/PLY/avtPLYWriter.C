@@ -46,7 +46,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtPLYWriter::avtPLYWriter(DBOptionsAttributes *atts)
+avtPLYWriter::avtPLYWriter(const DBOptionsAttributes *atts)
 {
     doBinary = atts->GetBool("Binary format");
     doColor = atts->GetBool("Output colors");
@@ -222,6 +222,11 @@ avtPLYWriter::GetCombineMode(const std::string &) const
 // Creation:    April 26, 2013
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
+// 
+//   Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//   Uses color table utility methods to improve performance.
 //
 //****************************************************************************
 
@@ -229,28 +234,24 @@ vtkScalarsToColors *
 avtPLYWriter::GetColorTable()
 {
     const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
-    int nCT = colorTables->GetNumColorTables();
-    for (int i=0; i<nCT; i++)
+    const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
+    if (table)
     {
-        if (colorTables->GetNames()[i] == colorTable)
+        vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+
+        double *vals = new double[3*table->GetNumControlPoints()];
+        for (int i=0; i<table->GetNumControlPoints(); i++)
         {
-            const ColorControlPointList &table = colorTables->GetColorTables(i);
-            vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
-
-            double *vals = new double[3*table.GetNumControlPoints()];
-            for (int j=0; j<table.GetNumControlPoints(); j++)
-            {
-                const ColorControlPoint &pt = table.GetControlPoints(j);
-                vals[j*3 + 0] = pt.GetColors()[0]/255.0;
-                vals[j*3 + 1] = pt.GetColors()[1]/255.0;
-                vals[j*3 + 2] = pt.GetColors()[2]/255.0;
-            }
-            
-            lut->BuildFunctionFromTable(colorTableMin, colorTableMax, table.GetNumControlPoints(), vals);
-            delete [] vals;
-
-            return lut;
+            const ColorControlPoint &pt = table->GetControlPoints(i);
+            vals[i*3 + 0] = pt.GetColors()[0]/255.0;
+            vals[i*3 + 1] = pt.GetColors()[1]/255.0;
+            vals[i*3 + 2] = pt.GetColors()[2]/255.0;
         }
+        
+        lut->BuildFunctionFromTable(colorTableMin, colorTableMax, table->GetNumControlPoints(), vals);
+        delete [] vals;
+
+        return lut;
     }
     return NULL;
 }

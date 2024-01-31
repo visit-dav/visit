@@ -129,7 +129,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   Changed 'Termination Criteria' to 'Termination Criterion'
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //   Added number of steps as a termination criterion.
@@ -235,13 +235,16 @@ QvisIntegralCurveWindow::CreateWindowContents()
 //   Kathleen Biagas, Fri Nov  8 09:16:34 PST 2019
 //   Some widgets moved from Integration tab to reduce window height.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the source group box.
@@ -250,7 +253,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(sourceGroup, 0, 0, 4, 2);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
-    sourceLayout->setMargin(5);
+    sourceLayout->setContentsMargins(5,5,5,5);
     sourceLayout->setSpacing(10);
 
     // Create the source type combo box.
@@ -274,7 +277,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(geometryGroup, 1, 0, 1, 4);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
-    geometryLayout->setMargin(5);
+    geometryLayout->setContentsMargins(5,5,5,5);
     geometryLayout->setSpacing(10);
     geometryLayout->setRowStretch(5,10);
 
@@ -429,7 +432,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(samplingGroup, 2, 0, 1, 6);
 
     QGridLayout *samplingLayout = new QGridLayout(samplingGroup);
-    samplingLayout->setMargin(5);
+    samplingLayout->setContentsMargins(5,5,5,5);
     samplingLayout->setSpacing(10);
     samplingLayout->setRowStretch(5,10);
 
@@ -444,19 +447,29 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingTypeButtonGroup->addButton(samplingTypeButtons[1], 1);
     samplingLayout->addWidget(samplingTypeButtons[0], sRow, 1);
     samplingLayout->addWidget(samplingTypeButtons[1], sRow, 2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(samplingTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(samplingTypeChanged(int)));
+#else
+    connect(samplingTypeButtonGroup, SIGNAL(idClicked(int)), this, SLOT(samplingTypeChanged(int)));
+#endif
+
+    sRow++;
 
     fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
-    samplingLayout->addWidget(fillLabel, sRow, 3);
+    samplingLayout->addWidget(fillLabel, sRow, 0);
     fillButtonGroup = new QButtonGroup(samplingGroup);
     fillButtons[0] = new QRadioButton(tr("Boundary"), samplingGroup);
     fillButtons[1] = new QRadioButton(tr("Interior"), samplingGroup);
     fillButtons[0]->setChecked(true);
     fillButtonGroup->addButton(fillButtons[0], 0);
     fillButtonGroup->addButton(fillButtons[1], 1);
-    samplingLayout->addWidget(fillButtons[0], sRow, 4);
-    samplingLayout->addWidget(fillButtons[1], sRow, 5);
+    samplingLayout->addWidget(fillButtons[0], sRow, 1);
+    samplingLayout->addWidget(fillButtons[1], sRow, 2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
+#else
+    connect(fillButtonGroup, SIGNAL(idClicked(int)), this, SLOT(fillChanged(int)));
+#endif
 
     sRow++;
 
@@ -508,6 +521,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDensity[1], sRow, 3);
     samplingLayout->addWidget(sampleDensityLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDensity[2], sRow, 5);
+
     sRow++;
 
     sampleDistanceLabel[0] = new QLabel(tr("Sample distance 0"), samplingGroup);
@@ -525,6 +539,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDistance[1], sRow, 3);
     samplingLayout->addWidget(sampleDistanceLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDistance[2], sRow, 5);
+
     sRow++;
 
     // Create the field group box.
@@ -533,7 +548,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
-    fieldLayout->setMargin(5);
+    fieldLayout->setContentsMargins(5,5,5,5);
     fieldLayout->setSpacing(10);
 
 
@@ -545,7 +560,6 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -579,7 +593,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(integrationGroup, 7, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
     // Create the direction of integration.
@@ -601,7 +615,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Runge-Kutta-Dormand-Prince (RKDP)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
@@ -631,7 +645,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
     integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
-    toleranceLayout->setMargin(5);
+    toleranceLayout->setContentsMargins(5,5,5,5);
     toleranceLayout->setSpacing(10);
 
     // Create the relative tolerance text field.
@@ -661,7 +675,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationLayout->addWidget(terminationGroup, 12, 0, 2, 2);
 //    integrationLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
-    terminationLayout->setMargin(5);
+    terminationLayout->setContentsMargins(5,5,5,5);
     terminationLayout->setSpacing(10);
 
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
@@ -715,18 +729,21 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
 //   Add color by correlation distance.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -734,21 +751,23 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2,10);
 
     // Create the data value.
-    dataLayout->addWidget(new QLabel(tr("Data value"), dataGroup), 0, 0);
+    dataLayout->addWidget(new QLabel(tr("Color by"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"), IntegralCurveAttributes::Solid);
-    dataValueComboBox->addItem(tr("Seed point ID"), IntegralCurveAttributes::SeedPointID);
-    dataValueComboBox->addItem(tr("Speed"), IntegralCurveAttributes::Speed);
+    dataValueComboBox->addItem(tr("Solid Color"), IntegralCurveAttributes::Solid);
+    dataValueComboBox->addItem(tr("Random"), IntegralCurveAttributes::Random);
+    dataValueComboBox->addItem(tr("Seed Point ID"), IntegralCurveAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Vector magnitude"), IntegralCurveAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), IntegralCurveAttributes::Vorticity);
     dataValueComboBox->addItem(tr("Arc length"), IntegralCurveAttributes::ArcLength);
-    dataValueComboBox->addItem(tr("Absolute time"), IntegralCurveAttributes::TimeAbsolute);
-    dataValueComboBox->addItem(tr("Relative time"), IntegralCurveAttributes::TimeRelative);
-    dataValueComboBox->addItem(tr("Ave. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
+    dataValueComboBox->addItem(tr("Absolute integration time"), IntegralCurveAttributes::TimeAbsolute);
+    dataValueComboBox->addItem(tr("Relative integration time"), IntegralCurveAttributes::TimeRelative);
+    dataValueComboBox->addItem(tr("Avg. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
     dataValueComboBox->addItem(tr("Correlation distance"), IntegralCurveAttributes::CorrelationDistance);
     dataValueComboBox->addItem(tr("Closed Curve"), IntegralCurveAttributes::ClosedCurve);
     dataValueComboBox->addItem(tr("Difference"), IntegralCurveAttributes::Difference);
     dataValueComboBox->addItem(tr("Variable"), IntegralCurveAttributes::Variable);
+    dataValueComboBox->addItem(tr("Variable at Seed"), IntegralCurveAttributes::VariableAtSeed);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);
@@ -786,7 +805,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(cleanupGrp, 3, 0);
 
     QGridLayout *cleanupLayout = new QGridLayout(cleanupGrp);
-    cleanupLayout->setMargin(5);
+    cleanupLayout->setContentsMargins(5,5,5,5);
     cleanupLayout->setSpacing(10);
 
     // Create the cleanup value.
@@ -813,7 +832,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(cropGrp, 4, 0);
 
     QGridLayout *cropLayout = new QGridLayout(cropGrp);
-    cropLayout->setMargin(5);
+    cropLayout->setContentsMargins(5,5,5,5);
     cropLayout->setSpacing(10);
 
     // Create the crop value.
@@ -861,7 +880,11 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     icButtonGroup->addButton(pathlineButton, 1);
     icGrpLayout->addWidget(streamlineButton, 1, 0);
     icGrpLayout->addWidget(pathlineButton, 2, 0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#else
+    connect(icButtonGroup, SIGNAL(idClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#endif
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
@@ -909,7 +932,11 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineCMFEButtonGroup->addButton(posButton, 1);
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#else
+    connect(pathlineCMFEButtonGroup, SIGNAL(idClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#endif
 }
 
 // ****************************************************************************
@@ -942,7 +969,7 @@ void
 QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
@@ -1038,27 +1065,22 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 4, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 4, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 5, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 6, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 7, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 7, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 8, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
+
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 9, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 6, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 9, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 6, 2);
 }
 
 // ****************************************************************************
@@ -1097,7 +1119,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //   Removed the accurate distance calculation option.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the integral curves plots.
@@ -1377,7 +1399,8 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             dataValueComboBox->setCurrentIndex(int(atts->GetDataValue()));
             dataValueComboBox->blockSignals(false);
 
-            if (atts->GetDataValue() == IntegralCurveAttributes::Variable)
+            if (atts->GetDataValue() == IntegralCurveAttributes::Variable ||
+                atts->GetDataValue() == IntegralCurveAttributes::VariableAtSeed)
             {
                 dataVariable->setEnabled(true);
                 dataVariable->show();
@@ -1507,12 +1530,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             {
               atts->SetIntegrationType(IntegralCurveAttributes::M3DC12DIntegrator);
               integrationType->setCurrentIndex(IntegralCurveAttributes::M3DC12DIntegrator);
-              UpdateIntegrationAttributes();
-            }
-            else if (atts->GetFieldType() == IntegralCurveAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(IntegralCurveAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(IntegralCurveAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
             else if (atts->GetIntegrationType() == IntegralCurveAttributes::M3DC12DIntegrator)
@@ -2044,7 +2061,6 @@ QvisIntegralCurveWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case IntegralCurveAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);
@@ -2134,7 +2150,7 @@ QvisIntegralCurveWindow::UpdateIntegrationAttributes()
 // Modifications:
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 // ****************************************************************************
 
@@ -2145,8 +2161,8 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
                             IntegralCurveAttributes::LoadOnDemand);
     bool useStaticDomains = (atts->GetParallelizationAlgorithmType() ==
                              IntegralCurveAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
-                           IntegralCurveAttributes::MasterSlave);
+    bool useManagerWorker = (atts->GetParallelizationAlgorithmType() ==
+                           IntegralCurveAttributes::ManagerWorker);
 
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -2166,7 +2182,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
         maxSLCountLabel->show();
         maxSLCount->show();
     }
-    else if (useMasterSlave)
+    else if (useManagerWorker)
     {
         maxDomainCacheLabel->show();
         maxDomainCache->show();
@@ -2205,7 +2221,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
 //   Use new methods.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the integral curves plots.

@@ -19,7 +19,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtParDomICAlgorithm.h"
 #include "avtPODICAlgorithm.h"
 #include "avtCommDSOnDemandICAlgorithm.h"
-#include "avtMasterSlaveICAlgorithm.h"
+#include "avtManagerWorkerICAlgorithm.h"
 #include "avtVariableCache.h"
 #include <visitstream.h>
 
@@ -57,7 +57,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPNektar++Field.h>
 #include <avtIVPNektar++TimeVaryingField.h>
 #endif
-#include <avtIVPNIMRODField.h>
 #include <avtIVPFlashField.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
@@ -968,7 +967,7 @@ avtPICSFilter::SetPathlines(bool pathlines,
 // Modifications:
 //
 //   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
-//   Add workGroupSize for masterSlave algorithm.
+//   Add workGroupSize for managerWorker algorithm.
 //
 // ****************************************************************************
 
@@ -1081,7 +1080,7 @@ AlgorithmToString(int algo)
         static const char *s = "Communicate domains";
         return s;
     }
-    if (algo == PICS_PARALLEL_MASTER_SLAVE)
+    if (algo == PICS_PARALLEL_MANAGER_WORKER)
     {
         static const char *s = "Parallelize over curves and domains";
         return s;
@@ -1285,7 +1284,7 @@ avtPICSFilter::CheckOnDemandViability(void)
 //    In serial mode, set the cacheQLen to be the total number of domains.
 //
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
-//   Add MasterSlave method.
+//   Add ManagerWorker method.
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.
@@ -1337,9 +1336,9 @@ avtPICSFilter::Execute(void)
     /*
     else if (selectedAlgo == PICS_PARALLEL_COMM_DOMAINS)
         icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
-    else if (selectedAlgo == PICS_PARALLEL_MASTER_SLAVE)
+    else if (selectedAlgo == PICS_PARALLEL_MANAGER_WORKER)
     {
-        icAlgo = avtMasterSlaveICAlgorithm::Create(this,
+        icAlgo = avtManagerWorkerICAlgorithm::Create(this,
                                                    maxCount,
                                                    PAR_Rank(),
                                                    PAR_Size(),
@@ -2175,8 +2174,6 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 
 #endif
       }
-      else if( fieldType == PICS_FIELD_NIMROD )
-         return new avtIVPNIMRODField(ds, *locator);
 
       else if (isFace) 
       {
@@ -3289,17 +3286,6 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Add in the other fields that the Nektar++ Interpolation needs
 
         // Assume the user has selected velocity as the primary variable.
-    }
-    else if ( fieldType == PICS_FIELD_NIMROD )
-    {
-        // Add in the other fields that the NIMROD Interpolation needs
-
-        // Assume the user has selected B as the primary variable.
-        // Which is ignored.
-
-        // Fourier series grid and data stored on the original mesh
-//        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
-//        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
     }
     else if ( fieldType == PICS_FIELD_FLASH )
     {

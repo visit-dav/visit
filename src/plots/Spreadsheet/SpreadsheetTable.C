@@ -40,7 +40,7 @@ bool operator < (const QSize &a, const QSize &b)
 //   This is a subclass of QAbstractItemModel that lets us show vtkDataArray
 //   data in Qt's item view classes. We use QTableView for the SpreadSheet plot.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 14:43:57 PDT 2008
@@ -65,7 +65,7 @@ public:
 
     void setCurveData(vtkRectilinearGrid *rgrid);
 
-    void setDataArray(vtkDataArray *arr, 
+    void setDataArray(vtkDataArray *arr,
                       vtkDataArray *ghosts, vtkDataArray *missingData,
                       int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex,
                       int base_index[3]);
@@ -106,7 +106,7 @@ private:
 // ****************************************************************************
 // Method: DataArrayModel::DataArrayModel
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the DataArrayModel class.
 //
 // Arguments:
@@ -142,15 +142,15 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
 // ****************************************************************************
 // Method: DataArrayModel::setCurveData
 //
-// Purpose: 
+// Purpose:
 //   Set curve data into the model.
 //
 // Arguments:
 //   grid : The rectilinear grid that contains the curve data.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Dec  1 16:25:54 PST 2010
@@ -193,7 +193,7 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
 // ****************************************************************************
 // Method: DataArrayModel::setDataArray
 //
-// Purpose: 
+// Purpose:
 //   Provides data to the model.
 //
 // Arguments:
@@ -206,9 +206,9 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
 //   base_index : The base_index values to add to i,j,k when displaying the
 //                indices that identify a cell or node.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 16:21:31 PDT 2008
@@ -226,7 +226,7 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
 // ****************************************************************************
 
 void
-DataArrayModel::setDataArray(vtkDataArray *arr, 
+DataArrayModel::setDataArray(vtkDataArray *arr,
     vtkDataArray *ghosts, vtkDataArray *missingData,
     int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex, int baseIndex[3])
 {
@@ -288,7 +288,7 @@ DataArrayModel::setDataArray(vtkDataArray *arr,
 // ****************************************************************************
 // Method: DataArrayModel::clearDataArray
 //
-// Purpose: 
+// Purpose:
 //   Clears out the model's data.
 //
 // Programmer: Brad Whitlock
@@ -320,7 +320,7 @@ DataArrayModel::clearDataArray()
 // ****************************************************************************
 // Method: DataArrayModel::addSelectedCellLabel
 //
-// Purpose: 
+// Purpose:
 //   Adds a selected cell label to the model.
 //
 // Arguments:
@@ -328,15 +328,15 @@ DataArrayModel::clearDataArray()
 //   col   : The column for the cell that will contain the label.
 //   label : The pick label to use.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 16:22:31 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -351,14 +351,14 @@ DataArrayModel::addSelectedCellLabel(int row, int col, const QString &label)
 // ****************************************************************************
 // Method: DataArrayModel::clearSelectedCellLabels
 //
-// Purpose: 
+// Purpose:
 //   Clears the selected cell labels.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 16:23:26 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -372,7 +372,7 @@ DataArrayModel::clearSelectedCellLabels()
 // ****************************************************************************
 // Method: DataArrayModel::numSelectedCellLabels
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of selected cell labels.
 //
 // Returns:    The number of selected cell labels.
@@ -381,7 +381,7 @@ DataArrayModel::clearSelectedCellLabels()
 // Creation:   Thu Aug 28 16:23:51 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -397,7 +397,7 @@ DataArrayModel::numSelectedCellLabels() const
 // ****************************************************************************
 // Method: DataArrayModel::columnCount
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of columns in the model.
 //
 // Returns:    The number of columns.
@@ -406,7 +406,7 @@ DataArrayModel::numSelectedCellLabels() const
 // Creation:   Thu Aug 28 16:24:18 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -418,7 +418,7 @@ DataArrayModel::columnCount(const QModelIndex &) const
 // ****************************************************************************
 // Method: DataArrayModel::rowCount
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of rows in the model.
 //
 // Returns:    The number of rows.
@@ -427,7 +427,7 @@ DataArrayModel::columnCount(const QModelIndex &) const
 // Creation:   Thu Aug 28 16:24:40 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -439,7 +439,7 @@ DataArrayModel::rowCount(const QModelIndex &) const
 // ****************************************************************************
 // Method: DataArrayModel::data
 //
-// Purpose: 
+// Purpose:
 //   Returns data for the specified model index.
 //
 // Arguments:
@@ -463,7 +463,7 @@ DataArrayModel::rowCount(const QModelIndex &) const
 //
 //   Gunther H. Weber, Mon Feb  2 15:42:07 PST 2009
 //   Use internalId() instead of internalPointer() to obtain global index of a
-//   spreadsheet element since latter does not work on Linux systems. 
+//   spreadsheet element since latter does not work on Linux systems.
 //
 //   Brad Whitlock, Wed Dec  1 16:39:13 PST 2010
 //   I added support for showing curve data.
@@ -485,7 +485,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             double value = 0.;
             if(id < dataArray->GetNumberOfTuples())
                 value = dataArray->GetTuple1(id);
-            QString s; s.sprintf(formatString.toStdString().c_str(), value);
+            QString s = QString::asprintf(formatString.toStdString().c_str(), value);
 
             // See if we need to prepend a pick letter.
             QSize key(index.row(), index.column());
@@ -507,7 +507,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             else
                 value = arr->GetTuple1(id);
 
-            QString s; s.sprintf(formatString.toStdString().c_str(), value);
+            QString s = QString::asprintf(formatString.toStdString().c_str(), value);
             return QVariant(s);
         }
     }
@@ -540,7 +540,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
     }
     else if(role == Qt::BackgroundRole)
     {
-        // This role returns the background brush: gray for ghost, 
+        // This role returns the background brush: gray for ghost,
         // pinkish gray for missing data, default otherwise.
         if(ghostArray != 0)
         {
@@ -557,7 +557,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             vtkIdType id = index.internalId();
 
             // By convention, the missing data array contains unsigned char.
-            const unsigned char *missingData = 
+            const unsigned char *missingData =
                 (const unsigned char *)missingDataArray->GetVoidPointer(0);
             if(id < missingDataArray->GetNumberOfTuples() && missingData[id] > 0)
                 return QVariant(QBrush(QColor(255,200,200)));
@@ -570,7 +570,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
 // ****************************************************************************
 // Method: DataArrayModel::headerData
 //
-// Purpose: 
+// Purpose:
 //   Returns a label for a particular header cell.
 //
 // Arguments:
@@ -580,7 +580,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
 //
 // Returns:    The header data for a particular header cell.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 16:25:59 PDT 2008
@@ -588,6 +588,9 @@ DataArrayModel::data(const QModelIndex &index, int role) const
 // Modifications:
 //   Brad Whitlock, Wed Dec  1 16:44:43 PST 2010
 //   I added a CurveData display mode.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace use of QString.asprintf with QString.setNum.
 //
 // ****************************************************************************
 
@@ -601,37 +604,37 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
         if(displayMode == SpreadsheetTable::SliceX)
         {
             if(orientation == Qt::Horizontal)
-                label.sprintf("k=%d", section + base_index[2]);
+                label = QString("k=%1").arg(section + base_index[2]);
             else
-                label.sprintf("j=%d", dims[1]-1-section + base_index[1]);
+                label = QString("j=%1").arg(dims[1]-1-section + base_index[1]);
         }
         else if(displayMode == SpreadsheetTable::SliceY)
         {
             if(orientation == Qt::Horizontal)
-                label.sprintf("k=%d", section + base_index[2]);
+                label = QString("k=%1").arg(section + base_index[2]);
             else
-                label.sprintf("i=%d", dims[0]-1-section + base_index[0]);
+                label = QString("i=%1").arg(dims[0]-1-section + base_index[0]);
         }
         else if(displayMode == SpreadsheetTable::SliceZ)
         {
             if(orientation == Qt::Horizontal)
-                label.sprintf("i=%d", section + base_index[0]);
+                label = QString("i=%1").arg(section + base_index[0]);
             else
-                label.sprintf("j=%d", dims[1]-1-section + base_index[1]);
+                label = QString("j=%1").arg(dims[1]-1-section + base_index[1]);
         }
         else if(displayMode == SpreadsheetTable::UCDCell)
         {
             if(orientation == Qt::Horizontal)
                 label = tr("cell value");
             else
-                label.sprintf("%d", section + base_index[0]);
+                label.setNum(section + base_index[0]);
         }
         else if(displayMode == SpreadsheetTable::UCDNode)
         {
             if(orientation == Qt::Horizontal)
                 label = tr("node value");
             else
-                label.sprintf("%d", section + base_index[0]);
+                label.setNum(section + base_index[0]);
         }
         else if(displayMode == SpreadsheetTable::CurveData)
         {
@@ -643,7 +646,7 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
                     label = tr("Y");
             }
             else
-                label.sprintf("%d", section);
+                label.setNum(section);
         }
 
         return QVariant(label);
@@ -655,7 +658,7 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
 // ****************************************************************************
 // Method: DataArrayModel::index
 //
-// Purpose: 
+// Purpose:
 //   Constructs a model index for the specified row and column.
 //
 // Arguments:
@@ -674,7 +677,7 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
 // Creation:   Thu Aug 28 16:28:01 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QModelIndex
@@ -715,7 +718,7 @@ DataArrayModel::index(int row, int column, const QModelIndex &) const
 // ****************************************************************************
 // Method: DataArrayModel::parent
 //
-// Purpose: 
+// Purpose:
 //   Returns that no model indices in this model have parents.
 //
 // Returns:    An empty model index.
@@ -724,7 +727,7 @@ DataArrayModel::index(int row, int column, const QModelIndex &) const
 // Creation:   Thu Aug 28 16:30:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QModelIndex
@@ -739,13 +742,13 @@ DataArrayModel::parent(const QModelIndex &) const
 // Purpose:
 //   This special purpose delegate lets us render table cells in color.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 16:31:20 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DataArrayDelegate : public QItemDelegate
@@ -769,7 +772,7 @@ private:
 // ****************************************************************************
 // Method: DataArrayDelegate::DataArrayDelegate
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the DataArrayDelegate class.
 //
 // Arguments:
@@ -780,10 +783,10 @@ private:
 // Creation:   Thu Aug 28 16:32:09 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-DataArrayDelegate::DataArrayDelegate(QAbstractItemModel *m, QObject *parent) : 
+DataArrayDelegate::DataArrayDelegate(QAbstractItemModel *m, QObject *parent) :
     QItemDelegate(parent)
 {
     model = m;
@@ -794,7 +797,7 @@ DataArrayDelegate::DataArrayDelegate(QAbstractItemModel *m, QObject *parent) :
 // ****************************************************************************
 // Method: DataArrayDelegate::paint
 //
-// Purpose: 
+// Purpose:
 //   Override of the paint method that lets us change the text color based
 //   on the model's data value.
 //
@@ -807,11 +810,11 @@ DataArrayDelegate::DataArrayDelegate(QAbstractItemModel *m, QObject *parent) :
 // Creation:   Thu Aug 28 16:33:43 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-DataArrayDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
+DataArrayDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
     const QModelIndex &index) const
 {
     if(renderInColor)
@@ -838,7 +841,7 @@ DataArrayDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 // ****************************************************************************
 // Method: SpreadsheetTable::SpreadsheetTable
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the SpreadsheetTable class.
 //
 // Arguments:
@@ -875,14 +878,14 @@ SpreadsheetTable::SpreadsheetTable(QWidget *parent) : QTableView(parent)
 // ****************************************************************************
 // Method: SpreadsheetTable::~SpreadsheetTable
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the SpreadsheetTable class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 20 15:33:26 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 SpreadsheetTable::~SpreadsheetTable()
@@ -892,7 +895,7 @@ SpreadsheetTable::~SpreadsheetTable()
 // ****************************************************************************
 // Method: SpreadsheetTable::setLUT
 //
-// Purpose: 
+// Purpose:
 //   Sets the LUT that should be used when we need to map data to colors.
 //
 // Arguments:
@@ -916,7 +919,7 @@ SpreadsheetTable::setLUT(avtLookupTable *L)
 // ****************************************************************************
 // Method: SpreadsheetTable::setRenderInColor
 //
-// Purpose: 
+// Purpose:
 //   Sets whether the table should render its text in color.
 //
 // Arguments:
@@ -931,7 +934,7 @@ SpreadsheetTable::setLUT(avtLookupTable *L)
 //
 // ****************************************************************************
 
-void 
+void
 SpreadsheetTable::setRenderInColor(bool ric)
 {
     if(DELEGATE->getRenderInColor() != ric)
@@ -945,7 +948,7 @@ SpreadsheetTable::setRenderInColor(bool ric)
 // ****************************************************************************
 // Method: SpreadsheetTable::setFormatString
 //
-// Purpose: 
+// Purpose:
 //   Sets the format string to use for drawing text.
 //
 // Arguments:
@@ -977,7 +980,7 @@ SpreadsheetTable::setFormatString(const QString &fmt)
 // ****************************************************************************
 // Method: SpreadsheetTable::setCurveData
 //
-// Purpose: 
+// Purpose:
 //   Set the curve data into the model.
 //
 // Arguments:
@@ -987,7 +990,7 @@ SpreadsheetTable::setFormatString(const QString &fmt)
 // Creation:   Mon Dec  6 14:19:38 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1001,7 +1004,7 @@ SpreadsheetTable::setCurveData(vtkRectilinearGrid *rgrid)
 // ****************************************************************************
 // Method: SpreadsheetTable::setDataArray
 //
-// Purpose: 
+// Purpose:
 //   Sets the data array and other parameters used to render the data in
 //   the spreadsheet.
 //
@@ -1028,7 +1031,7 @@ SpreadsheetTable::setCurveData(vtkRectilinearGrid *rgrid)
 // ****************************************************************************
 
 void
-SpreadsheetTable::setDataArray(vtkDataArray *arr, 
+SpreadsheetTable::setDataArray(vtkDataArray *arr,
     vtkDataArray *ghosts, vtkDataArray *missingData,
     int d[3], DisplayMode dm, int sliceindex, int base_index[3])
 {
@@ -1039,7 +1042,7 @@ SpreadsheetTable::setDataArray(vtkDataArray *arr,
 // ****************************************************************************
 // Method: SpreadsheetTable
 //
-// Purpose: 
+// Purpose:
 //   Disassociates the current data and ghost arrays from the spreadsheeet.
 //
 // Programmer: Brad Whitlock
@@ -1061,10 +1064,10 @@ SpreadsheetTable::clearDataArray()
 // ****************************************************************************
 // Method: SpreadsheetTable::selectedCellsAsText
 //
-// Purpose: 
+// Purpose:
 //   Gets the selected cells as text.
 //
-// Returns:    The string containing the text for all selected cells of 
+// Returns:    The string containing the text for all selected cells of
 //             the table.
 //
 // Programmer: Brad Whitlock
@@ -1105,7 +1108,7 @@ SpreadsheetTable::selectedCellsAsText() const
 // ****************************************************************************
 // Method: SpreadsheetTable::selectedCellsSum
 //
-// Purpose: 
+// Purpose:
 //   Sums the data values over the selected cells.
 //
 // Returns:    The sum of the values in the selected cells.
@@ -1134,7 +1137,7 @@ SpreadsheetTable::selectedCellsSum() const
 // ****************************************************************************
 // Method: SpreadsheetTable::selectedCellsAverage
 //
-// Purpose: 
+// Purpose:
 //   Average the values of the selected cells.
 //
 // Returns:    The average of the selected cells.
@@ -1145,7 +1148,7 @@ SpreadsheetTable::selectedCellsSum() const
 // Modifications:
 //   Brad Whitlock, Wed Aug 27 15:59:08 PDT 2008
 //   Rewrote for Qt 4.
-//   
+//
 // ****************************************************************************
 
 double
@@ -1163,7 +1166,7 @@ SpreadsheetTable::selectedCellsAverage() const
 // ****************************************************************************
 // Method: SpreadsheetTable::selectedColumnIndices
 //
-// Purpose: 
+// Purpose:
 //   Return the indices of the column.
 //
 // Arguments:
@@ -1171,13 +1174,13 @@ SpreadsheetTable::selectedCellsAverage() const
 //
 // Returns:    An array of indices.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 11 10:51:31 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkIdType *
@@ -1209,7 +1212,7 @@ SpreadsheetTable::selectedColumnIndices(int &nvals) const
 // ****************************************************************************
 // Method: SpreadsheetTable::selectedColumnIndices
 //
-// Purpose: 
+// Purpose:
 //   Return the indices of the column.
 //
 // Arguments:
@@ -1217,13 +1220,13 @@ SpreadsheetTable::selectedColumnIndices(int &nvals) const
 //
 // Returns:    An array of indices.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 11 10:51:31 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkIdType *
@@ -1256,7 +1259,7 @@ SpreadsheetTable::selectedRowIndices(int &nvals) const
 // ****************************************************************************
 // Method: SpreadsheetTable::addSelectedCellLabel()
 //
-// Purpose: 
+// Purpose:
 //   Add a label (pick letter) for a cell, which will be displayed if the
 //   cell is selected.
 //
@@ -1283,7 +1286,7 @@ SpreadsheetTable::addSelectedCellLabel(int row, int col, const QString &label)
 // ****************************************************************************
 // Method: SpreadsheetTable::clearSelectedCellLabels()
 //
-// Purpose: 
+// Purpose:
 //   Clear the list of cell labels (pick letters for cells).
 //
 // Programmer: Gunther H. Weber
@@ -1304,7 +1307,7 @@ SpreadsheetTable::clearSelectedCellLabels()
 // ****************************************************************************
 // Method: SpreadsheetTable::setFont()
 //
-// Purpose: 
+// Purpose:
 //   Update column widths after a font change
 //
 // Programmer: Gunther H. Weber
@@ -1326,7 +1329,7 @@ SpreadsheetTable::setFont(QFont&f)
 // ****************************************************************************
 // Method: SpreadsheetTable::selectAll
 //
-// Purpose: 
+// Purpose:
 //   Selects all of the cells in the table.
 //
 // Programmer: Brad Whitlock
@@ -1351,7 +1354,7 @@ SpreadsheetTable::selectAll()
 // ****************************************************************************
 // Method: SpreadsheetTable::selectNone
 //
-// Purpose: 
+// Purpose:
 //   Removes all of the selections from the table.
 //
 // Programmer: Brad Whitlock
@@ -1372,7 +1375,7 @@ SpreadsheetTable::selectNone()
 // ****************************************************************************
 // Method: SpreadsheetTable::updateColumnWidths
 //
-// Purpose: 
+// Purpose:
 //   Change table column width so that numeric values (and labels) displayed
 //   in cells are not truncated
 //
@@ -1383,6 +1386,9 @@ SpreadsheetTable::selectNone()
 //   Brad Whitlock, Wed Aug 27 10:59:56 PDT 2008
 //   Qt 4.
 //
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -1390,13 +1396,21 @@ SpreadsheetTable::updateColumnWidths()
 {
     QFontMetrics fm(font());
     QString lengthProbeString;
-    lengthProbeString.sprintf(MODEL->getFormatString().toStdString().c_str(),
+    lengthProbeString.asprintf(MODEL->getFormatString().toStdString().c_str(),
         -3.33333333333333333333);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int columnWidth = fm.horizontalAdvance(lengthProbeString);
+    if(MODEL->numSelectedCellLabels() > 0)
+        columnWidth += fm.horizontalAdvance(" AA=");
+    else
+        columnWidth += fm.horizontalAdvance(" ");
+#else
     int columnWidth = fm.width(lengthProbeString);
     if(MODEL->numSelectedCellLabels() > 0)
         columnWidth += fm.width(" AA=");
     else
         columnWidth += fm.width(" ");
+#endif
     for (int i=0; i < model()->columnCount(); ++i)
         setColumnWidth(i, columnWidth);
 }

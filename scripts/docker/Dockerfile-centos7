@@ -1,0 +1,68 @@
+FROM centos:centos7
+MAINTAINER Kathleen Biagas<biagas2@llnl.gov>
+
+# fetch build env
+ENV TZ=America/Phoenix
+
+RUN yum groups mark convert
+RUN yum -y groupinstall "Development Tools"
+# Update to gcc 7
+RUN yum -y install  centos-release-scl
+RUN yum -y install  devtoolset-7-gcc*
+# this command enables gcc-7, will need to be run each time you run
+# the container if running interactively
+RUN scl enable devtoolset-7 bash
+# Install missing Qt build dependencies
+RUN yum -y install \
+    libxcb \
+    libxcb-devel \
+    xcb-util \
+    xcb-util-devel \
+    libxkbcommon-devel \
+    libxkbcommon-x11-devel \
+    xcb-util-image-devel \
+    xcb-util-keysyms-devel \
+    xcb-util-renderutil-devel \
+    xcb-util-wm-devel \
+    mesa-libGL-devel \
+    libX11-devel \
+    fontconfig \
+    fontconfig-devel \
+    xorg-x11-xkb-utils \
+    libXt-devel \
+    libXrender-devel
+
+# Install other visit dependencies
+RUN yum -y install \
+    git \
+    wget \
+    curl \
+    unzip \
+    zlib-devel \
+    python \
+    libSM-devel \
+    openssl-devel \
+    xorg-x11-utils \
+    freetype-devel \
+    libxml2 \
+    libxml2-devel \
+    vim \
+    expat21 \
+    libffi-devel 
+
+RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
+WORKDIR /home/visit
+
+# Create the third-party directory
+RUN mkdir /home/visit/third-party
+# Copy build_visit and the script to run it
+COPY build_visit3_3_3 /home/visit
+COPY run_build_visit.sh /home/visit
+COPY build_visit_docker_cleanup.py /home/visit
+COPY build_test_visit.sh /home/visit
+COPY test_visit.py /home/visit
+# Build the third party libraries
+RUN scl enable devtoolset-7 ./run_build_visit.sh

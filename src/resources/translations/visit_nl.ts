@@ -4336,10 +4336,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation type="unfinished">Constant</translation>
     </message>
@@ -6835,10 +6831,6 @@ door de Lineout operator</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation type="unfinished">Constant</translation>
     </message>
@@ -7658,10 +7650,6 @@ door de Lineout operator</translation>
     </message>
     <message>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12797,10 +12785,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Flash</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13157,10 +13141,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -18337,10 +18317,6 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Flash</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22334,7 +22310,7 @@ If you found debug log files on %1 but VisIt still can&apos;t connect then it&ap
 
 If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
 
-If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
+If none of these suggestions allow you to successfully connect to %1 then contact us via https://visit-help.llnl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
         <translation type="obsolete">De metadataserver op computer %1 kon niet gestart worden of deze kon geen verbinding maken met uw computer. Er zijn vele mogelijke verklaringen voor dit euvel.
 
 Het is mogelijk dat SSH niet in staat was VisIt te starten op %1. Als U dit wilt verifiëren gebruik dan &quot;visit -debug 5&quot; en controlleer of er in uw thuismap logbestanden zijn van vcl, mdserver of de rekenmachine. Als er geen logbestanden zijn dan is het mogelijk dat VisIt geen componenten op %1 kon starten. In dat geval controlleer of een SSH sessie opgebouwd kan worden met %1, of de (omgevings)paden naar VisIt op %1 gespecificeerd zijn. 
@@ -22386,7 +22362,7 @@ If you found debug log files on %1 but VisIt still can&apos;t connect then it&ap
 
 If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
 
-If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
+If none of these suggestions allow you to successfully connect to %1 then contact us via https://visit-help.llnl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
         <translation type="obsolete">De metadataserver op computer %1 kon niet gelanceerd worden of kon geen verbinding opzetten met Uw lokale computer. Er zijn vele mogelijke verklaringen voor dit euvel.
 
 Het is mogelijk dat SSH niet in staat was VisIt te starten op %1. Als U dit wilt verifiëren gebruik dan &quot;visit -debug 5&quot; en controlleer of er in uw thuismap logbestanden zijn van vcl, mdserver of de rekenmachine. Als er geen logbestanden zijn dan is het mogelijk dat VisIt geen componenten op %1 kon starten. In dat geval controlleer of een SSH sessie opgebouwd kan worden met %1, of de (omgevings)paden naar VisIt op %1 gespecificeerd zijn. 
@@ -22408,7 +22384,7 @@ If you found debug log files on %1 but VisIt still can&apos;t connect then it&ap
 
 If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
 
-If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
+If none of these suggestions allow you to successfully connect to %1 then contact us via https://visit-help.llnl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

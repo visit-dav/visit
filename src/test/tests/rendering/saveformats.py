@@ -40,6 +40,9 @@
 #             September 20, 2005
 #
 # ----------------------------------------------------------------------------
+
+from PIL import Image
+
 def FileExists(name, waitToAppear, growthInterval):
     if os.path.isfile(name) == 0:
         time.sleep(waitToAppear)
@@ -60,14 +63,6 @@ def FileExists(name, waitToAppear, growthInterval):
             else:
                 return 1
             curSize = size
-
-# find tif to rgb image convert utility
-if 'VISIT_TEST_CONVERT' in os.environ:
-    imgConverter = os.environ['VISIT_TEST_CONVERT']
-elif (os.path.isfile("/usr/bin/convert")):
-    imgConverter = "/usr/bin/convert"
-else:
-    imgConverter = "convert"
 
 # ----------------------------------------------------------------------------
 # Function: SaveFileInfo
@@ -128,6 +123,16 @@ a.databaseInfoFlag = 0
 a.legendInfoFlag = 0
 SetAnnotationAttributes(a)
 
+# ----------------------------------------------------------------------------
+# Function: TestSaveFormat
+#
+# Modifications:
+#   Kathleen Biagas, Thu Feb 11 2021
+#   For Image formats, only convert RGB to TIFF, as all other formats tested
+#   here should be readable and plottable by VisIt. Use PIL::Image for
+#   conversion instead of 'convert'.
+# ----------------------------------------------------------------------------
+
 def TestSaveFormat(fmt):
     SetActiveWindow(1)
     mode = ""
@@ -174,21 +179,36 @@ def TestSaveFormat(fmt):
     elif isI:
         if swatmp.screenCapture == 0:
             mode = "offscreen_"
-        tiffFileName = "%s/saveformat_tmp.tif"%TestEnv.params["run_dir"]
-        tiffFileExists = 0
         imageFileExists = FileExists(swatmp.fileName, 1, 0)
-        # TODO_WINDOWS ?
         if imageFileExists:
-            os.system("%s %s -compress none %s"%(imgConverter, swatmp.fileName, tiffFileName))
-            tiffFileExists = FileExists(tiffFileName, 1, 0)
-        if tiffFileExists:
-            SetActiveWindow(2)
-            if OpenDatabase(tiffFileName):
-                AddPlot("Pseudocolor","red")
-                if DrawPlots():
-                    result = "Passed\n"
-                DeleteAllPlots()
-                CloseDatabase(tiffFileName)
+            # visit should be able to read all but the RGB format, so only convert RGB to TIFF
+            if fmt != swa.RGB:
+                SetActiveWindow(2)
+                if OpenDatabase(swatmp.fileName):
+                    AddPlot("Pseudocolor","red")
+                    if DrawPlots():
+                        result = "Passed\n"
+                    DeleteAllPlots()
+                    CloseDatabase(swatmp.fileName)
+            else: 
+                tiffFileName = "%s/saveformat_tmp.tif"%TestEnv.params["run_dir"]
+                tiffFileExists = 0
+                try:
+                    im1=Image.open(swatmp.fileName)
+                    im1.save(tiffFileName, 'tiff') 
+                    tiffFileExists = FileExists(tiffFileName, 1, 0)
+                except ValueError:
+                    result="Format type could not be determined"
+                except OSError:
+                    result="Could not convert"
+                if tiffFileExists:
+                    SetActiveWindow(2)
+                    if OpenDatabase(tiffFileName):
+                        AddPlot("Pseudocolor","red")
+                        if DrawPlots():
+                            result = "Passed\n"
+                        DeleteAllPlots()
+                        CloseDatabase(tiffFileName)
     elif isG:
         if FileExists(swatmp.fileName+"."+ext, 1, 0):
             if ext == "stl":
@@ -216,16 +236,18 @@ DrawPlots()
 for f in CFormats:
     TestSaveFormat(f)
 
-TestSection("Image Formats via Screen Capture")
 DeleteAllPlots()
 CloseDatabase(data_path("curve_test_data","c062.curve"))
 
+TestSection("Image Formats via Screen Capture")
 OpenDatabase(silo_data_path("multi_rect2d.silo"))
 
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 slider = CreateAnnotationObject("TimeSlider")
+# make sure screenCapture is on
+swa.screenCapture = 1
 for f in IFormats:
     TestSaveFormat(f)
 
@@ -235,10 +257,10 @@ for f in IFormats:
     TestSaveFormat(f)
 swa.screenCapture = 1
 
-TestSection("Geometry Formats")
 DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
+TestSection("Geometry Formats")
 OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "dx")

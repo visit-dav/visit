@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
 #  Test Case:  pick.py #
@@ -6,42 +6,42 @@
 #
 #  Defect ID:  none
 #
-#  Programmer: Kathleen Bonnell 
-#  Date:       May 13, 2003 
+#  Programmer: Kathleen Bonnell
+#  Date:       May 13, 2003
 #
 #  Modifications:
 #    Kathleen Bonnell, Fri Jun 27 16:03:57 PDT 2003
 #    Modified PickFilledBoundary (removed MeshPlot) so that test is preformed
 #    on FilledBoundaryPlot and not MeshPlot.
 #
-#    Kathleen Bonnell, Tue Jul  8 21:17:17 PDT 2003 
+#    Kathleen Bonnell, Tue Jul  8 21:17:17 PDT 2003
 #    Modified PickFilledBoundary to use flip of slice so that it still works
-#    with recent slice changes. 
+#    with recent slice changes.
 #
 #    Kathleen Bonnell, Thu Aug 28 14:34:57 PDT 2003
 #    Remove compound var name from Subset and FilledBoundary plots.
 #
-#    Kathleen Bonnell, Wed Sep 10 11:36:32 PDT 2003 
-#    Added test for multi-block meshes. 
+#    Kathleen Bonnell, Wed Sep 10 11:36:32 PDT 2003
+#    Added test for multi-block meshes.
 #
-#    Kathleen Bonnell, Fri Oct 10 17:43:46 PDT 2003 
+#    Kathleen Bonnell, Fri Oct 10 17:43:46 PDT 2003
 #    Added test for surface plots.
 #
-#    Kathleen Bonnell, Fri Oct 24 16:09:33 PDT 2003 
-#    Added test for PC of BigSil, and pickvar = material. 
+#    Kathleen Bonnell, Fri Oct 24 16:09:33 PDT 2003
+#    Added test for PC of BigSil, and pickvar = material.
 #
 #    Kathleen Bonnell, Wed Nov  5 14:30:35 PST 2003
 #    Per VisIt000033891, add another onion peel test, where there is only
-#    1 cell, and window is set to use Actual extents. 
+#    1 cell, and window is set to use Actual extents.
 #
-#    Kathleen Bonnell, Thu Nov 13 12:07:20 PST 2003 
-#    Use SetOperatorOptions instead of SetDefaultOperatorOption in OnionPeel, so 
-#    that OnionPeel2 will work correctly.  Added vars to OnionPeel2. 
+#    Kathleen Bonnell, Thu Nov 13 12:07:20 PST 2003
+#    Use SetOperatorOptions instead of SetDefaultOperatorOption in OnionPeel, so
+#    that OnionPeel2 will work correctly.  Added vars to OnionPeel2.
 #
-#    Kathleen Bonnell, Tue Nov 18 17:23:43 PST 2003 
+#    Kathleen Bonnell, Tue Nov 18 17:23:43 PST 2003
 #    Added use of PickAtts' useNodeCoords, logicalCoords and logicalZone for
-#    a few tests. 
-#    
+#    a few tests.
+#
 #    Kathleen Bonnell, Thu Nov 20 16:29:45 PST 2003
 #    Added PicSpecMix tests, for species vars, (VisIt '3864).
 #    Added a 'vel' only test to PickMatFracsThreshold (VisIt '4103).
@@ -51,44 +51,44 @@
 #    pick letter starts out with 'A'.  This will prevent the necessity of
 #    updating all pick baselines when modifications are made to only one test.
 #    Added tests for new pick methods: PickByZone, PickByNode. ('4123)
-#   
-#    Kathleen Bonnell, Wed Dec  3 07:51:52 PST 2003 
+#
+#    Kathleen Bonnell, Wed Dec  3 07:51:52 PST 2003
 #    Added PickCurve tests, for curve plots. (VisIt '3832).
 #
-#    Kathleen Bonnell, Mon Mar  8 15:47:52 PST 2004 
+#    Kathleen Bonnell, Mon Mar  8 15:47:52 PST 2004
 #    Added more tests  to TestSpecMix, to verify that we get same results
 #    regardless of whether 'species' is the active variable, or some other
 #    scalar is the active variale.
 #
-#    Kathleen Bonnell, Tue Mar 16 16:26:17 PST 2004 
-#    Added bad variables and expression variable tests to PickMultiBlock, 
+#    Kathleen Bonnell, Tue Mar 16 16:26:17 PST 2004
+#    Added bad variables and expression variable tests to PickMultiBlock,
 #    from bug '4571.
 #
 #    Kathleen Bonnell, Thu Apr  1 09:21:22 PST 2004
 #    Added  a "Variable by Zone" and "Variable by Node" Query to PickSpecMix
 #    in order to test that these queries return the same values as their
-#    Pick counterparts. 
+#    Pick counterparts.
 #
-#    Kathleen Bonnell, Tue Apr 20 09:42:30 PDT 2004 
-#    Added PickMultiWindow. 
+#    Kathleen Bonnell, Tue Apr 20 09:42:30 PDT 2004
+#    Added PickMultiWindow.
 #
-#    Kathleen Bonnell, Thu Apr 29 07:40:58 PDT 2004 
-#    Slice defaults atts have changed, update accordingly. 
+#    Kathleen Bonnell, Thu Apr 29 07:40:58 PDT 2004
+#    Slice defaults atts have changed, update accordingly.
 #
 #    Brad Whitlock, Mon May 3 15:31:40 PST 2004
 #    I added a couple of tests that test how pick works if an engine is closed
 #    or if one crashes.
 #
-#    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
-#    Changed a couple of screen coordinates for PickBigSilMat that were 
-#    invalid.  
-#    
-#    Kathleen Bonnell, Wed Jun  2 10:14:58 PDT 2004 
+#    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004
+#    Changed a couple of screen coordinates for PickBigSilMat that were
+#    invalid.
+#
+#    Kathleen Bonnell, Wed Jun  2 10:14:58 PDT 2004
 #    Added tests to Pick2D to tests PickByNode and PickByZone on a dataset
 #    with ghost zones.  Added test to PickSurface, tests various flavors
 #    of pick to see if they are returning the same info for the same input.
 #
-#    Kathleen Bonnell, Thu Jul  8 16:30:07 PDT 2004 
+#    Kathleen Bonnell, Thu Jul  8 16:30:07 PDT 2004
 #    Added  PickedBoundary, to test picking on 2D Boundary plots and
 #    3D Sliced-to-2D Boundary plots with unstructured, rectilinear and
 #    curvilinear data.
@@ -96,81 +96,81 @@
 #    Jeremy Meredith, Wed Jul 21 08:59:24 PDT 2004
 #    Making print output go to stderr.
 #
-#    Kathleen Bonnell, Thu Jul 22 08:35:45 PDT 2004 
-#    Added test of data designated as 'ascii' to Pick2D (using rect2d). 
+#    Kathleen Bonnell, Thu Jul 22 08:35:45 PDT 2004
+#    Added test of data designated as 'ascii' to Pick2D (using rect2d).
 #
-#    Kathleen Bonnell, Wed Aug 11 09:04:56 PDT 2004 
+#    Kathleen Bonnell, Wed Aug 11 09:04:56 PDT 2004
 #    Added to Pick3DTo2D, a test of data sliced along boundary between zones,
 #    to verify that picking with all materials ON returns same results as
-#    with some materials OFF. ('5279) 
+#    with some materials OFF. ('5279)
 #
 #    Brad Whitlock, Wed Aug 25 12:30:45 PDT 2004
 #    Added TurnMaterialsOn to PickMultiBlock since it was remembering the
 #    material selection for mulit_rect3d.silo from an earlier pick test.
 #
-#    Kathleen Bonnell, Wed Sep  8 09:36:30 PDT 2004 
-#    Renamed 'WorldPick' to 'Pick' and 'WorldNodePick' to 'NodePick'. 
-# 
-#    Kathleen Bonnell, Fri Oct 22 16:11:41 PDT 2004 
+#    Kathleen Bonnell, Wed Sep  8 09:36:30 PDT 2004
+#    Renamed 'WorldPick' to 'Pick' and 'WorldNodePick' to 'NodePick'.
+#
+#    Kathleen Bonnell, Fri Oct 22 16:11:41 PDT 2004
 #    Added PickVectorPlots.
-# 
-#    Kathleen Bonnell, Tue Nov  2 10:16:36 PST 2004 
+#
+#    Kathleen Bonnell, Tue Nov  2 10:16:36 PST 2004
 #    Added PickPointMeshes.
-# 
-#    Kathleen Bonnell, Wed Dec 15 15:38:41 PST 2004 
+#
+#    Kathleen Bonnell, Wed Dec 15 15:38:41 PST 2004
 #    Added PickGlobalIds.
-# 
-#    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
-#    Added PickByNode and PickByZone to PickGlobalIds. 
-# 
-#    Kathleen Bonnell, Mon Dec 20 10:49:59 PST 2004 
+#
+#    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004
+#    Added PickByNode and PickByZone to PickGlobalIds.
+#
+#    Kathleen Bonnell, Mon Dec 20 10:49:59 PST 2004
 #    Removed  "Variable by Zone" and "Variable by Node" Query from PickSpecMix
-#    as they are no longer supported. 
+#    as they are no longer supported.
 #
-#    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
-#    Added PickExpressions, testing matvf and mirvf per '5799. 
+#    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005
+#    Added PickExpressions, testing matvf and mirvf per '5799.
 #
-#    Kathleen Bonnell, Tue Mar  1 13:11:31 PST 2005 
+#    Kathleen Bonnell, Tue Mar  1 13:11:31 PST 2005
 #    Added couple more tests to PickExpressions, testing Expression that
-#    has not been plotted, per '5418. 
+#    has not been plotted, per '5418.
 #
 #    Brad Whitlock, Wed Mar 9 09:15:30 PDT 2005
 #    Removed deprecated functions.
 #
-#    Kathleen Bonnell, Wed May 11 18:04:12 PDT 2005 
+#    Kathleen Bonnell, Wed May 11 18:04:12 PDT 2005
 #    Per ticket '6097, added tests to 'PickGlobalIds' to ensure global ids
-#    returned correctly for global zone/node picks. 
+#    returned correctly for global zone/node picks.
 #
-#    Kathleen Bonnell, Mon May 23 13:41:50 PDT 2005 
+#    Kathleen Bonnell, Mon May 23 13:41:50 PDT 2005
 #    Per ticket '6217, added tests to 'PickFilledBoundary' to ensure node
-#    pick of sliced FB plot returns correct coords. 
+#    pick of sliced FB plot returns correct coords.
 #
 #    Kathleen Bonnell, Fri Jun 10 14:38:27 PDT 2005
 #    Per ticket '6296 -- added tests to PickVectorPlots to ensure that
 #    pick of vector expression won't causes crash
 #
 #    Kathleen Bonnell, Thu Jun 30 15:39:03 PDT 2005
-#    Added tests for AMR data. 
-# 
+#    Added tests for AMR data.
+#
 #    Kathleen Bonnell, Fri Jul  8 14:12:03 PDT 2005
-#    Added more tests for AMR data: PickSamrai. 
-# 
-#    Kathleen Bonnell, Wed Aug 10 17:12:50 PDT 2005 
-#    Added PickIndexSelect. 
-# 
-#    Kathleen Bonnell, Tue Aug 30 15:19:34 PDT 2005 
+#    Added more tests for AMR data: PickSamrai.
+#
+#    Kathleen Bonnell, Wed Aug 10 17:12:50 PDT 2005
+#    Added PickIndexSelect.
+#
+#    Kathleen Bonnell, Tue Aug 30 15:19:34 PDT 2005
 #    Added PickTensors.  '6410
-# 
+#
 #    Jeremy Meredith, Wed Sep  7 12:06:04 PDT 2005
 #    Allowed spaces in variable names.
 #
-#    Kathleen Bonnell, Tue May  2 08:38:28 PDT 2006 
+#    Kathleen Bonnell, Tue May  2 08:38:28 PDT 2006
 #    Added PickMili ('7144, '7145).
 #
-#    Kathleen Bonnell, Tue Aug 29 09:34:17 PDT 2006 
+#    Kathleen Bonnell, Tue Aug 29 09:34:17 PDT 2006
 #    Added Pickcontour ('7220).
 #
-#    Kathleen Bonnell, Thu Oct 26 14:24:45 PDT 2006 
+#    Kathleen Bonnell, Thu Oct 26 14:24:45 PDT 2006
 #    Added PickBox ('7566).
 #
 #    Jeremy Meredith, Mon Jul 14 11:17:29 EDT 2008
@@ -185,7 +185,7 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 #
 #    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
-#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
 #    Kathleen Biagas, Wed Mar  7 19:33:48 PST 2012
@@ -198,38 +198,47 @@
 #    Added a test for zone pick highlighting
 #
 #    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
-#    For PickSubset, change plot var to 'domains' as Subset plots shouldn't 
+#    For PickSubset, change plot var to 'domains' as Subset plots shouldn't
 #    work for materials.  Change pick var to 'mat1' to preserve baselines.
 #
 #    Matt Larsen, Wed Sep 6 16:23:12 PST 2017
 #    Adding tests for pick by label for mili files.
 #
 #    Alister Maguire, Tue Sep 26 14:23:09 PDT 2017
-#    Added test for pick highlight color. 
+#    Added test for pick highlight color.
 #
 #    Alister Maguire, Mon Oct 23 10:34:28 PDT 2017
-#    Added tests for removing a list of picks. 
+#    Added tests for removing a list of picks.
 #
 #    Alister Maguire, Mon Oct 30 15:54:30 PDT 2017
-#    Added test for removing a list of labeled picks. 
+#    Added test for removing a list of labeled picks.
 #
 #    Matt Larsen, Wed Feb 28 08:24:31 PDT 2018
-#    Turning off all anotations for pick highlight tests 
+#    Turning off all anotations for pick highlight tests
 #
 #    Alister Maguire, Thu Aug 16 10:18:56 PDT 2018
-#    Added a test for swivel highlight. 
+#    Added a test for swivel highlight.
 #
 #    Alister Maguire, Mon Aug 20 12:45:25 PDT 2018
-#    Added a test for node highlight. 
+#    Added a test for node highlight.
 #
 #    Alister Maguire, Tue May 21 13:10:05 PDT 2019
-#    Updated tests that use mili to adhere to the plugin changes. 
+#    Updated tests that use mili to adhere to the plugin changes.
 #
 #    Alister Maguire, Thu Sep 12 15:54:36 PDT 2019
-#    Add test for highlighting a zone picked by global id. 
+#    Add test for highlighting a zone picked by global id.
 #
 #    Alister Maguire, Thu Jan  2 15:16:53 PST 2020
 #    Added test for translated zone highlights.
+#
+#    Mark C. Miller, Mon Jan 11 10:38:03 PST 2021
+#    Replace Assert-style with TestValue-style tests
+#
+#    Alister Maguire, Fri Jul 16 07:27:44 PDT 2021
+#    Added a test for Picking an expression variable.
+#
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' with meshColorSource.
 #
 # ----------------------------------------------------------------------------
 from __future__ import print_function
@@ -267,7 +276,7 @@ def Pick3DTo2D():
     PickByZone(945, vars)
     s = s + GetPickOutput()
 
-    # Turn off some materials, and verify we get 
+    # Turn off some materials, and verify we get
     #  same results
     TurnMaterialsOff("1")
     Pick(128, 107, vars)
@@ -278,7 +287,7 @@ def Pick3DTo2D():
     s = s + GetPickOutput()
     PickByZone(945, vars)
     s = s + GetPickOutput()
- 
+
     TurnMaterialsOn("1")
     RemoveLastOperator()
 
@@ -297,7 +306,7 @@ def Pick3DTo2D():
     s = s + GetPickOutput()
 
     DeleteAllPlots()
-    
+
     # VisIt00005279
     #  When sliced along boundary between zones,
     #  pick with all materials returns different output than
@@ -313,7 +322,7 @@ def Pick3DTo2D():
     slice.project2d = 1
     SetOperatorOptions(slice)
     DrawPlots()
-   
+
     s = s + "\nPick with all materials turned on:\n"
     Pick(80, 60)
     s = s + GetPickOutput()
@@ -439,7 +448,7 @@ def Pick2D():
 
     ResetView()
 
-    Pick(104, 224) 
+    Pick(104, 224)
     s = s + GetPickOutput()
     Pick(155, 140)
     s = s + GetPickOutput()
@@ -450,7 +459,7 @@ def Pick2D():
     Pick(187, 106)
     s = s + GetPickOutput()
 
-    NodePick(104, 224) 
+    NodePick(104, 224)
     s = s + GetPickOutput()
     NodePick(155, 140)
     s = s + GetPickOutput()
@@ -504,7 +513,7 @@ def PickOnionPeel():
 
     PickByZone(15, 4, vars)
     s = s + GetPickOutput()
- 
+
     TestText("PickOnionPeel", s)
     pa.showNodePhysicalCoords = 0
     SetPickAttributes(pa)
@@ -520,7 +529,7 @@ def PickSubset():
     AddPlot("Subset", "domains")
     TurnMaterialsOff()
     TurnMaterialsOn("1")
- 
+
     DrawPlots()
 
     v = GetView3D()
@@ -549,11 +558,11 @@ def PickSubset():
     TurnMaterialsOn()
     DeleteAllPlots()
     ResetPickLetter()
- 
- 
+
+
 def PickMatFracsThreshold():
     # Testing pick on 3d plot with Threshold operator, returning
-    # material var (mat fracs) and vector var. 
+    # material var (mat fracs) and vector var.
     OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Pseudocolor", "p")
@@ -563,7 +572,7 @@ def PickMatFracsThreshold():
     SetDefaultOperatorOptions(thresh)
     AddOperator("Threshold")
     DrawPlots()
- 
+
     v = GetView3D()
     v.viewNormal = (0, 0, 1)
     v.focus = (0.5, 0.5, 0.5)
@@ -573,7 +582,7 @@ def PickMatFracsThreshold():
     v.nearPlane = -1.73205
     v.farPlane = 1.73205
     v.perspective = 0
-    SetView3D(v) 
+    SetView3D(v)
 
     pa = GetPickAttributes()
     pa.showNodeDomainLogicalCoords = 1
@@ -603,7 +612,7 @@ def PickMatFracsThreshold():
     pa.showZoneDomainLogicalCoords = 0
     SetPickAttributes(pa)
 
-    # Add a few with only vel as the var 
+    # Add a few with only vel as the var
     # From bug: VisIt00004103
     RemoveLastOperator()
     vars = ("vel")
@@ -617,7 +626,7 @@ def PickMatFracsThreshold():
     s = s + GetPickOutput()
     PickByZone(35354, vars)
     s = s + GetPickOutput()
- 
+
     TestText("PickMatFracsThreshold", s)
     DeleteAllPlots()
     ResetPickLetter()
@@ -670,7 +679,7 @@ def PickFilledBoundary():
     AddPlot("FilledBoundary", "mat1")
 
     AddOperator("Slice")
-    s= SliceAttributes() 
+    s= SliceAttributes()
     s.originIntercept = 2.89833
     s.originType = s.Intercept
     s.normal = (0, 1, 0)
@@ -727,7 +736,7 @@ def PickFilledBoundary():
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.meshColor = (255, 255, 0, 255)
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.lineWidth = 2
     SetPlotOptions(m)
     AddOperator("OnionPeel", 0)
@@ -761,7 +770,7 @@ def PickFilledBoundary():
     ResetPickLetter()
 
 def PickMultiBlock():
-    # Testing pick on 3d multi-domain plots 
+    # Testing pick on 3d multi-domain plots
     OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
     AddPlot("Pseudocolor", "u")
@@ -771,8 +780,8 @@ def PickMultiBlock():
     v = GetView3D()
     v.perspective = 1
     SetView3D(v)
-    
-    vars = ("default", "d", "p") 
+
+    vars = ("default", "d", "p")
     Pick(109, 113, vars)
     s = GetPickOutput()
     Pick(74, 114, vars)
@@ -833,7 +842,7 @@ def PickMultiBlock():
     TurnMaterialsOn()
     DrawPlots()
     ResetView()
-    vars = ("default", "u", "d", "p") 
+    vars = ("default", "u", "d", "p")
     Pick(61, 61, vars)
     s = s + GetPickOutput()
     Pick(61, 188, vars)
@@ -897,7 +906,7 @@ def PickMultiBlock():
     DrawPlots()
     ResetView()
     v = GetView3D()
-    v.viewNormal= (1, 0, 0) 
+    v.viewNormal= (1, 0, 0)
     SetView3D(v)
 
     vars = ("default")
@@ -977,7 +986,7 @@ def PickSurface():
     s = s + GetPickOutput()
     NodePick(138, 126)
     s = s + GetPickOutput()
-  
+
     DeleteAllPlots()
 
     OpenDatabase(silo_data_path("curv2d.silo"))
@@ -1011,7 +1020,7 @@ def PickSurface():
     NodePick(188, 167)
     s = s + GetPickOutput()
 
-    DeleteAllPlots() 
+    DeleteAllPlots()
 
     OpenDatabase(silo_data_path("ucd2d.silo"))
 
@@ -1143,13 +1152,13 @@ def PickBigSilMat():
     s = s + GetPickOutput()
 
     TestText("PickBigSilMat", s)
-    DeleteAllPlots() 
+    DeleteAllPlots()
     pa.showNodePhysicalCoords = 0
     SetPickAttributes(pa)
     ResetPickLetter()
 
 def PickOnionPeel2():
-    #From defect VisIt00003981, onionpeel and window ACTUAL_EXTENTS 
+    #From defect VisIt00003981, onionpeel and window ACTUAL_EXTENTS
     #pick not working
     print(tests_path("queries","pickonionpeel.session"), 0,silo_data_path("curv3d.silo"))
     RestoreSessionWithDifferentSources(tests_path("queries","pickonionpeel.session"), 0,
@@ -1251,7 +1260,7 @@ def PickSpecMix():
     s = s +GetPickOutput()
     PickByNode(266, vars)
     s = s +GetPickOutput()
- 
+
     silr = SILRestriction()
     onoff = 0
     for sets in silr.SetsInCategory('Species'):
@@ -1314,7 +1323,7 @@ def PickCurve():
     pa = GetPickAttributes()
     pa.variables = ("default")
     SetPickAttributes(pa)
- 
+
     Pick(72, 53)
     p = GetPickOutput()
     Pick(156, 22)
@@ -1399,7 +1408,7 @@ def PickMultiWindow():
 
     TestText("PickMultiWindow", s)
     ResetPickLetter()
- 
+
     # delete window 2
     DeleteWindow()
     # remove plots from window 1
@@ -1519,7 +1528,7 @@ def PickAfterEngineCrashed():
             CloseComputeEngine("localhost")
         return "***\n*** Killed compute engine(s).\n***\n"
     PickBadEngineSetup("PickAfterEngineCrash", CrashCB)
-    
+
 def PickBoundary():
     # VisIt00004807
     # Test Pick on a 2D Boundary plot.
@@ -1565,7 +1574,7 @@ def PickBoundary():
     s = s + GetPickOutput()
 
     DeleteAllPlots()
- 
+
 
     OpenDatabase(silo_data_path("specmix_quad.silo"))
 
@@ -1732,12 +1741,12 @@ def PickBoundary():
     ResetView()
     SetViewExtentsType("original")
 
-    Pick(75, 258) 
+    Pick(75, 258)
     s = s + GetPickOutput()
     PickByZone(810)
     s = s + GetPickOutput()
 
-    NodePick(75, 258) 
+    NodePick(75, 258)
     s = s + GetPickOutput()
     PickByNode(869)
     s = s + GetPickOutput()
@@ -1780,9 +1789,9 @@ def PickVectorPlots():
     v.centerOfRotationSet = 0
     v.centerOfRotation = (0, 0, 0)
     SetView3D(v)
-   
+
     p = GetPickAttributes()
-    p.variables = ("default") 
+    p.variables = ("default")
     SetPickAttributes(p)
     Pick(274, 259)
     s = GetPickOutput()
@@ -1790,7 +1799,7 @@ def PickVectorPlots():
     s = s + GetPickOutput()
     Pick(86, 37)
     s = s + GetPickOutput()
-    Pick(83, 28) 
+    Pick(83, 28)
     s = s + GetPickOutput()
 
     AddOperator("Slice")
@@ -1798,7 +1807,7 @@ def PickVectorPlots():
     slice.axisType = slice.ZAxis
     SetOperatorOptions(slice)
     DrawPlots()
-    
+
     Pick(96, 244)
     s = s + GetPickOutput()
     Pick(204, 88)
@@ -1827,23 +1836,23 @@ def PickVectorPlots():
     v.centerOfRotationSet = 0
     v.centerOfRotation = (0, 0, 0)
     SetView3D(v)
-    
+
     Pick(119, 87)
-    s = s + GetPickOutput(); 
+    s = s + GetPickOutput();
     Pick(148, 230)
-    s = s + GetPickOutput(); 
+    s = s + GetPickOutput();
     Pick(22, 97)
-    s = s + GetPickOutput(); 
+    s = s + GetPickOutput();
 
     AddOperator("Slice")
     DrawPlots()
-    
+
     Pick(76, 113)
-    s = s + GetPickOutput(); 
+    s = s + GetPickOutput();
     Pick(244, 67)
-    s = s + GetPickOutput(); 
+    s = s + GetPickOutput();
     Pick(127, 217)
-    s = s + GetPickOutput(); 
+    s = s + GetPickOutput();
 
     DeleteAllPlots()
 
@@ -1882,7 +1891,7 @@ def PickVectorPlots():
     SetView3D(v)
     Pick(149, 209)
     s = s + GetPickOutput()
-    Pick(214, 6) 
+    Pick(214, 6)
     s = s + GetPickOutput()
 
 
@@ -1939,14 +1948,14 @@ def PickPointMeshes():
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.meshColor = (255, 0, 255, 255)
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.pointSize = 0.05
     m.pointType = m.Box
     SetPlotOptions(m)
     DrawPlots()
 
     v = GetView2D()
-    v.fullFrameActivationMode = v.On 
+    v.fullFrameActivationMode = v.On
     v.windowCoords = (-2.05391, -0.442661, 1.02233, 2.43681)
     SetView2D(v)
 
@@ -2044,7 +2053,7 @@ def PickGlobalIds():
     PickByGlobalNode(246827)
     s = s + GetPickOutput()
 
-    # bug '6097 -- global ids not displayed correctly with global picks. 
+    # bug '6097 -- global ids not displayed correctly with global picks.
     p.showGlobalIds = 1
     SetPickAttributes(p)
 
@@ -2130,8 +2139,8 @@ def PickAMR():
     DrawPlots()
     ResetView()
     v = GetView2D()
-    v.fullFrameActivationMode = v.Off 
-    v.windowCoords = (0.0232322, 0.0302984, 0.11825, 0.123807) 
+    v.fullFrameActivationMode = v.Off
+    v.windowCoords = (0.0232322, 0.0302984, 0.11825, 0.123807)
     SetView2D(v)
 
     s = "Testing boxlib 2D, pseudocolor\n"
@@ -2163,7 +2172,7 @@ def PickAMR():
     DrawPlots()
     v.windowCoords = (0.00408394, 0.0401985, 0.109754, 0.138135)
     SetView2D(v)
-    
+
     Pick(161, 137)
     s = s + GetPickOutput()
     NodePick(161, 137)
@@ -2218,13 +2227,13 @@ def PickSamrai():
                 NodePick(145, 157)
                 return GetPickOutput()
             elif index == 3:
-                PickByZone(1863, 2) 
+                PickByZone(1863, 2)
                 return GetPickOutput()
             elif index == 4:
-                PickByNode(2442, 2) 
+                PickByNode(2442, 2)
                 return GetPickOutput()
             elif index == 5:
-                PickByNode(2422, 2) 
+                PickByNode(2422, 2)
                 return GetPickOutput()
             else :
                 return ""
@@ -2302,7 +2311,7 @@ def PickSamrai():
     v.windowCoords = (4.89115, 6.43144, 6.80336, 8.63983)
     SetView2D(v)
     s = "\nTesting sliced SAMRAI:\n"
-    s = s + doPicks1()  
+    s = s + doPicks1()
     TestText("PickSamrai_01", s)
 
     SetActivePlots((0, 1, 2, 3))
@@ -2315,7 +2324,7 @@ def PickSamrai():
     DrawPlots()
     ResetPickLetter()
     s = "\nTesting clipped sliced SAMRAI:\n"
-    s = s + doPicks1()  
+    s = s + doPicks1()
     TestText("PickSamrai_02", s)
 
     SetActivePlots((0, 1, 2, 3))
@@ -2323,7 +2332,7 @@ def PickSamrai():
     DrawPlots()
     ResetPickLetter()
     s = "\nTesting sliced clipped SAMRAI:\n"
-    s = s + doPicks1()  
+    s = s + doPicks1()
     TestText("PickSamrai_03", s)
 
     SetActivePlots((0, 1, 2, 3))
@@ -2341,13 +2350,13 @@ def PickSamrai():
     v.farPlane = 41.2311
     v.perspective = 0
     SetView3D(v)
-    v.imageZoom = 8 
+    v.imageZoom = 8
     SetView3D(v)
     v.imagePan = (-0.2, 0.1)
     SetView3D(v)
     ResetPickLetter()
     s = "\nTesting clipped SAMRAI (3D):\n"
-    s = s + doPicks2()  
+    s = s + doPicks2()
     TestText("PickSamrai_04", s)
 
     DeleteAllPlots()
@@ -2366,7 +2375,7 @@ def PickSamrai():
 
     SetView2D(v)
     s = "\nTesting front:\n"
-    s = s + doPicks3()  
+    s = s + doPicks3()
     TestText("PickSamrai_05", s)
 
     DeleteAllPlots()
@@ -2508,7 +2517,7 @@ def PickIndexSelect():
     DrawPlots()
 
     s = s + "\nSame picks on Sliced, Index-selected 3D FilledBoundary Plot\n"
-    s = s + "Stride changes back to 1 due to MIR, so should match Mesh results below\n" 
+    s = s + "Stride changes back to 1 due to MIR, so should match Mesh results below\n"
     SetActivePlots(2)
     Pick(184, 234)
     s = s + GetPickOutput()
@@ -2600,7 +2609,7 @@ def PickMili():
     RemoveLastOperator()
 
     #'7145
-    AddPlot("Mesh", "mesh1")  
+    AddPlot("Mesh", "mesh1")
     SetActivePlots((0, 1))
     AddOperator("Clip")
     clip = ClipAttributes()
@@ -2740,7 +2749,7 @@ def PickBox():
     s = s + GetPickOutput()
     NodePick(206, 67)
     s = s + GetPickOutput()
-    
+
     TestText("PickBox", s)
     DeleteAllPlots()
     ResetPickLetter()
@@ -2788,7 +2797,7 @@ def PickScatter():
     scatter.var4Role = scatter.Color
     SetPlotOptions(scatter)
     DrawPlots()
-    ResetView() 
+    ResetView()
 
     Pick(100, 200)
     s = s + GetPickOutput()
@@ -2822,7 +2831,7 @@ def PickHighlight():
     AddPlot("Pseudocolor", "p")
     DrawPlots()
 
-    # bug '3880 -- global id highlights incorrect cell. 
+    # bug '3880 -- global id highlights incorrect cell.
     origAtts = GetPickAttributes()
     pickAtts = origAtts
     pickAtts.showPickHighlight = 1
@@ -2837,7 +2846,7 @@ def PickHighlight():
     ResetPickLetter()
 
     #restore the attributes
-    annotAtts  = GetAnnotationAttributes() 
+    annotAtts  = GetAnnotationAttributes()
     annotAtts.userInfoFlag = 1
     annotAtts.axes3D.xAxis.title.visible = 1
     annotAtts.axes3D.yAxis.title.visible = 1
@@ -2852,7 +2861,7 @@ def PickHighlightColor():
     AddPlot("Pseudocolor", "hardyglobal")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight  = 1
-    pickAtts.pickHighlightColor = (0, 0, 255) 
+    pickAtts.pickHighlightColor = (0, 0, 255)
     SetPickAttributes(pickAtts)
     DrawPlots()
     PickByZone(116242)
@@ -2862,7 +2871,7 @@ def PickHighlightColor():
     #restore the attributes
     pickAtts.pickHighlightColor = (255, 0, 0)
     SetPickAttributes(pickAtts)
-    annotAtts  = GetAnnotationAttributes() 
+    annotAtts  = GetAnnotationAttributes()
     annotAtts.userInfoFlag = 1
     annotAtts.axes3D.xAxis.title.visible = 1
     annotAtts.axes3D.yAxis.title.visible = 1
@@ -2870,7 +2879,7 @@ def PickHighlightColor():
     annotAtts.axes3D.bboxFlag = 1;
     annotAtts.axes3D.triadFlag = 1;
     SetAnnotationAttributes(annotAtts)
-    
+
 def PickRange():
     OpenDatabase(silo_data_path("noise.silo"))
     TurnOffAllAnnotations()
@@ -2977,8 +2986,9 @@ def PickRangeLabel():
     options["vars"] = "OriginalZoneLabels"
 
     output_dict = PickByZoneLabel(options)
-    s = str(output_dict)
-    TestText("PickRangeByZoneLabel",s)
+    # use json.dumps for dictionary object, makes for easier parsing
+    # of diffs when there are errors
+    TestText("PickRangeByZoneLabel",json.dumps(output_dict, indent=2))
     ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
@@ -2989,7 +2999,7 @@ def TestRemovePicks():
     AddPlot("Pseudocolor", "hardyglobal")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight = 1
-    SetPickAttributes(pickAtts) 
+    SetPickAttributes(pickAtts)
     DrawPlots()
 
     PickByZone(0)
@@ -3004,8 +3014,8 @@ def TestRemovePicks():
 
     #check that the returned list matches
     #what we expect
-    AssertEqual("Removed expected picks", removed, expected)
-    ClearPickPoints() 
+    TestValueEQ("Removed expected picks", removed, expected)
+    ClearPickPoints()
 
     PickByZone(0)
     PickByZone(18)
@@ -3015,9 +3025,9 @@ def TestRemovePicks():
     removed   = RemovePicks(to_remove)
     Test("RemovePicks_04")
 
-    AssertEqual("Removed expected picks 2", removed, expected)
+    TestValueEQ("Removed expected picks 2", removed, expected)
 
-    ClearPickPoints() 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
 
@@ -3027,7 +3037,7 @@ def TestRemoveLabeledPicks():
     AddPlot("Pseudocolor", "Primal/shell/bend_magnitude")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight = 1
-    SetPickAttributes(pickAtts) 
+    SetPickAttributes(pickAtts)
     DrawPlots()
 
     options = {}
@@ -3044,15 +3054,51 @@ def TestRemoveLabeledPicks():
     Test("RemoveLabeledPicks_01")
 
     expected = "shell 1, shell 2"
-    AssertEqual("Removed expected shell", expected, removed)
+    TestValueEQ("Removed expected shell", expected, removed)
 
-    ClearPickPoints() 
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+
+def TestSwivelFocus():
+    ResetPickAttributes()
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Mesh", "mesh1")
+    DrawPlots()
+    v = GetView3D()
+    v.viewNormal = (-0.461806, -0.673199, 0.577526)
+    v.focus = (0., 0., 0.)
+    v.viewUp = (-0.243052, 0.722237, 0.647532)
+    v.viewAngle = 30
+    v.parallelScale = 17.3205
+    v.nearPlane = -34.641
+    v.farPlane = 34.641
+    v.imagePan = (0.341463, 0.234840)
+    v.imageZoom = 1.21
+    SetView3D(v)
+
+    orig_atts = GetPickAttributes()
+    fh_atts   = GetPickAttributes()
+    fh_atts.swivelFocusToPick = 1
+    SetPickAttributes(fh_atts)
+
+    PickByNode(element=707)
+    Test("SwivelFocus_00")
+
+    SetPickAttributes(orig_atts)
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
 
 def TestSwivelHighlight():
     ResetPickAttributes()
-    ClearPickPoints() 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
     ResetView()
@@ -3070,17 +3116,17 @@ def TestSwivelHighlight():
     fh_atts.showPickLetter    = 0
     SetPickAttributes(fh_atts)
 
-    PickByZone(element=580)     
+    PickByZone(element=580)
     Test("SwivelHighlight_00")
-    
+
     SetPickAttributes(orig_atts)
-    ClearPickPoints() 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
 
 def TestNodeHighlight():
     ResetPickAttributes()
-    ClearPickPoints() 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
     ResetView()
@@ -3104,14 +3150,14 @@ def TestNodeHighlight():
     Test("NodeHighlight_00")
 
     ResetPickAttributes()
-    ClearPickPoints() 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
 
 
 def TestTranslatedHighlight():
     ResetPickAttributes()
-    ClearPickPoints() 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
     ResetView()
@@ -3130,19 +3176,44 @@ def TestTranslatedHighlight():
     TransformAtts.doTranslate = 1
     TransformAtts.translateX = 100
     SetOperatorOptions(TransformAtts)
-    
+
     DrawPlots()
 
     pAtts = GetPickAttributes()
     pAtts.showPickHighlight = 1
     SetPickAttributes(pAtts)
 
-    PickByZone(element=580)     
+    PickByZone(element=580)
     Test("TranslatedHighlight_00")
-    
-    ClearPickPoints() 
+
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
+
+
+def TestPickingExpression():
+    ResetPickAttributes()
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("curv3d.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "mesh_quality/jacobian")
+
+    DrawPlots()
+
+    PickByZone(element=100)
+    result = GetPickOutput()
+    PickByNode(element=100)
+    result += GetPickOutput()
+    TestText("TestPickingExpression_00", result)
+
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+    CloseDatabase(silo_data_path("curv3d.silo"))
 
 
 def PickMain():
@@ -3184,9 +3255,11 @@ def PickMain():
     PickZoneLabel()
     PickNodeLabel()
     PickRangeLabel()
+    TestSwivelFocus()
     TestSwivelHighlight()
     TestNodeHighlight()
     TestTranslatedHighlight()
+    TestPickingExpression()
 
 # Call the main function
 TurnOnAllAnnotations()

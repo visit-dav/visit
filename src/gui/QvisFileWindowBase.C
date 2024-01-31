@@ -49,13 +49,13 @@ using std::string;
 //   Delegate for QListWidget that draws the icon in the right place for
 //   virtual databases.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 15 11:53:30 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VirtualDBDelegate : public QItemDelegate
@@ -71,8 +71,8 @@ public:
 
 protected:
     virtual void drawDecoration(
-        QPainter *painter, 
-        const QStyleOptionViewItem &option, 
+        QPainter *painter,
+        const QStyleOptionViewItem &option,
         const QRect &rect,
         const QPixmap &pixmap) const
     {
@@ -95,14 +95,14 @@ protected:
 // ****************************************************************************
 // Method: QvisFileWindowBase::QvisFileWindowBase
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 15 12:05:08 PDT 2008
@@ -111,7 +111,7 @@ protected:
 //
 //   Tom Fogal, Sun Jan 24 16:54:13 MST 2010
 //   Apply patch from Andreas Kloeckner to set appropriate window role.
-//   
+//
 // ****************************************************************************
 
 QvisFileWindowBase::QvisFileWindowBase(const QString &winCaption) :
@@ -152,14 +152,14 @@ QvisFileWindowBase::QvisFileWindowBase(const QString &winCaption) :
 // ****************************************************************************
 // Method: QvisFileWindowBase::~QvisFileWindowBase
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 15 12:05:22 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisFileWindowBase::~QvisFileWindowBase()
@@ -177,7 +177,7 @@ QvisFileWindowBase::~QvisFileWindowBase()
 // ****************************************************************************
 // Method: QvisFileWindowBase::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Called when observed subjects are deleted so they can be removed from
 //   observation.
 //
@@ -188,7 +188,7 @@ QvisFileWindowBase::~QvisFileWindowBase()
 // Creation:   Tue Jul 15 12:05:36 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -203,7 +203,7 @@ QvisFileWindowBase::SubjectRemoved(Subject *TheRemovedSubject)
 // ****************************************************************************
 // Method: QvisFileWindowBase::ConnectSubjects
 //
-// Purpose: 
+// Purpose:
 //   Connect subjects for observation.
 //
 // Arguments:
@@ -213,7 +213,7 @@ QvisFileWindowBase::SubjectRemoved(Subject *TheRemovedSubject)
 // Creation:   Tue Jul 15 12:06:25 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -229,7 +229,7 @@ QvisFileWindowBase::ConnectSubjects(HostProfileList *hpl)
 // ****************************************************************************
 // Method: QvisFileWindowBase::GetDirectoryStrings
 //
-// Purpose: 
+// Purpose:
 //   Creates the current directory and up directory strings based on the
 //   current host.
 //
@@ -257,13 +257,13 @@ QvisFileWindowBase::GetDirectoryStrings(QString &curDir, QString &upDir)
 // ****************************************************************************
 // Method: QvisFileWindowBase::ProgressCallback
 //
-// Purpose: 
+// Purpose:
 //   This is a progress callback function for the FileServerList class and
 //   eventually RemoteProcess. It is called when we have to connect to a new
 //   mdserver. It prevents the user from changing anything in the window plus
 //   the window is modal so the rest of the GUI cannot be changed.
 //
-// Arguments:  
+// Arguments:
 //   data  : A void pointer to the file selection window.
 //   stage : The stage of the process launch.
 //
@@ -321,7 +321,7 @@ QvisFileWindowBase::ProgressCallback(void *data, int stage)
 // ****************************************************************************
 // Method: QvisFileWindowBase::UpdateComboBox
 //
-// Purpose: 
+// Purpose:
 //   Populates the specified combo box with the appropriate entries.
 //
 // Arguments:
@@ -373,15 +373,15 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
 // ****************************************************************************
 // Method: QvisFileWindowBase::CreateHostPathFilterControls
 //
-// Purpose: 
-//   Creates the top portion of the file selection window (host,path,filter) 
+// Purpose:
+//   Creates the top portion of the file selection window (host,path,filter)
 //   and some other controls.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 15 12:07:15 PDT 2008
@@ -417,7 +417,7 @@ QvisFileWindowBase::CreateHostPathFilterControls()
             this, SLOT(hostChanged(int)));
     QHBoxLayout *hostLayout = new QHBoxLayout();
     hostLayout->setSpacing(5);
-    hostLayout->setMargin(0);
+    hostLayout->setContentsMargins(0,0,0,0);
     QLabel *hostLabel = new QLabel(tr("Host"), central);
     QLabel *hostImageLabel = new QLabel(central);
     hostImageLabel->setPixmap(*computerPixmap);
@@ -436,8 +436,8 @@ QvisFileWindowBase::CreateHostPathFilterControls()
             this, SLOT(pathChanged(int)));
     QHBoxLayout *pathLayout2 = new QHBoxLayout;
     pathLayout2->setSpacing(5);
-    pathLayout2->setMargin(0);
-    
+    pathLayout2->setContentsMargins(0,0,0,0);
+
     QLabel *pathLabel = new QLabel(tr("Path"), central);
     QLabel *pathImageLabel = new QLabel(central);
     pathImageLabel->setPixmap(*folderPixmap);
@@ -459,7 +459,7 @@ QvisFileWindowBase::CreateHostPathFilterControls()
     topLayout->addLayout(toggleLayout);
     toggleLayout->setSpacing(10);
     QVBoxLayout *toggleVLayout = new QVBoxLayout(0);
-    toggleVLayout->setMargin(0);
+    toggleVLayout->setContentsMargins(0,0,0,0);
     toggleLayout->addLayout(toggleVLayout);
     currentDirToggle = new QCheckBox(tr("Use \"current working directory\" by default"), central);
     connect(currentDirToggle, SIGNAL(toggled(bool)),
@@ -519,7 +519,7 @@ QvisFileWindowBase::CreateHostPathFilterControls()
 // ****************************************************************************
 // Method: QvisFileWindowBase::CreateListWidget
 //
-// Purpose: 
+// Purpose:
 //   Creates a new list widget that uses a special delegate to aid in
 //   rendering.
 //
@@ -528,13 +528,13 @@ QvisFileWindowBase::CreateHostPathFilterControls()
 //
 // Returns:    A new QListWidget.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 15 11:58:07 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QListWidget *
@@ -548,14 +548,14 @@ QvisFileWindowBase::CreateFileListWidget(QWidget *parent) const
 // ****************************************************************************
 // method: QvisFileWindowBase::UpdateWindowFromFiles
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window is notified by the
 //   FileServerList object that there is a new file list or there is
 //   a new path, filter, etc. This function is responsible for putting
 //   the new values into the window's widgets.
 //
 // Arguments:
-//   doAll : If this is true, ignore any partial selection on the 
+//   doAll : If this is true, ignore any partial selection on the
 //           FileServerList's attributes and update all the widgets in
 //           the window.
 //
@@ -661,7 +661,7 @@ QvisFileWindowBase::UpdateWindowFromFiles(bool doAll)
 // ****************************************************************************
 // Method: QvisFileWindowBase::UpdateHostComboBox
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the host profile list changes. The purpose is
 //   to add any new host names into the host combo box so they are easily
 //   accessible.
@@ -733,7 +733,7 @@ QvisFileWindowBase::UpdateHostComboBox()
 // ****************************************************************************
 // Method: QvisFileWindowBase::UpdateDirectoryList
 //
-// Purpose: 
+// Purpose:
 //   This method adds all of the directories in the FileServer's
 //   file list to the window's directory listbox.
 //
@@ -817,7 +817,7 @@ QvisFileWindowBase::UpdateDirectoryList()
 // ****************************************************************************
 // Method: QvisFileWindowBase::AddFileItem
 //
-// Purpose: 
+// Purpose:
 //   Adds a file item to a list widget. The file item is initialized from a
 //   qualified filename.
 //
@@ -826,15 +826,17 @@ QvisFileWindowBase::UpdateDirectoryList()
 //   displayName : The name to show for the item.
 //   fileInfo    : Information about the file that will ride along with the item.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 10 15:59:10 PDT 2008
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg as suggested by Qt docs.
+//
 // ****************************************************************************
 
 void
@@ -857,8 +859,8 @@ QvisFileWindowBase::AddFileItem(QListWidget *parent, const QString &displayName,
         stringVector names(fileServer->GetVirtualFileDefinition(fileInfo));
         if(names.size() > (MAX_DISPLAYED_NAMES*2))
         {
-            QString nFilesString;
-            nFilesString.sprintf("(%d total files)", (int)names.size());
+            QString nFilesString =
+                QString("(%1 total files)").arg(names.size());
             itemText += QString("\n") + nFilesString;
 
             for(i = 0; i < MAX_DISPLAYED_NAMES; ++i)
@@ -884,7 +886,7 @@ QvisFileWindowBase::AddFileItem(QListWidget *parent, const QString &displayName,
 // ****************************************************************************
 // Method: QvisFileWindowBase::UpdateFileList
 //
-// Purpose: 
+// Purpose:
 //   This method gets the filtered file list from the file server and
 //   adds it to the list of files for the current directory.
 //
@@ -893,7 +895,7 @@ QvisFileWindowBase::AddFileItem(QListWidget *parent, const QString &displayName,
 //
 // Modifications:
 //   Brad Whitlock, Wed Oct 4 16:39:13 PST 2000
-//   I rewrote the code since the file filtering now happens in the 
+//   I rewrote the code since the file filtering now happens in the
 //   file server.
 //
 //   Brad Whitlock, Thu May 9 17:08:17 PST 2002
@@ -925,7 +927,7 @@ QvisFileWindowBase::UpdateFileList()
 // ****************************************************************************
 // Method: QvisFileWindowBase::RemoveComboBoxItem
 //
-// Purpose: 
+// Purpose:
 //   Removes an item from a combo box and makes another item active.
 //
 // Arguments:
@@ -958,7 +960,7 @@ QvisFileWindowBase::RemoveComboBoxItem(QComboBox *cb,
 // ****************************************************************************
 // Method: QvisFileWindowBase::ActivateComboBoxItem
 //
-// Purpose: 
+// Purpose:
 //   Makes an entry in the combo box active.
 //
 // Arguments:
@@ -991,7 +993,7 @@ QvisFileWindowBase::ActivateComboBoxItem(QComboBox *cb,
 // ****************************************************************************
 // Method: QvisFileWindowBase::HighlightComboBox
 //
-// Purpose: 
+// Purpose:
 //   Highlights the combo box by selecting its text and giving it focus.
 //
 // Arguments:
@@ -1001,7 +1003,7 @@ QvisFileWindowBase::ActivateComboBoxItem(QComboBox *cb,
 // Creation:   Wed Sep 11 17:45:50 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1016,17 +1018,17 @@ QvisFileWindowBase::HighlightComboBox(QComboBox *cb)
 // ****************************************************************************
 // Method: QvisFileWindowBase::AddFile
 //
-// Purpose: 
+// Purpose:
 //   Adds a filename to the intermediate selected file list if
 //   the filename is not already in the list.
 //
 // Arguments:
 //   newFile : The file to add to the intermediate file list.
 //
-// Returns:    
+// Returns:
 //   true is the file had to be added, false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 29 13:53:06 PST 2000
@@ -1062,7 +1064,7 @@ QvisFileWindowBase::AddFile(const QualifiedFilename &newFile)
 // ****************************************************************************
 // Method: QvisFileWindowBase::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the host, path, and filter and applies the
 //   ones that have changed.
 //
@@ -1120,7 +1122,7 @@ QvisFileWindowBase::GetCurrentValues(bool allowPathChange)
 // ****************************************************************************
 // Method: QvisFileWindowBase::ChangeHosts
 //
-// Purpose: 
+// Purpose:
 //   This method is called to change hosts.
 //
 // Returns:    true is there was an error.
@@ -1280,7 +1282,7 @@ QvisFileWindowBase::ChangeHosts()
 // ****************************************************************************
 // Method: QvisFileWindowBase::ChangePath
 //
-// Purpose: 
+// Purpose:
 //   This method is called to change the path.
 //
 // Arguments:
@@ -1396,7 +1398,7 @@ QvisFileWindowBase::ChangePath(bool allowPathChange)
 // ****************************************************************************
 // Method: QvisFileSelectionWindow::ChangeFilter
 //
-// Purpose: 
+// Purpose:
 //   This method is called to change filters.
 //
 // Returns:    true is there was an error.
@@ -1491,7 +1493,7 @@ QvisFileWindowBase::ChangeFilter()
 // ****************************************************************************
 // Method: QvisFileWindowBase::GetVirtualDatabaseDefinitions
 //
-// Purpose: 
+// Purpose:
 //   Populates a map with virtual database definitions.
 //
 // Arguments:
@@ -1501,7 +1503,7 @@ QvisFileWindowBase::ChangeFilter()
 // Creation:   Tue Jul 27 11:52:16 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1516,7 +1518,7 @@ QvisFileWindowBase::GetVirtualDatabaseDefinitions(
     {
         if(files[i].IsVirtual())
         {
-            defs[files[i].FullName()] = 
+            defs[files[i].FullName()] =
                 fileServer->GetVirtualFileDefinition(files[i].FullName());
         }
     }
@@ -1525,20 +1527,20 @@ QvisFileWindowBase::GetVirtualDatabaseDefinitions(
 // ****************************************************************************
 // Method: QvisFileWindowBase::CheckForNewStates
 //
-// Purpose: 
+// Purpose:
 //   Checks open virtual databases for new states.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 15 12:07:55 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1560,7 +1562,7 @@ QvisFileWindowBase::CheckForNewStates()
         if(intermediateFileList[i].IsVirtual())
         {
             std::string fileName(intermediateFileList[i].FullName());
-            StringStringVectorMap::const_iterator oldDef = 
+            StringStringVectorMap::const_iterator oldDef =
                 currentVirtualDatabaseDefinitions.find(fileName);
             StringStringVectorMap::const_iterator newDef =
                 newDefinitions.find(fileName);
@@ -1608,7 +1610,7 @@ QvisFileWindowBase::CheckForNewStates()
 // ****************************************************************************
 // Method: QvisFileWindowBase::filterChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the contents of
 //   filter text field change.
 //
@@ -1630,7 +1632,7 @@ QvisFileWindowBase::filterChanged()
 // ****************************************************************************
 // Method: QvisFileWindowBase::hostChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the contents of
 //   the host text field change. This tells the FileServerList to
 //   switch MetaData servers.
@@ -1654,7 +1656,7 @@ QvisFileWindowBase::hostChanged(int)
 // ****************************************************************************
 // Method: QvisFileWindowBase::pathChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the contents of
 //   the path text field change.
 //
@@ -1663,7 +1665,7 @@ QvisFileWindowBase::hostChanged(int)
 //
 // Modifications:
 //   Brad Whitlock, Wed Aug 30 15:56:45 PST 2000
-//   Caught some exceptions that are now propagated from the 
+//   Caught some exceptions that are now propagated from the
 //   FileServerList's Notify method. When I catch them, I display
 //   an error message.
 //
@@ -1687,7 +1689,7 @@ QvisFileWindowBase::pathChanged(int)
 // ****************************************************************************
 // Method: QvisFileWindowBase::changeDirectory
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when an item in the
 //   directory menu is double clicked.
 //
@@ -1729,7 +1731,7 @@ QvisFileWindowBase::pathChanged(int)
 // ****************************************************************************
 
 void
-QvisFileWindowBase::changeDirectory(QListWidgetItem *item) 
+QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
 {
     // make sure current item is not null
     if(!item)
@@ -1761,7 +1763,7 @@ QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
                     if(curPath[1] == ':')
                         newPath = "My Computer";
                 }
-                else 
+                else
                 {
                     size_t separatorPos = newPath.rfind(separator);
                     // If the last character is a slash, remove it.
@@ -1834,7 +1836,7 @@ QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
 // ****************************************************************************
 // Method: QvisFileWindowBase::refreshFiles
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that refreshes the list of files in the
 //   current directory.
 //
@@ -1864,7 +1866,7 @@ QvisFileWindowBase::refreshFiles()
 // ****************************************************************************
 // Method: QvisFileWindowBase::currentDir
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the "UseCurrentDirectory" flag
 //   in the file server.
 //
@@ -1875,7 +1877,7 @@ QvisFileWindowBase::refreshFiles()
 // Creation:   Fri Jul 26 14:04:21 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1887,7 +1889,7 @@ QvisFileWindowBase::currentDir(bool val)
 // ****************************************************************************
 // Method: QvisFileWindowBase::showDotFiles
 //
-// Purpose: 
+// Purpose:
 //   Set the new state for the show dot files check box.
 //
 // Arguments:
@@ -1897,7 +1899,7 @@ QvisFileWindowBase::currentDir(bool val)
 // Creation:   Wed Sep 12 15:33:59 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1910,7 +1912,7 @@ QvisFileWindowBase::showDotFiles(bool val)
 // ****************************************************************************
 // Method: QvisFileWindowBase::fileGroupingChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the AutomaticFileGrouping flag in
 //   the file server and updates the file list.
 //
@@ -1951,14 +1953,14 @@ QvisFileWindowBase::fileGroupingChanged(int val)
 // ****************************************************************************
 // Method: QvisFileWindowBase::showMinimized
 //
-// Purpose: 
+// Purpose:
 //   Iconifies the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 10 16:50:12 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1972,14 +1974,14 @@ QvisFileWindowBase::showMinimized()
 // ****************************************************************************
 // Method: QvisFileWindowBase::showNormal
 //
-// Purpose: 
+// Purpose:
 //   De-iconifies the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 10 16:50:12 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1996,7 +1998,7 @@ QvisFileWindowBase::showNormal()
 // ****************************************************************************
 // Method: QvisFileWindowBase::closeEvent
 //
-// Purpose: 
+// Purpose:
 //   Closes the window and also makes sure that the recentPathRemoval window
 //   gets closed if it is open.
 //
@@ -2009,7 +2011,7 @@ QvisFileWindowBase::showNormal()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2017,7 +2019,7 @@ QvisFileWindowBase::closeEvent(QCloseEvent *e)
 {
     if(recentPathsRemovalWindow && recentPathsRemovalWindow->isVisible())
         recentPathsRemovalWindow->hide();
-    
+
     QvisDelayedWindowSimpleObserver::closeEvent(e);
 }
 
@@ -2028,7 +2030,7 @@ QvisFileWindowBase::closeEvent(QCloseEvent *e)
 // ****************************************************************************
 // Method: EncodeQualifiedFilename
 //
-// Purpose: 
+// Purpose:
 //   Encodes QualifiedFilename into a QVariant that we can store in the
 //   QListWidgetItem's user data.
 //
@@ -2037,13 +2039,13 @@ QvisFileWindowBase::closeEvent(QCloseEvent *e)
 //
 // Returns:    A QVariant representation of the filename.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 10 15:57:11 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QVariant
@@ -2061,7 +2063,7 @@ EncodeQualifiedFilename(const QualifiedFilename &filename)
 // ****************************************************************************
 // Method: DecodeQualifiedFilename
 //
-// Purpose: 
+// Purpose:
 //   Decodes a QVariant into a QualifiedFilename.
 //
 // Arguments:
@@ -2069,13 +2071,13 @@ EncodeQualifiedFilename(const QualifiedFilename &filename)
 //
 // Returns:    A QualifiedFilename initialized from the QVariant data.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 10 15:57:58 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QualifiedFilename
@@ -2098,20 +2100,20 @@ DecodeQualifiedFilename(const QVariant &v)
 // ****************************************************************************
 // Method: QvisFileWindowBase::SetHideOptions
 //
-// Purpose: 
+// Purpose:
 //   If true, will tell the window to hide fields not needed by the Session
 //   dialog.
 //
 // Arguments:
 //   value : true or false to show or hide fields.
 //
-// Returns:    
+// Returns:
 //
 // Programmer: David Camp
 // Creation:   Thu Aug 27 09:40:00 PDT 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

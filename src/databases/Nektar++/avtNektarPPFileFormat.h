@@ -38,7 +38,7 @@ class DBOptionsAttributes;
 class avtNektarPPFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtNektarPPFileFormat(const char *, DBOptionsAttributes *);
+                       avtNektarPPFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtNektarPPFileFormat() {;};
 
     virtual void       Initialize();

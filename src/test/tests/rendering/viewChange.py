@@ -33,6 +33,13 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Wed Oct 21 11:19:52 PDT 2020
+#    Added TestLargeValueLineoutWithLogScaling
+#
+#    Alister Maguire, Mon May 24 12:50:20 PDT 2021
+#    Added TestViewChangeFullFrameWithLabels.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -338,6 +345,95 @@ def TestViewChangeLogScalingCurves():
     ResetView()
     DeleteAllPlots()
 
+def TestLargeValueLineoutWithLogScaling():
+    # github bug #5066
+    OpenDatabase(silo_data_path("rect2d.silo"))
+    DefineScalarExpression("tlarge", "t*1e19")
+    AddPlot("Pseudocolor", "tlarge")
+    DrawPlots()
+    Lineout((0.5, 1.5, 0), (0.5, 0, 0))
+    SetActiveWindow(2)
+    # Instead of getting *default* curve plot atts,
+    # get *current* plot's atts using `1` arg. This
+    # is to change *only* the attrs we want to change.
+    curveAtts = CurveAttributes(1)
+    curveAtts.lineWidth = 3
+    SetPlotOptions(curveAtts)
+    Test("largeValueLineout")
+
+    # save the curve as VTK so Mesh plot and 2D view can be tested.
+    oldSwa = SaveWindowAttributes() 
+    swa = SaveWindowAttributes() 
+    swa.fileName="lineoutRes"
+    swa.family=0
+    swa.format=swa.VTK
+    # need to ensure this is set (not the default on Windows)
+    swa.outputToCurrentDirectory=1
+    SetSaveWindowAttributes(swa)
+    if TestEnv.params["scalable"] == 0:
+        SaveWindow()
+    else:
+        # Turn of SR mode for the saveWindow, then turn it back on
+        ra = GetRenderingAttributes()
+        srm = ra.scalableActivationMode
+        ra.scalableActivationMode = ra.Never
+        SetRenderingAttributes(ra)
+        SaveWindow()
+        ra = GetRenderingAttributes()
+        ra.scalableActivationMode = srm
+        SetRenderingAttributes(ra)
+    # restore previous settings
+    SetSaveWindowAttributes(oldSwa)
+
+    v = GetViewCurve()
+    v.rangeScale  = v.LOG 
+    SetViewCurve(v)
+    Test("largeValueLineout_logScaling")
+
+    v = GetViewCurve()
+    v.rangeScale  = v.LINEAR 
+    SetViewCurve(v)
+
+    DeleteAllPlots()
+    OpenDatabase("lineoutRes.vtk")
+    AddPlot("Mesh", "mesh")
+    meshAtts = MeshAttributes()
+    meshAtts.lineWidth=3
+    SetPlotOptions(meshAtts)
+    DrawPlots()
+    Test("largeValueMeshCurve")
+
+    v = GetView2D()
+    v.yScale = v.LOG 
+    SetView2D(v)
+    Test("largeValueMeshCurve_logScaling")
+    v.yScale = v.LINEAR 
+    SetView2D(v)
+    DeleteWindow()
+    DeleteAllPlots()
+ 
+def TestViewChangeFullFrameWithLabels():
+    TestSection("Testing view changes with fullframe and label plots")
+    OpenDatabase(silo_data_path("curv2d.silo"))
+
+    AddPlot("Mesh", "curvmesh2d")
+    AddPlot("Label", "curvmesh2d")
+
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (-4.69855, 4.88342, 0.225185, 4.93329)
+    View2DAtts.fullFrameActivationMode = View2DAtts.On
+    SetView2D(View2DAtts)
+
+    DrawPlots()
+
+    Test("ViewChangeFullFrameWithLabels_00")
+
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(silo_data_path("curv2d.silo"))
+
+
+
 def ViewChangeMain():
     InitAnnotation()
     TestViewChangeSliceFlip()
@@ -345,6 +441,8 @@ def ViewChangeMain():
     TestViewChangeFullFrameWithGlyphs()
     TestViewChangeLogScaling2D()
     TestViewChangeLogScalingCurves()
+    TestLargeValueLineoutWithLogScaling()
+    TestViewChangeFullFrameWithLabels()
 
 # Call the main function
 ViewChangeMain()

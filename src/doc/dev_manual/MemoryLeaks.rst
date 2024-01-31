@@ -37,7 +37,7 @@ and change it to: ::
 
 In order for the stack traces from Valgrid to be the most useful, you should
 build the third party libraries with debug support. In our case we are
-going to do a minimal build with just the Silo and HDF5 I/O libraries. ::
+going to do a minimal build with just the Silo_ and HDF5 I/O libraries. ::
 
     ./build_visit3_1_0 --required --mesagl --llvm --silo --hdf5 --debug --no-visit \
     --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/toss3_debug \
@@ -49,7 +49,8 @@ Building VisIt_
 Just like the third party libraries, VisIt_ needs to be built with debug
 support in order for Valgrind to produce useful stack traces. Furthermore,
 VisIt_ contains conditional code that does additional cleanup at exit to
-eliminate spurious memory leaks that is enabled with VISIT_DEBUG_LEAKS.
+eliminate spurious memory leaks. The additional cleanup is enabled with
+DEBUG_MEMORY_LEAKS.
 The following steps were used to build VisIt_ as described. ::
 
     cd visit3.1.0

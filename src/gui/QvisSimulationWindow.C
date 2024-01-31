@@ -42,7 +42,7 @@
 #include <QMetaObject>
 #include <QProgressBar>
 #include <QPushButton>
-#include <QRadioButton> 
+#include <QRadioButton>
 #include <QScrollArea>
 #include <QSlider>
 #include <QSpinBox>
@@ -58,7 +58,7 @@
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisSimulationWindow class.
 //
 // Programmer: Jeremy Meredith
@@ -94,7 +94,7 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
 // ****************************************************************************
 // Method: QvisSimulationWindow::~QvisSimulationWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisSimulationWindow class.
 //
 // Programmer: Jeremy Meredith
@@ -123,11 +123,11 @@ QvisSimulationWindow::~QvisSimulationWindow()
 
     delete stripChartMgr;
 }
-  
+
 // ****************************************************************************
 // Method: QvisSimulationWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Jeremy Meredith
@@ -153,7 +153,7 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //   Shelly Prevost Fri Oct 12 15:19:40 PDT 2007
 //   modified splitter to help with widow space issues.
 //   Factored out strip chart window widgets and replaced them
-//   with a strip chart window manager. 
+//   with a strip chart window manager.
 //
 // ****************************************************************************
 void
@@ -175,7 +175,7 @@ QvisSimulationWindow::CreateWindowContents()
     // Create the widgets needed to show the engine information.
     simInfo = new QTreeWidget(central);
     simInfo->setColumnCount(2);
-    simInfo->setHeaderLabels(QStringList(tr("Attribute")) + 
+    simInfo->setHeaderLabels(QStringList(tr("Attribute")) +
                              QStringList(tr("Value")));
     simInfo->setAllColumnsShowFocus(true);
     simInfo->setAlternatingRowColors(true);
@@ -186,7 +186,7 @@ QvisSimulationWindow::CreateWindowContents()
     QGridLayout *statusLayout = new QGridLayout(0);
     topLayout->addLayout(statusLayout);
     simulationMode = new QLabel(tr("Not connected"), central);
-    statusLayout->addWidget(new QLabel(tr("Simulation status"), central), 0, 0);  
+    statusLayout->addWidget(new QLabel(tr("Simulation status"), central), 0, 0);
     statusLayout->addWidget(simulationMode, 0, 1, 1, 3);
 
     totalProgressBar = new QProgressBar(central);
@@ -215,7 +215,7 @@ QvisSimulationWindow::CreateWindowContents()
     topLayout->addWidget(notepadAux, 10);
 
     // Create the command window and post it to the notepad.
-    simCommands = new QvisSimulationCommandWindow(tr("Simulation controls"), 
+    simCommands = new QvisSimulationCommandWindow(tr("Simulation controls"),
         tr("Controls"), notepadAux);
     simCommands->post();
     connect(simCommands, SIGNAL(executeButtonCommand(const QString &)),
@@ -239,7 +239,7 @@ QvisSimulationWindow::CreateWindowContents()
 
     // Create the strip chart manager and post it to the notepad.
     int index = GetEngineListIndex(activeEngine);
-    stripChartMgr = 
+    stripChartMgr =
       new QvisStripChartMgr(this, GetViewerProxy(), engines, index, notepadAux);
     stripChartMgr->post();
 
@@ -250,7 +250,7 @@ QvisSimulationWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: ConnectUIChildren
 //
-// Purpose: 
+// Purpose:
 //   Connect the custon Ui gui signals to the availble slots
 //   for an object's children.
 //
@@ -271,7 +271,7 @@ QvisSimulationWindow::ConnectUIChildren(QObject *obj)
 {
     // Connect up handlers to all signals based on component type.
     const QObjectList &GUI_Objects = obj->children();
-    
+
     for (int i = 0; i < GUI_Objects.size(); ++i)
     {
         QObject *ui = GUI_Objects[i];
@@ -283,7 +283,7 @@ QvisSimulationWindow::ConnectUIChildren(QObject *obj)
 // ****************************************************************************
 // Method: ConnectUI
 //
-// Purpose: 
+// Purpose:
 //   Connect the custon Ui gui signals to the availble slots
 //   for an object.
 //
@@ -303,7 +303,7 @@ void
 QvisSimulationWindow::ConnectUI(QObject *ui)
 {
     SimCommandSlots *cc = CommandConnections;
-    
+
     const QMetaObject *mo = ui->metaObject();
 
 #if 0
@@ -312,7 +312,7 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
     for(int m = 0; m < uimo->methodCount(); ++m)
     {
         QMetaMethod uimm = uimo->method(m);
-        
+
         if(uimm.methodType() == QMetaMethod::Signal)
         {
             for(int n = 0; n < ccmo->methodCount(); ++n)
@@ -327,7 +327,7 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
             }
         }
     }
-    
+
     if(mm.methodType() == QMetaMethod::Method)
       qDebug("    %d: method: %s", m, mm.signature());
     else if(mm.methodType() == QMetaMethod::Signal)
@@ -343,7 +343,7 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
     for(int m = 0; m < mo->methodCount(); ++m)
     {
         QMetaMethod mm = mo->method(m);
-        
+
         if(mm.methodType() == QMetaMethod::Signal)
         {
           if( ui->objectName().toStdString() == "ListWidget" )
@@ -353,13 +353,13 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
         }
     }
 #endif
-    
+
     if (mo->indexOfSignal("clicked()") != -1)
     {
         QObject::connect(ui, SIGNAL(clicked()),
                          cc, SLOT(ClickedHandler()));
     }
-    
+
     if (mo->indexOfSignal("toggled(bool)") != -1)
     {
         QObject::connect(ui, SIGNAL(toggled(bool)),
@@ -483,12 +483,12 @@ QvisSimulationWindow::CreateCustomUIWindow()
         }
 
         simCommands->setCustomButtonEnabled(false);
-        
+
         clearStripCharts();
 
         return;
     }
-    
+
     debug5 << "UI_DIR = " << fname.toStdString() << endl;
     // qDebug("QvisSimulationWindow::CreateCommandUI: creating ui");
 
@@ -499,8 +499,8 @@ QvisSimulationWindow::CreateCustomUIWindow()
     QFile uiFile(fname);
     if(uiFile.open(QIODevice::ReadOnly))
         CustomUIWindow = uiLoader->load(&uiFile, NULL);
-    
-    // If creation failed then jump out 
+
+    // If creation failed then jump out
     if (CustomUIWindow == NULL)
     {
         simCommands->setCustomButtonEnabled(false);
@@ -519,7 +519,7 @@ QvisSimulationWindow::CreateCustomUIWindow()
     // object which will translate its signals into commands that we
     // will send to the simulation.
     ConnectUIChildren(CustomUIWindow);
-  
+
     // enable custom command UI button
     debug5 << "enabling custom command button" << endl;
     simCommands->setCustomButtonEnabled(true);
@@ -554,7 +554,7 @@ QvisSimulationWindow::Update(Subject *TheChangedSubject)
 // ****************************************************************************
 // Method: QvisSimulationWindow::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the subjects observed by the window are
 //   destructed.
 //
@@ -565,7 +565,7 @@ QvisSimulationWindow::Update(Subject *TheChangedSubject)
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
@@ -587,7 +587,7 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // Arguments:
 //   window : The parent window that contains the ui
 //   name   : The name of the widget to be updated.
-//   value  : If applicable the value for the widge 
+//   value  : If applicable the value for the widge
 //   e      : Boolean to enable/disable the gui
 //
 // Programmer: Shelly Prevost
@@ -629,7 +629,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             else //if( value == QString("SHOW_WIDGET") )
               ((QWidget *)ui)->show();
         }
-        
+
         if (ui->inherits("QLabel"))
         {
             debug5 << "found QLabel " << name.toStdString()
@@ -672,7 +672,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             {
               menu = new QMenu( name );
               menu->setObjectName( name );
-            
+
               ConnectUI(menu);
             }
 
@@ -702,7 +702,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                    << " value = " << value.toStdString() << endl;
             ((QSpinBox*)ui)->setValue(value.toInt());
         }
- 
+
         if (ui->inherits("QDial"))
         {
             debug5 << "found QDial " << name.toStdString()
@@ -776,7 +776,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             {
               debug5 << "found QComboBox " << name.toStdString()
                      << " current index = " << value.toInt() << endl;
-              
+
               ((QComboBox*)ui)->setCurrentIndex(index);
             }
             // The string value is character so clear the drop menu
@@ -815,24 +815,24 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                 if( item )
                   delete item;
               }
-            }                                 
+            }
             else if( text == std::string("CURRENT_ROW") &&
                      row < lWidget->count() )
             {
               lWidget->setCurrentRow( row );
-            }                                 
+            }
             else if( text == std::string("REMOVE_ROW") &&
                      row < lWidget->count() )
             {
               QListWidgetItem *item = lWidget->takeItem( row );
-              
+
               if( item )
                 delete item;
-            }                                 
+            }
             else
             {
               QListWidgetItem *item = lWidget->item(row);
-              
+
               // See if the item has already been created.
               if( item )
               {
@@ -846,10 +846,10 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                 // of the list.
                 while( lWidget->count() < row )
                   lWidget->addItem(QString(""));
-                  
+
                 // Create a new item and insert it into the list
                 item = new QListWidgetItem(tr("%1").arg(text.c_str()));
-                
+
                 lWidget->insertItem(row, item);
               }
 
@@ -888,21 +888,21 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             {
               while( tWidget->rowCount() )
                 tWidget->removeRow( tWidget->rowCount() - 1);
-            }                             
+            }
             else if( text == std::string("REMOVE_ROW") &&
                      row < tWidget->rowCount() )
             {
               tWidget->removeRow( row );
-            }                                 
+            }
             else if( text == std::string("REMOVE_COLUMN") &&
                      column <= 0 && column < tWidget->columnCount() )
             {
               tWidget->removeColumn( column );
-            }                                 
+            }
             else
             {
               QTableWidgetItem *item = tWidget->item(row, column);
-              
+
               // See if the item has already been created.
               if( item )
               {
@@ -913,13 +913,13 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
               {
                 // Create a new item and make sure there is room for it.
                 item = new QTableWidgetItem(tr("%1").arg(text.c_str()));
-                
+
                 if( tWidget->rowCount() <= row )
                   tWidget->setRowCount(row+1);
-                
+
                 if( tWidget->columnCount() <= column )
                   tWidget->setColumnCount(column+1);
-                
+
                 tWidget->setItem(row, column, item);
               }
 
@@ -944,7 +944,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 // ****************************************************************************
 // Method: QvisSimulationWindow::ConnectStatusAttributes
 //
-// Purpose: 
+// Purpose:
 //   Connects the status attributes subject that the window will observe.
 //
 // Arguments:
@@ -954,7 +954,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
@@ -969,7 +969,7 @@ QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
 // ****************************************************************************
 // Method: QvisSimulationWindow::ConnectSimulationUIValues
 //
-// Purpose: 
+// Purpose:
 //   Connects the UI value subject that the window will observe.
 //
 // Arguments:
@@ -979,7 +979,7 @@ QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisSimulationWindow::ConnectSimulationUIValues(SimulationUIValues *s)
@@ -994,7 +994,7 @@ QvisSimulationWindow::ConnectSimulationUIValues(SimulationUIValues *s)
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called to update the window's widgets when the subjects
 //   change.
 //
@@ -1028,7 +1028,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
             CustomUIWindow = NULL;
             simCommands->setCustomButtonEnabled(false);
           }
-          
+
           clearMessages();
           clearStripCharts();
         }
@@ -1067,7 +1067,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         }
         // The active engine was not in the list of engines returned
         // by the viewer.
-        else      
+        else
         {
             // Remove the entry from the list.
             RemoveStatusEntry(activeEngine);
@@ -1134,7 +1134,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
       std::string path = uiValues->GetSim();
       QString key(MakeKey(host, path));
-      
+
       // If the sender of the uiValues is the engine that we're
       // currently looking at, update the status widgets.
       if (key == activeEngine)
@@ -1142,43 +1142,43 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           debug5 << "uiValues being updated "
                  << uiValues->GetName() << "  " << uiValues->GetSvalue()
                  << std::endl;
-          
+
           if(uiValues->GetName() == "SIMULATION_ENABLE_BUTTON")
           {
             // Use activeEngine to get the metadata
             SimulationMetaDataMap::Iterator pos;
-            
+
             if ((pos = metadataMap.find(activeEngine)) != metadataMap.end())
             {
               const avtDatabaseMetaData *md = pos.value();
-              
+
               // Loop through all of the buttons to find the one being
               // enabled/disabled.
               int nButtons = simCommands->numCommandButtons();
-              
+
               for (int c=0; c<nButtons; ++c)
               {
-                avtSimulationCommandSpecification cmd = 
+                avtSimulationCommandSpecification cmd =
                   md->GetSimInfo().GetGenericCommands(c);
-                
+
                 avtSimulationCommandSpecification::CommandArgumentType t =
                   cmd.GetArgumentType();
-                
+
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
                   QString bName = QString(cmd.GetName().c_str());
-                  
+
                   if( bName == QString(uiValues->GetSvalue().c_str() ) )
                   {
                     bool enabled = uiValues->GetEnabled();
-                    
+
                     simCommands->setButtonEnabled(c, enabled, false);
                   }
                 }
               }
             }
           }
-          
+
           else if(uiValues->GetName() == "SIMULATION_TIME_LIMITS_ENABLED")
           {
             simCommands->setTimeRanging( uiValues->GetSvalue() == "1" );
@@ -1198,33 +1198,33 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           else if(uiValues->GetName() == "SIMULATION_MESSAGE_BOX")
           {
             QString msg = QString(uiValues->GetSvalue().c_str());
-            
+
             // Post the message to the user.
             if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok ) ==
                 QMessageBox::Ok)
               return;
           }
-          
+
           else if(uiValues->GetName() == "SIMULATION_MODE")
           {
             QString mode = QString(uiValues->GetSvalue().c_str());
             simulationMode->setText(mode);
           }
-          
+
           else if(uiValues->GetName() == "SIMULATION_MESSAGE")
           {
             QString message = QString(uiValues->GetSvalue().c_str());
             QString error = QString("<span style=\"color:#000000;\">%1</span>").arg(message);
             simMessages->addMessage(error);
           }
-          
+
           else if(uiValues->GetName() == "SIMULATION_MESSAGE_WARNING")
           {
             QString message = QString(uiValues->GetSvalue().c_str());
             QString warning = QString("<span style=\" color:#aaaa00;\">%1</span>").arg(message);
             simMessages->addMessage(warning);
           }
-          
+
           else if(uiValues->GetName() == "SIMULATION_MESSAGE_ERROR")
           {
             QString message = QString(uiValues->GetSvalue().c_str());
@@ -1236,48 +1236,48 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           {
             clearMessages();
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR_ALL")
           {
             stripChartMgr->clearAll();
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR_MENU")
           {
             stripChartMgr->clearMenu();
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_ADD_MENU_ITEM")
           {
             stripChartMgr->addMenuItem( uiValues->GetSvalue().c_str() );
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR")
           {
             unsigned int chart = atoi( uiValues->GetSvalue().c_str() );
             stripChartMgr->clear( chart );
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_SET_NAME_OLD")
           {
             unsigned int chart, index;
             std::string text;
-            
+
             parseCompositeCMD( uiValues->GetSvalue(), chart, index, text );
-            
+
             if( index == 0 )
               stripChartMgr->setTabLabel(chart, text.c_str() );
             else
               stripChartMgr->setCurveTitle(chart, index-1, text.c_str() );
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_SET_NAME")
           {
             unsigned int chart;
             std::string text;
-            
+
             parseCompositeCMD( uiValues->GetSvalue(), chart, text );
-            
+
             stripChartMgr->setTabLabel(chart, text.c_str() );
           }
 
@@ -1285,26 +1285,36 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           {
             unsigned int chart, curve;
             std::string text;
-            
+
             parseCompositeCMD( uiValues->GetSvalue(), chart, curve, text );
-            
+
             stripChartMgr->setCurveTitle(chart, curve, text.c_str() );
           }
-          
+
           else if(uiValues->GetName() == "STRIP_CHART_ADD_POINT")
           {
             unsigned int chart, curve;
             double x, y;
-            
+
             parseCompositeCMD( uiValues->GetSvalue(), chart, curve, x, y );
-            
+
             stripChartMgr->addDataPoint(chart, curve, x, y);
+          }
+          else if(uiValues->GetName() == "STRIP_CHART_ADD_POINTS")
+          {
+            unsigned int chart, curve, npts;
+            double *x, *y;
+
+            parseCompositeCMD( uiValues->GetSvalue(),
+                               chart, curve, npts, x, y );
+
+            stripChartMgr->addDataPoints(chart, curve, npts, x, y);
           }
           else if(CustomUIWindow != 0)
           {
-            UpdateUIComponent(CustomUIWindow, 
+            UpdateUIComponent(CustomUIWindow,
                               uiValues->GetName().c_str(),
-                              uiValues->GetSvalue().c_str(), 
+                              uiValues->GetSvalue().c_str(),
                               uiValues->GetEnabled());
           }
       }
@@ -1314,8 +1324,8 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateStatusArea
 //
-// Purpose: 
-//   Updates the window so it reflects the status information for the 
+// Purpose:
+//   Updates the window so it reflects the status information for the
 //   currently selected engine.
 //
 // Programmer: Jeremy Meredith
@@ -1359,7 +1369,7 @@ QvisSimulationWindow::UpdateStatusArea()
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateInformation
 //
-// Purpose: 
+// Purpose:
 //   Updates the engine information.
 //
 // Arguments:
@@ -1396,6 +1406,9 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Jean M. Favre, Mon Nov 28 13:04:28 PST 2011
 //   Use current time in some cases.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.setNum.
+//
 // ****************************************************************************
 void
 QvisSimulationWindow::UpdateInformation()
@@ -1404,7 +1417,7 @@ QvisSimulationWindow::UpdateInformation()
 
     // Clear the sim information.
     simInfo->clear();
-    
+
     // Use activeEngine to get the metadata
     SimulationMetaDataMap::Iterator pos;
 
@@ -1451,8 +1464,8 @@ QvisSimulationWindow::UpdateInformation()
         int firstDotPos =  newsim.indexOf('.');
         QString name = newsim.mid(firstDotPos+1,
                                   lastDotPos-firstDotPos-1);
-        item = new QTreeWidgetItem(simInfo, 
-                                   QStringList(tr("Name")) + 
+        item = new QTreeWidgetItem(simInfo,
+                                   QStringList(tr("Name")) +
                                    QStringList(name));
 
         // Date
@@ -1461,14 +1474,14 @@ QvisSimulationWindow::UpdateInformation()
         if(timesec == 0)
             timesec = time(NULL);
         QString timestr = ctime(&timesec);
-        item = new QTreeWidgetItem(simInfo, 
+        item = new QTreeWidgetItem(simInfo,
             QStringList(tr("Date")) +
             QStringList(timestr.left(timestr.length()-1)));
 
         // Num processors
-        tmp1.sprintf("%d", np);
-        item = new QTreeWidgetItem(simInfo, 
-                                   QStringList(tr("Num Processors")) + 
+        tmp1.setNum(np);
+        item = new QTreeWidgetItem(simInfo,
+                                   QStringList(tr("Num Processors")) +
                                    QStringList(tmp1));
 
         // Other values from the .sim2 file
@@ -1477,11 +1490,11 @@ QvisSimulationWindow::UpdateInformation()
 
         const std::vector<std::string> &values =
           md->GetSimInfo().GetOtherValues();
-        
+
         for (size_t i=0; i<names.size(); ++i)
         {
             item = new QTreeWidgetItem(simInfo,
-                                       QStringList(names[i].c_str()) + 
+                                       QStringList(names[i].c_str()) +
                                        QStringList(values[i].c_str()));
         }
 
@@ -1516,7 +1529,7 @@ QvisSimulationWindow::UpdateInformation()
             }
             else
             {
-                avtSimulationCommandSpecification cmd = 
+                avtSimulationCommandSpecification cmd =
                   md->GetSimInfo().GetGenericCommands(c);
 
                 avtSimulationCommandSpecification::CommandArgumentType t =
@@ -1559,7 +1572,7 @@ QvisSimulationWindow::UpdateInformation()
 // ****************************************************************************
 // Method: QvisSimulationWindow::AddStatusEntry
 //
-// Purpose: 
+// Purpose:
 //   Adds an engine to the internal status map.
 //
 // Arguments:
@@ -1569,7 +1582,7 @@ QvisSimulationWindow::UpdateInformation()
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisSimulationWindow::AddStatusEntry(const QString &key,
@@ -1583,7 +1596,7 @@ QvisSimulationWindow::AddStatusEntry(const QString &key,
 // ****************************************************************************
 // Method: QvisSimulationWindow::RemoveStatusEntry
 //
-// Purpose: 
+// Purpose:
 //   Removes an engine from the internal status map.
 //
 // Arguments:
@@ -1599,7 +1612,7 @@ void
 QvisSimulationWindow::RemoveStatusEntry(const QString &key)
 {
     SimulationStatusMap::Iterator pos;
-    
+
     // If the entry is in the map delete the key and remove it from
     // the map.
     if ((pos = statusMap.find(key)) != statusMap.end())
@@ -1614,7 +1627,7 @@ QvisSimulationWindow::RemoveStatusEntry(const QString &key)
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateStatusEntry
 //
-// Purpose: 
+// Purpose:
 //   Makes the specified entry in the status map update to the current status
 //   in the status attributes.
 //
@@ -1694,7 +1707,7 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
 // ****************************************************************************
 // Method: QvisSimulationWindow::AddMetaDataEntry
 //
-// Purpose: 
+// Purpose:
 //   Adds an engine to the internal meta data map.
 //
 // Arguments:
@@ -1705,10 +1718,10 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
-QvisSimulationWindow::AddMetaDataEntry(const QString &key, 
+QvisSimulationWindow::AddMetaDataEntry(const QString &key,
                                        const avtDatabaseMetaData &md)
 {
     // If the entry is not in the map add the entry to the map.
@@ -1719,7 +1732,7 @@ QvisSimulationWindow::AddMetaDataEntry(const QString &key,
 // ****************************************************************************
 // Method: QvisSimulationWindow::RemoveMetaDataEntry
 //
-// Purpose: 
+// Purpose:
 //   Removes an engine from the internal meta data map.
 //
 // Arguments:
@@ -1735,7 +1748,7 @@ void
 QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 {
     SimulationMetaDataMap::Iterator pos;
-    
+
     // If the entry is in the map delete the key and remove it from
     // the map.
     if ((pos = metadataMap.find(key)) != metadataMap.end())
@@ -1751,7 +1764,7 @@ QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateMetaDataEntry
 //
-// Purpose: 
+// Purpose:
 //   Makes the specified entry in the meta data map update to the current
 //   meta data.
 //
@@ -1766,7 +1779,7 @@ QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 //
 // ****************************************************************************
 void
-QvisSimulationWindow::UpdateMetaDataEntry(const QString &key, 
+QvisSimulationWindow::UpdateMetaDataEntry(const QString &key,
                                           const avtDatabaseMetaData &md)
 {
     // If the sender is in the meta data map, copy the MD into the map entry.
@@ -1785,7 +1798,7 @@ QvisSimulationWindow::UpdateMetaDataEntry(const QString &key,
 // ****************************************************************************
 // Method: QvisSimulationWindow::clearMessages
 //
-// Purpose: 
+// Purpose:
 //   Clear all of the strips charts.
 //
 // Programmer: Allen Sanderson
@@ -1804,7 +1817,7 @@ QvisSimulationWindow::clearMessages()
 // ****************************************************************************
 // Method: QvisSimulationWindow::clearStripCharts
 //
-// Purpose: 
+// Purpose:
 //   Clear all of the strips charts.
 //
 // Programmer: Allen Sanderson
@@ -1829,13 +1842,15 @@ QvisSimulationWindow::clearStripCharts()
 // ****************************************************************************
 // Method: QvisSimulationWindow::MakeKey
 //
-// Purpose: 
+// Purpose:
 //   Creates a key using the host name and the simulation.
 //
 // Programmer: Jeremy Meredith
 // Creation:   March 21, 2005
 //
 // Modifications:
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 QString
@@ -1845,13 +1860,13 @@ QvisSimulationWindow::MakeKey(const std::string &host,
     if(sim.empty())
         return QString(host.c_str());
     else
-        return QString().sprintf("%s:%s", host.c_str(), sim.c_str());
+        return QString("%1:%2").arg(host.c_str()).arg(sim.c_str());
 }
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::GetEngineListIndex
 //
-// Purpose: 
+// Purpose:
 //   Gets the engine list index for the given host:sim key.
 //
 // Arguments:
@@ -1880,7 +1895,7 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 // ****************************************************************************
 // Method: QvisSimulationWindow::GetUIFileDirectory
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the directory where VisIt looks for UI files.
 //
 // Returns:    The directory where VisIt looks for UI files.
@@ -1920,7 +1935,7 @@ QvisSimulationWindow::GetUIFileDirectory() const
 // ****************************************************************************
 // Method: QvisSimulationWindow::GetUIfile
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the directory where VisIt looks for UI files.
 //
 // Arguments:
@@ -2128,6 +2143,53 @@ QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
 }
 
 // ****************************************************************************
+// Method: QvisSimulationWindow::parseCompositeCMD
+//
+// Purpose:
+//   This method is called to parse a composite cmd to get the
+//   chart, cruve, and npts, and an array of x, and y values.
+//
+// Arguments:
+//   cmd      : The properly form command string.
+//
+// Programmer: Allen Sanderson
+// Creation:   29 May 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
+                                         unsigned int &chart,
+                                         unsigned int &curve,
+                                         unsigned int &npts,
+                                         double *&x, double *&y )
+{
+  std::string strcmd(cmd);
+
+  std::string str = getNextString( strcmd, " | " );
+  chart = atof( str.c_str() );
+
+  str = getNextString( strcmd, " | " );
+  curve = atof( str.c_str() );
+
+  str = getNextString( strcmd, " | " );
+  npts = atof( str.c_str() );
+
+  x = new double[npts];
+  y = new double[npts];
+
+  for( unsigned int i=0; i<npts; ++i )
+  {
+    str = getNextString( strcmd, " | " );
+    x[i] = atof( str.c_str() );
+
+    str = getNextString( strcmd, " | " );
+    y[i] = atof( str.c_str() );
+  }
+}
+
+// ****************************************************************************
 // Method: QvisSimulationWindow::getNextString
 //
 // Purpose:
@@ -2153,14 +2215,14 @@ std::string QvisSimulationWindow::getNextString( std::string &cmd,
 
   if( delim != std::string::npos )
   {
-    str.erase(delim, std::string::npos);  
+    str.erase(delim, std::string::npos);
     cmd.erase(0, delim+delimiter.length());
   }
   else
   {
     cmd.clear();
   }
-  
+
   return str;
 }
 
@@ -2172,7 +2234,7 @@ std::string QvisSimulationWindow::getNextString( std::string &cmd,
 // ****************************************************************************
 // Method: QvisSimulationWindow::selectEngine
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when selecting a new engine
 //   to display.
 //
@@ -2210,7 +2272,7 @@ QvisSimulationWindow::selectEngine(int index)
         if( show )
           showCustomUIWindow();
     }
-    
+
     // Update the rest of the widgets using the information for the
     // active engine.
     UpdateStatusArea();
@@ -2221,7 +2283,7 @@ QvisSimulationWindow::selectEngine(int index)
 // ****************************************************************************
 // Method: QvisSimulationWindow::interruptEngine
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to interrupt the engine that's
 //   displayed in the window.
 //
@@ -2249,7 +2311,7 @@ QvisSimulationWindow::interruptEngine()
 // ****************************************************************************
 // Method: QvisSimulationWindow::closeEngine
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "Close engine" button
 //   is clicked. Its job is to tell the viewer to close the engine being
 //   displayed by the window.
@@ -2293,7 +2355,7 @@ QvisSimulationWindow::closeEngine()
         QMessageBox::Ok)
     {
         stripChartMgr->clearAll();
-      
+
         // Close the engine.
         GetViewerMethods()->CloseComputeEngine(host, sim);
     }
@@ -2302,7 +2364,7 @@ QvisSimulationWindow::closeEngine()
 // ****************************************************************************
 // Method: QvisSimulationWindow::clearCache
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to tell the current engine
 //   to clear its cache.
 //
@@ -2359,10 +2421,10 @@ QvisSimulationWindow::showCustomUIWindow()
         int index = GetEngineListIndex(activeEngine);
         if (index < 0)
           return;
-        
+
         std::string host = engines->GetEngineName()[index];
         std::string sim  = engines->GetSimulationName()[index];
-        
+
         QString cmd("ActivateCustomUI");
         QString args(QString("clicked();%1;QPushButton;Simulations;NONE").arg(cmd));
         GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
@@ -2387,7 +2449,7 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
     int index = GetEngineListIndex(activeEngine);
     if (index < 0)
         return;
-    
+
     std::string host = engines->GetEngineName()[index];
     std::string sim  = engines->GetSimulationName()[index];
 
@@ -2472,7 +2534,7 @@ QvisSimulationWindow::executeEnableTimeRange(const QString &value)
 //   command string.
 //
 // ****************************************************************************
-void 
+void
 QvisSimulationWindow::executeStartCommand(const QString &value)
 {
     int index = GetEngineListIndex(activeEngine);
@@ -2503,7 +2565,7 @@ QvisSimulationWindow::executeStartCommand(const QString &value)
 //    command string.
 //
 // ****************************************************************************
-void 
+void
 QvisSimulationWindow::executeStepCommand(const QString &value)
 {
     int index = GetEngineListIndex(activeEngine);
@@ -2534,7 +2596,7 @@ QvisSimulationWindow::executeStepCommand(const QString &value)
 //    command string.
 //
 // ****************************************************************************
-void 
+void
 QvisSimulationWindow::executeStopCommand(const QString &value)
 {
     int index = GetEngineListIndex(activeEngine);
@@ -2546,7 +2608,7 @@ QvisSimulationWindow::executeStopCommand(const QString &value)
 
     QString cmd("StopCycle");
     QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString()); 
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
 
 // ****************************************************************************
@@ -2565,7 +2627,7 @@ QvisSimulationWindow::executeStopCommand(const QString &value)
 //    command string.
 //
 // ****************************************************************************
-void 
+void
 QvisSimulationWindow::setStripChartVar(const QString &value)
 {
     int index = GetEngineListIndex(activeEngine);
@@ -2577,5 +2639,5 @@ QvisSimulationWindow::setStripChartVar(const QString &value)
 
     QString cmd("StripChartVar");
     QString args(QString("triggered();%1;QMenu;Simulations;%2").arg(cmd).arg(value));
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString()); 
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }

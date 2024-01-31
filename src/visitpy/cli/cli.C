@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
+#include <Py2and3Support.h>
 
 // get select
 #if defined(_WIN32)
@@ -46,10 +47,10 @@
 #else
   #define VISITCLI_API
 #endif
+
 // For the VisIt module.
 extern "C" void cli_initvisit(int, bool, int, char **, int, char **);
 extern "C" void cli_runscript(const char *);
-extern "C" VISITCLI_API int Py_Main(int, char **);
 
 // ****************************************************************************
 // Function: main
@@ -168,6 +169,19 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //     1) Switch to using args after "-s" as sys.argv
 //     2) add "-ni"  + "-non-interactive" command line switches.
 //
+//    Cyrus Harrison, Wed Jan  6 11:39:57 PST 2021
+//    Added py2to3 option. When enabled, auto converts any python
+//    source run with "Source" to use the Python 2 to 3 translator
+//    before execution.
+//
+//    Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
+//    Adjustments for Pyside 2 support. 
+//
+//    Kathleen Biagas, Fri Sep 24 08:36:43 PDT 2021
+//    When processing args, look for '-sla' or '-la' and skip the next arg,
+//    as '-s' is a viable option that could be passed to srun via -sla or -la
+//    and we don't that option to be proccessed as a cli '-s' option.
+//
 // ****************************************************************************
 
 int
@@ -178,6 +192,7 @@ main(int argc, char *argv[])
     bool bufferDebug = false;
     bool verbose = false;
     bool s_found = false;
+    bool py2to3 = false;
     bool pyside = false;
     bool pyside_gui = false;
     bool pyside_viewer = false;
@@ -190,9 +205,9 @@ main(int argc, char *argv[])
     char **argv_py_style = new char *[argc];
     
     bool scriptOnly = false;
-                      
+
     int i=0;
-        
+
     int argc2 = 0;
     int argc_after_s = 0; 
     char* uifile = 0;
@@ -284,6 +299,26 @@ main(int argc, char *argv[])
             }
         }
 #else
+        else if(strcmp(argv[i], "-sla") == 0 && (i+1 < argc))
+        {
+            // skip next arg, since it may be '-s'
+            // Pass the array along to the visitmodule.
+            argv2[argc2++] = argv[i];
+            argv_after_s[argc_after_s++] = argv[i];
+            argv2[argc2++] = argv[i+1];
+            argv_after_s[argc_after_s++] = argv[i+1];
+
+            ++i;
+        }
+        else if(strcmp(argv[i], "-la") == 0 && (i+1 < argc))
+        {
+            // skip next arg, since it may be '-s'
+            argv2[argc2++] = argv[i];
+            argv_after_s[argc_after_s++] = argv[i];
+            argv2[argc2++] = argv[i+1];
+            argv_after_s[argc_after_s++] = argv[i+1];
+            ++i;
+        }
         else if(strcmp(argv[i], "-s") == 0 && (i+1 < argc))
         {
             runFile = argv[i+1];
@@ -358,6 +393,10 @@ main(int argc, char *argv[])
         //     // Skip the rate that comes along with -fps.
         //     ++i;
         // }
+        else if(strcmp(argv[i], "-py2to3") == 0)
+        {
+            py2to3 = true;
+        }
         else if(strcmp(argv[i], "-pyside") == 0)
         {
             pyside = true;
@@ -504,7 +543,14 @@ main(int argc, char *argv[])
             argc_py_style++;
         }
 
-        PySys_SetArgv(argc_py_style, argv_py_style);
+        if(argc_py_style == 0)
+        {
+            PySys_SetArgv(1, const_cast<char**>(&argv[0]));
+        }
+        else
+        {
+            PySys_SetArgv(argc_py_style, argv_py_style);
+        }
                 
         PyRun_SimpleString((char*)"import sys");
         PyRun_SimpleString((char*)"import os");
@@ -517,14 +563,39 @@ main(int argc, char *argv[])
         oss << "sys.path.append(pjoin(r'" << vlibdir  <<"','site-packages'))";
         PyRun_SimpleString(oss.str().c_str());
 
-        PyRun_SimpleString((char*)"import visit");
+#ifdef _WIN32
+        if(GetIsDevelopmentVersion())
+        {
+            // retrieve ThirdParty directory
+            std::string dlldir  = GetVisItThirdPartyDirectory(); 
+            // Add thirdparty DLL's directory
+            std::ostringstream ss;
+            ss << "os.add_dll_directory(r'" << dlldir  <<"')";
+            PyRun_SimpleString(ss.str().c_str());
+        }
+#endif
 
         // Initialize the VisIt module.
-        cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
+        cli_initvisit(bufferDebug ? -debugLevel : debugLevel,
+                      verbose,
+                      argc2, argv2,
                       argc_after_s, argv_after_s);
 
+        // import visit after the module is fully inited
+        PyRun_SimpleString((char*)"import visit");
+        PyRun_SimpleString((char*)"import visit_utils");
+        PyRun_SimpleString((char*)"from visit_utils.builtin import *");
 
-        // add original args to visit.argv_full, just in case 
+        // enable auto 2to3 support for passed scripts
+        if(py2to3)
+        {
+            // let folks know this is on:
+            std::cout << "VisIt CLI: Automatic Python 2to3 Conversion Enabled"
+                      << std::endl;
+            PyRun_SimpleString("visit_utils.builtin.SetAutoPy2to3(True)");
+        }
+
+        // add original args to visit.argv_full, just in case
         // some one needs to access them.
         
         PyObject *visit_module = PyImport_AddModule("visit"); //borrowed
@@ -542,13 +613,14 @@ main(int argc, char *argv[])
         if(pyside || pyside_gui)
         {
             int error = 0;
+            if(!error) error |= PyRun_SimpleString((char*)"import PySide2");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtCore import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtGui import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtOpenGL import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtUiTools import *");
 
-            if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_support");
-            if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_hook");
+            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_support");
+            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_hook");
 
             if(error)
             {
@@ -558,8 +630,10 @@ main(int argc, char *argv[])
             }
             else
             {
-                PyRun_SimpleString((char*)"visit.pyside_support.SetupTimer()");
-                PyRun_SimpleString((char*)"visit.pyside_hook.SetHook()");
+                // Cyrus Note, Wed Feb 24 10:15:52 PST 2021
+                // This Event handler seems to make the CLI unusable.
+                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_support.SetupTimer()");
+                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_hook.SetHook()");
             }
         }
 
@@ -568,7 +642,7 @@ main(int argc, char *argv[])
             //pysideviewer needs to be executed before visit import
             //so that visit will use the window..
             // we will only have one instance, init it
-            int error = PyRun_SimpleString((char*)"import visit.pyside_gui");
+            int error = PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_gui");
 
             if(error)
             {
@@ -580,15 +654,15 @@ main(int argc, char *argv[])
             PyRun_SimpleString((char*)"args = sys.argv");
             if(uifile) //if external file then start VisIt in embedded mode
                 PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
-            PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
+            PyRun_SimpleString((char*)"tmp = visit_utils.builtin.pyside_gui.PySideGUI.instance(args)");
             PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetPlotWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindowIds");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetUIWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetPlotWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOperatorWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindowNames");
 
             if(!uifile && !pyside_viewer)
                 PyRun_SimpleString((char*)"GetUIWindow().show()");
@@ -600,9 +674,8 @@ main(int argc, char *argv[])
                                   "__visit_source_file__  = None\n"
                                   "__visit_source_stack__ = [] \n");
 
-
         PyRun_SimpleString((char*)"visit.Launch()");
-
+        
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
 
@@ -645,7 +718,7 @@ main(int argc, char *argv[])
             
             if(split.size() == 2)
             {
-                command << "OpenDatabase(\"" << split[0] << ", 0, \"" << split[1] << "\")";
+                command << "OpenDatabase(\"" << split[0] << "\", 0, \"" << split[1] << "\")";
             }  
             else
             {

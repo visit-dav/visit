@@ -3,14 +3,31 @@ NOT SHOWING GLOBAL IDS
 Global node pick on node_centered data:
 
 dictionary output:
-{'pick_letter': 'A', 'incident_zones': (3162, 3163, 3177, 3178), 'point': (0.7166666984558105, 0.2666666805744171, 1.0), 'filename': 'global_node.silo', 'node_id': 3869, 'dist': 0.5927806496620178, 'domain_id': 55}
+{
+  "dist": 0.5927806496620178,
+  "domain_id": 55,
+  "filename": "global_node.silo",
+  "incident_zones": [
+    3178,
+    3177,
+    3163,
+    3162
+  ],
+  "node_id": 3869,
+  "pick_letter": "A",
+  "point": [
+    0.7166666984558105,
+    0.2666666805744171,
+    1.0
+  ]
+}
 
 string output: 
 A:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  3869
-Incident Zones:  3162  3163  3177  3178  
+Incident Zones:  3178  3177  3163  3162  
 dist:  <nodal> = 0.592781
 
 
@@ -19,7 +36,37 @@ dist:  <nodal> = 0.592781
 Global zone pick on node_centered data:
 
 dictionary output:
-{'pick_letter': 'B', 'dist': {'3690': 0.6835365891456604, '3691': 0.6755656003952026, '3946': 0.695421576499939, '3947': 0.6875883936882019, '3962': 0.7039570808410645, '3963': 0.6962199807167053, '3706': 0.6922186613082886, '3707': 0.6843488812446594}, 'zone_id': 3250, 'point': (0.17500000447034836, 0.8583333492279053, 0.9916666746139526), 'filename': 'global_node.silo', 'domain_id': 61, 'incident_nodes': (3690, 3691, 3707, 3706, 3946, 3947, 3963, 3962)}
+{
+  "dist": {
+    "3690": 0.6835365891456604,
+    "3691": 0.6755656003952026,
+    "3706": 0.6922186613082886,
+    "3707": 0.6843488812446594,
+    "3946": 0.695421576499939,
+    "3947": 0.6875883936882019,
+    "3962": 0.7039570808410645,
+    "3963": 0.6962199807167053
+  },
+  "domain_id": 61,
+  "filename": "global_node.silo",
+  "incident_nodes": [
+    3690,
+    3691,
+    3707,
+    3706,
+    3946,
+    3947,
+    3963,
+    3962
+  ],
+  "pick_letter": "B",
+  "point": [
+    0.17500000447034836,
+    0.8583333492279053,
+    0.9916666746139526
+  ],
+  "zone_id": 3250
+}
 
 string output: 
 B:  global_node.silo
@@ -44,14 +91,31 @@ SHOWING GLOBAL IDS
 Global node pick on node_centered data:
 
 dictionary output:
-{'pick_letter': 'C', 'incident_zones': (235158, 235159, 235221, 235222), 'point': (0.7166666984558105, 0.2666666805744171, 1.0), 'filename': 'global_node.silo', 'node_id': 246827, 'dist': 0.5927806496620178, 'domain_id': 55}
+{
+  "dist": 0.5927806496620178,
+  "domain_id": 55,
+  "filename": "global_node.silo",
+  "incident_zones": [
+    235222,
+    235221,
+    235159,
+    235158
+  ],
+  "node_id": 246827,
+  "pick_letter": "C",
+  "point": [
+    0.7166666984558105,
+    0.2666666805744171,
+    1.0
+  ]
+}
 
 string output: 
 C:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  246827 (global)
-Incident Zones: (global)  235158  235159  235221  235222  
+Incident Zones: (global)  235222  235221  235159  235158  
 dist:  <nodal> = 0.592781
 
 
@@ -60,7 +124,37 @@ dist:  <nodal> = 0.592781
 Global zone pick on node_centered data:
 
 dictionary output:
-{'pick_letter': 'D', 'dist': {'244938': 0.6835365891456604, '244939': 0.6755656003952026, '249034': 0.695421576499939, '249035': 0.6875883936882019, '245003': 0.6843488812446594, '245002': 0.6922186613082886, '249098': 0.7039570808410645, '249099': 0.6962199807167053}, 'zone_id': 237394, 'point': (0.17500000447034836, 0.8583333492279053, 0.9916666746139526), 'filename': 'global_node.silo', 'domain_id': 61, 'incident_nodes': (244938, 244939, 245003, 245002, 249034, 249035, 249099, 249098)}
+{
+  "dist": {
+    "244938": 0.6835365891456604,
+    "244939": 0.6755656003952026,
+    "245002": 0.6922186613082886,
+    "245003": 0.6843488812446594,
+    "249034": 0.695421576499939,
+    "249035": 0.6875883936882019,
+    "249098": 0.7039570808410645,
+    "249099": 0.6962199807167053
+  },
+  "domain_id": 61,
+  "filename": "global_node.silo",
+  "incident_nodes": [
+    244938,
+    244939,
+    245003,
+    245002,
+    249034,
+    249035,
+    249099,
+    249098
+  ],
+  "pick_letter": "D",
+  "point": [
+    0.17500000447034836,
+    0.8583333492279053,
+    0.9916666746139526
+  ],
+  "zone_id": 237394
+}
 
 string output: 
 D:  global_node.silo
@@ -85,19 +179,41 @@ NOT SHOWING GLOBAL IDS
 Global node pick on zone_centered data:
 
 dictionary output:
-{'pick_letter': 'E', 'incident_zones': (3162, 3163, 3177, 3178), 'point': (0.7166666984558105, 0.2666666805744171, 1.0), 'filename': 'global_node.silo', 'p': {'3178': 460.8500061035156, '3162': 425.3999938964844, '3163': 460.8500061035156, '3177': 425.3999938964844}, 'node_id': 3869, 'domain_id': 55}
+{
+  "domain_id": 55,
+  "filename": "global_node.silo",
+  "incident_zones": [
+    3178,
+    3177,
+    3163,
+    3162
+  ],
+  "node_id": 3869,
+  "p": {
+    "3162": 425.3999938964844,
+    "3163": 460.8500061035156,
+    "3177": 425.3999938964844,
+    "3178": 460.8500061035156
+  },
+  "pick_letter": "E",
+  "point": [
+    0.7166666984558105,
+    0.2666666805744171,
+    1.0
+  ]
+}
 
 string output: 
 E:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  3869
-Incident Zones:  3162  3163  3177  3178  
+Incident Zones:  3178  3177  3163  3162  
 p:  <zonal> 
-    (3162) = 425.4
-    (3163) = 460.85
-    (3177) = 425.4
     (3178) = 460.85
+    (3177) = 425.4
+    (3163) = 460.85
+    (3162) = 425.4
 
 
 
@@ -105,7 +221,28 @@ p:  <zonal>
 Global zone pick on zone_centered data:
 
 dictionary output:
-{'pick_letter': 'F', 'zone_id': 3250, 'point': (0.17500000447034836, 0.8583333492279053, 0.9916666746139526), 'filename': 'global_node.silo', 'p': 354.5, 'domain_id': 61, 'incident_nodes': (3690, 3691, 3707, 3706, 3946, 3947, 3963, 3962)}
+{
+  "domain_id": 61,
+  "filename": "global_node.silo",
+  "incident_nodes": [
+    3690,
+    3691,
+    3707,
+    3706,
+    3946,
+    3947,
+    3963,
+    3962
+  ],
+  "p": 354.5,
+  "pick_letter": "F",
+  "point": [
+    0.17500000447034836,
+    0.8583333492279053,
+    0.9916666746139526
+  ],
+  "zone_id": 3250
+}
 
 string output: 
 F:  global_node.silo
@@ -122,19 +259,41 @@ SHOWING GLOBAL IDS
 Global node pick on zone_centered data:
 
 dictionary output:
-{'pick_letter': 'G', 'incident_zones': (235158, 235159, 235221, 235222), 'point': (0.7166666984558105, 0.2666666805744171, 1.0), 'filename': 'global_node.silo', 'p': {'235222': 460.8500061035156, '235221': 425.3999938964844, '235158': 425.3999938964844, '235159': 460.8500061035156}, 'node_id': 246827, 'domain_id': 55}
+{
+  "domain_id": 55,
+  "filename": "global_node.silo",
+  "incident_zones": [
+    235222,
+    235221,
+    235159,
+    235158
+  ],
+  "node_id": 246827,
+  "p": {
+    "235158": 425.3999938964844,
+    "235159": 460.8500061035156,
+    "235221": 425.3999938964844,
+    "235222": 460.8500061035156
+  },
+  "pick_letter": "G",
+  "point": [
+    0.7166666984558105,
+    0.2666666805744171,
+    1.0
+  ]
+}
 
 string output: 
 G:  global_node.silo
 mesh domain 55 
 Point: <0.716667, 0.266667, 1>
 Node:  246827 (global)
-Incident Zones: (global)  235158  235159  235221  235222  
+Incident Zones: (global)  235222  235221  235159  235158  
 p:  <zonal> 
-    (235158) = 425.4
-    (235159) = 460.85
-    (235221) = 425.4
     (235222) = 460.85
+    (235221) = 425.4
+    (235159) = 460.85
+    (235158) = 425.4
 
 
 
@@ -142,7 +301,28 @@ p:  <zonal>
 Global zone pick on zone_centered data:
 
 dictionary output:
-{'pick_letter': 'H', 'zone_id': 237394, 'point': (0.17500000447034836, 0.8583333492279053, 0.9916666746139526), 'filename': 'global_node.silo', 'p': 354.5, 'domain_id': 61, 'incident_nodes': (244938, 244939, 245003, 245002, 249034, 249035, 249099, 249098)}
+{
+  "domain_id": 61,
+  "filename": "global_node.silo",
+  "incident_nodes": [
+    244938,
+    244939,
+    245003,
+    245002,
+    249034,
+    249035,
+    249099,
+    249098
+  ],
+  "p": 354.5,
+  "pick_letter": "H",
+  "point": [
+    0.17500000447034836,
+    0.8583333492279053,
+    0.9916666746139526
+  ],
+  "zone_id": 237394
+}
 
 string output: 
 H:  global_node.silo

@@ -101,6 +101,11 @@ public:
                       const unsigned int curveIndex,
                       const double x, const double y);
 
+    void addDataPoints(const unsigned int tabIndex,
+                       const unsigned int curveIndex,
+                       const unsigned int npts,
+                       const double *x, const double *y);
+
     unsigned int getCurrentStripChart() { return currentStripChart; };
                                                                         
 public slots:

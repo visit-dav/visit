@@ -180,6 +180,11 @@ QvisPostableWindowSimpleObserver::SelectedSubject()
 //   Added Load/Save button support.  Put them in between the
 //   Make Default and Reset buttons for now.
 //
+//   Eddie Rusu, Thu Jan 21 09:48:44 PST 2021
+//   Set the FocusPolicy for the ApplyButton to StrongFocus so that when the
+//   button is clicked, the focus shifts from any other widges to the Apply
+//   button, triggering any value change on the previously focused widget.
+//
 // ****************************************************************************
 
 void
@@ -198,14 +203,14 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         setCentralWidget( central );
         topCentral = central;
         topLayout = new QVBoxLayout(central);
-        topLayout->setMargin(10);
+        topLayout->setContentsMargins(10,10,10,10);
         vLayout = topLayout;
     }
     else
     {
         topCentral = new QWidget(this);
         vLayout = new QVBoxLayout(topCentral);
-        vLayout->setMargin(10);
+        vLayout->setContentsMargins(10,10,10,10);
         vLayout->setSpacing(5);
         setCentralWidget( topCentral );
         
@@ -217,7 +222,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         sv->setWidget(central);
         vLayout->addWidget(sv);
         topLayout = new QVBoxLayout(central);
-        topLayout->setMargin(10);
+        topLayout->setContentsMargins(10,10,10,10);
     }
 
     // Call the Sub-class's CreateWindowContents function to create the
@@ -263,6 +268,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     if(buttonCombination & ApplyButton)
     {
         QPushButton *applyButton = new QPushButton(tr("Apply"), topCentral);
+        applyButton->setFocusPolicy(Qt::StrongFocus);
         connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
         buttonLayout->addWidget(applyButton, 1, 0);
     }

@@ -4,32 +4,8 @@
 # Do not make changes to this file unless you know what you are doing--modify
 # the SWIG interface file instead.
 
+import _simV2
 
-
-
-
-from sys import version_info
-if version_info >= (2, 6, 0):
-    def swig_import_helper():
-        from os.path import dirname
-        import imp
-        fp = None
-        try:
-            fp, pathname, description = imp.find_module('_simV2', [dirname(__file__)])
-        except ImportError:
-            import _simV2
-            return _simV2
-        if fp is not None:
-            try:
-                _mod = imp.load_module('_simV2', fp, pathname, description)
-            finally:
-                fp.close()
-            return _mod
-    _simV2 = swig_import_helper()
-    del swig_import_helper
-else:
-    import _simV2
-del version_info
 try:
     _swig_property = property
 except NameError:
@@ -171,13 +147,13 @@ def VisItReadConsole(*args):
     return _simV2.VisItReadConsole(*args)
 VisItReadConsole = _simV2.VisItReadConsole
 
-def VisItSetSlaveProcessCallback(spcb):
-    return _simV2.VisItSetSlaveProcessCallback(spcb)
-VisItSetSlaveProcessCallback = _simV2.VisItSetSlaveProcessCallback
+def VisItSetWorkerProcessCallback(spcb):
+    return _simV2.VisItSetWorkerProcessCallback(spcb)
+VisItSetWorkerProcessCallback = _simV2.VisItSetWorkerProcessCallback
 
-def VisItSetSlaveProcessCallback2(cb, arg2):
-    return _simV2.VisItSetSlaveProcessCallback2(cb, arg2)
-VisItSetSlaveProcessCallback2 = _simV2.VisItSetSlaveProcessCallback2
+def VisItSetWorkerProcessCallback2(cb, arg2):
+    return _simV2.VisItSetWorkerProcessCallback2(cb, arg2)
+VisItSetWorkerProcessCallback2 = _simV2.VisItSetWorkerProcessCallback2
 
 def VisItSetCommandCallback(cb, cbdata1):
     return _simV2.VisItSetCommandCallback(cb, cbdata1)
@@ -418,6 +394,10 @@ VisItUI_setTableValueS = _simV2.VisItUI_setTableValueS
 def VisItUI_addStripChartPoint(chart, curve, cycle, value):
     return _simV2.VisItUI_addStripChartPoint(chart, curve, cycle, value)
 VisItUI_addStripChartPoint = _simV2.VisItUI_addStripChartPoint
+
+def VisItUI_addStripChartPoints(chart, curve, npts, cycles, values):
+    return _simV2.VisItUI_addStripChartPoints(chart, curve, npts, cycles, values)
+VisItUI_addStripChartPoints = _simV2.VisItUI_addStripChartPoints
 
 def VisItAddPlot(plotType, var):
     return _simV2.VisItAddPlot(plotType, var)
@@ -704,6 +684,9 @@ VISIT_DATATYPE_LONG = _simV2.VISIT_DATATYPE_LONG
 
 _simV2.VISIT_DATATYPE_STRING_swigconstant(_simV2)
 VISIT_DATATYPE_STRING = _simV2.VISIT_DATATYPE_STRING
+
+_simV2.VISIT_DATATYPE_ENUM_swigconstant(_simV2)
+VISIT_DATATYPE_ENUM = _simV2.VISIT_DATATYPE_ENUM
 
 _simV2.VISIT_OWNER_SIM_swigconstant(_simV2)
 VISIT_OWNER_SIM = _simV2.VISIT_OWNER_SIM
@@ -1416,6 +1399,10 @@ VisIt_OptionList_setValueD = _simV2.VisIt_OptionList_setValueD
 def VisIt_OptionList_setValueS(h, arg2, arg3):
     return _simV2.VisIt_OptionList_setValueS(h, arg2, arg3)
 VisIt_OptionList_setValueS = _simV2.VisIt_OptionList_setValueS
+
+def VisIt_OptionList_setValueE(h, arg2, arg3):
+    return _simV2.VisIt_OptionList_setValueE(h, arg2, arg3)
+VisIt_OptionList_setValueE = _simV2.VisIt_OptionList_setValueE
 
 def VisIt_PointMesh_alloc(*args):
     return _simV2.VisIt_PointMesh_alloc(*args)

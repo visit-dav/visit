@@ -88,13 +88,13 @@ class EnumType
     }
     void Print(QTextStream &out)
     {
-        out << "Enum: " << type << endl;
+        out << "Enum: " << type << Endl;
         for (size_t i=0; i<values.size(); i++)
         {
             out << "    " << values[i];
             if(ivalues[i] >= 0)
                 out << " = " << ivalues[i];
-            out << endl;
+            out << Endl;
         }
     }
 };

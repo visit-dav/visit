@@ -4,12 +4,35 @@ Release Candidate (RC) Development
 Overview
 --------
 
-VisIt_ normally has two active branches for doing development. The
-first is develop and the second is the current release candidate. Work
-performed on the develop branch will go into the next major release,
-such as 3.1. Work performed on the current release candidate will go into
-the next minor release, such as 3.0.2. When doing work on the release
-candidate the normal sequence of operations is as follows:
+VisIt_ supports three types of releases, major, minor and patch.
+VisIt_'s version number is of the form ``major.minor.patch``.
+Patch releases are the most common type of release and typically occur three to four times a year.
+Minor releases are the next most common type of release and may occur once or twice a year.
+Major releases happen infrequently, with perhaps several years passing between major releases.
+
+For example, the release sequence goes something like patch (2.12.0), patch (2.12.1), minor (2.13.0), patch (2.13.1), patch (2.13.2), patch (2.13.3), minor (2.14.0), patch (2.14.1), minor (2.15.0), patch (2.15.1), patch (2.15.2), major (3.0).
+
+The VisIt_ project normally maintains just two stable branches of development.
+These are the *current* release candidate (RC) branch named something like ``3.3RC`` and the main *development* branch named ``develop``.
+
+All patch releases of VisIt_ are made from the *current* RC branch.
+For example, ``3.3.0``, ``3.3.1``, ``3.3.2`` and ``3.3.3`` are all *patch* releases made from the ``3.3RC`` branch.
+
+When the next *minor* release is to be made, say ``3.4.0``, a new RC branch, named ``3.4RC``, is created from the current ``develop`` branch.
+The ``3.4RC`` branch becomes the *current* RC branch and all work on the ``3.3RC`` branch ceases.
+However, the ``3.3RC`` branch will remain forever available.
+
+Most work on VisIt_ is performed first on the *current* RC branch and then the same changes are applied also to the ``develop`` branch.
+In this way, ``develop`` will have all changes that were made on the *current* and all previous RC branches.
+
+Sometimes, short term fixes are performed on the RC branch *only* because they are never intended to become perminent.
+Likewise, sometimes long term enhancements are performed *only* on the ``develop`` branch because they introduce significant changes in interfaces and/or dependencies.
+
+.. tip::  Unless you have been instructed otherwise, plan to do your work *first* on a branch *from* the current RC branch in one pull request and then apply those same changes on a branch *from* ``develop`` in a second pull request.
+
+.. tip:: Use VisIt_'s `GitHub milestones <https://github.com/visit-dav/visit/milestones>`__ page or or reach out to the VisIt_ team on our `GitHub discussions <https://github.com/visit-dav/visit/discussions>`__ page if you need help identifying the current RC branch or deciding upon which branch you should start your work.
+
+When doing work on the release candidate the normal sequence of operations is as follows:
 
 * A branch is created off the current release candidate.
 * Changes are made on the branch.
@@ -24,6 +47,17 @@ In some instances the changes made to the release candidate are not applied
 to develop, in many instances the exact same changes can be applied to both
 the release candidate and develop, and in some instannces the changes
 applied to the two branches are slightly or significantly different.
+
+.. _communication_protocols_and_public_apis:
+
+Changes to files impacting communication protocols or public APIs are not permitted
+on a release candidate (RC) branch unless explicitly agreed to by the team. Communication
+protocol files are any XML files and their associated auto-generated header files for
+*state* objects (any class derived from ``AttributeSubject``) passed between VisIt_
+components (e.g. ``viewer`` and ``engine_par``) such as all XML and header files in
+``src/common/state`` and ``src/avt/DBAtts/MetaData``. Files impacting public APIs include
+any XML or header files used by database, plot or operator plugins as well as
+``src/avt/Database/Database`` and ``src/avt/Database/Formats``.
 
 The rest of the section will go through the steps of the most common case
 of making the exact same changes to both branches using an example of
@@ -71,6 +105,14 @@ and locally. ::
 
 Apply the same changes to develop
 ---------------------------------
+
+Typically, the same changes applied to the release candidate also need to be applied to ``develop``.
+This is not always the case however.
+Some changes are made only for the release candidate and should never get applied to ``develop``.
+Our practice is to require the *last* comment in every pull request to the release candidate to include a remark indicating either that the PR was not applied to ``develop`` or that the PR was applied to ``develop`` along with the commit in which it was applied to ``develop``.
+Typically, the PR for the release candidate has already been closed when this comment needs to be added.
+This is fine.
+Developers can still add this comment to a PR when it is in a closed state.
 
 You will apply your changes from the 3.0RC to develop by creating a patch
 of your changes to the 3.0RC and applying them to a branch created off of
@@ -154,14 +196,13 @@ In the description you can simply say that you are merging from the
 release candidate into develop rather than providing all the normal pull
 request information. If you are resolving an issue, you will want to
 mention that, since the automatic closing of issues only happens when
-you merge into develop.
+you merge into ``develop``.
 
 .. figure:: images/RCDevelop-GitHubStep4.png
 
    The pull request with the abbreviated description.
 
-Now you go through the normal pull request process. Once you have merged
-your changes into develop you can delete the branch at GitHub and locally. ::
+Once you have merged your changes into develop you can delete the branch at GitHub and locally. ::
 
     git remote prune origin
     git remote update
@@ -171,3 +212,27 @@ your changes into develop you can delete the branch at GitHub and locally. ::
 
 That's it. You have now made the exact same change to both the 3.0RC and
 develop.
+
+Once the PR to ``develop`` is merged, go back to the PR for the release candidate (it will probably be in a closed state but that is fine) and add a comment there indicating that the PR was also applied to develop and include the commit, from above, where it happened.
+
+Lastly, sometimes changes worth including in the release candidate nonetheless get done *first* on ``develop``.
+When this happens, we need to `backport <https://en.wikipedia.org/wiki/Backporting>`_ the changes to the release candidate.
+A procedure similar to what is described above can be followed except the roles of ``develop`` and release candidate branches are reversed.
+In addition, once the changes are backported to the release candidate, go back to the PR for ``develop`` (it will probably be in a closed state but that is fine) and add a comment there indicating that the changes were also *backported* to the release candidate and include the commit.
+
+Re-review of PRs for merging already reviewed and merged work to a different branch
+-----------------------------------------------------------------------------------
+
+As described above, there are typically two *active* branches where work may be going on in VisIt_; the currently active release candidate branch and ``develop``.
+The common case is for developers to do work on the release candidate and then apply the same work to ``develop`` using the format-patch or cherry-pick workflows.
+As noted in the section just above, sometimes the reverse happens and the work is originally done on ``develop`` and then *backported* to the release candidate.
+
+In either case, the question arises, is a second review of a pull-request of the same work to another branch required?
+The short answer is no.
+Work that was done and originally reviewed as a pull request to the release candidate does not require a second review in the pull request and merge to ``develop``.
+This is true even when backporting from ``develop`` to the release candidate.
+
+However, there are cases where the release candidate and ``develop`` branches have diverged significantly enough that re-review of the work might be needed.
+A good indicator of this need is if *conflicts* are encountered when using the format-patch or cherry-pick workflows to merge the changes to a different branch.
+When that happens, the developer should give some thought as to whether the changes necessary to resolve the conflicts are significant enough that re-review may be required.
+This is entirely up to the developer doing the work though other developers who may be watching are also free to make a request to re-review the pull request to the different branch.

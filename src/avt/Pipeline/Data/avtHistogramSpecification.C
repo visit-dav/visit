@@ -493,13 +493,13 @@ avtHistogramSpecification::GetBounds()
  *  in order to avoid copying of the data afterward.
  *  \return vector<unsigned int>&  : The counts per bin
  */
-VISIT_LONG_LONG*
+long long*
 avtHistogramSpecification::GetCounts()
 {
     if (cm_Counts == NULL)
     {
         int n = GetTotalNumberOfBins();
-        cm_Counts = new VISIT_LONG_LONG[n];
+        cm_Counts = new long long[n];
         for (int i=0; i<n; i++)
             cm_Counts[i] = 0;
     }
@@ -515,7 +515,7 @@ avtHistogramSpecification::GetCounts()
  *  \param counts : The histogram values
  */
 void
-avtHistogramSpecification::SetCounts(VISIT_LONG_LONG *counts)
+avtHistogramSpecification::SetCounts(long long *counts)
 {
     cm_Counts = counts;
 }
@@ -525,7 +525,7 @@ avtHistogramSpecification::SetCounts(const vector<unsigned int>& counts )
 {
     if( cm_Counts != NULL)
         delete[] cm_Counts;
-    cm_Counts = new VISIT_LONG_LONG[ counts.size() ];
+    cm_Counts = new long long[ counts.size() ];
     for (size_t i=0; i<counts.size(); i++)
         cm_Counts[i] = counts[i];
 
@@ -634,8 +634,8 @@ avtHistogramSpecification::copyInfo( avtHistogramSpecification* input)
       delete[] cm_Counts;
       cm_Counts = NULL;
       int numBins = input->GetTotalNumberOfBins();
-      cm_Counts = new VISIT_LONG_LONG[ numBins  ];
-      VISIT_LONG_LONG* inputCounts = input->GetCounts();
+      cm_Counts = new long long[ numBins  ];
+      long long* inputCounts = input->GetCounts();
       for(int i=0; i<numBins; ++i){
             cm_Counts[i] = inputCounts[i];
       }
@@ -733,14 +733,14 @@ avtHistogramSpecification::GetToRootProcessor(int tag)
     MPI_Aint lb,e;
     MPI_Type_get_extent(datatype, &lb, &e);
 #if defined(MPI_UNSIGNED_LONG_LONG)
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_get_extent(datatype, &lb, &e);
     }
 #endif
 #if defined(MPI_INTEGER8)  // ... may only be MPI-2.
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_INTEGER8;
         MPI_Type_get_extent(datatype, &lb, &e);
@@ -750,7 +750,7 @@ avtHistogramSpecification::GetToRootProcessor(int tag)
     MPI_Aint e;
     MPI_Type_extent(datatype, &e);
 #if defined(MPI_UNSIGNED_LONG_LONG)
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_extent(datatype, &e);
@@ -847,8 +847,8 @@ avtHistogramSpecification::GetToRootProcessor(int tag)
         if (counts_valid)
         {
             len = GetTotalNumberOfBins();
-            cm_Counts = new VISIT_LONG_LONG[len];
-            if (e == sizeof(VISIT_LONG_LONG))
+            cm_Counts = new long long[len];
+            if (e == sizeof(long long))
             {
                 MPI_Recv(cm_Counts, len, datatype,
                          MPI_ANY_SOURCE, tag, VISIT_MPI_COMM, &stat);
@@ -922,7 +922,7 @@ avtHistogramSpecification::GetToRootProcessor(int tag)
         if (counts_valid)
         {
             len = GetTotalNumberOfBins();
-            if (e == sizeof(VISIT_LONG_LONG))
+            if (e == sizeof(long long))
             {
                 MPI_Send(cm_Counts, len, datatype, 0, tag, VISIT_MPI_COMM);
             }
@@ -967,8 +967,8 @@ avtHistogramSpecification::SumAcrossAllProcessors()
     if (minMaxLength[0] != minMaxLength[1])
         return false;
     
-    VISIT_LONG_LONG *oldcounts = GetCounts();
-    VISIT_LONG_LONG *newcounts = new VISIT_LONG_LONG[length];
+    long long *oldcounts = GetCounts();
+    long long *newcounts = new long long[length];
     SumLongLongArrayAcrossAllProcessors(oldcounts, newcounts, length);
     cm_Counts = newcounts;
     delete[] oldcounts;

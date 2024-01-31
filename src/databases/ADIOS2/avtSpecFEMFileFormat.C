@@ -13,7 +13,6 @@
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <avtDatabaseMetaData.h>
-#include <DBOptionsAttributes.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
@@ -107,17 +106,22 @@ avtSpecFEMFileFormat::CreateInterface(const char *const *list,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
+// 
+//  Modifications:
+//    Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+//    Removed adios2::DebugON since it is not present in newer versions of 
+//    adios2.
 //
 // ****************************************************************************
 
 avtSpecFEMFileFormat::avtSpecFEMFileFormat(const char *nm)
     : avtMTMDFileFormat(nm),
 #ifdef PARALLEL
-      adiosMesh(std::make_shared<adios2::ADIOS>((MPI_Comm)VISIT_MPI_COMM, adios2::DebugON)),
-      adiosData(std::make_shared<adios2::ADIOS>((MPI_Comm)VISIT_MPI_COMM, adios2::DebugON))
+      adiosMesh(std::make_shared<adios2::ADIOS>((MPI_Comm)VISIT_MPI_COMM)),
+      adiosData(std::make_shared<adios2::ADIOS>((MPI_Comm)VISIT_MPI_COMM))
 #else
-      adiosMesh(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
-      adiosData(std::make_shared<adios2::ADIOS>(adios2::DebugON))
+      adiosMesh(std::make_shared<adios2::ADIOS>()),
+      adiosData(std::make_shared<adios2::ADIOS>())
 #endif
 {
     string filename(nm), meshNm, dataNm;
@@ -1744,6 +1748,9 @@ avtSpecFEMFileFormat::GenerateFileNames(const std::string &nm,
 // Creation:    April  9, 2014
 //
 // Modifications:
+//    Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+//    Removed adios2::DebugON since it is not present in newer versions of 
+//    adios2.
 //
 //****************************************************************************
 
@@ -1753,7 +1760,7 @@ avtSpecFEMFileFormat::IsMeshFile(const string &fname)
 #if 0
     {
         #ifdef PARALLEL
-        adios2::ADIOS adios((MPI_Comm)VISIT_MPI_COMM, adios2::DebugON);
+        adios2::ADIOS adios((MPI_Comm)VISIT_MPI_COMM);
         adios2::IO io = adios2::IO(adios.DeclareIO("ReadBP"));
         io.SetEngine("BP");
         adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
@@ -1764,7 +1771,7 @@ avtSpecFEMFileFormat::IsMeshFile(const string &fname)
     }
 #endif
 
-    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
+    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>();
     adios2::IO io = adios2::IO(adios->DeclareIO("ReadBP"));
     io.SetEngine("BP");
     adios2::Engine reader = io.Open(fname, adios2::Mode::Read);

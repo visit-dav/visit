@@ -33,10 +33,10 @@ class Code
          const QString &t) : name(n), prefix(pre), postfix(post), target(t)
     {
     }
-    void Print(QTextStream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
-            out << "        Code: (" << target << ") " << name << endl;
+            out << "        Code: (" << target << ") " << name << Endl;
     }
 };
 

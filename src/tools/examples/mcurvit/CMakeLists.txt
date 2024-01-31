@@ -7,6 +7,16 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
+#   and vtkpng with vtkpng_LIBRARIES.
+#
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 SET(MCURVIT_SOURCES
@@ -32,24 +42,6 @@ IF(VISIT_STATIC)
     SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
-SET(MCURVIT_MOC_SOURCES
-MultiCurveProcessor.h
-MultiCurveViewer.h
-QvisAnnotationWidget.h
-QvisAppearanceWidget.h
-QvisColorButton.h
-QvisColorGridWidget.h
-QvisColorManagerWidget.h
-QvisColorSelectionWidget.h
-QvisGeneralWidget.h
-QvisGridWidget.h
-QvisLineWidthWidget.h
-QvisMessageDialog.h
-QvisOpacitySlider.h
-Synchronizer.h
-)
-QT_WRAP_CPP(mcurvit MCURVIT_SOURCES ${MCURVIT_MOC_SOURCES})
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -72,10 +64,9 @@ ${VTK_INCLUDE_DIRS}
 )
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
-${VTK_FREETYPE_LIBRARIES}
+${vtktiff_LIBRARIES}
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
@@ -93,10 +84,12 @@ IF(APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "MCurveIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "MCurveIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
 ELSE(APPLE)
     ADD_EXECUTABLE(mcurvit ${VISIT_APPLICATION_STYLE} ${MCURVIT_SOURCES} ${STATIC_SOURCES})
 ENDIF(APPLE)
+
+set_target_properties(mcurvit PROPERTIES AUTOMOC ON)
 
 SET(VIEWER_QT_LIBS 
 ${QT_QTGUI_LIBRARY}
@@ -115,6 +108,10 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(mcurvit)
+endif()
+
 TARGET_LINK_LIBRARIES(mcurvit
 ${viewer_exe_IOperator}
 ${viewer_exe_VOperator}
@@ -129,6 +126,8 @@ ${VIEWER_QT_LIBS}
 ${VTK_EXTRA_LIBS}
 ${ZLIB_LIBRARY}
 )
+
+
 
 # If we're building statically then the viewer can't be linked until the plugin
 # sources are built

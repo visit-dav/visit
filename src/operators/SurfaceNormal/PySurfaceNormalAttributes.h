@@ -5,6 +5,7 @@
 #ifndef PY_SURFACENORMALATTRIBUTES_H
 #define PY_SURFACENORMALATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SurfaceNormalAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PySurfaceNormalAttributes_Wrap(const SurfaceNormalAttributes *att
 void           PySurfaceNormalAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySurfaceNormalAttributes_SetDefaults(const SurfaceNormalAttributes *atts);
 std::string    PySurfaceNormalAttributes_GetLogString();
-std::string    PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *, const char *);
+std::string    PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *, const char *, const bool=false);
 PyObject *     PySurfaceNormalAttributes_getattr(PyObject *self, char *name);
 int            PySurfaceNormalAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySurfaceNormalAttributes_methods[SURFACENORMALATTRIBUTES_NMETH];

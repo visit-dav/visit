@@ -22,6 +22,7 @@
 
 class vtkDataArray;
 class vtkDataSet;
+class vtkUnstructuredGrid;
 class avtDatabaseMetaData;
 
 using namespace std;
@@ -47,12 +48,23 @@ using namespace std;
 //    Pulled out all the CGNS specific code from avtCGNSFileFormat into
 //    this class.
 //
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
+//
+//    Alister Maguire, Tue Mar  2 08:01:12 PST 2021
+//    Added ReadMixedAndNamedElementSections, ReadNGonSections,
+//    ReadNGonAndNFaceSections.
+//
+//    Eric Brugger, Tue Jul  6 10:27:03 PDT 2021
+//    Added support for reading rind data.
+//
 // ****************************************************************************
 
 class avtCGNSFileReader
 {
 public:
-                           avtCGNSFileReader(const char *);
+                           avtCGNSFileReader(const char *, bool);
                           ~avtCGNSFileReader();
 
     virtual void           GetCycles(std::vector<int> &);
@@ -100,15 +112,16 @@ protected:
 
     int                    GetFileHandle();
     void                   ReadTimes();
-    bool                   GetCoords(int timestate, int base, int zone, const cgsize_t *zsize,
-                                     int cell_dim, int phys_dim,
-                                     bool structured, float **coords);
+    bool                   GetCoords(int timestate, int base, int zone,
+                               const cgsize_t *zsize, int cell_dim,
+                               int phys_dim, bool structured, float **coords);
     void                   AddReferenceStateExpressions(avtDatabaseMetaData *md,
-                                     int base, int nBases, const std::string &baseName,
-                                     const std::string &meshName);
+                               int base, int nBases,
+                               const std::string &baseName,
+                               const std::string &meshName);
     void                   AddVectorExpressions(avtDatabaseMetaData *md,
-                               bool *haveVelocity, bool *haveMomentum, int nBases,
-                               const std::string &baseName);
+                               bool *haveVelocity, bool *haveMomentum,
+                               int nBases, const std::string &baseName);
     void                   AddVectorExpression(avtDatabaseMetaData *md,
                                bool *haveComponent, int nBases,
                                const std::string &baseName,
@@ -117,10 +130,27 @@ protected:
     bool                   BaseContainsUnits(int base);
     void                   InitializeMaps(int timeState);
 
+    void                   GetQuadGhostZones(int base, int zone,
+                               const cgsize_t *zsize, int cell_dim,
+                               vtkDataSet *ds);
     vtkDataSet *           GetCurvilinearMesh(int, int, int, const char *,
                                               const cgsize_t *, int, int);
     vtkDataSet *           GetUnstructuredMesh(int, int, int, const char *,
                                                const cgsize_t *, int, int);
+    void                   ReadMixedAndNamedElementSections(
+                               vtkUnstructuredGrid *,
+                               const char *, std::vector<int> &,
+                               int, int, int, int);
+    void                   ReadNGonSections(
+                               vtkUnstructuredGrid *,
+                               const char *, std::vector<int> &,
+                               int, int, int, int);
+    void                   ReadNGonAndNFaceSections(
+                               vtkUnstructuredGrid *,
+                               const char *,
+                               std::vector<int> &,
+                               std::vector<int> &,
+                               int, int, int, int);
 
     void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
     void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);
@@ -137,6 +167,7 @@ protected:
     std::map<std::string, int>             BaseNameToIndices;
     std::map<std::string, std::string>     VisItNameToCGNSName;
     bool                                   initializedMaps;
+    bool                                   cgnsIsMTMD;
 };
 
 #endif

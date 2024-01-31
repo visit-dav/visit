@@ -77,6 +77,9 @@
       <Field name="sphereInverse" label="Inverse" type="bool" enabler="funcType:Sphere">
         false
       </Field>
+      <Field name="crinkleClip" label="Crinkle clip" type="bool" enabler="funcType:Crinkle">
+        false
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

@@ -35,8 +35,8 @@ class QvisRemoveCellsWindow : public QvisOperatorWindow
   public:
     QvisRemoveCellsWindow(const int type,
                          RemoveCellsAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisRemoveCellsWindow();
     virtual void CreateWindowContents();

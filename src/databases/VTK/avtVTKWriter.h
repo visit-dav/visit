@@ -59,7 +59,7 @@ class
 avtVTKWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtVTKWriter(DBOptionsAttributes *);
+                   avtVTKWriter(const DBOptionsAttributes *);
     virtual       ~avtVTKWriter() {;};
 
   protected:

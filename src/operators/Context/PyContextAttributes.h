@@ -5,6 +5,7 @@
 #ifndef PY_CONTEXTATTRIBUTES_H
 #define PY_CONTEXTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ContextAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyContextAttributes_Wrap(const ContextAttributes *attr);
 void           PyContextAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyContextAttributes_SetDefaults(const ContextAttributes *atts);
 std::string    PyContextAttributes_GetLogString();
-std::string    PyContextAttributes_ToString(const ContextAttributes *, const char *);
+std::string    PyContextAttributes_ToString(const ContextAttributes *, const char *, const bool=false);
 PyObject *     PyContextAttributes_getattr(PyObject *self, char *name);
 int            PyContextAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyContextAttributes_methods[CONTEXTATTRIBUTES_NMETH];

@@ -191,6 +191,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
     meshname               = "<unknown>";
     filename               = "<unknown>";
     fullDBName             = "<unknown>";
+    commentInDB            = "";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
     presentGhostZoneTypes  = AVT_NO_GHOST_ZONES;
     containsExteriorBoundaryGhosts = false;
@@ -625,15 +626,16 @@ avtDataAttributes::Print(ostream &out)
         out << endl;
     }
 
-    out << "The mesh's name is " << meshname.c_str() << endl;
-    out << "The filename is " << filename.c_str() << endl;
-    out << "The full db name is " << fullDBName.c_str() << endl;
-    out << "The X-units are " << xUnits.c_str() << endl;
-    out << "The Y-units are " << yUnits.c_str() << endl;
-    out << "The Z-units are " << zUnits.c_str() << endl;
-    out << "The X-labels are " << xLabel.c_str() << endl;
-    out << "The Y-labels are " << yLabel.c_str() << endl;
-    out << "The Z-labels are " << zLabel.c_str() << endl;
+    out << "The mesh's name is " << meshname << endl;
+    out << "The filename is " << filename << endl;
+    out << "The full db name is " << fullDBName << endl;
+    out << "The db comment is " << commentInDB << endl;
+    out << "The X-units are " << xUnits << endl;
+    out << "The Y-units are " << yUnits << endl;
+    out << "The Z-units are " << zUnits << endl;
+    out << "The X-labels are " << xLabel << endl;
+    out << "The Y-labels are " << yLabel << endl;
+    out << "The Z-labels are " << zLabel << endl;
 
     if (originalSpatial != NULL)
     {
@@ -1038,6 +1040,11 @@ avtDataAttributes::Print(ostream &out)
 //
 //    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
 //    Added forceRemoveFacesBeforeGhosts.
+// 
+//    Justin Privitera, Thu Oct  5 14:50:38 PDT 2023
+//    Greatly simplified the for-loop in this function. This fixes a 
+//    performance bottleneck I ran into when using a huge number of 
+//    complicated expressions.
 //
 // ****************************************************************************
 
@@ -1075,6 +1082,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetMeshname(di.GetMeshname());
     SetFilename(di.GetFilename());
     SetFullDBName(di.GetFullDBName());
+    SetCommentInDB(di.GetCommentInDB());
     SetXUnits(di.GetXUnits());
     SetYUnits(di.GetYUnits());
     SetZUnits(di.GetZUnits());
@@ -1089,25 +1097,27 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(thisProcsActualSpatial)  = *(di.thisProcsActualSpatial);
 
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
+
+    // We assume that variables is empty, and that everything in di.variables is valid.
+    // Therefore, rather than performing checks and searching for indices each step of
+    // the way, we can just perform a straight copy.
     for (size_t i = 0 ; i < di.variables.size() ; i++)
     {
         const char *vname = di.variables[i]->varname.c_str();
-        AddVariable(vname, di.variables[i]->varunits);
-        SetVariableType(di.variables[i]->vartype, vname);
-        SetVariableSubnames(di.variables[i]->subnames, vname);
-        SetVariableBinRanges(di.variables[i]->binRange, vname);
-        SetVariableDimension(di.variables[i]->dimension, vname);
-        SetCentering(di.variables[i]->centering, vname);
-        SetTreatAsASCII(di.variables[i]->treatAsASCII, vname);
-        SetUseForAxis(di.variables[i]->useForAxis, vname);
-        *(variables[i]->originalData)              = *(di.variables[i]->originalData);
-        *(variables[i]->thisProcsOriginalData)    = 
-                                      *(di.variables[i]->thisProcsOriginalData);
-        *(variables[i]->desiredData)         =
-                                      *(di.variables[i]->desiredData);
-        *(variables[i]->actualData)           = *(di.variables[i]->actualData);
-        *(variables[i]->thisProcsActualData) = 
-                                      *(di.variables[i]->thisProcsActualData);
+        VarInfo *new_var = new VarInfo(vname, di.variables[i]->varunits);
+        variables.push_back(new_var);
+        variables[i]->vartype = di.variables[i]->vartype;
+        variables[i]->subnames = di.variables[i]->subnames;
+        variables[i]->binRange = di.variables[i]->binRange;
+        SetVariableDimension(di.variables[i]->dimension, i);
+        variables[i]->centering = di.variables[i]->centering;
+        variables[i]->treatAsASCII = di.variables[i]->treatAsASCII;
+        variables[i]->useForAxis = di.variables[i]->useForAxis;
+        *(variables[i]->originalData) = *(di.variables[i]->originalData);
+        *(variables[i]->thisProcsOriginalData) = *(di.variables[i]->thisProcsOriginalData);
+        *(variables[i]->desiredData) = *(di.variables[i]->desiredData);
+        *(variables[i]->actualData) = *(di.variables[i]->actualData);
+        *(variables[i]->thisProcsActualData) = *(di.variables[i]->thisProcsActualData);
         *(variables[i]->componentExtents) = *(di.variables[i]->componentExtents);
     }
     activeVariable = di.activeVariable;
@@ -2088,47 +2098,16 @@ avtDataAttributes::SetSpatialDimension(int td)
 //  Arguments:
 //      vd       The new variable dimension.
 //
-//  Programmer: Hank Childs
-//  Creation:   September 4, 2001
+//  Programmer: Justin Privitera
+//  Creation:   October 4th, 2023
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Oct  3 10:57:13 PDT 2001
-//    Add actualData, thisProcsActualData.
-//
-//    Hank Childs, Mon Feb 23 14:19:15 PST 2004
-//    Account for multiple variables.
-//
-//    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
-//    DataExtents now always have dimension of 1. 
-//
-//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
-//    Added a reason to the exception.
-//
-//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
-//    Make sure varname is non-NULL, or we'll crash.
-//
-//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
-//    Added component extents for array variables.
 //
 // ****************************************************************************
 
 void
-avtDataAttributes::SetVariableDimension(int vd, const char *varname)
+avtDataAttributes::SetVariableDimension(int vd, int index)
 {
-    int index = VariableNameToIndex(varname);
-    if (index < 0)
-    {
-        //
-        // We were asked to set the variable dimension of a non-existent
-        // variable.
-        //
-        const char *varname_to_print = (varname != NULL ? varname
-                                         : "<null>");
-        string reason = "Attempting to set dimension of non-existent";
-        reason = reason +  " variable: " + varname_to_print + ".\n";
-        EXCEPTION1(ImproperUseException, reason);
-    }
-
     if (vd == variables[index]->dimension)
     {
         return;
@@ -2171,6 +2150,60 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         delete variables[index]->componentExtents;
     }
     variables[index]->componentExtents = new avtExtents(vd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::SetVariableDimension
+//
+//  Purpose:
+//      Sets the variable dimension.
+//
+//  Arguments:
+//      vd       The new variable dimension.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Oct  3 10:57:13 PDT 2001
+//    Add actualData, thisProcsActualData.
+//
+//    Hank Childs, Mon Feb 23 14:19:15 PST 2004
+//    Account for multiple variables.
+//
+//    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
+//    DataExtents now always have dimension of 1. 
+//
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetVariableDimension(int vd, const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable dimension of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to set dimension of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    SetVariableDimension(vd, index);
 }
 
 
@@ -2961,6 +2994,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
     str.Append((char *) fullDBName.c_str(), (int)fullDBName.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
+    wrtr->WriteInt(str, (int)commentInDB.size());
+    str.Append((char *) commentInDB.c_str(), (int)commentInDB.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+
     wrtr->WriteInt(str, (int)xUnits.size());
     str.Append((char *) xUnits.c_str(), (int)xUnits.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
@@ -3473,6 +3510,14 @@ avtDataAttributes::Read(char *input)
     fullDBName = l3;
     size += fullDBNameSize;
     input += fullDBNameSize;
+
+    int commentInDBSize;
+    memcpy(&commentInDBSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string l4(input, commentInDBSize);
+    commentInDB = l4;
+    size += commentInDBSize;
+    input += commentInDBSize;
 
     int unitSize;
     memcpy(&unitSize, input, sizeof(int));
@@ -5315,6 +5360,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
     webpage->AddTableEntry2("Database name", fullDBName.c_str());
+    webpage->AddTableEntry2("Database comment", commentInDB.c_str());
     webpage->AddTableEntry2("File name", filename.c_str());
     webpage->AddTableEntry2("Mesh name", meshname.c_str());
     snprintf(str, 4096, "%d", numStates);

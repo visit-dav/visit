@@ -78,8 +78,8 @@ class QvisVectorPlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisVectorPlotWindow(const int type, VectorAttributes *_vecAtts,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisVectorPlotWindow();
     virtual void CreateWindowContents();

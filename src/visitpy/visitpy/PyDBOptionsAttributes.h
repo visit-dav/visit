@@ -5,6 +5,7 @@
 #ifndef PY_DBOPTIONSATTRIBUTES_H
 #define PY_DBOPTIONSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DBOptionsAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyDBOptionsAttributes_Wrap(const DBOptionsAttributes 
 void VISITPY_API           PyDBOptionsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyDBOptionsAttributes_SetDefaults(const DBOptionsAttributes *atts);
 std::string VISITPY_API    PyDBOptionsAttributes_GetLogString();
-std::string VISITPY_API    PyDBOptionsAttributes_ToString(const DBOptionsAttributes *, const char *);
+std::string VISITPY_API    PyDBOptionsAttributes_ToString(const DBOptionsAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyDBOptionsAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyDBOptionsAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyDBOptionsAttributes_methods[DBOPTIONSATTRIBUTES_NMETH];

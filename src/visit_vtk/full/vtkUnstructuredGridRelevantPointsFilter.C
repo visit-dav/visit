@@ -3,7 +3,13 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "vtkUnstructuredGridRelevantPointsFilter.h"
+
+#include <visit-config.h>
+
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkInformation.h>
@@ -33,6 +39,9 @@ vtkStandardNewMacro(vtkUnstructuredGridRelevantPointsFilter);
 //    Hank Childs, Sun Mar 29 16:26:27 CDT 2009
 //    Remove call to BuildLinks.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK 9: use vtkCellArrayIterator.
+//
 // ****************************************************************************
 int
 vtkUnstructuredGridRelevantPointsFilter::RequestData(
@@ -52,53 +61,68 @@ vtkUnstructuredGridRelevantPointsFilter::RequestData(
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  int  i, j;
-
   vtkDebugMacro(<<"Beginning UnstructuredGrid Relevant Points Filter ");
 
-  if (input == NULL) 
+  if (input == NULL)
     {
     vtkErrorMacro(<<"Input is NULL");
     return 1;
     }
 
   vtkPoints    *inPts  = input->GetPoints();
-  int numInPts = input->GetNumberOfPoints();
-  int numCells = input->GetNumberOfCells();
+  vtkIdType   numInPts = input->GetNumberOfPoints();
+  vtkIdType   numCells = input->GetNumberOfCells();
   output->Allocate(numCells);
-  
-  if ( (numInPts<1) || (inPts == NULL ) ) 
+
+  if ( (numInPts<1) || (inPts == NULL ) )
     {
     vtkErrorMacro(<<"No data to Operate On!");
     return 1;
     }
-  
-  int *pointMap = new int[numInPts];
-  for (i = 0 ; i < numInPts ; i++)
+
+  vtkIdType *pointMap = new vtkIdType[numInPts];
+  for (vtkIdType i = 0 ; i < numInPts ; i++)
     {
     pointMap[i] = -1;
     }
+
+#if LIB_VERSION_LE(VTK, 8,1,0)
   vtkCellArray *cells = input->GetCells();
   vtkIdType *ptr = cells->GetPointer();
   int numOutPts = 0;
-  for (i = 0 ; i < numCells ; i++)
+  for (vtkIdType i = 0 ; i < numCells ; i++)
     {
     int npts = *ptr++;
-    for (j = 0 ; j < npts ; j++)
+    for (int j = 0 ; j < npts ; j++)
       {
       int oldPt = *ptr++;
       if (pointMap[oldPt] == -1)
         pointMap[oldPt] = numOutPts++;
       }
     }
+#else
+  auto cellIter = vtk::TakeSmartPointer(input->GetCells()->NewIterator());
+  vtkIdType npts;
+  const vtkIdType *ptr;
+  vtkIdType numOutPts = 0;
+  for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
+    {
+    cellIter->GetCurrentCell(npts, ptr);
+    for (vtkIdType j = 0 ; j < npts ; j++)
+      {
+      if (pointMap[ptr[j]] == -1)
+        pointMap[ptr[j]] = numOutPts++;
+      }
+    }
+#endif
 
   vtkPoints *newPts = vtkPoints::New(input->GetPoints()->GetDataType());
   newPts->SetNumberOfPoints(numOutPts);
   vtkPointData *inputPD  = input->GetPointData();
   vtkPointData *outputPD = output->GetPointData();
   outputPD->CopyAllocate(inputPD, numOutPts);
-  
-  for (j = 0 ; j < numInPts ; j++)
+
+  for (vtkIdType j = 0 ; j < numInPts ; j++)
     {
     if (pointMap[j] != -1)
       {
@@ -112,7 +136,7 @@ vtkUnstructuredGridRelevantPointsFilter::RequestData(
   vtkCellData  *inputCD = input->GetCellData();
   vtkCellData  *outputCD = output->GetCellData();
   outputCD->PassData(inputCD);
-  
+
   vtkIdList *cellIds = vtkIdList::New();
 
   output->SetPoints(newPts);
@@ -120,20 +144,29 @@ vtkUnstructuredGridRelevantPointsFilter::RequestData(
   // now work through cells, changing associated point id to coincide
   // with the new ones as specified in the pointmap;
 
-  vtkIdList *oldIds = vtkIdList::New(); 
+  vtkIdList *oldIds = vtkIdList::New();
   vtkIdList *newIds = vtkIdList::New();
-  int id, cellType;
+#if LIB_VERSION_LE(VTK, 8,1,0)
   ptr = cells->GetPointer();
-  for (i = 0; i < numCells; i++) 
+  for (vtkIdType i = 0; i < numCells; i++)
     {
-    cellType = input->GetCellType(i);
+    int cellType = input->GetCellType(i);
     int npts = *ptr++;
-
+#else
+  for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
+    {
+    cellIter->GetCurrentCell(npts, ptr);
+    int cellType = input->GetCellType(cellIter->GetCurrentCellId());
+#endif
     newIds->SetNumberOfIds(npts);
-    for (j = 0; j < npts ; j++)
+    for (vtkIdType j = 0; j < npts ; j++)
       {
-      id = *ptr++;
-      newIds->SetId(j, pointMap[id]);
+#if LIB_VERSION_LE(VTK,8,1,0)
+      //vtkIdType id = *ptr++;
+      newIds->SetId(j, pointMap[*ptr++]);
+#else
+      newIds->SetId(j, pointMap[ptr[j]]);
+#endif
       }
       output->InsertNextCell(cellType, newIds);
     }
@@ -165,7 +198,7 @@ vtkUnstructuredGridRelevantPointsFilter::FillInputPortInformation(int,
 // ****************************************************************************
 void
 vtkUnstructuredGridRelevantPointsFilter::PrintSelf(ostream& os,
-  vtkIndent indent) 
+  vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 }

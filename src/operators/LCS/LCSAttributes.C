@@ -161,21 +161,21 @@ LCSAttributes::IntegrationDirection_FromString(const std::string &s, LCSAttribut
 
 static const char *FieldType_strings[] = {
 "Default", "FlashField", "M3DC12DField",
-"M3DC13DField", "Nek5000Field", "NektarPPField",
-"NIMRODField"};
+"M3DC13DField", "Nek5000Field", "NektarPPField"
+};
 
 std::string
 LCSAttributes::FieldType_ToString(LCSAttributes::FieldType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 7) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return FieldType_strings[index];
 }
 
 std::string
 LCSAttributes::FieldType_ToString(int t)
 {
-    int index = (t < 0 || t >= 7) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return FieldType_strings[index];
 }
 
@@ -183,7 +183,7 @@ bool
 LCSAttributes::FieldType_FromString(const std::string &s, LCSAttributes::FieldType &val)
 {
     val = LCSAttributes::Default;
-    for(int i = 0; i < 7; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == FieldType_strings[i])
         {
@@ -275,7 +275,7 @@ LCSAttributes::SizeType_FromString(const std::string &s, LCSAttributes::SizeType
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
+"LoadOnDemand", "ParallelStaticDomains", "ManagerWorker",
 "VisItSelects"};
 
 std::string
@@ -1753,7 +1753,7 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 7)
+            if(ival >= 0 && ival < 6)
                 SetFieldType(FieldType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -3322,5 +3322,57 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
     }
 
     return false;
+}
+
+// ****************************************************************************
+// Method: LCSAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Mark C. Miller
+// Creation:   October 27, 2023
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+LCSAttributes::ProcessOldVersions(DataNode *parentNode,
+                                     const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("LCSAttributes");
+    if(searchNode == 0)
+        return;
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *dn = nullptr;
+
+        // We need deal with only ManagerWorker case here because it replaces
+        // the old entry of MasterSlave
+        if ((dn = searchNode->GetNode("parallelizationAlgorithmType")) != nullptr)
+        {
+            std::string type = dn->AsString();
+            if (type == "MasterSlave")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("MasterSlave",
+                    "ManagerWorker", "3.5.0"));
+#endif
+                dn->SetString(ParallelizationAlgorithmType_ToString(LCSAttributes::ManagerWorker));
+            }
+        }
+    }
+#endif
 }
 

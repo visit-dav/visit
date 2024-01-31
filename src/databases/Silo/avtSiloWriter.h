@@ -82,6 +82,9 @@ class DBOptionsAttributes;
 //    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
 //    Added curCycle, curFTime, curDTime to avoid issues with static
 //    members. 
+// 
+//    Justin Privitera,Thu Apr 28 14:40:37 PDT 2022
+//    Removed `WriteExpressions()`.
 //
 // ****************************************************************************
 
@@ -89,7 +92,7 @@ class
 avtSiloWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtSiloWriter(DBOptionsAttributes *);
+                   avtSiloWriter(const DBOptionsAttributes *);
     virtual       ~avtSiloWriter();
 
   protected:
@@ -164,8 +167,6 @@ avtSiloWriter : public virtual avtDatabaseWriter
                                       const unsigned char *gz);
     void           WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
                                        int ndims, int *dims, int centering);
-
-    void           WriteExpressions(DBfile *dbfile);
 };
 
 

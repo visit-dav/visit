@@ -24,7 +24,6 @@
 #include <InvalidFilesException.h>
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>

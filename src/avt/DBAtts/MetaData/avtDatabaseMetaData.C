@@ -7043,6 +7043,11 @@ avtDatabaseMetaData::IssueWarning(const char *msg) const
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 5, 2002
 //
+//  Modifications:
+//
+//    Alister Maguire, Mon Jul 20 16:27:19 PDT 2020
+//    Check if the discovered mesh name is actually a known mesh.
+//
 // ****************************************************************************
 
 bool
@@ -7056,7 +7061,22 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
     {
         return false;
     }
-    return true;
+
+    //
+    // Let's check if this is truly a known mesh.
+    //
+    std::string meshName = v.substr(beg + 1, end - beg - 1);
+
+    int nmeshes = GetNumMeshes();
+    for (int i = 0 ; i < nmeshes ; i++)
+    {
+        if (VariableNamesEqual(GetMeshes(i).name, meshName))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // ****************************************************************************
@@ -7509,9 +7529,8 @@ avtDatabaseMetaData::GetSEGWarningString() const
         "except to override this behavior and suffer any GUI performance issues.\n"
         "Unfortunately, if you are running in client-server mode, you will have to\n"
         "take action to set this enviornment variable on both the server and client\n"
-        "machines. This will only be necessary in VisIt version 2.12.3. An entirely\n"
-        "different mechanism for controlling this behavior will be introduced in 2.13.",
-         GetTotalVarCount(), GetSEGEnvVarName());
+        "machines.",
+        GetTotalVarCount(), GetSEGEnvVarName());
     return msg;
 }
 

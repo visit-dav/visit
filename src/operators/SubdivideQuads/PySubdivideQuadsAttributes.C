@@ -5,6 +5,7 @@
 #include <PySubdivideQuadsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PySubdivideQuadsAttributes
@@ -34,9 +35,8 @@ struct SubdivideQuadsAttributesObject
 // Internal prototypes
 //
 static PyObject *NewSubdivideQuadsAttributes(int);
-
 std::string
-PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const char *prefix)
+PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -74,12 +74,48 @@ SubdivideQuadsAttributes_SetThreshold(PyObject *self, PyObject *args)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the threshold in the object.
-    obj->data->SetThreshold(dval);
+    obj->data->SetThreshold(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -98,12 +134,48 @@ SubdivideQuadsAttributes_SetMaxSubdivs(PyObject *self, PyObject *args)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxSubdivs in the object.
-    obj->data->SetMaxSubdivs((int)ival);
+    obj->data->SetMaxSubdivs(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -122,12 +194,48 @@ SubdivideQuadsAttributes_SetFanOutPoints(PyObject *self, PyObject *args)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fanOutPoints in the object.
-    obj->data->SetFanOutPoints(ival != 0);
+    obj->data->SetFanOutPoints(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -146,12 +254,48 @@ SubdivideQuadsAttributes_SetDoTriangles(PyObject *self, PyObject *args)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the doTriangles in the object.
-    obj->data->SetDoTriangles(ival != 0);
+    obj->data->SetDoTriangles(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -170,12 +314,37 @@ SubdivideQuadsAttributes_SetVariable(PyObject *self, PyObject *args)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the variable in the object.
-    obj->data->SetVariable(std::string(str));
+    obj->data->SetVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -220,14 +389,7 @@ SubdivideQuadsAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-SubdivideQuadsAttributes_compare(PyObject *v, PyObject *w)
-{
-    SubdivideQuadsAttributes *a = ((SubdivideQuadsAttributesObject *)v)->data;
-    SubdivideQuadsAttributes *b = ((SubdivideQuadsAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *SubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySubdivideQuadsAttributes_getattr(PyObject *self, char *name)
 {
@@ -242,36 +404,49 @@ PySubdivideQuadsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return SubdivideQuadsAttributes_GetVariable(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySubdivideQuadsAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySubdivideQuadsAttributes_methods[i].ml_name),
+                PyString_FromString(PySubdivideQuadsAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySubdivideQuadsAttributes_methods, self, name);
 }
 
 int
 PySubdivideQuadsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "threshold") == 0)
-        obj = SubdivideQuadsAttributes_SetThreshold(self, tuple);
+        obj = SubdivideQuadsAttributes_SetThreshold(self, args);
     else if(strcmp(name, "maxSubdivs") == 0)
-        obj = SubdivideQuadsAttributes_SetMaxSubdivs(self, tuple);
+        obj = SubdivideQuadsAttributes_SetMaxSubdivs(self, args);
     else if(strcmp(name, "fanOutPoints") == 0)
-        obj = SubdivideQuadsAttributes_SetFanOutPoints(self, tuple);
+        obj = SubdivideQuadsAttributes_SetFanOutPoints(self, args);
     else if(strcmp(name, "doTriangles") == 0)
-        obj = SubdivideQuadsAttributes_SetDoTriangles(self, tuple);
+        obj = SubdivideQuadsAttributes_SetDoTriangles(self, args);
     else if(strcmp(name, "variable") == 0)
-        obj = SubdivideQuadsAttributes_SetVariable(self, tuple);
+        obj = SubdivideQuadsAttributes_SetVariable(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -279,7 +454,7 @@ static int
 SubdivideQuadsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
-    fprintf(fp, "%s", PySubdivideQuadsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySubdivideQuadsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -287,7 +462,7 @@ PyObject *
 SubdivideQuadsAttributes_str(PyObject *v)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
-    return PyString_FromString(PySubdivideQuadsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySubdivideQuadsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -300,49 +475,70 @@ static char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads o
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject SubdivideQuadsAttributesType =
+
+VISIT_PY_TYPE_OBJ(SubdivideQuadsAttributesType,         \
+                  "SubdivideQuadsAttributes",           \
+                  SubdivideQuadsAttributesObject,       \
+                  SubdivideQuadsAttributes_dealloc,     \
+                  SubdivideQuadsAttributes_print,       \
+                  PySubdivideQuadsAttributes_getattr,   \
+                  PySubdivideQuadsAttributes_setattr,   \
+                  SubdivideQuadsAttributes_str,         \
+                  SubdivideQuadsAttributes_Purpose,     \
+                  SubdivideQuadsAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+SubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SubdivideQuadsAttributes",                    // tp_name
-    sizeof(SubdivideQuadsAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SubdivideQuadsAttributes_dealloc,  // tp_dealloc
-    (printfunc)SubdivideQuadsAttributes_print,     // tp_print
-    (getattrfunc)PySubdivideQuadsAttributes_getattr, // tp_getattr
-    (setattrfunc)PySubdivideQuadsAttributes_setattr, // tp_setattr
-    (cmpfunc)SubdivideQuadsAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)SubdivideQuadsAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SubdivideQuadsAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &SubdivideQuadsAttributesType
+         || Py_TYPE(other) != &SubdivideQuadsAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    SubdivideQuadsAttributes *a = ((SubdivideQuadsAttributesObject *)self)->data;
+    SubdivideQuadsAttributes *b = ((SubdivideQuadsAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -418,7 +614,7 @@ PySubdivideQuadsAttributes_GetLogString()
 {
     std::string s("SubdivideQuadsAtts = SubdivideQuadsAttributes()\n");
     if(currentAtts != 0)
-        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.");
+        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.", true);
     return s;
 }
 
@@ -431,7 +627,7 @@ PySubdivideQuadsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SubdivideQuadsAtts = SubdivideQuadsAttributes()\n");
-        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.");
+        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.", true);
         cb(s);
     }
 }

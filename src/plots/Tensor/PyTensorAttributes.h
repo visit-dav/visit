@@ -5,6 +5,7 @@
 #ifndef PY_TENSORATTRIBUTES_H
 #define PY_TENSORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TensorAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyTensorAttributes_Wrap(const TensorAttributes *attr);
 void           PyTensorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTensorAttributes_SetDefaults(const TensorAttributes *atts);
 std::string    PyTensorAttributes_GetLogString();
-std::string    PyTensorAttributes_ToString(const TensorAttributes *, const char *);
+std::string    PyTensorAttributes_ToString(const TensorAttributes *, const char *, const bool=false);
 PyObject *     PyTensorAttributes_getattr(PyObject *self, char *name);
 int            PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH];

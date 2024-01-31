@@ -5,6 +5,8 @@
 #include <PyContourAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
+#include <visit-config.h>
 #include <PyColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -37,9 +39,8 @@ struct ContourAttributesObject
 // Internal prototypes
 //
 static PyObject *NewContourAttributes(int);
-
 std::string
-PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
+PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -47,7 +48,7 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "defaultPalette.";
-        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str(), forLogging);
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
         snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
@@ -101,16 +102,25 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
     snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
-    { const ColorAttributeList &cL = atts->GetMultiColor();
-        const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
-        for(int i = 0; i < cL.GetNumColors(); ++i)
-        {
-            const unsigned char *c = cL[i].GetColor();
-            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
-                     comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
-            str += tmpStr;
-        }
+    const char *contourMethod_names = "Level, Value, Percent";
+    switch (atts->GetContourMethod())
+    {
+      case ContourAttributes::Level:
+          snprintf(tmpStr, 1000, "%scontourMethod = %sLevel  # %s\n", prefix, prefix, contourMethod_names);
+          str += tmpStr;
+          break;
+      case ContourAttributes::Value:
+          snprintf(tmpStr, 1000, "%scontourMethod = %sValue  # %s\n", prefix, prefix, contourMethod_names);
+          str += tmpStr;
+          break;
+      case ContourAttributes::Percent:
+          snprintf(tmpStr, 1000, "%scontourMethod = %sPercent  # %s\n", prefix, prefix, contourMethod_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
     }
+
     snprintf(tmpStr, 1000, "%scontourNLevels = %d\n", prefix, atts->GetContourNLevels());
     str += tmpStr;
     {   const doubleVector &contourValue = atts->GetContourValue();
@@ -145,25 +155,16 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *contourMethod_names = "Level, Value, Percent";
-    switch (atts->GetContourMethod())
-    {
-      case ContourAttributes::Level:
-          snprintf(tmpStr, 1000, "%scontourMethod = %sLevel  # %s\n", prefix, prefix, contourMethod_names);
-          str += tmpStr;
-          break;
-      case ContourAttributes::Value:
-          snprintf(tmpStr, 1000, "%scontourMethod = %sValue  # %s\n", prefix, prefix, contourMethod_names);
-          str += tmpStr;
-          break;
-      case ContourAttributes::Percent:
-          snprintf(tmpStr, 1000, "%scontourMethod = %sPercent  # %s\n", prefix, prefix, contourMethod_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
+    { const ColorAttributeList &cL = atts->GetMultiColor();
+        const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
+        for(int i = 0; i < cL.GetNumColors(); ++i)
+        {
+            const unsigned char *c = cL[i].GetColor();
+            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
+                     comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
+            str += tmpStr;
+        }
     }
-
     if(atts->GetMinFlag())
         snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
@@ -219,10 +220,7 @@ ContourAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyColorControlPointList_Check(newValue))
-    {
-        fprintf(stderr, "The defaultPalette field can only be set with ColorControlPointList objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field defaultPalette can be set only with ColorControlPointList objects");
 
     obj->data->SetDefaultPalette(*PyColorControlPointList_FromPyObject(newValue));
 
@@ -251,59 +249,59 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    unsignedCharVector  &vec = obj->data->GetChangedColors();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    typedef unsigned char uchar;
+    ucharVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        uchar cval = uchar(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            int c;
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                c = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                c = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                c = int(PyLong_AsDouble(item));
-            else
-                c = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ uchar");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
 
-            if(c < 0) c = 0;
-            if(c > 255) c = 255;
-            vec[i] = (unsigned char)(c);
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            uchar cval = uchar(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyFloat_AS_DOUBLE(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyInt_AS_LONG(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        int c = PyLong_AsLong(tuple);
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more uchars");
 
+    obj->data->GetChangedColors() = vec;
     // Mark the changedColors in the object as modified.
     obj->data->SelectChangedColors();
 
@@ -328,21 +326,55 @@ ContourAttributes_SetColorType(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByMultipleColors";
+        ss << ", ColorByColorTable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetColorType(ContourAttributes::ColoringMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable.");
-        return NULL;
-    }
+    obj->data->SetColorType(ContourAttributes::ColoringMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -361,12 +393,37 @@ ContourAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -385,12 +442,48 @@ ContourAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    obj->data->SetInvertColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -409,12 +502,48 @@ ContourAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -433,12 +562,48 @@ ContourAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -530,6 +695,285 @@ ContourAttributes_GetSingleColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid contourMethod value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Level";
+        ss << ", Value";
+        ss << ", Percent";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the contourMethod in the object.
+    obj->data->SetContourMethod(ContourAttributes::Select_by(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ContourAttributes_GetContourMethod(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetContourMethod()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ContourAttributes_SetContourNLevels(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the contourNLevels in the object.
+    obj->data->SetContourNLevels(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ContourAttributes_GetContourNLevels(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetContourNLevels()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+
+    doubleVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
+
+    obj->data->GetContourValue() = vec;
+    // Mark the contourValue in the object as modified.
+    obj->data->SelectContourValue();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ContourAttributes_GetContourValue(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the contourValue.
+    const doubleVector &contourValue = obj->data->GetContourValue();
+    PyObject *retval = PyTuple_New(contourValue.size());
+    for(size_t i = 0; i < contourValue.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(contourValue[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+
+    doubleVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
+
+    obj->data->GetContourPercent() = vec;
+    // Mark the contourPercent in the object as modified.
+    obj->data->SelectContourPercent();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ContourAttributes_GetContourPercent(PyObject *self, PyObject *args)
+{
+    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the contourPercent.
+    const doubleVector &contourPercent = obj->data->GetContourPercent();
+    PyObject *retval = PyTuple_New(contourPercent.size());
+    for(size_t i = 0; i < contourPercent.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(contourPercent[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
 ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
@@ -570,12 +1014,11 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the tuple is the right size.
                             if(PyTuple_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyTuple_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -585,7 +1028,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -593,17 +1036,17 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -614,12 +1057,11 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the list is the right size.
                             if(PyList_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyList_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -629,7 +1071,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -637,17 +1079,17 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -656,7 +1098,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             delete [] C;
                         }
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_TypeError, "Expecting tuple or list");
                     }
                 }
                 else
@@ -666,7 +1108,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
 
                     // Make sure that the tuple is the right size.
                     if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)
-                        return NULL;
+                        return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
 
                     // Make sure that all elements in the tuple are ints.
                     for(int i = 0; i < PyTuple_Size(pyobj); ++i)
@@ -677,7 +1119,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         else if(PyFloat_Check(item))
                             c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d as a color component", i);
                     }
                 }
             }
@@ -686,7 +1128,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return NULL;
+        return PyErr_Format(PyExc_ValueError, "color index out of range 0 <= i < %d", (int) cL.GetNumColors());
 
     // Set the color in the object.
     if(setTheColor)
@@ -742,199 +1184,52 @@ ContourAttributes_GetMultiColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ContourAttributes_SetContourNLevels(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the contourNLevels in the object.
-    obj->data->SetContourNLevels((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ContourAttributes_GetContourNLevels(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetContourNLevels()));
-    return retval;
-}
-
-/*static*/ PyObject *
-ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-
-    doubleVector  &vec = obj->data->GetContourValue();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the contourValue in the object as modified.
-    obj->data->SelectContourValue();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ContourAttributes_GetContourValue(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the contourValue.
-    const doubleVector &contourValue = obj->data->GetContourValue();
-    PyObject *retval = PyTuple_New(contourValue.size());
-    for(size_t i = 0; i < contourValue.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(contourValue[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-
-    doubleVector  &vec = obj->data->GetContourPercent();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the contourPercent in the object as modified.
-    obj->data->SelectContourPercent();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ContourAttributes_GetContourPercent(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the contourPercent.
-    const doubleVector &contourPercent = obj->data->GetContourPercent();
-    PyObject *retval = PyTuple_New(contourPercent.size());
-    for(size_t i = 0; i < contourPercent.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(contourPercent[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the contourMethod in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetContourMethod(ContourAttributes::Select_by(ival));
-    else
-    {
-        fprintf(stderr, "An invalid contourMethod value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Level, Value, Percent.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ContourAttributes_GetContourMethod(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetContourMethod()));
-    return retval;
-}
-
-/*static*/ PyObject *
 ContourAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
+    obj->data->SetMinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -953,12 +1248,48 @@ ContourAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
+    obj->data->SetMaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -977,12 +1308,48 @@ ContourAttributes_SetMin(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the min in the object.
-    obj->data->SetMin(dval);
+    obj->data->SetMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1001,12 +1368,48 @@ ContourAttributes_SetMax(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the max in the object.
-    obj->data->SetMax(dval);
+    obj->data->SetMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1025,21 +1428,54 @@ ContourAttributes_SetScaling(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaling in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetScaling(ContourAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid scaling value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Linear, Log.");
-        return NULL;
-    }
+    obj->data->SetScaling(ContourAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1058,12 +1494,48 @@ ContourAttributes_SetWireframe(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wireframe in the object.
-    obj->data->SetWireframe(ival != 0);
+    obj->data->SetWireframe(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1097,16 +1569,16 @@ PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH] = {
     {"GetLineWidth", ContourAttributes_GetLineWidth, METH_VARARGS},
     {"SetSingleColor", ContourAttributes_SetSingleColor, METH_VARARGS},
     {"GetSingleColor", ContourAttributes_GetSingleColor, METH_VARARGS},
-    {"SetMultiColor", ContourAttributes_SetMultiColor, METH_VARARGS},
-    {"GetMultiColor", ContourAttributes_GetMultiColor, METH_VARARGS},
+    {"SetContourMethod", ContourAttributes_SetContourMethod, METH_VARARGS},
+    {"GetContourMethod", ContourAttributes_GetContourMethod, METH_VARARGS},
     {"SetContourNLevels", ContourAttributes_SetContourNLevels, METH_VARARGS},
     {"GetContourNLevels", ContourAttributes_GetContourNLevels, METH_VARARGS},
     {"SetContourValue", ContourAttributes_SetContourValue, METH_VARARGS},
     {"GetContourValue", ContourAttributes_GetContourValue, METH_VARARGS},
     {"SetContourPercent", ContourAttributes_SetContourPercent, METH_VARARGS},
     {"GetContourPercent", ContourAttributes_GetContourPercent, METH_VARARGS},
-    {"SetContourMethod", ContourAttributes_SetContourMethod, METH_VARARGS},
-    {"GetContourMethod", ContourAttributes_GetContourMethod, METH_VARARGS},
+    {"SetMultiColor", ContourAttributes_SetMultiColor, METH_VARARGS},
+    {"GetMultiColor", ContourAttributes_GetMultiColor, METH_VARARGS},
     {"SetMinFlag", ContourAttributes_SetMinFlag, METH_VARARGS},
     {"GetMinFlag", ContourAttributes_GetMinFlag, METH_VARARGS},
     {"SetMaxFlag", ContourAttributes_SetMaxFlag, METH_VARARGS},
@@ -1136,14 +1608,7 @@ ContourAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ContourAttributes_compare(PyObject *v, PyObject *w)
-{
-    ContourAttributes *a = ((ContourAttributesObject *)v)->data;
-    ContourAttributes *b = ((ContourAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ContourAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyContourAttributes_getattr(PyObject *self, char *name)
 {
@@ -1170,14 +1635,6 @@ PyContourAttributes_getattr(PyObject *self, char *name)
         return ContourAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "singleColor") == 0)
         return ContourAttributes_GetSingleColor(self, NULL);
-    if(strcmp(name, "multiColor") == 0)
-        return ContourAttributes_GetMultiColor(self, NULL);
-    if(strcmp(name, "contourNLevels") == 0)
-        return ContourAttributes_GetContourNLevels(self, NULL);
-    if(strcmp(name, "contourValue") == 0)
-        return ContourAttributes_GetContourValue(self, NULL);
-    if(strcmp(name, "contourPercent") == 0)
-        return ContourAttributes_GetContourPercent(self, NULL);
     if(strcmp(name, "contourMethod") == 0)
         return ContourAttributes_GetContourMethod(self, NULL);
     if(strcmp(name, "Level") == 0)
@@ -1187,6 +1644,14 @@ PyContourAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Percent") == 0)
         return PyInt_FromLong(long(ContourAttributes::Percent));
 
+    if(strcmp(name, "contourNLevels") == 0)
+        return ContourAttributes_GetContourNLevels(self, NULL);
+    if(strcmp(name, "contourValue") == 0)
+        return ContourAttributes_GetContourValue(self, NULL);
+    if(strcmp(name, "contourPercent") == 0)
+        return ContourAttributes_GetContourPercent(self, NULL);
+    if(strcmp(name, "multiColor") == 0)
+        return ContourAttributes_GetMultiColor(self, NULL);
     if(strcmp(name, "minFlag") == 0)
         return ContourAttributes_GetMinFlag(self, NULL);
     if(strcmp(name, "maxFlag") == 0)
@@ -1205,104 +1670,77 @@ PyContourAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wireframe") == 0)
         return ContourAttributes_GetWireframe(self, NULL);
 
-    // Try and handle legacy fields
 
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
     {
-        lineStyleFound = true;
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyContourAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyContourAttributes_methods[i].ml_name),
+                PyString_FromString(PyContourAttributes_methods[i].ml_name));
+        return result;
     }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        fprintf(stdout, "lineStyle is no longer a valid Contour "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
+
     return Py_FindMethod(PyContourAttributes_methods, self, name);
 }
 
 int
 PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "defaultPalette") == 0)
-        obj = ContourAttributes_SetDefaultPalette(self, tuple);
+        obj = ContourAttributes_SetDefaultPalette(self, args);
     else if(strcmp(name, "changedColors") == 0)
-        obj = ContourAttributes_SetChangedColors(self, tuple);
+        obj = ContourAttributes_SetChangedColors(self, args);
     else if(strcmp(name, "colorType") == 0)
-        obj = ContourAttributes_SetColorType(self, tuple);
+        obj = ContourAttributes_SetColorType(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = ContourAttributes_SetColorTableName(self, tuple);
+        obj = ContourAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
-        obj = ContourAttributes_SetInvertColorTable(self, tuple);
+        obj = ContourAttributes_SetInvertColorTable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = ContourAttributes_SetLegendFlag(self, tuple);
+        obj = ContourAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = ContourAttributes_SetLineWidth(self, tuple);
+        obj = ContourAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "singleColor") == 0)
-        obj = ContourAttributes_SetSingleColor(self, tuple);
-    else if(strcmp(name, "multiColor") == 0)
-        obj = ContourAttributes_SetMultiColor(self, tuple);
-    else if(strcmp(name, "contourNLevels") == 0)
-        obj = ContourAttributes_SetContourNLevels(self, tuple);
-    else if(strcmp(name, "contourValue") == 0)
-        obj = ContourAttributes_SetContourValue(self, tuple);
-    else if(strcmp(name, "contourPercent") == 0)
-        obj = ContourAttributes_SetContourPercent(self, tuple);
+        obj = ContourAttributes_SetSingleColor(self, args);
     else if(strcmp(name, "contourMethod") == 0)
-        obj = ContourAttributes_SetContourMethod(self, tuple);
+        obj = ContourAttributes_SetContourMethod(self, args);
+    else if(strcmp(name, "contourNLevels") == 0)
+        obj = ContourAttributes_SetContourNLevels(self, args);
+    else if(strcmp(name, "contourValue") == 0)
+        obj = ContourAttributes_SetContourValue(self, args);
+    else if(strcmp(name, "contourPercent") == 0)
+        obj = ContourAttributes_SetContourPercent(self, args);
+    else if(strcmp(name, "multiColor") == 0)
+        obj = ContourAttributes_SetMultiColor(self, args);
     else if(strcmp(name, "minFlag") == 0)
-        obj = ContourAttributes_SetMinFlag(self, tuple);
+        obj = ContourAttributes_SetMinFlag(self, args);
     else if(strcmp(name, "maxFlag") == 0)
-        obj = ContourAttributes_SetMaxFlag(self, tuple);
+        obj = ContourAttributes_SetMaxFlag(self, args);
     else if(strcmp(name, "min") == 0)
-        obj = ContourAttributes_SetMin(self, tuple);
+        obj = ContourAttributes_SetMin(self, args);
     else if(strcmp(name, "max") == 0)
-        obj = ContourAttributes_SetMax(self, tuple);
+        obj = ContourAttributes_SetMax(self, args);
     else if(strcmp(name, "scaling") == 0)
-        obj = ContourAttributes_SetScaling(self, tuple);
+        obj = ContourAttributes_SetScaling(self, args);
     else if(strcmp(name, "wireframe") == 0)
-        obj = ContourAttributes_SetWireframe(self, tuple);
+        obj = ContourAttributes_SetWireframe(self, args);
 
-    // Try and handle legacy fields
-    if(obj == NULL)
-    {
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1310,7 +1748,7 @@ static int
 ContourAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)v;
-    fprintf(fp, "%s", PyContourAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyContourAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1318,7 +1756,7 @@ PyObject *
 ContourAttributes_str(PyObject *v)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)v;
-    return PyString_FromString(PyContourAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyContourAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1331,49 +1769,70 @@ static char *ContourAttributes_Purpose = "This class contains the plot attribute
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ContourAttributesType =
+
+VISIT_PY_TYPE_OBJ(ContourAttributesType,         \
+                  "ContourAttributes",           \
+                  ContourAttributesObject,       \
+                  ContourAttributes_dealloc,     \
+                  ContourAttributes_print,       \
+                  PyContourAttributes_getattr,   \
+                  PyContourAttributes_setattr,   \
+                  ContourAttributes_str,         \
+                  ContourAttributes_Purpose,     \
+                  ContourAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ContourAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ContourAttributes",                    // tp_name
-    sizeof(ContourAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ContourAttributes_dealloc,  // tp_dealloc
-    (printfunc)ContourAttributes_print,     // tp_print
-    (getattrfunc)PyContourAttributes_getattr, // tp_getattr
-    (setattrfunc)PyContourAttributes_setattr, // tp_setattr
-    (cmpfunc)ContourAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ContourAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ContourAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ContourAttributesType
+         || Py_TYPE(other) != &ContourAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ContourAttributes *a = ((ContourAttributesObject *)self)->data;
+    ContourAttributes *b = ((ContourAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1449,7 +1908,7 @@ PyContourAttributes_GetLogString()
 {
     std::string s("ContourAtts = ContourAttributes()\n");
     if(currentAtts != 0)
-        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.");
+        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.", true);
     return s;
 }
 
@@ -1462,7 +1921,7 @@ PyContourAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ContourAtts = ContourAttributes()\n");
-        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.");
+        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.", true);
         cb(s);
     }
 }

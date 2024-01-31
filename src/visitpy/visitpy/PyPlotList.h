@@ -5,6 +5,7 @@
 #ifndef PY_PLOTLIST_H
 #define PY_PLOTLIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PlotList.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyPlotList_Wrap(const PlotList *attr);
 void VISITPY_API           PyPlotList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPlotList_SetDefaults(const PlotList *atts);
 std::string VISITPY_API    PyPlotList_GetLogString();
-std::string VISITPY_API    PyPlotList_ToString(const PlotList *, const char *);
+std::string VISITPY_API    PyPlotList_ToString(const PlotList *, const char *, const bool=false);
 VISITPY_API PyObject *     PyPlotList_getattr(PyObject *self, char *name);
 int VISITPY_API            PyPlotList_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyPlotList_methods[PLOTLIST_NMETH];

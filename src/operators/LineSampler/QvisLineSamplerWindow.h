@@ -41,8 +41,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
   public:
     QvisLineSamplerWindow(const int type,
                          LineSamplerAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisLineSamplerWindow();
     virtual void CreateWindowContents();
@@ -78,7 +78,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void arrayPlotOffsetProcessText();
     void channelGeometryChanged(int val);
     void radiusProcessText();
-//     void divergenceProcessText();
+    void divergenceProcessText();
     void channelProfileChanged(int val);
     void standardDeviationProcessText();
     void sampleDistanceProcessText();
@@ -182,7 +182,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QWidget      *channelGeometry;
     QButtonGroup *channelGeometryButtonGroup;
     QLineEdit *radius;
-//     QLineEdit *divergence;
+    QLineEdit *divergence;
     QWidget      *channelProfile;
     QButtonGroup *channelProfileButtonGroup;
     QRadioButton *channelProfileChannelTypeTopHat;
@@ -198,7 +198,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QWidget      *toroidalIntegration;
     QButtonGroup *toroidalIntegrationButtonGroup;
     QRadioButton *toroidalIntegrationNone;
-    QRadioButton *toroidalIntegrationTime;
+    QRadioButton *toroidalIntegrationSample;
     QRadioButton *toroidalIntegrationSummation;
     QWidget      *toroidalAngleSampling;
     QButtonGroup *toroidalAngleSamplingButtonGroup;
@@ -248,7 +248,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *arrayPlotOffsetLabel;
     QLabel *channelGeometryLabel;
     QLabel *radiusLabel;
-//     QLabel *divergenceLabel;
+    QLabel *divergenceLabel;
     QLabel *channelProfileLabel;
     QLabel *standardDeviationLabel;
     QLabel *sampleDistanceLabel;

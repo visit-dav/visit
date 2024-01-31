@@ -191,8 +191,8 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
 
             vtkDataSet *ds = meshes[i];
             
-            set<int> cells;
-            set<int> points;
+            set<vtkIdType> cells;
+            set<vtkIdType> points;
 
             // For each shared point, find the cells to give.
             // From those cells, find what points to give.
@@ -202,7 +202,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
 
                 for (int k = 0; k < cl->GetNumberOfIds(); ++k)
                 {
-                    int cellId = cl->GetId(k);
+                    vtkIdType cellId = cl->GetId(k);
 #if 0
                     //
                     // We shouldn't ghost 2D cells.
@@ -214,24 +214,14 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
 #endif
                     cells.insert(cellId);
                     ds->GetCellPoints(cellId, pl);
-                    for (int m = 0; m < pl->GetNumberOfIds(); ++m)
+                    for (vtkIdType m = 0; m < pl->GetNumberOfIds(); ++m)
                         points.insert(pl->GetId(m));
                 }
             }
 
             vector<int> givenCells, givenPoints;
-#if defined(_MSC_VER) && (_MSC_VER <= 1200) // MSVC 6
-            for(std::set<int>::const_iterator cell_it = cells.begin();
-                cell_it != cells.end(); ++cell_it)
-                givenCells.push_back(*cell_it);
-
-            for(std::set<int>::const_iterator point_it = points.begin();
-                point_it != points.end(); ++point_it)
-                givenPoints.push_back(*point_it);
-#else
             givenCells.assign(cells.begin(), cells.end());
             givenPoints.assign(points.begin(), points.end());
-#endif
             // sendDom gives to recvDom with point filter on.
             SetGivenCellsAndPoints(sendDom, recvDom, givenCells, 
                                                      givenPoints, true);

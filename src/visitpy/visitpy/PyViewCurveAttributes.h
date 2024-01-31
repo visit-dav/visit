@@ -5,6 +5,7 @@
 #ifndef PY_VIEWCURVEATTRIBUTES_H
 #define PY_VIEWCURVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ViewCurveAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyViewCurveAttributes_Wrap(const ViewCurveAttributes 
 void VISITPY_API           PyViewCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewCurveAttributes_SetDefaults(const ViewCurveAttributes *atts);
 std::string VISITPY_API    PyViewCurveAttributes_GetLogString();
-std::string VISITPY_API    PyViewCurveAttributes_ToString(const ViewCurveAttributes *, const char *);
+std::string VISITPY_API    PyViewCurveAttributes_ToString(const ViewCurveAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyViewCurveAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewCurveAttributes_methods[VIEWCURVEATTRIBUTES_NMETH];

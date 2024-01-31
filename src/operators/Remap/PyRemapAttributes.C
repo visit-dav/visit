@@ -5,6 +5,7 @@
 #include <PyRemapAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyRemapAttributes
@@ -34,9 +35,8 @@ struct RemapAttributesObject
 // Internal prototypes
 //
 static PyObject *NewRemapAttributes(int);
-
 std::string
-PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix)
+PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -101,12 +101,48 @@ RemapAttributes_SetUseExtents(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useExtents in the object.
-    obj->data->SetUseExtents(ival != 0);
+    obj->data->SetUseExtents(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -125,12 +161,48 @@ RemapAttributes_SetStartX(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startX in the object.
-    obj->data->SetStartX(dval);
+    obj->data->SetStartX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -149,12 +221,48 @@ RemapAttributes_SetEndX(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endX in the object.
-    obj->data->SetEndX(dval);
+    obj->data->SetEndX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -173,12 +281,48 @@ RemapAttributes_SetCellsX(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cellsX in the object.
-    obj->data->SetCellsX((int)ival);
+    obj->data->SetCellsX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -197,12 +341,48 @@ RemapAttributes_SetStartY(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startY in the object.
-    obj->data->SetStartY(dval);
+    obj->data->SetStartY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -221,12 +401,48 @@ RemapAttributes_SetEndY(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endY in the object.
-    obj->data->SetEndY(dval);
+    obj->data->SetEndY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -245,12 +461,48 @@ RemapAttributes_SetCellsY(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cellsY in the object.
-    obj->data->SetCellsY((int)ival);
+    obj->data->SetCellsY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -269,12 +521,48 @@ RemapAttributes_SetIs3D(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the is3D in the object.
-    obj->data->SetIs3D(ival != 0);
+    obj->data->SetIs3D(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -293,12 +581,48 @@ RemapAttributes_SetStartZ(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startZ in the object.
-    obj->data->SetStartZ(dval);
+    obj->data->SetStartZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -317,12 +641,48 @@ RemapAttributes_SetEndZ(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endZ in the object.
-    obj->data->SetEndZ(dval);
+    obj->data->SetEndZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -341,12 +701,48 @@ RemapAttributes_SetCellsZ(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cellsZ in the object.
-    obj->data->SetCellsZ((int)ival);
+    obj->data->SetCellsZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -365,21 +761,54 @@ RemapAttributes_SetVariableType(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid variableType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " intrinsic";
+        ss << ", extrinsic";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the variableType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetVariableType(RemapAttributes::VariableTypes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid variableType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "intrinsic, extrinsic.");
-        return NULL;
-    }
+    obj->data->SetVariableType(RemapAttributes::VariableTypes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -438,14 +867,7 @@ RemapAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-RemapAttributes_compare(PyObject *v, PyObject *w)
-{
-    RemapAttributes *a = ((RemapAttributesObject *)v)->data;
-    RemapAttributes *b = ((RemapAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *RemapAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyRemapAttributes_getattr(PyObject *self, char *name)
 {
@@ -479,50 +901,63 @@ PyRemapAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(RemapAttributes::extrinsic));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyRemapAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyRemapAttributes_methods[i].ml_name),
+                PyString_FromString(PyRemapAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyRemapAttributes_methods, self, name);
 }
 
 int
 PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "useExtents") == 0)
-        obj = RemapAttributes_SetUseExtents(self, tuple);
+        obj = RemapAttributes_SetUseExtents(self, args);
     else if(strcmp(name, "startX") == 0)
-        obj = RemapAttributes_SetStartX(self, tuple);
+        obj = RemapAttributes_SetStartX(self, args);
     else if(strcmp(name, "endX") == 0)
-        obj = RemapAttributes_SetEndX(self, tuple);
+        obj = RemapAttributes_SetEndX(self, args);
     else if(strcmp(name, "cellsX") == 0)
-        obj = RemapAttributes_SetCellsX(self, tuple);
+        obj = RemapAttributes_SetCellsX(self, args);
     else if(strcmp(name, "startY") == 0)
-        obj = RemapAttributes_SetStartY(self, tuple);
+        obj = RemapAttributes_SetStartY(self, args);
     else if(strcmp(name, "endY") == 0)
-        obj = RemapAttributes_SetEndY(self, tuple);
+        obj = RemapAttributes_SetEndY(self, args);
     else if(strcmp(name, "cellsY") == 0)
-        obj = RemapAttributes_SetCellsY(self, tuple);
+        obj = RemapAttributes_SetCellsY(self, args);
     else if(strcmp(name, "is3D") == 0)
-        obj = RemapAttributes_SetIs3D(self, tuple);
+        obj = RemapAttributes_SetIs3D(self, args);
     else if(strcmp(name, "startZ") == 0)
-        obj = RemapAttributes_SetStartZ(self, tuple);
+        obj = RemapAttributes_SetStartZ(self, args);
     else if(strcmp(name, "endZ") == 0)
-        obj = RemapAttributes_SetEndZ(self, tuple);
+        obj = RemapAttributes_SetEndZ(self, args);
     else if(strcmp(name, "cellsZ") == 0)
-        obj = RemapAttributes_SetCellsZ(self, tuple);
+        obj = RemapAttributes_SetCellsZ(self, args);
     else if(strcmp(name, "variableType") == 0)
-        obj = RemapAttributes_SetVariableType(self, tuple);
+        obj = RemapAttributes_SetVariableType(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -530,7 +965,7 @@ static int
 RemapAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)v;
-    fprintf(fp, "%s", PyRemapAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRemapAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -538,7 +973,7 @@ PyObject *
 RemapAttributes_str(PyObject *v)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)v;
-    return PyString_FromString(PyRemapAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRemapAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -551,49 +986,70 @@ static char *RemapAttributes_Purpose = "Atts for Remap operator";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject RemapAttributesType =
+
+VISIT_PY_TYPE_OBJ(RemapAttributesType,         \
+                  "RemapAttributes",           \
+                  RemapAttributesObject,       \
+                  RemapAttributes_dealloc,     \
+                  RemapAttributes_print,       \
+                  PyRemapAttributes_getattr,   \
+                  PyRemapAttributes_setattr,   \
+                  RemapAttributes_str,         \
+                  RemapAttributes_Purpose,     \
+                  RemapAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+RemapAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "RemapAttributes",                    // tp_name
-    sizeof(RemapAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)RemapAttributes_dealloc,  // tp_dealloc
-    (printfunc)RemapAttributes_print,     // tp_print
-    (getattrfunc)PyRemapAttributes_getattr, // tp_getattr
-    (setattrfunc)PyRemapAttributes_setattr, // tp_setattr
-    (cmpfunc)RemapAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)RemapAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    RemapAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &RemapAttributesType
+         || Py_TYPE(other) != &RemapAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    RemapAttributes *a = ((RemapAttributesObject *)self)->data;
+    RemapAttributes *b = ((RemapAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -669,7 +1125,7 @@ PyRemapAttributes_GetLogString()
 {
     std::string s("RemapAtts = RemapAttributes()\n");
     if(currentAtts != 0)
-        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.");
+        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.", true);
     return s;
 }
 
@@ -682,7 +1138,7 @@ PyRemapAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RemapAtts = RemapAttributes()\n");
-        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.");
+        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.", true);
         cb(s);
     }
 }

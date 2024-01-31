@@ -17,7 +17,6 @@ class     vtkVisItTensorGlyph;
 class     vtkAlgorithmOutput;
 class     vtkLookupTable;
 class     vtkPolyData;
-class     vtkVisItPolyDataNormals;
 
 
 // ****************************************************************************
@@ -52,6 +51,9 @@ class     vtkVisItPolyDataNormals;
 //    Kathleen Biagas, Thu Mar 14 13:03:50 PDT 2013
 //    Remove normalsFilter.
 //
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Moved GetVarRange to avtMapper.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
@@ -75,7 +77,6 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     void                       SetMaxOff(void);
     virtual bool               GetRange(double &, double &);
     virtual bool               GetCurrentRange(double &, double &);
-    bool                       GetVarRange(double &, double &);
 
  protected:
     vtkAlgorithmOutput        *glyph;

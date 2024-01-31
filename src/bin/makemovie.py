@@ -7,7 +7,7 @@ import os
 import select
 import signal
 import socket
-import string
+import subprocess
 import sys
 
 if (sys.version_info > (3, 0)):
@@ -16,7 +16,9 @@ else:
     import thread as _thread
 
 import distutils.spawn
-from xmllib import *
+
+import xml
+import xml.sax
 
 from visit_utils import encoding
 
@@ -223,100 +225,6 @@ def removeFiles(format, nframes):
     return applyFunctionToFrames(removeFilesHelper, nframes, conversionargs)
 
 ###############################################################################
-# Function: visit_pipe
-#
-# Purpose:    This function is acts like os.popen except that instead of
-#             returning a file object, this function returns the exit code
-#             of the command and you pass a callback function to process
-#             text output from the child process.
-#
-# Programmer: Brad Whitlock
-# Date:       Wed Sep 20 10:19:07 PDT 2006
-#
-# Modifications:
-#   Brad Whitlock, Thu Dec 21 19:42:19 PST 2006
-#   Fixed for win32.
-#
-###############################################################################
-
-def visit_pipe(command, line_callback, line_callback_data):
-    child_exit = 0
-
-    iterate = 1
-    # Install a signal handler.
-    def stop_iterating(a,b):
-        iterate = 0
-
-    do_fork = 1
-    try:
-        signal.signal(signal.SIGCHLD, stop_iterating)
-    except ValueError:
-        # We're not running from the master thread so we should not fork
-        # and read the input. We should just call os.system. Unless we can
-        # figure out some other way of determining when the child exits
-        # instead of using signals.
-        do_fork = 0
-    except AttributeError:
-        # We have a lame signal module that does not have SIGCHLD so
-        # we can't do a fork.
-        do_fork = 0
-
-    # We're not going to do a fork so just call os.system
-    if not do_fork:
-        return os.system(command)
-
-    # We're allowed to do fork.
-    fd = os.pipe()
-    id = os.fork()
-    if id == 0:
-        # Child
-        os.dup2(fd[1], 1)
-        os.dup2(fd[1], 2)
-        #os.close(2)
-        ret = os.system(command)
-        sys.exit(ret)
-    else:
-        # Parent
-        s = ""
-        while iterate:
-            # Wait for input from the child.
-            try:
-                fd_list = select.select([fd[0]], [], [])
-            except select.error:
-                iterate = 0
-                break
-            # If we have a file descriptor to read then read and process data.
-            if len(fd_list[0]) > 0:
-                # Read child output
-                s = s + os.read(fd_list[0][0], 100)
-
-                # Process the child output into lines.
-                if s[0] == '\n':
-                    if len(s) > 1:
-                        s = s[1:]
-                    else:
-                        s = ""
-                        continue
-                line = ""
-                len_s = len(s)
-                index = 0
-                for i in range(len_s):
-                    if s[index] == '\n':
-                        s = s[index:]
-                        line_callback(line, line_callback_data)
-                        index = 0
-                        line = ""
-                    else:
-                        line = line + s[index]
-                    index = index + 1
-        try:
-            child_result = os.waitpid(id, 0)
-        except IOError:
-            child_result=(id,0)
-        child_exit = child_result[1] / 256
-    return child_exit
-
-###############################################################################
 # Function: MovieClassSaveWindow
 #
 # Purpose:    This function is called from the mangled Python script when it
@@ -331,7 +239,7 @@ def MovieClassSaveWindow():
     return classSaveWindowObj.SaveImage2()
 
 ###############################################################################
-# Class: EngineAttributesParser
+# Class: EngineAttributesParserHandler
 #
 # Purpose:    This class parses session files for MachineProfiles in the
 #             "RunningEngines" node so we can extract information about the
@@ -346,18 +254,21 @@ def MovieClassSaveWindow():
 #    I changed host profiles to be a machine profile + nested launch profile.
 #    During this change I noticed the endtag parsing was making use of the
 #    latest "open tag", which is incorrect since self.dataName wasn't a stack.
-#    I changed it to instead use the explocit booleans we set during starttag,
+#    I changed it to instead use the explicit booleans we set during starttag,
 #    though a viable alternative would be to make dataName a stack of strings.
 #
 #    Brad Whitlock, Thu Oct 28 11:49:48 PDT 2010
 #    I added code to eliminate leading/trailing quotes from string data to
 #    work around a problem introduced in version 2.1.
 #
+#    Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+#    Port EngineAttributesParser to xml.sax 
+#    (xmllib deprecated since Python 2.0 and not supported in Python 3)
+#
 ###############################################################################
 
-class EngineAttributesParser(XMLParser):
+class EngineAttributesParserHandler(xml.sax.ContentHandler):
     def __init__(self):
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -371,7 +282,7 @@ class EngineAttributesParser(XMLParser):
         self.dataAtts = None
 
 
-    def handle_starttag(self, tag, method, attributes):
+    def startElement(self, tag, method, attributes):
         if tag == "Object":
             if "name" in list(attributes.keys()):
                 self.dataName = attributes["name"]
@@ -388,7 +299,7 @@ class EngineAttributesParser(XMLParser):
             self.dataAtts = attributes
 
 
-    def handle_endtag(self, tag, method):
+    def endElement(self, tag):
         if tag == "Object":
             if self.readingLaunchProfile == 1:
                 self.readingLaunchProfile = 0
@@ -404,7 +315,7 @@ class EngineAttributesParser(XMLParser):
             self.readingField = 0
 
 
-    def handle_data(self, data):
+    def characters(self, data):
         def not_all_spaces(s):
             space = ""
             for i in range(len(s)):
@@ -421,24 +332,24 @@ class EngineAttributesParser(XMLParser):
             return retval
         if (self.readingEngineProperties == 1 or self.readingMachineProfile)\
             and self.readingField == 1 and len(data) > 0:
-            name = self.dataAtts["name"]
-            type = self.dataAtts["type"]
+            name  = self.dataAtts["name"]
+            etype = self.dataAtts["type"]
             value = None
-            if type == "bool":
+            if etype == "bool":
                 if data == "true":
                     value = 1
                 else:
                     value = 0
-            elif type == "string":
+            elif etype == "string":
                 value = StripLeadingTrailingQuotes(data)
-            elif type == "stringVector":
-                fragments = string.split(data, "\"")
+            elif etype == "stringVector":
+                fragments = data.split("\"")
                 value = []
                 for s in fragments:
                    if len(s) > 0:
                        if not_all_spaces(s):
                            value = value + [s]
-            elif type == "int":
+            elif etype == "int":
                 value = int(data)
             else:
                 print("Unknown type: ", type)
@@ -446,7 +357,7 @@ class EngineAttributesParser(XMLParser):
             self.engineProperties[name] = value
 
 ###############################################################################
-# Class: WindowSizeParser
+# Class: WindowSizeParserHandler
 #
 # Purpose:    This class parses session files for the windowSize field in
 #             the ViewerWindow and builds a list of [width,height] values.
@@ -460,11 +371,14 @@ class EngineAttributesParser(XMLParser):
 #   OpenGL part of the window instead of the windowSize, which is the size of
 #   the whole window including the decorations and toolbar.
 #
+#   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+#   Port WindowSizeParser to xml.sax
+#   (xmllib deprecated since Python 2.0 and not supported in Python 3)
+#
 ###############################################################################
 
-class WindowSizeParser(XMLParser):
+class WindowSizeParserHandler(xml.sax.ContentHandler):
     def __init__(self):
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -475,7 +389,7 @@ class WindowSizeParser(XMLParser):
         self.objectNames = []
         self.dataAtts = None
 
-    def handle_starttag(self, tag, method, attributes):
+    def startElement(self, tag, method, attributes):
         if tag == "Object":
             if "name" in list(attributes.keys()):
                 name = attributes["name"]
@@ -486,7 +400,7 @@ class WindowSizeParser(XMLParser):
             self.readingField = 1
             self.dataAtts = attributes
 
-    def handle_endtag(self, tag, method):
+    def endElement(self, tag):
         if tag == "Object":
             name = self.objectNames[-1]
             if name == "ViewerWindowManager":
@@ -495,7 +409,7 @@ class WindowSizeParser(XMLParser):
         elif tag == "Field":
             self.readingField = 0
 
-    def handle_data(self, data):
+    def charaters(self, data):
         def not_all_spaces(s):
             space = ""
             for i in range(len(s)):
@@ -515,7 +429,7 @@ class WindowSizeParser(XMLParser):
             elif name == "windowImageSize" and type == "intArray":
                 length = self.dataAtts["length"]
                 if length == "2":
-                    fragments = string.split(data, " ")
+                    fragments = data.split(" ")
                     value = []
                     for s in fragments:
                        if len(s) > 0:
@@ -526,7 +440,6 @@ class WindowSizeParser(XMLParser):
                                except ValueError:
                                    continue
                     self.windowSizes = self.windowSizes + [value[:2]]
-
 
 ###############################################################################
 # Class: MakeMovie
@@ -601,6 +514,10 @@ class MakeMovie(object):
     #   Eric Brugger, Tue Oct 22 13:22:35 PDT 2013
     #   Change the movie formats to all use PNG as the input format when
     #   ffmpeg is present and PPM otherwise (for use with mpeg2encode).
+    #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
     #
     ###########################################################################
 
@@ -681,6 +598,7 @@ class MakeMovie(object):
         self.engineRestartInterval = 1000000
         self.sources = []
         self.adjustview = 0
+        self.digitFormat = "%04d"
 
         # Compute engine properties.
         self.useSessionEngineInformation = 1
@@ -943,6 +861,8 @@ class MakeMovie(object):
         print("                       Method is one of the following: mpirun, poe,")
         print("                       psub, srun.")
         print("    -la   <args>       Additional arguments for the parallel launcher.")
+        print("                       Multiple arguments should be space-separated")
+        print("                       and the entire list enclosed in quotes.")
         print("    -p    <part>       Partition to run in.")
         print("    -b    <bank>       Bank from which to draw resources.")
         print("    -t    <time>       Maximum job run time.")
@@ -1029,7 +949,7 @@ class MakeMovie(object):
                 server = smtplib.SMTP('localhost')
 
                 domain = "llnl.gov"
-                d = string.split(os.uname()[1], ".")
+                d = os.uname()[1].split(".")
                 if len(d) > 2:
                     name = ""
                     for i in range(1, len(d)):
@@ -1079,7 +999,7 @@ class MakeMovie(object):
         extensions = (".session", ".vses", ".VSES", ".VSE", ".py", ".PY", ".xml", ".XML")
         extensionLocated = 0
         for ext in extensions:
-            pos = string.rfind(fileName, ext)
+            pos = fileName.rfind(ext)
             if(pos != -1):
                 fileName = fileName[:pos]
                 extensionLocated = 1
@@ -1089,7 +1009,7 @@ class MakeMovie(object):
         # If we located an extension then try and look for a path separator.
         if(extensionLocated == 1):
             for separator in ("/", "\\"):
-                pos = string.rfind(fileName, separator)
+                pos = fileName.rfind(separator)
                 if(pos != -1):
                     self.outputDir = fileName[:pos]
                     self.movieBase = fileName[pos+1:]
@@ -1112,7 +1032,7 @@ class MakeMovie(object):
 
     def SplitString(self, s, delim):
         retval = []
-        tokens = string.split(s, delim)
+        tokens = s.split(delim)
         for t in tokens:
             if len(t) > 0:
                 retval = retval + [t]
@@ -1222,6 +1142,11 @@ class MakeMovie(object):
     #   Kathleen Biagas, Tue Sep 29 15:52:44 MST 2015
     #   On Windows, only fail if format NOT compatible.
     #
+    #   Kathleen Biagas, Fri Sep 24 08:27:11 PDT 2021
+    #   Modified how launchArgs (-la) is processed. Expect multiple launch args
+    #   to be space-separated and enclosed in quotes, so they can be processed
+    #   as a single entity. Previous processing of -la created an endless loop.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1234,7 +1159,7 @@ class MakeMovie(object):
         for arg in sys.argv:
             if splitEngineArgs == 1:
                 splitEngineArgs = 0
-                eargs = string.split(arg, ";")
+                eargs = arg.split(";")
                 for earg in eargs:
                     if len(earg) > 0:
                         commandLine = commandLine + [earg]
@@ -1251,15 +1176,7 @@ class MakeMovie(object):
         i = 0
         outputName = "movie"
         outputSpecified = 0
-        processingLA = 0
         while(i < len(commandLine)):
-            # If we're processing launch arguments for the parallel launcher
-            # then append the argument to the the list of launch args.
-            if processingLA == 1:
-                self.engineCommandLineProperties["launchArgs"] = \
-                self.engineCommandLineProperties["launchArgs"] + [commandLine[i]]
-                continue
-
             # We're processing arguments as usual.
             if(commandLine[i] == "-format"):
                 if((i+1) < len(commandLine)):
@@ -1312,7 +1229,7 @@ class MakeMovie(object):
             elif(commandLine[i] == "-source"):
                 if((i+1) < len(commandLine)):
                     filename = commandLine[i+1]
-                    if string.find(filename, ":") == -1:
+                    if filename.find(":") == -1:
                         filename = "localhost:" + filename
                     self.sources = self.sources + [filename]
                     i = i + 1
@@ -1523,9 +1440,13 @@ class MakeMovie(object):
                     self.PrintUsage()
                     sys.exit(-1)
             elif(commandLine[i] == "-la"):
-                self.engineCommandLineProperties["launchArgs"] = []
-                self.engineCommandLineProperties["launchArgsSet"] = 1
-                processingLA = 1
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["launchArgs"] = [commandLine[i+1]]
+                    self.engineCommandLineProperties["launchArgsSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
             elif(commandLine[i] == "-expedite"):
                 if "arguments" in list(self.engineCommandLineProperties.keys()):
                     self.engineCommandLineProperties["arguments"] = self.engineCommandLineProperties["arguments"] + ["-expedite"]
@@ -1616,7 +1537,7 @@ class MakeMovie(object):
             if outputName[0] == '/':
                 # Absolute path
                 entirePath = outputName
-            elif string.find(outputName, self.slash) != -1:
+            elif outputName.find(self.slash) != -1:
                 # Relative path
                 entirePath = os.path.abspath(os.curdir) + self.slash + outputName
             else:
@@ -1624,7 +1545,7 @@ class MakeMovie(object):
                 entirePath = os.path.abspath(os.curdir) + self.slash + outputName
 
             # Separate into outputDir, movieBase.
-            pos = string.rfind(entirePath, self.slash)
+            pos = entirePath.rfind(self.slash)
             if pos != -1:
                 self.outputDir = entirePath[:pos]
                 self.movieBase = entirePath[pos+1:]
@@ -1901,7 +1822,7 @@ class MakeMovie(object):
         newname = "%s.mangled" % name
         f = open(newname, "w")
         for line in lines:
-            index = string.find(line, "SaveWindow()")
+            index = line.find("SaveWindow()")
             if index == -1:
                 f.write(line)
             else:
@@ -1938,6 +1859,9 @@ class MakeMovie(object):
     #   Something higher up in the session file was choking the parsing so
     #   let's just focus on the RunningEngines section if we can.
     #
+    #   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+    #   Use xml.sax for Python 3
+    #
     ###########################################################################
 
     def ReadEngineProperties(self, sessionfile):   
@@ -1954,9 +1878,9 @@ class MakeMovie(object):
             reading = 0
             indent = 0
             for line in lines:
-                level = string.find(line, "<")
+                level = line.find("<")
                 if reading == 0:
-                    if string.find(line, "<Object name=\"RunningEngines\">") != -1:
+                    if line.find("<Object name=\"RunningEngines\">") != -1:
                         reading = 1
                         runningEngines = runningEngines + [line]
                         indent = level
@@ -1964,13 +1888,24 @@ class MakeMovie(object):
                     runningEngines = runningEngines + [line]
                     if level <= indent:
                         break
-
             # Parse the running engines section, if present.
-            p = EngineAttributesParser()
+            # p = EngineAttributesParser()
+            # try:
+            #     for line in runningEngines:
+            #         p.feed(line)
+            #     p.close()
+            # New:
+            #
+            # Parse the running engines section, if present.
+            parser = xml.sax.make_parser()
+            ## turn off namepsaces
+            ## parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+            # override the default ContextHandler
+            h = EngineAttributesParserHandler()
+            parser.setContentHandler( h )
             try:
                 for line in runningEngines:
-                    p.feed(line)
-                p.close()
+                  parser.parseString(line)
             except:
                 print()
                 print("ERROR: We could not parse the session file for engine ")
@@ -1981,16 +1916,16 @@ class MakeMovie(object):
             if len(list(p.allEngineProperties.keys())) == 0:
                 # There were no hosts in the engine attributes so add the command
                 # line options for localhost.
-                p.allEngineProperties["localhost"] = self.engineCommandLineProperties
+                h.allEngineProperties["localhost"] = self.engineCommandLineProperties
             else:
                 # Override the EngineAttributesParser's engine attributes
                 # with options that were provided on the command line.
                 for host in list(p.allEngineProperties.keys()):
-                    dest = p.allEngineProperties[host]
+                    dest = h.allEngineProperties[host]
                     for key in list(self.engineCommandLineProperties.keys()):
                         dest[key] = self.engineCommandLineProperties[key]
             
-            return p.allEngineProperties
+            return h.allEngineProperties
         except VisItInterrupt:
             raise
         except:
@@ -2005,20 +1940,34 @@ class MakeMovie(object):
     # Programmer: Brad Whitlock
     # Date:       Fri Jun 24 10:06:24 PDT 2005
     #
+    # Modifications:
+    #   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+    #   Use xml.sax for Python 3
+    #
     ###########################################################################
 
     def ReadWindowSizes(self, sessionFile):
         try:
-            # Read the file.
-            f = open(sessionFile, "r")
-            lines = f.readlines()
-            f.close()
+            
+            # Parse the running engines section, if present.
+            parser = xml.sax.make_parser()
+            ## turn off namepsaces
+            ## parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+            # override the default ContextHandler
+            h = WindowSizeParserHandler()
+            parser.setContentHandler( h )
+            parser.parse(open(sessionFile, "r"))
 
-            # Parse the file
-            p = WindowSizeParser()
-            for line in lines:
-                p.feed(line)
-            p.close()
+            # # Read the file.
+            # f = open(sessionFile, "r")
+            # lines = f.readlines()
+            # f.close()
+            #
+            # # Parse the file
+            # p = WindowSizeParser()
+            # for line in lines:
+            #     p.feed(line)
+            # p.close()
             
             return (p.activeWindow, p.windowSizes)
         except VisItInterrupt:
@@ -2106,6 +2055,10 @@ class MakeMovie(object):
     #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
     #   Added -enginerestartinterval flag.
     #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
     def IterateAndSaveFrames(self):
 
@@ -2126,6 +2079,14 @@ class MakeMovie(object):
             self.frameStart = tmp
 
         self.Debug(1, "*** frameStart=%d, frameEnd=%d" % (self.frameStart, self.frameEnd))
+
+        # Calculate the number of frames in the movie. This may over estimate
+        # the total number in a few rare cases, but overestimating isn't an
+        # issue.
+        nTotalFrames = (self.frameEnd - self.frameStart + 1) / self.frameStep
+
+        # Generate the file names.
+        self.GenerateFileNames(nTotalFrames)
 
         # Save the old rendering mode.
         old_ra = GetRenderingAttributes()
@@ -2176,6 +2137,74 @@ class MakeMovie(object):
 
         # Restore the old rendering attributes.
         SetRenderingAttributes(old_ra)
+
+    ###########################################################################
+    # Method: GenerateFileNames
+    #
+    # Purpose:    This method generates the movie format names.
+    #             This code was extracted from GenerateFrames and then
+    #             modified to set the digitFormat. Note that it generates
+    #             between four and seven digits.
+    #
+    # Programmer: Eric Brugger
+    # Date:       Mon Dec 19 13:06:50 PST 2022
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def GenerateFileNames(self, nTotalFrames):
+
+        if nTotalFrames > 999999:
+            self.digitFormat = "%07d"
+        elif nTotalFrames > 99999:
+            self.digitFormat = "%06d"
+        elif nTotalFrames > 9999:
+            self.digitFormat = "%05d"
+
+        # Determine if the formats contain different resolutions.
+        differentResolutions = 0
+        if len(self.movieFormats) > 1:
+            w = self.movieFormats[0][2]
+            h = self.movieFormats[0][3]
+            for i in range(1, len(self.movieFormats)):
+                if w != self.movieFormats[i][2] or h != self.movieFormats[i][3]:
+                    differentResolutions = 1
+                    break
+
+        # Determine if the formats contain different stereo settings.
+        differentStereo = 0
+        if len(self.movieFormats) > 1:
+            s = self.movieFormats[0][4]
+            for i in range(1, len(self.movieFormats)):
+                if s != self.movieFormats[i][4]:
+                    differentStereo = 1
+                    break
+
+        # Create file format strings for the frames.
+        for index in range(len(self.movieFormats)):
+            filebase = self.movieBase
+            fmt = self.movieFormats[index][1]
+            si = self.movieFormats[index][4]
+            s = list(self.stereoNameToType.keys())[si]
+
+            df = self.digitFormat
+            if differentResolutions:
+                w = self.movieFormats[index][2]
+                h = self.movieFormats[index][3]
+                if differentStereo and si > 0:
+                    filebase = "%s_%dx%d_%s_%s" % (filebase, w, h, s, df)
+                else:
+                    filebase = "%s_%dx%d_%s" % (filebase, w, h, df)
+            else:
+                if differentStereo and si > 0:
+                    filebase = "%s_%s_%s" % (filebase, s, df)
+                else:
+                    filebase = "%s%s" % (filebase, df)
+
+            # Store the file format string in the movieFormats list.
+            self.movieFormats[index][0] = filebase
+        self.Debug(1, "GenerateFrames: movieFormats=" + str(self.movieFormats))
 
     ###########################################################################
     # Method: GenerateFrames
@@ -2242,6 +2271,13 @@ class MakeMovie(object):
     #   Kathleen Biagas, Mon Oct 23 17:04:22 MST 2017
     #   Resources dir on Windows is same now whether dev build or not.
     #
+    #   Eric Brugger, Thu Jan 28 11:28:09 PST 2021
+    #   Replace use of xmllib with xml.sax to parse the movie template file.
+    #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2279,65 +2315,27 @@ class MakeMovie(object):
                         self.movieFormats[index][1] = "ppm"
             index = index + 1
 
-        # Determine if the formats contain different resolutions.
-        differentResolutions = 0
-        if len(self.movieFormats) > 1:
-            w = self.movieFormats[0][2]
-            h = self.movieFormats[0][3]
-            for i in range(1, len(self.movieFormats)):
-                if w != self.movieFormats[i][2] or h != self.movieFormats[i][3]:
-                    differentResolutions = 1
-                    break
-
-        # Determine if the formats contain different stereo settings.
-        differentStereo = 0
-        if len(self.movieFormats) > 1:
-            s = self.movieFormats[0][4]
-            for i in range(1, len(self.movieFormats)):
-                if s != self.movieFormats[i][4]:
-                    differentStereo = 1
-                    break
-
-        # Create file format strings for the frames.
-        for index in range(len(self.movieFormats)):
-            filebase = self.movieBase
-            fmt = self.movieFormats[index][1]
-            si = self.movieFormats[index][4]
-            s = list(self.stereoNameToType.keys())[si]
-
-            if differentResolutions:
-                w = self.movieFormats[index][2]
-                h = self.movieFormats[index][3]
-                if differentStereo and si > 0:
-                    filebase = "%s_%dx%d_%s_%%04d" % (filebase, w, h, s)
-                else:
-                    filebase = "%s_%dx%d_%%04d" % (filebase, w, h)
-            else:
-                if differentStereo and si > 0:
-                    filebase = "%s_%s_%%04d" % (filebase, s)
-                else:
-                    filebase = "%s%%04d" % filebase
-
-            # Store the file format string in the movieFormats list.
-            self.movieFormats[index][0] = filebase
-        self.Debug(1, "GenerateFrames: movieFormats=" + str(self.movieFormats))
-
         if(self.usesTemplateFile):
+            # Generate the file names. Pass 1 as the number of files so
+            # that the number of digits in the family index is four to
+            # match legacy behavior.
+            self.GenerateFileNames(1)
+
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
                 prefix = sys.executable[:-7] + "resources" + self.slash
             else:
-                pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
+                pos = sys.argv[0].find("exe" + self.slash + "cli")
                 if pos != -1:
                     # Development version
                     prefix = sys.argv[0][:pos+4]
                     exe_dir = self.slash + "exe" + self.slash
                     resources_dir = self.slash + "resources" + self.slash
-                    prefix = string.replace(prefix, exe_dir, resources_dir)
+                    prefix = prefix.replace(exe_dir, resources_dir)
                 else:
                     # Installed version
-                    pos = string.find(sys.exec_prefix, "lib" + self.slash + "python")
+                    pos = sys.exec_prefix.find("lib" + self.slash + "python")
                     prefix = sys.exec_prefix[:pos] + "resources" + self.slash
             templateBaseFile = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
             self.Debug(1, "GenerateFrames: sourcing template base class file %s" % templateBaseFile)
@@ -2349,14 +2347,11 @@ class MakeMovie(object):
             # also need to prepend a path to it.
             try:
                 # Read the XML file.
-                self.Debug(1, "Opening template file: %s" % self.templateFile)
-                f = open(self.templateFile, "rt")
-                lines = f.readlines()
-                f.close()
+                self.Debug(1, "Reading template file: %s" % self.templateFile)
+                parser = xml.sax.make_parser()
                 templateReader = MovieTemplateReader()
-                for line in lines:
-                   templateReader.feed(line)
-                templateReader.close()
+                parser.setContentHandler( templateReader )
+                parser.parse(self.templateFile)
 
                 # Get the name of the template work file from the XML template.
                 templatePY = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
@@ -2370,8 +2365,8 @@ class MakeMovie(object):
                     print(tFile)
                     fileFound = 0
                     for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
-                        if (sys.platform != "win32") and string.find(name, "~") != -1:
-                            name2 = string.replace(name, "~", os.getenv("HOME"))
+                        if (sys.platform != "win32") and name.find("~") != -1:
+                            name2 = name.replace("~", os.getenv("HOME"))
                         else:
                             name2 = name
                         tmpPY = os.path.abspath(name2)
@@ -2490,6 +2485,10 @@ class MakeMovie(object):
             globals()['classSaveWindowObj'] = self
             # Create a modified version of the user's script.
             name = self.CreateMangledSource(self.scriptFile)
+            # Generate the file names. Pass 1 as the number of files so
+            # that the number of digits in the family index is four to
+            # match legacy behavior.
+            self.GenerateFileNames(1)
             # Try executing the modified version of the user's script.
             Source(name)
             # Remove the modified script.
@@ -2620,6 +2619,13 @@ class MakeMovie(object):
     #   Kathleen Biagas, Tue Jan 13 11:00:19 PST 2015
     #   Use mpeg2encode directly (instead of visit -mpeg2encode)
     #
+    #   Eric Brugger, Thu Jan 28 11:28:09 PST 2021
+    #   Replace visit_pipe function with subprocess.Popen.
+    #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie_old(self, moviename, imageFormatString, xres, yres):
@@ -2649,7 +2655,7 @@ class MakeMovie(object):
                 imgname = imageFormatString % i
                 imgname = self.tmpDir + self.slash + imgname + formatExt
                 for j in range(pad_rate):
-                    number4 = "%04d" % linkindex
+                    number4 = self.digitFormat % linkindex
                     linkname = self.tmpDir+self.slash+linkbase+number4+formatExt
                     linkindex = linkindex + 1
                     CopyFile(imgname, linkname, doSymlink)
@@ -2666,7 +2672,7 @@ class MakeMovie(object):
             # Use VisIt's mpeg2encode MPEG encoder program.
             f = open(paramFile, "w")
             f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
-            f.write(self.tmpDir + self.slash + linkbase + '%04d  /* name of source files */\n')
+            f.write(self.tmpDir + self.slash + linkbase + "%s  /* name of source files */\n" % self.digitFormat)
             f.write('-         /* name of reconstructed images ("-": do not store) */\n')
             f.write('-         /* name of intra quant matrix file     ("-": default matrix) */\n')
             f.write('-         /* name of non intra quant matrix file ("-": default matrix) */\n')
@@ -2727,15 +2733,33 @@ class MakeMovie(object):
             else:
                 command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
             self.Debug(1, command)
-            # Function to print the mpeg2encode output
-            def print_mpeg_line_cb(line, this):
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    universal_newlines=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+            while True:
+                line = proc.stdout.readline()
+                if not line:
+                    break
                 if line[:8] == "Encoding":
                     print(line)
-                    this.Debug(1, line)
+                    self.Debug(1, line)
                 else:
-                    this.Debug(5, line)
-            r = visit_pipe(command, print_mpeg_line_cb, self)
-            self.Debug(1, "mpeg2encode returned %d" % r)
+                    self.Debug(5, line)
+            # Wait for the process to terminate. If we don't wait then it's
+            # possible that the return code could end up being "None", which
+            # will cause the "if (r == 0):" test below to fail, which we
+            # don't want. There is mention that wait can cause a hang if
+            # stdout is a PIPE, which it is, and the child produces enough
+            # data such that it blocks waiting for the OS pipe buffer to
+            # accept more data. I wouldn't expect this to happen since we
+            # only get here when there is no more data being sent by the
+            # child.
+            proc.wait()
+            r = proc.returncode
+                
+            self.Debug(1, "mpeg2encode returned %s" % r)
 
             # Make sure that the movie exists before we delete files.
             files = os.listdir(self.outputDir)
@@ -2764,7 +2788,7 @@ class MakeMovie(object):
                 linkindex = 0
                 for i in range(self.numFrames):
                     for j in range(pad_rate):
-                        number4 = "%04d" % linkindex
+                        number4 = self.digitFormat % linkindex
                         linkname=self.tmpDir+self.slash+linkbase+number4+formatExt
                         self.Debug(5, "Removing link %s" % linkname)
                         RemoveFile(linkname)
@@ -2878,7 +2902,7 @@ class MakeMovie(object):
             if stereo == self.STEREO_LEFTRIGHT:
                 # All of the frames are named left*, right* so we need to temporarily
                 # rename them all to some common file base where left and right alternate.
-                lastSlash = string.find(imageFormatString, self.slash)
+                lastSlash = imageFormatString.find(self.slash)
                 if lastSlash != -1:
                     leftFmt = imageFormatString[:lastSlash+1] + "left_" + imageFormatString[lastSlash+1:] + ext
                     rightFmt = imageFormatString[:lastSlash+1] + "right_" + imageFormatString[lastSlash+1:] + ext

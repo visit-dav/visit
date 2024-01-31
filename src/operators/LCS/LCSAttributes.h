@@ -55,8 +55,7 @@ public:
         M3DC12DField,
         M3DC13DField,
         Nek5000Field,
-        NektarPPField,
-        NIMRODField
+        NektarPPField
     };
     enum IntegrationType
     {
@@ -76,7 +75,7 @@ public:
     {
         LoadOnDemand,
         ParallelStaticDomains,
-        MasterSlave,
+        ManagerWorker,
         VisItSelects
     };
     enum OperationType
@@ -350,6 +349,7 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const LCSAttributes &) const;
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

@@ -5,6 +5,7 @@
 #ifndef PY_EXTRACTPOINTFUNCTION2DATTRIBUTES_H
 #define PY_EXTRACTPOINTFUNCTION2DATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExtractPointFunction2DAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyExtractPointFunction2DAttributes_Wrap(const ExtractPointFunctio
 void           PyExtractPointFunction2DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyExtractPointFunction2DAttributes_SetDefaults(const ExtractPointFunction2DAttributes *atts);
 std::string    PyExtractPointFunction2DAttributes_GetLogString();
-std::string    PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *, const char *);
+std::string    PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *, const char *, const bool=false);
 PyObject *     PyExtractPointFunction2DAttributes_getattr(PyObject *self, char *name);
 int            PyExtractPointFunction2DAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyExtractPointFunction2DAttributes_methods[EXTRACTPOINTFUNCTION2DATTRIBUTES_NMETH];

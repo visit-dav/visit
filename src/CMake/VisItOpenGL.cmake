@@ -60,17 +60,22 @@ if(NOT VISIT_MESAGL_DIR)
         message(STATUS "Found GLU ${OPENGL_glu_LIBRARY}")
     else()
         # Standard find of system GL
+        message(STATUS "Using CMake's OpenGL locator!")
         include(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
-        set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
     endif()
 endif()
 
 
-# We use libGLU for its tessellation abilities but it requires libGL sometimes.
-if(UNIX AND NOT APPLE)
-    set(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
-else()
-    set(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY})
-endif()
 
-
+message(STATUS "**** OPENGL_gl_LIBRARY=${OPENGL_gl_LIBRARY}")
+message(STATUS "**** OPENGL_opengl_LIBRARY=${OPENGL_opengl_LIBRARY}")
+message(STATUS "**** OPENGL_glu_LIBRARY=${OPENGL_glu_LIBRARY}")
+message(STATUS "**** OPENGL_glx_LIBRARY=${OPENGL_glx_LIBRARY}")
+message(STATUS "**** OPENGL_egl_LIBRARY=${OPENGL_egl_LIBRARY}")
+message(STATUS "**** OPENGL_FOUND=${OPENGL_FOUND}")
+message(STATUS "**** OPENGL_XMESA_FOUND=${OPENGL_XMESA_FOUND}")
+message(STATUS "**** OPENGL_GLU_FOUND=${OPENGL_GLU_FOUND}")
+message(STATUS "**** OpenGL_OpenGL_FOUND=${OpenGL_OpenGL_FOUND}")
+message(STATUS "**** OpenGL_GLX_FOUND=${OpenGL_GLX_FOUND}")
+message(STATUS "**** OPENGL_INCLUDE_DIR=${OPENGL_INCLUDE_DIR}")
+message(STATUS "**** OPENGL_LIBRARIES=${OPENGL_LIBRARIES}")

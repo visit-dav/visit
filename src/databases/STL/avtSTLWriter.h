@@ -35,7 +35,7 @@ class
 avtSTLWriter : public avtDatabaseWriter
 {
   public:
-                   avtSTLWriter(DBOptionsAttributes *);
+                   avtSTLWriter(const DBOptionsAttributes *);
     virtual       ~avtSTLWriter() {}
 
   protected:

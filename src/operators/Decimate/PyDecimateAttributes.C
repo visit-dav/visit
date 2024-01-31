@@ -5,6 +5,7 @@
 #include <PyDecimateAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyDecimateAttributes
@@ -34,9 +35,8 @@ struct DecimateAttributesObject
 // Internal prototypes
 //
 static PyObject *NewDecimateAttributes(int);
-
 std::string
-PyDecimateAttributes_ToString(const DecimateAttributes *atts, const char *prefix)
+PyDecimateAttributes_ToString(const DecimateAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -60,12 +60,48 @@ DecimateAttributes_SetTarget(PyObject *self, PyObject *args)
 {
     DecimateAttributesObject *obj = (DecimateAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the target in the object.
-    obj->data->SetTarget(dval);
+    obj->data->SetTarget(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -102,19 +138,24 @@ DecimateAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-DecimateAttributes_compare(PyObject *v, PyObject *w)
-{
-    DecimateAttributes *a = ((DecimateAttributesObject *)v)->data;
-    DecimateAttributes *b = ((DecimateAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *DecimateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDecimateAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "target") == 0)
         return DecimateAttributes_GetTarget(self, NULL);
+
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyDecimateAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyDecimateAttributes_methods[i].ml_name),
+                PyString_FromString(PyDecimateAttributes_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyDecimateAttributes_methods, self, name);
 }
@@ -122,22 +163,23 @@ PyDecimateAttributes_getattr(PyObject *self, char *name)
 int
 PyDecimateAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "target") == 0)
-        obj = DecimateAttributes_SetTarget(self, tuple);
+        obj = DecimateAttributes_SetTarget(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -145,7 +187,7 @@ static int
 DecimateAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DecimateAttributesObject *obj = (DecimateAttributesObject *)v;
-    fprintf(fp, "%s", PyDecimateAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDecimateAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -153,7 +195,7 @@ PyObject *
 DecimateAttributes_str(PyObject *v)
 {
     DecimateAttributesObject *obj = (DecimateAttributesObject *)v;
-    return PyString_FromString(PyDecimateAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDecimateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -166,49 +208,70 @@ static char *DecimateAttributes_Purpose = "This class contains attributes for th
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject DecimateAttributesType =
+
+VISIT_PY_TYPE_OBJ(DecimateAttributesType,         \
+                  "DecimateAttributes",           \
+                  DecimateAttributesObject,       \
+                  DecimateAttributes_dealloc,     \
+                  DecimateAttributes_print,       \
+                  PyDecimateAttributes_getattr,   \
+                  PyDecimateAttributes_setattr,   \
+                  DecimateAttributes_str,         \
+                  DecimateAttributes_Purpose,     \
+                  DecimateAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+DecimateAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "DecimateAttributes",                    // tp_name
-    sizeof(DecimateAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)DecimateAttributes_dealloc,  // tp_dealloc
-    (printfunc)DecimateAttributes_print,     // tp_print
-    (getattrfunc)PyDecimateAttributes_getattr, // tp_getattr
-    (setattrfunc)PyDecimateAttributes_setattr, // tp_setattr
-    (cmpfunc)DecimateAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)DecimateAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    DecimateAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &DecimateAttributesType
+         || Py_TYPE(other) != &DecimateAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    DecimateAttributes *a = ((DecimateAttributesObject *)self)->data;
+    DecimateAttributes *b = ((DecimateAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -284,7 +347,7 @@ PyDecimateAttributes_GetLogString()
 {
     std::string s("DecimateAtts = DecimateAttributes()\n");
     if(currentAtts != 0)
-        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.");
+        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.", true);
     return s;
 }
 
@@ -297,7 +360,7 @@ PyDecimateAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DecimateAtts = DecimateAttributes()\n");
-        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.");
+        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.", true);
         cb(s);
     }
 }

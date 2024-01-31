@@ -39,7 +39,6 @@
 
 #include <avtDatabaseMetaData.h>
 
-#include <DBOptionsAttributes.h>
 #include <Environment.h>
 #include <Expression.h>
 

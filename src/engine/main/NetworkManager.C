@@ -2855,8 +2855,8 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 // ****************************************************************************
 
 avtDataObject_p
-NetworkManager::Render(avtImageType imgT, bool getZBuffer, 
-    intVector plotIds, bool checkThreshold, 
+NetworkManager::Render(avtImageType imgT, bool getZBuffer,
+    intVector plotIds, bool checkThreshold,
     int annotMode, int windowID, bool leftEye,
     int &outImgWidth, int &outImgHeight)
 {
@@ -2908,7 +2908,7 @@ NetworkManager::Render(avtImageType imgT, bool getZBuffer,
 //
 // Returns:    an avtImage containing a floating point image of the data.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 13:48:09 PDT 2017
@@ -3004,7 +3004,7 @@ NetworkManager::RenderInternal()
         {
             pass->GetImage().GetSize(&w, &h);
             debug5 << "NetworkManager::RenderInternal: 0: w=" << w
-                   << ", h=" << h 
+                   << ", h=" << h
                    << ", colorChannels=" << pass->GetImage().GetNumberOfColorChannels()
                    << endl;
             vtkFloatArray *arr = pass->GetImage().GetZBufferVTK();
@@ -3054,7 +3054,7 @@ NetworkManager::RenderInternal()
         {
             pass->GetImage().GetSize(&w, &h);
             debug5 << "NetworkManager::RenderInternal: 1: w=" << w
-                   << ", h=" << h 
+                   << ", h=" << h
                    << ", colorChannels=" << pass->GetImage().GetNumberOfColorChannels()
                    << endl;
             vtkFloatArray *arr = pass->GetImage().GetZBufferVTK();
@@ -3213,7 +3213,7 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
             if (extsAreDifferent == false)
                return;
         }
- 
+
         avtExtentType extType = AVT_UNKNOWN_EXTENT_TYPE;
         avtExtentType_FromString(extstr, extType);
         viswin->SetViewExtentsType(extType);
@@ -3231,7 +3231,7 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
         if ((s0 != atts.GetSize()[0]) || (s1 != atts.GetSize()[1]))
         {
             {
-                StackTimer t1("viswin->SetSize"); 
+                StackTimer t1("viswin->SetSize");
                 viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
             }
             {
@@ -3375,7 +3375,7 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
         int stereoType = renderAtts.GetStereoType();
         if ((viswin->GetStereo() != stereo) || (viswin->GetStereoType() != stereoType))
             viswin->SetStereoRendering(stereo, stereoType);
- 
+
         // update compositer thread pool size and blocking parameters
         zcomp->SetThreadPoolSize(renderAtts.GetDepthCompositeThreads());
         zcomp->SetBlocking(renderAtts.GetDepthCompositeBlocking());
@@ -3546,7 +3546,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 //
 // Returns:    An annotation object suitable for the annotation mode.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 16 16:01:50 PDT 2017
@@ -3601,7 +3601,7 @@ NetworkManager::AnnotationAttributesForRender(const AnnotationAttributes &atts,
 //
 // Returns:    An annotation object list suitable for the annotation mode.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 16 16:01:50 PDT 2017
@@ -3611,7 +3611,7 @@ NetworkManager::AnnotationAttributesForRender(const AnnotationAttributes &atts,
 // ****************************************************************************
 
 AnnotationObjectList
-NetworkManager::AnnotationObjectListForRender(const AnnotationObjectList &aolist, 
+NetworkManager::AnnotationObjectListForRender(const AnnotationObjectList &aolist,
     int annotMode) const
 {
     AnnotationObjectList newList;
@@ -3651,9 +3651,9 @@ NetworkManager::AnnotationObjectListForRender(const AnnotationObjectList &aolist
 //   atts      : The new annotation attributes.
 //   aolist    : The new annotation object list.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 16 16:00:53 PDT 2017
@@ -3663,7 +3663,7 @@ NetworkManager::AnnotationObjectListForRender(const AnnotationObjectList &aolist
 // ****************************************************************************
 
 void
-NetworkManager::ApplyAnnotations(VisWindow *viswin, 
+NetworkManager::ApplyAnnotations(VisWindow *viswin,
     const AnnotationAttributes &atts, const AnnotationObjectList &aolist)
 {
     // Set the annotation attributes.
@@ -4797,15 +4797,24 @@ NetworkManager::GetDataBinning(const char *name)
 //    Brad Whitlock, Thu Jul 24 22:27:34 EDT 2014
 //    Pass timeSuffix.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Change atts arg from 'const &' to * so that actual dir name can be
+//    returned in them.  If Dirname is '.', GetCWD to store instead.
+//
+//    Kathleen Biagas, Mon May 10 2021
+//    Move re-setting of Dirname when '.' to end of method, so it doesn't
+//    affect dirs stored internally in exported db's (like Silo).
+//
 // ****************************************************************************
 
 void
-NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &atts,
+NetworkManager::ExportDatabases(const intVector &ids,
+    ExportDBAttributes *atts,
     const std::string &timeSuffix)
 {
     // Determine the filename and extension.
     std::string filename, ext;
-    const std::string &f = atts.GetFilename();
+    const std::string &f = atts->GetFilename();
     std::string::size_type idx = f.rfind(".");
     if(idx != std::string::npos)
     {
@@ -4826,11 +4835,11 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
         for(size_t i = 0; i < ids.size(); ++i)
         {
             // Rig up a temporary ExportDBAttributes where we change the filename a little.
-            ExportDBAttributes eAtts(atts);
+            ExportDBAttributes eAtts(*atts);
             char plotid[4];
             snprintf(plotid, 4, "_%02d", int(i));
 
-            if(atts.GetAllTimes())
+            if(atts->GetAllTimes())
                 eAtts.SetFilename(filename + plotid + std::string("_") + timeSuffix + ext);
             else
                 eAtts.SetFilename(filename + plotid + ext);
@@ -4856,13 +4865,20 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
     }
     else if(!ids.empty())
     {
-        ExportDBAttributes eAtts(atts);
-        if(atts.GetAllTimes())
+        ExportDBAttributes eAtts(*atts);
+        if(atts->GetAllTimes())
             eAtts.SetFilename(filename + timeSuffix + ext);
         else
             eAtts.SetFilename(filename + ext);
         ExportSingleDatabase(ids[0], eAtts);
     }
+
+    if (atts->GetDirname() == ".")
+    {
+        // get the real path used for displaying back to user
+        atts->SetDirname(FileFunctions::GetCurrentWorkingDirectory());
+    }
+
 }
 
 // ****************************************************************************
@@ -5196,7 +5212,7 @@ NetworkManager::CloneNetwork(const int id)
 //    gathered from.
 //
 //    Alister Maguire, Mon Sep 23 12:35:44 MST 2019
-//    Refactored to handle two QOT types: DirectDatabaset and TimeLoop. 
+//    Refactored to handle two QOT types: DirectDatabaset and TimeLoop.
 //
 //    Alister Maguire, Tue Oct 29 14:46:38 MST 2019
 //    Updated to perform the network cloning within this method. If we're
@@ -5221,8 +5237,8 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
 
     //
-    // We need to determine if we can use the direct database QOT 
-    // filter. 
+    // We need to determine if we can use the direct database QOT
+    // filter.
     //
     bool useDirectDatabaseQOT = false;
 
@@ -5233,13 +5249,13 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         // we need to make sure that the current expressions are
         // compatible.
         //
-        avtExpressionEvaluatorFilter *eef = 
-            dynamic_cast<avtExpressionEvaluatorFilter *> 
+        avtExpressionEvaluatorFilter *eef =
+            dynamic_cast<avtExpressionEvaluatorFilter *>
             (networkCache[clonedFromId]->GetExpressionNode()->GetFilter());
 
         if (eef != NULL)
         {
-            useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
+            useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT();
         }
         else
         {
@@ -5277,16 +5293,16 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         // network based off of the cloning target.
         //
         NetnodeDB *nndb = networkCache[clonedFromId]->GetNetDB();
-        StartNetwork(nndb->GetDB()->GetFileFormat(), 
-                     nndb->GetFilename(), 
-                     nndb->GetVarName(), 
+        StartNetwork(nndb->GetDB()->GetFileFormat(),
+                     nndb->GetFilename(),
+                     nndb->GetVarName(),
                      nndb->GetTime());
 
         input = workingNet->GetExpressionNode()->GetOutput();
 
         //
         // We need to let the database readers know that we're asking for
-        // a specialized QOT dataset.  
+        // a specialized QOT dataset.
         //
         avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
             qA->GetQueryAtts().GetVariables()[0].c_str());
@@ -5294,7 +5310,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         dr->SetQOTAtts(qA);
 
         //
-        // Add the remaining variables as secondaries. 
+        // Add the remaining variables as secondaries.
         //
         stringVector vars = qA->GetQueryAtts().GetVariables();
         for (int i = 1; i < vars.size(); ++i)
@@ -6394,13 +6410,13 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    make sure ffscale gets applied to all plots in 2d mode.
 //
 //    Eric Brugger, Fri Mar 10 13:17:11 PST 2017
-//    I created a single implementation for deciding whether to go into 
+//    I created a single implementation for deciding whether to go into
 //    scalable rendering mode or not to eliminate a bug where VisIt would
 //    go into scalable rendering mode and immediately go back out and
 //    a blank image would get displayed.
 //
 //    Brad Whitlock, Tue Feb 13 15:23:13 PST 2018
-//    Make parallel axis window modes be considered 2D so we use viewported 
+//    Make parallel axis window modes be considered 2D so we use viewported
 //    mode to composite images to avoid an offset.
 //
 // ****************************************************************************
@@ -6712,10 +6728,13 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Brad Whitlock, Thu Sep 21 16:49:49 PDT 2017
 //    Added getAlpha.
 //
+//    Alister Maguire, Mon May 18 16:06:51 PDT 2020
+//    If OSPRay is enabled, pass the ospray settings to the render window.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds, 
+NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
                             bool getZBuffer, int annotMode, bool leftEye,
                             bool checkSRThreshold)
 {
@@ -6751,6 +6770,17 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.cellCounts.resize(nPlots, 0);
     renderState.handledCues = false;
     renderState.stereoType = -1;
+
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+    //
+    // Pass the OSPRay settings through so that the correct backend is
+    // used when saving windows and such.
+    //
+    renderState.window->SetOsprayRendering(renderAtts.GetOsprayRendering());
+    renderState.window->SetOspraySPP(renderAtts.GetOspraySPP());
+    renderState.window->SetOsprayAO(renderAtts.GetOsprayAO());
+    renderState.window->SetOsprayShadows(renderAtts.GetOsprayShadows());
+#endif
 
     // Apply any rendering-related changes to the annotation attributes.
     // This may mean turning some of them off, etc. Keep track of whether
@@ -7361,7 +7391,7 @@ NetworkManager::RenderGeometry()
 //
 //    Brad Whitlock, Wed Feb 28 11:14:59 PST 2018
 //    Enable passing input image's alpha through the compositing. This lets us
-//    create images where the translucent geometry is overlayed over a 
+//    create images where the translucent geometry is overlayed over a
 //    transparent background so that transparency is preserved (if we are
 //    requesting an image that has alpha).
 //
@@ -7451,7 +7481,7 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
 
             if(!renderState.getAlpha)
             {
-                // If we're not getting alpha then we do not want a 
+                // If we're not getting alpha then we do not want a
                 // transparent background.
                 if (bgMode == AnnotationAttributes::Solid)
                 {

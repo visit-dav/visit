@@ -5,6 +5,7 @@
 #ifndef PY_SLICEATTRIBUTES_H
 #define PY_SLICEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SliceAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PySliceAttributes_Wrap(const SliceAttributes *attr);
 void           PySliceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySliceAttributes_SetDefaults(const SliceAttributes *atts);
 std::string    PySliceAttributes_GetLogString();
-std::string    PySliceAttributes_ToString(const SliceAttributes *, const char *);
+std::string    PySliceAttributes_ToString(const SliceAttributes *, const char *, const bool=false);
 PyObject *     PySliceAttributes_getattr(PyObject *self, char *name);
 int            PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySliceAttributes_methods[SLICEATTRIBUTES_NMETH];

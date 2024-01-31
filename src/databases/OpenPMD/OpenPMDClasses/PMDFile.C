@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ***************************************************************************
 //                                 PMDFile.cpp
@@ -49,16 +15,17 @@
 
 #include "PMDFile.h"
 
+#include <cassert>
 #include <stdio.h>
 
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
 
+#include <InvalidDBTypeException.h>
 #ifndef TEST
-#include <InvalidVariableException.h>
-#include <InvalidDBTypeException.h>
-#include <InvalidFilesException.h>
-#include <InvalidTimeStepException.h>
-#include <InvalidDBTypeException.h>
+#   include <InvalidVariableException.h>
+#   include <InvalidFilesException.h>
+#   include <InvalidTimeStepException.h>
 #endif
 
 // ***************************************************************************
@@ -78,8 +45,6 @@
 PMDFile::PMDFile()
 {
     fileId=-1;
-    this->version = "";
-    strcpy(this->meshesPath,"");
 }
 
 // ***************************************************************************
@@ -105,12 +70,13 @@ PMDFile::~PMDFile()
 // Method: PMDFile::OpenFile
 //
 // Purpose:
-//      Open the OpenPMD file
+//      Open the openPMD file
 //
 // Programmer: Mathieu Lobet
 // Creation: Fri Oct 14 2016
 //
 // Modifications:
+// May 12 2020 - E. Brugger - add check for file open failure
 //
 // ***************************************************************************
 void PMDFile::OpenFile(char * PMDFilePath)
@@ -128,6 +94,13 @@ void PMDFile::OpenFile(char * PMDFilePath)
 
     H5Pclose(fileAccessPropListID);
 
+    // Check for error opening the file
+    if (fileId < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException,
+                   "Not an openPMD file: Error opening the file");
+    }
+
     // The path is copied in this->filePath if the file was well opened.
     strcpy(this->filePath,PMDFilePath);
 }
@@ -143,6 +116,8 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
+// May  6 2020 - A. Huebl - now really fix the above bug :-)
+//                          add version verification for read files
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
@@ -162,8 +137,11 @@ void PMDFile::ScanFileAttributes()
     size_t   size;
     int      nPoints;
 
-    // OpenPMD files always contain a data group at the root
-    groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
+    // is this a valid openPMD file with an "openPMD" attribute in / ?
+    bool     isValid = false;
+
+    // openPMD files always contain a data group at the root
+    groupId = H5Gopen(fileId, "/", H5P_DEFAULT);
 
     // Number of attributes
     nbAttr = H5Aget_num_attrs(groupId);
@@ -185,7 +163,7 @@ void PMDFile::ScanFileAttributes()
         // Size of an element (number of char for instance)
         size = H5Tget_size (atype);
 
-        if (strcmp(attrName,"openPMD")==0)
+        if (strcmp(attrName, "openPMD")==0)
         {
             char *buffer = new char[size + 1];
 
@@ -196,16 +174,16 @@ void PMDFile::ScanFileAttributes()
             this->version = buffer;
 
             delete [] buffer;
+            isValid = true;
         }
         else if (strcmp(attrName,"meshesPath")==0)
         {
             char *buffer = new char[size + 1];
 
             // Read attribute
-            H5Aread (attrId, atype, buffer);
+            H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
-
-            strncpy(this->meshesPath,buffer,sizeof(buffer));
+            this->meshesPath = buffer; // string copy
             delete [] buffer;
 
         }
@@ -214,13 +192,54 @@ void PMDFile::ScanFileAttributes()
             char *buffer = new char[size + 1];
 
             // Read attribute
-            H5Aread (attrId, atype, buffer);
+            H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
-
-            strncpy(this->particlesPath,buffer,sizeof(buffer));
-
+            this->particlesPath = buffer; // string copy
             delete [] buffer;
         }
+    }
+
+    // missing self-identification as openPMD file
+    if (!isValid)
+    {
+        char format_error[1024];
+        snprintf(format_error, 1024,
+                 "Not an openPMD file: Missing 'openPMD' identifier in /");
+        debug5 << "The current file ID '" << fileId
+               << "' is not an openPMD file" << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, format_error);
+    }
+
+    // validate openPMD standard version range
+    if (VersionGreaterThan("1.0.0", this->version)) // 1.0.0>file
+    {
+        // file format too old: < 1.0.0
+        char version_error[1024];
+        snprintf(version_error, 1024,
+                 "Standard '%s' in openPMD file is too old! "
+                 "Supported version range: >=1.0.0,<2.0.0 ",
+                 this->version.c_str());
+        debug5 << "The current file ID '" << fileId
+               << "' provides an unsupported openPMD standard: "
+               << this->version << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, version_error);
+    }
+    if (!VersionGreaterThan("2.0.0", this->version)) // !2.0.0>file aka file>=2.0.0
+    {
+        // file format too new: >= 2.0.0
+        char version_error[1024];
+        snprintf(version_error, 1024,
+                 "Standard '%s' in openPMD file is too new! "
+                 "Maybe try a newer version of VisIt? "
+                 "Supported version range: >=1.0.0,<2.0.0 ",
+                 this->version.c_str());
+        debug5 << "The current file ID '" << fileId
+               << "' provides an unsupported openPMD standard: "
+               << this->version << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, version_error);
     }
 
 }
@@ -263,7 +282,7 @@ void PMDFile::ScanIterations()
     hid_t        aspace;
     H5O_info_t   objectInfo;
 
-    // OpenPMD files always contain a data group at the root
+    // openPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/data",H5P_DEFAULT);
 
     //H5Gget_num_objs(group_iterations->getId(), &nobj);
@@ -292,13 +311,13 @@ void PMDFile::ScanIterations()
             iterationId = H5Gopen2(groupId, iterationName, H5P_DEFAULT);
 
             // Save the iteration name
-            strcpy(iteration.name,iterationName);
+            iteration.name = iterationName;
 
             // Save mesh path
-            strcpy(iteration.meshesPath,this->meshesPath);
+            iteration.meshesPath = this->meshesPath;
 
             // Save particles path
-            strcpy(iteration.particlesPath,this->particlesPath);
+            iteration.particlesPath = this->particlesPath;
 
             // Number of attributes
             nbAttr = H5Aget_num_attrs(iterationId);
@@ -408,7 +427,7 @@ void PMDFile::Print()
 {
 
     cout << " File: " << this->filePath << endl;
-    cout << " OpenPMD Version: " << this->version << endl;
+    cout << " openPMD standard: " << this->version << endl;
 
     cout << endl;
     cout << " Number of iteration: " << this->GetNumberIterations()
@@ -441,7 +460,7 @@ int PMDFile::GetNumberIterations() const
 // Method: PMDFile::CloseFile
 //
 // Purpose:
-//      This method closes the opened OpenPMD file.
+//      This method closes the opened openPMD file.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016
@@ -470,7 +489,7 @@ void PMDFile::CloseFile()
 //      numValues : number of element to read
 //      factor : multiplication factor applied to all elements of array
 //      fieldDataClass : Dataset type (H5T_FLOAT...)
-//      path : path to the data set in the OpenPMD file
+//      path : path to the data set in the openPMD file
 //
 // Returns:  <0 on failure, 0 on success.
 //

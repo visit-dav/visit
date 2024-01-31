@@ -6,7 +6,19 @@
 #  Programmer: Gunther H. Weber
 #  Date:       April 29, 2014
 #
+#  Modifications:
+#
+#      Alister Maguire, Wed Jan  6 08:31:05 PST 2021
+#      Added the -enable-ghosts-for-t-intersections flag, as it
+#      is now disabled by default.
+#
 # ----------------------------------------------------------------------------
+
+# NOTE: the comment below tells visit to use the
+# 'enable-ghosts-for-t-intersections' flag when running this test.
+# This flag must be enabled for this test to succeed.
+
+#VARGS: "-enable-ghosts-for-t-intersections"
 
 # Turn off all annotation
 a = AnnotationAttributes()

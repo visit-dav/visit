@@ -58,7 +58,65 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Alister Maguire, Mon Mar 29 12:17:40 PDT 2021
+#    Moved min/max tests into function and extended to include
+#    multi-domain data.
+#
 # ----------------------------------------------------------------------------
+
+def TestMinMaxExpression():
+    # Test min/max expression
+    OpenDatabase(silo_data_path("rect2d.silo"))
+
+    #
+    # First, let's test a serial dataset.
+    #
+    DefineScalarExpression('min1', 'min(10.0, 5.0, d+p)')
+    AddPlot('Pseudocolor', 'min1')
+    DrawPlots()
+    Test('min1')
+    DeleteAllPlots()
+
+    DefineScalarExpression('min2', 'min(d+p, 5.0, 10.0)')
+    AddPlot('Pseudocolor', 'min2')
+    DrawPlots()
+    Test('min2')
+    DeleteAllPlots()
+
+    DefineScalarExpression('max1', 'max(10.0, 5.0, d+p)')
+    AddPlot('Pseudocolor', 'max1')
+    DrawPlots()
+    Test('max1')
+    DeleteAllPlots()
+
+    DefineScalarExpression('min3', 'min(2.0, d+p, d*p+2*d)')
+    AddPlot('Pseudocolor', 'min3')
+    DrawPlots()
+    Test('min3')
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("rect2d.silo"))
+
+    #
+    # Multi-domain datasets are handled a little differently, so
+    # let's test one here.
+    #
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
+
+    DefineScalarExpression('max2', 'max(p*16, 4)')
+    AddPlot('Pseudocolor', 'max2')
+    DrawPlots()
+    Test('max2')
+    DeleteAllPlots()
+
+    DefineScalarExpression('max3', 'max(p*16, d, 4)')
+    AddPlot('Pseudocolor', 'max3')
+    DrawPlots()
+    Test('max3')
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
 
 OpenDatabase(silo_data_path("bigsil.silo"))
@@ -382,31 +440,6 @@ DrawPlots()
 Test('divide3')
 DeleteAllPlots()
 
-# Test min/max expression
-DefineScalarExpression('min1', 'min(10.0, 5.0, d+p)')
-AddPlot('Pseudocolor', 'min1')
-DrawPlots()
-Test('min1')
-DeleteAllPlots()
-
-DefineScalarExpression('min2', 'min(d+p, 5.0, 10.0)')
-AddPlot('Pseudocolor', 'min2')
-DrawPlots()
-Test('min2')
-DeleteAllPlots()
-
-DefineScalarExpression('max1', 'max(10.0, 5.0, d+p)')
-AddPlot('Pseudocolor', 'max1')
-DrawPlots()
-Test('max1')
-DeleteAllPlots()
-
-DefineScalarExpression('min3', 'min(2.0, d+p, d*p+2*d)')
-AddPlot('Pseudocolor', 'min3')
-DrawPlots()
-Test('min3')
-DeleteAllPlots()
-
 # Test resrad
 DefineScalarExpression("resrad", "resrad(recenter(u), 0.1)")
 AddPlot("Pseudocolor", "resrad")
@@ -426,4 +459,5 @@ AddPlot("Pseudocolor", "ident_mesh")
 DrawPlots()
 Test("ident_mesh")
 
+TestMinMaxExpression()
 Exit()

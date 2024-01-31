@@ -70,7 +70,10 @@ QueryAttributes::Reset()
     if (!resultsValue.empty())
     {
         resultsValue.clear();
-        resultsValue.push_back(0.);
+    }
+    if (!floatResultsValue.empty())
+    {
+        floatResultsValue.clear();
     }
     pipeIndex = -1;
 
@@ -100,6 +103,7 @@ Definition:
 void
 QueryAttributes::SetResultsValue(const double val)
 {
+    resultsValue.resize(1);
     resultsValue[0] = val;
 }
 
@@ -113,5 +117,46 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
     resultsValue.clear();
     for (i = 0; i < numVals; ++i)
         resultsValue.push_back(vals[i]);
+}
+
+Function: Move Assignment
+Declaration: QueryAttributes &operator=(QueryAttributes&&);
+Definition:
+QueryAttributes &
+QueryAttributes::operator=(QueryAttributes &&obj)
+{
+    Move(std::move(obj));
+    return *this;
+}
+
+Function: Move Constructor
+Declaration: QueryAttributes(QueryAttributes&&);
+Definition:
+QueryAttributes::QueryAttributes(QueryAttributes &&obj)
+    : AttributeSubject(QueryAttributes::TypeMapFormatString)
+{
+    Move(std::move(obj));
+}
+
+Function: Move
+Declaration: void Move(QueryAttributes&&);
+Definition:
+void
+QueryAttributes::Move(QueryAttributes &&obj)
+{
+    resultsMessage = std::move(obj.resultsMessage);
+    resultsValue = std::move(obj.resultsValue);
+    floatResultsValue = std::move(obj.floatResultsValue);
+    timeStep = obj.timeStep;
+    varTypes = std::move(obj.varTypes);
+    pipeIndex = obj.pipeIndex;
+    xUnits = std::move(obj.xUnits);
+    yUnits = std::move(obj.yUnits);
+    floatFormat = std::move(obj.floatFormat);
+    xmlResult = std::move(obj.xmlResult);
+    suppressOutput = obj.suppressOutput;
+    queryInputParams = obj.queryInputParams;
+    defaultName = std::move(obj.defaultName);
+    defaultVars = std::move(obj.defaultVars);
 }
 

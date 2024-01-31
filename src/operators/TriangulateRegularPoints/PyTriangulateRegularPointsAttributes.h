@@ -5,6 +5,7 @@
 #ifndef PY_TRIANGULATEREGULARPOINTSATTRIBUTES_H
 #define PY_TRIANGULATEREGULARPOINTSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TriangulateRegularPointsAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyTriangulateRegularPointsAttributes_Wrap(const TriangulateRegula
 void           PyTriangulateRegularPointsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTriangulateRegularPointsAttributes_SetDefaults(const TriangulateRegularPointsAttributes *atts);
 std::string    PyTriangulateRegularPointsAttributes_GetLogString();
-std::string    PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *, const char *);
+std::string    PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *, const char *, const bool=false);
 PyObject *     PyTriangulateRegularPointsAttributes_getattr(PyObject *self, char *name);
 int            PyTriangulateRegularPointsAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyTriangulateRegularPointsAttributes_methods[TRIANGULATEREGULARPOINTSATTRIBUTES_NMETH];

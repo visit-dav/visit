@@ -73,6 +73,9 @@ QvisDualMeshWindow::~QvisDualMeshWindow()
 //   Cyrus Harrison, on Aug 18 20:13:20 PDT 2008
 //   Qt4 Port - Autogen + Changed labels of radio buttons.   
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -86,7 +89,7 @@ QvisDualMeshWindow::CreateWindowContents()
     QWidget *modeWidget = new QWidget(central);
     mode = new QButtonGroup(modeWidget);
     QHBoxLayout *modeLayout = new QHBoxLayout(modeWidget);
-    modeLayout->setMargin(0);
+    modeLayout->setContentsMargins(0,0,0,0);
     modeLayout->setSpacing(10);
     QRadioButton *modeConversionModeAuto = new QRadioButton(tr("Auto"), modeWidget);
     mode->addButton(modeConversionModeAuto,0);
@@ -97,8 +100,11 @@ QvisDualMeshWindow::CreateWindowContents()
     QRadioButton *modeConversionModeZonesToNodes = new QRadioButton(tr("Zones to Nodes"), modeWidget);
     mode->addButton(modeConversionModeZonesToNodes,2);
     modeLayout->addWidget(modeConversionModeZonesToNodes);
-    connect(mode, SIGNAL(buttonClicked(int)),
-            this, SLOT(modeChanged(int)));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    connect(mode, SIGNAL(buttonClicked(int)), this, SLOT(modeChanged(int)));
+#else
+    connect(mode, SIGNAL(idClicked(int)), this, SLOT(modeChanged(int)));
+#endif
     mainLayout->addWidget(modeWidget, 0,1);
 
 }

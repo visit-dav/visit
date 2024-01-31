@@ -202,6 +202,28 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   I removed the logic for setting the visitarch to "linux-x86_64-toss3"
 #   on toss3 systems. I removed the logic for hoth.
 #
+#   Eric Brugger, Mon Oct 12 13:49:41 PDT 2020
+#   Add code to unsetenv LD_PRELOAD to protect against users setting
+#   it for the GL library, which would break rendering.
+#
+#   Cyrus Harrison, Fri Dec 11 09:34:38 PST 2020
+#   Python 3 port (avoid using old string methods)
+#
+#   Eric Brugger, Wed Feb  3 16:49:58 PST 2021
+#   Added code to set the LD_LIBRARY_PATH on trinity to include the
+#   directory with the standard C++ library used by the compiler used
+#   to compile visit.
+#
+#   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+#   Python 3 universal_newlines for Popen
+#
+#   Eric Brugger, Wed Jun  8 10:30:35 PDT 2022
+#   Added logic to set the LD_LIBRARY_PATH appropriately for MPI on toss3
+#   and toss4 x86_64 systems.
+#
+#   Eric Brugger, Fri Feb 17 14:33:43 PST 2023
+#   Added logic to set the visitarch appropriately on toss4 x86_64 systems.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -210,12 +232,16 @@ class LLNLLauncher(MainLauncher):
 
     # Get the IP address for eth0.
     def GetIPAddress(self):
-        p = subprocess.Popen(["/sbin/ifconfig"], stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        p = subprocess.Popen(["/sbin/ifconfig"],
+                             universal_newlines=True,
+                             stdin=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
         output = p.communicate()
-        iplines = [x for x in string.split(output[0], "\n") if string.find(x, "inet addr") != -1]
-        start = string.find(iplines[0], "inet addr")
-        end = string.find(iplines[0], "Bcast:")
-        IP = string.replace(iplines[0][start + 10:end], " ", "")
+        iplines = [x for x in output[0].split("\n") if x.find("inet addr") != -1]
+        start = iplines[0].find("inet addr")
+        end = iplines[0].find("Bcast:")
+        IP = iplines[0][start + 10:end].replace(" ", "")
         return IP
 
     def Customize(self):
@@ -224,8 +250,8 @@ class LLNLLauncher(MainLauncher):
         # with an IP address.
         #
         if self.parallelArgs.parallel and \
-           (string.find(self.generalArgs.exe_name, "_par") != -1 or \
-            string.find(self.generalArgs.exe_name, "_ser") != -1):
+           (self.generalArgs.exe_name.find("_par") != -1 or \
+            self.generalArgs.exe_name.find("_ser") != -1):
             if self.sectorname() == "vulcanlac" or \
                self.sectorname() == "rzuseqlac" or \
                self.sectorname() == "seqlac":
@@ -255,12 +281,39 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.3"
 
         #
-        # Set the LD_LIBRARY_PATH to include the path to MPI on
-        # linux-x86_64 systems.
+        # Set the LD_LIBRARY_PATH on trinity to include the directory
+        # with the standard C++ library used by the compiler used to
+        # compile visit.
         #
-        if self.visitarch == "linux-x86_64":
+        if self.sectorname() == "tr-fe" or self.sectorname() == "nid":
+            ld_library_path = GETENV("LD_LIBRARY_PATH")
+            new_ld_library_path = self.joinpaths(["/opt/gcc/9.3.0/snos/lib64", ld_library_path])
+            SETENV("LD_LIBRARY_PATH", new_ld_library_path)
+
+        #
+        # Set the LD_LIBRARY_PATH to include the path to MPI on toss3 or
+        # toss4 x86_64 systems.
+        #
+        sys_type = GETENV("SYS_TYPE")
+        if sys_type == "toss_3_x86_64" or sys_type == "toss_3_x86_64_ib":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+        elif sys_type == "toss_4_x86_64" or sys_type == "toss_4_x86_64_ib":
+            mpi_ld_library_paths = ["/usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-gcc-10.3.1/lib"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+
+        # Unset LD_PRELOAD
+        UNSETENV("LD_PRELOAD")
+
+        #
+        # Set the visitarch to linux-x86_64-toss4 if the kernel version
+        # starts with "4" and processor type is "x86_64".
+        #
+        kernel = subprocess.run(['uname', '-r'], stdout=subprocess.PIPE)
+        proc = subprocess.run(['uname', '-p'], stdout=subprocess.PIPE)
+        if proc.stdout.decode('utf-8')[:6] == "x86_64" and \
+           kernel.stdout.decode('utf-8')[:1] == "4":
+            self.visitarch = "linux-x86_64-toss4"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can

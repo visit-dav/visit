@@ -14,7 +14,7 @@
  *    grunt work of actually connecting to visit that must be done
  *    outside of the VisItEngine DLL.
  *
- *  Programmer:  Brad Whitlock, 
+ *  Programmer:  Brad Whitlock,
  *  Creation:    Thu Mar 11 14:42:24 PST 2010
  *
  *  Modifications:
@@ -28,9 +28,9 @@ extern "C" {
 /******************************************************************************
  * Function: VisItSetBroadcastIntFunction
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   an integer from the root process to slave processes.
+ *   an integer from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(int *, int);
@@ -54,9 +54,9 @@ void  VisItSetBroadcastIntFunction(int (*bicb)(int *, int));
 /******************************************************************************
  * Function: VisItSetBroadcastIntFunction2
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   an integer from the root process to slave processes.
+ *   an integer from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(int *, int, void *);
@@ -81,9 +81,9 @@ void  VisItSetBroadcastIntFunction2(int (*cb)(int *, int, void *), void *);
 /******************************************************************************
  * Function: VisItSetBroadcastStringFunction
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   a character string from the root process to slave processes.
+ *   a character string from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(char *, int, int);
@@ -98,7 +98,7 @@ void  VisItSetBroadcastIntFunction2(int (*cb)(int *, int, void *), void *);
  *             static int visit_broadcast_string_callback(char *str, int len, int sender)
  *             {
  *                 return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
- *             }      
+ *             }
  *
  * ****************************************************************************/
 /* DEPRECATED */
@@ -107,9 +107,9 @@ void  VisItSetBroadcastStringFunction(int (*bscb)(char *, int, int));
 /******************************************************************************
  * Function: VisItSetBroadcastStringFunction2
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   a character string from the root process to slave processes.
+ *   a character string from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(char *, int, int, void *);
@@ -126,7 +126,7 @@ void  VisItSetBroadcastStringFunction(int (*bscb)(char *, int, int));
  *             {
  *                 simdata_t *sim = (simdata_t *)ptr;
  *                 return MPI_Bcast(str, len, MPI_CHAR, sender, sim->communicator);
- *             }      
+ *             }
  *
  * ****************************************************************************/
 void  VisItSetBroadcastStringFunction2(int (*cb)(char *, int, int, void *), void *);
@@ -134,7 +134,7 @@ void  VisItSetBroadcastStringFunction2(int (*cb)(char *, int, int, void *), void
 /******************************************************************************
  * Function: VisItSetParallel
  *
- * Purpose: 
+ * Purpose:
  *   Set whether or not libsim will be operating in parallel.
  *
  * Arguments:
@@ -151,7 +151,7 @@ void  VisItSetParallel(int);
 /******************************************************************************
  * Function: VisItSetParallelRank
  *
- * Purpose: 
+ * Purpose:
  *   Set the rank of the current process within its MPI communicator.
  *
  * Arguments:
@@ -168,10 +168,10 @@ void  VisItSetParallelRank(int);
 /******************************************************************************
  * Function: VisItSetDirectory
  *
- * Purpose: 
+ * Purpose:
  *   Set the path to the top level directory where VisIt is installed. This lets
- *   libsim load runtime libraries from a specific version of VisIt. If you never 
- *   call this function, libsim will obtain VisIt runtime information using the 
+ *   libsim load runtime libraries from a specific version of VisIt. If you never
+ *   call this function, libsim will obtain VisIt runtime information using the
  *   "visit" script in your path. If that is the case, the latest runtime libraries
  *   will be used but it may not match the version of the client that is trying
  *   to connect to VisIt. Version mismatches are avoided (but not eliminated) by
@@ -193,10 +193,10 @@ void  VisItSetDirectory(char *);
 /******************************************************************************
  * Function: VisItSetOptions
  *
- * Purpose: 
+ * Purpose:
  *   Pass command line arguments that will be used when calling out to VisIt to
  *   determine the runtime libraries that libsim will need to load when VisIt
- *   connects. You can use this function to pass arguments such as 
+ *   connects. You can use this function to pass arguments such as
  *   "-forceversion 1.12.0" to force a specific version of VisIt.
  *
  * Arguments:
@@ -215,7 +215,7 @@ void  VisItSetOptions(char *);
 /******************************************************************************
  * Function: VisItSetupEnvironment
  *
- * Purpose: 
+ * Purpose:
  *   Sets up the environment so VisIt can be loaded into libsim when the
  *   VisIt client wants to connect
  *
@@ -238,13 +238,13 @@ int   VisItSetupEnvironment(void);
 /******************************************************************************
  * Function: VisItSetupEnvironment2
  *
- * Purpose: 
+ * Purpose:
  *   Sets up the environment so VisIt can be loaded into libsim when the
- *   VisIt client wants to connect. This function does the same thing as 
+ *   VisIt client wants to connect. This function does the same thing as
  *   VisItSetupEnvironment but it lets you pass in the environment string
  *   discovered by VisItGetEnvironment.
  *
- *   You would use this version when your MPI does not like to let your 
+ *   You would use this version when your MPI does not like to let your
  *   application spawn processes to discover the environment.
  *
  * Arguments: env : The environment returned by
@@ -253,7 +253,7 @@ int   VisItSetupEnvironment(void);
  *
  * Note:      All processors must call this function and they must call it
  *            before VisItInitializeSocketAndDumpSimFile and VisItDetectInput.
- *            
+ *
  *            Non-rank 0 processors may pass NULL for the environment if they
  *            wish to inherit the environment read by processor 0.
  *
@@ -274,9 +274,9 @@ int   VisItSetupEnvironment2(char *env);
 /******************************************************************************
  * Function: VisItGetEnvironment
  *
- * Purpose: 
- *   Discover the environment needed so VisIt can be loaded into libsim when 
- *   the VisIt client wants to connect. 
+ * Purpose:
+ *   Discover the environment needed so VisIt can be loaded into libsim when
+ *   the VisIt client wants to connect.
  *
  * Arguments: None
  *
@@ -288,13 +288,13 @@ char *VisItGetEnvironment(void);
 /******************************************************************************
  * Function: VisItInitializeSocketAndDumpSimFile
  *
- * Purpose: 
+ * Purpose:
  *   This function makes the simulation start listening for inbound VisIt
  *   socket connections and it writes a .sim1 file that tells VisIt how to
  *   connect to the simulation.
  *
  * Arguments:
- *   name             : The name of the simulation, which will be used in the 
+ *   name             : The name of the simulation, which will be used in the
  *                      created filename.
  *   comment          : A comment describing the simulation.
  *   path             : The path where the simulation was started.
@@ -318,7 +318,7 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
 /******************************************************************************
  * Function: VisItDetectInput
  *
- * Purpose: 
+ * Purpose:
  *   Simulations call this function to detect input from the listen socket,
  *   client socket, or console. Call this function in a loop to form the main
  *   event loop for a simulation.
@@ -326,7 +326,7 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
  * Arguments:
  *   blocking : Pass a non-zero value to tell the function to wait until there
  *              is input before returning. If you want to run the simulation
- *              without waiting for input, you will want to pass 0 so the 
+ *              without waiting for input, you will want to pass 0 so the
  *              function times out and returns whether or not there is input
  *              to be handled.
  *
@@ -335,7 +335,7 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
  *                that you want to monitor. If you want to monitor the console
  *                for typed commands, pass fileno(stdin). If you do not want
  *                to monitor other files, pass -1 for the descriptor.
- *                
+ *
  * Returns:
  *              -5: Logic error (fell through all cases)
  *              -4: Logic error (no descriptors but blocking)
@@ -360,7 +360,7 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
  *                  call the VisItProcessEngineCommand function.
  *              3 : Console input was detected so read stdin and handle it.
  *              other : error out, stop calling VisItDetectInput.
- *              
+ *
  * ****************************************************************************/
 int   VisItDetectInput(int blocking, int consoledesc);
 int   VisItDetectInputWithTimeout(int blocking, int timeout_usec, int consoledesc);
@@ -373,7 +373,7 @@ int   VisItDetectInputWithTimeout(int blocking, int timeout_usec, int consoledes
 *   VisItDetectInput detects input from VisIt's listen socket, a client socket,
 *   and optionally, a console file descriptor. This function lets you obtain the
 *   file descriptors to which VisItDetectInput would have listened, allowing you
-*   to pass the socket descriptors to your own listening routines should you 
+*   to pass the socket descriptors to your own listening routines should you
 *   need to do so.
 *
 * Arguments:
@@ -402,8 +402,8 @@ int VisItGetSockets(int *lSocket, int *cSocket);
 /******************************************************************************
  * Function: VisItAttemptToCompleteConnection
  *
- * Purpose: 
- *   Accept the inbound VisIt connection socket, verify security keys, get the 
+ * Purpose:
+ *   Accept the inbound VisIt connection socket, verify security keys, get the
  *   connection parameters from the client, load the VisIt engine library,
  *   create the Engine and connect back to the VisIt viewer.
  *
@@ -419,10 +419,10 @@ int   VisItAttemptToCompleteConnection(void);
 /******************************************************************************
  * Function: VisItReadConsole
  *
- * Purpose: 
+ * Purpose:
  *   Read characters from the console.
  *
- * Arguments: 
+ * Arguments:
  *   maxlen : The size of the buffer.
  *   buffer : the buffer into which the values will be read.
  *
@@ -435,52 +435,52 @@ int   VisItAttemptToCompleteConnection(void);
 int VisItReadConsole(int maxlen, char *buffer);
 
 /******************************************************************************
- * Function: VisItSetSlaveProcessCallback
+ * Function: VisItSetWorkerProcessCallback
  *
- * Purpose: 
- *   Set the callback function used to inform slave processes that they should
- *   call VisItfor ProcessEngineCommand. The provided callback function is used 
+ * Purpose:
+ *   Set the callback function used to inform worker processes that they should
+ *   call VisItfor ProcessEngineCommand. The provided callback function is used
  *   internally in libsim
- *   
+ *
  *
  * Arguments:  A pointer to a function with prototype: void func(void);
  *
  * Returns:    None
  *
- * Note:       The slave process callback is required for a parallel simulation.
+ * Note:       The worker process callback is required for a parallel simulation.
  *             This function should be called when VisItAttemptToCompleteConnection
  *             returns successfully.
  *
  *             MPI simulations may define the callback like this:
- *                 void slave_process_callback()
+ *                 void worker_process_callback()
  *                 {
  *                     int command = 0;
  *                     MPI_BCast(&command, 1, MPI_INT, 0, MPI_COMM_WORLD);
  *                 }
  *
  * ****************************************************************************/
-void  VisItSetSlaveProcessCallback(void(*spcb)(void));
+void  VisItSetWorkerProcessCallback(void(*spcb)(void));
 
 /******************************************************************************
- * Function: VisItSetSlaveProcessCallback2
+ * Function: VisItSetWorkerProcessCallback2
  *
- * Purpose: 
- *   Set the callback function used to inform slave processes that they should
- *   call VisItProcessEngineCommand. The provided callback function is used 
+ * Purpose:
+ *   Set the callback function used to inform worker processes that they should
+ *   call VisItProcessEngineCommand. The provided callback function is used
  *   internally in libsim
- *   
+ *
  *
  * Arguments:  A pointer to a function with prototype: void func(void *);
  *             A pointer to some callback function data.
  *
  * Returns:    None
  *
- * Note:       The slave process callback is required for a parallel simulation.
+ * Note:       The worker process callback is required for a parallel simulation.
  *             This function should be called when VisItAttemptToCompleteConnection
  *             returns successfully.
  *
  *             MPI simulations may define the callback like this:
- *                 void slave_process_callback(void *ptr)
+ *                 void worker_process_callback(void *ptr)
  *                 {
  *                     int command = 0;
  *                     simdata_t *sim = (simdata_t *)ptr;
@@ -488,16 +488,16 @@ void  VisItSetSlaveProcessCallback(void(*spcb)(void));
  *                 }
  *
  * ****************************************************************************/
-void  VisItSetSlaveProcessCallback2(void(*cb)(void *), void *);
+void  VisItSetWorkerProcessCallback2(void(*cb)(void *), void *);
 
 /******************************************************************************
  * Function: VisItSetCommandCallback
  *
- * Purpose: 
+ * Purpose:
  *   Set the callback for processing control commands (these are set up in
  *   the simulation's metadata).
  *
- * Arguments: A pointer to a function with prototype: 
+ * Arguments: A pointer to a function with prototype:
  *            void func(const char*,const char*,void*);
  *
  *            The callback function arguments are:
@@ -508,7 +508,7 @@ void  VisItSetSlaveProcessCallback2(void(*cb)(void *), void *);
  * Returns:    None
  *
  * Note:       This function must be called on all processors to install the
- *             callback function. This function should be called when 
+ *             callback function. This function should be called when
  *             VisItAttemptToCompleteConnection returns successfully.
  *
  * ****************************************************************************/
@@ -517,7 +517,7 @@ void  VisItSetCommandCallback(void(*cb)(const char*,const char*,void*), void *cb
 /******************************************************************************
  * Function: VisItProcessEngineCommand
  *
- * Purpose: 
+ * Purpose:
  *   This function reads input from VisIt's viewer and executes the requests.
  *   The VisItProcessEngineCommand function needs to be called from the
  *   simulation's event loop when VisItDetectInput return 2, indicating that
@@ -535,9 +535,9 @@ int   VisItProcessEngineCommand(void);
 /******************************************************************************
  * Function: VisItTimeStepChanged
  *
- * Purpose: 
+ * Purpose:
  *   The simulation can use this function to tell VisIt that it has changed to
- *   a new time step. This causes the simulation to send new metadata to 
+ *   a new time step. This causes the simulation to send new metadata to
  *   VisIt.
  *
  * Arguments: None
@@ -552,9 +552,9 @@ void  VisItTimeStepChanged(void);
 /******************************************************************************
  * Function: VisItUpdatePlots
  *
- * Purpose: 
+ * Purpose:
  *   The simulation can use this function to tell VisIt to update its plots
- *   using new data from the simulation. Calling this function only serves as 
+ *   using new data from the simulation. Calling this function only serves as
  *   a trigger to VisIt that it needs to update its plots. The simulation should
  *   take care to pause until VisIt has made all of its requests from the
  *   simulation or multiple plots may contain data from different time steps
@@ -564,9 +564,9 @@ void  VisItTimeStepChanged(void);
  *
  * Returns:   None
  *
- * Note:      This function has no effect when called by non-master
- *            processes. When VisIt is connected to the simulation, calling 
- *            this function on the master process will send commands to process
+ * Note:      This function has no effect when called by non-manager
+ *            processes. When VisIt is connected to the simulation, calling
+ *            this function on the manager process will send commands to process
  *            to VisIt's viewer. The sim will then process VisIt commands in
  *            a synchronization loop if synchronization is enabled. In that case,
  *            ALL processors must call this function. During the synchronization
@@ -582,7 +582,7 @@ void  VisItUpdatePlots(void);
 /******************************************************************************
  * Function: VisItExecuteCommand
  *
- * Purpose: 
+ * Purpose:
  *   This simulation can use this function to tell VisIt to execute VisIt CLI
  *   Python commands. The commands are sent to VisIt in a non-blocking fashion
  *   and VisIt later translates the commands into requests to the simulation.
@@ -595,9 +595,9 @@ void  VisItUpdatePlots(void);
  * Note:      And example call to this function could look like:
  *            VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
  *
- *            This function has no effect when called by non-master
- *            processes. When VisIt is connected to the simulation, calling 
- *            this function on the master process will send commands to process
+ *            This function has no effect when called by non-manager
+ *            processes. When VisIt is connected to the simulation, calling
+ *            this function on the manager process will send commands to process
  *            to VisIt's viewer. The sim will then process VisIt commands in
  *            a synchronization loop if synchronization is enabled. In that case,
  *            ALL processors must call this function. During the synchronization
@@ -613,9 +613,9 @@ void  VisItExecuteCommand(const char *);
 /******************************************************************************
  * Function: VisItDisconnect
  *
- * Purpose: 
+ * Purpose:
  *   This function disconnects the simulation from VisIt. It should be called
- *   from the simulation's event loop when VisItProcessEngineCommand returns 
+ *   from the simulation's event loop when VisItProcessEngineCommand returns
  *   failure.
  *
  * Arguments: None
@@ -630,14 +630,14 @@ void  VisItDisconnect(void);
 /******************************************************************************
  * Function: VisItIsConnected
  *
- * Purpose: 
+ * Purpose:
  *   This function returns 1 if VisIt is connected; 0 otherwise.
  *
  * Arguments: None
  *
  * Returns:   1 if VisIt is connected; 0 otherwise.
  *
- * Note:      
+ * Note:
  *
  * ****************************************************************************/
 int   VisItIsConnected(void);
@@ -645,14 +645,14 @@ int   VisItIsConnected(void);
 /******************************************************************************
  * Function: VisItIsRuntimeLoaded
  *
- * Purpose: 
+ * Purpose:
  *   This function returns 1 if the VisIt runtime is loaded; 0 otherwise.
  *
  * Arguments: None
  *
  * Returns:   1 if VisIt runtime is loaded; 0 otherwise.
  *
- * Note:      
+ * Note:
  *
  * ****************************************************************************/
 int   VisItIsRuntimeLoaded(void);
@@ -660,7 +660,7 @@ int   VisItIsRuntimeLoaded(void);
 /******************************************************************************
  * Function: VisItGetLastError
  *
- * Purpose: 
+ * Purpose:
  *   This function returns a pointer to a character string that contains the
  *   last error that libsim encountered.
  *
@@ -668,7 +668,7 @@ int   VisItIsRuntimeLoaded(void);
  *
  * Returns:    A null-terminated character string that contains the last error.
  *
- * Note:       
+ * Note:
  *
  * ****************************************************************************/
 char *VisItGetLastError(void);
@@ -676,7 +676,7 @@ char *VisItGetLastError(void);
 /******************************************************************************
  * Function: VisItSynchronize
  *
- * Purpose: 
+ * Purpose:
  *   This function blocks the simulation, creating a new event loop to handle
  *   requests from VisIt until VisIt returns a synchronize tag.
  *
@@ -692,7 +692,7 @@ int   VisItSynchronize(void);
 /******************************************************************************
  * Function: VisItEnableSynchronize
  *
- * Purpose: 
+ * Purpose:
  *   This function sets whether synchronization is enabled for functions such as
  *   VisItUpdatePlots and VisItExecuteCommand.
  *
@@ -701,7 +701,7 @@ int   VisItSynchronize(void);
  *
  * Returns:   None
  *
- * Note:      
+ * Note:
  *
  * ****************************************************************************/
 void  VisItEnableSynchronize(int);
@@ -709,11 +709,11 @@ void  VisItEnableSynchronize(int);
 /******************************************************************************
  * Function: VisItDebug
  *
- * Purpose: 
+ * Purpose:
  *   These functions let you write a printf-style output to VisIt's debugging
  *   logs.
  *
- * Arguments: 
+ * Arguments:
  *   format : A format string.
  *
  * Returns:   None
@@ -730,16 +730,16 @@ void  VisItDebug5(const char *format, ...);
 /******************************************************************************
  * Function: VisItOpenTraceFile
  *
- * Purpose: 
+ * Purpose:
  *   This function opens a trace file that contains a trace of all of SimV2's
  *   function calls. The trace file is meant to aid in debugging.
  *
- * Arguments: 
+ * Arguments:
  *   filename : The name of the trace file.
  *
  * Returns:   None
  *
- * Note:      
+ * Note:
  *
  * ****************************************************************************/
 
@@ -748,14 +748,14 @@ void  VisItOpenTraceFile(const char *filename);
 /******************************************************************************
  * Function: VisItCloseTraceFile
  *
- * Purpose: 
+ * Purpose:
  *   This function closes the trace file.
  *
  * Arguments: None
  *
  * Returns:   None
  *
- * Note:      
+ * Note:
  *
  * ****************************************************************************/
 void  VisItCloseTraceFile(void);
@@ -763,7 +763,7 @@ void  VisItCloseTraceFile(void);
 /******************************************************************************
  * Function: VisItSaveWindow
  *
- * Purpose: 
+ * Purpose:
  *   This function saves the last plot to an image file.
  *
  * Arguments:
@@ -771,7 +771,7 @@ void  VisItCloseTraceFile(void);
  *   width    : The width of the saved image.
  *   height   : The height of the saved image.
  *   format   : The format in which to save the image. (e.g. VISIT_IMAGEFORMAT_JPEG)
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      A plot must have already been created. Call this function on all
@@ -783,7 +783,7 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
 /******************************************************************************
  * Function: VisItBeginCinema
  *
- * Purpose: 
+ * Purpose:
  *   This function saves parameters for a new Cinema database. This makes it
  *   so we don't pass contradictory parameters later on and we also allocate
  *   some internal storage for this Cinema database.
@@ -799,7 +799,7 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
  *   cameratype: The camera type. VISIT_CINEMA_CAMERA_STATIC, VISIT_CINEMA_CAMERA_PHI_THETA.
  *   nphi      : The number of divisions in phi (for VISIT_CINEMA_CAMERA_PHI_THETA).
  *   ntheta    : The number of divisions in theta (for VISIT_CINEMA_CAMERA_PHI_THETA).
- *   varnames  : A namelist object containing variable names. This parameter is 
+ *   varnames  : A namelist object containing variable names. This parameter is
  *               optional. If you do not want to specify additional variable
  *               names, pass VISIT_INVALID_HANDLE.
  *
@@ -810,7 +810,7 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
  *
  * ****************************************************************************/
 int VisItBeginCinema(visit_handle *h,
-                     const char *file_cdb, int dbspec, int composite, 
+                     const char *file_cdb, int dbspec, int composite,
                      int imgformat, int width, int height,
                      int cameratype, int nphi, int ntheta,
                      visit_handle varnames);
@@ -818,13 +818,13 @@ int VisItBeginCinema(visit_handle *h,
 /******************************************************************************
  * Function: VisItSaveCinema
  *
- * Purpose: 
+ * Purpose:
  *   This function saves the current plots to the file_cdb Cinema database.
  *
  * Arguments:
  *   h     : The handle returned from VisItBeginCinema.
  *   time  : The time value for the current time step we're saving.
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      A plot must have already been created. Call this function on all
@@ -836,15 +836,15 @@ int VisItSaveCinema(visit_handle h,  double time);
 /******************************************************************************
  * Function: VisItEndCinema
  *
- * Purpose: 
+ * Purpose:
  *   This function ends a Cinema database.
  *
  * Arguments:
  *   h : The handle returned from VisItBeginCinema.
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
- * Note:      
+ * Note:
  *
  * ****************************************************************************/
 int VisItEndCinema(visit_handle h);
@@ -852,15 +852,15 @@ int VisItEndCinema(visit_handle h);
 /******************************************************************************
  * Function: VisItSetMPICommunicator
  *
- * Purpose: 
- *   This function sets the communicator that VisIt should use for parallel 
+ * Purpose:
+ *   This function sets the communicator that VisIt should use for parallel
  *   operations. Note that you may want to temporarily install a communicator
  *   for vis operations and then revert to the default communicator for when
  *   VisIt needs to communicate commands to other processes.
  *
  * Arguments:
  *   mpicom : A pointer to the communicator that we should use.
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      Passing NULL lets VisIt revert to its copy of MPI_COMM_WORLD.
@@ -871,8 +871,8 @@ int VisItSetMPICommunicator(void *mpicom);
 /******************************************************************************
  * Function: VisItSetMPICommunicator_f
  *
- * Purpose: 
- *   This function sets the communicator that VisIt should use for parallel 
+ * Purpose:
+ *   This function sets the communicator that VisIt should use for parallel
  *   operations from a Fortran handle. Note that you may want to temporarily
  *   install a communicator for vis operations and then revert to the default
  *   communicator for when VisIt needs to communicate commands to other
@@ -880,7 +880,7 @@ int VisItSetMPICommunicator(void *mpicom);
  *
  * Arguments:
  *   mpicom : A pointer to the FORTRAN communicator that we should use.
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      use VisItSetMPICommunicator to revert to its copy of MPI_COMM_WORLD.
@@ -891,12 +891,12 @@ int VisItSetMPICommunicator_f(int *mpicom);
 /******************************************************************************
  * Function: VisItInitializeRuntime
  *
- * Purpose: 
+ * Purpose:
  *   Initialize the VisIt runtime without the client being connected.
  *
  * Arguments:
- *   
- * 
+ *
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      Call this function on all processors.
@@ -907,24 +907,24 @@ int VisItInitializeRuntime(void);
 /******************************************************************************
  * Function: VisItGetMemory
  *
- * Purpose: 
+ * Purpose:
  *   Measure memory usage for the current processor.
  *
  * Arguments:
  *   m_size : The number of MiB in use.
  *   m_rss  : The resident set size in MiB.
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      This function can be called in individual processors.
  *
  * ****************************************************************************/
-int VisItGetMemory(double *m_size, double *m_rss); 
+int VisItGetMemory(double *m_size, double *m_rss);
 
 /******************************************************************************
  * Function: VisItExportDatabase
  *
- * Purpose: 
+ * Purpose:
  *   Export the active plots to database files.
  *
  * Arguments:
@@ -946,13 +946,13 @@ int VisItGetMemory(double *m_size, double *m_rss);
  *            Call this function on all processors.
  *
  * ****************************************************************************/
-int VisItExportDatabase(const char *filename, const char *format, 
+int VisItExportDatabase(const char *filename, const char *format,
                         visit_handle variables);
 
 /******************************************************************************
  * Function: VisItExportDatabaseWithOptions
  *
- * Purpose: 
+ * Purpose:
  *   Export the active plots to database files.
  *
  * Arguments:
@@ -965,7 +965,7 @@ int VisItExportDatabase(const char *filename, const char *format,
  *   variables: A name list containing the names of the variables to be exported.
  *              If an empty list or VISIT_INVALID_HANDLE are passed then the
  *              "default" variables will be exported.
- *   options  : A handle to an optional optionlist object (contaisn key/value 
+ *   options  : A handle to an optional optionlist object (contaisn key/value
  *              pairs) or VISIT_INVALID_HANDLE if no options are to be passed.
  *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
@@ -976,19 +976,19 @@ int VisItExportDatabase(const char *filename, const char *format,
  *            Call this function on all processors.
  *
  * ****************************************************************************/
-int VisItExportDatabaseWithOptions(const char *filename, const char *format, 
+int VisItExportDatabaseWithOptions(const char *filename, const char *format,
                                    visit_handle variables, visit_handle options);
 
 /******************************************************************************
  * Function: VisItRestoreSession
  *
- * Purpose: 
+ * Purpose:
  *   Restores a session file to set up the visualization that will be saved
  *   from operations such as VisItSaveWindow and VisItExportDatabase.
  *
  * Arguments:
  *   filename : The path to the session file.
- * 
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      Call this function on all processors.
@@ -1008,8 +1008,8 @@ int VisItRestoreSession(const char *filename);
 /******************************************************************************
  * Function: VisItSetActivateTimestep
  *
- * Purpose: 
- *   This function installs a callback function that does collective 
+ * Purpose:
+ *   This function installs a callback function that does collective
  *   communication before other data access callback functions are called.
  *
  * Arguments:
@@ -1027,7 +1027,7 @@ int VisItSetActivateTimestep(int (*cb)(void *), void *cbdata1);
 /******************************************************************************
  * Function: VisItSetGetMetaData
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets simulation metadata.
  *
  * Arguments:
@@ -1048,7 +1048,7 @@ int VisItSetGetMetaData(visit_handle (*cb)(void *), void *cbdata1);
 /******************************************************************************
  * Function: VisItSetGetMesh
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets a mesh.
  *
  * Arguments:
@@ -1071,7 +1071,7 @@ int VisItSetGetMesh(visit_handle (*cb)(int, const char *, void *), void *cbdata1
 /******************************************************************************
  * Function: VisItSetGetMaterial
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets a material.
  *
  * Arguments:
@@ -1094,7 +1094,7 @@ int VisItSetGetMaterial(visit_handle (*cb)(int, const char *, void *), void *cbd
 /******************************************************************************
  * Function: VisItSetGetSpecies
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets species data.
  *
  * Arguments:
@@ -1117,7 +1117,7 @@ int VisItSetGetSpecies(visit_handle (*cb)(int, const char *, void *), void *cbda
 /******************************************************************************
  * Function: VisItSetGetVariable
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets variable data.
  *
  * Arguments:
@@ -1140,7 +1140,7 @@ int VisItSetGetVariable(visit_handle (*cb)(int, const char *, void *), void *cbd
 /******************************************************************************
  * Function: VisItSetGetMixedVariable
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets mixed variable data.
  *
  * Arguments:
@@ -1163,7 +1163,7 @@ int VisItSetGetMixedVariable(visit_handle (*cb)(int, const char *, void *), void
 /******************************************************************************
  * Function: VisItSetGetCurve
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets curve data.
  *
  * Arguments:
@@ -1184,7 +1184,7 @@ int VisItSetGetCurve(visit_handle (*cb)(const char *, void *), void *cbdata1);
 /******************************************************************************
  * Function: VisItSetGetDomainList
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets a domain list.
  *
  * Arguments:
@@ -1209,7 +1209,7 @@ int VisItSetGetDomainList(visit_handle (*cb)(const char *, void *), void *cbdata
 /******************************************************************************
  * Function: VisItSetGetDomainBoundaries
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that gets domain boundaries.
  *   Implementing domain boundaries callback function allows VisIt to create
  *   ghost zones between domains.
@@ -1234,7 +1234,7 @@ int VisItSetGetDomainBoundaries(visit_handle (*cb)(const char *, void *), void *
 /******************************************************************************
  * Function: VisItSetGetDomainNesting
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that returns a domain nesting
  *   object, which is used to tell VisIt how AMR patches are nested.
  *
@@ -1260,7 +1260,7 @@ int VisItSetGetDomainNesting(visit_handle (*cb)(const char *, void *), void *cbd
 /******************************************************************************
  * Function: VisItSetWriteBegin
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that can be used to start
  *   exporting from VisIt back to the simulation.
  *
@@ -1283,7 +1283,7 @@ int VisItSetWriteBegin(int (*cb)(const char *, void *), void *cbdata1);
 /******************************************************************************
  * Function: VisItSetWriteEnd
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that can be called at the
  *   end of exporting from VisIt to the simulation.
  *
@@ -1306,7 +1306,7 @@ int VisItSetWriteEnd(int (*cb)(const char *, void *), void *cbdata1);
 /******************************************************************************
  * Function: VisItSetWriteMesh
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that is called to export a
  *   chunk of mesh data from VisIt to the simulation.
  *
@@ -1333,7 +1333,7 @@ int VisItSetWriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_hand
 /******************************************************************************
  * Function: VisItSetWriteVariable
  *
- * Purpose: 
+ * Purpose:
  *   This function installs a callback function that is called to export a chunk
  *   of variable data from VisIt to the simulation.
  *
@@ -1392,7 +1392,9 @@ int VisItUI_setTableValueS(const char *name,
 
 
 int VisItUI_addStripChartPoint(int chart, int curve, int cycle, double value);
-  
+
+int VisItUI_addStripChartPoints(int chart, int curve, int npts, int *cycles, double *values);
+
 /* Include some experimental plotting functions */
 #include <VisItControlInterface_V2_plotting.h>
 

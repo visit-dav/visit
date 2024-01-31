@@ -31,11 +31,16 @@ const char * avtNeighborExpression::variableName = "neighbor";
 //  Programmer: Akira Haddox
 //  Creation:   June 27, 2002
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtNeighborExpression::avtNeighborExpression()
 {
-
+    canApplyToDirectDatabaseQOT = false;
 }
 
 
@@ -72,6 +77,9 @@ avtNeighborExpression::~avtNeighborExpression()
 //
 //    Eric Brugger, Wed Aug 20 16:19:07 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Kathleen Biagas, Fri June 30, 2023
+//    Remove call to GetBounds, results never used.
 //
 // ****************************************************************************
  
@@ -115,9 +123,6 @@ avtNeighborExpression::ExecuteData(avtDataRepresentation *in_dr)
 
     data->SetNumberOfComponents(1);
     data->SetNumberOfTuples(nPoints);
-
-    double bounds[6];
-    in_ds->GetBounds(bounds);
 
     // Create the point locator
     vtkPointLocator *ptLoc = vtkPointLocator::New();

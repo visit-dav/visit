@@ -13,8 +13,7 @@
     Startup options
     ---------------------------------------------------------------------------
         -o <filename>        Open the specified data file at startup.
-        -s <filename>        Run the specified VisIt script. Note: This
-                             argument only takes effect with -cli or -movie.
+        -s <filename>        Run the specified VisIt script.
         -sessionfile <filename>  Open the specified session file at startup
                              Note that this argument only takes effect with
                              -gui or -movie.
@@ -28,6 +27,8 @@
                              to launch an engine on a remote host, specify 
                              the host's name as the <host> parameter.
         -nosplash            Do not display the splash screen at startup.
+        -py2to3              Enable limited on-the-fly Python 2 to 3
+                             conversion support
 
     Window options
     ---------------------------------------------------------------------------
@@ -45,7 +46,9 @@
 
         -window_anchor <x,y> The x,y position on the screen where VisIt's GUI
                              will show its windows (Main window excluded).
-        -style <style>       One of: windows,cde,motif,sgi.
+        -style <style>       One of: Windows,Fusion. If more options are
+                             available, they will be listed in the gui
+                             under Options->Appearance.
         -locale <locale>     The locale that you want VisIt to use when displaying
                              translated menus and controls. VisIt will use the
                              default locale if the -locale option is not
@@ -64,8 +67,8 @@
     Version options
     ---------------------------------------------------------------------------
         -version             Do NOT run VisIt. Just print the current version.
-        -git_version         Do NOT run VisIt. Just print the Git version it
-                             was built from.
+        -git_revision        Do NOT run VisIt. Just print the Git revision
+                             number it was built from.
         -beta                Run the current beta version.
         -v <version>         Run a specified version. Specifying 2 digits,
                              such as X.Y, will run the latest patch release
@@ -75,5 +78,4 @@
     Other resources for help
     ---------------------------------------------------------------------------
         run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit.llnl.gov
-        email:               visit-users@ornl.gov
+        on-line:             https://visit-help.llnl.gov

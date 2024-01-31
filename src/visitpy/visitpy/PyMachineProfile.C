@@ -5,6 +5,7 @@
 #include <PyMachineProfile.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyLaunchProfile.h>
 
 // ****************************************************************************
@@ -35,9 +36,8 @@ struct MachineProfileObject
 // Internal prototypes
 //
 static PyObject *NewMachineProfile(int);
-
 std::string
-PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
+PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -142,7 +142,7 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
             const LaunchProfile *current = (const LaunchProfile *)(*pos);
             snprintf(tmpStr, 1000, "GetLaunchProfiles(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyLaunchProfile_ToString(current, objPrefix.c_str());
+            str += PyLaunchProfile_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#launchProfiles does not contain any LaunchProfile objects.\n";
@@ -166,12 +166,37 @@ MachineProfile_SetHost(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the host in the object.
-    obj->data->SetHost(std::string(str));
+    obj->data->SetHost(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -190,12 +215,37 @@ MachineProfile_SetUserName(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the userName in the object.
-    obj->data->SetUserName(std::string(str));
+    obj->data->SetUserName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -214,12 +264,37 @@ MachineProfile_SetPassword(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the password in the object.
-    obj->data->SetPassword(std::string(str));
+    obj->data->SetPassword(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -238,12 +313,37 @@ MachineProfile_SetHostAliases(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hostAliases in the object.
-    obj->data->SetHostAliases(std::string(str));
+    obj->data->SetHostAliases(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -262,12 +362,37 @@ MachineProfile_SetHostNickname(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hostNickname in the object.
-    obj->data->SetHostNickname(std::string(str));
+    obj->data->SetHostNickname(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -286,12 +411,37 @@ MachineProfile_SetDirectory(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the directory in the object.
-    obj->data->SetDirectory(std::string(str));
+    obj->data->SetDirectory(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -310,12 +460,48 @@ MachineProfile_SetShareOneBatchJob(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the shareOneBatchJob in the object.
-    obj->data->SetShareOneBatchJob(ival != 0);
+    obj->data->SetShareOneBatchJob(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -334,12 +520,48 @@ MachineProfile_SetSshPortSpecified(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sshPortSpecified in the object.
-    obj->data->SetSshPortSpecified(ival != 0);
+    obj->data->SetSshPortSpecified(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -358,12 +580,48 @@ MachineProfile_SetSshPort(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sshPort in the object.
-    obj->data->SetSshPort((int)ival);
+    obj->data->SetSshPort(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -382,12 +640,48 @@ MachineProfile_SetSshCommandSpecified(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sshCommandSpecified in the object.
-    obj->data->SetSshCommandSpecified(ival != 0);
+    obj->data->SetSshCommandSpecified(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -406,31 +700,51 @@ MachineProfile_SetSshCommand(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    stringVector  &vec = obj->data->GetSshCommand();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetSshCommand() = vec;
     // Mark the sshCommand in the object as modified.
     obj->data->SelectSshCommand();
 
@@ -455,12 +769,48 @@ MachineProfile_SetUseGateway(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useGateway in the object.
-    obj->data->SetUseGateway(ival != 0);
+    obj->data->SetUseGateway(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -479,12 +829,37 @@ MachineProfile_SetGatewayHost(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the gatewayHost in the object.
-    obj->data->SetGatewayHost(std::string(str));
+    obj->data->SetGatewayHost(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -503,21 +878,55 @@ MachineProfile_SetClientHostDetermination(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid clientHostDetermination value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " MachineName";
+        ss << ", ManuallySpecified";
+        ss << ", ParsedFromSSHCLIENT";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the clientHostDetermination in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetClientHostDetermination(MachineProfile::ClientHostDetermination(ival));
-    else
-    {
-        fprintf(stderr, "An invalid clientHostDetermination value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "MachineName, ManuallySpecified, ParsedFromSSHCLIENT.");
-        return NULL;
-    }
+    obj->data->SetClientHostDetermination(MachineProfile::ClientHostDetermination(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -536,12 +945,37 @@ MachineProfile_SetManualClientHostName(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the manualClientHostName in the object.
-    obj->data->SetManualClientHostName(std::string(str));
+    obj->data->SetManualClientHostName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -560,12 +994,48 @@ MachineProfile_SetTunnelSSH(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tunnelSSH in the object.
-    obj->data->SetTunnelSSH(ival != 0);
+    obj->data->SetTunnelSSH(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -584,12 +1054,48 @@ MachineProfile_SetMaximumNodesValid(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maximumNodesValid in the object.
-    obj->data->SetMaximumNodesValid(ival != 0);
+    obj->data->SetMaximumNodesValid(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -608,12 +1114,48 @@ MachineProfile_SetMaximumNodes(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maximumNodes in the object.
-    obj->data->SetMaximumNodes((int)ival);
+    obj->data->SetMaximumNodes(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -632,12 +1174,48 @@ MachineProfile_SetMaximumProcessorsValid(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maximumProcessorsValid in the object.
-    obj->data->SetMaximumProcessorsValid(ival != 0);
+    obj->data->SetMaximumProcessorsValid(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -656,12 +1234,48 @@ MachineProfile_SetMaximumProcessors(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maximumProcessors in the object.
-    obj->data->SetMaximumProcessors((int)ival);
+    obj->data->SetMaximumProcessors(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -679,19 +1293,13 @@ MachineProfile_GetMaximumProcessors(PyObject *self, PyObject *args)
 MachineProfile_GetLaunchProfiles(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetLaunchProfiles().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetLaunchProfiles().size() == 0)
-            snprintf(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid because launchProfiles is empty.", index);
-        else
-            snprintf(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLaunchProfiles().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetLaunchProfiles(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetLaunchProfiles().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -720,12 +1328,7 @@ MachineProfile_AddLaunchProfiles(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyLaunchProfile_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The MachineProfile::AddLaunchProfiles method only accepts LaunchProfile objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type LaunchProfile");
     LaunchProfile *newData = PyLaunchProfile_FromPyObject(element);
     obj->data->AddLaunchProfiles(*newData);
     obj->data->SelectLaunchProfiles();
@@ -763,17 +1366,12 @@ MachineProfile_Remove_One_LaunchProfiles(PyObject *self, int index)
 PyObject *
 MachineProfile_RemoveLaunchProfiles(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     MachineProfileObject *obj = (MachineProfileObject *)self;
     if(index < 0 || index >= obj->data->GetNumLaunchProfiles())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In MachineProfile::RemoveLaunchProfiles : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return MachineProfile_Remove_One_LaunchProfiles(self, index);
 }
@@ -797,12 +1395,48 @@ MachineProfile_SetActiveProfile(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the activeProfile in the object.
-    obj->data->SetActiveProfile((int)ival);
+    obj->data->SetActiveProfile(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -884,14 +1518,7 @@ MachineProfile_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-MachineProfile_compare(PyObject *v, PyObject *w)
-{
-    MachineProfile *a = ((MachineProfileObject *)v)->data;
-    MachineProfile *b = ((MachineProfileObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *MachineProfile_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMachineProfile_getattr(PyObject *self, char *name)
 {
@@ -947,68 +1574,81 @@ PyMachineProfile_getattr(PyObject *self, char *name)
     if(strcmp(name, "activeProfile") == 0)
         return MachineProfile_GetActiveProfile(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyMachineProfile_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyMachineProfile_methods[i].ml_name),
+                PyString_FromString(PyMachineProfile_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyMachineProfile_methods, self, name);
 }
 
 int
 PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "host") == 0)
-        obj = MachineProfile_SetHost(self, tuple);
+        obj = MachineProfile_SetHost(self, args);
     else if(strcmp(name, "userName") == 0)
-        obj = MachineProfile_SetUserName(self, tuple);
+        obj = MachineProfile_SetUserName(self, args);
     else if(strcmp(name, "password") == 0)
-        obj = MachineProfile_SetPassword(self, tuple);
+        obj = MachineProfile_SetPassword(self, args);
     else if(strcmp(name, "hostAliases") == 0)
-        obj = MachineProfile_SetHostAliases(self, tuple);
+        obj = MachineProfile_SetHostAliases(self, args);
     else if(strcmp(name, "hostNickname") == 0)
-        obj = MachineProfile_SetHostNickname(self, tuple);
+        obj = MachineProfile_SetHostNickname(self, args);
     else if(strcmp(name, "directory") == 0)
-        obj = MachineProfile_SetDirectory(self, tuple);
+        obj = MachineProfile_SetDirectory(self, args);
     else if(strcmp(name, "shareOneBatchJob") == 0)
-        obj = MachineProfile_SetShareOneBatchJob(self, tuple);
+        obj = MachineProfile_SetShareOneBatchJob(self, args);
     else if(strcmp(name, "sshPortSpecified") == 0)
-        obj = MachineProfile_SetSshPortSpecified(self, tuple);
+        obj = MachineProfile_SetSshPortSpecified(self, args);
     else if(strcmp(name, "sshPort") == 0)
-        obj = MachineProfile_SetSshPort(self, tuple);
+        obj = MachineProfile_SetSshPort(self, args);
     else if(strcmp(name, "sshCommandSpecified") == 0)
-        obj = MachineProfile_SetSshCommandSpecified(self, tuple);
+        obj = MachineProfile_SetSshCommandSpecified(self, args);
     else if(strcmp(name, "sshCommand") == 0)
-        obj = MachineProfile_SetSshCommand(self, tuple);
+        obj = MachineProfile_SetSshCommand(self, args);
     else if(strcmp(name, "useGateway") == 0)
-        obj = MachineProfile_SetUseGateway(self, tuple);
+        obj = MachineProfile_SetUseGateway(self, args);
     else if(strcmp(name, "gatewayHost") == 0)
-        obj = MachineProfile_SetGatewayHost(self, tuple);
+        obj = MachineProfile_SetGatewayHost(self, args);
     else if(strcmp(name, "clientHostDetermination") == 0)
-        obj = MachineProfile_SetClientHostDetermination(self, tuple);
+        obj = MachineProfile_SetClientHostDetermination(self, args);
     else if(strcmp(name, "manualClientHostName") == 0)
-        obj = MachineProfile_SetManualClientHostName(self, tuple);
+        obj = MachineProfile_SetManualClientHostName(self, args);
     else if(strcmp(name, "tunnelSSH") == 0)
-        obj = MachineProfile_SetTunnelSSH(self, tuple);
+        obj = MachineProfile_SetTunnelSSH(self, args);
     else if(strcmp(name, "maximumNodesValid") == 0)
-        obj = MachineProfile_SetMaximumNodesValid(self, tuple);
+        obj = MachineProfile_SetMaximumNodesValid(self, args);
     else if(strcmp(name, "maximumNodes") == 0)
-        obj = MachineProfile_SetMaximumNodes(self, tuple);
+        obj = MachineProfile_SetMaximumNodes(self, args);
     else if(strcmp(name, "maximumProcessorsValid") == 0)
-        obj = MachineProfile_SetMaximumProcessorsValid(self, tuple);
+        obj = MachineProfile_SetMaximumProcessorsValid(self, args);
     else if(strcmp(name, "maximumProcessors") == 0)
-        obj = MachineProfile_SetMaximumProcessors(self, tuple);
+        obj = MachineProfile_SetMaximumProcessors(self, args);
     else if(strcmp(name, "activeProfile") == 0)
-        obj = MachineProfile_SetActiveProfile(self, tuple);
+        obj = MachineProfile_SetActiveProfile(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1016,7 +1656,7 @@ static int
 MachineProfile_print(PyObject *v, FILE *fp, int flags)
 {
     MachineProfileObject *obj = (MachineProfileObject *)v;
-    fprintf(fp, "%s", PyMachineProfile_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMachineProfile_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1024,7 +1664,7 @@ PyObject *
 MachineProfile_str(PyObject *v)
 {
     MachineProfileObject *obj = (MachineProfileObject *)v;
-    return PyString_FromString(PyMachineProfile_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMachineProfile_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1037,49 +1677,70 @@ static char *MachineProfile_Purpose = "This class contains information about a h
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject MachineProfileType =
+
+VISIT_PY_TYPE_OBJ(MachineProfileType,         \
+                  "MachineProfile",           \
+                  MachineProfileObject,       \
+                  MachineProfile_dealloc,     \
+                  MachineProfile_print,       \
+                  PyMachineProfile_getattr,   \
+                  PyMachineProfile_setattr,   \
+                  MachineProfile_str,         \
+                  MachineProfile_Purpose,     \
+                  MachineProfile_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+MachineProfile_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "MachineProfile",                    // tp_name
-    sizeof(MachineProfileObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)MachineProfile_dealloc,  // tp_dealloc
-    (printfunc)MachineProfile_print,     // tp_print
-    (getattrfunc)PyMachineProfile_getattr, // tp_getattr
-    (setattrfunc)PyMachineProfile_setattr, // tp_setattr
-    (cmpfunc)MachineProfile_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)MachineProfile_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    MachineProfile_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &MachineProfileType
+         || Py_TYPE(other) != &MachineProfileType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    MachineProfile *a = ((MachineProfileObject *)self)->data;
+    MachineProfile *b = ((MachineProfileObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -1155,7 +1816,7 @@ PyMachineProfile_GetLogString()
 {
     std::string s("MachineProfile = MachineProfile()\n");
     if(currentAtts != 0)
-        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.");
+        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.", true);
     return s;
 }
 
@@ -1168,7 +1829,7 @@ PyMachineProfile_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MachineProfile = MachineProfile()\n");
-        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.");
+        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.", true);
         cb(s);
     }
 }

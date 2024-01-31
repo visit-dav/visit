@@ -108,7 +108,7 @@ QvisStripChartMgr::CreateWindowContents()
     topLayout->addWidget( stripChartGroup);
     
     chartLayout = new QGridLayout(stripChartGroup);              
-    chartLayout->setMargin(10);
+    chartLayout->setContentsMargins(10,10,10,10);
     chartLayout->setSpacing(10);
     
     // Pick and zoom buttons
@@ -622,6 +622,34 @@ QvisStripChartMgr::addDataPoint( const unsigned int tabIndex,
 {
     stripChartTabWidget->addDataPoint(tabIndex, curveIndex, x, y);
 }
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::addDataPoints
+//
+// Purpose: 
+//   This is a pass through method that call the function with the
+//   same name in the strip chat tab widget and then update the Mgr
+//   widgets
+//
+// Arguments:
+//   y:  new Y data value
+//   x:  new x data value
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Sep 26 16:16:23 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartMgr::addDataPoints( const unsigned int tabIndex,
+                                  const unsigned int curveIndex,
+                                  const unsigned int npts,
+                                  double *x, double *y )
+{
+    stripChartTabWidget->addDataPoints(tabIndex, curveIndex, npts, x, y);
+}
+
 // ****************************************************************************
 // Method: QvisStripChartMgr::unpost()
 //

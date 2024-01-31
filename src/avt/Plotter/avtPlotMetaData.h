@@ -25,7 +25,8 @@
 // Creation:   Tue Sep 16 10:34:05 PDT 2014
 //
 // Modifications:
-//
+//    Mark C. Miller, Mon Nov  2 16:58:54 PST 2020
+//    Add bg/fg color members and methods
 // ****************************************************************************
 
 class PLOTTER_API avtPlotMetaData
@@ -36,7 +37,9 @@ public:
                     avtVarType                  _variableType,
                     avtSILRestriction_p         _silr,
                     const avtExtents           &_actualSpatial,
-                    const avtExtents           &_originalSpatial);
+                    const avtExtents           &_originalSpatial,
+                    const double                _bgColor[4],
+                    const double                _fgColor[4]);
     avtPlotMetaData(const avtPlotMetaData &obj);
     ~avtPlotMetaData();
 
@@ -49,6 +52,8 @@ public:
     avtSILRestriction_p        GetSILRestriction() const;
     const avtExtents          &GetActualSpatialExtents() const;
     const avtExtents          &GetOriginalSpatialExtents() const;
+    const double              *GetBackgroundColor() const;
+    const double              *GetForegroundColor() const;
 
 private:
     const avtDatabaseMetaData *md;
@@ -57,6 +62,8 @@ private:
     avtSILRestriction_p        silr;
     avtExtents                 actualSpatialExtents;
     avtExtents                 originalSpatialExtents;
+    double                     bgColor[4];
+    double                     fgColor[4];
 };
 
 #endif

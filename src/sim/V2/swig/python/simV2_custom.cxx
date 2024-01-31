@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <functional>
+#include <Py2and3Support.h>
 
 // Also see the documentation in simV2_python.i
 // which describes the pattern's we use for handling
@@ -178,20 +179,20 @@ pylibsim_invokeBroadcastStringCallback(char *arg0, int arg1, int arg2)
 }
 
 /******************************************************************************
- * SlaveProcess callback invoker
+ * WorkerProcess callback invoker
  ******************************************************************************/
-static simV2_PyObject slaveProcessCallback;
+static simV2_PyObject workerProcessCallback;
 
-void pylibsim_setSlaveProcessCallback(PyObject *cb)
-{ slaveProcessCallback.SetObject(cb); }
+void pylibsim_setWorkerProcessCallback(PyObject *cb)
+{ workerProcessCallback.SetObject(cb); }
 
-void pylibsim_invokeSlaveProcessCallback(void)
+void pylibsim_invokeWorkerProcessCallback(void)
 {
-    if (slaveProcessCallback)
+    if (workerProcessCallback)
     {
         PyObject *tuple = PyTuple_New(0);
 
-        PyObject *ret = PyObject_Call(slaveProcessCallback, tuple, NULL);
+        PyObject *ret = PyObject_Call(workerProcessCallback, tuple, NULL);
 
         Py_DECREF(tuple);
 
@@ -290,7 +291,7 @@ int pylibsim_invoke_i_F_pi_i_pv(int *arg0, int arg1, void *cbdata)
 }
 
 /******************************************************************************
- * used by: SlaveProcess2
+ * used by: WorkerProcess2
  * used by: UI_clicked
  ******************************************************************************/
 void pylibsim_invoke_v_F_pv(void *cbdata)
@@ -1209,7 +1210,7 @@ int pylibsim_VisIt_VariableData_setDataAsC(
 /******************************************************************************/
 void pylibsim_VisItDisconnect(void)
 {
-    pylibsim_setSlaveProcessCallback(NULL);
+    pylibsim_setWorkerProcessCallback(NULL);
     deleteCallbackData();
     VisItDisconnect();
 }
@@ -1219,7 +1220,7 @@ void pylibsim_VisItFinalize(void)
 {
     pylibsim_setBroadcastIntCallback(NULL);
     pylibsim_setBroadcastStringCallback(NULL);
-    pylibsim_setSlaveProcessCallback(NULL);
+    pylibsim_setWorkerProcessCallback(NULL);
     deleteCallbackData();
     deleteCommCallbackData();
 }

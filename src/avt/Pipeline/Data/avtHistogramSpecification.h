@@ -31,6 +31,9 @@
 //    Jeremy Meredith, Fri Mar  7 14:30:46 EST 2008
 //    Add some parallel support functions.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 // The basic specification of a histogram can be defined using the 
@@ -152,10 +155,10 @@ class PIPELINE_API avtHistogramSpecification {
     
     // Functions to ask for the actual histogram data
     std::vector< std::vector<double> > &GetBounds();
-    VISIT_LONG_LONG          *GetCounts();
+    long long          *GetCounts();
 
     // Function to set the actual histogram data
-    void                      SetCounts(VISIT_LONG_LONG *counts);
+    void                      SetCounts(long long *counts);
     void                      SetCounts(const std::vector<unsigned int>& counts );
     
     // Additional functions provided for convenience
@@ -207,7 +210,7 @@ private:
     bool cm_BoundsSpecified;
     
     // Define the actual value of each bin of the histogram
-    VISIT_LONG_LONG *cm_Counts;
+    long long *cm_Counts;
   
 };
 

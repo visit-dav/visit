@@ -22,13 +22,13 @@ function bv_zlib_depends_on
 
 function bv_zlib_info
 {
-    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.11"}
+    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.13"}
     export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.xz"}
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
     export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
-    export ZLIB_MD5_CHECKSUM="85adef240c5f370b308da8c938951a68"
-    export ZLIB_SHA256_CHECKSUM="4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
+    export ZLIB_MD5_CHECKSUM=""
+    export ZLIB_SHA256_CHECKSUM="d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98"
 }
 
 function bv_zlib_print
@@ -66,16 +66,13 @@ function bv_zlib_initialize_vars
 
 function bv_zlib_ensure
 {
-    ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
-    if [[ $? != 0 ]] ; then
-        ANY_ERRORS="yes"
-        error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
+    if [[ $DO_ZLIB == "yes" ]]; then
+        ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
+        fi
     fi
-}
-
-function bv_zlib_dry_run
-{
-    echo "Dry run option not set for zlib."
 }
 
 # *************************************************************************** #
@@ -109,18 +106,14 @@ function build_zlib
         STATICARGS=""
     fi
 
-    info "env CXX=$CXX_COMPILER CC=$C_COMPILER \
-         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-         CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-         ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS"
-
     # Call configure
+    set -x
     env CXX=$CXX_COMPILER CC=$C_COMPILER \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" \
         CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         ./configure \
         --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "ZLIB configure failed.  Giving up"

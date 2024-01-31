@@ -5,6 +5,7 @@
 #ifndef PY_TRUECOLORATTRIBUTES_H
 #define PY_TRUECOLORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TruecolorAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyTruecolorAttributes_Wrap(const TruecolorAttributes *attr);
 void           PyTruecolorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTruecolorAttributes_SetDefaults(const TruecolorAttributes *atts);
 std::string    PyTruecolorAttributes_GetLogString();
-std::string    PyTruecolorAttributes_ToString(const TruecolorAttributes *, const char *);
+std::string    PyTruecolorAttributes_ToString(const TruecolorAttributes *, const char *, const bool=false);
 PyObject *     PyTruecolorAttributes_getattr(PyObject *self, char *name);
 int            PyTruecolorAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyTruecolorAttributes_methods[TRUECOLORATTRIBUTES_NMETH];

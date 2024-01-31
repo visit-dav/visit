@@ -12,14 +12,18 @@
 #include <algorithm>
 #include <string>
 
+#include <vtkCellData.h>
 #include <vtkCellTypes.h>
 #include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
@@ -119,12 +123,17 @@ MakeSafeVariableName(const std::string &var)
 //    Brad Whitlock, Tue Apr 15 16:00:52 PDT 2008
 //    Added cgnsFileName, BaseNameToIndices, VisItNameToCGNSName.
 //
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
+//
 // ****************************************************************************
 
-avtCGNSFileReader::avtCGNSFileReader(const char *filename)
+avtCGNSFileReader::avtCGNSFileReader(const char *filename, bool isMTMD)
 {
     cgnsFileName = new char[strlen(filename) + 1];
     strcpy(cgnsFileName, filename);
+    cgnsIsMTMD = isMTMD;
 
     debug1 << "avtCGNSFileReader::avtCGNSFileReader: filename=" << cgnsFileName << endl;
     fn = INVALID_FILE_HANDLE;
@@ -291,7 +300,7 @@ avtCGNSFileReader::ReadTimes()
                 if(cg_narrays(&narrays) == CG_OK)
                 {
                     debug4 << mName << narrays
-                       << " array(s) under BaseIterative" << endl;
+                           << " array(s) under BaseIterative" << endl;
                     for(int i = 0; i < narrays; ++i)
                     {
                         int ndims = 1;
@@ -363,8 +372,9 @@ avtCGNSFileReader::ReadTimes()
                 }
                 else
                 {
-                    debug4 << mName << "Could not read narrays under BaseIterative node: "
-                       << cg_get_error() << endl;
+                    debug4 << mName << "Could not read narrays "
+                           << "under BaseIterative node: "
+                           << cg_get_error() << endl;
                 }
             }
             else
@@ -1006,19 +1016,24 @@ avtCGNSFileReader::AddReferenceStateExpressions(avtDatabaseMetaData *md,
 //  Creation:   Tue Aug 30 16:08:44 PST 2005
 //
 //  Modifications:
-//   Maxim Loginov, Tue Mar  4 12:28:12 NOVT 2008
-//   Some constants from ReferenceState_t should be available as array mesh
-//   variables.
+//    Maxim Loginov, Tue Mar  4 12:28:12 NOVT 2008
+//    Some constants from ReferenceState_t should be available as array mesh
+//    variables.
 //
-//   Brad Whitlock, Wed Apr 16 10:07:16 PDT 2008
-//   Totally rewrote to support reading data from multiple bases. It's more
-//   modular too.
+//    Brad Whitlock, Wed Apr 16 10:07:16 PDT 2008
+//    Totally rewrote to support reading data from multiple bases. It's more
+//    modular too.
 //
-//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//   Changed interface to DebugStream to obtain current debug level.
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 //
-//   Mark C. Miller, Mon Sep 21 14:17:47 PDT 2009
-//   Adding missing calls to actually set the times/cycles in the metadata.
+//    Mark C. Miller, Mon Sep 21 14:17:47 PDT 2009
+//    Adding missing calls to actually set the times/cycles in the metadata.
+//
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
+//
 // ****************************************************************************
 
 void
@@ -1154,14 +1169,30 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             avtMeshMetaData *mmd = new avtMeshMetaData(it->second,
                 1, 1, 1, 0, baseInfo[bi].physicalDim, baseInfo[bi].cellDim, mt);
 
-            stringVector domainNames;
-            for(size_t di = 0; di < it->first.size(); ++di)
+            if (cgnsIsMTMD)
             {
-                int idx = it->first[di] - 1;
-                domainNames.push_back(baseInfo[bi].zoneNames[idx]);
+                //
+                // The normal case.
+                //
+                stringVector domainNames;
+                for(size_t di = 0; di < it->first.size(); ++di)
+                {
+                    int idx = it->first[di] - 1;
+                    domainNames.push_back(baseInfo[bi].zoneNames[idx]);
+                }
+                mmd->blockNames = domainNames;
+                mmd->numBlocks = (int)domainNames.size();
             }
-            mmd->blockNames = domainNames;
-            mmd->numBlocks = (int)domainNames.size();
+            else
+            {
+                //
+                // The parallel CGNS file case. Don't set the blockNames
+                // and set the number of blocks to 1. This is so that
+                // avtGenericDatabase::ReadDataset, when handling
+                // AVT_DOMAIN_SUBSET doesn't seg fault.
+                //
+                mmd->numBlocks = 1;
+            }
             mmd->blockOrigin = 1;
             mmd->groupOrigin = 1;
             mmd->cellOrigin = 1;
@@ -1599,6 +1630,166 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
 }
 
 // ****************************************************************************
+// Method: avtCGNSFileReader::GetQuadGhostZones
+//
+// Purpose:
+//   Add the ghost zone information to the specified data set.
+//
+// Arguments:
+//   base       : The base to use
+//   zone       : The zone (mesh) that whose rind data we want.
+//   zsize      : The zone size information.
+//   cell_dim   : The cell dimension.
+//   ds         : The data set to add the ghost data to.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jul  6 10:27:03 PDT 2021
+//
+// Modifications:
+//   Eric Brugger, Wed Jul 14 13:32:10 PDT 2021
+//   Added a temporary hack to only generate ghost zones if the
+//   environment variable CGNS_USE_RIND is set.
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::GetQuadGhostZones(int base, int zone,
+    const cgsize_t *zsize, int cell_dim, vtkDataSet *ds)
+{
+    const char *mName = "avtCGNSFileReader::GetQuadGhostZones: ";
+
+    // Read the rind data.
+    debug4 << "Reading rind node." << endl;
+    int rind[6];
+    if(cg_goto(GetFileHandle(), base, "Zone_t", zone, "FlowSolution_t", 1, "end") == CG_OK)
+    {
+        if (cg_rind_read(rind) == CG_OK)
+        {
+            debug4 << "rind=" << rind[0] << "," << rind[1] << ","
+                              << rind[2] << "," << rind[3] << ","
+                              << rind[4] << "," << rind[5] << endl;
+        }
+        else
+        {
+            debug4 << "No rind data." << endl;
+            return;
+        }
+    }
+    else
+    {
+        debug4 << "Error going to FlowSolution." << endl;
+        return;
+    }
+
+    // Determine the size of the mesh.
+    unsigned int ncells = 0;
+    cgsize_t cdims[3] = {1,1,1};
+    if(cell_dim == 1)
+    {
+        cdims[0] = zsize[0]-1;
+    }
+    else if(cell_dim == 2)
+    {
+        cdims[0] = zsize[0]-1;
+        cdims[1] = zsize[1]-1;
+    }
+    else
+    {
+        cdims[0] = zsize[0]-1;
+        cdims[1] = zsize[1]-1;
+        cdims[2] = zsize[2]-1;
+    }
+    ncells = cdims[0] * cdims[1] * cdims[2];
+
+    // Determine if the rind information is valid.
+    cgsize_t first[3];
+    cgsize_t last[3];
+    bool ghostPresent = false;
+    bool badIndex = false;
+    for (int i = 0; i < cell_dim; i++)
+    {
+        first[i] = rind[i*2];
+        last[i]  = cdims[i] - rind[i*2+1] - 1;
+
+        if (first[i] < 0 || first[i] >= cdims[i])
+        {
+            debug1 << "bad rind value: rind[" << i*2 << "]=" << rind[i*2]
+                   << endl;
+            badIndex = true;
+        }
+
+        if (last[i] < 0 || last[i] >= cdims[i])
+        {
+            debug1 << "bad rind value: rind[" << i*2+1 << "]=" << rind[i*2+1]
+                   << endl;
+            badIndex = true;
+        }
+
+        if (first[i] != 0 || last[i] != cdims[i] - 1)
+        {
+            ghostPresent = true;
+        }
+    }
+
+    // Temporary hack to only generate ghost zones if the environment
+    // variable CGNS_USE_RIND is set. This is because there exist some
+    // CGNS files that are single block with rind zones all around the
+    // exterior. Adding ghost zones in this case generates a blank image.
+    // The particular file is delta.cgns.
+    if (getenv("CGNS_USE_RIND") == NULL)
+    {
+        ghostPresent = false;
+        debug4 << "Disabling use of rind values." << endl;
+        debug4 << "To enable setenv CGNS_USE_RIND." << endl;
+    }
+
+    //  Create the ghost zones array if necessary
+    if (ghostPresent && !badIndex)
+    {
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->Allocate(ncells);
+
+        unsigned char realVal = 0;
+        unsigned char ghostVal = 0;
+        avtGhostData::AddGhostZoneType(ghostVal,
+                                       DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        for (int i = 0; i < ncells; i++)
+            ghostCells->InsertNextValue(ghostVal);
+
+        unsigned char *gv = ghostCells->GetPointer(0);
+        for (int k = first[2]; k <= last[2]; k++) {
+            for (int j = first[1]; j <= last[1]; j++) {
+                for (int i = first[0]; i <= last[0]; i++)
+                {
+                    int index = k*cdims[1]*cdims[0] + j*cdims[0] + i;
+                    gv[index] = realVal;
+                }
+            }
+        }
+
+        ds->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete();
+
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->SetNumberOfValues(6);
+        realDims->SetValue(0, first[0]);
+        realDims->SetValue(1, last[0]+1);
+        realDims->SetValue(2, first[1]);
+        realDims->SetValue(3, last[1]+1);
+        realDims->SetValue(4, first[2]);
+        realDims->SetValue(5, last[2]+1);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
+    }
+
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
+}
+
+// ****************************************************************************
 // Method: avtCGNSFileReader::GetCurvilinearMesh
 //
 // Purpose:
@@ -1700,6 +1891,8 @@ avtCGNSFileReader::GetCurvilinearMesh(int timestate, int base, int zone, const c
         EXCEPTION1(InvalidVariableException, meshname);
     }
 
+    GetQuadGhostZones(base, zone, zsize, cell_dim, retval);
+
     return retval;
 }
 
@@ -1737,11 +1930,16 @@ avtCGNSFileReader::GetCurvilinearMesh(int timestate, int base, int zone, const c
 //   Mickael Philit, Mon Jun 18 15:25:55 PDT 2012
 //   Pass in number of spatial dimensions.
 //
+//   Alister Maguire, Tue Mar  2 08:01:12 PST 2021
+//   Refactored to handle NGon and NFace element types. I also moved
+//   a large section of code used for handling named and mixed
+//   sections to a new function, ReadMixedAndNamedElementSections.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const char *meshname,
-    const cgsize_t *zsize, int cell_dim, int phys_dim)
+avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
+    const char *meshname, const cgsize_t *zsize, int cell_dim, int phys_dim)
 {
     const char *mName = "avtCGNSFileReader::GetUnstructuredMesh: ";
     vtkDataSet *retval = 0;
@@ -1751,8 +1949,8 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
     if(GetCoords(timestate, base, zone, zsize, 0, phys_dim, false, coords))
     {
         // Read the number of sections, for the zone.
-        int nsections = 0;
-        if(cg_nsections(GetFileHandle(), base, zone, &nsections) != CG_OK)
+        int numSections = 0;
+        if(cg_nsections(GetFileHandle(), base, zone, &numSections) != CG_OK)
         {
             debug4 << mName << cg_get_error() << endl;
             delete [] coords[0];
@@ -1760,314 +1958,143 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
             delete [] coords[2];
             EXCEPTION1(InvalidVariableException, meshname);
         }
-        else
+
+        // Populate the points array.
+        unsigned int nPts = zsize[0];
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(nPts);
+
+        const float *xc = coords[0];
+        const float *yc = coords[1];
+        const float *zc = NULL;
+
+        if (phys_dim == 3)
         {
-            // Populate the points array.
-            unsigned int nPts = zsize[0];
-            vtkPoints *pts = vtkPoints::New();
-            pts->SetNumberOfPoints(nPts);
-            const float *xc = coords[0];
-            const float *yc = coords[1];
-            const float *zc = NULL;
+            zc = coords[2];
+        }
+
+        for (unsigned int i = 0; i < nPts; ++i)
+        {
+            float pt[3];
+            pt[0] = *xc++;
+            pt[1] = *yc++;
             if (phys_dim == 3)
-            {
-                zc = coords[2];
-            }
-            for(unsigned int i = 0; i < nPts; ++i)
-            {
-                float pt[3];
-                pt[0] = *xc++;
-                pt[1] = *yc++;
-                if (phys_dim == 3)
-                    pt[2] = *zc++;
-                else
-                    pt[2] = 0.;
-                pts->SetPoint(i, pt);
-            }
-
-            // Create an unstructured grid to contain the points.
-            vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-            ugrid->SetPoints(pts);
-            ugrid->Allocate(zsize[1]);
-            pts->Delete();
-            bool higherOrderWarning = false;
-
-            // Iterate over each of the sections.
-            for(int sec = 1; sec <= nsections; ++sec)
-            {
-                char sectionname[33];
-                ElementType_t et = ElementTypeNull;
-                cgsize_t start = 1, end = 1;
-                cgsize_t elementSizeInterior = 0;
-                int bound = 0, parent_flag = 0;
-                if(cg_section_read(GetFileHandle(), base, zone, sec, sectionname, &et,
-                    &start, &end, &bound, &parent_flag) != CG_OK)
-                {
-                    debug4 << mName << cg_get_error() << endl;
-                    continue;
-                }
-
-                if(parent_flag > 0)
-                {
-                    debug4 << mName << "parent_flag = " << parent_flag << endl;
-                    continue;
-                }
-                if(cell_dim == phys_dim)
-                    elementSizeInterior = (end-start+1)-bound;
-                else
-                    elementSizeInterior = (end-start+1);
-
-                cgsize_t eDataSize = 0;
-                if(cg_ElementDataSize(GetFileHandle(), base, zone, sec, &eDataSize) != CG_OK)
-                {
-                    debug4 << mName << "Could not determine ElementDataSize\n";
-                    continue;
-                }
-                debug4 << "Element data size for sec " << sec << " is:" << eDataSize << endl;
-
-                cgsize_t *elements = new cgsize_t[eDataSize];
-                if(elements == 0)
-                {
-                    debug4 << mName << "Could not allocate memory for connectivity\n";
-                    continue;
-                }
-
-                if(cg_elements_read(GetFileHandle(), base, zone, sec, elements, NULL)
-                   != CG_OK)
-                {
-                    delete [] elements;
-                    elements = 0;
-                    debug4 << mName << cg_get_error() << endl;
-                    continue;
-                }
-
-                debug4 << "section " << sec << ": elementType=";
-                PrintElementType(et);
-                debug4 << " start=" << start << " end=" << end << " bound=" << bound
-                       << " interior elements=" << elementSizeInterior
-                       << " parent_flag=" << parent_flag << endl;
-
-                //
-                // Iterate over the elements and insert them into ugrid.
-                //
-                vtkIdType verts[27];
-                const cgsize_t *elem = elements;
-                for(cgsize_t icell = 0; icell < elementSizeInterior; ++icell)
-                {
-                    // If we're reading mixed elements then the element type
-                    // comes first.
-                    ElementType_t currentType = et;
-                    if(currentType == MIXED)
-                    {
-                        currentType = (ElementType_t)(*elem++);
-#if 0
-                        debug4 << "et[" << icell << "] = ";
-                        PrintElementType(currentType);
-                        debug4 << endl;
-#endif
-                    }
-
-                    // Process the connectivity information for the cell.
-                    switch(currentType)
-                    {
-                    case NODE:
-                        verts[0] = elem[0]-1;
-                        ugrid->InsertNextCell(VTK_VERTEX, 1, verts);
-                        ++elem;
-                        break;
-                    case BAR_2:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        ugrid->InsertNextCell(VTK_LINE, 2, verts);
-                        elem += 2;
-                        break;
-                    case BAR_3:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        ugrid->InsertNextCell(VTK_LINE, 2, verts);
-                        higherOrderWarning = true;
-                        elem += 3;
-                        break;
-                    case TRI_3:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        //debug4 << "TRI3 [" << verts[0] << ", " << verts[1] << ", "
-                        //       << verts[2] << "]" << endl;
-                        ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
-                        elem += 3;
-                        break;
-                    case TRI_6:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        ugrid->InsertNextCell(VTK_LINE, 3, verts);
-                        higherOrderWarning = true;
-                        elem += 6;
-                        break;
-                    case QUAD_4:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        ugrid->InsertNextCell(VTK_QUAD, 4, verts);
-                        elem += 4;
-                        break;
-                    case QUAD_8:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        ugrid->InsertNextCell(VTK_QUAD, 4, verts);
-                        higherOrderWarning = true;
-                        elem += 8;
-                        break;
-                    case QUAD_9:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        ugrid->InsertNextCell(VTK_QUAD, 4, verts);
-                        higherOrderWarning = true;
-                        elem += 9;
-                        break;
-                    case TETRA_4:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        ugrid->InsertNextCell(VTK_TETRA, 4, verts);
-                        elem += 4;
-                        break;
-                    case TETRA_10:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        ugrid->InsertNextCell(VTK_TETRA, 4, verts);
-                        higherOrderWarning = true;
-                        elem += 10;
-                        break;
-                    case PYRA_5:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
-                        elem += 5;
-                        break;
-                    case PYRA_14:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
-                        higherOrderWarning = true;
-                        elem += 15;
-                        break;
-                    case PENTA_6:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        verts[5] = elem[5]-1;
-                        ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
-                        elem += 6;
-                        break;
-                    case PENTA_15:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        verts[5] = elem[5]-1;
-                        ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
-                        higherOrderWarning = true;
-                        elem += 16;
-                        break;
-                    case PENTA_18:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        verts[5] = elem[5]-1;
-                        ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
-                        higherOrderWarning = true;
-                        elem += 18;
-                        break;
-                    case HEXA_8:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        verts[5] = elem[5]-1;
-                        verts[6] = elem[6]-1;
-                        verts[7] = elem[7]-1;
-                        ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
-                        elem += 8;
-                        break;
-                    case HEXA_20:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        verts[5] = elem[5]-1;
-                        verts[6] = elem[6]-1;
-                        verts[7] = elem[7]-1;
-                        ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
-                        higherOrderWarning = true;
-                        elem += 20;
-                        break;
-                    case HEXA_27:
-                        verts[0] = elem[0]-1;
-                        verts[1] = elem[1]-1;
-                        verts[2] = elem[2]-1;
-                        verts[3] = elem[3]-1;
-                        verts[4] = elem[4]-1;
-                        verts[5] = elem[5]-1;
-                        verts[6] = elem[6]-1;
-                        verts[7] = elem[7]-1;
-                        ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
-                        higherOrderWarning = true;
-                        elem += 27;
-                        break;
-                    default:
-                        delete [] coords[0];
-                        delete [] coords[1];
-                        delete [] coords[2];
-                        delete [] elements;
-                        elements = 0;
-                        ugrid->Delete();
-                        EXCEPTION1(InvalidVariableException, meshname);
-                        break;
-                    }
-                }
-
-                debug4 << mName << "Done reading cell connectivity." << endl;
-                delete [] elements;
-            }
-
-            // Tell the user if we found any higher order elements.
-            if(higherOrderWarning)
-            {
-                avtCallback::IssueWarning("VisIt found quadratic or cubic cells "
-                    "in the mesh and reduced them to linear cells. Contact "
-                    "visit-users@ornl.gov if you would like VisIt to natively "
-                    "process higher order elements.");
-            }
-
-            retval = ugrid;
+                pt[2] = *zc++;
+            else
+                pt[2] = 0.;
+            pts->SetPoint(i, pt);
         }
 
         delete [] coords[0];
         delete [] coords[1];
         delete [] coords[2];
+
+        // Create an unstructured grid to contain the points.
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(pts);
+        ugrid->Allocate(zsize[1]);
+        pts->Delete();
+
+        //
+        // First pass:
+        // We need to figure out what kind of data we're reading,
+        // each of which requires different approaches to processing.
+        //
+        // Options are:
+        //     1. NGON_n sections. This will contain point connectivity
+        //        for faces. When used without NFACE_n, we construct 2D
+        //        cells.
+        //     2. NFACE_n sections. This will contain face connectivity
+        //        for cells. This must be used in conjunction with NGON_n.
+        //     3. Named sections. Each named section will explicity name
+        //        the cell type and point count as CELLTYPE_COUNT.
+        //     4. MIXED. Mixed sections contain multiple named sections.
+        //        They should NOT contain NGON_n sections.
+        //
+        std::vector<int> nGonSections;
+        std::vector<int> nFaceSections;
+        std::vector<int> mixedAndNamedSections;
+
+        //
+        // NOTE: sections can be thought of as "collections" of zones.
+        //
+        for (int sec = 1; sec < numSections + 1; ++sec)
+        {
+            char sectionName[33];
+            ElementType_t secElemType = ElementTypeNull;
+            cgsize_t start            = 1;
+            cgsize_t end              = 1;
+            int bound                 = 0;
+            int parentFlag            = 0;
+            int elem_status           = CG_OK;
+
+            if (cg_section_read(GetFileHandle(), base, zone, sec, sectionName,
+                    &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
+            {
+                debug1 << mName << cg_get_error() << endl;
+                continue;
+            }
+
+            switch (secElemType)
+            {
+                case (NGON_n):
+                {
+                    nGonSections.push_back(sec);
+                    break;
+                }
+                case (NFACE_n):
+                {
+                    nFaceSections.push_back(sec);
+                    break;
+                }
+                default:
+                {
+                    mixedAndNamedSections.push_back(sec);
+                    break;
+                }
+            }
+        }
+
+        //
+        // Mixed and named sections can be handled together.
+        //
+        if (mixedAndNamedSections.size() > 0)
+        {
+            ReadMixedAndNamedElementSections(ugrid, meshname,
+                mixedAndNamedSections, base, zone, cell_dim, phys_dim);
+        }
+
+        //
+        // Next, handle NGon and NFace cases.
+        //
+        bool haveNGonSections  = nGonSections.size() > 0;
+        bool haveNFaceSections = nFaceSections.size() > 0;
+
+        if (haveNGonSections && !haveNFaceSections)
+        {
+            //
+            // Handle the 2D polygonal case.
+            //
+            ReadNGonSections(ugrid, meshname, nGonSections, base, zone,
+                cell_dim, phys_dim);
+        }
+        else if (haveNGonSections && haveNFaceSections)
+        {
+            //
+            // Handle the 3D polyhedra case.
+            //
+            ReadNGonAndNFaceSections(ugrid, meshname, nGonSections,
+                nFaceSections, base, zone,
+                cell_dim, phys_dim);
+        }
+        else if (haveNFaceSections)
+        {
+            debug1 << mName << "NFace elements MUST be used in conjunction "
+                   << " with NGon elements, but only NFace were found." << endl;
+            EXCEPTION1(InvalidVariableException, meshname);
+        }
+
+        retval = ugrid;
     }
     else
     {
@@ -2075,6 +2102,868 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
     }
 
     return retval;
+}
+
+// ****************************************************************************
+//  Method: avtCGNSFileReader::ReadMixedAndNamedElementSections
+//
+//  Purpose:
+//
+//      Read mixed and named element sections, and add the cells from
+//      these sections to a given unstructured grid.
+//
+//      NOTE: the contents of this method were largely migrated from
+//      GetUnstructuredMesh, which was originally authored by Brad Whitlock.
+//
+//  Arguments:
+//      ugrid                   The unstructured grid to add our cells to.
+//      meshName                The name of our mesh.
+//      mixedAndNamedSections   An array of our mixed and named section indices.
+//      base                    The CGNS base to use.
+//      zone                    The CGNS zone (domain) to use.
+//      cellDim                 Dimension of the cells; 3 for volume cells,
+//                              2 for surface cells and 1 for line cells.
+//      physDim                 Number of coordinates required to define a
+//                              vector in the field.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Feb  2 09:20:04 PST 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
+    const char *meshName, std::vector<int> &mixedAndNamedSections, int base,
+    int zone, int cellDim, int physDim)
+{
+    bool higherOrderWarning = false;
+    const char *mName = "avtCGNSFileReader::ReadMixedAndNamedElementSections: ";
+
+    //
+    // Iterate over the mixed and named sections, and add each zone to
+    // our mesh.
+    //
+    for(std::vector<int>::iterator secItr = mixedAndNamedSections.begin();
+        secItr != mixedAndNamedSections.end(); ++secItr)
+    {
+        char sectionName[33];
+        ElementType_t secElemType    = ElementTypeNull;
+        int sec                      = *secItr;
+        cgsize_t start               = 1;
+        cgsize_t end                 = 1;
+        cgsize_t elementSizeInterior = 0;
+        int bound                    = 0;
+        int parentFlag               = 0;
+        int elem_status              = CG_OK;
+
+        if (cg_section_read(GetFileHandle(), base, zone, sec, sectionName,
+            &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
+        {
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        if (parentFlag > 0)
+        {
+            debug4 << mName << "parentFlag = " << parentFlag << endl;
+            continue;
+        }
+
+        elementSizeInterior = (end - start + 1);
+
+        if (cellDim == physDim)
+        {
+            elementSizeInterior -= bound;
+        }
+
+        cgsize_t eDataSize = 0;
+
+        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec, &eDataSize)
+            != CG_OK)
+        {
+            debug1 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        debug4 << "Element data size for sec " << sec << " is:"
+               << eDataSize << endl;
+
+        //
+        // CGNS refers to the element connectivity as "elements". These
+        // are actually indices to the nodes (or faces) of connectivity.
+        //
+        cgsize_t *elements = new cgsize_t[eDataSize];
+        if (elements == 0)
+        {
+            debug4 << mName << "Could not allocate memory for connectivity\n";
+            continue;
+        }
+
+        if (secElemType == MIXED)
+        {
+#if CGNS_VERSION >= 4000
+            elem_status = cg_poly_elements_read(GetFileHandle(), base,
+                zone, sec, elements, NULL, NULL);
+#else
+            elem_status = cg_elements_read(GetFileHandle(), base, zone,
+                sec, elements, NULL);
+#endif
+        }
+        else
+        {
+            elem_status = cg_elements_read(GetFileHandle(), base,
+                zone, sec, elements, NULL);
+        }
+
+        if (elem_status != CG_OK)
+        {
+            delete [] elements;
+            elements = 0;
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        debug4 << "section " << sec << ": secElemType=";
+        PrintElementType(secElemType);
+        debug4 << " start=" << start << " end=" << end << " bound=" << bound
+               << " interior elements=" << elementSizeInterior
+               << " parentFlag=" << parentFlag << endl;
+
+        //
+        // Iterate over the zones and insert them into ugrid.
+        //
+        vtkIdType verts[27];
+        const cgsize_t *elem = elements;
+
+        for (cgsize_t icell = 0; icell < elementSizeInterior; ++icell)
+        {
+            // If we're reading mixed elements then the element type
+            // comes first.
+            ElementType_t currentType = secElemType;
+
+            if (currentType == MIXED)
+            {
+                currentType = (ElementType_t)(*elem++);
+
+                //
+                // Mixed types should not contain NGON/NFACE types.
+                //
+                if (currentType == NGON_n || currentType == NFACE_n)
+                {
+                    char msg[256];
+                    sprintf(msg, "CGNS Mixed types should not contain "
+                        "NGON_n or NFACE_n elements.");
+                    EXCEPTION1(ImproperUseException, msg);
+                }
+            }
+
+            // Process the connectivity information for the cell.
+            switch (currentType)
+            {
+                case NODE:
+                    verts[0] = elem[0]-1;
+                    ugrid->InsertNextCell(VTK_VERTEX, 1, verts);
+                    ++elem;
+                    break;
+                case BAR_2:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    ugrid->InsertNextCell(VTK_LINE, 2, verts);
+                    elem += 2;
+                    break;
+                case BAR_3:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    ugrid->InsertNextCell(VTK_LINE, 2, verts);
+                    higherOrderWarning = true;
+                    elem += 3;
+                    break;
+                case TRI_3:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+                    elem += 3;
+                    break;
+                case TRI_6:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    ugrid->InsertNextCell(VTK_LINE, 3, verts);
+                    higherOrderWarning = true;
+                    elem += 6;
+                    break;
+                case QUAD_4:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+                    elem += 4;
+                    break;
+                case QUAD_8:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+                    higherOrderWarning = true;
+                    elem += 8;
+                    break;
+                case QUAD_9:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+                    higherOrderWarning = true;
+                    elem += 9;
+                    break;
+                case TETRA_4:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+                    elem += 4;
+                    break;
+                case TETRA_10:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+                    higherOrderWarning = true;
+                    elem += 10;
+                    break;
+                case PYRA_5:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+                    elem += 5;
+                    break;
+                case PYRA_14:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+                    higherOrderWarning = true;
+                    elem += 15;
+                    break;
+                case PENTA_6:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    verts[5] = elem[5]-1;
+                    ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+                    elem += 6;
+                    break;
+                case PENTA_15:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    verts[5] = elem[5]-1;
+                    ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+                    higherOrderWarning = true;
+                    elem += 16;
+                    break;
+                case PENTA_18:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    verts[5] = elem[5]-1;
+                    ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+                    higherOrderWarning = true;
+                    elem += 18;
+                    break;
+                case HEXA_8:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    verts[5] = elem[5]-1;
+                    verts[6] = elem[6]-1;
+                    verts[7] = elem[7]-1;
+                    ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
+                    elem += 8;
+                    break;
+                case HEXA_20:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    verts[5] = elem[5]-1;
+                    verts[6] = elem[6]-1;
+                    verts[7] = elem[7]-1;
+                    ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
+                    higherOrderWarning = true;
+                    elem += 20;
+                    break;
+                case HEXA_27:
+                    verts[0] = elem[0]-1;
+                    verts[1] = elem[1]-1;
+                    verts[2] = elem[2]-1;
+                    verts[3] = elem[3]-1;
+                    verts[4] = elem[4]-1;
+                    verts[5] = elem[5]-1;
+                    verts[6] = elem[6]-1;
+                    verts[7] = elem[7]-1;
+                    ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
+                    higherOrderWarning = true;
+                    elem += 27;
+                    break;
+                case NGON_n:
+                    debug1 << mName << "Found NGON_n types while processing "
+                           << "named sections... This shouldn't happen!"
+                           << endl;
+                    break;
+                case NFACE_n:
+                    debug1 << mName << "Found NFACE_n types while processing "
+                           << "named sections... This shouldn't happen!"
+                           << endl;
+                    break;
+                default:
+                    delete [] elements;
+                    elements = 0;
+                    ugrid->Delete();
+                    EXCEPTION1(InvalidVariableException, meshName);
+                    break;
+            }
+        }
+
+        debug4 << mName << "Done reading cell connectivity." << endl;
+        delete [] elements;
+
+        // Tell the user if we found any higher order elements.
+        if (higherOrderWarning)
+        {
+            avtCallback::IssueWarning("VisIt found quadratic or cubic cells "
+                "in the mesh and reduced them to linear cells. Contact "
+                "https://visit-help.llnl.gov if you would like VisIt to natively "
+                "process higher order elements.");
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtCGNSFileReader::ReadNGonSections
+//
+//  Purpose:
+//      Read the NGON_n sections, and add them to a given unstructured
+//      grid. The NGON_n sections define point connectivity for faces.
+//      This method assumes that NFACE_n is NOT defined for this mesh
+//      and will add the elements as 2D surface cells.
+//
+//  Arguments:
+//      ugrid                   The unstructured grid to add our cells to.
+//      meshName                The name of our mesh.
+//      nGonSections            A vector containing NGon_n section ids.
+//      base                    The CGNS base to use.
+//      zone                    The CGNS zone (domain) to use.
+//      cellDim                 Dimension of the cells; 3 for volume cells,
+//                              2 for surface cells and 1 for line cells.
+//      physDim                 Number of coordinates required to define a
+//                              vector in the field.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Feb  2 09:20:04 PST 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
+    const char *meshName, std::vector<int> &nGonSections, int base,
+    int zone, int cellDim, int physDim)
+{
+    const char *mName = "avtCGNSFileReader::ReadNGonSections: ";
+
+    for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
+         nGonSecItr != nGonSections.end(); ++nGonSecItr)
+    {
+        char sectionName[33];
+        int sec                   = *nGonSecItr;
+        ElementType_t secElemType = ElementTypeNull;
+        cgsize_t numSectionZones  = 0;
+        cgsize_t start            = 1;
+        cgsize_t end              = 1;
+        int bound                 = 0;
+        int parentFlag            = 0;
+        int status                = CG_OK;
+
+        if (cg_section_read(GetFileHandle(), base, zone, sec, sectionName,
+            &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
+        {
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        numSectionZones = (end - start + 1);
+
+        if (cellDim == physDim)
+        {
+            numSectionZones -= bound;
+        }
+
+        cgsize_t zonePointsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec,
+            &zonePointsSize) != CG_OK)
+        {
+            debug1 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        cgsize_t *zonePoints  = new cgsize_t[zonePointsSize];
+        int connOffsetsSize   = numSectionZones + 1;
+        cgsize_t *connOffsets = new cgsize_t[connOffsetsSize];
+
+        for (int i = 0; i < zonePointsSize; ++i)
+        {
+            zonePoints[i] = 0;
+        }
+
+        for (int i = 0; i < connOffsetsSize; ++i)
+        {
+            connOffsets[i] = 0;
+        }
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base,
+            zone, sec, zonePoints, connOffsets, NULL);
+#else
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4.0.0 is required for reading aribitrary "
+            "polygons.")
+        EXCEPTION1(ImproperUseException, msg);
+#endif
+
+        if (status != CG_OK)
+        {
+            delete [] zonePoints;
+            zonePoints = NULL;
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        vtkIdType verts[27];
+        const cgsize_t *zonePointsPtr = zonePoints;
+
+        //
+        // Iterate over our polygons, and add them to the mesh.
+        //
+        for (cgsize_t c = 0; c < numSectionZones; ++c)
+        {
+            //
+            // The connectivity offsets have size numSectionZones + 1
+            // so that we can grab the number of points for each zone.
+            //
+            int numVertices = connOffsets[c+1] - connOffsets[c];
+
+            for (int v = 0; v < numVertices; ++v)
+            {
+                verts[v] = zonePointsPtr[v]-1;
+            }
+
+            ugrid->InsertNextCell(VTK_POLYGON, numVertices, verts);
+            zonePointsPtr += numVertices;
+        }
+
+        delete [] zonePoints;
+        delete [] connOffsets;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtCGNSFileReader::ReadNGonAndNFaceSections
+//
+//  Purpose:
+//      NFace_n sections are used to define arbitrary polyhedra, and they are
+//      always used in conjunction with NGon_n. NFace_n "elements" define the
+//      zone-to-face connectivity, and NGon_n "elements" define the
+//      face-to-point connectivity.
+//
+//  Arguments:
+//      ugrid                   The unstructured grid to add our cells to.
+//      meshName                The name of our mesh.
+//      nGonSections            A vector containing NGon_n section ids.
+//      nFaceSections           A vector containing NFace_n section ids.
+//      base                    The CGNS base to use.
+//      zone                    The CGNS zone (domain) to use.
+//      cellDim                 Dimension of the cells; 3 for volume cells,
+//                              2 for surface cells and 1 for line cells.
+//      physDim                 Number of coordinates required to define a
+//                              vector in the field.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Feb  2 09:20:04 PST 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
+    const char *meshName, std::vector<int> &nGonSections,
+    std::vector<int> &nFaceSections, int base,
+    int zone, int cellDim, int physDim)
+{
+    const char *mName = "avtCGNSFileReader::ReadNGonAndNFaceSections: ";
+
+    //
+    // These sections should be sorted to begin with, but let's play it safe.
+    //
+    std::sort(nGonSections.begin(), nGonSections.end());
+    std::sort(nFaceSections.begin(), nFaceSections.end());
+
+    //
+    // Establish variables needed for our section reads.
+    //
+    char tempSecName[33];
+    int status               = CG_OK;
+    int parentFlag           = 0;
+    int curSec               = 0;
+    int bound                = 0;
+    ElementType_t elemType   = ElementTypeNull;
+
+    long totalNumFacePoints  = 0;
+    long totalNGonOffsetSize = 0;
+
+    //
+    // First pass through our nGonSections: count the total number
+    // of face points and total size of our NGon offsets.
+    //
+    for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
+         nGonSecItr != nGonSections.end(); ++nGonSecItr)
+    {
+        cgsize_t numSectionFaces = 0;
+        cgsize_t faceStart       = 1;
+        cgsize_t faceStop        = 1;
+        curSec                   = *nGonSecItr;
+
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+                &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
+        {
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        //
+        // faceStart and faceStop are inclusive, which means that
+        // we need to add 1 to account for the last face.
+        //
+        numSectionFaces = faceStop - faceStart + 1;
+        if (cellDim == physDim)
+        {
+            numSectionFaces -= bound;
+        }
+
+        //
+        // elementsSize is the size of the "elements" array, i.e. the size
+        // of the connectivity array.
+        //
+        cgsize_t elementsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &elementsSize) != CG_OK)
+        {
+            debug1 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        //
+        // NOTE: The offsets have an extra index on the end to allow us to
+        // count the total number of points in the last face.
+        //
+        totalNGonOffsetSize += numSectionFaces + 1;
+
+        totalNumFacePoints += elementsSize;
+    }
+
+    //
+    // NFace sections don't really correspond to NGon sections, but NFace
+    // elements will always map to the global NGon offsets. So, we need to pool
+    // all of our NGon data (face points and offsets) into single containers
+    // that we can reach into later.
+    // totalFacePoints contains all mappings of faces to global node ids,
+    // and totalNGonOffsets contains all offset information for reading this
+    // face connectivity.
+    //
+    cgsize_t *totalFacePoints  = new cgsize_t[totalNumFacePoints];
+    cgsize_t *totalNGonOffsets = new cgsize_t[totalNGonOffsetSize];
+
+    for (int i = 0; i < totalNumFacePoints; ++i)
+    {
+        totalFacePoints[i] = 0;
+    }
+
+    for (int i = 0; i < totalNGonOffsetSize; ++i)
+    {
+        totalNGonOffsets[i] = 0;
+    }
+
+    //
+    // Tricky business:
+    // When reading the NGon offsets, CGNS will always return 1 more offset
+    // at the end of the array to allow us to easily know the total number
+    // of nodes in the last face of the current section. Unfortunately, that
+    // last offset DOES NOT correspond to the start offset of the next
+    // section... This means that we need to keep track of which section we're
+    // on and offset appropriately to skip these "padded" values later on.
+    //
+    std::vector<cgsize_t> nGonOffsetIdxToSectionIdx;
+    nGonOffsetIdxToSectionIdx.reserve(totalNGonOffsetSize);
+
+    int nGonOffsetsIdx     = 0;
+    int secIdx             = 0;
+    int facePointIdx       = 0;
+    cgsize_t sectionOffset = 0;
+
+    //
+    // Second pass through our nGonSections: read all NGon data into
+    // our section-wide containers. NOTE: reading data from sections in
+    // (incremental) order SHOULD give back data that is in the correct
+    // global order (by sections).
+    //
+    for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
+         nGonSecItr != nGonSections.end(); ++nGonSecItr)
+    {
+        curSec                   = *nGonSecItr;
+        cgsize_t numSectionFaces = 0;
+        cgsize_t faceStart       = 1;
+        cgsize_t faceStop        = 1;
+
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+                &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
+        {
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        numSectionFaces = faceStop - faceStart + 1;
+        if (cellDim == physDim)
+        {
+            numSectionFaces -= bound;
+        }
+
+        int connOffsetsSize   = numSectionFaces + 1;
+        cgsize_t *faceOffsets = new cgsize_t[connOffsetsSize];
+
+        for (int i = 0; i < connOffsetsSize; ++i)
+        {
+            faceOffsets[i] = 0;
+        }
+
+        cgsize_t *sectionFacePtr = totalFacePoints + sectionOffset;
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base,
+            zone, curSec, sectionFacePtr, faceOffsets, NULL);
+#else
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4.0.0 is required for reading aribitrary "
+            "polyhedra.")
+        EXCEPTION1(ImproperUseException, msg);
+#endif
+
+        if (status != CG_OK)
+        {
+            delete [] faceOffsets;
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        //
+        // We need to be careful when copying over our offsets since we're
+        // now using section-wide containers, but this section read will
+        // give us offsets for this section only.
+        //
+        for (int i = 0; i < connOffsetsSize; ++i)
+        {
+            //
+            // The new offset will start at the section offset.
+            //
+            totalNGonOffsets[nGonOffsetsIdx++] = faceOffsets[i] + sectionOffset;
+
+            //
+            // Update our map. Remember that the last entry in the connectivity
+            // array is not really part of the global offset indexing scheme in
+            // CGNS. So, we want to pretend they don't exist (kind of).
+            //
+            if (i < connOffsetsSize - 1)
+            {
+                nGonOffsetIdxToSectionIdx.push_back(secIdx);
+            }
+        }
+
+        //
+        // Lastly, update our section offset.
+        //
+        cgsize_t sectionElementsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &sectionElementsSize) != CG_OK)
+        {
+            debug1 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        secIdx++;
+        sectionOffset += sectionElementsSize;
+
+        delete [] faceOffsets;
+    }
+
+    //
+    // Single pass over nFaceSections: Now that we have our global arrays for
+    // face-to-point connectivity, we can read in the zone-to-face connectivity
+    // and construct our zones.
+    //
+    for (std::vector<int>::iterator nFaceSecItr = nFaceSections.begin();
+         nFaceSecItr != nFaceSections.end(); ++nFaceSecItr)
+    {
+        curSec                   = *nFaceSecItr;
+        cgsize_t numSectionZones = 0;
+        cgsize_t offsetStart     = 1;
+        cgsize_t offsetStop      = 1;
+
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+               &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
+               != CG_OK)
+        {
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        numSectionZones = offsetStop - offsetStart + 1;
+        if (cellDim == physDim)
+        {
+            numSectionZones -= bound;
+        }
+
+        cgsize_t faceElementsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &faceElementsSize) != CG_OK)
+        {
+            debug1 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        //
+        // faceElements will contain a mapping from zones to faces. The
+        // faces are actually 0 based indices into the NGon face-to-point
+        // connectivity array. NOTE: this mapping is the GLOBAL mapping and
+        // does not take sections into consideration.
+        //
+        cgsize_t *faceElements = new cgsize_t[faceElementsSize];
+        int zoneOffsetsSize    = numSectionZones + 1;
+        cgsize_t *zoneOffsets  = new cgsize_t[zoneOffsetsSize];
+
+        for (int i = 0; i < faceElementsSize; ++i)
+        {
+            faceElements[i] = 0;
+        }
+
+        for (int i = 0; i < zoneOffsetsSize; ++i)
+        {
+            zoneOffsets[i] = 0;
+        }
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base,
+            zone, curSec, faceElements, zoneOffsets, NULL);
+#else
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4.0.0 is required for reading aribitrary "
+            "polyhedra.")
+        EXCEPTION1(ImproperUseException, msg);
+#endif
+
+        if (status != CG_OK)
+        {
+            delete [] faceElements;
+            delete [] zoneOffsets;
+            debug1 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        //
+        // Finally, we can read in the zones!
+        // NOTE: for all sections, the CGNS offset arrays are 0 based, and
+        // the elements arrays are 1 based (Fortran).
+        //
+        for (cgsize_t c = 0; c < numSectionZones; ++c)
+        {
+            cgsize_t zoneStart = zoneOffsets[c];
+            cgsize_t zoneStop  = zoneOffsets[c + 1];
+            cgsize_t numFaces  = zoneStop - zoneStart;
+
+            //
+            // VTK defines the face stream as follows:
+            // numFacePoints, pt1, pt2, ..., numFacePoints, pt1, pt2,...
+            // With an entry for each face.
+            //
+            vtkIdType faceStream[1024];
+            int faceStreamIdx = 0;
+
+            for (cgsize_t zIdx = zoneStart; zIdx < zoneStop; ++zIdx)
+            {
+                //
+                // This index will map back to our NGon section so that we
+                // can read the connectivity for each face of the zone.
+                // NOTE: CGNS will flip the sign of a face index to denote
+                // normal directions.
+                //
+                cgsize_t faceOffsetIdx = abs(faceElements[zIdx]) - 1;
+
+                //
+                // Here's where we come back to the tricky business from
+                // earlier. Our global offset array has padding after each
+                // section to count the points in the last face of each
+                // section. So, we need to account for this and ignore the
+                // padding when reading sections > 0.
+                //
+                int curSecIdx = nGonOffsetIdxToSectionIdx[faceOffsetIdx];
+
+                cgsize_t facePtStartIdx =
+                    totalNGonOffsets[faceOffsetIdx + curSecIdx];
+                cgsize_t facePtStopIdx  =
+                    totalNGonOffsets[faceOffsetIdx + curSecIdx + 1];
+
+                int numFacePts = facePtStopIdx - facePtStartIdx;
+
+                faceStream[faceStreamIdx++] = numFacePts;
+
+                for (int ptIdx = facePtStartIdx; ptIdx < facePtStopIdx;
+                     ++ptIdx)
+                {
+                    faceStream[faceStreamIdx++] = totalFacePoints[ptIdx] - 1;
+                }
+            }
+
+            ugrid->InsertNextCell(VTK_POLYHEDRON, numFaces, faceStream);
+        }
+
+
+        delete [] faceElements;
+        delete [] zoneOffsets;
+    }
+
+    delete [] totalFacePoints;
+    delete [] totalNGonOffsets;
 }
 
 // ****************************************************************************
@@ -2222,7 +3111,7 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
         if(cg_nsols(GetFileHandle(), base, zone, &nsols) != CG_OK)
         {
             debug4 << mName << "Could not get number of solutions in zone "
-                 << zone << endl;
+                   << zone << endl;
             debug4 << cg_get_error() << endl;
             EXCEPTION1(InvalidVariableException, varname);
         }
@@ -2252,7 +3141,7 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
                 &varcentering) != CG_OK)
             {
                 debug4 << "Could not get solution " << sol << "'s info."
-                     << endl;
+                       << endl;
                 debug4 << cg_get_error() << endl;
                 continue;
             }

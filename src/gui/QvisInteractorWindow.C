@@ -8,6 +8,7 @@
 #include <ViewerProxy.h>
 
 #include <QCheckBox>
+#include <QLabel>
 #include <QLayout>
 #include <QButtonGroup>
 #include <QRadioButton>
@@ -96,6 +97,13 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Hank Childs, Sat Mar 13 19:03:03 PST 2010
 //   Add interface for bounding box mode.
 //
+//   Kathleen Biagas, Wed Mar 23, 2022
+//   Added QLabel for message stating that navigation mode changes will
+//   trigger automatic ResetView.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -136,8 +144,13 @@ QvisInteractorWindow::CreateWindowContents()
     navigationVBoxLayout->addLayout(navigationLayout);
 
     navigationMode = new QButtonGroup(navigationGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(navigationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(navigationModeChanged(int)));
+#else
+    connect(navigationMode, SIGNAL(idClicked(int)),
+            this, SLOT(navigationModeChanged(int)));
+#endif
     QRadioButton *trackball = new QRadioButton(tr("Trackball"), navigationGroup);
     navigationMode->addButton(trackball,0);
     navigationLayout->addWidget(trackball, 1, 1);
@@ -147,6 +160,9 @@ QvisInteractorWindow::CreateWindowContents()
     QRadioButton *flythrough = new QRadioButton(tr("Flythrough"), navigationGroup);
     navigationMode->addButton(flythrough,2);
     navigationLayout->addWidget(flythrough, 1, 3);
+
+    QLabel *navMsg = new QLabel(tr("Changing mode will automatically trigger a View reset."), navigationGroup);
+    navigationLayout->addWidget(navMsg, 2, 1, 1, 3);
 
     QGroupBox *boundingBoxGroup = new QGroupBox(central);
     boundingBoxGroup->setTitle(tr("Switch to bounding box when changing views:"));
@@ -158,15 +174,20 @@ QvisInteractorWindow::CreateWindowContents()
     boundingBoxVBoxLayout->addLayout(boundingBoxLayout);
 
     boundingBoxMode = new QButtonGroup(boundingBoxGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(boundingBoxMode, SIGNAL(buttonClicked(int)),
             this, SLOT(boundingBoxModeChanged(int)));
+#else
+    connect(boundingBoxMode, SIGNAL(idClicked(int)),
+            this, SLOT(boundingBoxModeChanged(int)));
+#endif
     QRadioButton *always = new QRadioButton(tr("Always"), boundingBoxGroup);
     boundingBoxMode->addButton(always,0);
     boundingBoxLayout->addWidget(always, 1, 1);
     QRadioButton *never = new QRadioButton(tr("Never"), boundingBoxGroup);
     boundingBoxMode->addButton(never,1);
     boundingBoxLayout->addWidget(never, 1, 2);
-    QRadioButton *autorb = new QRadioButton(tr("Auto (remote rendering only)"), boundingBoxGroup);
+    QRadioButton *autorb = new QRadioButton(tr("Auto (scalable rendering only)"), boundingBoxGroup);
     boundingBoxMode->addButton(autorb,2);
     boundingBoxLayout->addWidget(autorb, 1, 3);
 

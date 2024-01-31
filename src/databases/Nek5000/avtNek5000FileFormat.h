@@ -110,7 +110,7 @@ class KeyCompare {
 class avtNek5000FileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtNek5000FileFormat(const char *, DBOptionsAttributes *);
+                       avtNek5000FileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtNek5000FileFormat();
 
     virtual void       RegisterDataSelections(

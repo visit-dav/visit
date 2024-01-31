@@ -35,7 +35,6 @@ class avtICAlgorithm;
 #define PICS_FIELD_M3D_C1_3D 3
 #define PICS_FIELD_NEK5000   4
 #define PICS_FIELD_NEKTARPP  5
-#define PICS_FIELD_NIMROD    6
 
 #define PICS_INTEGRATE_EULER 0
 #define PICS_INTEGRATE_LEAPFROG 1
@@ -51,7 +50,7 @@ class avtICAlgorithm;
 
 #define PICS_SERIAL                0
 #define PICS_PARALLEL_OVER_DOMAINS 1
-#define PICS_PARALLEL_MASTER_SLAVE 2
+#define PICS_PARALLEL_MANAGER_WORKER 2
 #define PICS_VISIT_SELECTS         3
 
 #define PICS_CONN_CMFE 0

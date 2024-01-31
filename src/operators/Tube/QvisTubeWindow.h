@@ -39,8 +39,8 @@ class QvisTubeWindow : public QvisOperatorWindow
   public:
     QvisTubeWindow(const int type,
                          TubeAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisTubeWindow();
     virtual void CreateWindowContents();

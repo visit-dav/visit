@@ -12,6 +12,7 @@
 
 #include <qapplication.h>
 #include <QStringList>
+#include <QSurfaceFormat>
 
 #include <VisItViewer.h>
 #include <AppearanceAttributes.h>
@@ -21,7 +22,11 @@
 #include <ViewerState.h>
 #include <VisItException.h>
 
+#if LIB_VERSION_LE(VTK,8,1,0)
 #include <QVTKOpenGLWidget.h>
+#else
+#include <QVTKOpenGLNativeWidget.h>
+#endif
 
 // ****************************************************************************
 // Method: Viewer_LogQtMessages
@@ -207,7 +212,11 @@ ViewerMain(int argc, char *argv[])
         int argc2 = real_argc + nExtraArgs;
 
         // Setting default QSurfaceFormat required with QVTKOpenGLwidget
+#if LIB_VERSION_LE(VTK,8,1,0)
         auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
+#else
+        auto surfaceFormat = QVTKOpenGLNativeWidget::defaultFormat();
+#endif
         surfaceFormat.setSamples(0);
         surfaceFormat.setAlphaBufferSize(0);
         QSurfaceFormat::setDefaultFormat(surfaceFormat);

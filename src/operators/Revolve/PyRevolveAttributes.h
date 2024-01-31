@@ -5,6 +5,7 @@
 #ifndef PY_REVOLVEATTRIBUTES_H
 #define PY_REVOLVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RevolveAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyRevolveAttributes_Wrap(const RevolveAttributes *attr);
 void           PyRevolveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyRevolveAttributes_SetDefaults(const RevolveAttributes *atts);
 std::string    PyRevolveAttributes_GetLogString();
-std::string    PyRevolveAttributes_ToString(const RevolveAttributes *, const char *);
+std::string    PyRevolveAttributes_ToString(const RevolveAttributes *, const char *, const bool=false);
 PyObject *     PyRevolveAttributes_getattr(PyObject *self, char *name);
 int            PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyRevolveAttributes_methods[REVOLVEATTRIBUTES_NMETH];

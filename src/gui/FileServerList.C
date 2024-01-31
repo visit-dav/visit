@@ -288,7 +288,7 @@ FileServerList::SelectAll()
     Select(ID_showDotFilesFlag,          (void *)&showDotFilesFlag);
 }
 
-// *************************************************************************************
+// ****************************************************************************
 // Method: FileServerList::Initialize
 //
 // Purpose: 
@@ -322,7 +322,7 @@ FileServerList::SelectAll()
 //   Brad Whitlock, Thu Jul 29 13:42:24 PST 2004
 //   I added smartFileGroupingFlag.
 //
-// *************************************************************************************
+// ****************************************************************************
 
 void
 FileServerList::Initialize()
@@ -1437,6 +1437,10 @@ FileServerList::CloseFile()
 //   Brad Whitlock, Mon Dec 13 10:35:24 PST 2010
 //   Call the "Ex" versions of GetMetaData and GetSIL.
 //
+//   Kathleen Biagas, Mon Aug 31 16:43:27 MST 2020
+//   Add openFile to the appliedFileList if not already there, as may be
+//   the case when a database is opened from the CLI.
+//
 // ****************************************************************************
 
 void
@@ -1511,6 +1515,16 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                 openFileTimeState = timeState;
                 fileAction = action;
                 Select(ID_fileAction, (void *)&fileAction);
+                // add to appliedFilesList if not already there
+                bool found = false;
+                for (size_t i = 0; i < appliedFileList.size() && !found; ++i)
+                    found = appliedFileList[i] == openFile;
+                if (!found)
+                {
+                    appliedFileList.push_back(openFile);
+                    Select(ID_appliedFileListFlag,(void *)&appliedFileListFlag);
+                }
+
             }
             CATCH2(GetMetaDataException, gmde)
             {

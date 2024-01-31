@@ -29,7 +29,6 @@
 #include <avtPolygonToTrianglesTesselator.h>
 #include <avtPolyhedralSplit.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>

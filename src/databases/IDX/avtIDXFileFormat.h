@@ -45,7 +45,7 @@ struct gidx_info{
 class avtIDXFileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtIDXFileFormat(const char *, DBOptionsAttributes* attrs);
+                       avtIDXFileFormat(const char *, const DBOptionsAttributes* attrs);
     virtual           ~avtIDXFileFormat();
 
     //

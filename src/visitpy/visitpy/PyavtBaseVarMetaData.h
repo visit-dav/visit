@@ -5,6 +5,7 @@
 #ifndef PY_AVTBASEVARMETADATA_H
 #define PY_AVTBASEVARMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtBaseVarMetaData.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyavtBaseVarMetaData_Wrap(const avtBaseVarMetaData *a
 void VISITPY_API           PyavtBaseVarMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtBaseVarMetaData_SetDefaults(const avtBaseVarMetaData *atts);
 std::string VISITPY_API    PyavtBaseVarMetaData_GetLogString();
-std::string VISITPY_API    PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *, const char *);
+std::string VISITPY_API    PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtBaseVarMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtBaseVarMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtBaseVarMetaData_methods[AVTBASEVARMETADATA_NMETH];

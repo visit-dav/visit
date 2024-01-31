@@ -26,6 +26,7 @@
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
+#include <avtParallelContext.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -47,7 +48,7 @@ using   std::sort;
 //                            static data members
 // ----------------------------------------------------------------------------
 
-bool avtStructuredDomainBoundaries::createGhostsForTIntersections = true;
+bool avtStructuredDomainBoundaries::createGhostsForTIntersections = false;
 
 // ----------------------------------------------------------------------------
 //                            private helper methods
@@ -213,6 +214,10 @@ BoundaryHelperFunctions<T>::InitializeBoundaryData()
 //    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
 //    When match index == -1, find match index instead of using a stored index.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -245,6 +250,14 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
         {
             // find the match index ourselves
             mi = FindMatchIndex(d1,d2);
+        }
+        if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
         }
 
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
@@ -302,6 +315,10 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
 //    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
 //    When match index == -1, find match index instead of using a stored index.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -330,10 +347,17 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
             // find the match index ourselves
             mi = FindMatchIndex(d1,d2);
         }
+        if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
 
         // get the other neis list
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
-
 
         int *n2extents = n2->nextents;
         int bndindex = 0;
@@ -396,6 +420,10 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //    Skip generating neighbor data for a donor relationship.  It won't
 //    get used anyway.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -421,6 +449,21 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
             continue;
         }
         int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+        if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
+
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
         int *n2extents = n2->zextents;
 
@@ -518,7 +561,7 @@ BoundaryHelperFunctions<T>::FindMatchIndex(int src_domain,
         }
     }
     if (res_match == -1)
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        EXCEPTION1(VisItException,"Bad Neighbor Index");
 
     return res_match;
 }
@@ -1157,6 +1200,10 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
 //    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
 //    When match index == -1, find match index instead of using a stored index.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1184,6 +1231,14 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
         {
             // find the match index ourselves
             mi = FindMatchIndex(d1,d2);
+        }
+        if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
         }
 
         T *data = bnddata[d2][mi];
@@ -1240,6 +1295,10 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
 //    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
 //    When match index == -1, find match index instead of using a stored index.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1263,6 +1322,14 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
         {
             // find the match index ourselves
             mi = FindMatchIndex(d1,d2);
+        }
+        if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
         }
 
         T *data = coord[d2][mi];
@@ -1815,6 +1882,10 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
@@ -1836,12 +1907,30 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
     // Create the matching arrays for the given scalars
     //
     float ***vals = bhf_float->InitializeBoundaryData();
-    for (size_t d = 0; d < scalars.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
-        bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        for (size_t d = 0; d < scalars.size(); d++)
+        {
+            float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
+            bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in float version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_float->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
@@ -1893,6 +1982,9 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
 //  Creation:    Sun Apr 22 08:53:31 PDT 2012
 //
 //  Modifications:
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
 //
 // ****************************************************************************
 
@@ -1916,12 +2008,30 @@ avtStructuredDomainBoundaries::ExchangeDoubleScalar(vector<int>     domainNum,
     // Create the matching arrays for the given scalars
     //
     double ***vals = bhf_double->InitializeBoundaryData();
-    for (size_t d = 0; d < scalars.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
-        bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        for (size_t d = 0; d < scalars.size(); d++)
+        {
+            double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
+            bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in double version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_double->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
@@ -1982,6 +2092,10 @@ avtStructuredDomainBoundaries::ExchangeDoubleScalar(vector<int>     domainNum,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
@@ -2003,12 +2117,30 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
     // Create the matching arrays for the given scalars
     //
     int ***vals = bhf_int->InitializeBoundaryData();
-    for (size_t d = 0; d < scalars.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
-        bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        for (size_t d = 0; d < scalars.size(); d++)
+        {
+            int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
+            bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in int version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_int->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
@@ -2070,6 +2202,10 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
@@ -2091,12 +2227,30 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
     // Create the matching arrays for the given scalars
     //
     unsigned char ***vals = bhf_uchar->InitializeBoundaryData();
-    for (size_t d = 0; d < scalars.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
-        bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        for (size_t d = 0; d < scalars.size(); d++)
+        {
+            unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
+            bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in uchar version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_uchar->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_uchar->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
@@ -2225,6 +2379,10 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
@@ -2248,12 +2406,30 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
     float ***vals = bhf_float->InitializeBoundaryData();
 
     int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
-    for (size_t d = 0; d < vectors.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
-        bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        for (size_t d = 0; d < vectors.size(); d++)
+        {
+            float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
+            bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in floatvec version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_float->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
@@ -2304,6 +2480,9 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
 //  Creation:    November 21, 2001
 //
 //  Modifications:
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
 //
 // ****************************************************************************
 vector<vtkDataArray*>
@@ -2328,12 +2507,30 @@ avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
     double ***vals = bhf_double->InitializeBoundaryData();
 
     int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
-    for (size_t d = 0; d < vectors.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
-        bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        for (size_t d = 0; d < vectors.size(); d++)
+        {
+            double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
+            bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in doublevec version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_double->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
@@ -2403,6 +2600,10 @@ avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
@@ -2426,12 +2627,30 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
     int ***vals = bhf_int->InitializeBoundaryData();
 
     int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents(): -1);
-    for (size_t d = 0; d < vectors.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
-        bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        for (size_t d = 0; d < vectors.size(); d++)
+        {
+            int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
+            bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in intvec version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_int->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
@@ -2504,6 +2723,10 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    data.  We can't reliably use any other information (like a change
 //    in zone ID) to determine when a segment of mix data has ended.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
@@ -2532,18 +2755,39 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     for (size_t b = 0; b < boundary.size(); b++)
         mixlen[b] = vector<int>(boundary[b].neighbors.size(), 0);
 
-    for (size_t d = 0; d < mats.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        const int *oldmatlist = mats[d]->GetMatlist();
-        bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
-    }
+        for (size_t d = 0; d < mats.size(); d++)
+        {
+            const int *oldmatlist = mats[d]->GetMatlist();
+            bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
+        }
 
-    for (size_t d = 0; d < mats.size(); d++)
-    {
-        bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], mats[d]->GetMixVF(),
-                              mixvf, mixmat, mixzone, mixnext, mixlen[domainNum[d]]);
+        for (size_t d = 0; d < mats.size(); d++)
+        {
+            bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], mats[d]->GetMixVF(),
+                mixvf, mixmat, mixzone, mixnext, mixlen[domainNum[d]]);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mat version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_int->FreeBoundaryData(matlist);
+        bhf_int->FreeBoundaryData(mixmat);
+        bhf_int->FreeBoundaryData(mixzone);
+        bhf_int->FreeBoundaryData(mixnext);
+        bhf_float->FreeBoundaryData(mixvf);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
     bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvf, mixmat, mixzone, mixnext, mixlen);
@@ -2675,6 +2919,10 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //    data.  We can't reliably use any other information (like a change
 //    in zone ID) to determine when a segment of mix data has ended.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 vector<avtMixedVariable*>
 avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
@@ -2742,19 +2990,40 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     for (size_t  b = 0; b < boundary.size(); b++)
         mixlen[b] = vector<int>(boundary[b].neighbors.size(), 0);
 
-    for (size_t d = 0; d < mats.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        const int *oldmatlist = mats[d]->GetMatlist();
-        bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
-    }
+        for (size_t d = 0; d < mats.size(); d++)
+        {
+            const int *oldmatlist = mats[d]->GetMatlist();
+            bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
+        }
 
-    for (size_t d = 0; d < mats.size(); d++)
-    {
-        const float *oldmixvals = (mixvars[d] ? mixvars[d]->GetBuffer() : NULL);
-        bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], oldmixvals,
-                              mixvals, NULL, mixzone, mixnext, mixlen[domainNum[d]]);
+        for (size_t d = 0; d < mats.size(); d++)
+        {
+            const float *oldmixvals = (mixvars[d] ? mixvars[d]->GetBuffer() : NULL);
+            bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], oldmixvals,
+                mixvals, NULL, mixzone, mixnext, mixlen[domainNum[d]]);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mixvar version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf_int->FreeBoundaryData(matlist);
+        bhf_int->FreeBoundaryData(mixzone);
+        bhf_int->FreeBoundaryData(mixnext);
+        bhf_float->FreeBoundaryData(mixvals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
     bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvals, NULL, mixzone, mixnext, mixlen);
@@ -3133,6 +3402,10 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    Brad Whitlock, Sun Apr 22 09:37:32 PDT 2012
 //    I templated this function so we can support double.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 
 template <typename Helper>
@@ -3146,13 +3419,31 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(Helper *bhf, int vtktype,
     // Create the matching arrays for the given meshes
     //
     typename Helper::Storage ***coord = bhf->InitializeBoundaryData();
-    for (size_t d = 0; d < meshes.size(); d++)
+    int exceptionThrown = 0;
+    TRY
     {
-        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
-        typename Helper::Storage *oldcoord = (typename Helper::Storage*)mesh->GetPoints()->GetVoidPointer(0);
-        bhf->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
+        for (size_t d = 0; d < meshes.size(); d++)
+        {
+            vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
+            typename Helper::Storage *oldcoord = (typename Helper::Storage*)mesh->GetPoints()->GetVoidPointer(0);
+            bhf->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in curvmesh version)");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf->FreeBoundaryData(coord);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
 
     bhf->CommunicateBoundaryData(domain2proc, coord, true, 3);
 
@@ -3246,6 +3537,10 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(Helper *bhf, int vtktype,
 //    Brad Whitlock, Sun Apr 22 09:55:30 PDT 2012
 //    Added support for double coordinates.
 //
+//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
+//    Add code to detect incorrect domain boundary information, where two
+//    neighbors don't list each other in their neighbor lists.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -3276,12 +3571,31 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     {
         int timer_PackData = visitTimer->StartTimer();
         ghosts = bhf_uchar->InitializeBoundaryData();
-        for (d = 0 ; d < meshes.size() ; d++)
+        int exceptionThrown = 0;
+        TRY
         {
-            unsigned char *g = (unsigned char*)meshes[d]->GetCellData()->GetArray("avtGhostZones")->GetVoidPointer(0);
-            bhf_uchar->FillBoundaryData(domainNum[d], g, ghosts, false, 1);
+            for (d = 0 ; d < meshes.size() ; d++)
+            {
+                unsigned char *g = (unsigned char*)meshes[d]->GetCellData()->GetArray("avtGhostZones")->GetVoidPointer(0);
+                bhf_uchar->FillBoundaryData(domainNum[d], g, ghosts, false, 1);
+            }
         }
+        CATCH2(VisItException, e)
+        {
+            exceptionThrown = 1;
+        }
+        ENDTRY
+
         visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in rectmesh version)");
+
+        avtParallelContext context;
+        exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+        if (exceptionThrown)
+        {
+            bhf_uchar->FreeBoundaryData(ghosts);
+            EXCEPTION1(VisItException, "Bad Neighbor Index");
+        }
+
         bhf_uchar->CommunicateBoundaryData(domain2proc, ghosts, false, 1);
     }
 

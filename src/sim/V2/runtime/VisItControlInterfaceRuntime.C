@@ -411,17 +411,17 @@ void simv2_disconnect()
 }
 
 // ****************************************************************************
-// Method: simv2_set_slave_process_callback
+// Method: simv2_set_worker_process_callback
 //
 // Purpose:
-//   SimV2 runtime function called when we want to install a slave process callback.
+//   SimV2 runtime function called when we want to install a worker process callback.
 //
 // Arguments:
 //   spic : The new callback function.
 //
 // Returns:    
 //
-// Note:       The slave process callback helps broadcast commands from the
+// Note:       The worker process callback helps broadcast commands from the
 //             viewer to other ranks.
 //
 // Programmer: Brad Whitlock
@@ -431,10 +431,10 @@ void simv2_disconnect()
 //
 // ****************************************************************************
 
-void simv2_set_slave_process_callback(void(*spic)())
+void simv2_set_worker_process_callback(void(*spic)())
 {
 #ifdef PARALLEL
-    MPIXfer::SetSlaveProcessInstructionCallback(spic);
+    MPIXfer::SetWorkerProcessInstructionCallback(spic);
 #endif
 }
 
@@ -877,6 +877,8 @@ simv2_set_operator_options(void *e,
 // Creation:   Thu Sep 18 10:53:32 PDT 2014
 //
 // Modifications:
+//    Kathleen Biagas, Fri Sep 10 09:14:56 PDT 2021
+//    Add support for VISIT_DATATYPE_ENUM.
 //
 // ****************************************************************************
 
@@ -943,6 +945,9 @@ simv2_exportdatabase_with_options(void *e, const char *filename, const char *for
                             break;
                         case VISIT_DATATYPE_STRING:
                             opt.SetString(name, std::string((const char *)pvalue));
+                            break;
+                        case VISIT_DATATYPE_ENUM:
+                            opt.SetEnum(name, *((int *)pvalue));
                             break;
                         }
                     }

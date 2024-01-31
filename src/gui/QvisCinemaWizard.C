@@ -110,7 +110,7 @@ QvisCinemaWizard::QvisCinemaWizard(AttributeSubject *atts, QWidget *parent) :
 
     QWidget *sideW = new QWidget(0);
     QVBoxLayout *sLayout = new QVBoxLayout(sideW);
-    sLayout->setMargin(0);
+    sLayout->setContentsMargins(0,0,0,0);
     sLayout->setSpacing(0);
     QPixmap logo;
     std::string logoFilename = GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "cinema-watermark.png");
@@ -267,7 +267,7 @@ QvisCinemaWizard::CreateFilenameControl(QWidget *parent)
     QWidget *filenameParent = new QWidget(parent);
     QHBoxLayout *oLayout = new QHBoxLayout(filenameParent);
     oLayout->setSpacing(0);
-    oLayout->setMargin(0);
+    oLayout->setContentsMargins(0,0,0,0);
 
     page0_fileNameLineEdit = new QLineEdit(filenameParent);
     page0_fileNameLineEdit->setMinimumWidth(300);
@@ -302,6 +302,8 @@ QvisCinemaWizard::CreateFilenameControl(QWidget *parent)
 // Creation:   Thu Sep 14 14:52:46 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -315,14 +317,14 @@ QvisCinemaWizard::CreateMainPage()
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page0);
     pageLayout->setSpacing(10);
-    pageLayout->setMargin(5);
+    pageLayout->setContentsMargins(5,5,5,5);
 
     //
     // Database settings.
     //
     QGroupBox *gbDB = new QGroupBox(tr("Database settings"), page0);
     QGridLayout *dbLayout = new QGridLayout(gbDB);
-    dbLayout->setMargin(5);
+    dbLayout->setContentsMargins(5,5,5,5);
     pageLayout->addWidget(gbDB);
 
     QLabel *filenameLabel = new QLabel(tr("File name"), gbDB);
@@ -335,16 +337,19 @@ QvisCinemaWizard::CreateMainPage()
     dbTypeLabel->setToolTip(tr("The specification determines the type of Cinema database that will be created."));
     dbLayout->addWidget(dbTypeLabel, 1, 0);
     page0_specification = new QButtonGroup(gbDB);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page0_specification, SIGNAL(buttonClicked(int)),
             this, SLOT(page0_specificationChanged(int)));
+#else
+    connect(page0_specification, SIGNAL(idClicked(int)),
+            this, SLOT(page0_specificationChanged(int)));
+#endif
     QRadioButton *rb0 = new QRadioButton(tr("A"), gbDB);
     page0_specification->addButton(rb0, 0);
     dbLayout->addWidget(rb0, 1, 1);
     QRadioButton *rb1 = new QRadioButton(tr("C"), gbDB);
     page0_specification->addButton(rb1, 1);
     dbLayout->addWidget(rb1, 1, 2);
-    // disable rb1 until C-spec is fixed.
-    rb1->setEnabled(false);
     QRadioButton *rb2 = new QRadioButton(tr("D"), gbDB);
     page0_specification->addButton(rb2, 2);
     dbLayout->addWidget(rb2, 1, 3);
@@ -354,7 +359,7 @@ QvisCinemaWizard::CreateMainPage()
     //
     QGroupBox *gbImage = new QGroupBox(tr("Image settings"), page0);
     QGridLayout *iLayout = new QGridLayout(gbImage);
-    iLayout->setMargin(5);
+    iLayout->setContentsMargins(5,5,5,5);
     pageLayout->addWidget(gbImage);
 
     iLayout->addWidget(new QLabel(tr("File format"), gbImage));
@@ -399,7 +404,7 @@ QvisCinemaWizard::CreateMainPage()
     //
     QGroupBox *gbCamera = new QGroupBox(tr("Camera"), page0);
     QGridLayout *cLayout = new QGridLayout(gbCamera);
-    cLayout->setMargin(5);
+    cLayout->setContentsMargins(5,5,5,5);
     pageLayout->addWidget(gbCamera);
 
     QLabel *ctLabel = new QLabel(tr("Camera type"), gbCamera);
@@ -456,12 +461,12 @@ QvisCinemaWizard::CreateNumFramesPage()
     page1->setMinimumWidth(400);
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page1);
-    pageLayout->setMargin(5);
+    pageLayout->setContentsMargins(5,5,5,5);
     pageLayout->setSpacing(10);
 
     QGridLayout *gLayout = new QGridLayout(0);
     pageLayout->addLayout(gLayout);
-    gLayout->setMargin(0);
+    gLayout->setContentsMargins(0,0,0,0);
     gLayout->setSpacing(5);
     gLayout->setColumnStretch(1, 100);
     pageLayout->addStretch(20);

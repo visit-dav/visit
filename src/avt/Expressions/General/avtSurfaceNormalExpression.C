@@ -10,6 +10,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -27,11 +28,18 @@
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtSurfaceNormalExpression::avtSurfaceNormalExpression()
 {
-    isPoint = true;
+    isPoint            = true;
+    zonesHaveBeenSplit = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 
@@ -83,6 +91,11 @@ avtSurfaceNormalExpression::~avtSurfaceNormalExpression()
 //    Kathleen Biagas, Fri Jan 25 16:28:49 PST 2013
 //    Call 'Update' on filter instead of data object.
 //
+//    Brad Whitlock, Tue Dec  5 16:30:57 PST 2023
+//    Execute vtkGeometryFilter on input dataset if it is not polydata. The
+//    old recommendation in the code did not work for vtkUnstructuredGrids
+//    that contained surfaces.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -93,20 +106,20 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         return RectilinearDeriveVariable((vtkRectilinearGrid *) in_ds);
     }
 
+    // Execute a geometry filter if the input dataset is not already polydata.
+    vtkPolyData *pd = NULL;
+    vtkGeometryFilter *geom = NULL;
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, 
-                   "The Surface normal expression "
-                   "can only be calculated on surfaces.  Use the External"
-                   "Surface operator to generate the external surface of "
-                   "this object.  You must also use the DeferExpression "
-                   "operator to defer the evaluation of this expression until "
-                   "after the external surface operator.  The external surface"
-                   " and defer expression operators are available through "
-                   "the plugin manager located under the Options menu");
+        geom = vtkGeometryFilter::New();
+        geom->SetInputData(in_ds);
+        geom->Update();
+        pd = (vtkPolyData *) geom->GetOutput();
     }
-
-    vtkPolyData *pd = (vtkPolyData *) in_ds;
+    else
+    {
+        pd = (vtkPolyData *) in_ds;
+    }
 
     vtkVisItPolyDataNormals *n = vtkVisItPolyDataNormals::New();
     n->SetSplitting(false);
@@ -118,6 +131,11 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     n->Update();
     vtkPolyData *out = n->GetOutput();
 
+    if (n->GetStripsHaveBeenDecomposed())
+    {
+        zonesHaveBeenSplit = true;
+    }
+
     vtkDataArray *arr = NULL;
     if (isPoint)
         arr = out->GetPointData()->GetNormals();
@@ -128,6 +146,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     if (arr == NULL)
     {
         n->Delete();
+        if(geom != NULL)
+            geom->Delete();
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "An internal error occurred where "
                    "the surface normals could not be calculated.  Please "
@@ -136,6 +156,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
 
     arr->Register(NULL);
     n->Delete();
+    if(geom != NULL)
+        geom->Delete();
 
     return arr;
 }
@@ -199,3 +221,32 @@ avtSurfaceNormalExpression::RectilinearDeriveVariable(vtkRectilinearGrid *rgrid)
 }
 
 
+// ****************************************************************************
+//  Method: avtSurfaceNormalExpression::UpdateDataObjectInfo
+//
+//  Purpose:
+//    Update the data object information.
+//
+//  Programmer: Alister Maguire
+//  Creation:   April 27, 2020
+//
+// ****************************************************************************
+
+void
+avtSurfaceNormalExpression::UpdateDataObjectInfo(void)
+{
+    avtDataAttributes &inputAtts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+    SetExpressionAttributes(inputAtts, outAtts);
+
+    //
+    // We need to inform VisIt if the PolyDataNormalsFilter has split
+    // cells.
+    //
+    if (zonesHaveBeenSplit)
+    {
+        GetOutput()->GetInfo().GetValidity().InvalidateZones();
+        GetOutput()->GetInfo().GetValidity().ZonesSplit();
+    }
+}

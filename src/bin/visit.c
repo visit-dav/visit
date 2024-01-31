@@ -2,6 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <conio.h>
 #include <direct.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,9 +16,11 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
-#include <vector>
-#include <string>
+#include <fstream>
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using std::vector;
 using std::string;
@@ -55,7 +58,10 @@ typedef vector<string> stringVector;
 /*
  * Constants
  */
-static const char usage[] = 
+
+// Old Style usage text to be used for Released versions (no console),
+// if a NewConsole cannot be created.
+static const char usage[] =
 "USAGE:  visit [arguments]\n"
 "\n"
 "    Program arguments:\n"
@@ -97,6 +103,40 @@ static const char usage[] =
 "        -env                 Print environment strings set up by the launcher\n"
 "\n";
 
+// Extra usage flags for Windows (not part of visitusage.txt)
+// The Tools section will always be needed due to how they are launched on
+// Windows.
+// Some of the others are part of visitusageplus.txt so can be removed if
+// it is decided that -fullhelp should be supported on Windows.
+static const char windows_usage[] =
+"\n"
+" Windows-OS specific options.\n"
+"\n"
+"    Tools options:\n"
+"--------------------------------------------------------------------------\n"
+"        -xmledit             Run the xmledit tool.\n"
+"        -xml2atts            Run the xml2atts tool.\n"
+"        -xml2cmake           Run the xml2cmake tool.\n"
+"        -xml2java            Run the xml2java tool.\n"
+"        -xml2python          Run the xml2python tool.\n"
+"        -public              xml2cmake: force install plugins publicly\n"
+"        -private             xml2cmake: force install plugins privately\n"
+"        -clobber             Permit xml2... tools to overwrite old files\n"
+"        -noprint             Silence debugging output from xml2... tools\n"
+"        -silex               Run the silex tool.\n"
+"\n"
+"    Debugging options:\n"
+"--------------------------------------------------------------------------\n"
+"        -newconsole          Run the component in a new console window\n"
+"        -env                 Print environment strings set up by the launcher\n"
+"\n"
+"    Movie options:\n"
+"--------------------------------------------------------------------------\n"
+"        -mpeg2encode         Run mpeg2encode program for movie-making\n"
+"        -composite           Run composite program for movie-making\n"
+"        -transition          Run transition program for movie-making\n"
+"\n";
+
 /*
  * Prototypes
  */
@@ -105,8 +145,13 @@ string GetVisItEnvironment(stringVector &, bool, bool &, bool &);
 void   SetVisItEnvironment(const stringVector &);
 string AddPath(char *, const char *, const char*);
 bool   ReadKey(const char *key, char **keyval);
-void   PrintEnvironment(void);
 string WinGetEnv(const char * name);
+string GetUsageTextDir(void);
+
+bool RedirectConsoleIO();
+bool ReleaseConsole();
+void AdjustConsoleBuffer(int16_t minLength);
+bool CreateNewConsole(int16_t minLength);
 
 static bool EndsWith(const char *s, const char *suffix)
 {
@@ -131,8 +176,8 @@ static bool EndsWith(const char *s, const char *suffix)
  *
  * Modifications:
  *   Brad Whitlock, Mon Jul 15 10:57:32 PDT 2002
- *   I changed the code so it uses the entire path to the executable. This 
- *   prevents an error where the viewer cannot be found because of another 
+ *   I changed the code so it uses the entire path to the executable. This
+ *   prevents an error where the viewer cannot be found because of another
  *   Windows program called "viewer".
  *
  *   Brad Whitlock, Thu Jul 18 11:32:52 PDT 2002
@@ -172,33 +217,33 @@ static bool EndsWith(const char *s, const char *suffix)
  *
  *   Brad Whitlock, Tue Sep 19 17:09:57 PST 2006
  *   Added support for mpeg2enc.exe so we can create MPEG movies on Windows.
- * 
+ *
  *   Brad Whitlock, Thu Dec 21 14:52:11 PST 2006
  *   Added support for transition and composite programs.
  *
  *   Kathleen Bonnell, Thu Mar 22 09:29:45 PDT 2007
- *   Enclose argv[i] in quotes before calling PUSHARG, if there are spaces. 
+ *   Enclose argv[i] in quotes before calling PUSHARG, if there are spaces.
  *
- *   Kathleen Bonnell, Mon Jul  2 10:43:29 PDT 2007 
- *   Remove last fix. 
+ *   Kathleen Bonnell, Mon Jul  2 10:43:29 PDT 2007
+ *   Remove last fix.
  *
- *   Kathleen Bonnell, Tue Jul 24 15:19:23 PDT 2007 
+ *   Kathleen Bonnell, Tue Jul 24 15:19:23 PDT 2007
  *   Added tests for spaces in args, so they can be surrounded in quotes, and
  *   for args beginning with quotes so that the entire arg can be concatenated
- *   into 1 argument surrounded by quotes. 
+ *   into 1 argument surrounded by quotes.
  *
- *   Kathleen Bonnell, Tue Jan  8 18:09:38 PST 2008 
+ *   Kathleen Bonnell, Tue Jan  8 18:09:38 PST 2008
  *   When parsing args, moved around the order of testing for spaces and
- *   surrounding quotes, to fix problem with path-with-spaces used with -o. 
- * 
- *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
- *   Added call to free printCommand. 
+ *   surrounding quotes, to fix problem with path-with-spaces used with -o.
  *
- *   Kathleen Bonnell, Thu Jul 17 4:16:22 PDT 2008 
+ *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008
+ *   Added call to free printCommand.
+ *
+ *   Kathleen Bonnell, Thu Jul 17 4:16:22 PDT 2008
  *   Added call to free visitargs if not found, because ReadKey does the
  *   allocation regardless.
  *
- *   Kathleen Bonnell, Wed Sep 10 16:19:53 PDT 2008 
+ *   Kathleen Bonnell, Wed Sep 10 16:19:53 PDT 2008
  *   Added loopback support: it replaces the remote host name with 127.0.0.1
  *   unless the "-noloopback" flag is given by visit or by the user.
  *
@@ -206,7 +251,7 @@ static bool EndsWith(const char *s, const char *suffix)
  *   I fixed a bug with host renaming that caused invalid security keys on
  *   machines with short hostnames.
  *
- *   Kathleen Bonnell, Tue Mar 17 16:55:32 MST 2009 
+ *   Kathleen Bonnell, Tue Mar 17 16:55:32 MST 2009
  *   Added 'TestForConfigFiles' and attendant methods.
  *
  *   Kathleen Bonnell, Frid Sep 11 10:43:57 MST 2009
@@ -219,17 +264,17 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Add support for xml2cmake.
  *
  *   Kathleen Bonnell, Tue May 3 14:31:50 MST 2011
- *   Add support for -env. 
+ *   Add support for -env.
  *
  *   Kathleen Bonnell, Mon Sep 26 07:13:08 MST 2011
  *   Add support for parallel engine.  Use string for arg storage.
  *
  *   Kathleen Bonnell, Thu Sep 29 16:41:28 MST 2011
  *   Pass over 'visit' and '-visit' args.
- * 
+ *
  *   Brad Whitlock, Thu Dec 8 14:51:PST 2011
- *   Skip over arguments that end with 'visit', 'visit.exe', 'visit"', 
- *   'visit.exe"' since we're starting the argv iteration at 0, which means 
+ *   Skip over arguments that end with 'visit', 'visit.exe', 'visit"',
+ *   'visit.exe"' since we're starting the argv iteration at 0, which means
  *   we'll pick up the visit.exe program.
  *
  *   Brad Whitlock, Tue Dec 13 10:49:34 PDT 2011
@@ -246,7 +291,7 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Prevent arguments ending in '.visit' from being skipped.
  *
  *   Kathleen Biagas, Wed Nov 7 09:46:15 PDT 2012
- *   Removed 'TestForConfigFIles' and attendent methods. Remove version # 
+ *   Removed 'TestForConfigFIles' and attendent methods. Remove version #
  *   from VISITUSERHOME path.
  *
  *   Kathleen Biagas, Wed Dec 19 17:35:21 MST 2012
@@ -290,20 +335,27 @@ static bool EndsWith(const char *s, const char *suffix)
  *   operation of VisIt when Mesa3D (17.3.0) is used as a drop-in replacment
  *   for system OpenGL.
  *
+ *   Kathleen Biagas, Thur Jun 8, 2021
+ *   Added -nodialog option, to be used with -env when importing VisIt into
+ *   python. It won't be advertised. It allows the environment string to be
+ *   passed via stderr without a dialog box popping up.
+ *   Removed PrintEnvironment as it wasn't printing all environment strings.
+ *
  *****************************************************************************/
 
 int
 VisItLauncherMain(int argc, char *argv[])
 {
-    bool addMovieArguments = false; 
-    bool addCinemaArguments = false; 
-    bool addVISITARGS = true; 
+    bool addMovieArguments = false;
+    bool addCinemaArguments = false;
+    bool addVISITARGS = true;
     bool addPluginVars = false;
     bool newConsole = false;
     bool noloopback = false;
     bool parallel = false;
     bool hostset = 0;
     bool envOnly = false;
+    bool noDialog = false;
     bool debugLaunch = false;
     bool apitrace = false;
 
@@ -313,16 +365,16 @@ VisItLauncherMain(int argc, char *argv[])
     string component("gui");
     string tmpArg;
     string apitrace_component("");
-    
+
 
     //
     // Parse the command line arguments.
-    // 
+    //
     for(int i = 0; i < argc; ++i)
     {
         if(ARG("-visit"))
         {
-           continue; 
+           continue;
         }
         else if (!ENDSWITH(".visit") && !ENDSWITH(".visit\"") &&
                 (ENDSWITH("visit")   || ENDSWITH("visit.exe") ||
@@ -332,12 +384,56 @@ VisItLauncherMain(int argc, char *argv[])
         }
         else if(ARG("-help"))
         {
-            printf("%s", usage);
+            string usageFile(GetUsageTextDir());
+            usageFile += "visitusage.txt";
+            std::ifstream inFile;
+            inFile.open(usageFile);
+            std::stringstream strStream;
+            strStream << inFile.rdbuf();
+            string usageText = strStream.str();
+            inFile.close();
+            // add the windows-specific text
+            usageText += string(windows_usage);
+
+#ifdef VISIT_WINDOWS_APPLICATION
+            // Create a console and redirect i/o to it.
+            // A MessageBox is good only for small amounts of text.
+            if (CreateNewConsole(1024))
+            {
+                cerr << usageText.c_str() << endl;
+                //cerr << "NOTE: For a more complete list of options, use '-fullhelp'." << endl;
+                cerr << "Press any key to continue ... " << endl;
+                _getch();
+                ReleaseConsole();
+            }
+            else
+            {
+                // Use the truncated help text here with a pointer to the
+                // user doc's for more information:
+                string msg(usage);
+                msg += "Please see the user manual for a more complete list.\n";
+                msg += "https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/gui_manual/StartupOptions/index.html";
+                MessageBox(NULL,
+                           (LPCSTR)msg.c_str(),
+                           (LPCSTR)"Usage",
+                           MB_ICONINFORMATION | MB_OK);
+            }
+#else
+            cerr << usageText.c_str() << endl;
+            //    cerr << "NOTE: For a more complete list of options, use '-fullhelp'." << endl;
+#endif
             return 0;
         }
         else if(ARG("-version"))
         {
-            printf("%s\n", VISIT_VERSION);
+#ifdef VISIT_WINDOWS_APPLICATION
+            MessageBox(NULL,
+                       (LPCSTR)VISIT_VERSION,
+                       (LPCSTR)"VisIt Version",
+                       MB_ICONINFORMATION | MB_OK);
+#else
+            cerr << VISIT_VERSION << endl;
+#endif
             return 0;
         }
         else if(ARG("-gui"))
@@ -397,9 +493,16 @@ VisItLauncherMain(int argc, char *argv[])
         }
         else if(ARG("-mpeg_encode"))
         {
-            fprintf(stderr, "The mpeg_encode component is not supported "
-                            "on Windows! You can only generate sequences "
-                            "of still images.\n");
+            string msg("The mpeg_encode component is not supported "
+                            "on Windows! Try -mpeg2encode.\n");
+#ifdef VISIT_WINDOWS_APPLICATION
+            MessageBox(NULL,
+                       (LPCSTR)msg.c_str(),
+                       (LPCSTR)"",
+                       MB_ICONEXCLAMATION | MB_OK);
+#else
+            cerr << msg << endl;
+#endif
             return -1;
         }
         else if(ARG("-xmledit"))
@@ -438,7 +541,7 @@ VisItLauncherMain(int argc, char *argv[])
             }
         }
         else if(ARG("-np"))
-        {       
+        {
             if (component == "engine")
             {
                 parallel = true;
@@ -497,6 +600,10 @@ VisItLauncherMain(int argc, char *argv[])
         {
             envOnly = true;
         }
+        else if(ARG("-nodialog"))
+        {
+            noDialog = true;
+        }
         else if(ARG("-debuglaunch"))
         {
             debugLaunch = true;
@@ -542,7 +649,7 @@ VisItLauncherMain(int argc, char *argv[])
                 componentArgs.push_back(tmpArg);
                 i += (nArgsSkip -1);
             }
-            else 
+            else
             {
                 componentArgs.push_back(argv[i]);
             }
@@ -627,10 +734,13 @@ VisItLauncherMain(int argc, char *argv[])
     {
         FreeConsole();
         AllocConsole();
-#ifdef VISIT_WINDOWS_APPLICATION
-        // If we're running a parallel engine then let's hide the console window.
         if(component == "engine_par")
+#ifdef VISIT_WINDOWS_APPLICATION
+            // Hide the parallel engine console window.
             ShowWindow(GetConsoleWindow(), SW_HIDE);
+#else
+            // Prevent parallel engine console window from stealing focus.
+            ShowWindow(GetConsoleWindow(), SW_SHOWMINNOACTIVE);
 #endif
     }
 
@@ -652,23 +762,38 @@ VisItLauncherMain(int argc, char *argv[])
         visitEnv.push_back("MESA_GL_VERSION_OVERRIDE=3.3");
     }
     SetVisItEnvironment(visitEnv);
-#ifdef VISIT_WINDOWS_APPLICATION
-    if(debugLaunch)
+    if(debugLaunch || envOnly)
     {
         // Show the path and the environment we've created.
         string envStr;
         for(size_t i = 0; i < visitEnv.size(); ++i)
             envStr = envStr + visitEnv[i] + "\n";
         string msgStr((visitpath + "\n\n") + envStr);
-        MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
-    }
-#endif
+#ifdef VISIT_WINDOWS_APPLICATION
+        if(envOnly && noDialog)
+        {
+            // We want the environment string to be readable when
+            // importing VisIt into python, so don't use the dialog
+            cerr << msgStr << endl;
+        }
+        else
+        {
+            MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
+        }
 
-    if (envOnly)
-    {
-        PrintEnvironment();
-        componentArgs.clear();
-        return 0;
+        if(envOnly)
+        {
+            componentArgs.clear();
+            return 0;
+        }
+#else
+        cerr << msgStr << endl;
+        if (envOnly)
+        {
+            componentArgs.clear();
+            return 0;
+        }
+#endif
     }
 
     stringVector command;
@@ -690,7 +815,7 @@ VisItLauncherMain(int argc, char *argv[])
         // found, we've switched to a serial engine.
         // mpi exec
         command.push_back(mpipath);
-        // mpi exec args, 
+        // mpi exec args,
         command.push_back("-n");
         command.push_back(nps);
         // engine_par, Surrounded by quotes
@@ -721,10 +846,10 @@ VisItLauncherMain(int argc, char *argv[])
         if((componentArgs[i] == "-host") && !noloopback)
         {
             // Replace the host arg with the loopback
-            componentArgs[i+1] = "127.0.0.1"; 
+            componentArgs[i+1] = "127.0.0.1";
         }
 
-        if (!BEGINSWITHQUOTE(componentArgs[i].c_str()) && 
+        if (!BEGINSWITHQUOTE(componentArgs[i].c_str()) &&
             HASSPECIAL(componentArgs[i].c_str()))
         {
             DQUOTEARG(componentArgs[i].c_str());
@@ -732,7 +857,7 @@ VisItLauncherMain(int argc, char *argv[])
         }
         else
             command.push_back(componentArgs[i]);
-        
+
     }
 
     if (!engineArgs.empty())
@@ -764,9 +889,9 @@ VisItLauncherMain(int argc, char *argv[])
         visitargs = 0;
     }
 
-    // 
+    //
     // Print the run information.
-    // 
+    //
     // cmdLine is used with console-app version as argument to system command.
     // so the first 'arg' must be quoted.
     string cmdLine(quote + command[0] + quote);
@@ -781,7 +906,7 @@ VisItLauncherMain(int argc, char *argv[])
 
     // We can't use system() since that opens a cmd shell.
     // the exeName is the second arg to _spawnv, and doesn't need quotes,
-    // but when used as the first arg in the exeArgs list, it does. 
+    // but when used as the first arg in the exeArgs list, it does.
     const char *exeName = command[0].c_str();
     const char **exeArgs = new const char *[command.size()+1];
     string quotedCommand(quote + command[0] + quote);
@@ -812,11 +937,11 @@ VisItLauncherMain(int argc, char *argv[])
             case ENOMEM:
                 snprintf(errmsg, 30,  "_spawn error: %d: ENOMEM\n", err);
                 break;
-            default: 
+            default:
                 snprintf(errmsg, 30, "_spawn error: %d: UNKNOWN\n", err);
                 break;
         }
-        MessageBox(NULL, errmsg, component.c_str(), MB_OK);
+        MessageBox(NULL, errmsg, component.c_str(), MB_ICONEXCLAMATION | MB_OK);
     }
     delete [] exeArgs;
 #else
@@ -848,8 +973,8 @@ VisItLauncherMain(int argc, char *argv[])
  *            should be freed by the caller.
  *
  * Modifications:
- *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
- *   Only malloc keyval if it is null. 
+ *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008
+ *   Only malloc keyval if it is null.
  *
  *   Kathleen Bonnell, Thu Jun 17 20:23:51 MST 2010
  *   Location of VisIt's registry keys has changed to Software\Classes.
@@ -863,18 +988,18 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
     char regkey[100];
     HKEY hkey;
 
-    /* 
-     * Try and read the key from the system registry. 
+    /*
+     * Try and read the key from the system registry.
      */
     sprintf(regkey, "Software\\Classes\\VISIT%s", VISIT_VERSION);
     if (*keyval == 0)
         *keyval = (char *)malloc(500);
-    
-    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == 
+
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) ==
        ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
-        if(RegQueryValueEx(hkey, key, NULL, &keyType, (LPBYTE)*keyval, 
+        if(RegQueryValueEx(hkey, key, NULL, &keyType, (LPBYTE)*keyval,
                            &strSize) == ERROR_SUCCESS)
         {
             readSuccess = true;
@@ -920,8 +1045,8 @@ ReadKey(const char *key, char **keyval)
 
     if((retval = ReadKeyFromRoot(HKEY_LOCAL_MACHINE, key, keyval)) == 0)
         retval = ReadKeyFromRoot(HKEY_CURRENT_USER, key, keyval);
-    
-    return retval;     
+
+    return retval;
 }
 
 
@@ -948,7 +1073,7 @@ ReadKey(const char *key, char **keyval)
  *   Brad Whitlock, Fri Feb 28 12:24:11 PDT 2003
  *   I improved how the path is added and I fixed a potential memory problem.
  *
- *   Brad Whitlock, Wed Apr 23 09:28:44 PDT 2003 
+ *   Brad Whitlock, Wed Apr 23 09:28:44 PDT 2003
  *   I added VISITSYSTEMCONFIG to the environment.
  *
  *   Brad Whitlock, Tue Aug 12 10:47:16 PDT 2003
@@ -966,14 +1091,14 @@ ReadKey(const char *key, char **keyval)
  *
  *   Kathleen Bonnell, Thu Jul 19 07:56:22 PDT 2007
  *   Added VISITUSERHOME, which defaults to VISITHOME if the reg key could
- *   not be found.  Create the directory if it does not exist, and add 
+ *   not be found.  Create the directory if it does not exist, and add
  *   "My images" subdir for saving windows.
  *
- *   Kathleen Bonnell, Tue Jan  8 18:09:38 PST 2008 
+ *   Kathleen Bonnell, Tue Jan  8 18:09:38 PST 2008
  *   Account for the fact that VisIt may be built with MSVC8, so location of
- *   config dir and binaries differs -- use new _VISIT_MSVC define. 
- *   
- *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
+ *   config dir and binaries differs -- use new _VISIT_MSVC define.
+ *
+ *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008
  *   Added call to free visituserpath and visitdevdir.
  *
  *   Kathleen Bonnell, Thu Apr 17 10:20:25 PDT 2008
@@ -982,25 +1107,25 @@ ReadKey(const char *key, char **keyval)
  *   Use "Application Data" path for private plugins, as users have write-
  *   privileges there (and it better supports roaming profiles).
  *
- *   Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008 
- *   Use ';' to separate different paths for VISITPLUGINDIR. 
+ *   Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008
+ *   Use ';' to separate different paths for VISITPLUGINDIR.
  *
  *   Kathleen Bonnell, Mon Jun 2 18:08:32 PDT 2008
  *   Change how VisItDevDir is retrieved and stored.
  *
- *   Kathleen Bonnell, Thu July 17 16:20:22 PDT 2008 
+ *   Kathleen Bonnell, Thu July 17 16:20:22 PDT 2008
  *   Free visitpath if we didn't find VISITHOME, because ReadKey mallocs
  *   regardless.  Same for tempvisitdev.  If VISITDEVDIR not defined, then
  *   find the full path to this executable and use it for visitpath and
  *   visitdevdir instead.
  *
- *   Kathleen Bonnell, Thu July 31 16:55:43 PDT 2008 
+ *   Kathleen Bonnell, Thu July 31 16:55:43 PDT 2008
  *   Initialize visitdevdir.
  *
- *   Kathleen Bonnell, Wed Oct 8 08:49:11 PDT 2008 
+ *   Kathleen Bonnell, Wed Oct 8 08:49:11 PDT 2008
  *   Re-organized code.  Modified settingup of VISITSSH and VISITSSHARGS so
- *   that if these are already set by user in environment they won't be 
- *   overwritten. 
+ *   that if these are already set by user in environment they won't be
+ *   overwritten.
  *
  *   Kathleen Bonnell, Wed Apr 22 17:47:34 PDT 2009
  *   Added VISITULTRAHOME env var.
@@ -1014,17 +1139,17 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Tue Mar 30 16:46:19 MST 2010
  *   Test for dev dir and set vars accordingly.
  *
- *   Kathleen Bonnell, Wed Dec 1 08:43:44 MST 2010 
+ *   Kathleen Bonnell, Wed Dec 1 08:43:44 MST 2010
  *   Add variables necessary for plugin development if necessary.
  *
- *   Kathleen Bonnell, Tue May 3 14:33:17 MST 2011 
+ *   Kathleen Bonnell, Tue May 3 14:33:17 MST 2011
  *   Add root lib directory to PYTHONPATH.
  *
  *   Brad Whitlock, Tue Dec 13 10:10:23 PDT 2011
  *   I made the routine return all of the environment strings in a stringVector
  *   instead of calling _putenv on all of them.
  *
- *   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012 
+ *   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
  *   Return usingdev as an arg.
  *
  *   Kathleen Biagas, Thu Nov  1 11:03:09 PDT 2012
@@ -1037,12 +1162,15 @@ ReadKey(const char *key, char **keyval)
  *   Display message box if VISITSSH set, but does not point
  *   to valid executable.
  *
- *    Kathleen Biagas, Thu Aug 1 13:41:32 MST 2019
- *    Removed useShorFileName argument.
+ *   Kathleen Biagas, Thu Aug 1 13:41:32 MST 2019
+ *   Removed useShorFileName argument.
+ *
+ *   Kathleen Biagas, Thu Jun 8, 2021
+ *   Add LIBPATH for non-dev, needed when importing VisIt into python.
  *
  *****************************************************************************/
 
-std::string 
+string
 GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     bool &needsMesaOverride)
 {
@@ -1122,7 +1250,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
                 config = vp.substr(pos+1);
         }
     }
- 
+
     /*
      * Determine visit user path (Path to My Documents).
      */
@@ -1144,7 +1272,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
                             " before running VisIt again.\n",
                             personalUserHome.c_str());
 #ifdef VISIT_WINDOWS_APPLICATION
-                MessageBox(NULL, tmp, "", MB_OK);
+                MessageBox(NULL, tmp, "", MB_ICONEXCLAMATION | MB_OK);
 #else
                 fprintf(stderr, tmp);
 #endif
@@ -1160,7 +1288,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
                             "VISITUSERHOME before running VisIt again.\n",
                             personalUserHome.c_str());
 #ifdef VISIT_WINDOWS_APPLICATION
-                MessageBox(NULL, tmp, "", MB_OK);
+                MessageBox(NULL, tmp, "", MB_ICONEXCLAMATION | MB_OK);
 #else
                 fprintf(stderr, tmp);
 #endif
@@ -1179,8 +1307,8 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
             bool haveVISITUSERHOME=0;
             TCHAR szPath[MAX_PATH];
             struct _stat fs;
-            if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
-                                     SHGFP_TYPE_CURRENT, szPath))) 
+            if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
+                                     SHGFP_TYPE_CURRENT, szPath)))
             {
                 snprintf(visituserpath, 512, "%s\\VisIt", szPath);
                 haveVISITUSERHOME = true;
@@ -1228,7 +1356,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     /*
      * Set the plugin dir.
      */
-    { 
+    {
         sprintf(tmp, "VISITPLUGINDIR=%s;%s", userHome.c_str(), visitpath);
         env.push_back(tmp);
         if (addPluginVars)
@@ -1261,7 +1389,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     }
 
     /*
-     * Set PYTHONPATH
+     * Set PYTHONPATH, PYTHONHOME, LIBPATH (non-dev only)
      */
     if (!usingdev)
     {
@@ -1269,8 +1397,10 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         env.push_back(tmp);
         sprintf(tmp, "PYTHONHOME=%s\\lib\\python",visitpath);
         env.push_back(tmp);
+        sprintf(tmp, "LIBPATH=%s\\lib", visitpath);
+        env.push_back(tmp);
     }
-    else 
+    else
     {
         string vp(visitpath);
         size_t pos = vp.find_last_of("\\");
@@ -1290,7 +1420,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     /*
      * Set the SSH program.
      */
-    { 
+    {
         char *ssh = NULL, *sshargs = NULL;
         bool needVISITSSH = false;
         bool haveSSH = false, haveSSHARGS = false, freeSSH = false, freeSSHARGS = false;
@@ -1320,7 +1450,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
                 {
                     sprintf(tmp, "VISITSSH=%s", ssh);
                     env.push_back(tmp);
-                    errmsg.clear(); 
+                    errmsg.clear();
                 }
                 else
                 {
@@ -1336,13 +1466,15 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
             qpath+=string("\\qtssh.exe");
             sprintf(tmp, "VISITSSH=%s", qpath.c_str());
             env.push_back(tmp);
+            sprintf(tmp, "VISITSSHARGS=-no-antispoof");
+            env.push_back(tmp);
             if (!errmsg.empty())
             {
                 errmsg += "Using VisIt's qtssh.";
 #ifdef VISIT_WINDOWS_APPLICATION
-                MessageBox(NULL, 
-                           (LPCSTR)errmsg.c_str(), 
-                           "", 
+                MessageBox(NULL,
+                           (LPCSTR)errmsg.c_str(),
+                           "",
                            MB_ICONEXCLAMATION | MB_OK);
 #else
                 cerr << errmsg << endl;
@@ -1378,17 +1510,17 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
 
 /******************************************************************************
  *
- * Purpose: Sets the VisIt environment variables from a vector of VAR=VALUE 
+ * Purpose: Sets the VisIt environment variables from a vector of VAR=VALUE
  *          strings.
  *
  * Programmer: Brad Whitlock
- * Date:       
+ * Date:
  *
  * Input Arguments:
  *   env       : The vector of environment strings.
  *
  * Modifications:
- * 
+ *
  *****************************************************************************/
 
 void
@@ -1413,14 +1545,14 @@ SetVisItEnvironment(const stringVector &env)
  * Modifications:
  *   Kathleen Bonnell, Mon Jun 2 18:11:01 PDT 2008
  *   Add 'visitdev' argument. Add it to the path if not null.
- * 
+ *
  *   Kathleen Bonnell, Sun Feb 28 16:23:45 MST 2010
  *   Add visitpath and visitdev to beginning of PATH, not end.  Ensure they
  *   don't get duplicated in the PATH string.
- * 
+ *
  *****************************************************************************/
 
-std::string
+string
 AddPath(char *tmp, const char *visitpath, const char *visitdev)
 {
     char *env = 0, *path;
@@ -1443,7 +1575,7 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
        token = strtok( env2, ";" );
        while(token != NULL)
        {
-           /* 
+           /*
             * If the token does not contain "VisIt " then add it to the path.
             */
            skiptoken = false;
@@ -1461,7 +1593,7 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
                path += (len + 1);
            }
 
-           /* 
+           /*
             * Get next token:
             */
            token = strtok( NULL, ";" );
@@ -1470,28 +1602,8 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
        free(env2);
     }
 
-    return std::string(tmp);
+    return string(tmp);
 }
-
-void
-PrintEnvironment()
-{
-    char *tmp;
-
-    if((tmp = getenv("VISITHOME")) != NULL)
-    {
-        fprintf(stdout, "LIBPATH=%s\\lib\n", tmp);
-        fprintf(stdout, "VISITHOME=%s\n", tmp);
-    }
-    if((tmp = getenv("VISITARCHHOME")) != NULL)
-        fprintf(stdout, "VISITARCHHOME=%s\n", tmp);
-    if((tmp = getenv("VISITULTRAHOME")) != NULL)
-        fprintf(stdout, "VISITULTRAHOME=%s\n", tmp);
-    if((tmp = getenv("VISITPLUGINDIR")) != NULL)
-        fprintf(stdout, "VISITPLUGINDIR=%s\n", tmp);
-
-}
-
 
 string
 WinGetEnv(const char * name)
@@ -1506,23 +1618,38 @@ WinGetEnv(const char * name)
     return retval;
 }
 
+string
+GetUsageTextDir()
+{
+    char modFName[MAX_PATH];
+    string usageDir;
+    if (GetModuleFileName(NULL, modFName, MAX_PATH) != 0)
+    {
+        string tpath(modFName);
+        size_t pos = tpath.find_last_of('\\');
+        usageDir = tpath.substr(0, pos) +  "\\resources\\usage\\";
+    }
+    return usageDir;
+}
+
+
 // ****************************************************************************
 // Method: main/WinMain
 //
-// Purpose: 
+// Purpose:
 //   The program entry point function.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 23 13:15:31 PST 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 #if defined(VISIT_WINDOWS_APPLICATION)
 int WINAPI
 WinMain(HINSTANCE hInstance,     // handle to the current instance
-        HINSTANCE hPrevInstance, // handle to the previous instance    
+        HINSTANCE hPrevInstance, // handle to the previous instance
         LPSTR lpCmdLine,         // pointer to the command line
         int nCmdShow             // show state of window
 )
@@ -1536,4 +1663,106 @@ main(int argc, char **argv)
     return VisItLauncherMain(argc, argv);
 }
 #endif
+
+
+// methods for creating console and redirecting io
+
+bool RedirectConsoleIO()
+{
+    bool result = true;
+    FILE* fp;
+
+    // Redirect STDIN if the console has an input handle
+    if (GetStdHandle(STD_INPUT_HANDLE) != INVALID_HANDLE_VALUE)
+        if (freopen_s(&fp, "CONIN$", "r", stdin) != 0)
+            result = false;
+        else
+            setvbuf(stdin, NULL, _IONBF, 0);
+
+    // Redirect STDOUT if the console has an output handle
+    if (GetStdHandle(STD_OUTPUT_HANDLE) != INVALID_HANDLE_VALUE)
+        if (freopen_s(&fp, "CONOUT$", "w", stdout) != 0)
+            result = false;
+        else
+            setvbuf(stdout, NULL, _IONBF, 0);
+
+    // Redirect STDERR if the console has an error handle
+    if (GetStdHandle(STD_ERROR_HANDLE) != INVALID_HANDLE_VALUE)
+        if (freopen_s(&fp, "CONOUT$", "w", stderr) != 0)
+            result = false;
+        else
+            setvbuf(stderr, NULL, _IONBF, 0);
+
+    // Make C++ standard streams point to console as well.
+    std::ios::sync_with_stdio(true);
+
+    // Clear the error state for each of the C++ standard streams.
+    std::wcout.clear();
+    std::cout.clear();
+    std::wcerr.clear();
+    std::cerr.clear();
+    std::wcin.clear();
+    std::cin.clear();
+
+    return result;
+}
+
+bool ReleaseConsole()
+{
+    bool result = true;
+    FILE* fp;
+
+    // Just to be safe, redirect standard IO to NUL before releasing.
+
+    // Redirect STDIN to NUL
+    if (freopen_s(&fp, "NUL:", "r", stdin) != 0)
+        result = false;
+    else
+        setvbuf(stdin, NULL, _IONBF, 0);
+
+    // Redirect STDOUT to NUL
+    if (freopen_s(&fp, "NUL:", "w", stdout) != 0)
+        result = false;
+    else
+        setvbuf(stdout, NULL, _IONBF, 0);
+
+    // Redirect STDERR to NUL
+    if (freopen_s(&fp, "NUL:", "w", stderr) != 0)
+        result = false;
+    else
+        setvbuf(stderr, NULL, _IONBF, 0);
+
+    // Detach from console
+    if (!FreeConsole())
+        result = false;
+
+    return result;
+}
+
+void AdjustConsoleBuffer(int16_t minLength)
+{
+    // Set the screen buffer to be big enough to scroll some text
+    CONSOLE_SCREEN_BUFFER_INFO conInfo;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &conInfo);
+    if (conInfo.dwSize.Y < minLength)
+        conInfo.dwSize.Y = minLength;
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), conInfo.dwSize);
+}
+
+bool CreateNewConsole(int16_t minLength)
+{
+    bool result = false;
+
+    // Release any current console and redirect IO to NUL
+    ReleaseConsole();
+
+    // Attempt to create new console
+    if (AllocConsole())
+    {
+        AdjustConsoleBuffer(minLength);
+        result = RedirectConsoleIO();
+    }
+
+    return result;
+}
 

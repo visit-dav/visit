@@ -5,6 +5,7 @@
 #include <PySelectionList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PySelectionProperties.h>
 #include <PySelectionSummary.h>
 
@@ -36,9 +37,8 @@ struct SelectionListObject
 // Internal prototypes
 //
 static PyObject *NewSelectionList(int);
-
 std::string
-PySelectionList_ToString(const SelectionList *atts, const char *prefix)
+PySelectionList_ToString(const SelectionList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -56,7 +56,7 @@ PySelectionList_ToString(const SelectionList *atts, const char *prefix)
             const SelectionProperties *current = (const SelectionProperties *)(*pos);
             snprintf(tmpStr, 1000, "GetSelections(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PySelectionProperties_ToString(current, objPrefix.c_str());
+            str += PySelectionProperties_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#selections does not contain any SelectionProperties objects.\n";
@@ -69,7 +69,7 @@ PySelectionList_ToString(const SelectionList *atts, const char *prefix)
             const SelectionSummary *current = (const SelectionSummary *)(*pos);
             snprintf(tmpStr, 1000, "GetSelectionSummary(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PySelectionSummary_ToString(current, objPrefix.c_str());
+            str += PySelectionSummary_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#selectionSummary does not contain any SelectionSummary objects.\n";
@@ -91,12 +91,48 @@ SelectionList_SetAutoApplyUpdates(PyObject *self, PyObject *args)
 {
     SelectionListObject *obj = (SelectionListObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoApplyUpdates in the object.
-    obj->data->SetAutoApplyUpdates(ival != 0);
+    obj->data->SetAutoApplyUpdates(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -114,19 +150,13 @@ SelectionList_GetAutoApplyUpdates(PyObject *self, PyObject *args)
 SelectionList_GetSelections(PyObject *self, PyObject *args)
 {
     SelectionListObject *obj = (SelectionListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSelections().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSelections().size() == 0)
-            snprintf(msg, 400, "In SelectionList::GetSelections : The index %d is invalid because selections is empty.", index);
-        else
-            snprintf(msg, 400, "In SelectionList::GetSelections : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSelections().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSelections(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSelections().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -155,12 +185,7 @@ SelectionList_AddSelections(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PySelectionProperties_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The SelectionList::AddSelections method only accepts SelectionProperties objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type SelectionProperties");
     SelectionProperties *newData = PySelectionProperties_FromPyObject(element);
     obj->data->AddSelections(*newData);
     obj->data->SelectSelections();
@@ -198,17 +223,12 @@ SelectionList_Remove_One_Selections(PyObject *self, int index)
 PyObject *
 SelectionList_RemoveSelections(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     SelectionListObject *obj = (SelectionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumSelections())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In SelectionList::RemoveSelections : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return SelectionList_Remove_One_Selections(self, index);
 }
@@ -231,19 +251,13 @@ SelectionList_ClearSelections(PyObject *self, PyObject *args)
 SelectionList_GetSelectionSummary(PyObject *self, PyObject *args)
 {
     SelectionListObject *obj = (SelectionListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSelectionSummary().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSelectionSummary().size() == 0)
-            snprintf(msg, 400, "In SelectionList::GetSelectionSummary : The index %d is invalid because selectionSummary is empty.", index);
-        else
-            snprintf(msg, 400, "In SelectionList::GetSelectionSummary : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSelectionSummary().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSelectionSummary(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSelectionSummary().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -272,12 +286,7 @@ SelectionList_AddSelectionSummary(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PySelectionSummary_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The SelectionList::AddSelectionSummary method only accepts SelectionSummary objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type SelectionSummary");
     SelectionSummary *newData = PySelectionSummary_FromPyObject(element);
     obj->data->AddSelectionSummary(*newData);
     obj->data->SelectSelectionSummary();
@@ -315,17 +324,12 @@ SelectionList_Remove_One_SelectionSummary(PyObject *self, int index)
 PyObject *
 SelectionList_RemoveSelectionSummary(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     SelectionListObject *obj = (SelectionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumSelectionSummarys())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In SelectionList::RemoveSelectionSummary : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return SelectionList_Remove_One_SelectionSummary(self, index);
 }
@@ -377,14 +381,7 @@ SelectionList_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-SelectionList_compare(PyObject *v, PyObject *w)
-{
-    SelectionList *a = ((SelectionListObject *)v)->data;
-    SelectionList *b = ((SelectionListObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *SelectionList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySelectionList_getattr(PyObject *self, char *name)
 {
@@ -395,28 +392,41 @@ PySelectionList_getattr(PyObject *self, char *name)
     if(strcmp(name, "selectionSummary") == 0)
         return SelectionList_GetSelectionSummary(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySelectionList_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySelectionList_methods[i].ml_name),
+                PyString_FromString(PySelectionList_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySelectionList_methods, self, name);
 }
 
 int
 PySelectionList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "autoApplyUpdates") == 0)
-        obj = SelectionList_SetAutoApplyUpdates(self, tuple);
+        obj = SelectionList_SetAutoApplyUpdates(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -424,7 +434,7 @@ static int
 SelectionList_print(PyObject *v, FILE *fp, int flags)
 {
     SelectionListObject *obj = (SelectionListObject *)v;
-    fprintf(fp, "%s", PySelectionList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySelectionList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -432,7 +442,7 @@ PyObject *
 SelectionList_str(PyObject *v)
 {
     SelectionListObject *obj = (SelectionListObject *)v;
-    return PyString_FromString(PySelectionList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySelectionList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -445,49 +455,70 @@ static char *SelectionList_Purpose = "Contains a list of SelectionProperties obj
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject SelectionListType =
+
+VISIT_PY_TYPE_OBJ(SelectionListType,         \
+                  "SelectionList",           \
+                  SelectionListObject,       \
+                  SelectionList_dealloc,     \
+                  SelectionList_print,       \
+                  PySelectionList_getattr,   \
+                  PySelectionList_setattr,   \
+                  SelectionList_str,         \
+                  SelectionList_Purpose,     \
+                  SelectionList_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+SelectionList_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SelectionList",                    // tp_name
-    sizeof(SelectionListObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SelectionList_dealloc,  // tp_dealloc
-    (printfunc)SelectionList_print,     // tp_print
-    (getattrfunc)PySelectionList_getattr, // tp_getattr
-    (setattrfunc)PySelectionList_setattr, // tp_setattr
-    (cmpfunc)SelectionList_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)SelectionList_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SelectionList_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &SelectionListType
+         || Py_TYPE(other) != &SelectionListType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    SelectionList *a = ((SelectionListObject *)self)->data;
+    SelectionList *b = ((SelectionListObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -563,7 +594,7 @@ PySelectionList_GetLogString()
 {
     std::string s("SelectionList = SelectionList()\n");
     if(currentAtts != 0)
-        s += PySelectionList_ToString(currentAtts, "SelectionList.");
+        s += PySelectionList_ToString(currentAtts, "SelectionList.", true);
     return s;
 }
 
@@ -576,7 +607,7 @@ PySelectionList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SelectionList = SelectionList()\n");
-        s += PySelectionList_ToString(currentAtts, "SelectionList.");
+        s += PySelectionList_ToString(currentAtts, "SelectionList.", true);
         cb(s);
     }
 }

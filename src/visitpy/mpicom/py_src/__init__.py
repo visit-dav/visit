@@ -11,16 +11,19 @@
 #
 #
 # Modifications:
-#
+#    Cyrus Harrison, Thu Feb 18 16:06:46 PST 2021
+#    Change the way the compiled lib import works to support Python 3.
 #
 ###############################################################################
 
+# import the serial stub module
 from . import mpistub
+
+# try to import the compiled module
+# (this will only exist if visit was built with mpi support)
 try:
-    from mpicom import *
+    from . import mpicom
 except ImportError:
     pass
-
-
 
 

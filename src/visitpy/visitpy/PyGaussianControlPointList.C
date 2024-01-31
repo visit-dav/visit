@@ -5,6 +5,7 @@
 #include <PyGaussianControlPointList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyGaussianControlPoint.h>
 
 // ****************************************************************************
@@ -35,22 +36,29 @@ struct GaussianControlPointListObject
 // Internal prototypes
 //
 static PyObject *NewGaussianControlPointList(int);
-
 std::string
-PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const char *prefix)
+PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
     { // new scope
         int index = 0;
+        if (forLogging)
+        {
+            // this is needed in case the current NumControlPoints is greater
+            // than the default set up by the containing class.
+            snprintf(tmpStr, 1000, "SetNumControlPoints(%d)\n",
+                atts->GetNumControlPoints());
+            str += (prefix + std::string(tmpStr));
+        }
         // Create string representation of controlPoints from atts.
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
             const GaussianControlPoint *current = (const GaussianControlPoint *)(*pos);
             snprintf(tmpStr, 1000, "GetControlPoints(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyGaussianControlPoint_ToString(current, objPrefix.c_str());
+            str += PyGaussianControlPoint_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#controlPoints does not contain any GaussianControlPoint objects.\n";
@@ -71,19 +79,13 @@ GaussianControlPointList_Notify(PyObject *self, PyObject *args)
 GaussianControlPointList_GetControlPoints(PyObject *self, PyObject *args)
 {
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetControlPoints().size() == 0)
-            snprintf(msg, 400, "In GaussianControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
-        else
-            snprintf(msg, 400, "In GaussianControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetControlPoints(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -112,12 +114,7 @@ GaussianControlPointList_AddControlPoints(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyGaussianControlPoint_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The GaussianControlPointList::AddControlPoints method only accepts GaussianControlPoint objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type GaussianControlPoint");
     GaussianControlPoint *newData = PyGaussianControlPoint_FromPyObject(element);
     obj->data->AddControlPoints(*newData);
     obj->data->SelectControlPoints();
@@ -155,17 +152,12 @@ GaussianControlPointList_Remove_One_ControlPoints(PyObject *self, int index)
 PyObject *
 GaussianControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
     if(index < 0 || index >= obj->data->GetNumControlPoints())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In GaussianControlPointList::RemoveControlPoints : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return GaussianControlPointList_Remove_One_ControlPoints(self, index);
 }
@@ -185,6 +177,18 @@ GaussianControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 }
 
 
+PyObject *
+GaussianControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
+{
+    GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
+    int numItems = -1;
+    if(!PyArg_ParseTuple(args, "i", &numItems))
+        return PyErr_Format(PyExc_TypeError, "Expecting integer numItems");
+    obj->data->SetNumControlPoints(numItems);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH] = {
     {"Notify", GaussianControlPointList_Notify, METH_VARARGS},
@@ -193,6 +197,7 @@ PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH] =
     {"AddControlPoints", GaussianControlPointList_AddControlPoints, METH_VARARGS},
     {"RemoveControlPoints", GaussianControlPointList_RemoveControlPoints, METH_VARARGS},
     {"ClearControlPoints", GaussianControlPointList_ClearControlPoints, METH_VARARGS},
+    {"SetNumControlPoints", GaussianControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -210,19 +215,24 @@ GaussianControlPointList_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-GaussianControlPointList_compare(PyObject *v, PyObject *w)
-{
-    GaussianControlPointList *a = ((GaussianControlPointListObject *)v)->data;
-    GaussianControlPointList *b = ((GaussianControlPointListObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *GaussianControlPointList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyGaussianControlPointList_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "controlPoints") == 0)
         return GaussianControlPointList_GetControlPoints(self, NULL);
+
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyGaussianControlPointList_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyGaussianControlPointList_methods[i].ml_name),
+                PyString_FromString(PyGaussianControlPointList_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyGaussianControlPointList_methods, self, name);
 }
@@ -230,20 +240,21 @@ PyGaussianControlPointList_getattr(PyObject *self, char *name)
 int
 PyGaussianControlPointList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -251,7 +262,7 @@ static int
 GaussianControlPointList_print(PyObject *v, FILE *fp, int flags)
 {
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)v;
-    fprintf(fp, "%s", PyGaussianControlPointList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyGaussianControlPointList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -259,7 +270,7 @@ PyObject *
 GaussianControlPointList_str(PyObject *v)
 {
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)v;
-    return PyString_FromString(PyGaussianControlPointList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyGaussianControlPointList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -272,49 +283,70 @@ static char *GaussianControlPointList_Purpose = "This class contains a list of G
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject GaussianControlPointListType =
+
+VISIT_PY_TYPE_OBJ(GaussianControlPointListType,         \
+                  "GaussianControlPointList",           \
+                  GaussianControlPointListObject,       \
+                  GaussianControlPointList_dealloc,     \
+                  GaussianControlPointList_print,       \
+                  PyGaussianControlPointList_getattr,   \
+                  PyGaussianControlPointList_setattr,   \
+                  GaussianControlPointList_str,         \
+                  GaussianControlPointList_Purpose,     \
+                  GaussianControlPointList_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+GaussianControlPointList_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "GaussianControlPointList",                    // tp_name
-    sizeof(GaussianControlPointListObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)GaussianControlPointList_dealloc,  // tp_dealloc
-    (printfunc)GaussianControlPointList_print,     // tp_print
-    (getattrfunc)PyGaussianControlPointList_getattr, // tp_getattr
-    (setattrfunc)PyGaussianControlPointList_setattr, // tp_setattr
-    (cmpfunc)GaussianControlPointList_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)GaussianControlPointList_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    GaussianControlPointList_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &GaussianControlPointListType
+         || Py_TYPE(other) != &GaussianControlPointListType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    GaussianControlPointList *a = ((GaussianControlPointListObject *)self)->data;
+    GaussianControlPointList *b = ((GaussianControlPointListObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -390,7 +422,7 @@ PyGaussianControlPointList_GetLogString()
 {
     std::string s("GaussianControlPointList = GaussianControlPointList()\n");
     if(currentAtts != 0)
-        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.");
+        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.", true);
     return s;
 }
 
@@ -403,7 +435,7 @@ PyGaussianControlPointList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("GaussianControlPointList = GaussianControlPointList()\n");
-        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.");
+        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.", true);
         cb(s);
     }
 }

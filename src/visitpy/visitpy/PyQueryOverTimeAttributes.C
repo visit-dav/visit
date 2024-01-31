@@ -5,6 +5,7 @@
 #include <PyQueryOverTimeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyQueryAttributes.h>
 #include <PyPickAttributes.h>
 
@@ -36,9 +37,8 @@ struct QueryOverTimeAttributesObject
 // Internal prototypes
 //
 static PyObject *NewQueryOverTimeAttributes(int);
-
 std::string
-PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const char *prefix)
+PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -128,21 +128,55 @@ QueryOverTimeAttributes_SetTimeType(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid timeType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Cycle";
+        ss << ", DTime";
+        ss << ", Timestep";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetTimeType(QueryOverTimeAttributes::TimeType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid timeType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Cycle, DTime, Timestep.");
-        return NULL;
-    }
+    obj->data->SetTimeType(QueryOverTimeAttributes::TimeType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -161,12 +195,48 @@ QueryOverTimeAttributes_SetStartTimeFlag(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startTimeFlag in the object.
-    obj->data->SetStartTimeFlag(ival != 0);
+    obj->data->SetStartTimeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -185,12 +255,48 @@ QueryOverTimeAttributes_SetStartTime(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startTime in the object.
-    obj->data->SetStartTime((int)ival);
+    obj->data->SetStartTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -209,12 +315,48 @@ QueryOverTimeAttributes_SetEndTimeFlag(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endTimeFlag in the object.
-    obj->data->SetEndTimeFlag(ival != 0);
+    obj->data->SetEndTimeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -233,12 +375,48 @@ QueryOverTimeAttributes_SetEndTime(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endTime in the object.
-    obj->data->SetEndTime((int)ival);
+    obj->data->SetEndTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -257,12 +435,48 @@ QueryOverTimeAttributes_SetStrideFlag(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the strideFlag in the object.
-    obj->data->SetStrideFlag(ival != 0);
+    obj->data->SetStrideFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -281,12 +495,48 @@ QueryOverTimeAttributes_SetStride(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stride in the object.
-    obj->data->SetStride((int)ival);
+    obj->data->SetStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -305,12 +555,48 @@ QueryOverTimeAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the createWindow in the object.
-    obj->data->SetCreateWindow(ival != 0);
+    obj->data->SetCreateWindow(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -329,12 +615,48 @@ QueryOverTimeAttributes_SetWindowId(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowId in the object.
-    obj->data->SetWindowId((int)ival);
+    obj->data->SetWindowId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -353,45 +675,58 @@ QueryOverTimeAttributes_SetCachedCurvePts(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetCachedCurvePts();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    doubleVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetCachedCurvePts() = vec;
     // Mark the cachedCurvePts in the object as modified.
     obj->data->SelectCachedCurvePts();
 
@@ -416,12 +751,48 @@ QueryOverTimeAttributes_SetUseCachedPts(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useCachedPts in the object.
-    obj->data->SetUseCachedPts(ival != 0);
+    obj->data->SetUseCachedPts(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -478,14 +849,7 @@ QueryOverTimeAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-QueryOverTimeAttributes_compare(PyObject *v, PyObject *w)
-{
-    QueryOverTimeAttributes *a = ((QueryOverTimeAttributesObject *)v)->data;
-    QueryOverTimeAttributes *b = ((QueryOverTimeAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *QueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
 {
@@ -519,48 +883,61 @@ PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "useCachedPts") == 0)
         return QueryOverTimeAttributes_GetUseCachedPts(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyQueryOverTimeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyQueryOverTimeAttributes_methods[i].ml_name),
+                PyString_FromString(PyQueryOverTimeAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyQueryOverTimeAttributes_methods, self, name);
 }
 
 int
 PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "timeType") == 0)
-        obj = QueryOverTimeAttributes_SetTimeType(self, tuple);
+        obj = QueryOverTimeAttributes_SetTimeType(self, args);
     else if(strcmp(name, "startTimeFlag") == 0)
-        obj = QueryOverTimeAttributes_SetStartTimeFlag(self, tuple);
+        obj = QueryOverTimeAttributes_SetStartTimeFlag(self, args);
     else if(strcmp(name, "startTime") == 0)
-        obj = QueryOverTimeAttributes_SetStartTime(self, tuple);
+        obj = QueryOverTimeAttributes_SetStartTime(self, args);
     else if(strcmp(name, "endTimeFlag") == 0)
-        obj = QueryOverTimeAttributes_SetEndTimeFlag(self, tuple);
+        obj = QueryOverTimeAttributes_SetEndTimeFlag(self, args);
     else if(strcmp(name, "endTime") == 0)
-        obj = QueryOverTimeAttributes_SetEndTime(self, tuple);
+        obj = QueryOverTimeAttributes_SetEndTime(self, args);
     else if(strcmp(name, "strideFlag") == 0)
-        obj = QueryOverTimeAttributes_SetStrideFlag(self, tuple);
+        obj = QueryOverTimeAttributes_SetStrideFlag(self, args);
     else if(strcmp(name, "stride") == 0)
-        obj = QueryOverTimeAttributes_SetStride(self, tuple);
+        obj = QueryOverTimeAttributes_SetStride(self, args);
     else if(strcmp(name, "createWindow") == 0)
-        obj = QueryOverTimeAttributes_SetCreateWindow(self, tuple);
+        obj = QueryOverTimeAttributes_SetCreateWindow(self, args);
     else if(strcmp(name, "windowId") == 0)
-        obj = QueryOverTimeAttributes_SetWindowId(self, tuple);
+        obj = QueryOverTimeAttributes_SetWindowId(self, args);
     else if(strcmp(name, "cachedCurvePts") == 0)
-        obj = QueryOverTimeAttributes_SetCachedCurvePts(self, tuple);
+        obj = QueryOverTimeAttributes_SetCachedCurvePts(self, args);
     else if(strcmp(name, "useCachedPts") == 0)
-        obj = QueryOverTimeAttributes_SetUseCachedPts(self, tuple);
+        obj = QueryOverTimeAttributes_SetUseCachedPts(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -568,7 +945,7 @@ static int
 QueryOverTimeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
-    fprintf(fp, "%s", PyQueryOverTimeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyQueryOverTimeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -576,7 +953,7 @@ PyObject *
 QueryOverTimeAttributes_str(PyObject *v)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
-    return PyString_FromString(PyQueryOverTimeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyQueryOverTimeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -589,49 +966,70 @@ static char *QueryOverTimeAttributes_Purpose = "Attributes for queries over time
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject QueryOverTimeAttributesType =
+
+VISIT_PY_TYPE_OBJ(QueryOverTimeAttributesType,         \
+                  "QueryOverTimeAttributes",           \
+                  QueryOverTimeAttributesObject,       \
+                  QueryOverTimeAttributes_dealloc,     \
+                  QueryOverTimeAttributes_print,       \
+                  PyQueryOverTimeAttributes_getattr,   \
+                  PyQueryOverTimeAttributes_setattr,   \
+                  QueryOverTimeAttributes_str,         \
+                  QueryOverTimeAttributes_Purpose,     \
+                  QueryOverTimeAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+QueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "QueryOverTimeAttributes",                    // tp_name
-    sizeof(QueryOverTimeAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)QueryOverTimeAttributes_dealloc,  // tp_dealloc
-    (printfunc)QueryOverTimeAttributes_print,     // tp_print
-    (getattrfunc)PyQueryOverTimeAttributes_getattr, // tp_getattr
-    (setattrfunc)PyQueryOverTimeAttributes_setattr, // tp_setattr
-    (cmpfunc)QueryOverTimeAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)QueryOverTimeAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    QueryOverTimeAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &QueryOverTimeAttributesType
+         || Py_TYPE(other) != &QueryOverTimeAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    QueryOverTimeAttributes *a = ((QueryOverTimeAttributesObject *)self)->data;
+    QueryOverTimeAttributes *b = ((QueryOverTimeAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

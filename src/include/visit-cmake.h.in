@@ -13,9 +13,6 @@
 /* Define if you have the gdal library. */
 #cmakedefine HAVE_LIBGDAL
 
-/* Define if you have hdf4. */
-#cmakedefine HAVE_LIBHDF4
-
 /* Define if you have hdf5. */
 #cmakedefine HAVE_LIBHDF5
 
@@ -50,20 +47,14 @@
 /* Define if you have the Damaris library. */
 #cmakedefine HAVE_DAMARIS
 
-/* Define if you have the FastBit library. */
-#cmakedefine HAVE_LIBFASTBIT 
-
-/* Define if you have the FastQuery library. */
-#cmakedefine HAVE_LIBFASTQUERY
-
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM 1
 
 /* Define if you have the MFEM library. */
 #cmakedefine HAVE_LIBMFEM
 
-/* Define if you have the VTKh library. */
-#cmakedefine HAVE_LIBVTKH
+/* Define if you have the VTKm library. */
+#cmakedefine HAVE_LIBVTKM
 
 /* Define if you have the X11 library */
 #cmakedefine HAVE_LIBX11
@@ -77,8 +68,9 @@
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
 
-/* Define if you have the EGL */
-#cmakedefine HAVE_EGL
+/* Define if you have Conduit. */
+#cmakedefine HAVE_CONDUIT
+
 
 /*******************************************************************************
  * Header file checks
@@ -122,9 +114,6 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #cmakedefine HAVE_SYS_TYPES_H 1
-
-/* Define if you have the pthread library. */
-#cmakedefine HAVE_THREADS
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #cmakedefine HAVE_UNISTD_H 1
@@ -333,10 +322,24 @@ logic here to cause compilation failure if this logic seems to be failing.
 #define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) EXPORTMACRO const char *NAME##VisItPluginVersion = VISIT_VERSION;
 #endif
 
-/* App version check macro. Must check against the hex value.
-   Usage: #if (APP_VERSION_CHECK(4, 4, 0) <= APP_VERSION_HEX )
-*/
-#define VISIT_APP_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
+// Macro to create a hex version of a passed in libary version
+// where A == version-major, B == version-minor, C == version-patch
+// The hex calculation is the same as used in SETUP_APP_VERSION.
+#define LIB_VERSION_HEX(A,B,C) (((A)<<16)|((B)<<8)|(C))
+
+// Macros for testing if library version is less-than-or-equal,
+// or greater-than-or-equal to passed in version
+//
+// Pre-condition: NAME_VERSION_HEX must be defined
+//                This can be accomplished by using SETUP_APP_VERSION
+//                and adding NAME_VERSION_HEX to compile-time definitions.
+//
+// Example1 : test if UINTAH version <= 2.0.0 
+//                #if LIB_VERSION_LE(UINTAH, 2,0,0)
+// Example2 : test if VTK version >= 9.1.0
+//                #if LIB_VERSION_GE(VTK, 9.1.0)
+#define LIB_VERSION_LE(NAME, A,B,C) (NAME##_VERSION_HEX <= LIB_VERSION_HEX(A,B,C))
+#define LIB_VERSION_GE(NAME, A,B,C) (NAME##_VERSION_HEX >= LIB_VERSION_HEX(A,B,C))
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
@@ -378,8 +381,27 @@ logic here to cause compilation failure if this logic seems to be failing.
 /* Define a uniform socket buffer size that we can use in various places. */
 #define VISIT_SOCKET_BUFFER_SIZE 1024
 
-/* define control to intentionally leak things or not. my profiling shows it
-   saves on the order of 0.001 sec to undefine this. leaving it undefined
-   for now in case there's some issue with it when using a remote server.
+/* 
+   When DEBUG_MEMORY_LEAKS is defined, then extra object-cleanup occurs.
+   When not defined, VisIt shortciruits some cleanup at exit.
+   Profiling shows it saves on the order of 0.001 sec to NOT have this defined.
+
+   Uncomment this when debugging memory leaks so that there will be no
+   intentional leaks.
+
+   The uncommenting of DEBUG_MEMORY_LEAKS should never be committed. 
+
 #define DEBUG_MEMORY_LEAKS
 */
+
+// Turn on compile errors for obsolete code. 
+#cmakedefine VISIT_REMOVE_OBSOLETE_CODE
+
+// Wrappers for obosolete code
+#ifdef VISIT_REMOVE_OBSOLETE_CODE
+  #define VISIT_OBSOLETE_AT_VERSION(A,B,C) VISIT_VERSION_GE(A,B,C)
+#else
+  #define VISIT_OBSOLETE_AT_VERSION(A,B,C) 0
+#endif
+
+

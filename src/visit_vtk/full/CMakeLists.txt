@@ -50,6 +50,7 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
+vtkExtractCellsByType.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C
@@ -118,7 +119,16 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${OPENEXR_LIBRARY_DIR})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 
-TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkCommonExecutionModel vtkCommonMisc vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonExecutionModel vtkCommonMisc
+        vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources
+        vtkImagingHybrid vtkIOImage vtktiff)
+else()
+    set(vtklibs VTK::CommonExecutionModel VTK::CommonMisc
+        VTK::FiltersExtraction VTK::FiltersFlowPaths VTK::FiltersSources
+        VTK::ImagingHybrid VTK::IOImage VTK::tiff)
+endif()
 
+target_link_libraries(visit_vtk lightweight_visit_vtk ${vtklibs} ${OPENEXR_LIB})
 
 VISIT_INSTALL_TARGETS(visit_vtk)

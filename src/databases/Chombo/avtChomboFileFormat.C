@@ -97,7 +97,7 @@ using     std::string;
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename,
-                                         DBOptionsAttributes *atts)
+                                         const DBOptionsAttributes *atts)
     : avtSTMDFileFormat(&filename, 1)
 {
     initializedReader = false;
@@ -378,6 +378,14 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Mark C. Miller, Wed Feb  9 11:15:05 PST 2022
+//    Add contingency read logic for prob_lo, aspect_ratio, vec_dx and
+//    vec_ref_ratio to read these as simple arrays instead of structy types.
+//    The HDF5 library will fail the reads if you don't give it a compatible
+//    memory type to read into and the new logic allows for either case.
+//    Also handle possibility that dx and ref_ratio are stored as arrays
+//    instead of scalars.
+//
 // ****************************************************************************
 
 extern "C"  herr_t
@@ -388,6 +396,26 @@ add_var(hid_t loc_id, const char *varname, void *opData)
   return 0;
 }
 
+//
+// Purpose: Open HDF5 file with close degree semi
+//
+// Programmer: Mark C. Miller, Wed Feb  9 13:35:50 PST 2022
+//
+static hid_t OpenHDF5File(char const *fname)
+{
+    hid_t retval;
+    hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
+    retval = H5Fopen(fname, H5F_ACC_RDONLY, fapl);
+    H5Pclose(fapl);
+    return retval;
+}
+
+//
+//  Modifications
+//    Mark C. Miller, Wed Feb  9 13:37:12 PST 2022
+//    Use new method, OpenHDF5File, to open the file.
+//
 void
 avtChomboFileFormat::InitializeReader(void)
 {
@@ -408,7 +436,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Open file
     //
-    file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+    file_handle = OpenHDF5File(filenames[0]);
     if (file_handle < 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -585,7 +613,15 @@ avtChomboFileFormat::InitializeReader(void)
             doublevect probLoBuff;
             if (H5Aread(probLo_id, (dimension == 2 ? doublevect2d_id : doublevect3d_id), &probLoBuff) < 0)
             {
-                EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_lo\".");
+                double tmp[4];
+                if (H5Aread(probLo_id, H5T_NATIVE_DOUBLE, &tmp[0]) < 0) // try reading as simple array
+                { 
+                    EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_lo\".");
+                }
+                probLo[0] = tmp[0];
+                probLo[1] = tmp[1];
+                if (dimension > 2)
+                    probLo[2] = tmp[2];
             }
             else
             {
@@ -621,7 +657,15 @@ avtChomboFileFormat::InitializeReader(void)
             doublevect aspectRatioBuff;
             if (H5Aread(aspectRatio_id, (dimension == 2 ? doublevect2d_id : doublevect3d_id), &aspectRatioBuff) < 0)
             {
-                EXCEPTION1(InvalidDBTypeException, "Cannot read \"aspect_ratio\".");
+                double tmp[4];
+                if (H5Aread(aspectRatio_id, H5T_NATIVE_DOUBLE, &tmp[0]) < 0) // try reading as simple array
+                {
+                    EXCEPTION1(InvalidDBTypeException, "Cannot read \"aspect_ratio\".");
+                }
+                aspectRatio[0] = tmp[0];
+                aspectRatio[1] = tmp[1];
+                if (dimension > 2)
+                    aspectRatio[2] = tmp[2];
             }
             else
             {
@@ -824,17 +868,33 @@ avtChomboFileFormat::InitializeReader(void)
         hid_t dx_id = H5Aopen_name(level, "vec_dx");
         if (dx_id >= 0)
         {
+            double dtmp[4];
             if (dimension == 2)
             {
                 doublevect2d dx_tmp;
-                H5Aread(dx_id, doublevect2d_id, &dx_tmp);
+                if (H5Aread(dx_id, doublevect2d_id, &dx_tmp) < 0)
+                {
+                    if (H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dtmp[0]) >= 0) // try as simple array
+                    {
+                        dx_tmp.x = dtmp[0];
+                        dx_tmp.y = dtmp[1];
+                    }
+                }
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
             }
             else if (dimension == 3)
             {
                 doublevect3d dx_tmp;
-                H5Aread(dx_id, doublevect3d_id, &dx_tmp);
+                if (H5Aread(dx_id, doublevect3d_id, &dx_tmp) < 0)
+                {
+                    if (H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dtmp[0]) >= 0) // try as simple array
+                    {
+                        dx_tmp.x = dtmp[0];
+                        dx_tmp.y = dtmp[1];
+                        dx_tmp.z = dtmp[2];
+                    }
+                }
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
                 dx[i].push_back(dx_tmp.z);
@@ -842,7 +902,16 @@ avtChomboFileFormat::InitializeReader(void)
             else
             {
                 doublevect4d dx_tmp;
-                H5Aread(dx_id, doublevect4d_id, &dx_tmp);
+                if (H5Aread(dx_id, doublevect4d_id, &dx_tmp) < 0)
+                {
+                    if (H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dtmp[0]) >= 0) // try as simple array
+                    {
+                        dx_tmp.x = dtmp[0];
+                        dx_tmp.y = dtmp[1];
+                        dx_tmp.z = dtmp[2];
+                        dx_tmp.u = dtmp[3];
+                    }
+                }
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
                 dx[i].push_back(dx_tmp.z);
@@ -857,10 +926,15 @@ avtChomboFileFormat::InitializeReader(void)
                 EXCEPTION1(InvalidDBTypeException,
                            "Does not contain \"vec_dx\" or \"dx\".");
 
-            double dx_tmp;
-            H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp);
+            // Figure out how many values in this attribute
+            hid_t dx_sid = H5Aget_space(dx_id);
+            int nvals = (int) H5Sget_simple_extent_npoints(dx_sid);
+            H5Sclose(dx_sid);
+
+            std::vector<double> dx_tmp(nvals);
+            H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp[0]);
             for (int d = 0; d<dimension; ++d)
-                dx[i].push_back(dx_tmp);
+                dx[i].push_back(dx_tmp[d<nvals?d:0]);
         }
         H5Aclose(dx_id);
 
@@ -869,17 +943,33 @@ avtChomboFileFormat::InitializeReader(void)
             hid_t rr_id = H5Aopen_name(level, "vec_ref_ratio");
             if (rr_id >= 0)
             {
+                int itmp[4];
                 if (dimension == 2)
                 {
                     intvect2d rr_tmp;
-                    H5Aread(rr_id, intvect2d_id, &rr_tmp);
+                    if (H5Aread(rr_id, intvect2d_id, &rr_tmp) < 0)
+                    {
+                        if (H5Aread(rr_id, H5T_NATIVE_INT, &itmp[0]) >= 0) // try as simple array
+                        {
+                            rr_tmp.i = itmp[0];
+                            rr_tmp.j = itmp[1];
+                        }
+                    }
                     refinement_ratio[i].push_back(rr_tmp.i);
                     refinement_ratio[i].push_back(rr_tmp.j);
                 }
                 else if (dimension == 3)
                 {
                     intvect3d rr_tmp;
-                    H5Aread(rr_id, intvect3d_id, &rr_tmp);
+                    if (H5Aread(rr_id, intvect3d_id, &rr_tmp) < 0)
+                    {
+                        if (H5Aread(rr_id, H5T_NATIVE_INT, &itmp[0]) >= 0) // try as simple array
+                        {
+                            rr_tmp.i = itmp[0];
+                            rr_tmp.j = itmp[1];
+                            rr_tmp.k = itmp[2];
+                        }
+                    }
                     refinement_ratio[i].push_back(rr_tmp.i);
                     refinement_ratio[i].push_back(rr_tmp.j);
                     refinement_ratio[i].push_back(rr_tmp.k);
@@ -898,10 +988,15 @@ avtChomboFileFormat::InitializeReader(void)
                     EXCEPTION1(InvalidDBTypeException,
                             "Does not contain \"vec_ref_ratio\" or \"ref_ratio\".");
 
-                int rr_tmp;
-                H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
+                // Figure out how many values in this attribute
+                hid_t rr_sid = H5Aget_space(rr_id);
+                int nvals = (int) H5Sget_simple_extent_npoints(rr_sid);
+                H5Sclose(rr_sid);
+
+                std::vector<int> rr_tmp(nvals);
+                H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp[0]);
                 for (int d = 0; d < dimension; ++d)
-                    refinement_ratio[i].push_back(rr_tmp);
+                    refinement_ratio[i].push_back(rr_tmp[d<nvals?d:0]);
             }
             H5Aclose(rr_id);
         }
@@ -1312,7 +1407,7 @@ avtChomboFileFormat::InitializeReader(void)
             FileFunctions::VisItStat_t fs;
             if (FileFunctions::VisItStat(mappingFilename.c_str(), &fs) == 0)
             {
-                hid_t mapping_file_handle = H5Fopen(mappingFilename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                hid_t mapping_file_handle = OpenHDF5File(mappingFilename.c_str());
                 if (mapping_file_handle > 0)
                 {
                     hid_t slash = H5Gopen(mapping_file_handle, "/");
@@ -2323,6 +2418,11 @@ class LookUpOrderCmp
         const int *order2Var;
 };
 
+//
+//  Modifications
+//    Mark C. Miller, Wed Feb  9 13:38:49 PST 2022
+//    Use new method, OpenHDF5File, to open file.
+//
 vtkDataSet *
 avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 {
@@ -2573,7 +2673,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
         if (file_handle < 0)
         {
-            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            file_handle = OpenHDF5File(filenames[0]);
             if (file_handle < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -2921,6 +3021,8 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Mark C. Miller, Wed Feb  9 13:39:31 PST 2022
+//    Use new method, OpenHDF5File, to open the file.
 // ****************************************************************************
 
 vtkDataArray *
@@ -3037,7 +3139,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         snprintf(name, 1024, "level_%d", level);
         if (file_handle < 0)
         {
-            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            file_handle = OpenHDF5File(filenames[0]);
             if (file_handle < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3151,7 +3253,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         {
             if (file_handle < 0)
             {
-                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                file_handle = OpenHDF5File(filenames[0]);
                 if (file_handle < 0)
                 {
                     EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3234,6 +3336,8 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Mark C. Miller, Wed Feb  9 13:40:08 PST 2022
+//    Use new method, OpenHDF5File, to open file.
 // ****************************************************************************
 
 vtkDataArray *
@@ -3386,7 +3490,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             snprintf(name, 1024, "level_%d", level);
             if (file_handle < 0)
             {
-                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                file_handle = OpenHDF5File(filenames[0]);
                 if (file_handle < 0)
                 {
                     EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "

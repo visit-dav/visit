@@ -21,12 +21,17 @@ import pprint
 #
 #   Helper which saves a file to the test suite's logs directory.
 #
+#   Modifications:
+#     Kathleen Biagas, Wed Nov 18, 2020
+#     Changed location to result_dir.
+#
 # -----------------------------------------------------------------------------
 def saveLogFile(f):
-    logdir = test_root_path("logs")
+    res_dir = TestEnv.params["result_dir"]
+    logdir = pjoin(res_dir, "logs")
     if not os.path.isdir(logdir):
         os.mkdir(logdir)
-    logdir = abs_path(logdir, "plugins") 
+    logdir = pjoin(logdir, "plugins") 
     if not os.path.isdir(logdir):
         os.mkdir(logdir)
     shutil.copy2(f, logdir)
@@ -48,86 +53,6 @@ def getVersion():
     return version[:-1].strip()
 
 # -----------------------------------------------------------------------------
-#   Method: createPackage
-#
-#   Programmer: Kathleen Biagas
-#   Date:       Thu Nov 8, 2018
-#
-#   Helper which calls 'make package' in the build dir.
-#
-# -----------------------------------------------------------------------------
-def createPackage():
-    print "createPackage, chdir to: ", visit_bin_path("..")
-    os.chdir(visit_bin_path(".."))
-    version = getVersion().replace(".", "_")
-    # this is for linux, won't work on windows, what about Mac?
-    # is there a better way to check if the package has already been created?
-    pkgFiles = glob.glob(visit_bin_path("..", 'visit%s.*.tar.gz'%version))
-    print "pkg exists? ", pkgFiles
-    if len(pkgFiles) > 0:
-        return 1
-
-    status = 1
-    fname = abs_path(TestEnv.params["run_dir"], "createPackage_results.txt")
-    f = open(fname, "w")
-    try:
-        subprocess.check_call(["gmake", "-j", "8", "package"],stdout=f,stderr=f)
-        status = 1
-    except subprocess.CalledProcessError as err:
-        status = 0
-    except OSError as e:
-        status = 0
-    f.close()
-    if not status:
-        saveLogFile(fname)
-    os.chdir(test_root_path())
-    return status
-
-# -----------------------------------------------------------------------------
-#   Method: installPackage
-#
-#   Programmer: Kathleen Biagas
-#   Date:       Thu Nov 8, 2018
-#
-#   Helper which installs the package in the build dir.
-#
-#   Modifications:
-#     Eric Brugger, Thu Oct  3 10:16:05 PDT 2019
-#     Remove logic to rename hardware path on toss3 systems.
-#
-# -----------------------------------------------------------------------------
-def installPackage():
-    fname = abs_path(TestEnv.params["run_dir"], "installPackage_results.txt")
-    f = open(fname, "w")
-    f.write("installPackage, chdir to: %s\n"%visit_bin_path(".."))
-    os.chdir(visit_bin_path(".."))
-    installCmd = visit_src_path( "svn_bin", "visit-install")
-    f.write("installPackage, installCmd: %s\n"% installCmd)
-    installDir = visit_bin_path("..", "_install")
-    f.write("installPackage, installDir: %s\n"% installDir)
-    version = getVersion()
-    if (os.path.isdir(abs_path(installDir, version))):
-        f.write("install path already exists\n")
-        f.close()
-        return 1
-    
-    status = 1
-    try:
-        f.write("calling install cmd\n")
-        subprocess.check_call([installCmd, "-c", "llnl_open", version, "linux-x86_64", installDir ], stdout=f,stderr=f)
-        f.write("calling install cmd ... done\n")
-        status = 1
-    except subprocess.CalledProcessError as err:
-        status = 0
-    except OSError as e:
-        status = 0
-    f.close()
-    if not status:
-        saveLogFile(fname)
-    os.chdir(test_root_path())
-    return status
-
-# -----------------------------------------------------------------------------
 #   Method: regencmake
 #
 #   Programmer: Kathleen Biagas
@@ -137,7 +62,7 @@ def installPackage():
 #
 # -----------------------------------------------------------------------------
 def regencmake(plugin, pluginResults):
-    print "regenerating cmake for ", plugin
+    print("regenerating cmake for ", plugin)
     pluginArg = plugin + '.xml'
     xml2cmake = visit_bin_path("..", "_install", "bin", "xml2cmake")
     status = 1
@@ -184,7 +109,7 @@ def build(plugin, pluginResults):
     fname = "%s_build_res.txt" %plugin
     f = open(fname, "w")
     try:
-        print "running cmake for ", plugin
+        print("running cmake for ", plugin)
         subprocess.check_call([cmakecmd, "../"],stdout=f,stderr=f)
     except subprocess.CalledProcessError as err:
         pluginResults[plugin] = 'cmake configure failed'
@@ -195,7 +120,7 @@ def build(plugin, pluginResults):
 
     if status == 1:
         try:
-            print "running make for ", plugin
+            print("running make for ", plugin)
             subprocess.check_call(["gmake", "-j", "8"],stdout=f,stderr=f)
             pluginResults[plugin] = 'success'
         except subprocess.CalledProcessError as err:
@@ -230,7 +155,7 @@ def build(plugin, pluginResults):
 #
 # -----------------------------------------------------------------------------
 def buildPlugin(pluginType, pluginList):
-    print "buildPlugin: ", pluginType
+    print("buildPlugin: ", pluginType)
     plugindir = abs_path(TestEnv.params["run_dir"], pluginType)
 
     if os.path.exists(plugindir):
@@ -286,21 +211,6 @@ def buildPlugin(pluginType, pluginList):
 # -----------------------------------------------------------------------------
 
 def do_plugin_type(pluginType, pluginList):
-    # createPackage and installPackage cause the test to overrun the limit
-    # so, instead of creating (which has been added to the build),
-    # just check that the install exists
-
-    #success = createPackage()
-    #if not success:
-    #    TestText("%sVsInstall"%pluginType, "Create package failed")
-    #    Exit(-1)
-
-    #success = installPackage()
-
-    #if not success:
-    #    TestText("%sVsInstall"%pluginType, "Install package failed")
-    #    Exit(-1)
-
     installDir = visit_bin_path("..", "_install")
     version = getVersion()
     if not os.path.isdir(abs_path(installDir, version)):
@@ -311,7 +221,7 @@ def do_plugin_type(pluginType, pluginList):
     results = buildPlugin(pluginType, pluginList)
 
     pp = pprint.PrettyPrinter(indent=4)
-    txt = pp.pformat(results)
+    txt = pp.pformat(results) + "\n"
     TestText("%sVsInstall"%pluginType, txt)
 
 

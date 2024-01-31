@@ -18,7 +18,6 @@
 import os
 import socket
 import subprocess
-import string
 import getpass
 
 # The launch cases we want to test.
@@ -52,9 +51,9 @@ debuggers = [[], ["-totalview", "engine_par"], ["-valgrind", "engine_par"], ["-s
 
 # Get the launcher command for new versions of VisIt.
 def GetLauncherCommand(args):
-    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     stdout, stderr = p.communicate()
-    ru = string.find(stdout, "RUN USING")
+    ru = stdout.find("RUN USING")
     if ru != -1:
         cmd = stdout[ru + 11:-2]
     else:
@@ -63,12 +62,12 @@ def GetLauncherCommand(args):
 
 def FilterLauncherOutput(text, replacements):
     for k in list(replacements.keys()):
-        text = string.replace(text, k, replacements[k])
+        text = text.replace(k, replacements[k])
     return text
 
 def FilterHostName(text):
-    host = string.find(text, "-host")
-    port = string.find(text, "-port")
+    host = text.find("-host")
+    port = text.find("-port")
     if host != -1 and port != -1:
         return text[:host + 6] + "$HOST " + text[port:]
     return text
@@ -77,16 +76,16 @@ def hostname():
     return socket.gethostname()
 
 def nodename():
-    return string.split(hostname(), ".")[0]
+    return hostname().split(".")[0]
 
 def sectorname():
     s = nodename()
     for d in "0123456789":
-        s = string.replace(s, d, "")
+        s = s.replace(d, "")
     return s
 
 def FormatLauncherOutput(cmd):
-    tmpvisit = string.find(cmd, "/tmp/visit")
+    tmpvisit = cmd.find("/tmp/visit")
     text = ""
     if tmpvisit == -1:
         text = cmd
@@ -100,7 +99,7 @@ def FormatLauncherOutput(cmd):
         except:
             filename = cmd[tmpvisit:]
 
-        cmd = string.replace(cmd, filename, "$LAUNCHSCRIPT")
+        cmd = cmd.replace(filename, "$LAUNCHSCRIPT")
         text = text + cmd
 
         try:
@@ -186,10 +185,10 @@ for k in keys:
 
         # Do the test
         text = text + "="*80 + "\n"
-        text = text + "CASE: %s\n\nINPUT: visit %s\n\nRESULTS:\n" % (k + " " + string.join(debuggers[j]), cmd[:-1])
+        text = text + "CASE: %s\n\nINPUT: visit %s\n\nRESULTS:\n" % (k + " " + " ".join(debuggers[j]), cmd[:-1])
         text = text + output + "\n"*2
 
-    name = string.replace(k, "/", "_")
+    name = k.replace("/", "_")
     TestText(name, text)
     i = i + 1
 

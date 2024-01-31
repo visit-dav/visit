@@ -1,56 +1,29 @@
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
-Definition:
-// ****************************************************************************
-// Method: LimitCycleAttributes::ProcessOldVersions
-//
-// Purpose:
-//   Updates the config settings in the data node to the current IndexSelect
-//   opertor version.
-//
-// Arguments:
-//   parentNode    : The data node that stores the IndexSelect attributes.
-//   configVersion : The version of the config file from which the node
-//                   was read.
-//
-// Programmer: Allen Sanderson
-// Creation:   8 March 2016
-//
-// Modifications:
-//
-// ****************************************************************************
+Target: xml2python
+Code: PyLimitCycleAttributes_getattr
+Prefix:
+Postfix:
+#include <visit-config.h>
 
-void
-LimitCycleAttributes::ProcessOldVersions(DataNode *parentNode,
-    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "2.11.0"))
-    {
-        DataNode *searchNode = parentNode->GetNode("LimitCycleAttributes");
-        if(searchNode == 0)
-            return;
-
-        DataNode *sourceNode = searchNode->GetNode("sourceType");
-        if(sourceNode == 0)
-            return;
-
-        std::string mode = sourceNode->AsString();
-
-        if (mode == "Line_")
-        {
-          searchNode->RemoveNode(sourceNode, true);
-          searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(LimitCycleAttributes::SpecifiedLine)));
-        }
-        else if (mode == "Plane")
-        {
-          searchNode->RemoveNode(sourceNode, true);
-          searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(LimitCycleAttributes::SpecifiedPlane)));
-        }
-    }
-}
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0) 
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid LimitCycle attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+        
+    // parallelizationAlgorithmType
+    if(strcmp(name, "MasterSlave") == 0)
+    {       
+        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
+        return PyInt_FromLong(long(LimitCycleAttributes::ManagerWorker));
+    }           
+    // end parallelizationAlgorithmType 
+    // NOTE: no cooresponding _setattr method is needed for this case because this
+    // is handling only a change in enum symbol name. Those are constants in the
+    // python object and never set
+#endif  
 
 Target: xml2atts
 Function: CopyAttributes
@@ -114,7 +87,6 @@ LimitCycleAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
-Target: xml2atts
 Function: CreateCompatible
 Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
 Definition:
@@ -167,7 +139,6 @@ LimitCycleAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
-Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const LimitCycleAttributes &) const;
 Definition:
@@ -364,3 +335,60 @@ LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *at
 
     return var;
 }
+
+Target: xml2atts
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: LimitCycleAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Mark C. Miller
+// Creation:   October 27, 2023
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+LimitCycleAttributes::ProcessOldVersions(DataNode *parentNode,
+                                     const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("LimitCycleAttributes");
+    if(searchNode == 0)
+        return;
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *dn = nullptr;
+
+        // We need deal with only ManagerWorker case here because it replaces
+        // the old entry of MasterSlave
+        if ((dn = searchNode->GetNode("parallelizationAlgorithmType")) != nullptr)
+        {
+            std::string type = dn->AsString();
+            if (type == "MasterSlave")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("MasterSlave",
+                    "ManagerWorker", "3.5.0"));
+#endif
+                dn->SetString(ParallelizationAlgorithmType_ToString(LimitCycleAttributes::ManagerWorker));
+            }
+        }
+    }
+#endif
+}
+

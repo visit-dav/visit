@@ -5,6 +5,7 @@
 #ifndef PY_INDEXSELECTATTRIBUTES_H
 #define PY_INDEXSELECTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <IndexSelectAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyIndexSelectAttributes_Wrap(const IndexSelectAttributes *attr);
 void           PyIndexSelectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyIndexSelectAttributes_SetDefaults(const IndexSelectAttributes *atts);
 std::string    PyIndexSelectAttributes_GetLogString();
-std::string    PyIndexSelectAttributes_ToString(const IndexSelectAttributes *, const char *);
+std::string    PyIndexSelectAttributes_ToString(const IndexSelectAttributes *, const char *, const bool=false);
 PyObject *     PyIndexSelectAttributes_getattr(PyObject *self, char *name);
 int            PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyIndexSelectAttributes_methods[INDEXSELECTATTRIBUTES_NMETH];

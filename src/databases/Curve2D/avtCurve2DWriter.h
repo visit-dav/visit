@@ -34,7 +34,7 @@ class
 avtCurve2DWriter : public avtDatabaseWriter
 {
   public:
-                   avtCurve2DWriter(DBOptionsAttributes *);
+                   avtCurve2DWriter(const DBOptionsAttributes *);
     virtual       ~avtCurve2DWriter() {;}
 
   protected:

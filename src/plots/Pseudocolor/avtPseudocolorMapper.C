@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                       avtPseudocolorMapper.C                              //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtPseudocolorMapper.C
+// ****************************************************************************
 
 #include <avtPseudocolorMapper.h>
 
@@ -60,13 +60,6 @@ avtPseudocolorMapper::avtPseudocolorMapper() : avtVariableMapper()
 
 avtPseudocolorMapper::~avtPseudocolorMapper()
 {
-}
-
-
-bool
-LabelIsFromPCPlot(string &l)
-{
-    return (!l.empty() && l.size() > 3 && l.compare(0, 3, string("pc_")) == 0);
 }
 
 
@@ -127,8 +120,7 @@ avtPseudocolorMapper::CreateActorMapperPairs(vtkDataSet **children)
                 ++mi;
                 continue;
             }
-            if (labels.empty() ||  !LabelIsFromPCPlot(labels[i]) ||
-                (labels[i].compare(0, 10, string("pc_points_")) != 0))
+            if (labels.empty() || (labels[i].compare(0, 10, string("pc_points_")) != 0))
             {
                 usedDS.push_back(i);
                 mappers[mi] = vtkDataSetMapper::New();
@@ -154,7 +146,7 @@ avtPseudocolorMapper::CreateActorMapperPairs(vtkDataSet **children)
                 ++mi;
                 continue;
             }
-            bool pointsLabel = (!labels.empty() && LabelIsFromPCPlot(labels[i]) &&
+            bool pointsLabel = (!labels.empty() &&
                               (labels[i].compare(0, 10, string("pc_points_")) == 0));
             mappers[mi] = (vtkDataSetMapper*)vtkPointGlyphMapper::New();
             if (topoDim == 0 || pointsLabel)
@@ -263,8 +255,7 @@ avtPseudocolorMapper::CustomizeMappersInternal(bool invalidateTransparency)
                 prop->SetRepresentationToSurface();
                 if (drawWireframe)
                 {
-                    if (labels.empty() || !LabelIsFromPCPlot(labels[i]) ||
-                        (labels[i].compare(0, 8, string("pc_surf_")) == 0))
+                    if (labels.empty() || (labels[i].compare(0, 8, string("pc_surf_")) == 0))
                     {
                         prop->EdgeVisibilityOn();
                         prop->SetEdgeColor(wireframeColor);
@@ -503,7 +494,7 @@ avtPseudocolorMapper::ColorByScalarOff()
 
 
 // ****************************************************************************
-//  Method: avtPointMapper::ScaleByVar
+//  Method: avtPseudocolorMapper::ScaleByVar
 //
 //  Purpose:
 //    Turns on data scaling for the glyph portion of this mapper.
@@ -716,14 +707,19 @@ avtPseudocolorMapper::SetFullFrameScaling(bool useScale, const double *s)
 //  Programmer: Kathleen Biagas
 //  Creation:   November 5, 2019
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jun 10 09:18:19 PDT 2020
+//    Only save labels if they are prefixed with "pc_".
+//
 // ****************************************************************************
 
 void
 avtPseudocolorMapper::SetLabels(vector<string> &l, bool fromTree)
 {
-    if (!fromTree)
-        return;
-
-    labels = l;
+    if (fromTree)
+    {
+        if (!l.empty() && l[0].compare(0, 3, string("pc_")) == 0)
+            labels = l;
+    }
 }
 

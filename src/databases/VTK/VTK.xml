@@ -1,21 +1,23 @@
 <?xml version="1.0"?>
-  <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true">
+  <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" skipInfoGen="true">
     <FilePatterns>
       *.vtk
       *.vti
       *.vtp
-      *.vtr 
+      *.vtr
       *.vts
       *.vtu
       *.vtm
       *.pvti
       *.pvtk
       *.pvtp
-      *.pvtr 
+      *.pvtr
       *.pvts
       *.pvtu
+      *.pvd
     </FilePatterns>
     <Files components="M">
+      avtPVDFileReader.C
       avtVTKFileFormat.C
       avtVTKFileReader.C
       avtVTKOptions.C
@@ -24,6 +26,7 @@
       VTMParser.C
     </Files>
     <Files components="E">
+      avtPVDFileReader.C
       avtVTKFileFormat.C
       avtVTKFileReader.C
       avtVTKOptions.C

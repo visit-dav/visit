@@ -15,13 +15,12 @@
 #
 # ----------------------------------------------------------------------------
 
-import string
 
 def GetTruncatedWindowInformationString():
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
     # Only use the first 5 or so lines from the string.
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     s = ""
     for i in range(5):
         if(i < len(lines)):
@@ -196,7 +195,8 @@ DrawPlots()
 # and it should be the active time slider.
 testIndex = TestCorrelation(GetActiveTimeSlider(), sectionIndex, testIndex);
 testIndex = TestTimeSlider(sectionIndex, testIndex)
-SetTimeSliderState(TimeSliderGetNStates() / 2)
+# note: py3 div creates float
+SetTimeSliderState(int(TimeSliderGetNStates() / 2))
 testIndex = TestTimeSlider(sectionIndex, testIndex)
 SetTimeSliderState(TimeSliderGetNStates() - 1)
 testIndex = TestTimeSlider(sectionIndex, testIndex)

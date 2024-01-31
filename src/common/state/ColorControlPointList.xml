@@ -19,7 +19,10 @@
     <Field name="externalFlag" label="externalFlag" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="categoryName" label="categoryName" type="string">
+    <Field name="tagNames" label="tagNames" type="stringVector">
+    </Field>
+    <Field name="builtIn" label="builtIn" type="bool" internal="true" persistent="true">
+      true
     </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">
     </Function>
@@ -33,4 +36,42 @@
     </Function>
     <Function name="CompactCreateNode" user="true" member="true">
     </Function>
+    <Function name="AddTag" user="true" member="true">
+    </Function>
+    <Function name="RemoveTag" user="true" member="true">
+    </Function>
+    <Function name="ClearTags" user="true" member="true">
+    </Function>
+    <Function name="GetTag" user="true" member="true">
+    </Function>
+    <Function name="GetNumTags" user="true" member="true">
+    </Function>
+    <Function name="GetTagsAsString" user="true" member="true">
+    </Function>
+    <Function name="HasTag" user="true" member="true">
+    </Function>
+    <Function name="GetTagIndex" user="true" member="true">
+    </Function>
+    <Function name="ValidateTag" user="true" member="true">
+    </Function>
+    <Function name="SetNumControlPoints" user="true" member="true">
+    </Function>
+    <Function name="ColorControlPointList_SetNumControlPoints" user="true" member="true">
+    </Function>
+    <Function name="SetTagNames" user="false" member="true">
+    </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
+    <Include file="source" quoted="false">
+      cctype
+    </Include>
+    <Include file="source" quoted="false">
+      string.h
+    </Include>
   </Attribute>

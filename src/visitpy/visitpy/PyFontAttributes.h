@@ -5,6 +5,7 @@
 #ifndef PY_FONTATTRIBUTES_H
 #define PY_FONTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FontAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyFontAttributes_Wrap(const FontAttributes *attr);
 void VISITPY_API           PyFontAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyFontAttributes_SetDefaults(const FontAttributes *atts);
 std::string VISITPY_API    PyFontAttributes_GetLogString();
-std::string VISITPY_API    PyFontAttributes_ToString(const FontAttributes *, const char *);
+std::string VISITPY_API    PyFontAttributes_ToString(const FontAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyFontAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyFontAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyFontAttributes_methods[FONTATTRIBUTES_NMETH];

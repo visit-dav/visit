@@ -38,10 +38,10 @@ class Constant
         : name(n), decl(dc), def(df), member(m), target(t)
     {
     }
-    void Print(QTextStream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
-            out << "        Constant: (" << target << ") " << decl << endl;
+            out << "        Constant: (" << target << ") " << decl << Endl;
     }
 };
 

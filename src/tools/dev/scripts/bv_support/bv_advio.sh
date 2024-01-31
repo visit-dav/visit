@@ -67,13 +67,6 @@ function bv_advio_ensure
     fi
 }
 
-function bv_advio_dry_run
-{
-    if [[ "$DO_ADVIO" == "yes" ]] ; then
-        echo "Dry run option not set for advio."
-    fi
-}
-
 function apply_advio_12_mavericks_patch
 {
     patch -p0 << \EOF
@@ -201,9 +194,11 @@ function build_advio
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         ADVIO_DEBUG="--enable-debug"
     fi
+    set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN $ADVIO_DEBUG
+    set +x
     if [[ $? != 0 ]] ; then
         warn "AdvIO configure failed.  Giving up"
         return 1

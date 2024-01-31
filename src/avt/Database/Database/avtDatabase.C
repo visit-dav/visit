@@ -781,6 +781,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Changed 'for loop' to speed up the action. No need to test all if once
 //    any are true we are going to invalidate the zones.
 //
+//    Brad Whitlock, Fri Jun 16 14:43:44 PDT 2023
+//    Make invalidating nodes/zones for data selections conditional.
+//
 // ****************************************************************************
 
 void
@@ -797,6 +800,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     avtDataValidity   &validity = dob->GetInfo().GetValidity();
 
     avtDatabaseMetaData *md = GetMetaData(ts);
+    atts.SetCommentInDB(md->GetDatabaseComment());
     atts.SetDynamicDomainDecomposition(md->GetFormatCanDoDomainDecomposition());
     string mesh = md->MeshForVar(var);
     const avtMeshMetaData *mmd = md->GetMesh(mesh);
@@ -834,12 +838,15 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         {
             if (selectionsApplied[i])
             {
+                const auto selection = spec->GetDataSelection(i);
+
                 // We need to set these as invalid, or else caching could
                 // kick in and we might end up using acceleration structures
                 // across pipeline executions that were no longer valid.
-                validity.InvalidateZones();
-                validity.InvalidateNodes();
-                break;
+                if(selection->InvalidatesZones())
+                    validity.InvalidateZones();
+                if(selection->InvalidatesNodes())
+                    validity.InvalidateNodes();
             }
         }
         if (mmd->zonesWereSplit)
@@ -1444,6 +1451,9 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Thu Jun  8 14:15:28 PDT 2017
 //    Skip invalid variables too
+//
+//    Eddie Rusu, Wed May  6 15:43:52 PDT 2020
+//    Added newer mesh quality metrics.
 // ****************************************************************************
 
 void
@@ -1451,6 +1461,9 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 {
     struct MQExprTopoPair
     {
+        // The second argument, t, is the topological dimension that the
+        // Expression needs (e.g. Volume need 3). If the expression works for
+        // all topological dimensions, then use -1.
         MQExprTopoPair(const char *s, int t) { mq_expr = s; topo = t; };
         MQExprTopoPair() { ; };
         string mq_expr;
@@ -1493,40 +1506,43 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             continue;
 
         ++nmeshes_done;
-        const int nPairs = 30;
+        const int nPairs = 34;
         // Static allocation?!  Really??!!
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
         exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
         exprs[2]  = MQExprTopoPair("aspect", -1);
         exprs[3]  = MQExprTopoPair("condition", -1);
-        exprs[4]  = MQExprTopoPair("diagonal_ratio", 3);
-        exprs[5]  = MQExprTopoPair("min_diagonal", 3);
-        exprs[6]  = MQExprTopoPair("max_diagonal", 3);
-        exprs[7]  = MQExprTopoPair("dimension", 3);
-        exprs[8]  = MQExprTopoPair("jacobian", -1);
-        exprs[9]  = MQExprTopoPair("max_edge_length", -1);
-        exprs[10]  = MQExprTopoPair("max_side_volume", 3);
-        exprs[11]  = MQExprTopoPair("maximum_angle", 2);
-        exprs[12] = MQExprTopoPair("min_edge_length", -1);
-        exprs[13] = MQExprTopoPair("min_side_volume", 3);
-        exprs[14] = MQExprTopoPair("minimum_angle", 2);
-        exprs[15] = MQExprTopoPair("oddy", -1);
-        exprs[16] = MQExprTopoPair("relative_size", -1);
-        exprs[17] = MQExprTopoPair("scaled_jacobian", -1);
-        exprs[18] = MQExprTopoPair("shape", -1);
-        exprs[19] = MQExprTopoPair("shape_and_size", -1);
-        exprs[20] = MQExprTopoPair("shear", -1);
-        exprs[21] = MQExprTopoPair("skew", -1);
-        exprs[22] = MQExprTopoPair("stretch", -1);
-        exprs[23] = MQExprTopoPair("taper", -1);
-        exprs[24] = MQExprTopoPair("volume", 3);
-        exprs[25] = MQExprTopoPair("warpage", 2);
-        exprs[26] = MQExprTopoPair("face_planarity", 3);
-        exprs[27] = MQExprTopoPair("relative_face_planarity", 3);
-        exprs[28] = MQExprTopoPair("min_corner_area", 2);
-        exprs[29] = MQExprTopoPair("min_sin_corner", 2);
-        //exprs[30] = MQExprTopoPair("min_sin_corner_cw", 2);
+        exprs[4]  = MQExprTopoPair("degree", -1);
+        exprs[5]  = MQExprTopoPair("diagonal_ratio", 3);
+        exprs[6]  = MQExprTopoPair("min_diagonal", 3);
+        exprs[7]  = MQExprTopoPair("max_diagonal", 3);
+        exprs[8]  = MQExprTopoPair("dimension", 3);
+        exprs[9]  = MQExprTopoPair("jacobian", -1);
+        exprs[10]  = MQExprTopoPair("max_edge_length", -1);
+        exprs[11]  = MQExprTopoPair("max_side_volume", 3);
+        exprs[12]  = MQExprTopoPair("maximum_angle", 2);
+        exprs[13] = MQExprTopoPair("min_edge_length", -1);
+        exprs[14] = MQExprTopoPair("min_side_volume", 3);
+        exprs[15] = MQExprTopoPair("min_corner_area", 2);
+        exprs[16] = MQExprTopoPair("min_sin_corner", 2);
+        exprs[17] = MQExprTopoPair("min_sin_corner_cw", 2);
+        exprs[18] = MQExprTopoPair("minimum_angle", 2);
+        exprs[19] = MQExprTopoPair("neighbor", -1);
+        exprs[20] = MQExprTopoPair("node_degree", 3);
+        exprs[21] = MQExprTopoPair("oddy", -1);
+        exprs[22] = MQExprTopoPair("relative_size", -1);
+        exprs[23] = MQExprTopoPair("scaled_jacobian", -1);
+        exprs[24] = MQExprTopoPair("shape", -1);
+        exprs[25] = MQExprTopoPair("shape_and_size", -1);
+        exprs[26] = MQExprTopoPair("shear", -1);
+        exprs[27] = MQExprTopoPair("skew", -1);
+        exprs[28] = MQExprTopoPair("stretch", -1);
+        exprs[29] = MQExprTopoPair("taper", -1);
+        exprs[30] = MQExprTopoPair("volume", 3);
+        exprs[31] = MQExprTopoPair("warpage", 2);
+        exprs[32] = MQExprTopoPair("face_planarity", 3);
+        exprs[33] = MQExprTopoPair("relative_face_planarity", 3);
 
         for (int j = 0 ; j < nPairs ; ++j)
         {
@@ -2374,6 +2390,13 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Don't count key words when determining if the file count evenly divides
 //    the block count.
 //
+//    Eric Brugger, Fri May  1 12:39:32 PDT 2020
+//    Added logic to skip lines that start with !TIME and !ENSEMBLE.
+//
+//    Kathleen Biagas, Thu Oct 27 11:45:24 PDT 2022
+//    Removed badCount, it prevented .visit files from having comments
+//    associated with each file when fileCount >= 10000.
+//
 // ****************************************************************************
 
 bool
@@ -2399,11 +2422,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     char  str_auto[1024];
     char  str_with_dir[2048];
     int   goodCount = 0; // number of valid lines, keywords and files
-    int   badCount = 0; // number of empty and comment lines
     int   fileCount = 0; // number of non empty, non comment, non keyword, lines
     int   bang_nBlocks = -1;
     bool failed = false;
-    while (!ifile.eof() && !failed && badCount < 10000)
+    while (!ifile.eof() && !failed)
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
@@ -2451,6 +2473,20 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
                 continue;
             }
 
+            //
+            // Skip !TIME and !ENSEMBLE.
+            //
+            bnbp = strstr(str_auto, "!TIME ");
+            if (bnbp && bnbp == str_auto)
+            {
+                continue;
+            }
+            bnbp = strstr(str_auto, "!ENSEMBLE");
+            if (bnbp && bnbp == str_auto)
+            {
+                continue;
+            }
+
             ConvertSlashes(str_auto);
             if (str_auto[0] == VISIT_SLASH_CHAR || str_auto[0] == '!' ||
                 (str_auto_len > 2 && str_auto[1] == ':'))
@@ -2472,8 +2508,6 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             if (str_auto[0] != '!')
                 ++fileCount;
         }
-        else
-            ++badCount;
     }
 
     if (bang_nBlocks > 0 && !failed)

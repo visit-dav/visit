@@ -21,9 +21,6 @@
 
 #include <DebugStream.h>
 
-#define TIME_IDENTIFIER "$time"
-#define CYCLE_IDENTIFIER "$cycle"
-
 // Macros that let us access the AnnotationObject and store the fields
 // we care about into the available fields.
 #define HasPreserveOrientation GetOptions().HasEntry("preserveOrientation")
@@ -44,9 +41,6 @@
 #define HasFixedHeight   GetOptions().HasEntry("fixedHeight")
 #define GetFixedHeight   GetOptions().GetEntry("fixedHeight")->AsDouble
 
-double avtText3DColleague::initialTime = 0.;
-int    avtText3DColleague::initialCycle = 0;
-
 // ****************************************************************************
 // Method: avtText3DColleague::avtText3DColleague
 //
@@ -66,15 +60,11 @@ int    avtText3DColleague::initialCycle = 0;
 // ****************************************************************************
 
 avtText3DColleague::avtText3DColleague(VisWindowColleagueProxy &m) 
-    : avtAnnotationColleague(m)
+    : avtAnnotationWithTextColleague(m)
 {
     info = new Text3DInformation;
     info->positionInitialized = false;
     info->scaleInitialized = false;
-    info->textFormatString = 0;
-    info->textString = 0;
-    info->currentTime = initialTime;
-    info->currentCycle = initialCycle;
 
     info->useForegroundForTextColor = true;
     info->useRelativeHeight = true;
@@ -161,18 +151,6 @@ avtText3DColleague::~avtText3DColleague()
         info->textSource->Delete();
         info->textSource = NULL;
     } 
-
-    if (info->textString != NULL)
-    {
-        delete [] info->textString;
-        info->textString = NULL;
-    }
-
-    if(info->textFormatString != NULL)
-    {
-        delete [] info->textFormatString;
-        info->textFormatString = NULL;
-    }
 
     delete info;
 }
@@ -527,7 +505,7 @@ avtText3DColleague::GetOptions(AnnotationObject &annot)
 
     // Store the text
     stringVector text;
-    text.push_back(info->textFormatString);
+    text.push_back(textFormatString);
     annot.SetText(text);
     annot.SetOptions(opts);
 }
@@ -620,21 +598,10 @@ avtText3DColleague::NoPlots(void)
 void
 avtText3DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
-    if(lst.size() > 0 && info->textFormatString != 0)
-    {
-        avtDataAttributes &atts = lst[0]->GetBehavior()->GetInfo().GetAttributes();
-        info->currentTime = atts.GetTime();
-        info->currentCycle = atts.GetCycle();
-
-        std::string formatString(info->textFormatString);
-        std::string::size_type pos;
-        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
-           (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
-            SetText(info->textFormatString);
-
-        // Set the initial values from the current values.
-        initialTime = info->currentTime;
-        initialCycle = info->currentCycle;
+    if (lst.size() > 0 && textFormatString != 0)
+    {   
+        avtAnnotationWithTextColleague::UpdatePlotList(lst);
+        SetText(textFormatString);
     }
 
     // Update the actor's scale
@@ -663,54 +630,25 @@ avtText3DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 void
 avtText3DColleague::SetText(const char *formatString)
 {
-    if(formatString == 0)
+    if (formatString == 0)
         return;
 
     // Save the format string. Don't do it in the case that the formatString
     // pointer is the same as textFormatString, which is how we get here from
     // UpdatePlotList.
     size_t len = strlen(formatString);
-    if(info->textFormatString != formatString)
+    if (textFormatString != formatString)
     {
-        if(info->textFormatString != 0)
-            delete [] info->textFormatString;
-        info->textFormatString = new char[len + 1];
-        strcpy(info->textFormatString, formatString);
+        if (textFormatString != 0)
+            delete [] textFormatString;
+        textFormatString = new char[len + 1];
+        strcpy(textFormatString, formatString);
     }
 
-    // Replace $time with the time if the format string contains $time.
-    if(info->textString != 0)
-        delete [] info->textString;
-    std::string fmtStr(info->textFormatString);
-    std::string::size_type pos;
-    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(TIME_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%g", info->currentTime);
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        info->textString = new char[len + 1];
-        snprintf(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(CYCLE_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%d", info->currentCycle);
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        info->textString = new char[len + 1];
-        snprintf(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else
-    {
-        info->textString = new char[len + 1];
-        strcpy(info->textString, formatString);
-    }
+    if (textString != 0)
+        delete [] textString;
+    textString = CreateAnnotationString(textFormatString);
 
-    if(info->textSource)
-        info->textSource->SetText(info->textString);
+    if (info->textSource)
+        info->textSource->SetText(textString);
 }

@@ -20,7 +20,7 @@
 //  Purpose:
 //      This is a proxy specific to VisWindow colleagues.  They may use it
 //      to access the VisWindow.  This object is not a friend to VisWindow,
-//      but it may access it through its base class' methods and friend 
+//      but it may access it through its base class' methods and friend
 //      status.
 //
 //  Programmer: Hank Childs
@@ -37,31 +37,31 @@
 //    Hank Childs, Wed Nov  8 14:23:16 PST 2000
 //    Added GetBounds.
 //
-//    Hank Childs, Tue Mar 12 17:55:27 PST 2002 
+//    Hank Childs, Tue Mar 12 17:55:27 PST 2002
 //    Added UpdatePlotList.
 //
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
-//    Added Set/Get TypeIsCurve, GetCurveYScale, ComputeVectorTextScaleFactor. 
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
+//    Added Set/Get TypeIsCurve, GetCurveYScale, ComputeVectorTextScaleFactor.
 //
-//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002  
-//    Added GetLighting, GetAmbientOn, GetAmbientCoefficient, 
+//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
+//    Added GetLighting, GetAmbientOn, GetAmbientCoefficient,
 //    and UpdateLightPositions.
 //
 //    Brad Whitlock, Mon Sep 23 16:28:18 PST 2002
 //    Added methods to return the surface representation and the immediate
 //    rendering mode.
 //
-//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003 
+//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003
 //    Replaced GetCurveYScale with more generic GetScaleFactorAndType.
 //
-//    Kathleen Bonnell, Mon May 19 09:00:54 PDT 2003  
-//    Removed return from GetScaleFactorAndType. 
+//    Kathleen Bonnell, Mon May 19 09:00:54 PDT 2003
+//    Removed return from GetScaleFactorAndType.
 //
-//    Kathleen Bonnell, Wed May 28 15:58:15 PDT 2003 
+//    Kathleen Bonnell, Wed May 28 15:58:15 PDT 2003
 //    Added methods ReAddColleaguesToRenderWindow, GetAntialiasing.
 //
-//    Kathleen Bonnell, Fri Jun  6 15:31:37 PDT 2003  
-//    Added GetFullFrameMode method. 
+//    Kathleen Bonnell, Fri Jun  6 15:31:37 PDT 2003
+//    Added GetFullFrameMode method.
 //
 //    Eric Brugger, Wed Aug 20 10:03:43 PDT 2003
 //    Removed GetTypeIsCurve and SetTypeIsCurve.
@@ -86,7 +86,7 @@
 //    Added RecalculateRenderOrder. Strangely, it was already implemented
 //    in VisWindowColleagueProxy.C
 //
-//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005
 //    Added GetMaxPlotZShift.
 //
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
@@ -111,143 +111,154 @@
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 {
   public:
-                        VisWindowColleagueProxy(VisWindow *vw) 
-                             : VisWindowProtectionProxy(vw) {;};
+                        VisWindowColleagueProxy(VisWindow *vw)
+                             : VisWindowProtectionProxy(vw) {;}
 
-    WINDOW_MODE         GetMode() { return ProxiedGetMode(); };
+    WINDOW_MODE         GetMode() { return ProxiedGetMode(); }
 
     void                ChangeMode(WINDOW_MODE mode)
-                                  { ProxiedChangeMode(mode); };
+                                  { ProxiedChangeMode(mode); }
 
     void                SetInteractor(VisitInteractor *i)
-                                  { ProxiedSetInteractor(i); };
+                                  { ProxiedSetInteractor(i); }
 
     void                GetForegroundColor(double *fg)
-                                  { ProxiedGetForegroundColor(fg); };
+                                  { ProxiedGetForegroundColor(fg); }
 
     void                GetViewport(double *vport)
-                                  { ProxiedGetViewport(vport); };
+                                  { ProxiedGetViewport(vport); }
 
     vtkRenderer        *GetBackground(void)
-                                  { return ProxiedGetBackground(); };
+                                  { return ProxiedGetBackground(); }
 
     int                 GetBackgroundMode() const
                                   { return ProxiedGetBackgroundMode(); }
 
     void                GetBounds(double bounds[6])
-                                  { ProxiedGetBounds(bounds); };
+                                  { ProxiedGetBounds(bounds); }
 
     void                GetExtents(double ext[3]) // TODO: Remove with VTK8
-                                  { ProxiedGetExtents(ext); };
+                                  { ProxiedGetExtents(ext); }
 
     vtkRenderer        *GetCanvas(void)
-                                  { return ProxiedGetCanvas(); };
+                                  { return ProxiedGetCanvas(); }
 
     vtkRenderer        *GetForeground(void)
-                                  { return ProxiedGetForeground(); };
+                                  { return ProxiedGetForeground(); }
 
     void                HasPlots(bool b)
-                                  { ProxiedHasPlots(b); };
+                                  { ProxiedHasPlots(b); }
 
     bool                HasPlots(void)
-                                  { return ProxiedHasPlots(); };
+                                  { return ProxiedHasPlots(); }
 
     bool                UpdatesEnabled(void)
-                                  { return ProxiedUpdatesEnabled(); };
+                                  { return ProxiedUpdatesEnabled(); }
 
-    void                Render(void) { ProxiedRender(); };
+    void                Render(void) { ProxiedRender(); }
 
     void                UpdatePlotList(std::vector<avtActor_p> &l)
-                                  { ProxiedUpdatePlotList(l); };
+                                  { ProxiedUpdatePlotList(l); }
 
-    double               ComputeVectorTextScaleFactor(const double *p, const double*v = NULL) 
-                                  { return ProxiedComputeVectorTextScaleFactor(p, v); };
+    double               ComputeVectorTextScaleFactor(const double *p, const double*v = NULL)
+                                  { return ProxiedComputeVectorTextScaleFactor(p, v); }
 
     bool                GetAmbientOn()
-                                  { return ProxiedGetAmbientOn(); };
+                                  { return ProxiedGetAmbientOn(); }
 
     double               GetAmbientCoefficient()
-                                  { return ProxiedGetAmbientCoefficient(); };
+                                  { return ProxiedGetAmbientCoefficient(); }
 
     bool                GetLighting()
-                                  { return ProxiedGetLighting(); };
+                                  { return ProxiedGetLighting(); }
 
     void                UpdateLightPositions()
-                                  { ProxiedUpdateLightPositions(); };
+                                  { ProxiedUpdateLightPositions(); }
 
     int                 GetSurfaceRepresentation()
-                                  { return ProxiedGetSurfaceRepresentation(); };
+                                  { return ProxiedGetSurfaceRepresentation(); }
 
     bool                DisableExternalRenderRequests(bool bClearImage = false)
-                                  { return ProxiedDisableExternalRenderRequests(bClearImage); };
+                                  { return ProxiedDisableExternalRenderRequests(bClearImage); }
 
     bool                EnableExternalRenderRequests()
-                                  { return ProxiedEnableExternalRenderRequests(); };
+                                  { return ProxiedEnableExternalRenderRequests(); }
 
-    void                GetScaleFactorAndType(double &s, int &t) 
-                                  { ProxiedGetScaleFactorAndType(s, t); };
+    void                GetScaleFactorAndType(double &s, int &t)
+                                  { ProxiedGetScaleFactorAndType(s, t); }
 
     void                ReAddColleaguesToRenderWindow()
-                                  { ProxiedReAddColleaguesToRenderWindow(); };
+                                  { ProxiedReAddColleaguesToRenderWindow(); }
 
     bool                GetAntialiasing()
-                                  { return ProxiedGetAntialiasing(); };
+                                  { return ProxiedGetAntialiasing(); }
 
     bool                GetFullFrameMode()
-                                  { return ProxiedGetFullFrameMode(); };
+                                  { return ProxiedGetFullFrameMode(); }
 
-    bool                Get3DAxisScalingFactors(double s[3]) 
+    bool                Get3DAxisScalingFactors(double s[3])
                                   { return ProxiedGet3DAxisScalingFactors(s); }
 
     bool                GetSpecularFlag()
-                                  { return ProxiedGetSpecularFlag(); };
+                                  { return ProxiedGetSpecularFlag(); }
 
     double               GetSpecularCoeff()
-                                  { return ProxiedGetSpecularCoeff(); };
+                                  { return ProxiedGetSpecularCoeff(); }
 
     double               GetSpecularPower()
-                                  { return ProxiedGetSpecularPower(); };
+                                  { return ProxiedGetSpecularPower(); }
 
     const ColorAttribute &GetSpecularColor()
-                                  { return ProxiedGetSpecularColor(); };
+                                  { return ProxiedGetSpecularColor(); }
     void                ReAddToolsToRenderWindow()
-                                  { ProxiedReAddToolsToRenderWindow(); };
+                                  { ProxiedReAddToolsToRenderWindow(); }
 
     void                GetFrameAndState(int &a, int &b, int &c, int &d,
                                          int &e, int &f, int &g) const
-                                  { ProxiedGetFrameAndState(a,b,c,d,e,f,g); };
+                                  { ProxiedGetFrameAndState(a,b,c,d,e,f,g); }
 
     void                SuspendOpaqueGeometry()
-                                  { ProxiedSuspendOpaqueGeometry(); };
+                                  { ProxiedSuspendOpaqueGeometry(); }
 
     void                SuspendTranslucentGeometry()
-                                  { ProxiedSuspendTranslucentGeometry(); };
+                                  { ProxiedSuspendTranslucentGeometry(); }
 
     void                ResumeOpaqueGeometry()
-                                  { ProxiedResumeOpaqueGeometry(); };
+                                  { ProxiedResumeOpaqueGeometry(); }
 
     void                ResumeTranslucentGeometry()
-                                  { ProxiedResumeTranslucentGeometry(); };
+                                  { ProxiedResumeTranslucentGeometry(); }
 
     void                RecalculateRenderOrder()
-                                  { ProxiedRecalculateRenderOrder(); };
+                                  { ProxiedRecalculateRenderOrder(); }
     double              GetMaxPlotZShift()
-                                  { return ProxiedGetMaxPlotZShift(); };
+                                  { return ProxiedGetMaxPlotZShift(); }
 
     bool                IsMakingExternalRenderRequests(void) const
-                             { return ProxiedIsMakingExternalRenderRequests(); };
+                             { return ProxiedIsMakingExternalRenderRequests(); }
     double              GetAverageExternalRenderingTime(void) const
-                             { return ProxiedGetAverageExternalRenderingTime(); };
+                             { return ProxiedGetAverageExternalRenderingTime(); }
     void                DoNextExternalRenderAsVisualQueue(int w, int h, const double *c)
-                             { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); };
-#ifdef VISIT_OSPRAY
+                             { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); }
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     bool                GetOsprayRendering()
-                             { return ProxiedGetOsprayRendering(); };
+                             { return ProxiedGetOsprayRendering(); }
+#endif
+#ifdef HAVE_OSPRAY
+    int                 GetOspraySPP()
+                             { return ProxiedGetOspraySPP(); }
+    int                 GetOsprayAO()
+                             { return ProxiedGetOsprayAO(); }
+    bool                GetOsprayShadows()
+                             { return ProxiedGetOsprayShadows(); }
 #endif
 };
 

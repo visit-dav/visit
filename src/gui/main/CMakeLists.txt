@@ -17,6 +17,9 @@
 #   Kathleen Biagas, Tue May 24 16:17:22 MST 2016
 #   Add qwt lib.
 #
+#   Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
+#   Updated GUI bundle name, identifier and copyright
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -61,11 +64,11 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical client for VisIt")
     SET(MACOSX_BUNDLE_ICON_FILE            ${GUI_ICON_FILE})
-    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
+    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       "gov.llnl.visit.gui")
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
 
 ENDIF(NOT APPLE)
 

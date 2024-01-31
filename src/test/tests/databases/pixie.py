@@ -128,5 +128,33 @@ v=GetView2D()
 v.windowCoords=(-0.241119, 0.241119, -0.162714, 0.162714)
 SetView2D(v)
 Test("pixie_08")
+DeleteAllPlots()
+
+# test a pseudocolor plot of a 3D curvilinear mesh
+OpenDatabase(data_path("pixie_test_data/pixie3d6.h5"))
+
+AddPlot("Mesh", "curvemesh_8x8x8")
+AddPlot("Pseudocolor","Curvilinear/temperature")
+DrawPlots()
+v = GetView3D()
+v.viewNormal = (0.465617, -0.587141, 0.662168)
+v.focus = (0.5, 1, 1.5)
+v.viewUp = (0.884708, 0.327576, -0.33164)
+v.viewAngle = 30
+v.parallelScale = 1.63698
+v.nearPlane = -3.27395
+v.farPlane = 3.27395
+v.imagePan = (0, 0)
+v.imageZoom = 0.9
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0.5, 1, 1.5)
+v.axis3DScaleFlag = 0
+v.axis3DScales = (1, 1, 1)
+v.shear = (0, 0, 1)
+v.windowValid = 1
+SetView3D(v)
+Test("pixie_09")
 
 Exit()

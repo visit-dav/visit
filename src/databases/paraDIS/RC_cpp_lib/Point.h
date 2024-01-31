@@ -332,7 +332,7 @@ namespace rclib {
   // ========================================================================
   // ***********************************************************************
 
-  // POINT ROTATION:  The following functions take a vector of Points and rotate them from "oldOrientation" to "newOrientation".  For example, if oldOrientation = (0 0 1) and newOrientation = (0 1 0), this means that any point <x y z> in pointsToRotate will be rotated by the same set of rotations around the origin that would move (0 0 1) to (0 1 0), which boils down to a 270° rotation around the X axis. 
+  // POINT ROTATION:  The following functions take a vector of Points and rotate them from "oldOrientation" to "newOrientation".  For example, if oldOrientation = (0 0 1) and newOrientation = (0 1 0), this means that any point <x y z> in pointsToRotate will be rotated by the same set of rotations around the origin that would move (0 0 1) to (0 1 0), which boils down to a 270 degree rotation around the X axis. 
   // -----------------------------------------------------------------------
 
   // =======================================================================

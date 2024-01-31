@@ -46,7 +46,7 @@ def WaitForFile(filename, starttime, timelimit):
 TestSection("Testing batch simulation with session file")
 
 # The name of the session file.
-session = string.replace(TestEnv.params["script"], "updateplots_session.py", "updateplots_session.session")
+session = TestEnv.params["script"].replace("updateplots_session.py", "updateplots_session.session")
 
 # Create our simulation object.
 sim = Simulation(SimVisItDir(), SimProgram("updateplots"), SimFile("dummy"))

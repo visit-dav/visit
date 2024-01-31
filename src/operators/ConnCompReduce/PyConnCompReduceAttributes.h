@@ -5,6 +5,7 @@
 #ifndef PY_CONNCOMPREDUCEATTRIBUTES_H
 #define PY_CONNCOMPREDUCEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ConnCompReduceAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyConnCompReduceAttributes_Wrap(const ConnCompReduceAttributes *a
 void           PyConnCompReduceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyConnCompReduceAttributes_SetDefaults(const ConnCompReduceAttributes *atts);
 std::string    PyConnCompReduceAttributes_GetLogString();
-std::string    PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *, const char *);
+std::string    PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *, const char *, const bool=false);
 PyObject *     PyConnCompReduceAttributes_getattr(PyObject *self, char *name);
 int            PyConnCompReduceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyConnCompReduceAttributes_methods[CONNCOMPREDUCEATTRIBUTES_NMETH];

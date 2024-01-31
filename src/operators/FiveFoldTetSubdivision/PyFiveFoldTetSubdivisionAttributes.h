@@ -5,6 +5,7 @@
 #ifndef PY_FIVEFOLDTETSUBDIVISIONATTRIBUTES_H
 #define PY_FIVEFOLDTETSUBDIVISIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FiveFoldTetSubdivisionAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyFiveFoldTetSubdivisionAttributes_Wrap(const FiveFoldTetSubdivis
 void           PyFiveFoldTetSubdivisionAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyFiveFoldTetSubdivisionAttributes_SetDefaults(const FiveFoldTetSubdivisionAttributes *atts);
 std::string    PyFiveFoldTetSubdivisionAttributes_GetLogString();
-std::string    PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *, const char *);
+std::string    PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *, const char *, const bool=false);
 PyObject *     PyFiveFoldTetSubdivisionAttributes_getattr(PyObject *self, char *name);
 int            PyFiveFoldTetSubdivisionAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyFiveFoldTetSubdivisionAttributes_methods[FIVEFOLDTETSUBDIVISIONATTRIBUTES_NMETH];

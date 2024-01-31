@@ -5,6 +5,7 @@
 #include <PyReflectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyReflectAttributes
@@ -34,9 +35,8 @@ struct ReflectAttributesObject
 // Internal prototypes
 //
 static PyObject *NewReflectAttributes(int);
-
 std::string
-PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
+PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -182,22 +182,60 @@ ReflectAttributes_SetOctant(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 8)
+    {
+        std::stringstream ss;
+        ss << "An invalid octant value was given." << std::endl;
+        ss << "Valid values are in the range [0,7]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " PXPYPZ";
+        ss << ", NXPYPZ";
+        ss << ", PXNYPZ";
+        ss << ", NXNYPZ";
+        ss << ", PXPYNZ";
+        ss << ", NXPYNZ";
+        ss << ", PXNYNZ";
+        ss << ", NXNYNZ";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the octant in the object.
-    if(ival >= 0 && ival < 8)
-        obj->data->SetOctant(ReflectAttributes::Octant(ival));
-    else
-    {
-        fprintf(stderr, "An invalid octant value was given. "
-                        "Valid values are in the range of [0,7]. "
-                        "You can also use the following names: "
-                        "PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, PXPYNZ, "
-                        "NXPYNZ, PXNYNZ, NXNYNZ.");
-        return NULL;
-    }
+    obj->data->SetOctant(ReflectAttributes::Octant(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -216,12 +254,48 @@ ReflectAttributes_SetUseXBoundary(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useXBoundary in the object.
-    obj->data->SetUseXBoundary(ival != 0);
+    obj->data->SetUseXBoundary(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -240,12 +314,48 @@ ReflectAttributes_SetSpecifiedX(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the specifiedX in the object.
-    obj->data->SetSpecifiedX(dval);
+    obj->data->SetSpecifiedX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -264,12 +374,48 @@ ReflectAttributes_SetUseYBoundary(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useYBoundary in the object.
-    obj->data->SetUseYBoundary(ival != 0);
+    obj->data->SetUseYBoundary(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -288,12 +434,48 @@ ReflectAttributes_SetSpecifiedY(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the specifiedY in the object.
-    obj->data->SetSpecifiedY(dval);
+    obj->data->SetSpecifiedY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -312,12 +494,48 @@ ReflectAttributes_SetUseZBoundary(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useZBoundary in the object.
-    obj->data->SetUseZBoundary(ival != 0);
+    obj->data->SetUseZBoundary(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -336,12 +554,48 @@ ReflectAttributes_SetSpecifiedZ(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the specifiedZ in the object.
-    obj->data->SetSpecifiedZ(dval);
+    obj->data->SetSpecifiedZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -360,35 +614,60 @@ ReflectAttributes_SetReflections(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    int *ivals = obj->data->GetReflections();
-    if(!PyArg_ParseTuple(args, "iiiiiiii", &ivals[0], &ivals[1], &ivals[2], &ivals[3], &ivals[4], &ivals[5], &ivals[6], &ivals[7]))
+    PyObject *packaged_args = 0;
+    int *vals = obj->data->GetReflections();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 8)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    ivals[i] = int(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    ivals[i] = int(PyLong_AsDouble(item));
-                else
-                    ivals[i] = 0;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 8)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 8)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 8 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        long val = PyLong_AsLong(item);
+        int cval = int(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the reflections in the object as modified.
     obj->data->SelectReflections();
@@ -414,35 +693,60 @@ ReflectAttributes_SetPlanePoint(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    double *dvals = obj->data->GetPlanePoint();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPlanePoint();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the planePoint in the object as modified.
     obj->data->SelectPlanePoint();
@@ -468,35 +772,60 @@ ReflectAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    double *dvals = obj->data->GetPlaneNormal();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPlaneNormal();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the planeNormal in the object as modified.
     obj->data->SelectPlaneNormal();
@@ -522,21 +851,54 @@ ReflectAttributes_SetReflectType(PyObject *self, PyObject *args)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid reflectType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Plane";
+        ss << ", Axis";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the reflectType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetReflectType(ReflectAttributes::ReflectType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid reflectType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Plane, Axis.");
-        return NULL;
-    }
+    obj->data->SetReflectType(ReflectAttributes::ReflectType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -593,14 +955,7 @@ ReflectAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ReflectAttributes_compare(PyObject *v, PyObject *w)
-{
-    ReflectAttributes *a = ((ReflectAttributesObject *)v)->data;
-    ReflectAttributes *b = ((ReflectAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ReflectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyReflectAttributes_getattr(PyObject *self, char *name)
 {
@@ -649,48 +1004,61 @@ PyReflectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ReflectAttributes::Axis));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyReflectAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyReflectAttributes_methods[i].ml_name),
+                PyString_FromString(PyReflectAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyReflectAttributes_methods, self, name);
 }
 
 int
 PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "octant") == 0)
-        obj = ReflectAttributes_SetOctant(self, tuple);
+        obj = ReflectAttributes_SetOctant(self, args);
     else if(strcmp(name, "useXBoundary") == 0)
-        obj = ReflectAttributes_SetUseXBoundary(self, tuple);
+        obj = ReflectAttributes_SetUseXBoundary(self, args);
     else if(strcmp(name, "specifiedX") == 0)
-        obj = ReflectAttributes_SetSpecifiedX(self, tuple);
+        obj = ReflectAttributes_SetSpecifiedX(self, args);
     else if(strcmp(name, "useYBoundary") == 0)
-        obj = ReflectAttributes_SetUseYBoundary(self, tuple);
+        obj = ReflectAttributes_SetUseYBoundary(self, args);
     else if(strcmp(name, "specifiedY") == 0)
-        obj = ReflectAttributes_SetSpecifiedY(self, tuple);
+        obj = ReflectAttributes_SetSpecifiedY(self, args);
     else if(strcmp(name, "useZBoundary") == 0)
-        obj = ReflectAttributes_SetUseZBoundary(self, tuple);
+        obj = ReflectAttributes_SetUseZBoundary(self, args);
     else if(strcmp(name, "specifiedZ") == 0)
-        obj = ReflectAttributes_SetSpecifiedZ(self, tuple);
+        obj = ReflectAttributes_SetSpecifiedZ(self, args);
     else if(strcmp(name, "reflections") == 0)
-        obj = ReflectAttributes_SetReflections(self, tuple);
+        obj = ReflectAttributes_SetReflections(self, args);
     else if(strcmp(name, "planePoint") == 0)
-        obj = ReflectAttributes_SetPlanePoint(self, tuple);
+        obj = ReflectAttributes_SetPlanePoint(self, args);
     else if(strcmp(name, "planeNormal") == 0)
-        obj = ReflectAttributes_SetPlaneNormal(self, tuple);
+        obj = ReflectAttributes_SetPlaneNormal(self, args);
     else if(strcmp(name, "reflectType") == 0)
-        obj = ReflectAttributes_SetReflectType(self, tuple);
+        obj = ReflectAttributes_SetReflectType(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -698,7 +1066,7 @@ static int
 ReflectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
-    fprintf(fp, "%s", PyReflectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyReflectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -706,7 +1074,7 @@ PyObject *
 ReflectAttributes_str(PyObject *v)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
-    return PyString_FromString(PyReflectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyReflectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -719,49 +1087,70 @@ static char *ReflectAttributes_Purpose = "This class contains attributes for the
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ReflectAttributesType =
+
+VISIT_PY_TYPE_OBJ(ReflectAttributesType,         \
+                  "ReflectAttributes",           \
+                  ReflectAttributesObject,       \
+                  ReflectAttributes_dealloc,     \
+                  ReflectAttributes_print,       \
+                  PyReflectAttributes_getattr,   \
+                  PyReflectAttributes_setattr,   \
+                  ReflectAttributes_str,         \
+                  ReflectAttributes_Purpose,     \
+                  ReflectAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ReflectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ReflectAttributes",                    // tp_name
-    sizeof(ReflectAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ReflectAttributes_dealloc,  // tp_dealloc
-    (printfunc)ReflectAttributes_print,     // tp_print
-    (getattrfunc)PyReflectAttributes_getattr, // tp_getattr
-    (setattrfunc)PyReflectAttributes_setattr, // tp_setattr
-    (cmpfunc)ReflectAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ReflectAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ReflectAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ReflectAttributesType
+         || Py_TYPE(other) != &ReflectAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ReflectAttributes *a = ((ReflectAttributesObject *)self)->data;
+    ReflectAttributes *b = ((ReflectAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -837,7 +1226,7 @@ PyReflectAttributes_GetLogString()
 {
     std::string s("ReflectAtts = ReflectAttributes()\n");
     if(currentAtts != 0)
-        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.");
+        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.", true);
     return s;
 }
 
@@ -850,7 +1239,7 @@ PyReflectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ReflectAtts = ReflectAttributes()\n");
-        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.");
+        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.", true);
         cb(s);
     }
 }

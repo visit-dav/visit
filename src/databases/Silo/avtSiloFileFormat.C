@@ -262,7 +262,7 @@ static int db_get_index(DBnamescheme const *ns, int natnum);
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
-                                     DBOptionsAttributes *rdatts)
+                                     const DBOptionsAttributes *rdatts)
     : avtSTMDFileFormat(&toc_name, 1)
 {
     //
@@ -3714,6 +3714,11 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Mark C. Miller, Thu Feb 25 12:40:17 PST 2016
 //    Add logic to check mesh identified by mmesh_name member and then fall
 //    back to fuzzy match if it doesn't exist.
+//
+//    Alister Maguire, Mon Jan  4 09:06:58 PST 2021
+//    If we encounter a negative material number, bail and let the user
+//    know that this isn't allowed.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3727,6 +3732,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
         DBmultimat *mm = 0;
         DBmaterial *mat = 0;
         avtSiloMultiMatCacheEntry *mm_ent = NULL;
+        bool foundNegativeMats = false;
         TRY
         {
             name_w_dir = GenerateName(dirname, multimat_names[i], topDir.c_str());
@@ -3829,6 +3835,18 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             {
                 for (j = 0 ; j < minfo_nmats ; j++)
                 {
+                    //
+                    // We don't allow negative material numbers. If we've
+                    // encountered them, we need to bail. This exception
+                    // will be caught below, so we need to truly bail and
+                    // send a proper message later on.
+                    //
+                    if (minfo_matnos[j] < 0)
+                    {
+                        foundNegativeMats = true;
+                        EXCEPTION0(ImproperUseException);
+                    }
+
                     char *num = NULL;
                     int dlen = int(log10(float(minfo_matnos[j]+1))) + 1;
                     if (minfo_matnames == NULL || minfo_matnames[j] == NULL)
@@ -3931,6 +3949,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             }
 
             debug1 << "Giving up on multi-mat \"" << multimat_names[i] << "\"" << endl;
+
             vector<string> no_matnames;
             avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir, "unknown",
                                           0, no_matnames);
@@ -3941,6 +3960,18 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
 
         if (mat) DBFreeMaterial(mat);
         if (name_w_dir) delete [] name_w_dir;
+
+        //
+        // If we've encountered negative material numbers, now is the time
+        // to truly bail and let the user know that this is not allowed.
+        //
+        if (foundNegativeMats)
+        {
+            char msg[256];
+            snprintf(msg, sizeof(msg), "Material numbers must "
+                "be >= 0, but values < 0 have been encountered.");
+            EXCEPTION1(ImproperUseException, msg);
+        }
     }
 }
 
@@ -5180,6 +5211,10 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
 //    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
 //    Read the Domains_BlockNums data to support adding block decompposition
 //    as a variable.
+//
+//    Cyrus Harrison, Fri Dec  9 14:45:57 PST 2022
+//    Add support for the rare `6th` decomp format discovered in the wild.
+//
 // ****************************************************************************
 
 void
@@ -5433,25 +5468,41 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
     if (!packed_conn_info) // use standard connectivity info
     {
         debug1 << "avtSiloFileFormat: using standard connectivity info" <<endl;
-        for (int j = 0 ; j < ndomains ; j++)
+
+        // Look for absence of `Domain_0/BlockNum` along with the
+        // existence of `Domains_BlockNums` & `Domain_Extents`
+        // to identify the rare "6th" silo decomp format.
+        //
+        // (yes, Domain_Extents is singular not plural form)
+        //
+        // This case is a blend of some of the arrays used for the mmadj and
+        // "standard" format flavors.
+        //
+        // It came to town in a file that has decomp dirs but the blocks
+        // are all independent and neighborless.
+        // 
+        // mmadj can't represent this case (all relationships can't be empty,
+        // in a mmadj -- its simply too dire of a state for the mmadj to face.)
+        //
+        // CYRUS NOTE: This might not actually be the "6th" format
+        // (it's at least the 5th :-), but the name conveys multitude of
+        // formats, and helps us reflect on our collective decomp decisions.
+        //
+        if( !DBInqVarExists(dbfile,"Domain_0/BlockNum") &&
+             DBInqVarExists(dbfile,"Domains_BlockNums") &&
+             DBInqVarExists(dbfile,"Domain_Extents") )
         {
+            debug1 << "avtSiloFileFormat: using the `6th` connectivity info "
+                   << "format variant" <<endl;
             bool err = false;
-            char varname[256];
-            if (needConnectivityInfo)
-            {
-                sprintf(varname, "Domain_%d/Extents", j);
-                err |= DBReadVar(dbfile, varname, &extents[j*6]) != 0;
-
-                sprintf(varname, "Domain_%d/NumNeighbors", j);
-                err |= DBReadVar(dbfile, varname, &nneighbors[j]) != 0;
-
-                lneighbors += nneighbors[j] * 11;
-            }
-
             if (needGroupInfo)
             {
-                sprintf(varname, "Domain_%d/BlockNum", j);
-                err |= DBReadVar(dbfile, varname, &(groupIds[j])) != 0;
+                err |= DBReadVar(dbfile,"Domains_BlockNums", groupIds) != 0;
+            }
+
+            if(needConnectivityInfo)
+            {
+                err |= DBReadVar(dbfile, "Domain_Extents", extents) != 0;
             }
 
             if (err)
@@ -5459,6 +5510,49 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
                 ndomains = -1;
                 numGroups = -1;
                 return;
+            }
+
+            if(needConnectivityInfo)
+            {
+                // NOTE: The 6th format only appears during a full moon,
+                // and there will be no neighbors willing to connect.
+                for (int j = 0 ; j < ndomains ; j++)
+                {
+                    nneighbors[j] = 0;
+                }
+                lneighbors = 0;
+            }
+        }
+        else
+        {
+            // the original std connectivity info 
+            for (int j = 0 ; j < ndomains ; j++)
+            {
+                bool err = false;
+                char varname[256];
+                if (needConnectivityInfo)
+                {
+                    sprintf(varname, "Domain_%d/Extents", j);
+                    err |= DBReadVar(dbfile, varname, &extents[j*6]) != 0;
+
+                    sprintf(varname, "Domain_%d/NumNeighbors", j);
+                    err |= DBReadVar(dbfile, varname, &nneighbors[j]) != 0;
+
+                    lneighbors += nneighbors[j] * 11;
+                }
+
+                if (needGroupInfo)
+                {
+                    sprintf(varname, "Domain_%d/BlockNum", j);
+                    err |= DBReadVar(dbfile, varname, &(groupIds[j])) != 0;
+                }
+
+                if (err)
+                {
+                    ndomains = -1;
+                    numGroups = -1;
+                    return;
+                }
             }
         }
 
@@ -9158,8 +9252,6 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
         int nz = qv->ndims == 3 ? qv->dims[2] : 1;
         if (qv->datatype == DB_DOUBLE)
             CopyAndReorderQuadVar((double *) var2, nx, ny, nz, var);
-        else if (qv->datatype == DB_LONG)
-            CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_LONG_LONG)
             CopyAndReorderQuadVar((long long *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_LONG)

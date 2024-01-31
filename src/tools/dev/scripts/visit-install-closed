@@ -74,6 +74,19 @@
 #   Eric Brugger, Mon Jan 13 15:24:51 PST 2020
 #   I removed shark.
 #
+#   Eric Brugger, Wed Jun  8 15:19:01 PDT 2022
+#   I added logic to the jade install to copy libraries needed to run
+#   on toss4 systems.
+#
+#   Eric Brugger, Tue Jun 14 11:57:11 PDT 2022
+#   I removed the logic on the jade install that copies the libraries
+#   needed by Qt, since those now get included by default.
+#
+#   Eric Brugger, Wed Nov 29 11:16:25 PST 2023
+#   I removed the "-none" option since all the machines are now off by
+#   default. Turning on a machine is now done with -<machine_name>
+#   instead of +<machine_name>.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -83,10 +96,10 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-winnipeg=true
-jade=true
-sierra=true
-trinity=true
+winnipeg=false
+jade=false
+sierra=false
+trinity=false
 
 ver=undefined
 
@@ -98,42 +111,19 @@ ver=undefined
 for abc
 do
    case $1 in
-      -none)
-         winnipeg=false
-         jade=false
-         sierra=false
-         trinity=false
-         shift
-         ;;
       -winnipeg)
-         winnipeg=false
-         shift
-         ;;
-      +winnipeg)
          winnipeg=true
          shift
          ;;
       -jade)
-         jade=false
-         shift
-         ;;
-      +jade)
          jade=true
          shift
          ;;
       -sierra)
-         sierra=false
-         shift
-         ;;
-      +sierra)
          sierra=true
          shift
          ;;
       -trinity)
-         trinity=false
-         shift
-         ;;
-      +trinity)
          trinity=true
          shift
          ;;
@@ -149,7 +139,7 @@ done
 #
 if [ $ver = undefined ]
 then
-   echo "Usage: [-none] [-<machine name>] -v <version>"
+   echo "Usage: [-<machine name>] -v <version>"
    exit
 fi
 
@@ -168,10 +158,10 @@ ver=`echo $ver2 | tr "_" "."`
 #
 # Install on winnipeg.
 #
-rm -f winnipeg
-cat <<EOF > winnipeg
+rm -f winnipeg_install
+cat <<EOF > winnipeg_install
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-winnipeg /misc/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-kickit_opengl /misc/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                          > resultlog 2>&1
 echo "        install of visit on winnipeg"      >> resultlog 2>&1
@@ -187,6 +177,7 @@ echo "number of plot plugins = "\`ls /misc/gapps/visit/$ver+/linux-x86_64/plugin
 echo ""                                          >> resultlog 2>&1
 echo "The database plugins:"                     >> resultlog 2>&1
 ls /misc/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/misc\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.winnipeg
 mv resultlog resultlog.winnipeg
 EOF
 
@@ -194,21 +185,18 @@ if [ $winnipeg = true ]
 then
    if [ $test = no ]
    then
-      scp -P 22 winnipeg:winnipeg/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-winnipeg.tar.gz
-      scp -P 22 visit$ver2.linux-x86_64-winnipeg.tar.gz winnipeg:
-      scp -P 22 visit-install winnipeg:
-      scp -P 22 winnipeg winnipeg:winnipeg_install
-      ssh -p 22 winnipeg "chmod 750 winnipeg_install;./winnipeg_install"
+      chmod 750 winnipeg_install;./winnipeg_install
    fi
 fi
 
 #
 # Install on jade.
 #
-rm -f jade
-cat <<EOF > jade
+rm -f jade_install
+cat <<EOF > jade_install
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-jade /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on jade"              >> resultlog 2>&1
@@ -216,14 +204,15 @@ echo "       --------------------------"             >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 df -k /usr/gapps/visit                               >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin        >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin  >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.jade
 mv resultlog resultlog.jade
 EOF
 
@@ -231,21 +220,17 @@ if [ $jade = true ]
 then
    if [ $test = no ]
    then
-      scp jade962:/usr/tmp/$user/jade/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-jade.tar.gz
-      scp visit$ver2.linux-x86_64-jade.tar.gz jade:
-      scp visit-install jade:
-      scp jade jade:jade_install
-      ssh jade "chmod 750 jade_install;./jade_install"
+      chmod 750 jade_install;./jade_install
    fi
 fi
 
 #
 # Install on sierra
 #
-rm -f sierra
-cat <<EOF > sierra
+rm -f sierra_install
+cat <<EOF > sierra_install
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-sierra /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on sierra"            >> resultlog 2>&1
@@ -261,6 +246,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.sierra
 mv resultlog resultlog.sierra
 EOF
 
@@ -268,19 +254,15 @@ if [ $sierra = true ]
 then
    if [ $test = no ]
    then
-      scp sierra4358:/usr/tmp/$user/sierra/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-sierra.tar.gz
-      scp visit$ver2.linux-intel-sierra.tar.gz sierra:
-      scp visit-install sierra:
-      scp sierra sierra:sierra_install
-      ssh sierra "chmod 750 sierra_install;./sierra_install"
+      chmod 750 sierra_install;./sierra_install
    fi
 fi
 
 #
 # Install on trinity.
 #
-rm -f trinity
-cat <<EOF > trinity
+rm -f trinity_install
+cat <<EOF > trinity_install
 #!/bin/sh
 ./visit-install -private -c llnl_closed -l $ver linux-x86_64-trinity /usr/projects/views/visit > installlog 2>&1
 rm -f resultlog
@@ -298,6 +280,7 @@ echo "number of plot plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_6
 echo ""                                                >> resultlog 2>&1
 echo "The database plugins:"                           >> resultlog 2>&1
 ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/projects\/views\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.trinity
 mv resultlog resultlog.trinity
 EOF
 
@@ -306,7 +289,6 @@ then
    if [ $test = no ]
    then
       cp /tmp/$user/trinity/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-trinity.tar.gz
-      cp trinity trinity_install
       chmod 750 trinity_install;./trinity_install
    fi
 fi
@@ -316,5 +298,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f winnipeg jade sierra trinity
+   rm -f winnipeg_install jade_install sierra_install trinity_install
 fi

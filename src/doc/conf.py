@@ -6,8 +6,12 @@
 
 # -- Path setup --------------------------------------------------------------
 
+# Attempt add_css_file only if the version of Sphinx actually supports it
 def setup(app):
-    app.add_stylesheet('custom.css')
+    if hasattr(app, 'add_css_file'):
+        app.add_css_file('custom.css')
+    elif hasattr(app, 'add_stylesheet'):
+        app.add_stylesheet('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -21,11 +25,11 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = u'VisIt User Manual'
-copyright = u'2008-2019, LLNL, UCRL-SM-220449'
+copyright = u'2008-2020, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The full version, including alpha/beta/rc tags
-release = '3.1'
+release = '3.2.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -33,12 +37,16 @@ release = '3.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax']
+extensions = ['sphinx.ext.mathjax',
+              'sphinx_tabs.tabs']
 
+# Force installation of any special stuff in the RTD virtual machine instance
+# needed to support any custom extensions.
 if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
     extensions.append('notfound.extension')
+
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -59,6 +67,7 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
+suppress_warnings = ['image.nonlocal_uri']
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -67,8 +76,15 @@ numfig = True
 
 # Best place to put a substitution for 'VisIt'
 # Authors should use either VisIt_ or VisIt_'s
+# fs*nix = fully supported, ps*nix = partially supported
 rst_epilog = """
 .. _VisIt: https://visit.llnl.gov
+.. _Silo: https://silo.llnl.gov
+.. |*nix| replace:: Centos, Debian, Fedora, Redhat, TOSS, Ubuntu
+.. |fs*nix| replace:: Redhat, TOSS, Ubuntu
+.. |ps*nix| replace:: Centos, Debian, Fedora
+.. role:: vundl
+    :class: vundl
 """
 
 # Add any paths that contain templates here, relative to this directory.
@@ -85,15 +101,21 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+try:
+    html_theme
+except:
+    html_theme = "sphinx_rtd_theme"
+    
 if not os.environ.get('READTHEDOCS'):
-    try:
-        html_theme
-    except:
-        html_theme = "sphinx_rtd_theme"
     try:
         version
     except:
         version = "local_build"
+else:
+    try:
+        version
+    except:
+        version = "rtd_build"
 
 htmlhelp_basename = 'VisItUserManualdoc'
 
@@ -182,3 +204,6 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# -- Options for linkcheck builder ---------------------------------------
+linkcheck_ignore = [r'https?://.*\.zip$',r'https?://.*\.tar\.gz$',r'https?://.*\.pdf\?#page=.*$']

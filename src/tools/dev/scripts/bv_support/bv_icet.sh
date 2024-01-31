@@ -43,9 +43,9 @@ function bv_icet_print
 
 function bv_icet_print_usage
 {
-    printf "%-20s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
-    printf "%-20s %s [%s]\n" "--no-icet" "Prevent Ice-T from being built" "$PREVENT_ICET"
-    printf "%-20s %s\n" "" "NOTE: Ice-T is automatically built with --enable-parallel."
+    printf "%-20s %s [%s]\n" "--icet" "Build IceT (parallel rendering lib)" "$DO_ICET"
+    printf "%-20s %s [%s]\n" "--no-icet" "Prevent IceT from being built" "$PREVENT_ICET"
+    printf "%-20s %s\n" "" "NOTE: IceT is automatically built with --enable-parallel."
 }
 
 function bv_icet_host_profile
@@ -53,7 +53,7 @@ function bv_icet_host_profile
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## Ice-T" >> $HOSTCONF
+        echo "## IceT" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_ICET_DIR \${VISITHOME}/icet/$ICET_VERSION/\${VISITARCH})" \
@@ -68,15 +68,8 @@ function bv_icet_ensure
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ICET="no"
-            error "Unable to build Ice-T.  ${ICET_FILE} not found."
+            error "Unable to build IceT.  ${ICET_FILE} not found."
         fi
-    fi
-}
-
-function bv_icet_dry_run
-{
-    if [[ "$DO_ICET" == "yes" ]] ; then
-        echo "Dry run option not set for icet."
     fi
 }
 
@@ -92,76 +85,14 @@ function apply_icet_patch
 
 function build_icet
 {
-    PAR_INCLUDE_STRING=""
-    if [[ "$PAR_INCLUDE" != "" ]] ; then
-        PAR_INCLUDE_STRING=$PAR_INCLUDE
-    fi
-
-    if [[ "$PAR_COMPILER" != "" ]] ; then
-        if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpicc" ]]; then
-            PAR_INCLUDE_STRING="-I/usr/include/"
-        elif [[ "$OPSYS" == "Linux" && "$PAR_COMPILER" == "mpixlc" ]]; then
-            PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
-        else
-            if [[ -z "$PAR_INCLUDE_STRING" ]]; then
-                PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`
-                if [[ $? != 0 ]] ; then
-                    PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
-                fi
-            fi
-        fi
-    fi
-
-    if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
-        warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to build Ice-T."
+    # We need to set MPI_COMPILER for CMake. We can get that from MPICH
+    # or from PAR_COMPILER. Note that DO_MPICH causes PAR_COMPILER to be
+    # set, so testing for that also catches using MPICH.
+    if [[ "$PAR_COMPILER" == "" ]] ; then
+        warn "To build IceT, you must either use MPICH (add --mpich) or set the PAR_COMPILER environment variable."
         warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
-        warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
         warn "Giving Up!"
         return 1
-    fi
-
-    # IceT's CMake config doesn't take the compiler options, but rather the
-    # paths to certain files, and then it tries to build all of the appropriate
-    # options itself.  Since we only have the former, we need to guess at the
-    # latter.
-    # Our current guess is to take the first substring in PAR_INCLUDE, assume
-    # it's the appropriate -I option, and use it with the "-I" removed.  This
-    # is certainly not ideal -- for example, it will break if the user's
-    # MPI setup requires multiple include directories.
-
-    # Search all of the -I directories and take the first one containing mpi.h
-    PAR_INCLUDE_DIR=""
-    for arg in $PAR_INCLUDE_STRING ; do
-        if [[ "$arg" != "${arg#-I}" ]] ; then
-            if test -e "${arg#-I}/mpi.h" ; then
-                PAR_INCLUDE_DIR=${arg#-I}
-                break
-            fi
-        fi
-    done
-    # If we did not get a valid include directory, take the first -I directory.
-    if test -z "${PAR_INCLUDE_DIR}"  ; then
-        for arg in $PAR_INCLUDE_STRING ; do
-            if [[ "$arg" != "${arg#-I}" ]] ; then
-                PAR_INCLUDE_DIR=${arg#-I}
-                break
-            fi
-        done
-    fi
-
-    if test -z "${PAR_INCLUDE_DIR}"  ; then
-        if test -n "${PAR_INCLUDE}" ; then
-            warn "This script believes you have defined PAR_INCLUDE as: $PAR_INCLUDE"
-            warn "However, to build Ice-T, this script expects to parse a -I/path/to/mpi out of PAR_INCLUDE"
-        fi
-        warn "Could not determine the MPI include information which is needed to compile IceT."
-        if test -n "${PAR_INCLUDE}" ; then
-            error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
-        else
-            error "You need to specify either PAR_COMPILER or PAR_INCLUDE variable.  On many "
-            " systems, the output of \"mpicc -showme\" is good enough."
-            error ""
-        fi
     fi
 
     #
@@ -173,76 +104,76 @@ function build_icet
     prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
-        warn "Unable to prepare Ice-T build directory. Giving Up!"
+        warn "Unable to prepare IceT build directory. Giving Up!"
         return 1
     fi
 
     apply_icet_patch
 
-    info "Executing CMake on Ice-T"
+    info "Executing CMake on IceT"
     cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         LIBEXT="${SO_EXT}"
     else
         LIBEXT="a"
     fi
-    touch fakempi.${LIBEXT}
     rm -f CMakeCache.txt
 
+    iopts=""
     if [[ "$OPSYS" == "Darwin" ]] ; then
         ${CMAKE_BIN} \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
-        -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
-        -DBUILD_TESTING:BOOL=OFF\
-        .
+        iopts="${iopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        iopts="${iopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        iopts="${iopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+        iopts="${iopts} -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"-fPIC ${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DMPI_COMPILER:PATH=${PAR_COMPILER}"
+        iopts="${iopts} -DBUILD_TESTING:BOOL=OFF"
     else
-        ${CMAKE_BIN} \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
-        -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
-        -DBUILD_TESTING:BOOL=OFF\
-        .
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            iopts="${iopts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/include"
+            iopts="${iopts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+        elif [[ "$DO_OSMESA" == "yes" ]] ; then
+            iopts="${iopts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/include"
+            iopts="${iopts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+        fi
+        iopts="${iopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        iopts="${iopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        iopts="${iopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+        iopts="${iopts} -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"-fPIC ${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DMPI_COMPILER:PATH=${PAR_COMPILER}"
+        iopts="${iopts} -DBUILD_TESTING:BOOL=OFF"
     fi
 
-    rm fakempi.${LIBEXT}
-
-    if [[ $? != 0 ]] ; then
-        warn "Cannot get CMAKE to create the makefiles.  Giving up."
-        return 1
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\"" ${iopts} . > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "IceT configuration failed."
 
     #
-    # Now build Ice-T.
+    # Now build IceT.
     #
-    info "Building Ice-T . . . (~2 minutes)"
+    info "Building IceT . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "Ice-T did not build correctly.  Giving up."
+        warn "IceT did not build correctly.  Giving up."
         return 1
     fi
 
-    info "Installing Ice-T . . ."
+    info "Installing IceT . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-        warn "Ice-T: 'make install' failed.  Giving up"
+        warn "IceT: 'make install' failed.  Giving up"
         return 1
     fi
 
@@ -252,7 +183,7 @@ function build_icet
     fi
 
     cd "$START_DIR"
-    echo "Done with Ice-T"
+    echo "Done with IceT"
     return 0
 }
 
@@ -279,14 +210,14 @@ function bv_icet_build
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         check_if_installed "icet" $ICET_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping Ice-T build.  Ice-T is already installed."
+            info "Skipping IceT build.  IceT is already installed."
         else
-            info "Building Ice-T (~2 minutes)"
+            info "Building IceT (~2 minutes)"
             build_icet
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install Ice-T.  Bailing out."
+                error "Unable to build or install IceT.  Bailing out."
             fi
-            info "Done building Ice-T"
+            info "Done building IceT"
         fi
     fi
 }

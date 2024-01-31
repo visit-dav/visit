@@ -5,6 +5,7 @@
 #ifndef PY_INTEGRALCURVEATTRIBUTES_H
 #define PY_INTEGRALCURVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <IntegralCurveAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyIntegralCurveAttributes_Wrap(const IntegralCurveAttributes *att
 void           PyIntegralCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyIntegralCurveAttributes_SetDefaults(const IntegralCurveAttributes *atts);
 std::string    PyIntegralCurveAttributes_GetLogString();
-std::string    PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *, const char *);
+std::string    PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *, const char *, const bool=false);
 PyObject *     PyIntegralCurveAttributes_getattr(PyObject *self, char *name);
 int            PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH];

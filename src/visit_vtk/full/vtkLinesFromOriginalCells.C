@@ -148,7 +148,6 @@ int vtkLinesFromOriginalCells::RequestData(
   outCD->CopyAllocate(inCD,numCells);
 
   cell = vtkGenericCell::New();
-  vtkIdList *edgeIds;
 
   // Set up for OriginalCell usage, if requested
   unsigned int* origCellNums = NULL;

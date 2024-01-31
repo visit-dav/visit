@@ -5,6 +5,7 @@
 #include <PyAxesArray.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyAxisAttributes.h>
 
 // ****************************************************************************
@@ -35,9 +36,8 @@ struct AxesArrayObject
 // Internal prototypes
 //
 static PyObject *NewAxesArray(int);
-
 std::string
-PyAxesArray_ToString(const AxesArray *atts, const char *prefix)
+PyAxesArray_ToString(const AxesArray *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -67,7 +67,7 @@ PyAxesArray_ToString(const AxesArray *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "axes.";
-        str += PyAxisAttributes_ToString(&atts->GetAxes(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetAxes(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -86,12 +86,48 @@ AxesArray_SetVisible(PyObject *self, PyObject *args)
 {
     AxesArrayObject *obj = (AxesArrayObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visible in the object.
-    obj->data->SetVisible(ival != 0);
+    obj->data->SetVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -110,12 +146,48 @@ AxesArray_SetTicksVisible(PyObject *self, PyObject *args)
 {
     AxesArrayObject *obj = (AxesArrayObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ticksVisible in the object.
-    obj->data->SetTicksVisible(ival != 0);
+    obj->data->SetTicksVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -134,12 +206,48 @@ AxesArray_SetAutoSetTicks(PyObject *self, PyObject *args)
 {
     AxesArrayObject *obj = (AxesArrayObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoSetTicks in the object.
-    obj->data->SetAutoSetTicks(ival != 0);
+    obj->data->SetAutoSetTicks(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -158,12 +266,48 @@ AxesArray_SetAutoSetScaling(PyObject *self, PyObject *args)
 {
     AxesArrayObject *obj = (AxesArrayObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoSetScaling in the object.
-    obj->data->SetAutoSetScaling(ival != 0);
+    obj->data->SetAutoSetScaling(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -182,12 +326,48 @@ AxesArray_SetLineWidth(PyObject *self, PyObject *args)
 {
     AxesArrayObject *obj = (AxesArrayObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -210,10 +390,7 @@ AxesArray_SetAxes(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The axes field can only be set with AxisAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field axes can be set only with AxisAttributes objects");
 
     obj->data->SetAxes(*PyAxisAttributes_FromPyObject(newValue));
 
@@ -270,14 +447,7 @@ AxesArray_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-AxesArray_compare(PyObject *v, PyObject *w)
-{
-    AxesArray *a = ((AxesArrayObject *)v)->data;
-    AxesArray *b = ((AxesArrayObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *AxesArray_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxesArray_getattr(PyObject *self, char *name)
 {
@@ -294,38 +464,51 @@ PyAxesArray_getattr(PyObject *self, char *name)
     if(strcmp(name, "axes") == 0)
         return AxesArray_GetAxes(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxesArray_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxesArray_methods[i].ml_name),
+                PyString_FromString(PyAxesArray_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxesArray_methods, self, name);
 }
 
 int
 PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
-        obj = AxesArray_SetVisible(self, tuple);
+        obj = AxesArray_SetVisible(self, args);
     else if(strcmp(name, "ticksVisible") == 0)
-        obj = AxesArray_SetTicksVisible(self, tuple);
+        obj = AxesArray_SetTicksVisible(self, args);
     else if(strcmp(name, "autoSetTicks") == 0)
-        obj = AxesArray_SetAutoSetTicks(self, tuple);
+        obj = AxesArray_SetAutoSetTicks(self, args);
     else if(strcmp(name, "autoSetScaling") == 0)
-        obj = AxesArray_SetAutoSetScaling(self, tuple);
+        obj = AxesArray_SetAutoSetScaling(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = AxesArray_SetLineWidth(self, tuple);
+        obj = AxesArray_SetLineWidth(self, args);
     else if(strcmp(name, "axes") == 0)
-        obj = AxesArray_SetAxes(self, tuple);
+        obj = AxesArray_SetAxes(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -333,7 +516,7 @@ static int
 AxesArray_print(PyObject *v, FILE *fp, int flags)
 {
     AxesArrayObject *obj = (AxesArrayObject *)v;
-    fprintf(fp, "%s", PyAxesArray_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxesArray_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -341,7 +524,7 @@ PyObject *
 AxesArray_str(PyObject *v)
 {
     AxesArrayObject *obj = (AxesArrayObject *)v;
-    return PyString_FromString(PyAxesArray_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxesArray_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -354,49 +537,70 @@ static char *AxesArray_Purpose = "Contains the properties for the array axes.";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject AxesArrayType =
+
+VISIT_PY_TYPE_OBJ(AxesArrayType,         \
+                  "AxesArray",           \
+                  AxesArrayObject,       \
+                  AxesArray_dealloc,     \
+                  AxesArray_print,       \
+                  PyAxesArray_getattr,   \
+                  PyAxesArray_setattr,   \
+                  AxesArray_str,         \
+                  AxesArray_Purpose,     \
+                  AxesArray_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+AxesArray_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "AxesArray",                    // tp_name
-    sizeof(AxesArrayObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)AxesArray_dealloc,  // tp_dealloc
-    (printfunc)AxesArray_print,     // tp_print
-    (getattrfunc)PyAxesArray_getattr, // tp_getattr
-    (setattrfunc)PyAxesArray_setattr, // tp_setattr
-    (cmpfunc)AxesArray_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)AxesArray_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    AxesArray_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &AxesArrayType
+         || Py_TYPE(other) != &AxesArrayType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AxesArray *a = ((AxesArrayObject *)self)->data;
+    AxesArray *b = ((AxesArrayObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -472,7 +676,7 @@ PyAxesArray_GetLogString()
 {
     std::string s("AxesArray = AxesArray()\n");
     if(currentAtts != 0)
-        s += PyAxesArray_ToString(currentAtts, "AxesArray.");
+        s += PyAxesArray_ToString(currentAtts, "AxesArray.", true);
     return s;
 }
 
@@ -485,7 +689,7 @@ PyAxesArray_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxesArray = AxesArray()\n");
-        s += PyAxesArray_ToString(currentAtts, "AxesArray.");
+        s += PyAxesArray_ToString(currentAtts, "AxesArray.", true);
         cb(s);
     }
 }

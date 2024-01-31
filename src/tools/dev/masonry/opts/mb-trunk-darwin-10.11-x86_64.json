@@ -15,7 +15,6 @@
                  "cfitsio",
                  "conduit",
                  "eavl",
-                 "fastbit",
                  "gdal",
                  "hdf4",
                  "h5part",

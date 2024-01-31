@@ -19,6 +19,7 @@ namespace moab
 {
   class Core;
   class ParallelComm;
+  class Range;
 }
 struct mhdf_FileDesc ;
 
@@ -36,8 +37,8 @@ struct mhdf_FileDesc ;
 class avtMOABFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtMOABFileFormat(const char *, DBOptionsAttributes *);
-    virtual           ~avtMOABFileFormat() {;};
+                       avtMOABFileFormat(const char *, const DBOptionsAttributes *);
+    virtual           ~avtMOABFileFormat() ;
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -65,6 +66,24 @@ class avtMOABFileFormat : public avtSTMDFileFormat
   protected:
     // DATA MEMBERS
 
+    struct tagBasic {
+      std::string nameTag;
+      int size;
+      void * defValue; // size 4 or 8 usually
+      int type; // mhdf_INTEGER = 1,    /**< Integer type */
+                // mhdf_FLOAT = 2,      /**< Floating point value */ (double)
+    };
+    struct compare1 {
+      bool operator () (const tagBasic& lhs, const tagBasic& rhs) const
+      {
+        if (lhs.nameTag == rhs.nameTag)
+          return (lhs.size < rhs.size);
+        else
+          return (lhs.nameTag < rhs.nameTag);
+      }
+    };
+
+
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     void                   gatherMhdfInformation();
@@ -74,15 +93,21 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     vtkDataArray*          GetDirichletSetsVar();
     vtkDataArray*          GetGeometrySetsVar();
     moab::Core*            mbCore;
-    const char*            fileName;
-    DBOptionsAttributes *  readOptions;
-    bool                   fileLoaded;
+    char*                  fileName;
+    const DBOptionsAttributes *  readOptions;
     struct mhdf_FileDesc *       file_descriptor;
     std::set<int>          materials;
     std::set<int>          neumannsets;
     std::set<int>          dirichsets;
-    std::set<std::string>       elemTags;
-    std::vector<std::string>    nodeTags;
+
+    bool opt1d, opt2d, opt3d;
+    moab::Range           *edges;
+    moab::Range           *faces;
+    moab::Range           *solids;
+    moab::Range           *select;
+
+    std::set<struct tagBasic, compare1>       elemTags;
+    std::vector<struct tagBasic>    nodeTags;
     int                    rank, nProcs;
     int                    num_parts; // PARALLEL_PARTITIONs
     int                    num_mats; // MATERIAL_SETs

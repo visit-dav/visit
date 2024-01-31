@@ -27,6 +27,7 @@
 #include <VolumeAttributes.h>
 
 #include <DebugStream.h>
+#include <InvalidLimitsException.h>
 #include <ImproperUseException.h>
 #include <LostConnectionException.h>
 
@@ -251,6 +252,10 @@ avtVolumePlot::Create()
 //    Have the legend reflect the scaling (log, linear, skew).  Also make sure
 //    that accurate numbers are put the legends range.
 //
+//    Kathleen Biagas, Mon Feb 7, 2022
+//    Only set the legend range when mapper has input. Also added checks
+//    for valid ranges.
+//
 // ****************************************************************************
 
 void
@@ -263,18 +268,28 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
 
     SetLegendOpacities();
 
-    double min = 0., max = 1.;
+    // SetAtts can be called before the mapper has data, so don't set
+    // legend's range unless there is input, as invalid ranges can cause
+    // vtkError messages
     if (*(mapper->GetInput()) != NULL)
+    {
+        double min = 0., max = 1.;
         mapper->GetRange(min, max);
-    if (atts.GetUseColorVarMin())
-    {
-        min = atts.GetColorVarMin();
+
+        if (atts.GetUseColorVarMin())
+        {
+            min = atts.GetColorVarMin();
+        }
+        if (atts.GetUseColorVarMax())
+        {
+            max = atts.GetColorVarMax();
+        }
+        if (min > max)
+        {
+            EXCEPTION1(InvalidLimitsException, false);
+        }
+        varLegend->SetRange(min, max);
     }
-    if (atts.GetUseColorVarMax())
-    {
-        max = atts.GetColorVarMax();
-    }
-    varLegend->SetRange(min, max);
     if (atts.GetScaling() == VolumeAttributes::Linear)
         varLegend->SetScaling(0);
     else if (atts.GetScaling() == VolumeAttributes::Log)
@@ -551,16 +566,16 @@ bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
 //
 //    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
 //    With the new default renderer, the only time we don't resample
-//    is when we have a single domain rectilinear mesh. 
+//    is when we have a single domain rectilinear mesh.
 //
 // ****************************************************************************
 
 bool DataMustBeResampled(avtDataObject_p input)
 {
-    // 
-    // Unless we have a single domain rectilinear mesh, 
-    // we must resample. 
-    // 
+    //
+    // Unless we have a single domain rectilinear mesh,
+    // we must resample.
+    //
     avtMeshType mt = input->GetInfo().GetAttributes().GetMeshType();
     if (mt != AVT_RECTILINEAR_MESH)
     {
@@ -577,7 +592,7 @@ bool DataMustBeResampled(avtDataObject_p input)
     {
          //
          // If we have multiple domains, we still need to resample
-         // onto a single domain. 
+         // onto a single domain.
          //
          if (md->GetNDomains(datts.GetVariableName()) > 1)
              return true;
@@ -587,7 +602,7 @@ bool DataMustBeResampled(avtDataObject_p input)
     {
         //
         // We don't know how many domains we have... resample to
-        // be safe. 
+        // be safe.
         //
         return true;
     }
@@ -646,8 +661,8 @@ bool DataMustBeResampled(avtDataObject_p input)
 //    Replaced the Texture3D renderer with the Default renderer.
 //
 //    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
-//    The new default renderer requires a single domain rectilinear dataset. 
-//    I've updated the logic to address this. 
+//    The new default renderer requires a single domain rectilinear dataset.
+//    I've updated the logic to address this.
 //
 // ****************************************************************************
 

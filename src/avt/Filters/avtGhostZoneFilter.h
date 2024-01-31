@@ -50,6 +50,9 @@
 //    Eric Brugger, Mon Jul 21 13:22:09 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kevin Griffin, Thu Jul 30 08:43:33 PDT 2020
+//    Added ability to force confirmation of region for Structured grids.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneFilter : public avtDataTreeIterator
@@ -78,11 +81,17 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtDataTreeIterator
     // will be removed.  Ghost zones information will not be removed,
     // meaning that future ghost zone removals can occur.
     void                 SetGhostZoneTypesToRemove(unsigned char);
+    
+    // If you call this method, this will force checking (if true) to make sure
+    // that zones planned to be removed are uniformly of the type to remove for
+    // Structured grids.
+    void                 SetConfirmRegion(bool);
 
   protected:
     bool                        ghostDataMustBeRemoved;
-    unsigned char               ghostNodeTypesToRemove;
-    unsigned char               ghostZoneTypesToRemove;
+    unsigned char               ghostNodeTypesToRemove; // remove all types if must be removed
+    unsigned char               ghostZoneTypesToRemove; // remove all types if must be removed
+    bool                        confirmRegion;
 
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void                UpdateDataObjectInfo(void);

@@ -73,7 +73,9 @@ QvisStatisticalTrendsWindow::~QvisStatisticalTrendsWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -87,7 +89,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     topLayout->addWidget(timeGroup);
 
     QGridLayout *timeLayout = new QGridLayout(timeGroup);
-    timeLayout->setMargin(5);
+    timeLayout->setContentsMargins(5,5,5,5);
     timeLayout->setSpacing(10);
 
     // Start
@@ -96,7 +98,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     startTrendType = new QWidget(central);
     startTrendTypeButtonGroup= new QButtonGroup(startTrendType);
     QHBoxLayout *startTrendTypeLayout = new QHBoxLayout(startTrendType);
-    startTrendTypeLayout->setMargin(0);
+    startTrendTypeLayout->setContentsMargins(0,0,0,0);
     startTrendTypeLayout->setSpacing(10);
 
     QRadioButton *startTrendTypeTrendTypeEnumAbsolute = new QRadioButton(tr("Absolute"), startTrendType);
@@ -105,8 +107,13 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     QRadioButton *startTrendTypeTrendTypeEnumRelative = new QRadioButton(tr("Relative"), startTrendType);
     startTrendTypeButtonGroup->addButton(startTrendTypeTrendTypeEnumRelative, 1);
     startTrendTypeLayout->addWidget(startTrendTypeTrendTypeEnumRelative);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(startTrendTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(startTrendTypeChanged(int)));
+#else
+    connect(startTrendTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(startTrendTypeChanged(int)));
+#endif
     timeLayout->addWidget(startTrendType, 0,1);
 
     startIndexLabel = new QLabel(tr("Index of first time slice"), central);
@@ -122,7 +129,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     stopTrendType = new QWidget(central);
     stopTrendTypeButtonGroup= new QButtonGroup(stopTrendType);
     QHBoxLayout *stopTrendTypeLayout = new QHBoxLayout(stopTrendType);
-    stopTrendTypeLayout->setMargin(0);
+    stopTrendTypeLayout->setContentsMargins(0,0,0,0);
     stopTrendTypeLayout->setSpacing(10);
     QRadioButton *stopTrendTypeTrendTypeEnumAbsolute = new QRadioButton(tr("Absolute"), stopTrendType);
     stopTrendTypeButtonGroup->addButton(stopTrendTypeTrendTypeEnumAbsolute, 0);
@@ -130,8 +137,13 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     QRadioButton *stopTrendTypeTrendTypeEnumRelative = new QRadioButton(tr("Relative"), stopTrendType);
     stopTrendTypeButtonGroup->addButton(stopTrendTypeTrendTypeEnumRelative, 1);
     stopTrendTypeLayout->addWidget(stopTrendTypeTrendTypeEnumRelative);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(stopTrendTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(stopTrendTypeChanged(int)));
+#else
+    connect(stopTrendTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(stopTrendTypeChanged(int)));
+#endif
     timeLayout->addWidget(stopTrendType, 2,1);
 
     stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
@@ -156,7 +168,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     topLayout->addWidget(statisticGroup);
 
     QGridLayout *statisticLayout = new QGridLayout(statisticGroup);
-    statisticLayout->setMargin(5);
+    statisticLayout->setContentsMargins(5,5,5,5);
     statisticLayout->setSpacing(10);
 
 
@@ -188,8 +200,13 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
 
     r1->setChecked(true);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(statisticTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(statisticTypeChanged(int)));
+#else
+    connect(statisticTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(statisticTypeChanged(int)));
+#endif
 
 
     // Trend axis
@@ -198,7 +215,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     topLayout->addWidget(trendAxisGroup);
 
     QGridLayout *trendAxisLayout = new QGridLayout(trendAxisGroup);
-    trendAxisLayout->setMargin(5);
+    trendAxisLayout->setContentsMargins(5,5,5,5);
     trendAxisLayout->setSpacing(10);
 
     trendAxisButtonGroup= new QButtonGroup(central);
@@ -215,8 +232,13 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     trendAxisButtonGroup->addButton(trendAxisCycle,2);
     trendAxisLayout->addWidget(trendAxisCycle, 0, 2);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(trendAxisButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(trendAxisChanged(int)));
+#else
+    connect(trendAxisButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(trendAxisChanged(int)));
+#endif
 }
 
 

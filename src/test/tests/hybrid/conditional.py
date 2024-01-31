@@ -21,6 +21,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#    Changed Pseudocolor CurrentPlot to ActualData.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -52,7 +55,7 @@ SetDefaultOperatorOptions(t)
 AddOperator("Threshold")
 
 pc_atts = PseudocolorAttributes()
-pc_atts.limitsMode = pc_atts.CurrentPlot
+pc_atts.limitsMode = pc_atts.ActualData
 SetPlotOptions(pc_atts)
 DrawPlots()
 Test("conditional_02")

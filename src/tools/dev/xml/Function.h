@@ -54,7 +54,7 @@ class Function
     {
         usedThisFunction = false;
     }
-    void Print(QTextStream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
         {
@@ -63,7 +63,7 @@ class Function
                 out << ",private";
             else if(accessType == AccessProtected)
                 out << ",protected";
-            out << ") " << decl << endl;
+            out << ") " << decl << Endl;
         }
     }
 };

@@ -4,12 +4,6 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/MeshQuality
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
     </CXXFLAGS>
-    <LIBS components="ESer">
-      avtexpressions_ser
-    </LIBS>
-    <LIBS components="EPar">
-      avtexpressions_par
-    </LIBS>
     <Files components="V">
       avtHistogramFilter.C
       avtHistogramMapper.C
@@ -18,6 +12,12 @@
       avtHistogramFilter.C
       avtHistogramMapper.C
     </Files>
+    <LIBS components="ESer">
+      avtexpressions_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtexpressions_par
+    </LIBS>
     <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve
@@ -107,8 +107,6 @@
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="HistogramViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
       <Function name="HistogramViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
@@ -119,6 +117,9 @@
       </Function>
       <Include file="header" quoted="false">
         PickAttributes.h
+      </Include>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
       </Include>
     </Attribute>
   </Plugin>

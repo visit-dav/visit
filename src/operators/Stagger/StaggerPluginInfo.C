@@ -86,7 +86,7 @@ StaggerGeneralPluginInfo::GetID() const
 bool
 StaggerGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }
 
 // ****************************************************************************

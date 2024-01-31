@@ -15,6 +15,9 @@
 #  
 #    Mark C. Miller, Mon Sep 15 12:05:44 PDT 2008
 #    Added 3D test
+#
+#    Mark C. Miller, Mon Jan 11 10:40:34 PST 2021
+#    Replace Assert-style with TestValue-style tests.
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D", "Boxlib3D"))
 
@@ -94,6 +97,22 @@ silr.TurnOffSet(silr.SetsInCategory('materials')[1])
 SetPlotSILRestriction(silr)
 Test("boxlib_06")
 
+# Test precision {
+#
+# Test double precision is working by reading a known double precision
+# database and ensuring we get expected min/max values within 15 digits
+# of accuracy.
+#
+DeleteAllPlots()
+CloseDatabase(data_path("boxlib_test_data/3D/plt00000.cartgrid.body.small/Header"))
+OpenDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
+AddPlot("Pseudocolor", "temperature1")
+DrawPlots()
+SetQueryOutputToValue()
+TestValueEQ("temperature1 min", Query("Min"), 295.409999999999968, 15)
+TestValueEQ("temperature1 max", Query("Max"), 295.410000000000082, 15)
+DeleteAllPlots()
+CloseDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
+# Test precision }
+
 Exit()
-
-

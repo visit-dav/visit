@@ -76,6 +76,15 @@
 //
 //    Eric Brugger, Thu Jun  4 15:56:25 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    SetImageProperties now takes avtVectors for a few arguments.
+// 
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Added CalculateImagingPlaneDims().
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -96,22 +105,39 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                        { absVarName = abs;
                                          emisVarName = emis; };
 
-    void                            SetImageProperties(double *_normal,
-                                                       double *_focus,
-                                                       double *_viewUp,
-                                                       double  _viewAngle,
-                                                       double  _parallelScale,
-                                                       double  _nearPlane,
-                                                       double  _farPlane,
-                                                       double *_imagePan,
-                                                       double  _imageZoom,
-                                                       bool    _perspective,
-                                                       int    *_imageSize);
+    void                            SetImageProperties(avtVector _normal,
+                                                       avtVector _focus,
+                                                       avtVector _viewUp,
+                                                       double    _viewAngle,
+                                                       double    _parallelScale,
+                                                       double    _viewWidthOverride,
+                                                       bool      _nonSquarePixels,
+                                                       double    _nearPlane,
+                                                       double    _farPlane,
+                                                       double   *_imagePan,
+                                                       double    _imageZoom,
+                                                       bool      _perspective,
+                                                       int      *_imageSize);
     void                            SetDivideEmisByAbsorb(bool);
     void                            SetBackgroundIntensity(double);
     void                            SetBackgroundIntensities(double *, int);
     void                            SetDebugRay(int);
     void                            SetOutputRayBounds(bool);
+    static void                     CalculateImagingPlaneDims(const double &parallelScale,
+                                                              double &viewWidthOverride,
+                                                              const bool &nonSquarePixels,
+                                                              const int (&imageSize)[2],
+                                                              const bool &perspective,
+                                                              const double &viewAngle,
+                                                              const double &nearPlane,
+                                                              const double &farPlane,
+                                                              const double &imageZoom,
+                                                              double &nearHeight,
+                                                              double &nearWidth,
+                                                              double &viewHeight,
+                                                              double &viewWidth,
+                                                              double &farHeight,
+                                                              double &farWidth);
 
   protected:
     std::string                     absVarName;
@@ -127,7 +153,9 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
 
     double                          normal[3], focus[3], viewUp[3];
     double                          viewAngle;
-    double                          parallelScale;
+    double                          parallelScale; // view height
+    double                          viewWidthOverride; // view width
+    bool                            nonSquarePixels;
     double                          nearPlane, farPlane;
     double                          imagePan[2], imageZoom;
     bool                            perspective;

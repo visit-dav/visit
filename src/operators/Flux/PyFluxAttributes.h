@@ -5,6 +5,7 @@
 #ifndef PY_FLUXATTRIBUTES_H
 #define PY_FLUXATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FluxAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyFluxAttributes_Wrap(const FluxAttributes *attr);
 void           PyFluxAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyFluxAttributes_SetDefaults(const FluxAttributes *atts);
 std::string    PyFluxAttributes_GetLogString();
-std::string    PyFluxAttributes_ToString(const FluxAttributes *, const char *);
+std::string    PyFluxAttributes_ToString(const FluxAttributes *, const char *, const bool=false);
 PyObject *     PyFluxAttributes_getattr(PyObject *self, char *name);
 int            PyFluxAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyFluxAttributes_methods[FLUXATTRIBUTES_NMETH];

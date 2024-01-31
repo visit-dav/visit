@@ -1,0 +1,166 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+###############################################################################
+# VisIt Azure CI Checks
+###############################################################################
+# Azure Commands Ref:
+# https://aka.ms/yaml
+
+#####
+# TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
+#####
+variables:
+  container_tag: visitdav/visit-ci-develop:2024-01-24-sha0d1435
+
+# only build merge target pr to develop
+trigger: none
+pr:
+  branches:
+    include:
+    - develop
+    - 3.4RC
+
+# fast fail sanity checks
+stages:
+- stage: Sanity
+  jobs:
+  - job: BLT_Time_Travel_Check
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - checkout: self
+        clean: boolean
+        submodules: recursive
+
+      - script: |
+          #######################################
+          # run our sanity check script
+          #######################################
+          git fetch
+          python scripts/ci/check_blt_time_travel.py
+        displayName: 'BLT Time Travel Check'
+
+
+# main checks build using docker containers that
+# include tpls built with build_visit
+- stage: Main
+  jobs:
+  - job: Main_Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    timeoutInMinutes: 0
+    container: ${{ variables.container_tag }}
+    variables:
+      TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
+    steps:
+      - checkout: self
+        clean: boolean
+        submodules: recursive
+
+      - script: |
+           #################################
+           # configure
+           #################################
+           # setup path to cmake
+           export CMAKE_BIN_DIR=`ls -d ${TPLS_PATH}/cmake/*/ci/bin/`
+           export PATH=$PATH:$CMAKE_BIN_DIR
+           # make dir for build
+           mkdir build
+           cd build
+           # configure with cmake
+           cmake -DVISIT_CONFIG_SITE:PATH="/visit-ci-cfg.cmake" ../src
+        displayName: 'Configure with CMake'
+
+      - script: |
+           #################################
+           # build
+           #################################
+           # build
+           cd build
+           make -j 4
+        displayName: 'Build'
+
+      - script: |
+           #################################
+           # fetch subset of test data (silo + blueprint)
+           #################################
+           cd data
+           git lfs pull --include silo_amr_test_data.tar.xz
+           git lfs pull --include silo_ghost_test_data.tar.xz
+           git lfs pull --include silo_hdf5_test_data.tar.xz
+           git lfs pull --include silo_pdb_test_data.tar.xz
+           git lfs pull --include silo_sph_test_data.tar.xz
+           git lfs pull --include blueprint_v0.3.1_test_data.tar.xz
+           git lfs pull --include blueprint_v0.3.1_mfem_test_data.tar.xz
+           git lfs pull --include blueprint_v0.7.0_venn_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.4_part_map_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.6_rz_examples.tar.xz
+           cd ../
+           git lfs pull  --include test/baseline/databases/silo
+           git lfs pull  --include test/baseline/databases/blueprint
+           cd build/testdata/
+           tar xvf ../../data/silo_amr_test_data.tar.xz
+           tar xvf ../../data/silo_ghost_test_data.tar.xz
+           tar xvf ../../data/silo_hdf5_test_data.tar.xz
+           tar xvf ../../data/silo_pdb_test_data.tar.xz
+           tar xvf ../../data/silo_sph_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.3.1_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.3.1_mfem_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.7.0_venn_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.2_braid_examples_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_part_map_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.6_rz_examples.tar.xz
+        displayName: 'Prep Test Data'
+
+      - script: |
+           #################################
+           # run tests
+           #################################
+           # run test suite
+           cd build/test
+           # find qt, vtk, and ospray
+           export QT_LIB_DIR=`ls -d ${TPLS_PATH}/qt/*/ci/lib/`
+           export VTK_LIB_DIR=`ls -d ${TPLS_PATH}/vtk/*/ci/lib/`
+           export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/lib/`
+           # add to ld_lib path (rpaths are missing?)
+           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
+           # run test suite on silo + blueprint tests
+           export TESTS=../../src/test/tests/databases/silo.py
+           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
+           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint_export.py"
+           export TESTS="${TESTS} ../../src/test/tests/hybrid/ddf.py"
+           # also run a few of our unit tests
+           export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
+           export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
+           export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
+           ./run_visit_test_suite.sh  -v ${TESTS}
+        displayName: 'Run Tests'
+
+      - task: CopyFiles@2
+        inputs:
+          contents: 'build/test/output/html/**'
+          targetFolder: $(Build.ArtifactStagingDirectory)
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: $(Build.ArtifactStagingDirectory)
+          artifactName: VisIt_Test_Outputs
+        condition: always()
+
+
+      # - script: |
+      #      #################################
+      #      # install
+      #      #################################
+      #      cd build
+      #      make install
+      #   displayName: 'Install'

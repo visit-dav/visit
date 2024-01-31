@@ -43,6 +43,12 @@
 #    Use ${PYSIDE_PYTHONPATH} (set by findpackage PySide) instead of 
 #    ${VISIT_PYSIDE_DIR}/lib/site-packages to support system PySide installs
 #
+#    Kathleen Biagas, Thu Jun 25 14:13:46 PDT 2020
+#    Check if Pyside installed in python before adding to lib/site-packages.
+#
+#    Kathleen Biagas, Tue Jan 31, 2023
+#    visit_special_builds renamed to visit_util_builds.
+#
 #----------------------------------------------------------------------------
 
 IF(VISIT_PYTHON_DIR)
@@ -62,9 +68,7 @@ IF(VISIT_PYTHON_DIR)
             ${VISIT_PYTHON_DIR}/Lib
             ${VISIT_LIBRARY_DIR}/python/Lib
         COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib")
-    if(VISIT_NO_ALLBUILD)
-        add_dependencies(visit_special_builds python_lib)
-    endif()
+    visit_add_to_util_builds(python_lib)
   ENDIF (NOT WIN32)
 ENDIF()
 
@@ -88,8 +92,12 @@ IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
     MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
+  if(VTK_VERSION VERSION_EQUAL "8.1.0")
     IF (NOT WIN32)
         FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
+        IF(NOT VTK_PYTHON_MODULE_ITEMS)
+            MESSAGE(WARNING "Failed to find VTK Python module in ${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/")
+        endif()
         FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
             GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
             GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
@@ -116,42 +124,77 @@ IF(VISIT_PYTHON_FILTERS)
                     ${VISIT_LIBRARY_DIR}/site-packages/vtk
             COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
         )
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_special_builds vtk_python_modules)
-        endif()
+        visit_add_to_util_builds(vtk_python_modules)
     ENDIF (NOT WIN32)
+  else()
+      add_custom_target(vtk_python_modules ALL
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        ${VTK_PY_WRAPPERS_DIR}
+                        ${VISIT_LIBRARY_DIR}/site-packages
+                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules")
+      if(WIN32)
+          visit_add_to_util_builds(vtk_python_modules)
+      endif()
+  endif()
 ENDIF(VISIT_PYTHON_FILTERS)
 
-IF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE)
-    MESSAGE(STATUS "Adding PySide to lib/site-packages/")
-    IF (NOT WIN32)
-        FILE(GLOB PYSIDE_MODULE_ITEMS "${PYSIDE_PYTHONPATH}/*")
-        FOREACH(ITM ${PYSIDE_MODULE_ITEMS})
-            GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
-            GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
-            MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
-                          ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                          RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                          ${ITM_ABS}
-                          ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                          RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
-            IF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
-                MESSAGE(WARNING "Failed to create PySide module symlink in lib/site-packages/ for ${ITM_ABS}")
-            ENDIF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
-        ENDFOREACH(ITM ${PYSIDE_MODULE_ITEMS})
-    ELSE (NOT WIN32)
-      set(pysidename "PySide2")
-      ADD_CUSTOM_TARGET(pyside_modules ALL
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${PYSIDE_PYTHONPATH}/${pysidename}
-                    ${VISIT_LIBRARY_DIR}/site-packages/${pysidename}
-            COMMENT "Copying ${PYSIDE_PYTHONPATH}/${pysidename} to ${VISIT_LIBRARY_DIR}/site-packages/${pysidename}"
-        )
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_special_builds pyside_modules)
+if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
+    function(SYMLINK_PYSIDE pkg)
+        get_filename_component(ITM_BASE ${${pkg}} NAME)
+        set(sym_cmd "create_symlink")
+        if(WIN32)
+            set(sym_cmd "copy_directory")
         endif()
-    ENDIF (NOT WIN32)
-ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE)
+        # KSB to do, check if this works on Windows
+        message(STATUS "${sym_cmd} ${${pkg}} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+            RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E ${sym_cmd}
+            ${${pkg}} ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+            RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
+        if(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
+            message(WARNING "Failed to create PySide module in lib/site-packages/ for ${${pkg}}")
+        endif()
+        unset(sym_cmd)
+    endfunction()
+
+    message(STATUS "Adding PySide to lib/site-packages/")
+    SYMLINK_PYSIDE(PYSIDE_PYTHONPATH)
+    SYMLINK_PYSIDE(SHIBOKEN_PYTHON_MODULE_DIR)
+endif()
+
+if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)
+    # symlink conduit python module so it works during dev builds
+    message(STATUS "Adding Conduit python module to lib/site-packages/")
+
+    
+    set(CONDUIT_PY_MODULE ${CONDUIT_DIR}/python-modules/conduit)
+    if(NOT EXISTS ${CONDUIT_PY_MODULE})
+        message(WARNING "Failed to find Conduit Python Module at ${CONDUIT_PY_MODULE}")
+    endif()
+    if(NOT WIN32)
+        
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
+                                 RESULT_VARIABLE CONDUIT_PY_SYM_REMOTE)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${CONDUIT_PY_MODULE}
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
+                                RESULT_VARIABLE CONDUIT_PY_SYM_CREATE)
+
+        if(NOT "${CONDUIT_PY_SYM_CREATE}" STREQUAL "0")
+            message(WARNING "Failed to create Conduit Python module symlink in lib/site-packages/")
+        endif()
+
+    else() # NOT WIN32
+        # correct lib/${CFG} directory
+        add_custom_target(conduit_python_module ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CONDUIT_PY_MODULE}
+                    ${VISIT_LIBRARY_DIR}/site-packages/conduit
+            COMMENT "Copying ${CONDUIT_PY_MODULE} to ${VISIT_LIBRARY_DIR}/site-packages/conduit"
+        )
+        visit_add_to_util_builds(conduit_python_module)
+    endif()
+endif()
 

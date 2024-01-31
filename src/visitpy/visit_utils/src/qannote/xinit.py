@@ -3,10 +3,13 @@
 # details.  No copyright assignment is required to contribute to VisIt.
 
 """
- file: canvas.py
+ file: xinit.py
  author: Cyrus Harrison (cyrush@llnl.gov)
  description:
     Handle x setup using Xvfb if necessary
+ modification:
+    Kathleen Biagas, Tue Feb 16, 2021
+    Add universal_newlines to subprocess.Popen.
 
 """
 
@@ -15,7 +18,7 @@ import subprocess
 
 def check_x():
     cmd = "xset -g"
-    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True)
     res = p.communicate()[0]
     if res.count("xset:  unable to open display") >0:
         return False

@@ -7,8 +7,11 @@
 // ************************************************************************* //
 
 #include "vtkUnstructuredGridBoundaryFilter.h"
-
+#include <visit-config.h> // For LIB_VERSION_GE/LE
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -227,7 +230,7 @@ class BQuad
   public:
                    BQuad() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(BQuad *);
     bool           Equals(BTri *);
     void           AddInRemainingTriangle(BTri *, int);
@@ -275,7 +278,7 @@ typedef enum
     Q3012, Q3021, Q3102, Q3120, Q3201, Q3210
 }  QUAD_ORDERING_CASES;
 
-static int quad_reorder_list[24][4] = 
+static vtkIdType quad_reorder_list[24][4] =
     { { -1, 0, 1, 2 }, { -1, 0, 2, 1 }, { -1, 1, 0, 2 }, { -1, 2, 0, 1 },
       { -1, 1, 2, 0 }, { -1, 2, 1, 0 },
       { 0, -1, 1, 2 }, { 0, -1, 2, 1 }, { 1, -1, 0, 2 }, { 2, -1, 0, 1 },
@@ -283,10 +286,10 @@ static int quad_reorder_list[24][4] =
       { 0, 1, -1, 2 }, { 0, 2, -1, 1 }, { 1, 0, -1, 2 }, { 2, 0, -1, 1 },
       { 1, 2, -1, 0 }, { 2, 1, -1, 0 },
       { 0, 1, 2, -1 }, { 0, 2, 1, -1 }, { 1, 0, 2, -1 }, { 2, 0, 1, -1 },
-      { 1, 2, 0, -1 }, { 2, 1, 0, -1 } 
+      { 1, 2, 0, -1 }, { 2, 1, 0, -1 }
     };
 
-static int quad_map_back_list[24][3] =
+static vtkIdType quad_map_back_list[24][3] =
     {
          { 1, 2, 3 }, { 1, 3, 2 }, { 2, 1, 3 },
          { 2, 3, 1 }, { 3, 1, 2 }, { 3, 2, 1 },
@@ -323,7 +326,7 @@ class BTri
   public:
                    BTri() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(BTri *&t)
                    {
                       if (t->nodes[0] == nodes[0] && t->nodes[1] == nodes[1])
@@ -375,9 +378,9 @@ typedef enum
     T201, T210
 }  TRI_ORDERING_CASES;
 
-static int tri_reorder_list[6][3] = 
-    { 
-        { -1, 0, 1 }, { -1, 1, 0 }, 
+static int tri_reorder_list[6][3] =
+    {
+        { -1, 0, 1 }, { -1, 1, 0 },
         { 0, -1, 1 }, { 0, 1, -1 },
         { 1, -1, 0 }, { 1, 0, -1 }
     };
@@ -403,7 +406,7 @@ class BLine
   public:
                    BLine() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(BLine *l)
                    {
                        return l->nodes[0] == nodes[0];
@@ -447,8 +450,8 @@ typedef enum
     T01, T10
 }  LINE_ORDERING_CASES;
 
-static int line_reorder_list[2][2] = 
-    { 
+static int line_reorder_list[2][2] =
+    {
         { -1, 0 }, { 0, -1 }
     };
 
@@ -499,7 +502,7 @@ class BHashEntry
     unsigned char  last_good_entry;
     unsigned char  face_type;
     BHashEntry     *extension;
-   
+
     static BHashEntryMemoryManager *MemoryManager;
     static BHashEntryList          *list;
 
@@ -548,7 +551,7 @@ class BHashEntry2D
     int            point_index;
     unsigned char  last_good_entry;
     BHashEntry2D   *extension;
-   
+
     static BHashEntryMemoryManager2D *MemoryManager;
     static BHashEntryList2D          *list;
 
@@ -642,7 +645,7 @@ class BHashEntryMemoryManager2D
 //
 //  Purpose:
 //      This effectively works as the hash.  It hashes each faces by its lowest
-//      numbered index. 
+//      numbered index.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
@@ -687,7 +690,7 @@ class BHashEntryList
 //
 //  Purpose:
 //      This effectively works as the hash.  It hashes each line by its lowest
-//      numbered index. 
+//      numbered index.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   June 12, 2003
@@ -743,6 +746,8 @@ BHashEntryMemoryManager2D *BHashEntry2D::MemoryManager = NULL;
 // Function prototypes
 //
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
+
 static void AddPolygon(int, vtkIdType *, int, int, BHashEntryList2D &);
 static void AddPixel(vtkIdType *, int, int, BHashEntryList2D &);
 static void AddTetrahedron(vtkIdType *, int, int, BHashEntryList &);
@@ -750,6 +755,19 @@ static void AddWedge(vtkIdType *, int, int, BHashEntryList &);
 static void AddPyramid(vtkIdType *, int, int, BHashEntryList &);
 static void AddHexahedron(vtkIdType *, int, int, BHashEntryList &);
 static void AddVoxel(vtkIdType *, int, int, BHashEntryList &);
+
+#else
+
+static void AddPolygon(int, const vtkIdType *, int, int, BHashEntryList2D &);
+static void AddPixel(const vtkIdType *, int, int, BHashEntryList2D &);
+static void AddTetrahedron(const vtkIdType *, int, int, BHashEntryList &);
+static void AddWedge(const vtkIdType *, int, int, BHashEntryList &);
+static void AddPyramid(const vtkIdType *, int, int, BHashEntryList &);
+static void AddHexahedron(const vtkIdType *, int, int, BHashEntryList &);
+static void AddVoxel(const vtkIdType *, int, int, BHashEntryList &);
+
+#endif
+
 static int  LoopOverAllCells(vtkUnstructuredGrid *, BHashEntryList &, BHashEntryList2D &, bool &);
 static void LoopOverUnhashedCells(vtkUnstructuredGrid *, vtkPolyData *,
                                   vtkCellData *, vtkCellData *);
@@ -810,10 +828,10 @@ BQuad::RegisterMemoryManager(BQuadMemoryManager *mm)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 BQuad::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[1] < n[smallest])
        smallest = 1;
     if (n[2] < n[smallest])
@@ -830,7 +848,7 @@ BQuad::AssignNodes(const vtkIdType *n)
        biggest = 3;
 
     if (biggest == 3)
-    { 
+    {
         if (smallest == 0)
         {
             if (n[1] < n[2])
@@ -1045,7 +1063,7 @@ BQuad::AssignNodes(const vtkIdType *n)
             }
         }
     }
-    
+
 /*** There was an effort to play with additional hashing functions.  It was
  *** determined that the functions to calculate the key was just too expensive.
  *** The only function that could be used for a single pass hash was one that
@@ -1080,7 +1098,7 @@ BQuad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
-    int *list = quad_reorder_list[ordering_case];
+    vtkIdType *list = quad_reorder_list[ordering_case];
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
@@ -1207,10 +1225,10 @@ BQuad::AddInRemainingTriangle(BTri *t, int node_0)
 void
 BQuad::AddInRemainingTriangle(int n, int node_0)
 {
-    int orig_quad_index = quad_map_back_list[ordering_case][n];
-    int *neighbors = quad_reorder_list[ordering_case];
+    vtkIdType orig_quad_index = quad_map_back_list[ordering_case][n];
+    vtkIdType *neighbors = quad_reorder_list[ordering_case];
 
-    int n_list[3];
+    vtkIdType n_list[3];
     n_list[0] = neighbors[(orig_quad_index+3)%4];
     n_list[1] = neighbors[orig_quad_index];
     n_list[2] = neighbors[(orig_quad_index+1)%4];
@@ -1257,10 +1275,10 @@ BTri::RegisterMemoryManager(BTriMemoryManager *mm)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 BTri::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[0] < n[1])
     {
         if (n[1] < n[2])
@@ -1421,10 +1439,10 @@ BLine::RegisterMemoryManager(BLineMemoryManager *mm)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 BLine::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[0] < n[1])
     {
         ordering_case = T01;
@@ -1509,7 +1527,7 @@ BHashEntry::AddTri(BTri *f)
         ActuallyAddTri(f);
     }
 }
-        
+
 
 // ****************************************************************************
 //  Method: BHashEntry::AddQuad
@@ -1532,7 +1550,7 @@ BHashEntry::AddQuad(BQuad *f)
         ActuallyAddQuad(f);
     }
 }
-        
+
 
 // ****************************************************************************
 //  Method: BHashEntry::RemoveEntry
@@ -1562,7 +1580,7 @@ BHashEntry::RemoveEntry(int ind)
 
 // ****************************************************************************
 //  Method: BHashEntry::LocateAndRemoveQuad
-// 
+//
 //  Purpose:
 //      Locates a quad in the hash entry.  If the quad already exists
 //      with the same value, removes it and tells the caller not to add
@@ -1658,7 +1676,7 @@ BHashEntry::LocateAndRemoveQuad(BQuad *f)
 
 // ****************************************************************************
 //  Method: BHashEntry::LocateAndRemoveQuad
-// 
+//
 //  Purpose:
 //      Locates a triangle in the hash entry and removes it if it exists.
 //
@@ -1784,7 +1802,7 @@ BHashEntry::ActuallyAddQuad(BQuad *f)
 //  Method: BHashEntry::ActuallyAddTri
 //
 //  Purpose:
-//      After determining that this triangle is unique, this actually adds it 
+//      After determining that this triangle is unique, this actually adds it
 //      to the hash entry.
 //
 //  Programmer: Hank Childs
@@ -1902,7 +1920,7 @@ BHashEntry2D::AddLine(BLine *l)
         ActuallyAddLine(l);
     }
 }
-        
+
 
 // ****************************************************************************
 //  Method: BHashEntry2D::RemoveEntry
@@ -1927,7 +1945,7 @@ BHashEntry2D::RemoveEntry(int ind)
 
 // ****************************************************************************
 //  Method: BHashEntry2D::LocateAndRemoveLine
-// 
+//
 //  Purpose:
 //      Locates a line in the hash entry.  If the line already exists
 //      with the same value, removes it and tells the caller not to add
@@ -2321,7 +2339,7 @@ BHashEntryList::AddTri(const vtkIdType *node_list, int orig_zone, int cell_value
 {
     nfaces++;
     BTri *tri = tmm.GetFreeTri();
-    int hash_index = tri->AssignNodes(node_list);
+    vtkIdType hash_index = tri->AssignNodes(node_list);
     tri->SetOriginalZone(orig_zone);
     tri->SetCellValue(cell_value);
     if (list[hash_index] == NULL)
@@ -2356,7 +2374,7 @@ BHashEntryList::AddQuad(const vtkIdType *node_list, int orig_zone, int cell_valu
 {
     nfaces++;
     BQuad *quad = qmm.GetFreeQuad();
-    int hash_index = quad->AssignNodes(node_list);
+    vtkIdType hash_index = quad->AssignNodes(node_list);
     quad->SetOriginalZone(orig_zone);
     quad->SetCellValue(cell_value);
     if (list[hash_index] == NULL)
@@ -2402,7 +2420,7 @@ BHashEntryList::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 //  Method: BHashEntry::CreateOutputCells
 //
 //  Purpose:
-//      Goes through each of the faces and has them output themselves as VTK 
+//      Goes through each of the faces and has them output themselves as VTK
 //      objects.
 //
 //  Programmer: Hank Childs
@@ -2507,7 +2525,7 @@ BHashEntryList2D::AddLine(const vtkIdType *node_list, int orig_zone, int cell_va
 {
     nlines++;
     BLine *line = lmm.GetFreeLine();
-    int hash_index = line->AssignNodes(node_list);
+    vtkIdType hash_index = line->AssignNodes(node_list);
     line->SetOriginalZone(orig_zone);
     line->SetCellValue(cell_value);
     if (list[hash_index] == NULL)
@@ -2551,7 +2569,7 @@ BHashEntryList2D::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 //  Method: BHashEntry2D::CreateOutputCells
 //
 //  Purpose:
-//      Goes through each of the lines and has them output themselves as VTK 
+//      Goes through each of the lines and has them output themselves as VTK
 //      objects.
 //
 //  Programmer: Jeremy Meredith
@@ -2578,7 +2596,7 @@ BHashEntry2D::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 }
 
 
-vtkStandardNewMacro(vtkUnstructuredGridBoundaryFilter); 
+vtkStandardNewMacro(vtkUnstructuredGridBoundaryFilter);
 
 
 // ****************************************************************************
@@ -2622,7 +2640,7 @@ vtkUnstructuredGridBoundaryFilter::RequestData(
 
     vtkCellData *cd = input->GetCellData();
     vtkCellData *outputCD = output->GetCellData();
- 
+
     //
     // We won't be doing anything to the points, so they can be passed right
     // through.
@@ -2710,6 +2728,9 @@ vtkUnstructuredGridBoundaryFilter::PrintSelf(ostream& os, vtkIndent indent)
 //    Jeremy Meredith, Thu Jun 24 14:15:52 PDT 2004
 //    Added pixel support.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
@@ -2722,14 +2743,23 @@ void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     }
 
     vtkIdType   pixel_ids[4];
-    vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType   *pts;
+    vtkIdType    cellId;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        vtkIdType cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2776,6 +2806,9 @@ void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //    Added check for single-valued data to also output unmatched polygons.
 //    Added ability to hash 2D cells for edge-matching.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 int
@@ -2799,13 +2832,22 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
     isSingleValue = true;
 
     int         numUnhashedCells = 0;
-    vtkIdType   cellId;
     vtkIdType   npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType   *pts;
+    vtkIdType    cellId;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
     {
+#else
+    const vtkIdType *pts;
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
+    {
+        vtkIdType cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
+#endif
         int cellType = input->GetCellType(cellId);
         int cellVal  = cellData[cellId];
 
@@ -2868,12 +2910,19 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
 //  Creation:   June 11, 2003
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
 //
 // ****************************************************************************
-
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddPolygon(int npts, vtkIdType *pts, int cellId, int cellVal,
            BHashEntryList2D &list)
+#else
+void
+AddPolygon(int npts, const vtkIdType *pts, int cellId, int cellVal,
+           BHashEntryList2D &list)
+#endif
 {
     vtkIdType nodes[2];
     for (int l=0; l<npts; l++)
@@ -2896,11 +2945,19 @@ AddPolygon(int npts, vtkIdType *pts, int cellId, int cellVal,
 //
 //  Modifications:
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8, 1, 0)
 void
-AddPixel(vtkIdType *pts, int cellId, int cellVal,
+AddPixel(vtkIdType *pts, int cellId, int cellVal, BHashEntryList2D &list)
+#else
+void
+AddPixel(const vtkIdType *pts, int cellId, int cellVal,
            BHashEntryList2D &list)
+#endif
 {
     vtkIdType nodes[2];
 
@@ -2932,10 +2989,18 @@ AddPixel(vtkIdType *pts, int cellId, int cellVal,
 //    Jeremy Meredith, Fri May 30 14:58:55 PDT 2003
 //    Added cellVal.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddTetrahedron(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#else
+void
+AddTetrahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -2970,10 +3035,18 @@ AddTetrahedron(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 //    Jeremy Meredith, Fri May 30 14:58:55 PDT 2003
 //    Added cellVal.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddVoxel(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#else
+void
+AddVoxel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3022,10 +3095,18 @@ AddVoxel(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 //    Jeremy Meredith, Fri May 30 14:58:55 PDT 2003
 //    Added cellVal.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddHexahedron(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#else
+void
+AddHexahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3074,10 +3155,18 @@ AddHexahedron(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 //    Jeremy Meredith, Fri May 30 14:58:55 PDT 2003
 //    Added cellVal.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddWedge(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#else
+void
+AddWedge(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3119,10 +3208,18 @@ AddWedge(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 //    Jeremy Meredith, Fri May 30 14:58:55 PDT 2003
 //    Added cellVal.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, change pts arg to const.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 void
 AddPyramid(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#else
+void
+AddPyramid(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];

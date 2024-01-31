@@ -16,6 +16,11 @@
 #   Added a path for Windows when we want to use mesgl as a dropin replacement
 #   for opengl on systems without sufficient opengl version.
 #
+#   Kathleen Biagas, Thu Aug 18, 2022
+#   Set OpenGL_GL_PREFERENCE to LEGACY. Doesn't hurt with VTK 8 and is needed
+#   by VTK 9, otherwise it will say it needs system GLVND OpenGL version.
+#   Also, don't clutter OPENGL_gl_LIBRARY with anything other than GL.
+#
 #****************************************************************************/
 
 #
@@ -78,6 +83,8 @@ if (VISIT_MESAGL_DIR)
       set(OPENGL_gl_LIBRARY ${MESAGL_LIBRARY} CACHE STRING "OpenGL library")
       set(OPENGL_LIBRARIES ${MESAGL_LIBRARY} CACHE STRING "OpenGL libraries")
       set(OPENGL_INCLUDE_DIR ${VISIT_MESAGL_DIR}/include CACHE PATH "OpenGL include path")
+      # needed for VTK 9, doesn't cause harm with VTK 8.
+      set(OpenGL_GL_PREFERENCE LEGACY CACHE STRING "OpenGL GL preference")
 
   else()
       message(FATAL_ERROR "VISIT_MESAGL_DIR provided, but it doesn't contain GL library")
@@ -101,7 +108,6 @@ if (VISIT_MESAGL_DIR)
                               ${MESAGL_API_LIBRARY}
                               ${VISIT_BINARY_DIR}/lib/mesagl/)
 
-        list(APPEND OPENGL_gl_LIBRARY ${MESAGL_API_LIBRARY})
         list(APPEND OPENGL_LIBRARIES ${MESAGL_API_LIBRARY})
 
   endif()
@@ -150,9 +156,7 @@ if (VISIT_MESAGL_DIR)
                               ${MESAGL_LLVM_LIBRARY}
                               ${VISIT_BINARY_DIR}/lib/mesagl/)
 
-        list(APPEND OPENGL_gl_LIBRARY ${MESAGL_LLVM_LIBRARY})
         list(APPEND OPENGL_LIBRARIES ${MESAGL_LLVM_LIBRARY})
-        set(OPENGL_gl_LIBRARY ${OPENGL_gl_LIBRARY} CACHE STRING "OpenGL library" FORCE)
         set(OPENGL_LIBRARIES ${OPENGL_LIBRARIES} CACHE STRING "OpenGL libraries" FORCE)
     endif()
   endif(VISIT_LLVM_DIR)
@@ -169,7 +173,7 @@ if (VISIT_MESAGL_DIR)
           CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-      include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
       THIRD_PARTY_INSTALL_INCLUDE(mesagl ${VISIT_MESAGL_DIR}/include)
   endif()
 endif(VISIT_MESAGL_DIR)
+

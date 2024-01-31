@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                     avtMultipleInputMathExpression.C                      //
@@ -104,6 +70,11 @@ avtMultipleInputMathExpression::~avtMultipleInputMathExpression()
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
+//  Modifications:
+//
+//      Alister Maguire, Mon Mar 29 11:17:07 PDT 2021
+//      Clear our containers after we've performed our work.
+//
 // ****************************************************************************
 
 vtkDataArray*
@@ -116,12 +87,21 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
     for (int i = 0; i < nProcessedArgs; ++i)
     {
         avtCentering currentCenter;
-        dataArrays.push_back(ExractCenteredData(&currentCenter, in_ds, varnames[i]));
+        dataArrays.push_back(ExtractCenteredData(&currentCenter, in_ds, varnames[i]));
         centerings.push_back(currentCenter);
     }
 
     RecenterData(in_ds);
     vtkDataArray* output = DoOperation();
+
+    //
+    // Before we leave, we need to clear out our data containers. There are
+    // times when an instantiation of this class will be used more than once
+    // (like with domain decomposed data), and we can't have old information
+    // hanging around.
+    //
+    dataArrays.clear();
+    centerings.clear();
 
     debug3 << "Exiting  avtMultipleInputMathExpression::DeriveVariable("
             "vtkDataSet*, int)" << std::endl;
@@ -129,7 +109,7 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
 }
 
 // ****************************************************************************
-//  Method: avtMultipleInputMathExpression::ExractCenteredData
+//  Method: avtMultipleInputMathExpression::ExtractCenteredData
 //
 //  Purpose:
 //      Determines the centering of an input variable and outputs the
@@ -148,10 +128,10 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
 // ****************************************************************************
 
 vtkDataArray*
-avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
+avtMultipleInputMathExpression::ExtractCenteredData(avtCentering *centering_out,
         vtkDataSet *in_ds, const char *varname)
 {
-    debug5 << "Entering avtMultipleInputMathExpression::ExractCenteredData("
+    debug5 << "Entering avtMultipleInputMathExpression::ExtractCenteredData("
             "avtCentering*, vtkDataSet*, const char*)" << std::endl;
     debug5 << "\t For " << varname << std::endl;
     vtkDataArray* out = in_ds->GetCellData()->GetArray(varname);
@@ -168,7 +148,7 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
         {
             *(centering_out) = AVT_NODECENT;
             debug5 << "Exiting  "
-                    "avtMultipleInputMathExpression::ExractCenteredData("
+                    "avtMultipleInputMathExpression::ExtractCenteredData("
                     "avtCentering*, vtkDataSet*, const char*)" << std::endl;
             return out;
         }
@@ -176,7 +156,7 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
     else
     {
         *(centering_out) = AVT_ZONECENT;
-        debug5 << "Exiting  avtMultipleInputMathExpression::ExractCenteredData("
+        debug5 << "Exiting  avtMultipleInputMathExpression::ExtractCenteredData("
                 "avtCentering*, vtkDataSet*, const char*)" << std::endl;
         return out;
     }

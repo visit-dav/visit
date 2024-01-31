@@ -40,8 +40,7 @@ public:
         M3DC12DField,
         M3DC13DField,
         Nek5000Field,
-        NektarPPField,
-        NIMRODField
+        NektarPPField
     };
     enum IntegrationType
     {
@@ -121,7 +120,7 @@ public:
     {
         LoadOnDemand,
         ParallelStaticDomains,
-        MasterSlave,
+        ManagerWorker,
         VisItSelects
     };
     enum PathlinesCMFE
@@ -437,6 +436,7 @@ public:
     bool ChangesRequireRecalculation(const PoincareAttributes &obj) const;
     bool IntegralCurveAttsRequireRecalculation(const PoincareAttributes &obj) const;
     bool PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const;
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

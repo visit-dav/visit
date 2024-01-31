@@ -11,21 +11,21 @@
 
 static const char *OptionType_strings[] = {
 "Bool", "Int", "Float",
-"Double", "String", "Enum"
-};
+"Double", "String", "Enum",
+"MultiLineString"};
 
 std::string
 DBOptionsAttributes::OptionType_ToString(DBOptionsAttributes::OptionType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 6) index = 0;
+    if(index < 0 || index >= 7) index = 0;
     return OptionType_strings[index];
 }
 
 std::string
 DBOptionsAttributes::OptionType_ToString(int t)
 {
-    int index = (t < 0 || t >= 6) ? 0 : t;
+    int index = (t < 0 || t >= 7) ? 0 : t;
     return OptionType_strings[index];
 }
 
@@ -33,7 +33,7 @@ bool
 DBOptionsAttributes::OptionType_FromString(const std::string &s, DBOptionsAttributes::OptionType &val)
 {
     val = DBOptionsAttributes::Bool;
-    for(int i = 0; i < 6; ++i)
+    for(int i = 0; i < 7; ++i)
     {
         if(s == OptionType_strings[i])
         {
@@ -90,6 +90,7 @@ void DBOptionsAttributes::Copy(const DBOptionsAttributes &obj)
     optInts = obj.optInts;
     optStrings = obj.optStrings;
     optEnums = obj.optEnums;
+    optMultiLineStrings = obj.optMultiLineStrings;
     enumStrings = obj.enumStrings;
     enumStringsSizes = obj.enumStringsSizes;
     obsoleteNames = obj.obsoleteNames;
@@ -259,6 +260,7 @@ DBOptionsAttributes::operator == (const DBOptionsAttributes &obj) const
             (optInts == obj.optInts) &&
             (optStrings == obj.optStrings) &&
             (optEnums == obj.optEnums) &&
+            (optMultiLineStrings == obj.optMultiLineStrings) &&
             (enumStrings == obj.enumStrings) &&
             (enumStringsSizes == obj.enumStringsSizes) &&
             (obsoleteNames == obj.obsoleteNames) &&
@@ -406,18 +408,19 @@ DBOptionsAttributes::NewInstance(bool copy) const
 void
 DBOptionsAttributes::SelectAll()
 {
-    Select(ID_types,            (void *)&types);
-    Select(ID_names,            (void *)&names);
-    Select(ID_optBools,         (void *)&optBools);
-    Select(ID_optFloats,        (void *)&optFloats);
-    Select(ID_optDoubles,       (void *)&optDoubles);
-    Select(ID_optInts,          (void *)&optInts);
-    Select(ID_optStrings,       (void *)&optStrings);
-    Select(ID_optEnums,         (void *)&optEnums);
-    Select(ID_enumStrings,      (void *)&enumStrings);
-    Select(ID_enumStringsSizes, (void *)&enumStringsSizes);
-    Select(ID_obsoleteNames,    (void *)&obsoleteNames);
-    Select(ID_help,             (void *)&help);
+    Select(ID_types,               (void *)&types);
+    Select(ID_names,               (void *)&names);
+    Select(ID_optBools,            (void *)&optBools);
+    Select(ID_optFloats,           (void *)&optFloats);
+    Select(ID_optDoubles,          (void *)&optDoubles);
+    Select(ID_optInts,             (void *)&optInts);
+    Select(ID_optStrings,          (void *)&optStrings);
+    Select(ID_optEnums,            (void *)&optEnums);
+    Select(ID_optMultiLineStrings, (void *)&optMultiLineStrings);
+    Select(ID_enumStrings,         (void *)&enumStrings);
+    Select(ID_enumStringsSizes,    (void *)&enumStringsSizes);
+    Select(ID_obsoleteNames,       (void *)&obsoleteNames);
+    Select(ID_help,                (void *)&help);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,6 +501,12 @@ DBOptionsAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("optEnums", optEnums));
     }
 
+    if(completeSave || !FieldsEqual(ID_optMultiLineStrings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("optMultiLineStrings", optMultiLineStrings));
+    }
+
     if(completeSave || !FieldsEqual(ID_enumStrings, &defaultObject))
     {
         addToParent = true;
@@ -574,6 +583,8 @@ DBOptionsAttributes::SetFromNode(DataNode *parentNode)
         SetOptStrings(node->AsStringVector());
     if((node = searchNode->GetNode("optEnums")) != 0)
         SetOptEnums(node->AsIntVector());
+    if((node = searchNode->GetNode("optMultiLineStrings")) != 0)
+        SetOptMultiLineStrings(node->AsStringVector());
     if((node = searchNode->GetNode("enumStrings")) != 0)
         SetEnumStrings(node->AsStringVector());
     if((node = searchNode->GetNode("enumStringsSizes")) != 0)
@@ -642,6 +653,13 @@ DBOptionsAttributes::SetOptEnums(const intVector &optEnums_)
 {
     optEnums = optEnums_;
     Select(ID_optEnums, (void *)&optEnums);
+}
+
+void
+DBOptionsAttributes::SetOptMultiLineStrings(const stringVector &optMultiLineStrings_)
+{
+    optMultiLineStrings = optMultiLineStrings_;
+    Select(ID_optMultiLineStrings, (void *)&optMultiLineStrings);
 }
 
 void
@@ -773,6 +791,18 @@ DBOptionsAttributes::GetOptEnums()
 }
 
 const stringVector &
+DBOptionsAttributes::GetOptMultiLineStrings() const
+{
+    return optMultiLineStrings;
+}
+
+stringVector &
+DBOptionsAttributes::GetOptMultiLineStrings()
+{
+    return optMultiLineStrings;
+}
+
+const stringVector &
 DBOptionsAttributes::GetEnumStrings() const
 {
     return enumStrings;
@@ -873,6 +903,12 @@ DBOptionsAttributes::SelectOptEnums()
 }
 
 void
+DBOptionsAttributes::SelectOptMultiLineStrings()
+{
+    Select(ID_optMultiLineStrings, (void *)&optMultiLineStrings);
+}
+
+void
 DBOptionsAttributes::SelectEnumStrings()
 {
     Select(ID_enumStrings, (void *)&enumStrings);
@@ -920,18 +956,19 @@ DBOptionsAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_types:            return "types";
-    case ID_names:            return "names";
-    case ID_optBools:         return "optBools";
-    case ID_optFloats:        return "optFloats";
-    case ID_optDoubles:       return "optDoubles";
-    case ID_optInts:          return "optInts";
-    case ID_optStrings:       return "optStrings";
-    case ID_optEnums:         return "optEnums";
-    case ID_enumStrings:      return "enumStrings";
-    case ID_enumStringsSizes: return "enumStringsSizes";
-    case ID_obsoleteNames:    return "obsoleteNames";
-    case ID_help:             return "help";
+    case ID_types:               return "types";
+    case ID_names:               return "names";
+    case ID_optBools:            return "optBools";
+    case ID_optFloats:           return "optFloats";
+    case ID_optDoubles:          return "optDoubles";
+    case ID_optInts:             return "optInts";
+    case ID_optStrings:          return "optStrings";
+    case ID_optEnums:            return "optEnums";
+    case ID_optMultiLineStrings: return "optMultiLineStrings";
+    case ID_enumStrings:         return "enumStrings";
+    case ID_enumStringsSizes:    return "enumStringsSizes";
+    case ID_obsoleteNames:       return "obsoleteNames";
+    case ID_help:                return "help";
     default:  return "invalid index";
     }
 }
@@ -956,18 +993,19 @@ DBOptionsAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_types:            return FieldType_intVector;
-    case ID_names:            return FieldType_stringVector;
-    case ID_optBools:         return FieldType_intVector;
-    case ID_optFloats:        return FieldType_doubleVector;
-    case ID_optDoubles:       return FieldType_doubleVector;
-    case ID_optInts:          return FieldType_intVector;
-    case ID_optStrings:       return FieldType_stringVector;
-    case ID_optEnums:         return FieldType_intVector;
-    case ID_enumStrings:      return FieldType_stringVector;
-    case ID_enumStringsSizes: return FieldType_intVector;
-    case ID_obsoleteNames:    return FieldType_stringVector;
-    case ID_help:             return FieldType_string;
+    case ID_types:               return FieldType_intVector;
+    case ID_names:               return FieldType_stringVector;
+    case ID_optBools:            return FieldType_intVector;
+    case ID_optFloats:           return FieldType_doubleVector;
+    case ID_optDoubles:          return FieldType_doubleVector;
+    case ID_optInts:             return FieldType_intVector;
+    case ID_optStrings:          return FieldType_stringVector;
+    case ID_optEnums:            return FieldType_intVector;
+    case ID_optMultiLineStrings: return FieldType_stringVector;
+    case ID_enumStrings:         return FieldType_stringVector;
+    case ID_enumStringsSizes:    return FieldType_intVector;
+    case ID_obsoleteNames:       return FieldType_stringVector;
+    case ID_help:                return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -992,18 +1030,19 @@ DBOptionsAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_types:            return "intVector";
-    case ID_names:            return "stringVector";
-    case ID_optBools:         return "intVector";
-    case ID_optFloats:        return "doubleVector";
-    case ID_optDoubles:       return "doubleVector";
-    case ID_optInts:          return "intVector";
-    case ID_optStrings:       return "stringVector";
-    case ID_optEnums:         return "intVector";
-    case ID_enumStrings:      return "stringVector";
-    case ID_enumStringsSizes: return "intVector";
-    case ID_obsoleteNames:    return "stringVector";
-    case ID_help:             return "string";
+    case ID_types:               return "intVector";
+    case ID_names:               return "stringVector";
+    case ID_optBools:            return "intVector";
+    case ID_optFloats:           return "doubleVector";
+    case ID_optDoubles:          return "doubleVector";
+    case ID_optInts:             return "intVector";
+    case ID_optStrings:          return "stringVector";
+    case ID_optEnums:            return "intVector";
+    case ID_optMultiLineStrings: return "stringVector";
+    case ID_enumStrings:         return "stringVector";
+    case ID_enumStringsSizes:    return "intVector";
+    case ID_obsoleteNames:       return "stringVector";
+    case ID_help:                return "string";
     default:  return "invalid index";
     }
 }
@@ -1068,6 +1107,11 @@ DBOptionsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_optEnums:
         {  // new scope
         retval = (optEnums == obj.optEnums);
+        }
+        break;
+    case ID_optMultiLineStrings:
+        {  // new scope
+        retval = (optMultiLineStrings == obj.optMultiLineStrings);
         }
         break;
     case ID_enumStrings:
@@ -1471,6 +1515,52 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
     enumStringsSizes[eIndex] = values.size();
 }
 
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetMultiLineString
+//
+//  Purpose: Gets a multi line string.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Feb  8 18:07:09 EST 2022
+//
+// ****************************************************************************
+
+const std::string &
+DBOptionsAttributes::GetMultiLineString(const std::string &name) const
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return optMultiLineStrings[bIndex];
+}
+
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetMultiLineString
+//
+//  Purpose: Sets a multi line string.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Feb  8 18:07:09 EST 2022
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetMultiLineString(const std::string &name,
+                                        const std::string &defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(MultiLineString);
+        optMultiLineStrings.push_back(defaultValue);
+    }
+    else
+    {
+        optMultiLineStrings[bIndex] = defaultValue;
+    }
+}
+
 int
 DBOptionsAttributes::GetNumberOfOptions(void) const
 {
@@ -1602,6 +1692,9 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
             case Enum:
                 SetEnum(name, obj.GetEnum(name));
                 SetEnumStrings(name, obj.GetEnumStrings(name));
+                break;
+            case MultiLineString:
+                SetMultiLineString(name, obj.GetMultiLineString(name));
                 break;
             }
         }

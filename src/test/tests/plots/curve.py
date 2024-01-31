@@ -34,6 +34,9 @@
 #    Turn off cycling of colors for all tests.  Set the colors individually
 #    to match current baseline results.
 #
+#    Kathleen Biagas, Thu Feb 17 07:40:34 PST 2022
+#    Replace 'color' with 'curveColor' for CurveAttributes.
+#
 # ----------------------------------------------------------------------------
 
 def Test1():
@@ -359,7 +362,7 @@ def TestPolar():
     AddPlot("Curve", "rose")
     c = CurveAttributes()
     c.curveColorSource = c.Custom
-    c.color = (255, 0, 0, 255)
+    c.curveColor = (255, 0, 0, 255)
     c.showLabels = 0
     c.doLineTimeCue = 0
     c.doCropTimeCue = 0
@@ -380,7 +383,7 @@ def TestPolar():
     AddPlot("Curve", "rose")
     c = CurveAttributes()
     c.curveColorSource = c.Custom
-    c.color = (0, 0, 255, 255)
+    c.curveColor = (0, 0, 255, 255)
     c.showLabels = 0
     c.doLineTimeCue = 0
     c.doCropTimeCue = 0
@@ -399,7 +402,7 @@ def TestPolar():
 
     OpenDatabase(data_path("curve_test_data/spiral_r_theta_deg.ultra"))
     AddPlot("Curve", "spiral")
-    c.color = (0, 255, 0, 255)
+    c.curveColor = (0, 255, 0, 255)
     c.polarToCartesian = 0
     SetPlotOptions(c)
     DrawPlots()
@@ -415,7 +418,7 @@ def TestPolar():
 
     OpenDatabase(data_path("curve_test_data/circle.ultra"))
     AddPlot("Curve", "circle")
-    c.color = (255, 0, 255, 255)
+    c.curveColor = (255, 0, 255, 255)
     c.polarToCartesian = 0
     SetPlotOptions(c)
     DrawPlots()

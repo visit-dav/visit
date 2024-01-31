@@ -11,32 +11,14 @@
 #   Warning:
 #       This script is only expected to work for Linux, and Darwin systems.
 #
-#   Please send feedback to visit-users@ornl.gov if you run into problems
-#   so that this script can be improved in the future.
+#   Please visit https://visit-help.llnl.gov to send feedback if you run into
+#   problems so that this script can be improved in the future.
 #
 
-# To create your own modular file these 7 functions need to be implemented..
-#filename: bv_<module>.sh
-#bv_<module>_initialize : Initialize any variables you may want to export
-#bv_<module>_enable : Enables the module
-#bv_<module>_disable : Disables the module
-#bv_<module>_info : Where to get the module, the version, etc...
-#bv_<module>_ensure : Ensure the module has been downloaded and extracted properly. Set and check variables here..
-#bv_<module>_depends_on : What other modules does this module depend on. Example "adios" returns string "mxml"
-#bv_<module>_build : build the module
+# To create your own modular file, see the docs at
+# //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
 
-# Then add the module name to bv_support/modules.xml under the appropriate
-# categories
-
-#order of execution
-#1. bv_<module>_initialize anything to intialize the module
-#2. bv_<module>_info runs to setup download locations,directories,etc..
-#3. bv_<module>_[enable|disable] runs next to enable or disable the module
-#4. bv_<module>_ensure runs to ensure module is setup properly and variables are initialized
-#5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
-#6. bv_<module>_build builds the module
-
-export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.4.1"}
 
 ####
 # Trunk:
@@ -74,6 +56,9 @@ export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
 export visitroot="https://github.com/visit-dav/visit/releases/download/"
 export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
 
+# for use when running a develop verison of build_visit
+export thirdpartyroot_dev="https://github.com/visit-dav/third-party/raw/master/lib"
+
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
 declare -a reqlibs_state
@@ -85,6 +70,18 @@ declare -a grouplibs_comment
 declare -a grouplibs_enabled
 declare -a defaultLicenses
 declare -a args
+
+function quick_check_for_help
+{
+    for arg in "$@";
+    do
+        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+            echo 0 # in sh, 0 return ==> ok
+            return
+        fi
+    done
+    echo 1 # in sh, non-zero return ==> not-ok
+}
 
 function check_for_versioning
 {
@@ -167,7 +164,7 @@ function configure_support_files
         fi
 
         if [ ! -d $bv_PREFIX ]; then
-            echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
+            echo "Failed to detect or fetch support files. Quitting..."
             exit 2
         fi
     fi
@@ -256,17 +253,11 @@ configure_support_files
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
 
+# Test a key version compare function there
+test_compare_version_strings
+
 #import visit
 . $bv_PREFIX/bv_visit.sh
-
-#handle -h or --help arg early to avoid delays
-#for arg in "$@";
-#do
-#    if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-#        usage
-#        exit 2
-#    fi
-#done
 
 #These options can be read from a file..
 . $bv_PREFIX/bv_xml_parser.sh
@@ -283,7 +274,9 @@ defaultLicenses=$(xmlp_get_license "$@")
 
 for license in `echo $defaultLicenses`
 do
-    info "Processing $license license."
+    if [[ $(quick_check_for_help $@) -ne 0 ]]; then
+        info "Processing $license license."
+    fi
 
     #read in contents for this license
     parseXmlModuleContents $license
@@ -362,14 +355,13 @@ done
 
 function check_default_args
 {
-    #handle -h or --help arg early to avoid delays
+    if [[ $(quick_check_for_help $@) -eq 0 ]]; then
+        usage
+        exit 2
+    fi
+
     for arg in "$@";
     do
-        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-            usage
-            exit 2
-        fi
-
         if [[ "$arg" == "--write-unified-file" ]]; then
             next_arg="write-unified-file"
         elif [[ "$next_arg" == "write-unified-file" ]]; then
@@ -433,6 +425,9 @@ function bv_write_unified_file
     echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
     echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
 
+    # for use when running a develop verison of build_visit
+    echo "export thirdpartyroot_dev=\"https://github.com/visit-dav/third-party/raw/master/lib\"" >> $OUTPUT_bv_FILE
+
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_name" >> $OUTPUT_bv_FILE
@@ -442,6 +437,7 @@ function bv_write_unified_file
     echo "declare -a defaultLicenses" >> $OUTPUT_bv_FILE
     echo "declare -a args" >> $OUTPUT_bv_FILE
 
+    declare -f quick_check_for_help >> $OUTPUT_bv_FILE
     declare -f check_for_versioning >> $OUTPUT_bv_FILE
     declare -f call_build_visit >> $OUTPUT_bv_FILE
     declare -f configure_support_files >> $OUTPUT_bv_FILE
@@ -517,7 +513,7 @@ function bv_write_unified_file
     echo "check_default_args \"\$@\"" >> $OUTPUT_bv_FILE
 
     #write command to run and execute VisIt
-    echo "initialize_build_visit" >> $OUTPUT_bv_FILE
+    echo "initialize_build_visit \"\$@\"" >> $OUTPUT_bv_FILE
     echo "run_build_visit \"\$@\"" >> $OUTPUT_bv_FILE
     chmod 755 $OUTPUT_bv_FILE
     cd $OLDPWD
@@ -538,7 +534,7 @@ configure_support_files
 check_default_args "$@"
 
 #initialize all build visit variables
-initialize_build_visit
+initialize_build_visit "$@"
 
 #run all build visit
 run_build_visit "$@"

@@ -7,6 +7,8 @@
 #include <vtkTypedDataArray.h>
 #include <vtkIdList.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include "vtkArrayComponent.h"
 
 // NOTE: this macro is crucial so NewInstance() calls on the array will return
@@ -61,6 +63,10 @@ int zc_getvoidpointer();
 //    Modified for VTK-8: GetTupleValue->GetTypedTuple, etc, and deal with
 //    inconsistent const-ness.
 //
+//    Kathleen Biagas, Thu Apr  8 16:15:59 PDT 2021
+//    Add ExportToVoidPointer, so that this class will work correctly with
+//    vtkDataWriter.
+//
 // ****************************************************************************
 
 template <typename Scalar, typename ComponentData = vtkArrayComponentStride>
@@ -99,7 +105,11 @@ public:
         temporaryTuple = NULL;
     }
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     bool HasStandardMemoryLayout() override { return false; }
+#else
+    bool HasStandardMemoryLayout() const override { return false; }
+#endif
 
     void SetNumberOfTuples(vtkIdType nt) override
     {
@@ -185,6 +195,21 @@ public:
     vtkVariant GetVariantValue(vtkIdType arrayIndex) override
     {
         return vtkVariant(this->GetValue(arrayIndex));
+    }
+
+    //
+    // This method copies the array data to the void pointer specified
+    // by the user.  It is up to the user to allocate enough memory for
+    // the void pointer.
+    //
+    void ExportToVoidPointer(void *out_ptr) override
+    {
+        Scalar *ptr = reinterpret_cast<Scalar *>(out_ptr);
+        for(vtkIdType i = 0; i < this->GetNumberOfTuples(); ++i)
+        {
+            this->GetTypedTuple(i, ptr);
+            ptr += this->GetNumberOfComponents();
+        }
     }
 
     void *GetVoidPointer(vtkIdType id) override

@@ -19,7 +19,7 @@
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::QvisGlobalLineoutWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: xml2window
@@ -46,14 +46,14 @@ QvisGlobalLineoutWindow::QvisGlobalLineoutWindow(
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
@@ -64,7 +64,7 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
@@ -74,15 +74,15 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 //   Brad Whitlock, Wed Dec 15 11:07:46 PDT 2004
 //   I ifdef'd some code so it builds with Qt versions older than 3.2.
 //
-//   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005 
-//   Added curveOptions and colorOptions for Dynamic mode. 
+//   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005
+//   Added curveOptions and colorOptions for Dynamic mode.
 //
 //   Kathleen Bonnell, Mon Feb 27 12:36:41 PST 2006
-//   Added more text to createWindow label, to clarify intent. 
-//   
-//   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006 
+//   Added more text to createWindow label, to clarify intent.
+//
+//   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006
 //   Added freezInTime.
-//   
+//
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
@@ -99,7 +99,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // CreateWindow
     //
-    createWindow = new QCheckBox(tr("Use 1st unused window or create\nnew one. All  subsequent lineouts\nwill use this same window."), 
+    createWindow = new QCheckBox(tr("Use 1st unused window or create\nnew one. All  subsequent lineouts\nwill use this same window."),
                                   central);
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
@@ -123,7 +123,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     mainLayout->addWidget(freezeInTime,2,0,1,2);
 
     //
-    // Dynamic 
+    // Dynamic
     //
     dynamic = new QGroupBox(tr("Synchronize with originating plot"),central);
     dynamic->setCheckable(true);
@@ -132,7 +132,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     topLayout->addWidget(dynamic);
 
     QVBoxLayout *dlayout = new QVBoxLayout(dynamic);
-    dlayout->setMargin(10);
+    dlayout->setContentsMargins(10,10,10,10);
     dlayout->addSpacing(15);
 
     QGridLayout *dgrid = new QGridLayout();
@@ -172,13 +172,13 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     topLayout->addWidget(gbox);
 
     QVBoxLayout *blayout = new QVBoxLayout(gbox);
-    blayout->setMargin(5);
+    blayout->setContentsMargins(5,5,5,5);
 
     QGridLayout *qgrid = new QGridLayout();
     blayout->addLayout(qgrid);
-    qgrid->setMargin(5);
-    
-    QLabel *msg = new QLabel(gbox); 
+    qgrid->setContentsMargins(5,5,5,5);
+
+    QLabel *msg = new QLabel(gbox);
     msg->setText(tr("These items can be overridden\nby the Lineout operator"));
     msg->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(msg, 0,0,1,2);
@@ -217,17 +217,17 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005 
-//   Added curveOptions and colorOptions for Dynamic mode. 
+//   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005
+//   Added curveOptions and colorOptions for Dynamic mode.
 //
-//   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006 
+//   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006
 //   Added freezInTime.
 //
 //   Brad Whitlock, Fri Dec 14 17:22:35 PST 2007
@@ -235,6 +235,9 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 //
 //   Cyrus Harrison, Wed Jun 11 13:19:35 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with simpler QString::setNum.
 //
 // ****************************************************************************
 
@@ -258,14 +261,14 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             dynamic->setChecked(atts->GetDynamic());
             if (atts->GetDynamic())
             {
-                freezeInTime->setChecked(false); 
+                freezeInTime->setChecked(false);
             }
-            freezeInTime->setEnabled(!atts->GetDynamic()); 
+            freezeInTime->setEnabled(!atts->GetDynamic());
             curveOptions->setEnabled(atts->GetDynamic()) ;
             curveLabel->setEnabled(atts->GetDynamic()) ;
-            colorOptions->setEnabled(atts->GetDynamic() && 
+            colorOptions->setEnabled(atts->GetDynamic() &&
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
-            colorLabel->setEnabled(atts->GetDynamic() && 
+            colorLabel->setEnabled(atts->GetDynamic() &&
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
             break;
           case GlobalLineoutAttributes::ID_createWindow:
@@ -282,7 +285,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             createWindow->setChecked(atts->GetCreateWindow());
             break;
           case GlobalLineoutAttributes::ID_windowId:
-            temp.sprintf("%d", atts->GetWindowId());
+            temp.setNum(atts->GetWindowId());
             windowId->setText(temp);
             break;
           case GlobalLineoutAttributes::ID_samplingOn:
@@ -299,7 +302,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             samplingOn->setChecked(atts->GetSamplingOn());
             break;
           case GlobalLineoutAttributes::ID_numSamples:
-            temp.sprintf("%d", atts->GetNumSamples());
+            temp.setNum(atts->GetNumSamples());
             numSamples->setText(temp);
             break;
           case GlobalLineoutAttributes::ID_createReflineLabels:
@@ -309,9 +312,9 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             curveOptions->setCurrentIndex(atts->GetCurveOption());
             curveOptions->setEnabled(atts->GetDynamic()) ;
             curveLabel->setEnabled(atts->GetDynamic()) ;
-            colorOptions->setEnabled(atts->GetDynamic() && 
+            colorOptions->setEnabled(atts->GetDynamic() &&
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
-            colorLabel->setEnabled(atts->GetDynamic() && 
+            colorLabel->setEnabled(atts->GetDynamic() &&
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
             break;
           case GlobalLineoutAttributes::ID_colorOption:
@@ -331,7 +334,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
@@ -340,7 +343,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 // ****************************************************************************
 
 void
@@ -421,14 +424,14 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -454,14 +457,14 @@ QvisGlobalLineoutWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisGlobalLineoutWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

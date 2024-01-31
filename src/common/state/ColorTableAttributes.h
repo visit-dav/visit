@@ -53,27 +53,71 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectNames();
+    void SelectColorTableNames();
+    void SelectColorTableActiveFlags();
     void SelectColorTables();
-    void SelectActiveContinuous();
-    void SelectActiveDiscrete();
+    void SelectDefaultContinuous();
+    void SelectDefaultDiscrete();
+    void SelectTagListNames();
+    void SelectTagListActive();
+    void SelectTagListNumRefs();
+    void SelectTagListTableItemFlag();
+    void SelectTagChangesTag();
+    void SelectTagChangesType();
+    void SelectTagChangesCTName();
+    void SelectDeferredTagChangesTag();
+    void SelectDeferredTagChangesType();
+    void SelectDeferredTagChangesCTName();
 
     // Property setting methods
-    void SetNames(const stringVector &names_);
-    void SetActiveContinuous(const std::string &activeContinuous_);
-    void SetActiveDiscrete(const std::string &activeDiscrete_);
-    void SetGroupingFlag(bool groupingFlag_);
+    void SetColorTableNames(const stringVector &colorTableNames_);
+    void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
+    void SetDefaultContinuous(const std::string &defaultContinuous_);
+    void SetDefaultDiscrete(const std::string &defaultDiscrete_);
+    void SetTagsMatchAny(bool tagsMatchAny_);
+    void SetTagListNames(const stringVector &tagListNames_);
+    void SetTagListActive(const intVector &tagListActive_);
+    void SetTagListNumRefs(const intVector &tagListNumRefs_);
+    void SetTagListTableItemFlag(const intVector &tagListTableItemFlag_);
+    void SetTagChangesTag(const stringVector &tagChangesTag_);
+    void SetTagChangesType(const intVector &tagChangesType_);
+    void SetTagChangesCTName(const stringVector &tagChangesCTName_);
+    void SetDeferredTagChangesTag(const stringVector &deferredTagChangesTag_);
+    void SetDeferredTagChangesType(const intVector &deferredTagChangesType_);
+    void SetDeferredTagChangesCTName(const stringVector &deferredTagChangesCTName_);
 
     // Property getting methods
-    const stringVector &GetNames() const;
-          stringVector &GetNames();
+    const stringVector &GetColorTableNames() const;
+          stringVector &GetColorTableNames();
+    const intVector    &GetColorTableActiveFlags() const;
+          intVector    &GetColorTableActiveFlags();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
-    const std::string  &GetActiveContinuous() const;
-          std::string  &GetActiveContinuous();
-    const std::string  &GetActiveDiscrete() const;
-          std::string  &GetActiveDiscrete();
-    bool               GetGroupingFlag() const;
+    const std::string  &GetDefaultContinuous() const;
+          std::string  &GetDefaultContinuous();
+    const std::string  &GetDefaultDiscrete() const;
+          std::string  &GetDefaultDiscrete();
+    bool               GetTagsMatchAny() const;
+    const stringVector &GetTagListNames() const;
+          stringVector &GetTagListNames();
+    const intVector    &GetTagListActive() const;
+          intVector    &GetTagListActive();
+    const intVector    &GetTagListNumRefs() const;
+          intVector    &GetTagListNumRefs();
+    const intVector    &GetTagListTableItemFlag() const;
+          intVector    &GetTagListTableItemFlag();
+    const stringVector &GetTagChangesTag() const;
+          stringVector &GetTagChangesTag();
+    const intVector    &GetTagChangesType() const;
+          intVector    &GetTagChangesType();
+    const stringVector &GetTagChangesCTName() const;
+          stringVector &GetTagChangesCTName();
+    const stringVector &GetDeferredTagChangesTag() const;
+          stringVector &GetDeferredTagChangesTag();
+    const intVector    &GetDeferredTagChangesType() const;
+          intVector    &GetDeferredTagChangesType();
+    const stringVector &GetDeferredTagChangesCTName() const;
+          stringVector &GetDeferredTagChangesCTName();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -102,33 +146,98 @@ public:
     int GetColorTableIndex(const std::string &name) const;
     const ColorControlPointList *GetColorControlPoints(int index) const;
     const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
-    void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
+    void AddColorTable(const std::string &name, ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
+    void SelectColorTablesList();
+    void SetColorTableActiveFlag(int index, bool val);
+    bool GetColorTableActiveFlag(int index);
+    void MergeTagChanges(const stringVector tagChangesTagFromNode, const intVector tagChangesTypeFromNode, const stringVector tagChangesCTNameFromNode);
+    void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
+    std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
+    bool AllTagsSelected();
+    void EnableDisableAllTags(bool enable);
+    int GetIndexOfTag(const std::string tagname);
+    void CreateTagListEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
+    void RemoveTagListEntry(const int index);
+    void SelectTagList();
+    void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
+    void RemoveTagChangesEntry(const int index);
+    int GetIndexOfTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    bool CheckTagChangesEntryInTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
+    void CreateDeferredTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
+    void RemoveDeferredTagChangesEntry(const int index);
+    void RemoveDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    void SelectDeferredTagChanges();
+    int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    bool CheckTagChangesEntryInDeferredTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
+    void ApplyDeferredTagChanges(const std::string newCTName, ColorControlPointList *cpts);
+    void ApplyTagChange(const std::string tagName, const int changeType, const std::string ctName, ColorControlPointList *ccpl);
+    void SelectTagChanges();
+    void SetTagActive(const std::string tagname, const bool active);
+    void SetTagActive(const int index, const bool active);
+    bool GetTagActive(const std::string tagname);
+    void IncrementTagNumRefs(const std::string tagname);
+    void IncrementTagNumRefs(const int index);
+    void DecrementTagNumRefs(const std::string tagname);
+    void DecrementTagNumRefs(const int index);
+    int GetTagNumRefs(const std::string tagname);
+    void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
+    void SetTagTableItemFlag(const int index, const bool tagTableItemExists);
+    bool GetTagTableItemFlag(const std::string tagname);
+    bool CheckTagInTagList(const std::string tagname);
+    std::vector<std::string> RemoveUnusedTagsFromTagTable();
+    std::vector<std::string> GetNewTagNames();
+    bool FilterTableByTag(const ColorControlPointList &ccpl);
+    void FilterTablesByTag();
+    void PrintTagList();
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_names = 0,
+        ID_colorTableNames = 0,
+        ID_colorTableActiveFlags,
         ID_colorTables,
-        ID_activeContinuous,
-        ID_activeDiscrete,
-        ID_groupingFlag,
+        ID_defaultContinuous,
+        ID_defaultDiscrete,
+        ID_tagsMatchAny,
+        ID_tagListNames,
+        ID_tagListActive,
+        ID_tagListNumRefs,
+        ID_tagListTableItemFlag,
+        ID_tagChangesTag,
+        ID_tagChangesType,
+        ID_tagChangesCTName,
+        ID_deferredTagChangesTag,
+        ID_deferredTagChangesType,
+        ID_deferredTagChangesCTName,
         ID__LAST
     };
 
 protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
-    stringVector         names;
+    stringVector         colorTableNames;
+    intVector            colorTableActiveFlags;
     AttributeGroupVector colorTables;
-    std::string          activeContinuous;
-    std::string          activeDiscrete;
-    bool                 groupingFlag;
+    std::string          defaultContinuous;
+    std::string          defaultDiscrete;
+    bool                 tagsMatchAny;
+    stringVector         tagListNames;
+    intVector            tagListActive;
+    intVector            tagListNumRefs;
+    intVector            tagListTableItemFlag;
+    stringVector         tagChangesTag;
+    intVector            tagChangesType;
+    stringVector         tagChangesCTName;
+    stringVector         deferredTagChangesTag;
+    intVector            deferredTagChangesType;
+    stringVector         deferredTagChangesCTName;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*a*ssb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbs*i*i*i*s*i*s*s*i*s*"
 
 #endif

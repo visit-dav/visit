@@ -10,9 +10,6 @@
 #include <avtparaDISOptions.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
-#include "stringutil.h"
-#include "debugutil.h"
-#include "pathutil.h"
 #include "version.h"
 #include "paradis.h"
 #include <string>
@@ -43,7 +40,7 @@ using     rclib::Point;
 // ****************************************************************************
  
 avtparaDISFileFormat::avtparaDISFileFormat(const char *filename,
-                                           DBOptionsAttributes *rdatts)
+                                           const DBOptionsAttributes *rdatts)
   : avtSTSDFileFormat(filename), mParallelData(filename), mDumpfile(filename, rdatts) {
 
   if (filename) {

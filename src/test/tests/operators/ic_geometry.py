@@ -11,6 +11,13 @@
 #  Programmer: Allen Sanderson
 #  Date:       March 10, 2016
 #
+#  Modifications:
+#    Kathleen Biagas, Tue Sep 29 09:17:57 PDT 2020
+#    Turned off IC warnings.
+#
+#    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#    Changed Pseudocolor CurrentPlot to ActualData.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
@@ -35,7 +42,7 @@ SetView3D(View3DAtts)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
 PseudocolorAtts.skewFactor = 1
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.minFlag = 0
 PseudocolorAtts.min = 0
 PseudocolorAtts.maxFlag = 0
@@ -65,7 +72,7 @@ PseudocolorAtts.tubeRadiusVarEnabled = 0
 PseudocolorAtts.tubeRadiusVar = ""
 PseudocolorAtts.tubeRadiusVarRatio = 10
 PseudocolorAtts.tailStyle = PseudocolorAtts.Spheres  # None, Spheres, Cones
-PseudocolorAtts.headStyle = PseudocolorAtts.None  # None, Spheres, Cones
+PseudocolorAtts.headStyle = PseudocolorAtts.NONE  # None, Spheres, Cones
 PseudocolorAtts.endPointRadiusSizeType = PseudocolorAtts.Absolute  # Absolute, FractionOfBBox
 PseudocolorAtts.endPointRadiusAbsolute = 0.3
 PseudocolorAtts.endPointRadiusBBox = 0.005
@@ -116,11 +123,11 @@ IntegralCurveAtts.relTol = 1e-06
 IntegralCurveAtts.absTolSizeType = IntegralCurveAtts.FractionOfBBox  # Absolute, FractionOfBBox
 IntegralCurveAtts.absTolAbsolute = 1e-06
 IntegralCurveAtts.absTolBBox = 1e-07
-IntegralCurveAtts.fieldType = IntegralCurveAtts.Default  # Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, NektarPPField, NIMRODField
+IntegralCurveAtts.fieldType = IntegralCurveAtts.Default  # Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, NektarPPField
 IntegralCurveAtts.fieldConstant = 1
 IntegralCurveAtts.velocitySource = (0, 0, 0)
 IntegralCurveAtts.integrationType = IntegralCurveAtts.AdamsBashforth  # Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, M3DC12DIntegrator
-IntegralCurveAtts.parallelizationAlgorithmType = IntegralCurveAtts.VisItSelects  # LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects
+IntegralCurveAtts.parallelizationAlgorithmType = IntegralCurveAtts.VisItSelects  # LoadOnDemand, ParallelStaticDomains, ManagerWorker, VisItSelects
 IntegralCurveAtts.maxProcessCount = 10
 IntegralCurveAtts.maxDomainCacheSize = 3
 IntegralCurveAtts.workGroupSize = 32
@@ -185,19 +192,19 @@ PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
 SetPlotOptions(PseudocolorAtts)
 Test( "ic_geometry_06" )
 
-#PseudocolorAtts.lineType = PseudocolorAtts.Ribbon
-#SetPlotOptions(PseudocolorAtts)
-#Test( "ic_geometry_07" )
+PseudocolorAtts.lineType = PseudocolorAtts.Ribbon
+SetPlotOptions(PseudocolorAtts)
+Test( "ic_geometry_07" )
 
-#PseudocolorAtts.tubeRadiusBBox = 0.01
-#PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.FractionOfBBox
-#SetPlotOptions(PseudocolorAtts)
-#Test( "ic_geometry_08" )
+PseudocolorAtts.tubeRadiusBBox = 0.01
+PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.FractionOfBBox
+SetPlotOptions(PseudocolorAtts)
+Test( "ic_geometry_08" )
 
-#PseudocolorAtts.tubeRadiusAbsolute = 0.4
-#PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
-#SetPlotOptions(PseudocolorAtts)
-#Test( "ic_geometry_09" )
+PseudocolorAtts.tubeRadiusAbsolute = 0.4
+PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
+SetPlotOptions(PseudocolorAtts)
+Test( "ic_geometry_09" )
 
 PseudocolorAtts.lineType = PseudocolorAtts.Line
 PseudocolorAtts.headStyle = PseudocolorAtts.Spheres  # None, Spheres, Cones
@@ -233,7 +240,7 @@ AddPlot("Pseudocolor", "operators/IntegralCurve/grad", 1, 0)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
 PseudocolorAtts.skewFactor = 1
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.minFlag = 0
 PseudocolorAtts.min = 0
 PseudocolorAtts.maxFlag = 0
@@ -262,7 +269,7 @@ PseudocolorAtts.tubeRadiusBBox = 0.02
 PseudocolorAtts.tubeRadiusVarEnabled = 0
 PseudocolorAtts.tubeRadiusVar = ""
 PseudocolorAtts.tubeRadiusVarRatio = 10
-PseudocolorAtts.tailStyle = PseudocolorAtts.None  # None, Spheres, Cones
+PseudocolorAtts.tailStyle = PseudocolorAtts.NONE  # None, Spheres, Cones
 PseudocolorAtts.headStyle = PseudocolorAtts.Cones  # None, Spheres, Cones
 PseudocolorAtts.endPointRadiusSizeType = PseudocolorAtts.Absolute  # Absolute, FractionOfBBox
 PseudocolorAtts.endPointRadiusAbsolute = 0.8
@@ -314,11 +321,11 @@ IntegralCurveAtts.relTol = 0.0001
 IntegralCurveAtts.absTolSizeType = IntegralCurveAtts.FractionOfBBox  # Absolute, FractionOfBBox
 IntegralCurveAtts.absTolAbsolute = 1e-06
 IntegralCurveAtts.absTolBBox = 1e-06
-IntegralCurveAtts.fieldType = IntegralCurveAtts.Default  # Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, NektarPPField, NIMRODField
+IntegralCurveAtts.fieldType = IntegralCurveAtts.Default  # Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, NektarPPField
 IntegralCurveAtts.fieldConstant = 1
 IntegralCurveAtts.velocitySource = (0, 0, 0)
 IntegralCurveAtts.integrationType = IntegralCurveAtts.AdamsBashforth  # Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, M3DC12DIntegrator
-IntegralCurveAtts.parallelizationAlgorithmType = IntegralCurveAtts.VisItSelects  # LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects
+IntegralCurveAtts.parallelizationAlgorithmType = IntegralCurveAtts.VisItSelects  # LoadOnDemand, ParallelStaticDomains, ManagerWorker, VisItSelects
 IntegralCurveAtts.maxProcessCount = 10
 IntegralCurveAtts.maxDomainCacheSize = 3
 IntegralCurveAtts.workGroupSize = 32
@@ -340,12 +347,12 @@ IntegralCurveAtts.fillInterior = 1
 IntegralCurveAtts.randomSamples = 0
 IntegralCurveAtts.randomSeed = 0
 IntegralCurveAtts.numberOfRandomSamples = 1
-IntegralCurveAtts.issueAdvectionWarnings = 1
-IntegralCurveAtts.issueBoundaryWarnings = 1
-IntegralCurveAtts.issueTerminationWarnings = 1
-IntegralCurveAtts.issueStepsizeWarnings = 1
-IntegralCurveAtts.issueStiffnessWarnings = 1
-IntegralCurveAtts.issueCriticalPointsWarnings = 1
+IntegralCurveAtts.issueAdvectionWarnings = 0
+IntegralCurveAtts.issueBoundaryWarnings = 0
+IntegralCurveAtts.issueTerminationWarnings = 0
+IntegralCurveAtts.issueStepsizeWarnings = 0
+IntegralCurveAtts.issueStiffnessWarnings = 0
+IntegralCurveAtts.issueCriticalPointsWarnings = 0
 IntegralCurveAtts.criticalPointThreshold = 0.001
 IntegralCurveAtts.correlationDistanceAngTol = 5
 IntegralCurveAtts.correlationDistanceMinDistAbsolute = 1

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtVTK_STSDFileFormat.h                        //
+//  avtVTKFileFormat.h
 // ************************************************************************* //
 
 #ifndef AVT_VTK_FILE_FORMAT_H
@@ -34,15 +34,15 @@ class DBOptionsAttributes;
 class avtVTK_STSDFileFormat : public avtSTSDFileFormat
 {
 public:
-                       avtVTK_STSDFileFormat(const char *filename, 
-                                             DBOptionsAttributes *);
-                       avtVTK_STSDFileFormat(const char *filename, 
-                                             DBOptionsAttributes *,
+                       avtVTK_STSDFileFormat(const char *filename,
+                                             const DBOptionsAttributes *);
+                       avtVTK_STSDFileFormat(const char *filename,
+                                             const DBOptionsAttributes *,
                                              avtVTKFileReader *r);
     virtual           ~avtVTK_STSDFileFormat();
 
     virtual const char    *GetType(void);
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual int            GetCycleFromFilename(const char *f) const;
     virtual int            GetCycle(void);
@@ -54,7 +54,7 @@ public:
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
 
-    virtual void          *GetAuxiliaryData(const char *var, 
+    virtual void          *GetAuxiliaryData(const char *var,
                               const char *type, void *, DestructorFunction &df);
 
     virtual bool           IsEmpty();
@@ -82,14 +82,14 @@ class avtVTK_STMDFileFormat : public avtSTMDFileFormat
 {
 public:
                        avtVTK_STMDFileFormat(const char *filename,
-                                             DBOptionsAttributes *);
-                       avtVTK_STMDFileFormat(const char *filename, 
-                                             DBOptionsAttributes *,
+                                             const DBOptionsAttributes *);
+                       avtVTK_STMDFileFormat(const char *filename,
+                                             const DBOptionsAttributes *,
                                              avtVTKFileReader *r);
     virtual           ~avtVTK_STMDFileFormat();
 
     virtual const char    *GetType(void);
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual int            GetCycleFromFilename(const char *f) const;
     virtual int            GetCycle(void);
@@ -108,6 +108,50 @@ protected:
     avtVTKFileReader *reader;
 
     mutable int cycleFromFilename;
+};
+
+
+class avtPVDFileReader;
+#include <avtMTMDFileFormat.h>
+
+// ****************************************************************************
+//  Class: avtPVD_MTMDFileFormat
+//
+//  Purpose:
+//      Reads in PVD files as a plugin to VisIt.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 3, 2021
+//
+// ****************************************************************************
+
+
+class avtPVD_MTMDFileFormat : public avtMTMDFileFormat
+{
+  public:
+                       avtPVD_MTMDFileFormat(const char *filename,
+                                             const DBOptionsAttributes *);
+    virtual           ~avtPVD_MTMDFileFormat();
+
+    int                GetNTimesteps(void) override;
+    void               GetTimes(std::vector<double> &) override;
+
+    vtkDataSet        *GetMesh(int, int, const char *) override;
+    vtkDataArray      *GetVar(int, int, const char *) override;
+    vtkDataArray      *GetVectorVar(int, int, const char *) override;
+
+    void *             GetAuxiliaryData(const char *, int, const char *,
+                                        void *, DestructorFunction &);
+
+    const char        *GetType(void)  override;
+    void               FreeUpResources(void) override;
+
+    void               ActivateTimestep(int ts) override;
+
+  protected:
+    void               PopulateDatabaseMetaData(avtDatabaseMetaData *, int) override;
+
+    avtPVDFileReader *reader;
 };
 
 

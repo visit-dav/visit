@@ -1,0 +1,214 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 3.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 3.3 Release Notes</font></b></center>
+<center><b><font size="4">June, 2022</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
+  <li><a href="#Build_features">Changes for build_visit</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_features"></a>
+<p><b><font size="4">General features added in version 3.3</font></b></p>
+<ul>
+  <li>The handling of color tables has been enhanced and modified.
+    <ul>
+     <li>Many color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> have been added for individuals who are color vision deficient (CVD).</li>
+     <li>To handle the expanded list of color tables a new tagging system has been introduced to allow users to reduce the color tables displayed in the color table controls in the rest of the GUI. All the tagging and filtering controls are located in the existing Color table window.
+       <ul>
+        <li>Every color table has one or more tags.</li>
+        <li>Color table filtering can be turned on or off.</li>
+        <li>When color table filtering is off all the color tables are displayed in the color table controls in the rest of the GUI.</li>
+        <li>When color table filtering is on only the color tables associated with the active flags are displayed.</li>
+        <li>The user can select if only the color tables that contain all the tags or any of the tags gets displayed.</li>
+       </ul>
+     <li>The color table categories have been eliminated since that functionality is now redundant with the introduction of the more flexible tagging system.</li>
+     <li>Changed <i>active</i> to <i>default</i> for everything related to color tables, including the GUI and the Python scripting interface.</li>
+    </ul>
+  </li>
+  <li>New capabilities have been added to allow repartitioning or flattening domain decomposed data when exporting to Blueprint.
+    <ul>
+     <li>When repartitioning data, the user can specify the number of domains to repartition the data into. The current repartitioning algoithm uses a simple spatial decomposition algorithm. The user can also specify a field to control the partitioning, enabling an arbitrary repartitioning.</li>
+     <li>When flattening the data, all the domains are merged into a single domain.</li>
+     <li>To export repartitioned data, go to the Blueprint export options, select the <i>Partition</i> operation and set the target number of domains field.</li>
+     <li>To export flattened data, go to the Blueprint export options, select <i>Flatten_CSV</i> to export the mesh data to vertex and element based CSV files, or <i>Flatten_HDF5</i> to export the data to a Blueprint <i>Table</i> node.</li>
+     <li>It is also possible to directly access flattened data from the Python scripting interface. The <code>Flatten</code> function uses the new Flatten Query to return the active plot data as a tabular, numpy compatible, 2D array.</li>
+    </ul>
+  </li>
+  <li>Support for <i>SeedMe</i> was removed since the service was retired.</li>
+  <li>References to old email lists (@ornl.gov) throughout the code and documentation were replaced with references to the help pages of the new website.</li>
+  <li>The behavior of Python's <code>help</code> was modified to first present what <code>help</code> would normally produce followed by the output from <code>apropos</code> when that output is non-empty.</li>
+  <li>The French translation was updated thanks to <a href="https://github.com/cessenat">@cessenat</a>. We are still looking for volunteers for translations in other languages. If interested, please <a href="https://visit-dav.github.io/visit-website/support/">contact us</a>.</li>
+  <li>A new (beta) <a href="https://en.wikipedia.org/wiki/Names_given_to_the_Spanish_language">Castilian Spanish</a> translation was created thanks to <a href="https://github.com/cessenat">@cessenat</a> using auto-translation from English. It likely still requires review by someone who is fluent in Spanish and we would welcome any volunteers.</li>
+  <li>Added support and examples of 2D structured grids representing surfaces in 3 dimensions.</li>
+</ul>
+
+<a name="Advanced_features"></a>
+<p><b><font size="4">Advanced features added in version 3.3</font></b></p>
+<ul>
+  <li>Text annotation macros (e.g. <code>$time</code>, <code>$cycle</code>, ...) have been enhanced in some key ways. First, more macros are available including <code>$index</code>, <code>$dbcomment</code>, <code>$numstates</code>, etc.. Next, printf-style formatting can be specified for a macro and multiple instances of the same or different macros can appear in the same annotation object.</li>
+  <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations in the Python scripting interface were modified to catch and disallow incorrect usage instead of silently falling back to default values. Better error checks and messages were also added. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
+  <li>A new function was added to the Python scripting interface named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
+  <li><code>ColorControlPointsList</code> and <code>GaussianControlPointsList</code> now have a <code>SetNum</code> method for changing the size of the underlying controlPoints list. Control points will be added or removed based on the current size of the list. The <code>SetNum</code> method was also added to the script created by logging / command recording, so that the control points list has the correct size and the created script can execute correctly without crashing the Python scripting interface.</li>
+  <li>A section was added to the <i>Developer Manual</i> describing process launching.</li>
+  <li>A section was added to the <i>Developer Manual</i> describing building VisIt with spack.</li>
+  <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
+</ul>
+
+<a name="GUI_changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 3.3</font></b></p>
+<ul>
+  <li>In the file open window, next to <i>Open file as type:</i> when you click <i>Guess from file name/extension</i>, the list of file types is now sorted in alphabetical case-insensitive order. The same change has been made in the list of Databases in the Plugin Manager.</li>
+  <li>In the plugin selection in the file open window, users can now delete the text that is there and start typing the name of the plugin that they wish to open files with, and VisIt will autocomplete the entered text to select a plugin.</li>
+  <li>Custom titles for Legend annotation objects can now be set.</li> 
+  <li><i>Dolly</i> and <i>FlyThrough</i> navigation modes now support mouse-wheel interaction for zooming.</li>
+  <li>Changing the navigation mode (<i>Trackball</i>, <i>Dolly</i>, <i>FlyThrough</i>) will now trigger an automatic View reset.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 3.3</font></b></p>
+<ul>
+  <li>The informational message displayed after successfully exporting a database now contains the host and path to the file.</li>
+  <li>The Chombo reader now supports anisotropic refinements.</li>
+  <li>The WData reader was added.</li>
+  <li>The Blueprint reader was enhanced to support the implicit points topology.</li>
+  <li>The Xmdv reader was enhanced to allow users the ability to specify the output precision when exporting data.</li>
+  <li>The Blueprint reader was enhanced to support polyhedral meshes. If you read a polyhedral mesh, it will automatically convert the mesh to a tetrahedral mesh, as well as convert the fields as needed. It will also keep track of original element ids so that you don't see the new lines from the resulting tetrahedra.</li>
+  <li>The Xolotl reader was updated to support phase-space.</li>
+  <li>The SW4 reader was renamed as sw4img to fix static builds.</li>
+  <li>The NASTRAN reader was modified to reduce the amount of debug outputs and handle DOS line endings.</li>
+  <li>The Blueprint reader now supports the option to choose between two different MFEM low order refinement schemes. The Legacy option is the original LOR scheme used by VisIt, and the new option preserves the continuity of meshes. The new option is enabled by default.</li>
+  <li>VisIt-generated expressions are no longer included in VTK, Blueprint, and Silo exports.</li>
+  <li>The ADIOS and ADIOS2 readers were updated to build with c-blosc, so blosc-compressed ADIOS-based files can now be read by VisIt.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 3.3</font></b></p>
+<ul>
+  <li>Pseudocolor Plot Limits now say <i>Use Actual Data</i> instead of <i>Use Current Plot</i>.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 3.3</font></b></p>
+<ul>
+  <li>Added the <i>logical_nodeid</i>, <i>logical_zoneid</i>, <i>node_domain</i>, <i>zone_domain</i>, and <i>zone_centers</i> mesh expressions.</li>
+  <li>Moved the <i>divergence</i>, <i>curl</i>, <i>Laplacian</i>, and <i>gradient</i> functions from the <i>Miscellaneous</i> submenu to the <i>Vector</i> submenu within the <i>Insert function...</i> menu in the Expressions window. </li>
+  <li>Added the new <i>ghost_zoneid</i> function to the <i>Mesh</i> submenu in the Expressions window.</li>
+  <li>Added the new <i>crack_width</i> function to the <i>Misc</i> submenu in the Expressions window.</li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 3.3</font></b></p>
+<ul>
+  <li>Upgraded the <i>XRay Image</i> Query so it can now output Blueprint files.</li>
+  <li>Upgraded the <i>XRay Image</i> Query so users can now specify an output directory for query results.</li>
+  <li>The <i>Pick</i> operation now has the option to include the Euclidean distance between the current and previous <i>Pick</i> in the GUI's output window. To enable this option, check the <i>Distance to previous</i> box Pick output window. You should then see a new field in the tabular output display titled <i>Distance to previous</i>.</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 3.3</font></b></p>
+<ul>
+  <li>Fixed a bug with expression insert-function for constant expressions, so that the usage is clearer. </li>
+  <li>Fixed a bug with the PlainText reader, where leading and trailing whitespace was included int the variable names.</li>
+  <li>Fixed a bug with the time slider in the main window where it would resize to an extremely wide minimum width in some situations.</li>
+  <li>Fixed an issue where the list of plugins in the File open window could disappear when selecting plugins from the list multiple times.</li>
+  <li>Fixed a bug where changing the <i>Number format</i> for a Contour plot's legend would have no affect on the labels next to the tick marks.</li>
+  <li>Fixed a bug that prevented users from comparing particular VisIt Python objects in the Python scripting interface with non-VisIt types.</li>
+  <li>Fixed a crash with Libsim when attempting to Export databases that have export options specified as enums.</li>
+  <li>Fixed a bug where right-clicking in the Viewer Window to access popup menu was preventing mouse-wheel navigation functionality until another mouse click was performed.</li>
+  <li>Fixed several bugs with <i>Flythrough</i> navigation mode: multiple calls to <i>Reset View</i> would make the plot disappear; adding new plots would make them disappear from view; issuing a <i>Recenter View</i> would move the camera inside the plot.</li>
+  <li>Fixed a bug where the bounding box extents would not be reset when <i>Scale 3D Axes</i> was turned off.</li>
+  <li>Fixed a crash in the Python scripting interface when <code>DeleteAllPlots</code> is called when there are no plots and a callback has been registered for <code>SetActivePlots</code>.</li>
+  <li>Fixed a bug in <code>visit_composite</code> where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
+  <li>Fixed a bug with the Python scripting interface where the PySide2 module wouldn't load when running one of the pre-built binaries.</li>
+  <li>The Contour plot's fields were re-ordered internally to fix a bug where a command-recorded script of a Contour plot would crash the Python scripting interface if the number of contours had been increased from the default.</li>
+  <li>The images and wording for <i>Curve Overlay</i> and <i>Reflected Curve Overlay</i> templates in the Save Movie Wizard were updated to demonstrate that they can be used on 3D plots, not just 2D plots.</li>
+</ul>
+
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 3.3</font></b></p>
+<ul>
+  <li>Added host profiles for the KAUST Supercomputing Laboratory.</li>
+  <li>Updated the Ohio Supercomputing Center host profiles.</li>
+  <li>Updated the ORNL host profiles to remove obsolete machines.</li>
+  <li>Renamed the <i>mxterm</i> launch profiles to <i>sxterm</i> in the LLNL host profiles since <i>mxterm</i> has been replaced with <i>sxterm</i>."
+  <li>Updated the <i>TOSS3</i> installations at LLNL so that they would also run on <i>TOSS4</i> systems.</li>
+  <li>Updated the LLNL host profiles for <i>TOSS</i> systems to use <code>sbatch</code> instead of <code>msub</code> when launching batch jobs.</li>
+</ul>
+
+<a name="Build_features"></a>
+<p><b><font size="4">Build features added in version 3.3</font></b></p>
+<ul>
+  <li>Build_visit was modified to do an out-of-source build for Qt.</li>
+  <li>Enhanced build_visit to optionally build Qt 5.10.1 instead of Qt 5.14.2. To enable building Qt 5.10.1, add <code>--qt510</code> to the command line.</li>
+  <li>Build_visit was enhanced to patch Xdmf so that it builds with gcc 11.2.</li>
+  <li>The <code>--dry-run</code> command line option was removed from build_visit.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 3.3</font></b></p>
+<ul>
+  <li>VTK-m was updated to version 1.7.0 and VTK-h was updated to version 0.8.0.</li>
+  <li>Added the spack environment files <code>compilers.yaml</code> and <code>packages.yaml</code> for crusher.olcf.ornl.gov.</li>
+  <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
+  <li>The minimum required version of CMake is now 3.14.</li> 
+  <li>The programs <code>qtviswinExample</code>, <code>qtvtkExample</code>, <code>qvtkopenglExample</code> were added to help with debugging OpenGL issues.</li>
+  <li>VisIt test data archive tooling was changed from <code>7z</code> to <code>tar</code> with the same (lzma2) compression.</li>
+  <li>The version of Conduit was upgraded to 0.8.2.</li>
+  <li>VisIt now calculates the topological dimension of the data tree after the data was retrieved from the database, and after SIL and/or Material selection was applied. This should aid downstream filters that depend on an accurate topological dimension. For mixed-topology datasets the largest topological dimension is what gets reported. Filters that modify topological structure are still required to update the topological dimension.</li>
+  <li>The <code>DEFINES</code>, <code>CXXFLAGS</code> and <code>LDFLAGS</code> tags in the xml files for plugins now support an optional <code>components</code> attribute specifying for which component(s) the tag applies. These are currently valid for the MDServer("M"), serial Engine ("ESer") and parallel Engine("EPar"). Multiple components may be specified, separated by commas. See <code>ADIOS2.xml</code> or <code>MOAB.xml</code> for an example.</li>
+  <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See <code>uintah.xml</code> for an example.</li>
+  <li>The version of MFEM was upgraded to 4.4.</li>
+  <li>Added the script <code>run-build-visit</code> for running <code>build_visit</code> to build the third party libraries on LLNL systems. The script has the following usage:<br>
+    <pre>
+    Usage: +"machine name" -v "version" -s "build_visit_script"
+    Valid machine names:
+        kickit_mesagl (B-Div, Linux, x86_64, mesagl),
+        kickit_opengl (B-Div, Linux, x86_64, opengl),
+        quartz (LC, Linux, x86_64),
+        lassen (LC, Linux, power9),
+        rztrona (LC, Linux, x86_64),
+        rzansel (LC, Linux, power9),
+        jade (LC, Linux, x86_64),
+        sierra (LC, Linux, power9)</pre></li>
+  <li>Fixed a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
+  <li>Added <code>TestAutoName()</code> method for automagically naming test baseline files.</li>
+  <li>The signature for the <code>SET_UP_THIRD_PARTY</code> function for Find modules was modified to utilize keyword arguments:
+    <ul>
+     <li><b>LIBS</b> (required) -- the list of libraries to be found</li>
+     <li><b>LIBDIR</b> (optional) -- use when libs are located in an extension other than <i>lib64</i> or <i>lib</i></li>
+     <li><b>INCDIR</b> (optional) -- use when the headers are located in an extension other than <i>include</i></li>
+    </ul>
+    The first argument still must be the name of the package.
+  </li>
+  <li>The packaging was enhanced to add the <code>libicui18n</code>, <code>libicudata</code> and <code>libicuuc</code> system libraries used by Qt to the lib directory. This is done automaticallly if the libraries can be found in the <code>lib64</code> directory. The packaging logic was also enhanced to add the libstdc++ libraries to the lib directory of a distribution. The libstdc++ library depends on <code>VISIT_CXX_LIBRARY</code> being defined. This would typically be added to the config site file and would be set if using a non-standard compiler on a system. Both of these enhancements only apply to Linux systems.</li>
+  <li>The version of Mili was upgraded to 22.1.</li>
+  <li>VisIt now builds successfully with ADIOS enabled while MPI is disabled.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.2.2.html>3.2.2</a>.</p>
+</body>
+</html>

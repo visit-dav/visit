@@ -58,7 +58,7 @@
 // ****************************************************************************
 // Method: QvisHostProfileWindow::QvisHostProfileWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisHostProfileWindow class.
 //
 // Arguments:
@@ -107,11 +107,11 @@ QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
 // ****************************************************************************
 // Method: QvisHostProfileWindow::~QvisHostProfileWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisHostProfileWindow class.
 //
-// Programmer: 
-// Creation:   
+// Programmer:
+// Creation:
 //
 // Modifications:
 //
@@ -324,7 +324,7 @@ QvisHostProfileWindow::ListWidgetDropEvent(QDropEvent *event)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the window's widgets and hooks up the slot
 //   methods.
 //
@@ -488,6 +488,11 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
 // Creation:   September 10, 2013
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 11:56:47 PDT 2020
+//    Remove '/' betweeen remoteUrl and new url text, as remoteUrl contains a
+//    trailing '/'.  Having '//' in the url was causing a redirect error,
+//    and redirects aren't currently allowed/handled. Also remove extra call
+//    to manager->get using removteUrl, doesn't seem to be needed.
 //
 // ****************************************************************************
 
@@ -497,7 +502,8 @@ QvisHostProfileWindow::retrieveLatestProfiles()
     ///get content from url..
     QUrl url(remoteUrl->currentText());
 
-    if(!manager) {
+    if(!manager)
+    {
         manager = new QNetworkAccessManager();
 
         connect(manager, SIGNAL(finished(QNetworkReply*)),
@@ -507,12 +513,9 @@ QvisHostProfileWindow::retrieveLatestProfiles()
     remoteTree->clear();
     remoteData.clear();
 
-    QNetworkRequest maprequest(QUrl(remoteUrl->currentText() + "/networks.dat"));
+    QNetworkRequest maprequest(QUrl(remoteUrl->currentText() + "networks.dat"));
     QNetworkReply* reply = manager->get(maprequest);
     reply->waitForReadyRead(-1);
-
-    QNetworkRequest request(url);
-    manager->get(request);
 }
 
 // ****************************************************************************
@@ -600,11 +603,40 @@ QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &
 //    Kathleen Biagas, Tue Sep  3 20:08:13 PDT 2019
 //    Use networks.json file to parse for locations of .xml files.
 //
+//    Kathleen Biagas, Wed Apr  8 11:56:47 PDT 2020
+//    If an error was encountered, print error messages and return.
+//
+//    Remove '/' betweeen remoteUrl and new url text, as remoteUrl contains a
+//    trailing '/'.  Having '//' in the url was causing a redirect error,
+//    and redirects aren't currently allowed/handled.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 {
+    if (reply->error())
+    {
+        QString msg = tr("There was an error attempting to download hosts.\n"
+                         "Please contact VisIt developers.\n\n"
+                         "url: %1\n\n%2.")
+                         .arg(reply->url().toString())
+                         .arg(reply->errorString());
+        Error(msg);
+        return;
+    }
+    else if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200)
+    {
+        QString msg = tr("There was an error attempting to download hosts.\n"
+                         "Please contact VisIt developers.\n\n"
+                         "url: %1.\n\nhttp error %2: %3.")
+                .arg(reply->url().toString())
+                .arg(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt())
+                .arg(reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString());
+        Error(msg);
+        return;
+    }
+
     QString results(reply->readAll());
 
     QString inputUrl = reply->url().toString();
@@ -626,7 +658,7 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
             profileMap[key] = values;
         }
         // change the url to retieve hosts directory structure from json file
-        QNetworkRequest request(QUrl(remoteUrl->currentText() + "/networks.json"));
+        QNetworkRequest request(QUrl(remoteUrl->currentText() + "networks.json"));
         manager->get(request);
     }
     else if(QFileInfo(inputUrl).fileName() == "networks.json")
@@ -648,7 +680,7 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
                     for(rapidjson::SizeType j = 0; j < hostDir.Size(); ++j)
                     {
                         QString fileN(hostDir[j]["name"].GetString());
-                        QNetworkRequest request(QUrl(remoteUrl->currentText() + "/" + network + "/" + fileN));
+                        QNetworkRequest request(QUrl(remoteUrl->currentText() + network + "/" + fileN));
                         manager->get(request);
                     }
                 }
@@ -684,10 +716,13 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 //   Brad Whitlock, Wed Aug 15 13:58:14 PDT 2012
 //   I added ssh command.
 //
-//    Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
-//    Replace slot 'sshCommandChanged' with 'sshCommandRetPressed', so that
-//    sshCommand is only processed once editing has finished.  Will be
-//    triggered by 'returnPressed'/'editingFinished' signals from the widget.
+//   Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
+//   Replace slot 'sshCommandChanged' with 'sshCommandRetPressed', so that
+//   sshCommand is only processed once editing has finished.  Will be
+//   triggered by 'returnPressed'/'editingFinished' signals from the widget.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -697,7 +732,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     QWidget *currentGroup = new QWidget();
 
     QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     //
     // Machine group
@@ -706,7 +741,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     layout->addWidget(machineGroup);
     int mRow = 0;
     QGridLayout *mLayout = new QGridLayout(machineGroup);
-    mLayout->setMargin(5);
+    mLayout->setContentsMargins(5,5,5,5);
     mLayout->setSpacing(HOST_PROFILE_SPACING);
 
     hostNickname = new QLineEdit(machineGroup);
@@ -783,7 +818,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     layout->addWidget(accountGroup);
     int aRow = 0;
     QGridLayout *aLayout = new QGridLayout(accountGroup);
-    aLayout->setMargin(5);
+    aLayout->setContentsMargins(5,5,5,5);
     aLayout->setSpacing(HOST_PROFILE_SPACING);
 
     userName = new QLineEdit(accountGroup);
@@ -801,7 +836,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     layout->addWidget(connectionGroup);
     int cRow = 0;
     QGridLayout *cLayout = new QGridLayout(connectionGroup);
-    cLayout->setMargin(5);
+    cLayout->setContentsMargins(5,5,5,5);
     cLayout->setSpacing(HOST_PROFILE_SPACING);
     cLayout->setColumnMinimumWidth(0,15);
     cLayout->setColumnStretch(0,0);
@@ -823,8 +858,13 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     cRow++;
 
     clientHostNameMethod = new QButtonGroup(connectionGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
             this, SLOT(clientHostNameMethodChanged(int)));
+#else
+    connect(clientHostNameMethod, SIGNAL(idClicked(int)),
+            this, SLOT(clientHostNameMethodChanged(int)));
+#endif
     chnMachineName = new QRadioButton(tr("Use local machine name"), connectionGroup);
     chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
                                              connectionGroup);
@@ -846,7 +886,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     cLayout->addWidget(chnParseFromSSHClient, cRow, 1, 1, 3);
     cRow++;
     cLayout->addWidget(chnSpecifyManually, cRow, 1, 1, 1);
-    
+
     clientHostName = new QLineEdit(connectionGroup);
     connect(clientHostName, SIGNAL(textChanged(const QString &)),
             this, SLOT(clientHostNameChanged(const QString &)));
@@ -923,7 +963,7 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
 
     int row = 0;
     QGridLayout *layout = new QGridLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     profileList = new QListWidget(currentGroup);
     layout->addWidget(profileList, row,0, 1,4);
@@ -991,13 +1031,13 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    tmpLayout->setMargin(0);
+    tmpLayout->setContentsMargins(0,0,0,0);
     QGridLayout *layout = new QGridLayout();
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     tmpLayout->addLayout(layout);
     layout->setSpacing(7);
     tmpLayout->addStretch(5);
-    
+
     profileName = new QLineEdit(currentGroup);
     connect(profileName, SIGNAL(textChanged(const QString&)),
             this, SLOT(processProfileNameText(const QString&)));
@@ -1043,7 +1083,7 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::CreateParallelSettingsGroup
 //
-// Purpose: 
+// Purpose:
 //   Create the parallel options together on this tab.
 //
 // Returns:    The widget that contains the parallel options.
@@ -1052,7 +1092,7 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 // Creation:   Thu Oct  6 11:59:12 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QWidget *
@@ -1060,7 +1100,7 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 {
     QWidget *currentGroup = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     parallelCheckBox = new QCheckBox(
                      tr("Launch parallel engine"),
@@ -1114,6 +1154,13 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Brad Whitlock, Wed Nov  7 10:53:27 PST 2018
 //   Add lrun.
 //
+//   Kathleen Biagas, Wed Apr 19 14:02:45 PDT 2023
+//   Replace deprecated 'activated' signal with 'currentIndexChanged'.
+//
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
+// 
 // ****************************************************************************
 
 QWidget *
@@ -1123,13 +1170,13 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    tmpLayout->setMargin(5);
+    tmpLayout->setContentsMargins(5,5,5,5);
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(HOST_PROFILE_SPACING+2);
     tmpLayout->addStretch(5);
-    
+
     launchMethod = new QComboBox(currentGroup);
     launchMethod->addItem(tr("(default)"));
     launchMethod->addItem("aprun");
@@ -1163,7 +1210,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
     launchMethod->addItem("sbatch/srun");
-    connect(launchMethod, SIGNAL(activated(const QString &)),
+    connect(launchMethod, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
     connect(launchCheckBox, SIGNAL(toggled(bool)),
@@ -1185,14 +1232,14 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     QWidget *h = new QWidget(currentGroup);
     layout->addWidget(h, row, 0, 1, 2);
     QHBoxLayout *hLayout = new QHBoxLayout(h);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
     hLayout->setSpacing(HOST_PROFILE_SPACING);
 
     // Create the default value widgets.
     QGroupBox *defaultGroup = new QGroupBox(tr("Defaults"), h);
     hLayout->addWidget(defaultGroup);
     QGridLayout *dLayout = new QGridLayout(defaultGroup);
-    dLayout->setMargin(5);
+    dLayout->setContentsMargins(5,5,5,5);
     dLayout->setSpacing(HOST_PROFILE_SPACING+2);
     row = 0;
 
@@ -1211,7 +1258,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     numNodes->setKeyboardTracking(false);
     numNodes->setRange(1,999999);
     numNodes->setSingleStep(1);
-    
+
     connect(numNodes, SIGNAL(valueChanged(int)),
             this, SLOT(numNodesChanged(int)));
     numNodesCheckBox = new QCheckBox(tr("Number of nodes"), defaultGroup);
@@ -1258,7 +1305,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     connect(constraintGroup, SIGNAL(toggled(bool)),
             this, SLOT(toggleAllowableNodeProcs(bool)));
     QGridLayout *cLayout = new QGridLayout(constraintGroup);
-    cLayout->setMargin(5);
+    cLayout->setContentsMargins(5,5,5,5);
     row = 0;
 
     QPushButton *addRow = new QPushButton(tr("Add row"), constraintGroup);
@@ -1316,10 +1363,10 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    tmpLayout->setMargin(5);
+    tmpLayout->setContentsMargins(5,5,5,5);
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(HOST_PROFILE_SPACING);
     tmpLayout->addStretch(5);
 
@@ -1407,6 +1454,10 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 //   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
 //   Return the created widget.
 //
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `valueChanged(const QString)` signal for QSpinBox with
+//   'valueChanged(int)' as the former is not available in Qt 6.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1414,10 +1465,10 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 {
     QWidget *currentGroup = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     QString str1(
-       QString("<i>") + 
+       QString("<i>") +
        tr("These options are for hardware accelerating the scalable rendering "
           "feature on a compute cluster. In other modes, VisIt will automatically "
           "use hardware acceleration. This tab only needs to be modified for "
@@ -1441,7 +1492,7 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     layout->addWidget(hardwareGroup);
     int hRow = 0;
     QGridLayout *hLayout = new QGridLayout(hardwareGroup);
-    hLayout->setMargin(5);
+    hLayout->setContentsMargins(5,5,5,5);
     hLayout->setSpacing(HOST_PROFILE_SPACING);
 
     QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), hardwareGroup);
@@ -1463,8 +1514,8 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     sbNGPUs->setKeyboardTracking(false);
     sbNGPUs->setRange(0, 2048);
     sbNGPUs->setEnabled(true);
-    connect(sbNGPUs, SIGNAL(valueChanged(const QString&)), this,
-            SLOT(nGPUsChanged(const QString&)));
+    connect(sbNGPUs, SIGNAL(valueChanged(int)), this,
+            SLOT(nGPUsChanged(int)));
     hLayout->addWidget(lblNGPUs, hRow,0, 1,1);
     hLayout->addWidget(sbNGPUs, hRow,1, 1,1);
     hRow++;
@@ -1486,7 +1537,7 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method updates the window so it reflects the current state
 //   of the HostProfileList object.
 //
@@ -1632,7 +1683,7 @@ QvisHostProfileWindow::UpdateMachineProfile()
 
         // Replace any localhost machine names.
         ReplaceLocalHost();
-    
+
         machineTabs->setEnabled(true);
 
         // Update the contents of the machine settings tab
@@ -1815,7 +1866,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     {
         profileName->setText("");
         numProcessors->setValue(1);
-        
+
         parallelCheckBox->setChecked(false);
         launchCheckBox->setChecked(false);
         launchMethod->setCurrentIndex(0);
@@ -1966,7 +2017,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
               temp += "\"";
               temp += QString(pos->c_str());
               temp += "\" ";
-              
+
               laFlag = false;
             }
         }
@@ -2042,7 +2093,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::ReplaceLocalHost
 //
-// Purpose: 
+// Purpose:
 //   Looks through the host profile list and replaces all hosts that are
 //   "localhost" with the correct local hostname.
 //
@@ -2070,7 +2121,7 @@ QvisHostProfileWindow::ReplaceLocalHost()
         MachineProfile &current = profiles->operator[](i);
         if(current.GetHost() == "localhost")
         {
-            current.SetHost(GetViewerProxy()->GetLocalHostName()); 
+            current.SetHost(GetViewerProxy()->GetLocalHostName());
         }
     }
 }
@@ -2078,7 +2129,7 @@ QvisHostProfileWindow::ReplaceLocalHost()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::UpdateWindowSensitivity
 //
-// Purpose: 
+// Purpose:
 //   This method sets the sensitivity of the window's widgets.
 //
 // Programmer: Brad Whitlock
@@ -2126,7 +2177,7 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Jeremy Meredith, Thu Jun 28 13:19:55 EDT 2007
 //    Disable client host name method determination widgets when SSH tunneling
 //    is enabled.
-// 
+//
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
@@ -2210,7 +2261,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     maxNodes->setEnabled(hostEnabled && currentMachine->GetMaximumNodesValid());
     maxProcessorsCheckBox->setEnabled(hostEnabled);
     maxProcessors->setEnabled(hostEnabled && currentMachine->GetMaximumProcessorsValid());
-    
+
 
     profileNameLabel->setEnabled(launchEnabled);
     profileName->setEnabled(launchEnabled);
@@ -2279,7 +2330,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values from the widgets in the active profile area.
 //
 // Arguments:
@@ -2412,7 +2463,7 @@ QvisHostProfileWindow::GetCurrentValues()
             std::string newHost(temp.toStdString());
             if(newHost == "localhost")
             {
-                newHost = GetViewerProxy()->GetLocalHostName(); 
+                newHost = GetViewerProxy()->GetLocalHostName();
                 hostName->setText(newHost.c_str());
             }
             if (newHost != currentMachine->GetHost())
@@ -2535,7 +2586,7 @@ QvisHostProfileWindow::GetCurrentValues()
                 // NOTE: if the quotes are missing the compositing
                 // will go to the last arg.  This may not be correct
                 // but that is what is interperted and does not fail.
-                else 
+                else
                 {
                     // Save the -la argument as normal.
                     arguments.push_back(std::string(str[i].toStdString()));
@@ -2556,7 +2607,7 @@ QvisHostProfileWindow::GetCurrentValues()
                         {
                           std::string tmp(str[i].toStdString());
                           composite += std::string(" ") + tmp;
-                          
+
                           // Strip the quote as it will get added back
                           // in when it is processed. Then quit.
                           if( composite.find(terminal) == composite.size()-1 )
@@ -2791,7 +2842,7 @@ QvisHostProfileWindow::GetCurrentValues()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we want to apply the values from the window
 //   to the state object.
 //
@@ -2804,7 +2855,7 @@ QvisHostProfileWindow::GetCurrentValues()
 // Modifications:
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2829,7 +2880,7 @@ QvisHostProfileWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the current values for all
 //   of the widgets in the window and then calls Notify to tell the
 //   viewer.
@@ -2853,7 +2904,7 @@ QvisHostProfileWindow::apply()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::userNameChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the username for the active
 //   host profile.
 //
@@ -2865,7 +2916,7 @@ QvisHostProfileWindow::apply()
 //   Prevented the window from being updated.
 //
 //    Jeremy Meredith, Mon Aug 18 13:36:20 PDT 2003
-//    Made it apply without a return press, and 
+//    Made it apply without a return press, and
 //    renamed the method appropriately.
 //
 //    Jeremy Meredith, Thu Oct  9 15:48:43 PDT 2003
@@ -2918,7 +2969,7 @@ QvisHostProfileWindow::processDirectoryText(const QString &d)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleLaunch
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the launch method widget.
 //
 // Programmer: Jeremy Meredith
@@ -2948,7 +2999,7 @@ QvisHostProfileWindow::toggleLaunch(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processLaunchMethodText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the launch method for the active
 //   host profile.
 //
@@ -2983,7 +3034,7 @@ QvisHostProfileWindow::launchMethodChanged(const QString &method)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::numProcessorsChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the number of processors
 //   for the active host profile.
 //
@@ -3014,7 +3065,7 @@ QvisHostProfileWindow::numProcessorsChanged(int value)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::timeoutChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the timeout for the active host
 //   profile.
 //
@@ -3040,7 +3091,7 @@ QvisHostProfileWindow::timeoutChanged(int value)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::threadsChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the threads for the active host
 //   profile.
 //
@@ -3064,7 +3115,7 @@ QvisHostProfileWindow::threadsChanged(int value)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleNumNodes
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the NumNodes widget.
 //
 // Programmer: Jeremy Meredith
@@ -3094,7 +3145,7 @@ QvisHostProfileWindow::toggleNumNodes(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::numNodesChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the number of nodes
 //   for the active host profile.
 //
@@ -3124,7 +3175,7 @@ QvisHostProfileWindow::numNodesChanged(int n)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::togglePartitionName
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the PartitionName widget.
 //
 // Programmer: Jeremy Meredith
@@ -3154,7 +3205,7 @@ QvisHostProfileWindow::togglePartitionName(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processPartitionNameText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the partition name for the active
 //   host profile.
 //
@@ -3164,7 +3215,7 @@ QvisHostProfileWindow::togglePartitionName(bool state)
 // Modifications:
 //   Brad Whitlock, Mon Sep 24 09:29:16 PDT 2001
 //   Prevented the window from updating.
-//   
+//
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
@@ -3184,7 +3235,7 @@ QvisHostProfileWindow::processPartitionNameText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleBankName
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the BankName widget.
 //
 // Programmer: Jeremy Meredith
@@ -3211,7 +3262,7 @@ QvisHostProfileWindow::toggleBankName(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processBankNameText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the bank name for the active
 //   host profile.
 //
@@ -3238,7 +3289,7 @@ QvisHostProfileWindow::processBankNameText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleTimeLimit
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the TimeLimit widget.
 //
 // Programmer: Jeremy Meredith
@@ -3265,7 +3316,7 @@ QvisHostProfileWindow::toggleTimeLimit(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processTimeLimitText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the timeLimit name for the active
 //   host profile.
 //
@@ -3292,7 +3343,7 @@ QvisHostProfileWindow::processTimeLimitText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleMachinefile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the Machinefile widget.
 //
 // Programmer: Jeremy Meredith
@@ -3319,7 +3370,7 @@ QvisHostProfileWindow::toggleMachinefile(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processMachinefileText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the machinefile name for the active
 //   host profile.
 //
@@ -3346,7 +3397,7 @@ QvisHostProfileWindow::processMachinefileText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleLaunchArgs
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the launchArgs widget.
 //
 // Programmer: Jeremy Meredith
@@ -3373,7 +3424,7 @@ QvisHostProfileWindow::toggleLaunchArgs(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processLaunchArgsText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the launch args for the active
 //   host profile.
 //
@@ -3400,7 +3451,7 @@ QvisHostProfileWindow::processLaunchArgsText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleSublaunchArgs
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the sublaunchArgs widget.
 //
 // Programmer: Eric Brugger
@@ -3427,7 +3478,7 @@ QvisHostProfileWindow::toggleSublaunchArgs(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processSublaunchArgsText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the sublaunch args for the active
 //   host profile.
 //
@@ -3454,7 +3505,7 @@ QvisHostProfileWindow::processSublaunchArgsText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleSublaunchPreCmd
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the sublaunchPreCmd widget.
 //
 // Programmer: Dave Bremer
@@ -3481,8 +3532,8 @@ QvisHostProfileWindow::toggleSublaunchPreCmd(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processSublaunchPreCmdText
 //
-// Purpose: 
-//   This is a Qt slot function that sets the sublaunch pre-mpi command for 
+// Purpose:
+//   This is a Qt slot function that sets the sublaunch pre-mpi command for
 //   the active host profile.
 //
 // Programmer: Dave Bremer
@@ -3508,7 +3559,7 @@ QvisHostProfileWindow::processSublaunchPreCmdText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleSublaunchPostCmd
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables the sublaunchPostCmd widget.
 //
 // Programmer: Dave Bremer
@@ -3535,8 +3586,8 @@ QvisHostProfileWindow::toggleSublaunchPostCmd(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processSublaunchPostCmdText
 //
-// Purpose: 
-//   This is a Qt slot function that sets the sublaunch post-mpi command for 
+// Purpose:
+//   This is a Qt slot function that sets the sublaunch post-mpi command for
 //   the active host profile.
 //
 // Programmer: Dave Bremer
@@ -3545,7 +3596,7 @@ QvisHostProfileWindow::toggleSublaunchPostCmd(bool state)
 // Modifications:
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3562,7 +3613,7 @@ QvisHostProfileWindow::processSublaunchPostCmdText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleParallel
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that enables parallelism.
 //
 // Programmer: Jeremy Meredith
@@ -3612,7 +3663,7 @@ QvisHostProfileWindow::toggleParallel(bool state)
 //
 // ****************************************************************************
 
-void 
+void
 QvisHostProfileWindow::loadBalancingChanged(int val)
 {
     if (currentLaunch == NULL)
@@ -3641,7 +3692,7 @@ QvisHostProfileWindow::loadBalancingChanged(int val)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::hostNameChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a slot function that sets the host name for the current profile.
 //
 // Programmer: Jeremy Meredith
@@ -3692,7 +3743,7 @@ QvisHostProfileWindow::hostNameChanged(const QString &n)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::hostAliasesChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a slot function that sets the host aliases for the current
 //   profile.
 //
@@ -3717,7 +3768,7 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::hostNicknameChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a slot function that sets the host nickname for the current
 //   profile.
 //
@@ -3769,7 +3820,7 @@ QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::processEngineArgumentsText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the engine arguments for
 //   the active host profile.
 //
@@ -3801,7 +3852,7 @@ QvisHostProfileWindow::processEngineArgumentsText(const QString &tmp)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleShareMDServer
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is activated when the Share MDServer
 //   check box is toggled.
 //
@@ -3813,7 +3864,7 @@ QvisHostProfileWindow::processEngineArgumentsText(const QString &tmp)
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 //   Brad Whitlock, Thu Dec  1 11:41:23 PST 2011
-//   Indicate that sharing a batch job does not work with ssh tunneling 
+//   Indicate that sharing a batch job does not work with ssh tunneling
 //   right now.
 //
 // ****************************************************************************
@@ -3845,7 +3896,7 @@ QvisHostProfileWindow::toggleShareMDServer(bool state)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleUseVisItScriptForEnv
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is activated when the Use VisIt
 //   to Set up Environment check box is toggled.
 //
@@ -4200,7 +4251,7 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleTunnelSSH
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is activated when the tunnel SSH
 //   check box is toggled.
 //
@@ -4222,7 +4273,7 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 //   Brad Whitlock, Thu Dec  1 11:41:23 PST 2011
-//   Indicate that sharing a batch job does not work with ssh tunneling 
+//   Indicate that sharing a batch job does not work with ssh tunneling
 //   right now.
 //
 // ****************************************************************************
@@ -4411,11 +4462,12 @@ QvisHostProfileWindow::toggleCanDoHW(bool state)
 //  Modifications:
 // ****************************************************************************
 void
-QvisHostProfileWindow::nGPUsChanged(const QString&)
+QvisHostProfileWindow::nGPUsChanged(int value)
 {
-    if(NULL == currentLaunch) { return; }
+    if(NULL == currentLaunch)
+        return;
 
-    currentLaunch->SetGPUsPerNode(sbNGPUs->value());
+    currentLaunch->SetGPUsPerNode(value);
     SetUpdate(false);
     Apply();
 }
@@ -4663,6 +4715,9 @@ QvisHostProfileWindow::copyMachineProfile()
 //   Brad Whitlock, Thu Oct 27 14:54:28 PDT 2011
 //   Set focus on the first thing you'd edit.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::addLaunchProfile()
@@ -4672,7 +4727,7 @@ QvisHostProfileWindow::addLaunchProfile()
 
     LaunchProfile lp;
     QString name(tr("New profile"));
-    QString num; num.sprintf(" #%d", profileCounter++);
+    QString num = QString(" #%1").arg(profileCounter++);
     name += num;
     lp.SetProfileName(name.toStdString());
 
@@ -4733,7 +4788,7 @@ QvisHostProfileWindow::delLaunchProfile()
     currentLaunch = NULL;
     Apply();
 }
-    
+
 // ****************************************************************************
 // Method:  QvisHostProfileWindow::copyLaunchProfile
 //
@@ -4804,7 +4859,7 @@ QvisHostProfileWindow::makeDefaultLaunchProfile()
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleUseMaxNodes
 //
-// Purpose: 
+// Purpose:
 //   Called when we click on the max nodes check box.
 //
 // Arguments:
@@ -4814,7 +4869,7 @@ QvisHostProfileWindow::makeDefaultLaunchProfile()
 // Creation:   Thu Oct  6 11:15:23 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4832,7 +4887,7 @@ QvisHostProfileWindow::toggleUseMaxNodes(bool val)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::maxNodesChanged
 //
-// Purpose: 
+// Purpose:
 //   Set a new max # nodes.
 //
 // Arguments:
@@ -4842,7 +4897,7 @@ QvisHostProfileWindow::toggleUseMaxNodes(bool val)
 // Creation:   Thu Oct  6 11:16:24 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4858,7 +4913,7 @@ QvisHostProfileWindow::maxNodesChanged(int val)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::toggleUseMaxProcessors
 //
-// Purpose: 
+// Purpose:
 //   Called when we click on the max processors check box.
 //
 // Arguments:
@@ -4868,7 +4923,7 @@ QvisHostProfileWindow::maxNodesChanged(int val)
 // Creation:   Thu Oct  6 11:15:23 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4886,7 +4941,7 @@ QvisHostProfileWindow::toggleUseMaxProcessors(bool val)
 // ****************************************************************************
 // Method: QvisHostProfileWindow::maxProcessorsChanged
 //
-// Purpose: 
+// Purpose:
 //   Set a new max # processors.
 //
 // Arguments:
@@ -4896,7 +4951,7 @@ QvisHostProfileWindow::toggleUseMaxProcessors(bool val)
 // Creation:   Thu Oct  6 11:16:24 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4918,9 +4973,9 @@ QvisHostProfileWindow::maxProcessorsChanged(int val)
 // Arguments:
 //   newsize : the new size.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 22 16:43:01 PDT 2014
@@ -4982,7 +5037,7 @@ QvisHostProfileWindow::ResizeNodeProcs(int newSize, bool blank)
 // Method: QvisHostProfileWindow::allowableNodeProcsAddRow
 //
 // Purpose:
-//   This is a Qt slot function called when we want to add a row to the 
+//   This is a Qt slot function called when we want to add a row to the
 //   allowableNodeProcs table.
 //
 // Programmer: Brad Whitlock
@@ -5004,7 +5059,7 @@ QvisHostProfileWindow::allowableNodeProcsAddRow()
 // Method: QvisHostProfileWindow::allowableNodeProcsDeleteRow
 //
 // Purpose:
-//   This is a Qt slot function called when we want to delete a row from the 
+//   This is a Qt slot function called when we want to delete a row from the
 //   allowableNodeProcs table.
 //
 // Programmer: Brad Whitlock

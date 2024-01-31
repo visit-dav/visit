@@ -18,6 +18,7 @@ class QvisColorButton;
 class QvisColorManagerWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisMultiCurvePlotWindow
@@ -48,6 +49,10 @@ class QvisOpacitySlider;
 //   Eric Brugger, Fri Feb 15 16:27:14 PST 2013
 //   I added markerScale and markerLineWidth.
 //
+//   Kathleen Biagas, Wed May 5, 2021 
+//   Changed markerVariable and idVariable to QvisVariableButton per github 
+//   ticket #1961.
+//
 // ****************************************************************************
 
 class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
@@ -56,8 +61,8 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
   public:
     QvisMultiCurvePlotWindow(const int type,
                          MultiCurveAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisMultiCurvePlotWindow();
     virtual void CreateWindowContents();
@@ -84,9 +89,9 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void displayMarkersChanged(bool val);
     void markerScaleProcessText();
     void markerLineWidthChanged(int style);
-    void markerVariableProcessText();
+    void markerVariableChanged(const QString &varName);
     void displayIdsChanged(bool val);
-    void idVariableProcessText();
+    void idVariableChanged(const QString &varName);
     void displayLegendChanged(bool val);
   private:
     int                     plotType;
@@ -100,11 +105,11 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QCheckBox              *useYAxisTickSpacing;
     QLineEdit              *yAxisTickSpacing;
     QCheckBox              *displayMarkers;
-    QLineEdit              *markerVariable;
+    QvisVariableButton     *markerVariable;
     QLineEdit              *markerScale;
     QvisLineWidthWidget    *markerLineWidth;
     QCheckBox              *displayIds;
-    QLineEdit              *idVariable;
+    QvisVariableButton     *idVariable;
     QCheckBox              *displayLegend;
     QLabel                 *lineWidthLabel;
     QLabel                 *yAxisTitleFormatLabel;

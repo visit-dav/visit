@@ -5,6 +5,7 @@
 #ifndef PY_LIGHTATTRIBUTES_H
 #define PY_LIGHTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LightAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyLightAttributes_Wrap(const LightAttributes *attr);
 void VISITPY_API           PyLightAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyLightAttributes_SetDefaults(const LightAttributes *atts);
 std::string VISITPY_API    PyLightAttributes_GetLogString();
-std::string VISITPY_API    PyLightAttributes_ToString(const LightAttributes *, const char *);
+std::string VISITPY_API    PyLightAttributes_ToString(const LightAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyLightAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyLightAttributes_methods[LIGHTATTRIBUTES_NMETH];

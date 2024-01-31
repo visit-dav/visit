@@ -5,6 +5,7 @@
 #include <PyProjectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyProjectAttributes
@@ -34,9 +35,8 @@ struct ProjectAttributesObject
 // Internal prototypes
 //
 static PyObject *NewProjectAttributes(int);
-
 std::string
-PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
+PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -73,11 +73,11 @@ PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *vectorTransformMethod_names = "None, AsPoint, AsDisplacement, AsDirection";
+    const char *vectorTransformMethod_names = "NONE, AsPoint, AsDisplacement, AsDirection";
     switch (atts->GetVectorTransformMethod())
     {
       case ProjectAttributes::None:
-          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sNone  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sNONE  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case ProjectAttributes::AsPoint:
@@ -113,22 +113,58 @@ ProjectAttributes_SetProjectionType(PyObject *self, PyObject *args)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid projectionType value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ZYCartesian";
+        ss << ", XZCartesian";
+        ss << ", XYCartesian";
+        ss << ", XRCylindrical";
+        ss << ", YRCylindrical";
+        ss << ", ZRCylindrical";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the projectionType in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetProjectionType(ProjectAttributes::ProjectionType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid projectionType value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "ZYCartesian, XZCartesian, XYCartesian, XRCylindrical, YRCylindrical, "
-                        "ZRCylindrical.");
-        return NULL;
-    }
+    obj->data->SetProjectionType(ProjectAttributes::ProjectionType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -147,21 +183,56 @@ ProjectAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid vectorTransformMethod value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", AsPoint";
+        ss << ", AsDisplacement";
+        ss << ", AsDirection";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the vectorTransformMethod in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetVectorTransformMethod(ProjectAttributes::VectorTransformMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid vectorTransformMethod value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "None, AsPoint, AsDisplacement, AsDirection.");
-        return NULL;
-    }
+    obj->data->SetVectorTransformMethod(ProjectAttributes::VectorTransformMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -200,14 +271,7 @@ ProjectAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ProjectAttributes_compare(PyObject *v, PyObject *w)
-{
-    ProjectAttributes *a = ((ProjectAttributesObject *)v)->data;
-    ProjectAttributes *b = ((ProjectAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ProjectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyProjectAttributes_getattr(PyObject *self, char *name)
 {
@@ -230,6 +294,8 @@ PyProjectAttributes_getattr(PyObject *self, char *name)
         return ProjectAttributes_GetVectorTransformMethod(self, NULL);
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(ProjectAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(ProjectAttributes::None));
     if(strcmp(name, "AsPoint") == 0)
         return PyInt_FromLong(long(ProjectAttributes::AsPoint));
     if(strcmp(name, "AsDisplacement") == 0)
@@ -238,30 +304,43 @@ PyProjectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ProjectAttributes::AsDirection));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyProjectAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyProjectAttributes_methods[i].ml_name),
+                PyString_FromString(PyProjectAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyProjectAttributes_methods, self, name);
 }
 
 int
 PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "projectionType") == 0)
-        obj = ProjectAttributes_SetProjectionType(self, tuple);
+        obj = ProjectAttributes_SetProjectionType(self, args);
     else if(strcmp(name, "vectorTransformMethod") == 0)
-        obj = ProjectAttributes_SetVectorTransformMethod(self, tuple);
+        obj = ProjectAttributes_SetVectorTransformMethod(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -269,7 +348,7 @@ static int
 ProjectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -277,7 +356,7 @@ PyObject *
 ProjectAttributes_str(PyObject *v)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    return PyString_FromString(PyProjectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyProjectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -290,49 +369,70 @@ static char *ProjectAttributes_Purpose = "Project data from three to two dimensi
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ProjectAttributesType =
+
+VISIT_PY_TYPE_OBJ(ProjectAttributesType,         \
+                  "ProjectAttributes",           \
+                  ProjectAttributesObject,       \
+                  ProjectAttributes_dealloc,     \
+                  ProjectAttributes_print,       \
+                  PyProjectAttributes_getattr,   \
+                  PyProjectAttributes_setattr,   \
+                  ProjectAttributes_str,         \
+                  ProjectAttributes_Purpose,     \
+                  ProjectAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ProjectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ProjectAttributes",                    // tp_name
-    sizeof(ProjectAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ProjectAttributes_dealloc,  // tp_dealloc
-    (printfunc)ProjectAttributes_print,     // tp_print
-    (getattrfunc)PyProjectAttributes_getattr, // tp_getattr
-    (setattrfunc)PyProjectAttributes_setattr, // tp_setattr
-    (cmpfunc)ProjectAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ProjectAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ProjectAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ProjectAttributesType
+         || Py_TYPE(other) != &ProjectAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ProjectAttributes *a = ((ProjectAttributesObject *)self)->data;
+    ProjectAttributes *b = ((ProjectAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -408,7 +508,7 @@ PyProjectAttributes_GetLogString()
 {
     std::string s("ProjectAtts = ProjectAttributes()\n");
     if(currentAtts != 0)
-        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.");
+        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.", true);
     return s;
 }
 
@@ -421,7 +521,7 @@ PyProjectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ProjectAtts = ProjectAttributes()\n");
-        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.");
+        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.", true);
         cb(s);
     }
 }

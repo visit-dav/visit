@@ -47,6 +47,9 @@
 //    Kathleen Biagas, Thu Nov  6 11:16:20 PST 2014
 //    Added support for DEFINES tag.
 //
+//    Kathleen Biagas, Wed May 4, 2022
+//    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
+//
 // ****************************************************************************
 
 XMLEditMakefile::XMLEditMakefile(QWidget *p)
@@ -124,6 +127,21 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(MFiles, row,1);
     row++;
 
+    topLayout->addWidget(new QLabel(tr("MDServer DEFINES"), this), row, 0);
+    MDefines = new QLineEdit(this);
+    topLayout->addWidget(MDefines, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("MDServer CXXFLAGS"), this), row, 0);
+    MCXXFlags = new QLineEdit(this);
+    topLayout->addWidget(MCXXFlags, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("MDServer LDFLAGS"), this), row, 0);
+    MLDFlags = new QLineEdit(this);
+    topLayout->addWidget(MLDFlags, row, 1);
+    row++;
+
     customMLibs = new QCheckBox(tr("MDServer Libs"), this);
     MLibs = new QLineEdit(this);
     topLayout->addWidget(customMLibs, row, 0);
@@ -136,10 +154,40 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(EFiles, row,1);
     row++;
 
+    topLayout->addWidget(new QLabel(tr("Engine DEFINES (ser)"), this), row, 0);
+    EDefinesSer = new QLineEdit(this);
+    topLayout->addWidget(EDefinesSer, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("Engine CXXFLAGS (ser)"), this), row, 0);
+    ECXXFlagsSer = new QLineEdit(this);
+    topLayout->addWidget(ECXXFlagsSer, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("Engine LDFLAGS (ser)"), this), row, 0);
+    ELDFlagsSer = new QLineEdit(this);
+    topLayout->addWidget(ELDFlagsSer, row, 1);
+    row++;
+
     customELibsSer = new QCheckBox(tr("Engine Libs (ser)"), this);
     ELibsSer = new QLineEdit(this);
     topLayout->addWidget(customELibsSer, row, 0);
     topLayout->addWidget(ELibsSer, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("Engine DEFINES (par)"), this), row, 0);
+    EDefinesPar = new QLineEdit(this);
+    topLayout->addWidget(EDefinesPar, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("Engine CXXFLAGS (par)"), this), row, 0);
+    ECXXFlagsPar = new QLineEdit(this);
+    topLayout->addWidget(ECXXFlagsPar, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("Engine LDFLAGS (par)"), this), row, 0);
+    ELDFlagsPar = new QLineEdit(this);
+    topLayout->addWidget(ELDFlagsPar, row, 1);
     row++;
 
     customELibsPar = new QCheckBox(tr("Engine Libs (par)"), this);
@@ -222,6 +270,27 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     connect(engSpecificCode, SIGNAL(clicked()),
             this, SLOT(engSpecificCodeChanged()));
 
+    connect(MDefines, SIGNAL(textChanged(const QString&)),
+            this, SLOT(mdefsTextChanged(const QString&)));
+    connect(MCXXFlags, SIGNAL(textChanged(const QString&)),
+            this, SLOT(mcxxflagsTextChanged(const QString&)));
+    connect(MLDFlags, SIGNAL(textChanged(const QString&)),
+            this, SLOT(mldflagsTextChanged(const QString&)));
+
+    connect(EDefinesSer, SIGNAL(textChanged(const QString&)),
+            this, SLOT(edefsSerTextChanged(const QString&)));
+    connect(ECXXFlagsSer, SIGNAL(textChanged(const QString&)),
+            this, SLOT(ecxxflagsSerTextChanged(const QString&)));
+    connect(ELDFlagsSer, SIGNAL(textChanged(const QString&)),
+            this, SLOT(eldflagsSerTextChanged(const QString&)));
+
+    connect(EDefinesPar, SIGNAL(textChanged(const QString&)),
+            this, SLOT(edefsParTextChanged(const QString&)));
+    connect(ECXXFlagsPar, SIGNAL(textChanged(const QString&)),
+            this, SLOT(ecxxflagsParTextChanged(const QString&)));
+    connect(ELDFlagsPar, SIGNAL(textChanged(const QString&)),
+            this, SLOT(eldflagsParTextChanged(const QString&)));
+
 }
 
 // ****************************************************************************
@@ -251,6 +320,9 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
 //
 //    Kathleen Biagas, Thu Nov  6 11:16:59 PST 2014
 //    Added support for DEFINES tag.
+//
+//    Kathleen Biagas, Wed May 4, 2022
+//    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
 //
 // ****************************************************************************
 void
@@ -329,6 +401,18 @@ XMLEditMakefile::UpdateWindowContents()
             p->has_MDS_specific_code=false;
 
         mdSpecificCode->setChecked(p->has_MDS_specific_code);
+
+        MCXXFlags->setText(JoinValues(p->mcxxflags, ' '));
+        MLDFlags->setText(JoinValues(p->mldflags, ' '));
+        MDefines->setText(JoinValues(p->mdefs, ' '));
+
+        ECXXFlagsSer->setText(JoinValues(p->ecxxflagsSer, ' '));
+        ELDFlagsSer->setText(JoinValues(p->eldflagsSer, ' '));
+        EDefinesSer->setText(JoinValues(p->edefsSer, ' '));
+
+        ECXXFlagsPar->setText(JoinValues(p->ecxxflagsPar, ' '));
+        ELDFlagsPar->setText(JoinValues(p->eldflagsPar, ' '));
+        EDefinesPar->setText(JoinValues(p->edefsPar, ' '));
     }
     else
     {
@@ -369,6 +453,9 @@ XMLEditMakefile::UpdateWindowContents()
 //    Kathleen Biagas, Thu Nov  6 11:16:59 PST 2014
 //    Added support for DEFINES tag.
 //
+//    Kathleen Biagas, Wed May 4, 2022
+//    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::UpdateWindowSensitivity()
@@ -406,6 +493,18 @@ XMLEditMakefile::UpdateWindowSensitivity()
     engSpecificCode->setEnabled(plugin);
     // only enable for a database plugin
     mdSpecificCode->setEnabled(plugin && xmldoc->plugin->type =="database");
+
+    MCXXFlags->setEnabled(plugin);
+    MLDFlags->setEnabled(plugin);
+    MDefines->setEnabled(plugin);
+
+    ECXXFlagsSer->setEnabled(plugin);
+    ELDFlagsSer->setEnabled(plugin);
+    EDefinesSer->setEnabled(plugin);
+
+    ECXXFlagsPar->setEnabled(plugin);
+    ELDFlagsPar->setEnabled(plugin);
+    EDefinesPar->setEnabled(plugin);
 }
 
 // ****************************************************************************
@@ -439,6 +538,9 @@ XMLEditMakefile::UpdateWindowSensitivity()
 //
 //    Kathleen Biagas, Thu Nov  6 11:16:59 PST 2014
 //    Added support for DEFINES tag.
+//
+//    Kathleen Biagas, Wed May 4, 2022
+//    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
 //
 // ****************************************************************************
 void
@@ -474,6 +576,18 @@ XMLEditMakefile::BlockAllSignals(bool block)
     customVWFiles->blockSignals(block);
     mdSpecificCode->blockSignals(block);
     engSpecificCode->blockSignals(block);
+
+    MCXXFlags->blockSignals(block);
+    MLDFlags->blockSignals(block);
+    MDefines->blockSignals(block);
+
+    ECXXFlagsSer->blockSignals(block);
+    ELDFlagsSer->blockSignals(block);
+    EDefinesSer->blockSignals(block);
+
+    ECXXFlagsPar->blockSignals(block);
+    ELDFlagsPar->blockSignals(block);
+    EDefinesPar->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -904,3 +1018,119 @@ XMLEditMakefile::engSpecificCodeChanged()
     UpdateWindowContents();
 }
 
+// ****************************************************************************
+//  Method:  XMLEditMakefile::mcxxflagsTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::mcxxflagsTextChanged(const QString &text)
+{
+    xmldoc->plugin->mcxxflags = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::mldflagsTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::mldflagsTextChanged(const QString &text)
+{
+    xmldoc->plugin->mldflags = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::mdefsTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::mdefsTextChanged(const QString &text)
+{
+    xmldoc->plugin->mdefs = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::ecxxflagsSerTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::ecxxflagsSerTextChanged(const QString &text)
+{
+    xmldoc->plugin->ecxxflagsSer = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::eldflagsSerTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::eldflagsSerTextChanged(const QString &text)
+{
+    xmldoc->plugin->eldflagsSer = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::edefsSerTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::edefsSerTextChanged(const QString &text)
+{
+    xmldoc->plugin->edefsSer = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::ecxxflagsParTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::ecxxflagsParTextChanged(const QString &text)
+{
+    xmldoc->plugin->ecxxflagsPar = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::eldflagsParTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::eldflagsParTextChanged(const QString &text)
+{
+    xmldoc->plugin->eldflagsPar = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::edefsParTextChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    May 4, 2022
+//
+// ****************************************************************************
+void
+XMLEditMakefile::edefsParTextChanged(const QString &text)
+{
+    xmldoc->plugin->edefsPar = SplitValues(text);
+}

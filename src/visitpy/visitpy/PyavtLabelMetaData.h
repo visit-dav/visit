@@ -5,6 +5,7 @@
 #ifndef PY_AVTLABELMETADATA_H
 #define PY_AVTLABELMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtLabelMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>
@@ -23,7 +24,7 @@ VISITPY_API PyObject *     PyavtLabelMetaData_Wrap(const avtLabelMetaData *attr)
 void VISITPY_API           PyavtLabelMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtLabelMetaData_SetDefaults(const avtLabelMetaData *atts);
 std::string VISITPY_API    PyavtLabelMetaData_GetLogString();
-std::string VISITPY_API    PyavtLabelMetaData_ToString(const avtLabelMetaData *, const char *);
+std::string VISITPY_API    PyavtLabelMetaData_ToString(const avtLabelMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtLabelMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtLabelMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtLabelMetaData_methods[AVTLABELMETADATA_NMETH];

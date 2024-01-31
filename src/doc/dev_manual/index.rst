@@ -7,6 +7,9 @@ VisIt_ Developer Manual
     :maxdepth: 1
     :numbered: 
 
+    project_meetings
+    GitHub
+    StyleGuide
     pr_create
     pr_review
     RCDevelopment
@@ -14,10 +17,19 @@ VisIt_ Developer Manual
     xmltools
     PrepareRelease
     CreateRelease
+    ContributingToDocumentation/index
+    UpdatingPythonDocStrings
     MemoryLeaks
     Docker
     SiteReliabilityEngineering
     OpenGL
+    CI
+    ContributingHostProfiles
+    LaunchProcess
+    UpdatingPlugins
+    DebuggingTips
+    CreatingABuildVisItModule
+    AddingFindModule
 
 .. Indices and tables
 .. ==================

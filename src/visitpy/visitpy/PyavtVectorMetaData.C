@@ -5,6 +5,7 @@
 #include <PyavtVectorMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyavtVectorMetaData
@@ -34,14 +35,13 @@ struct avtVectorMetaDataObject
 // Internal prototypes
 //
 static PyObject *NewavtVectorMetaData(int);
-
 std::string
-PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix)
+PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%svarDim = %d\n", prefix, atts->varDim);
     str += tmpStr;
@@ -62,12 +62,48 @@ avtVectorMetaData_SetVarDim(PyObject *self, PyObject *args)
 {
     avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the varDim in the object.
-    obj->data->varDim = (int)ival;
+    obj->data->varDim = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -124,14 +160,7 @@ avtVectorMetaData_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-avtVectorMetaData_compare(PyObject *v, PyObject *w)
-{
-    avtVectorMetaData *a = ((avtVectorMetaDataObject *)v)->data;
-    avtVectorMetaData *b = ((avtVectorMetaDataObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtVectorMetaData_getattr(PyObject *self, char *name)
 {
@@ -146,6 +175,17 @@ PyavtVectorMetaData_getattr(PyObject *self, char *name)
 
     PyavtVectorMetaData_ExtendSetGetMethodTable();
 
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtVectorMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtVectorMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtVectorMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtVectorMetaData_methods, self, name);
 }
 
@@ -157,22 +197,23 @@ PyavtVectorMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else
         PyErr_Clear();
 
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "varDim") == 0)
-        obj = avtVectorMetaData_SetVarDim(self, tuple);
+        obj = avtVectorMetaData_SetVarDim(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -180,7 +221,7 @@ static int
 avtVectorMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtVectorMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtVectorMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -188,7 +229,7 @@ PyObject *
 avtVectorMetaData_str(PyObject *v)
 {
     avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
-    return PyString_FromString(PyavtVectorMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtVectorMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -201,49 +242,70 @@ static char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject avtVectorMetaDataType =
+
+VISIT_PY_TYPE_OBJ(avtVectorMetaDataType,         \
+                  "avtVectorMetaData",           \
+                  avtVectorMetaDataObject,       \
+                  avtVectorMetaData_dealloc,     \
+                  avtVectorMetaData_print,       \
+                  PyavtVectorMetaData_getattr,   \
+                  PyavtVectorMetaData_setattr,   \
+                  avtVectorMetaData_str,         \
+                  avtVectorMetaData_Purpose,     \
+                  avtVectorMetaData_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "avtVectorMetaData",                    // tp_name
-    sizeof(avtVectorMetaDataObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)avtVectorMetaData_dealloc,  // tp_dealloc
-    (printfunc)avtVectorMetaData_print,     // tp_print
-    (getattrfunc)PyavtVectorMetaData_getattr, // tp_getattr
-    (setattrfunc)PyavtVectorMetaData_setattr, // tp_setattr
-    (cmpfunc)avtVectorMetaData_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)avtVectorMetaData_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    avtVectorMetaData_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &avtVectorMetaDataType
+         || Py_TYPE(other) != &avtVectorMetaDataType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    avtVectorMetaData *a = ((avtVectorMetaDataObject *)self)->data;
+    avtVectorMetaData *b = ((avtVectorMetaDataObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -319,7 +381,7 @@ PyavtVectorMetaData_GetLogString()
 {
     std::string s("avtVectorMetaData = avtVectorMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.");
+        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.", true);
     return s;
 }
 
@@ -332,7 +394,7 @@ PyavtVectorMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtVectorMetaData = avtVectorMetaData()\n");
-        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.");
+        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.", true);
         cb(s);
     }
 }

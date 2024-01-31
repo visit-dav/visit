@@ -5,6 +5,7 @@
 #ifndef PY_MULTIRESCONTROLATTRIBUTES_H
 #define PY_MULTIRESCONTROLATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MultiresControlAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyMultiresControlAttributes_Wrap(const MultiresControlAttributes 
 void           PyMultiresControlAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMultiresControlAttributes_SetDefaults(const MultiresControlAttributes *atts);
 std::string    PyMultiresControlAttributes_GetLogString();
-std::string    PyMultiresControlAttributes_ToString(const MultiresControlAttributes *, const char *);
+std::string    PyMultiresControlAttributes_ToString(const MultiresControlAttributes *, const char *, const bool=false);
 PyObject *     PyMultiresControlAttributes_getattr(PyObject *self, char *name);
 int            PyMultiresControlAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH];

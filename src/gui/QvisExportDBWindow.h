@@ -66,8 +66,8 @@ class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisExportDBWindow(const QString &caption = QString::null,
-                       const QString &shortName = QString::null,
+    QvisExportDBWindow(const QString &caption = QString(),
+                       const QString &shortName = QString(),
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisExportDBWindow();
 

@@ -1,0 +1,18 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 3
+  },
+  "configurePresets": [
+    {
+      "name": "windows-visualstudio-default",
+      "displayName": "Windows Visual Studio Default",
+      "description": "Sets Visual Studio generator, x64 architecture and host=x64 toolset.",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "host=x64"
+    }
+  ]
+}

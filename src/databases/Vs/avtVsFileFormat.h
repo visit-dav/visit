@@ -41,6 +41,7 @@ class VsStructuredMesh;
 class VsRectilinearMesh;
 class VsRegistry;
 class VsReader;
+class DBOptionsAttributes;
 
 /**
  * avtSTMDFileFormat is a base class for multi-domain, single-time
@@ -59,7 +60,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  *
  * @param dfnm the name of the data file
  */
-    avtVsFileFormat(const char*, DBOptionsAttributes *);
+    avtVsFileFormat(const char*, const DBOptionsAttributes *);
 
 /**
  * Destructor

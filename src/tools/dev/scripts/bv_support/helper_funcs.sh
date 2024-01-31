@@ -1,6 +1,105 @@
 export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 
 # *************************************************************************** #
+# Purpose: Flexible comparison function for version strings                   #
+#                                                                             #
+#   - Converts version string "4.101.3" to bash array (4 101 3)               #
+#   - Appends zeros to operand with fewer array members (4)==>(4 000 0)       #
+#   - Ensures appended zeros have same length as counterparts                 #
+#   - Prepends zeros to digit strings with fewer digits (4 9 3)==>(4 09 3)    #
+#   - Forms integer values from arrays (4 101 3)==>41013                      #
+#   - Compares integers using specified operator                              #
+#   - Sets status using test operator                                         #
+#                                                                             #
+# *************************************************************************** #
+function compare_version_strings
+{   
+    # default op is -lt and separator char is .
+    op=${3:-'-lt'}
+    sep=${4:-'.'}
+
+    # create array variables of digits from version string
+    vldigitarr=($(echo $1 | tr $sep ' '))
+    vrdigitarr=($(echo $2 | tr $sep ' '))
+
+    # append strings of zeros of equal length of missing digits
+    # "5"==>"0", "10"==>"00", "101"==>"000"
+    i=0
+    while [[ ${#vldigitarr[@]} -lt ${#vrdigitarr[@]} ]]; do
+        zeros=$(echo ${vrdigitarr[$i]} | tr '1234567890' '0000000000')
+        vldigitarr+=($zeros)
+        i=$((i+1))
+    done
+    while [[ ${#vrdigitarr[@]} -lt ${#vldigitarr[@]} ]]; do
+        zeros=$(echo ${vldigitarr[$i]} | tr '1234567890' '0000000000')
+        vrdigitarr+=($zeros)
+        i=$((i+1))
+    done
+
+    # prepend zeros to digit entries with fewer characters
+    i=0
+    while [[ $i -lt ${#vldigitarr[@]} ]]; do
+        vlndigits=$(echo ${vldigitarr[$i]} | wc -c)
+        vrndigits=$(echo ${vrdigitarr[$i]} | wc -c)
+        if [[ $vlndigits -lt $vrndigits ]]; then
+           ((vrndigits--))
+           zeros=$(printf '0%.0s' $(seq $vlndigits $vrndigits))
+           vldigitarr[$i]="${zeros}${vldigitarr[$i]}"
+        elif [[ $vrndigits -lt $vlndigits ]]; then
+           ((vlndigits--))
+           zeros=$(printf '0%.0s' $(seq $vrndigits $vlndigits))
+           vrdigitarr[$i]="${zeros}${vrdigitarr[$i]}"
+        fi
+        i=$((i+1))
+    done
+
+    # Turn arrays of digit strings into integers
+    # "4 10 3" ==> 4103
+    vlval=$(echo ${vldigitarr[@]} | tr -d ' ')
+    vrval=$(echo ${vrdigitarr[@]} | tr -d ' ')
+
+    test $vlval $op $vrval
+}
+
+function test_compare_version_strings
+{
+    # Test different operators
+    compare_version_strings 4.0.0 4.0.0 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.1 4.0.0 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.0 4.0.1 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.0 4.0.1 -ne
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test different sep chars
+    compare_version_strings 4-0-0 4-0-0 -eq -
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4%0%0 4%0%0 -eq %
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test implied zero digits
+    compare_version_strings 4.0.0 4 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4 4.0.0 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test digits that cross order of magnitude boundaries
+    compare_version_strings 4.9.3 4.10.3 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.10.3 4.9.3 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test some combinations
+    compare_version_strings 4.10 4.9.3 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.9.101.3.0 4.10.0.3 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+}
+
+# *************************************************************************** #
 # Function: errorFunc                                                         #
 #                                                                             #
 # Purpose: Error messages                                                     #
@@ -23,9 +122,31 @@ function errorFunc
 # *************************************************************************** #
 function log
 {
-    echo "$@" >> ${LOG_FILE}
+    if [[ "${LOG_FILE}" != "/dev/tty" && -w "${LOG_FILE}" ]] ; then
+        echo "$@" >> ${LOG_FILE}
+    fi
 }
+ 
+# *************************************************************************** #
+# Function: info                                                              #
+#                                                                             #
+# Purpose: Give an informative message to the user.                           #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+function info
+{
+    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+        echo -e "$@" 1>&3
+    else
+        echo -e "$@"
+    fi
 
+    # write message to log as well
+    log "$@"
+}
 
 # *************************************************************************** #
 # Function: warn                                                              #
@@ -43,16 +164,7 @@ function log
 # *************************************************************************** #
 function warn
 {
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo -e "$@" 1>&3
-    else
-        echo -e "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
+    info $@
 }
 
 # *************************************************************************** #
@@ -73,10 +185,15 @@ function error
     warn "$@"
     if test "${LOG_FILE}" != "/dev/tty" ; then
         warn "Error in build process.  See ${LOG_FILE} for more information."\
-             "If the error is unclear, please include ${LOG_FILE} in a "\
-             "message to the visit-users@ornl.gov list.  You will probably "\
+             "If the error is unclear, please include ${LOG_FILE} and contact "\
+             "the VisIt project via https://visit-help.llnl.gov. You may "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
-             "so it will fit within the size limits for email attachments."
+             "so it will fit within the size limits for attachments."
+        if [[ -n "$START_DIR" ]]; then
+            info "Log file full path: " ${START_DIR}/${LOG_FILE}
+        else
+            info "Log file full path: " $(pwd)/${LOG_FILE}
+        fi
     fi
     exit 1
 }
@@ -157,7 +274,6 @@ function verify_required_module_exists
     declare -F "bv_${reqlib}_depends_on" &>/dev/null || errorFunc "${reqlib} depends_on not found"
     declare -F "bv_${reqlib}_print" &>/dev/null || errorFunc "${reqlib} print not found"
     declare -F "bv_${reqlib}_print_usage" &>/dev/null || errorFunc "${reqlib} print_usage not found"
-    declare -F "bv_${reqlib}_dry_run" &>/dev/null || errorFunc "${reqlib} dry_run not found"
     declare -F "bv_${reqlib}_is_installed" &>/dev/null || errorFunc "${reqlib} is_installed not found"
     declare -F "bv_${reqlib}_is_enabled" &>/dev/null || errorFunc "${reqlib} is_enabled not found"
 }
@@ -176,32 +292,8 @@ function verify_optional_module_exists
     declare -F "bv_${optlib}_print" &>/dev/null || errorFunc "${optlib} print not found"
     declare -F "bv_${optlib}_print_usage" &>/dev/null || errorFunc "${optlib} print_usage not found"
     declare -F "bv_${optlib}_host_profile" &>/dev/null || errorFunc "${optlib} host_profile not found"
-    declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
     declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
     declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
-}
-
-# *************************************************************************** #
-# Function: info                                                              #
-#                                                                             #
-# Purpose: Give an informative message to the user.                           #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
-#                                                                             #
-# *************************************************************************** #
-function info
-{
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo "$@" 1>&3
-    else
-        echo "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
 }
 
 # *************************************************************************** #
@@ -330,8 +422,6 @@ function verify_sha_checksum
         return 0
     fi
 
-    set -x
-
     if [[ $checksum_algo == 512 ]]; then
         tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
     else
@@ -386,7 +476,7 @@ function verify_checksum_by_lookup
     # out function names and definitions from the search
     for var in $(set -o posix; set | grep _FILE=; set +o posix); do
         var=$(echo $var | cut -d '=' -f1)
-        if [ ${!var} = $dlfile ]; then
+        if [[ ${!var} = $dlfile ]]; then
             varbase=$(echo $var | sed -e 's/_FILE$//')
             md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
@@ -521,6 +611,16 @@ function download_file
                 fi
             fi
         done
+    fi
+
+    # if all else has failed, and running develop version of build_visit,
+    # then also check the master repo.
+    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+        site="${thirdpartyroot_dev}"
+        try_download_file $site/$dfile $dfile
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
     fi
 
     return 1
@@ -1176,7 +1276,7 @@ function build_hostconf
     # First line of config-site file provides a hint to the location
     # of cmake.
 
-    THIRD_PARTY_ABS_PATH=$(pushd $THIRD_PARTY_PATH 1,2>/dev/null; pwd; popd 1,2>/dev/null)
+    THIRD_PARTY_ABS_PATH=$(pushd $THIRD_PARTY_PATH >/dev/null 2>&1; pwd; popd >/dev/null 2>&1)
     if [[ "$CMAKE_INSTALL" != "" ]]; then
         echo "#$CMAKE_INSTALL/cmake" > $HOSTCONF
     else
@@ -1245,7 +1345,7 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON  TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF TYPE BOOL)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESAGL_VERSION/\${VISITARCH})" >> $HOSTCONF
         echo "ADD_DEFINITIONS(-DVISIT_BLUE_GENE_Q)" >> $HOSTCONF
         echo >> $HOSTCONF
     fi
@@ -1362,7 +1462,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "## Database reader plugin support libraries" >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "## The HDF4, HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
+    echo "## The HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
     echo "## their libdeps are defined for any plugins that need them." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## For libraries with LIBDEP settings, order matters." >> $HOSTCONF
@@ -1454,7 +1554,6 @@ function usage
     initialize_build_visit
 
     printf "Usage: %s [options]\n" $0
-    printf "%-15s %s [%s]\n" "--skip-opengl-context-check" "Skip check for minimum OpenGL context." "false"
 
     printf "\n"
     printf "BUILD OPTIONS\n"
@@ -1502,7 +1601,7 @@ function usage
         name=${grouplibs_name[$bv_i]}
         comment=${grouplibs_comment[$bv_i]}
         enabled=${grouplibs_enabled[$bv_i]}
-        printf "%-15s %s [%s]\n" "--$name" "$comment" "$enabled"
+        printf "%-20s %s [%s]\n" "--$name" "$comment" "$enabled"
     done
     printf "\n"
 
@@ -1551,22 +1650,25 @@ function usage
     printf "GIT OPTIONS\n"
     printf "\n"
 
-    printf "%-26s %s\n"      "--git" "Obtain the VisIt source code"
-    printf "%-26s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
+    printf "%-20s %s\n"      "--git" "Obtain the VisIt source code"
+    printf "%-20s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
 
     printf "\n"
     printf "MISC OPTIONS\n"
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--bv-debug"   "Enable debugging for this script" "no"
-    printf "%-20s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "no"
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"
+    printf "%-20s <%s>\n" "--log-file"  "filename"
+    printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
+    printf "%-20s %s\n" "--skip-opengl-context-check" ""
+    printf "%-20s %s\n" "" "Skip check for minimum OpenGL context."
     printf "%-20s %s [%s]\n" "--stdout" "Write build log to stdout" "no"
     printf "%-20s <%s>\n" "--write-unified-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write single unified build_visit file using the provided filename" "$WRITE_UNIFIED_FILE"

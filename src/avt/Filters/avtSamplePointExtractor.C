@@ -365,6 +365,9 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    Hank Childs, Sat Nov 21 13:29:21 PST 2009
 //    Add support for long longs.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
@@ -375,8 +378,8 @@ avtSamplePointExtractor::PreExecute(void)
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         avtDataset_p ds = GetTypedInput();
-        VISIT_LONG_LONG nzones = avtDatasetExaminer::GetNumberOfZones(ds);
-        VISIT_LONG_LONG total_nzones;
+        long long nzones = avtDatasetExaminer::GetNumberOfZones(ds);
+        long long total_nzones;
         SumLongLongArrayAcrossAllProcessors(&nzones, &total_nzones, 1);
         
 

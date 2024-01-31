@@ -41,17 +41,19 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_FIELDDATA = 8;
 
     public final static int DATAVALUE_SOLID = 0;
-    public final static int DATAVALUE_SEEDPOINTID = 1;
-    public final static int DATAVALUE_SPEED = 2;
-    public final static int DATAVALUE_VORTICITY = 3;
-    public final static int DATAVALUE_ARCLENGTH = 4;
-    public final static int DATAVALUE_TIMEABSOLUTE = 5;
-    public final static int DATAVALUE_TIMERELATIVE = 6;
-    public final static int DATAVALUE_AVERAGEDISTANCEFROMSEED = 7;
-    public final static int DATAVALUE_CORRELATIONDISTANCE = 8;
-    public final static int DATAVALUE_CLOSEDCURVE = 9;
-    public final static int DATAVALUE_DIFFERENCE = 10;
-    public final static int DATAVALUE_VARIABLE = 11;
+    public final static int DATAVALUE_RANDOM = 1;
+    public final static int DATAVALUE_SEEDPOINTID = 2;
+    public final static int DATAVALUE_SPEED = 3;
+    public final static int DATAVALUE_VORTICITY = 4;
+    public final static int DATAVALUE_ARCLENGTH = 5;
+    public final static int DATAVALUE_TIMEABSOLUTE = 6;
+    public final static int DATAVALUE_TIMERELATIVE = 7;
+    public final static int DATAVALUE_AVERAGEDISTANCEFROMSEED = 8;
+    public final static int DATAVALUE_CORRELATIONDISTANCE = 9;
+    public final static int DATAVALUE_CLOSEDCURVE = 10;
+    public final static int DATAVALUE_DIFFERENCE = 11;
+    public final static int DATAVALUE_VARIABLE = 12;
+    public final static int DATAVALUE_VARIABLEATSEED = 13;
 
     public final static int CLEANUPMETHOD_NOCLEANUP = 0;
     public final static int CLEANUPMETHOD_MERGE = 1;
@@ -75,7 +77,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
 
     public final static int PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
-    public final static int PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE = 2;
+    public final static int PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER = 2;
     public final static int PARALLELIZATIONALGORITHMTYPE_VISITSELECTS = 3;
 
     public final static int FIELDTYPE_DEFAULT = 0;
@@ -84,7 +86,6 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int FIELDTYPE_M3DC13DFIELD = 3;
     public final static int FIELDTYPE_NEK5000FIELD = 4;
     public final static int FIELDTYPE_NEKTARPPFIELD = 5;
-    public final static int FIELDTYPE_NIMRODFIELD = 6;
 
     public final static int INTEGRATIONTYPE_EULER = 0;
     public final static int INTEGRATIONTYPE_LEAPFROG = 1;
@@ -1603,6 +1604,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         str = str + indent + "dataValue = ";
         if(dataValue == DATAVALUE_SOLID)
             str = str + "DATAVALUE_SOLID";
+        if(dataValue == DATAVALUE_RANDOM)
+            str = str + "DATAVALUE_RANDOM";
         if(dataValue == DATAVALUE_SEEDPOINTID)
             str = str + "DATAVALUE_SEEDPOINTID";
         if(dataValue == DATAVALUE_SPEED)
@@ -1625,6 +1628,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_DIFFERENCE";
         if(dataValue == DATAVALUE_VARIABLE)
             str = str + "DATAVALUE_VARIABLE";
+        if(dataValue == DATAVALUE_VARIABLEATSEED)
+            str = str + "DATAVALUE_VARIABLEATSEED";
         str = str + "\n";
         str = str + stringToString("dataVariable", dataVariable, indent) + "\n";
         str = str + indent + "integrationDirection = ";
@@ -1671,8 +1676,6 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "FIELDTYPE_NEK5000FIELD";
         if(fieldType == FIELDTYPE_NEKTARPPFIELD)
             str = str + "FIELDTYPE_NEKTARPPFIELD";
-        if(fieldType == FIELDTYPE_NIMRODFIELD)
-            str = str + "FIELDTYPE_NIMRODFIELD";
         str = str + "\n";
         str = str + doubleToString("fieldConstant", fieldConstant, indent) + "\n";
         str = str + doubleArrayToString("velocitySource", velocitySource, indent) + "\n";
@@ -1695,8 +1698,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS)
             str = str + "PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS";
-        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE)
-            str = str + "PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_VISITSELECTS)
             str = str + "PARALLELIZATIONALGORITHMTYPE_VISITSELECTS";
         str = str + "\n";

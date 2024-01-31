@@ -37,6 +37,11 @@
 #    Turn off cycling of colors for all Curve plot tests.  Set the colors
 #    individually to match current baseline results.
 #
+#    Kathleen Biagas, Mon Jul 17 10:59:26 PDT 2023
+#    Change two_triangles_node_and_cell extension from 'plt' to 'tec'.
+#    Second triangle's point ids were invalid, so data was regenerted by
+#    exporting to VTK, fixing the ordering, and re-exporting back to tecplot.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -294,6 +299,24 @@ AddPlot("Mesh","mesh")
 ResetView()
 DrawPlots()
 Test("tecplot_25")
+DeleteAllPlots()
+
+DeleteAllPlots();
+CloseDatabase(data_path("tecplot_test_data/pointmesh.tec"))
+
+# ascii file containing both node and cell data in block format
+OpenDatabase(data_path("tecplot_test_data/two_triangles_node_and_cell.tec"))
+
+AddPlot("Pseudocolor","nodal_field")
+ResetView()
+DrawPlots()
+Test("tecplot_26")
+DeleteAllPlots()
+
+AddPlot("Pseudocolor","cell_field")
+ResetView()
+DrawPlots()
+Test("tecplot_27")
 DeleteAllPlots()
 
 Exit()

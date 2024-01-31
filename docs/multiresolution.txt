@@ -1,6 +1,6 @@
 Multiresolution in VisIt
 ========================
-The VisIt team <visit-developers@ornl.gov>
+The VisIt team <https://visit-help.llnl.gov>
 
 Visualizing extremely large data is a difficult problem on multiple
 levels.  One of the growing problems experienced in the visualization

@@ -5,6 +5,7 @@
 #ifndef PY_COORDSWAPATTRIBUTES_H
 #define PY_COORDSWAPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CoordSwapAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyCoordSwapAttributes_Wrap(const CoordSwapAttributes *attr);
 void           PyCoordSwapAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCoordSwapAttributes_SetDefaults(const CoordSwapAttributes *atts);
 std::string    PyCoordSwapAttributes_GetLogString();
-std::string    PyCoordSwapAttributes_ToString(const CoordSwapAttributes *, const char *);
+std::string    PyCoordSwapAttributes_ToString(const CoordSwapAttributes *, const char *, const bool=false);
 PyObject *     PyCoordSwapAttributes_getattr(PyObject *self, char *name);
 int            PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyCoordSwapAttributes_methods[COORDSWAPATTRIBUTES_NMETH];

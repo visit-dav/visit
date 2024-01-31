@@ -33,20 +33,20 @@ def ddf(opts):
                   "count":  atts.Count,
                   "rms": atts.RMS,
                   "pdf": atts.PDF}
-    atts.ddfName         = opts["name"]
-    atts.codomainName    = opts["codomain"]
+    atts.name         = opts["name"]
+    atts.varForReductionOperator = opts["codomain"]
     atts.varnames   = opts["varnames"]
-    atts.ranges     = opts["ranges"]
-    atts.numSamples = opts["samples"]
-    atts.statisticalOperator = ddf_op_map[opts["op"]]
+    atts.binBoundaries = opts["ranges"]
+    atts.numBins = opts["samples"]
+    atts.reductionOperator = ddf_op_map[opts["op"]]
     visit.ConstructDDF(atts)
     
     
-    ndims = len(atts.numSamples)
+    ndims = len(atts.numBins)
     ddf_varname = "%s_%s_%dd" % (opts["codomain"],opts["op"],ndims)
-    if len(atts.numSamples) == 1:
-        src_fname = "%s.ultra" % atts.ddfName
-        des_fname = "%s.ult" % (atts.ddfName)
+    if len(atts.numBins) == 1:
+        src_fname = "%s.ultra" % atts.name
+        des_fname = "%s.ult" % (atts.name)
         common.sexe("mv %s %s" % (src_fname, des_fname))
         lines = open(des_fname).readlines()
         f     = open(des_fname, "w")
@@ -55,7 +55,7 @@ def ddf(opts):
             f.write(l)
         f.close()
     else:
-        ofname = "%s.vtk" % atts.ddfName
+        ofname = "%s.vtk" % atts.name
         orig_vtk_var = "SCALARS %s float" % opts["codomain"]
         ddf_vtk_var  = "SCALARS %s float" % ddf_varname
         data = open(ofname).read()
@@ -78,18 +78,18 @@ def test_dbinning_using_coords():
     setup_plot()
     AddOperator("DataBinning")
     datts = DataBinningAttributes()
-    datts.numDimensions = datts.Two 
-    datts.dim1BinBasedOn = datts.X 
+    datts.numDimensions = datts.Two
+    datts.dim1BinBasedOn = datts.X
     datts.dim1SpecifyRange = 0
     datts.dim1NumBins = 10
-    datts.dim2BinBasedOn = datts.Y 
+    datts.dim2BinBasedOn = datts.Y
     datts.dim2SpecifyRange = 0
     datts.dim2NumBins = 10
     datts.outOfBoundsBehavior = datts.Clamp
-    datts.reductionOperator = datts.Sum  
+    datts.reductionOperator = datts.Sum
     datts.varForReduction = "mass"
     datts.emptyVal = 0
-    datts.outputType = datts.OutputOnBins  
+    datts.outputType = datts.OutputOnBins
     SetOperatorOptions(datts)
     DrawPlots()
     # we have to export b/c we can't query the 
@@ -123,7 +123,7 @@ def test_dbinning_using_coords_exprs():
     setup_plot()
     AddOperator("DataBinning")
     datts = DataBinningAttributes()
-    datts.numDimensions = datts.Two 
+    datts.numDimensions = datts.Two
     datts.dim1BinBasedOn = datts.Variable
     datts.dim1Var = "mesh_x_zonal"
     datts.dim1SpecifyRange = 0
@@ -133,10 +133,10 @@ def test_dbinning_using_coords_exprs():
     datts.dim2SpecifyRange = 0
     datts.dim2NumBins = 10
     datts.outOfBoundsBehavior = datts.Clamp
-    datts.reductionOperator = datts.Sum  
+    datts.reductionOperator = datts.Sum
     datts.varForReduction = "mass"
     datts.emptyVal = 0
-    datts.outputType = datts.OutputOnBins  
+    datts.outputType = datts.OutputOnBins
     SetOperatorOptions(datts)
     DrawPlots()
     # we have to export b/c we can't query the 
@@ -201,9 +201,9 @@ TestText("DDF","Mass Sum = %s" % ddf_val)
 TestText("DBIN with Coords","Mass Sum = %s" % dbin_coords_val)
 TestText("DBIN with Coords Exprs","Mass Sum = %s" % dbin_cexprs_val)
 
-AssertTrue("Orig Equals DDF",abs(orig_val - ddf_val)  < 1e-4 )
-AssertTrue("Orig Equals DBIN with Coords",abs(orig_val - dbin_coords_val) < 1e-4 )
-AssertTrue("Orig Equals DBIN with Coords Exprs",abs(orig_val - dbin_cexprs_val) < 1e-4 )
+TestValueLT("Orig Equals DDF",abs(orig_val - ddf_val), 1e-4 )
+TestValueLT("Orig Equals DBIN with Coords",abs(orig_val - dbin_coords_val), 1e-4 )
+TestValueLT("Orig Equals DBIN with Coords Exprs",abs(orig_val - dbin_cexprs_val), 1e-4 )
 
 Exit()
 

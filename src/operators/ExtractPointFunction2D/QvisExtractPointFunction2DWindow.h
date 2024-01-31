@@ -33,8 +33,8 @@ class QvisExtractPointFunction2DWindow : public QvisOperatorWindow
   public:
     QvisExtractPointFunction2DWindow(const int type,
                          ExtractPointFunction2DAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisExtractPointFunction2DWindow();
     virtual void CreateWindowContents();

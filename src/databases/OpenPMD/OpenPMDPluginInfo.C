@@ -48,7 +48,7 @@ OpenPMDGeneralPluginInfo::GetName() const
 const char *
 OpenPMDGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "1.1";
 }
 
 // ****************************************************************************
@@ -67,7 +67,7 @@ OpenPMDGeneralPluginInfo::GetVersion() const
 const char *
 OpenPMDGeneralPluginInfo::GetID() const
 {
-    return "OpenPMD_1.0";
+    return "OpenPMD_1.1";
 }
 // ****************************************************************************
 //  Method: OpenPMDGeneralPluginInfo::EnabledByDefault
@@ -121,6 +121,7 @@ OpenPMDGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.pmd");
     defaultPatterns.push_back("*.opmd");
+    defaultPatterns.push_back("*.h5");
 
     return defaultPatterns;
 }

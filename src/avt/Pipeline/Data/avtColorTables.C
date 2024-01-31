@@ -15,19 +15,19 @@
 #include <DebugStream.h>
 
 //
-// Static data that describes the eight default color tables.
+// Constant data that describes the default color tables.
 //
 
-static const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
+constexpr const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
     "contoured", "difference", "gray", "hot", "hot_and_cold", 
     "hot_desaturated", "levels", "orangehot", "rainbow", "xray",
     "cpk_jmol", "cpk_rasmol", "amino_rasmol", "amino_shapely",
     "distinct"
 };
-static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23, 22};
-static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0,  0};
-static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
-static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+constexpr int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23, 22};
+constexpr int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0,  0};
+constexpr int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+constexpr int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
 
 //
 // The 4-tuples in the tables below are defining
@@ -37,7 +37,7 @@ static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,
 //
 
 /* Hot */
-static const float ct_hot[] = {
+constexpr float ct_hot[] = {
  0.f,   0.f, 0.f, 1.f,
  0.25f, 0.f, 1.f, 1.f, 
  0.5f,  0.f, 1.f, 0.f, 
@@ -46,7 +46,7 @@ static const float ct_hot[] = {
 };
 
 /* Caleblack */
-static const float ct_caleblack[] = {
+constexpr float ct_caleblack[] = {
  0.f,   0.f, 0.f, 0.f,
  0.17f, 0.f, 0.f, 1.f, 
  0.34f, 0.f, 1.f, 1.f, 
@@ -57,7 +57,7 @@ static const float ct_caleblack[] = {
 };
 
 /* Calewhite */
-static const float ct_calewhite[] = {
+constexpr float ct_calewhite[] = {
  0.f,   1.f, 1.f, 1.f, 
  0.17f, 0.f, 0.f, 1.f, 
  0.34f, 0.f, 1.f, 1.f, 
@@ -68,12 +68,12 @@ static const float ct_calewhite[] = {
 };
 
 /* Gray */
-static const float ct_gray[] = {0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f};
+constexpr float ct_gray[] = {0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f};
 /* Xray */
-static const float ct_xray[] = {0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, 0.f};
+constexpr float ct_xray[] = {0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, 0.f};
 
 /* Rainbow */
-static const float ct_rainbow[] = {
+constexpr float ct_rainbow[] = {
  0.f,  1.f, 0.f, 1.f, 
  0.2f, 0.f, 0.f, 1.f, 
  0.4f, 0.f, 1.f, 1.f, 
@@ -83,7 +83,7 @@ static const float ct_rainbow[] = {
 };
 
 /* Contoured */
-static const float ct_contoured[] = {
+constexpr float ct_contoured[] = {
  0.f,    0.f, 0.f, 1.f, 
  0.333f, 0.f, 1.f, 0.f, 
  0.666f, 1.f, 1.f, 0.f, 
@@ -91,7 +91,7 @@ static const float ct_contoured[] = {
 };
 
 /* Levels discrete color table. */
-static const float ct_levels[] = {
+constexpr float ct_levels[] = {
  0.000f, 1.00f, 0.00f, 0.00f,
  0.034f, 0.00f, 1.00f, 0.00f,
  0.069f, 0.00f, 0.00f, 1.00f,
@@ -125,7 +125,7 @@ static const float ct_levels[] = {
 };
 
 /* Bluehot */
-static const float ct_bluehot[] = {
+constexpr float ct_bluehot[] = {
  0.f,    0.f, 0.f,  0.f, 
  0.333f, 0.f, 0.f,  0.5f, 
  0.666f, 0.f, 0.5f, 1.f, 
@@ -133,7 +133,7 @@ static const float ct_bluehot[] = {
 };
 
 /* Orangehot */
-static const float ct_orangehot[] = {
+constexpr float ct_orangehot[] = {
  0.f,    0.f,  0.f,  0.f, 
  0.333f, 0.5f, 0.f,  0.f, 
  0.666f, 1.f,  0.5f, 0.f, 
@@ -141,7 +141,7 @@ static const float ct_orangehot[] = {
 };
 
 /* Hot-and-cold */
-static const float ct_hot_and_cold[] = {
+constexpr float ct_hot_and_cold[] = {
  0.f,    0.f, 1.f, 1.f, 
  0.45f,  0.f, 0.f, 1.f, 
  0.5f,   0.f, 0.f, 0.5f, 
@@ -150,7 +150,7 @@ static const float ct_hot_and_cold[] = {
 };
 
 /* Hot desaturated */
-static const float ct_hot_desaturated[] = {
+constexpr float ct_hot_desaturated[] = {
  0.0f,   0.28f, 0.28f, 0.86f, 
  0.143f, 0.f,   0.f,   0.36f, 
  0.285f, 0.f,   1.f,   1.f, 
@@ -162,14 +162,14 @@ static const float ct_hot_desaturated[] = {
 };
 
 /* Difference */
-static const float ct_difference[] = {
+constexpr float ct_difference[] = {
  0.f,    0.f,  0.f,  1.f, 
  0.5f,   1.f,  1.f,  1.f, 
  1.0f,   1.f,  0.f,  0.f, 
 };
 
 /* CPK Molecular Colors used by Jmol */
-static const float ct_jmol_colors[] = {
+constexpr float ct_jmol_colors[] = {
  0.000f, 0.125f, 0.125f, 0.125f,
  0.009f, 1.000f, 1.000f, 1.000f,
  0.018f, 0.851f, 1.000f, 1.000f,
@@ -283,7 +283,7 @@ static const float ct_jmol_colors[] = {
 };
 
 /* CPK Molecular Colors used by Rasmol */
-static const float ct_rasmol_colors[] = {
+constexpr float ct_rasmol_colors[] = {
  0.000f, 0.125f, 0.125f, 0.125f,
  0.009f, 1.000f, 1.000f, 1.000f,
  0.018f, 1.000f, 0.753f, 0.796f,
@@ -396,7 +396,7 @@ static const float ct_rasmol_colors[] = {
  1.000f, 1.000f, 0.078f, 0.576f,
 };
 
-static const float ct_amino_colors[] = {
+constexpr float ct_amino_colors[] = {
  0.000f, 0.745f, 0.627f, 0.431f,
  0.009f, 0.784f, 0.784f, 0.784f,
  0.019f, 1.000f, 0.412f, 0.706f,
@@ -422,7 +422,7 @@ static const float ct_amino_colors[] = {
  0.204f, 1.000f, 0.412f, 0.706f,
 };
 
-static const float ct_shapely_colors[] = {
+constexpr float ct_shapely_colors[] = {
  0.000f, 1.000f, 0.000f, 1.000f,
  0.009f, 0.549f, 1.000f, 0.549f,
  0.019f, 1.000f, 0.000f, 1.000f,
@@ -450,7 +450,7 @@ static const float ct_shapely_colors[] = {
 
 /* 22 maximally perceptually distinct colors */
 // Grabbed 29May19 from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
-static const float ct_distinct[] = {
+constexpr float ct_distinct[] = {
 0.000f, 0.902f, 0.098f, 0.294f,
 0.048f, 0.235f, 0.706f, 0.294f,
 0.095f, 1.000f, 0.882f, 0.098f,
@@ -508,6 +508,53 @@ reverse_alphas(unsigned char *a, int na)
     }
 }
 
+// ****************************************************************************
+// Method: avtColorTables::ModifyColor
+//
+// Purpose: Lighten or darken a color by a multiplicative factor without
+//          changing the effective hue. To lighten a color pass a value for
+//          mult > 1 but not too much larger than 2. To darken a color pass a
+//          value for mult < 1 but not too close to 0.
+// 
+// Mark C. Miller, Fri Oct 30 20:03:37 PDT 2020
+// Based on code found here,
+// https://stackoverflow.com/questions/141855/programmatically-lighten-a-color#141865
+// ****************************************************************************
+void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
+    char unsigned *outrgb)
+{
+    static double const threshold = 255;
+    double r = inrgb[0];
+    double g = inrgb[1];
+    double b = inrgb[2];
+
+    r *= mult;
+    g *= mult;
+    b *= mult;
+
+    double m = r>g ? (r>b ? r : b) : (g>b ? g : b);
+    if (m < threshold)
+    {
+        outrgb[0] = (unsigned char) r;
+        outrgb[1] = (unsigned char) g;
+        outrgb[2] = (unsigned char) b;
+        return;
+    }
+
+    double total = r + g + b;
+    if (total >= 3 * threshold)
+    {
+        outrgb[0] = outrgb[1] = outrgb[2] = threshold;
+        return;
+    }
+
+    double x = (3 * threshold - total) / (3 * m - total);
+    double gray = threshold - x * m;
+
+    outrgb[0] = gray + x * r;
+    outrgb[1] = gray + x * g;
+    outrgb[2] = gray + x * b;
+}
 
 // ****************************************************************************
 // Method: avtColorTables::avtColorTables
@@ -540,6 +587,19 @@ reverse_alphas(unsigned char *a, int na)
 //
 //   Mark C. Miller, Mon Jun 10 17:37:19 PDT 2019
 //   Make the code a little more automated as color tables are added.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tagging and removed categories.
+// 
+//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
+//   Changed "Standard" tag to "Default".
+// 
+//   Justin Privitera, Mon Oct 30 11:11:34 PDT 2023
+//   Use constexpr to take advantage of compile time evaluation.
+// 
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -547,7 +607,7 @@ avtColorTables::avtColorTables()
     ctAtts = new ColorTableAttributes();
 
     // Just add new, pre-defined color tables to this list
-    float const *predef_ct_colors[] = {
+    constexpr float const *predef_ct_colors[] = {
         ct_bluehot,
         ct_caleblack,
         ct_calewhite,
@@ -567,7 +627,7 @@ avtColorTables::avtColorTables()
         ct_shapely_colors,
         ct_distinct
     };
-    int const ntables = sizeof(predef_ct_colors)/sizeof(predef_ct_colors[0]);
+    int constexpr ntables = sizeof(predef_ct_colors)/sizeof(predef_ct_colors[0]);
 
     // Add each colortable.
     for(int i = 0; i < ntables; ++i)
@@ -589,14 +649,18 @@ avtColorTables::avtColorTables()
         ccpl.SetSmoothing(ColorControlPointList::SmoothingMethod(predef_ct_smooth[i]));
         ccpl.SetEqualSpacingFlag(predef_ct_equal[i] == 1);
         ccpl.SetDiscreteFlag(predef_ct_discrete[i] == 1);
-        ccpl.SetCategoryName("Standard");
+        ccpl.AddTag("Default");
+        if (predef_ct_discrete[i] == 1)
+            ccpl.AddTag("Discrete");
+        else
+            ccpl.AddTag("Continuous");
         ctAtts->AddColorTable(predef_ct_names[i], ccpl);
     }
 
-    // Set the active continuous color table to "hot".
-    ctAtts->SetActiveContinuous("hot");
-    // Set the active discrete color table to "levels".
-    ctAtts->SetActiveDiscrete("levels");
+    // Set the default continuous color table to "hot".
+    ctAtts->SetDefaultContinuous("hot");
+    // Set the default discrete color table to "levels".
+    ctAtts->SetDefaultDiscrete("levels");
 }
 
 // ****************************************************************************
@@ -659,13 +723,16 @@ avtColorTables::Instance()
 // Modifications:
 //   Brad Whitlock, Wed Nov 20 13:36:51 PST 2002
 //   I renamed the method.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
 const std::string &
 avtColorTables::GetDefaultContinuousColorTable() const
 {
-    return ctAtts->GetActiveContinuous();
+    return ctAtts->GetDefaultContinuous();
 }
 
 // ****************************************************************************
@@ -680,13 +747,15 @@ avtColorTables::GetDefaultContinuousColorTable() const
 // Creation:   Fri Jun 15 14:06:07 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //   
 // ****************************************************************************
 
 const std::string &
 avtColorTables::GetDefaultDiscreteColorTable() const
 {
-    return ctAtts->GetActiveDiscrete();
+    return ctAtts->GetDefaultDiscrete();
 }
 
 // ****************************************************************************
@@ -760,6 +829,8 @@ avtColorTables::IsDiscrete(const std::string &ctName) const
 // Creation:   Fri Jun 15 14:08:36 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //   
 // ****************************************************************************
 
@@ -768,7 +839,7 @@ avtColorTables::SetDefaultContinuousColorTable(const std::string &ctName)
 {
     if(ColorTableExists(ctName))
     {
-        ctAtts->SetActiveContinuous(ctName);
+        ctAtts->SetDefaultContinuous(ctName);
     }
 }
 
@@ -785,6 +856,8 @@ avtColorTables::SetDefaultContinuousColorTable(const std::string &ctName)
 // Creation:   Fri Jun 15 14:08:36 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //   
 // ****************************************************************************
 
@@ -793,7 +866,7 @@ avtColorTables::SetDefaultDiscreteColorTable(const std::string &ctName)
 {
     if(ColorTableExists(ctName))
     {
-        ctAtts->SetActiveDiscrete(ctName);
+        ctAtts->SetDefaultDiscrete(ctName);
     }
 }
 
@@ -1009,30 +1082,41 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
 // ****************************************************************************
 // Method: avtColorTables::GetJNDControlPointColor
 //
-// Purpose: Finds a color, starting from the i'th color control point for the
-// specified, that is above the just-noticeably-different (JND) color distance
-// from a given (avoidrgb) color
+// Purpose: Finds a color, using i as a starting index, in the named color
+// table that is above the just-noticeably-different (JND) color distance
+// threshold from a given (avoidrgb) color.
 //
 // Arguments:
 //   ctName   : The name of the discrete color table.
-//   i        : The index at which to start the search. The value is mod'ed so
-//              that it always falls within the number of control points for
-//              the specified color table.
+//   idxName  : The name of index at which to start the search. This method
+//              maintains a private, static map of named integer color
+//              indices as a sort of "memory" of the last color index used.
 //   avoidrgb : The color we wish to avoid matching too closely.
 //
-// Returns:    A boolean value indicating whether or not a color was returned.
+// Returns:    True if it found a color. False otherwise.
 //
 // Mark C. Miller, Wed Jun 19 17:56:46 PDT 2019
 // ****************************************************************************
 
 bool
-avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
+avtColorTables::GetJNDControlPointColor(const std::string &ctName,
+    std::string const& idxName,
     unsigned char const *avoidrgb, unsigned char *jndrgb, bool invert) const
 {
+    static std::map<std::string, int> namedIndices;
+
+    // handle resetting color index
+    if (ctName == "" && jndrgb == 0)
+    {
+        namedIndices.erase(idxName);
+        return false;
+    }
+
     int index = ctAtts->GetColorTableIndex(ctName);
     if (index < 0) return false;
     const ColorControlPointList &ct = ctAtts->operator[](index);
 
+    int i = namedIndices[idxName]; // initializes to zero on first ref.
     for (int n = 0; n < ct.GetNumControlPoints(); n++)
     {
         unsigned char rgb[3];
@@ -1042,11 +1126,16 @@ avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
         if (PerceptualColorDistance(rgb, avoidrgb) > JNDColorDistance)
         {
             std::copy(rgb,rgb+3,jndrgb);
+            namedIndices[idxName] += (n+1);
             return true;
         }
     }
 
     return false;
+}
+void avtColorTables::ResetJNDIndex(std::string const &idxName)
+{
+    GetJNDControlPointColor("", idxName, 0, 0, false);
 }
 
 // ****************************************************************************
@@ -1169,5 +1258,5 @@ avtColorTables::PerceptualColorDistance(unsigned char const *rgbA, unsigned char
     long r = (long)rgbA[0] - (long)rgbB[0];
     long g = (long)rgbA[1] - (long)rgbB[1];
     long b = (long)rgbA[2] - (long)rgbB[2];
-    return sqrt((((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8));
+    return sqrt((double) (((512+rmean)*r*r)>>8) + (double) 4*g*g + (double) (((767-rmean)*b*b)>>8));
 }

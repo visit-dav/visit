@@ -14,7 +14,8 @@
 // //-----------------------------------------------------------------------------
 #include <StringHelpers.h>
 #include <TimingsManager.h>
-
+#include <InvalidFilesException.h>
+#include "FileFunctions.h"
 //-----------------------------------------------------------------------------
 // std lib includes
 //-----------------------------------------------------------------------------
@@ -45,6 +46,11 @@ using namespace mfem;
 ///
 /// avtBlueprintTreeCache::CacheMap Interface
 ///
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  7 15:35:20 PST 2023
+//    Add logic to limit max number of file handles held open
+//
 //----------------------------------------------------------------------------/
 class avtBlueprintTreeCache::CacheMap
 {
@@ -59,13 +65,17 @@ class avtBlueprintTreeCache::CacheMap
 
         uint64   TotalSize() const;
         uint64   TotalHDF5Ids() const;
+
+        void     CloseHDF5FileHandle(hid_t h5_file_id);
         
         void     Release();
 
   private:
       std::map<int,Node>          m_nodes;
       std::map<int,Node>          m_sidre_nodes;
+      int                         m_max_file_handles;
       std::map<std::string,hid_t> m_h5_ids;
+      std::vector<std::string>    m_h5_path_open_order;
 
 };
 
@@ -79,6 +89,7 @@ class avtBlueprintTreeCache::CacheMap
 avtBlueprintTreeCache::CacheMap::CacheMap()
 : m_nodes(),
   m_sidre_nodes(),
+  m_max_file_handles(256),
   m_h5_ids()
 {}
 
@@ -104,12 +115,11 @@ avtBlueprintTreeCache::CacheMap::Release()
     {
      
          hid_t h5_file_id = (*itr).second;
-         // close the hdf5 file
-         CHECK_HDF5_ERROR(H5Fclose(h5_file_id),
-                           "Error closing HDF5 file handle: " << h5_file_id);
+         CloseHDF5FileHandle(h5_file_id);
     }
 
     m_h5_ids.clear();
+    m_h5_path_open_order.clear();
 
 }
 
@@ -132,8 +142,21 @@ hid_t
 avtBlueprintTreeCache::CacheMap::FetchHDF5Id(const std::string &file_path)
 {
     hid_t h5_file_id = -1;
+
+    // check if handle is open
     if ( m_h5_ids.find(file_path) == m_h5_ids.end() )
     {
+        // handle is not open, check if we are at max number of handles
+        if( TotalHDF5Ids() > m_max_file_handles )
+        {
+            // take the first entry and close it
+            std::string h5_file_path_to_close = m_h5_path_open_order[0];
+            hid_t h5_id_to_close = m_h5_ids[h5_file_path_to_close];
+            CloseHDF5FileHandle(h5_id_to_close);
+            m_h5_path_open_order.erase(m_h5_path_open_order.begin());
+            m_h5_ids.erase(h5_file_path_to_close);
+        }
+
         // assume fetch_path points to a hdf5 dataset
         // open the hdf5 file for reading
         h5_file_id = H5Fopen(file_path.c_str(),
@@ -142,6 +165,7 @@ avtBlueprintTreeCache::CacheMap::FetchHDF5Id(const std::string &file_path)
         CHECK_HDF5_ERROR(h5_file_id,
                          "Error opening HDF5 file for reading: "  << file_path);
         BP_PLUGIN_INFO("opened " << file_path << "  hdf5 id = " << h5_file_id);
+        m_h5_path_open_order.push_back(file_path);
         m_h5_ids[file_path] = h5_file_id;
     }
     else
@@ -152,6 +176,13 @@ avtBlueprintTreeCache::CacheMap::FetchHDF5Id(const std::string &file_path)
     return h5_file_id;
 }
 
+//----------------------------------------------------------------------------/
+void avtBlueprintTreeCache::CacheMap::CloseHDF5FileHandle(hid_t h5_file_id)
+{
+    // close the hdf5 file
+    CHECK_HDF5_ERROR(H5Fclose(h5_file_id),
+                      "Error closing HDF5 file handle: " << h5_file_id);
+}
 
 //----------------------------------------------------------------------------/
 uint64
@@ -223,6 +254,7 @@ private:
     static void LoadSidreView(conduit::Node &sidre_meta_view,
                               avtBlueprintTreeCache &tcache,
                               int tree_id,
+                              const std::string &file_path,
                               const std::string &tree_root,
                               const std::string &view_path,
                               conduit::Node &out);
@@ -231,6 +263,7 @@ private:
     static void LoadSidreGroup(conduit::Node &sidre_meta,
                                avtBlueprintTreeCache &tcache,
                                int tree_id,
+                               const std::string &file_path,
                                const std::string &tree_root,
                                const std::string &group_path,
                                conduit::Node &out);
@@ -239,6 +272,7 @@ private:
     static void LoadSidreTree(conduit::Node &sidre_meta,
                               avtBlueprintTreeCache &tcache,
                               int tree_id,
+                              const std::string &file_path,
                               const std::string &tree_root,
                               const std::string &tree_path,
                               const std::string &curr_path,
@@ -333,7 +367,7 @@ avtBlueprintTreeCache::IO::CreateSidreMetaViewPath(const std::string &tree_path)
 
 
 //---------------------------------------------------------------------------//
-// Main Blueprint IO Load Method (HDF5 Variant)
+// Main Blueprint IO Load Method
 //---------------------------------------------------------------------------//
 void
 avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
@@ -345,21 +379,34 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
                                              Node &out)
 {
     int t_load_bp_tree = visitTimer->StartTimer();
-    
-    // hid_t h5_file_id = tree_cache.Cache().FetchHDF5Id(file_path);
-    
     // non sidre case
     if(protocol.find("sidre") == std::string::npos)
     {
         std::string fetch_path = tree_root + tree_path;
         BP_PLUGIN_INFO("tree cache read " 
-                        << "domain " << tree_id 
-                        << " : "
-                        << fetch_path);
+                       << "[domain " << tree_id << "] "
+                       << file_path << ":"
+                       << fetch_path);
+        // capture errors to allow sparsely populated trees to be read
+        // e.g. a coordset, topology, or field that only exists 
+        // on a subset of trees
         int t_tree_read = visitTimer->StartTimer();
-        
-        tree_cache.Read(tree_id,fetch_path,out);
-        visitTimer->StopTimer(t_tree_read, "tree read");
+        try
+        {
+            tree_cache.Read(file_path,fetch_path,out);
+            visitTimer->StopTimer(t_tree_read, "tree read");
+        }
+        catch(const conduit::Error &e)
+        {
+            visitTimer->StopTimer(t_tree_read, "tree read");
+            visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "Failed to read tree path: "
+                                 << "domain "
+                                 << tree_id
+                                 << " : "
+                                 << fetch_path);
+        }
     }
     else if( protocol == "sidre_hdf5" )
     {
@@ -379,27 +426,31 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
         {
     
             // check to see if we have a group or view
-            if( tree_cache.HasPath(tree_id,
+            if( tree_cache.HasPath(file_path,
                                    tree_root + "/sidre/" + sidre_mtree_group) )
             {
                    // we have a group, read the meta data
-                   tree_cache.Read(tree_id,
+                   tree_cache.Read(file_path,
                                    tree_root + "/sidre/" + sidre_mtree_group,
                                    sidre_meta[sidre_mtree_group]);
 
             }
-            else if( tree_cache.HasPath(tree_id,
+            else if( tree_cache.HasPath(file_path,
                                         tree_root + "/sidre/" + sidre_mtree_view) )
             {
                    // we have a view, read the meta data
-                   tree_cache.Read(tree_id,
+                   tree_cache.Read(file_path,
                                    tree_root + "/sidre/" + sidre_mtree_view,
                                    sidre_meta[sidre_mtree_view]);
             }
             else
             {
-                BP_PLUGIN_EXCEPTION1( InvalidVariableException, 
-                                     "Failed to read tree path: " << tree_path
+                visitTimer->StopTimer(t_sidre_meta_read, "fetch sidre meta data from hdf5");
+                visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                                     "Failed to read tree path: " 
+                                     << file_path << ":"
+                                     << tree_path
                                      << std::endl
                                      << "Expected to find Sidre Group: "
                                      << tree_root << "/sidre/" << sidre_mtree_group
@@ -422,6 +473,7 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
         LoadSidreTree(sidre_meta,
                       tree_cache,
                       tree_id,
+                      file_path,
                       tree_root,
                       tree_path,
                       "",
@@ -430,8 +482,9 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
     }
     else
     {
-         BP_PLUGIN_EXCEPTION1( InvalidVariableException,
-                               "unknown protocol" << protocol);
+        visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "unknown protocol" << protocol);
     }
 
     visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
@@ -454,6 +507,7 @@ void
 avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
                                          avtBlueprintTreeCache &tree_cache,
                                          int tree_id,
+                                         const std::string &file_path,
                                          const std::string &tree_root,
                                          const std::string &view_path,
                                          Node &out)
@@ -503,7 +557,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
         // TODO: We aren't caching this, but the final result is cached, not sure
         // we need to cache.
         
-        tree_cache.Read(tree_id,buffer_schema_fetch_path,n_buffer_schema_str);
+        tree_cache.Read(file_path,buffer_schema_fetch_path,n_buffer_schema_str);
        
         string buffer_schema_str = n_buffer_schema_str.as_string();
         Schema buffer_schema(buffer_schema_str);
@@ -547,7 +601,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
             //  hdf5 doesn't support byte level striding.
 
             if(
-                tree_cache.Read(tree_id,
+                tree_cache.Read(file_path,
                                 buffer_data_fetch_path,
                                 view_schema.dtype(),
                                 out)
@@ -561,7 +615,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
                 Node n_buff;
                 Node n_view;
 
-                tree_cache.Read(tree_id,
+                tree_cache.Read(file_path,
                                 buffer_data_fetch_path,
                                 n_buff);
                 // create our view on the buffer
@@ -577,7 +631,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
         else
         {
             
-            tree_cache.Read(tree_id,
+            tree_cache.Read(file_path,
                             buffer_data_fetch_path,
                             out);
         }
@@ -588,14 +642,12 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
 
         std::string fetch_path = tree_root + "sidre/external/" + view_path;
 
-        
-
         BP_PLUGIN_INFO("relay:io::hdf5_read " 
-                       << "domain " << tree_id 
-                       << " : "
+                       << "[domain " << tree_id << "] " 
+                       << file_path  << ":"
                        << fetch_path);
         
-        tree_cache.Read(tree_id,
+        tree_cache.Read(file_path,
                         fetch_path,
                         out);
 
@@ -613,6 +665,7 @@ void
 avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
                                           avtBlueprintTreeCache &tree_cache,
                                           int tree_id,
+                                          const std::string &file_path,
                                           const std::string &tree_root,
                                           const std::string &group_path,
                                           Node &out)
@@ -628,6 +681,7 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
         LoadSidreGroup(g,
                        tree_cache,
                        tree_id,
+                       file_path,
                        tree_root,
                        cld_path + "/",
                        out[g_name]);
@@ -640,12 +694,13 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
         string v_name = v_itr.name();
         BP_PLUGIN_INFO("loading " << group_path << v_name << " as view");
         std::string cld_path = group_path + v_name;
-         LoadSidreView(v,
-                       tree_cache,
-                       tree_id,
-                       tree_root,
-                       cld_path,
-                       out[v_name]);
+        LoadSidreView(v,
+                      tree_cache,
+                      tree_id,
+                      file_path,
+                      tree_root,
+                      cld_path,
+                      out[v_name]);
         
     }
 }
@@ -656,6 +711,7 @@ void
 avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
                                          avtBlueprintTreeCache &tree_cache,
                                          int tree_id,
+                                         const std::string &file_path,
                                          const std::string &tree_root,
                                          const std::string &tree_path,
                                          const std::string &curr_path,
@@ -677,6 +733,7 @@ avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
             LoadSidreGroup(sidre_meta["groups"][tree_curr],
                            tree_cache,
                            tree_id,
+                           file_path,
                            tree_root,
                            curr_path + tree_curr  + "/",
                            out);
@@ -686,6 +743,7 @@ avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
             LoadSidreTree(sidre_meta["groups"][tree_curr],
                           tree_cache,
                           tree_id,
+                          file_path,
                           tree_root,
                           tree_next,
                           curr_path + tree_curr  + "/",
@@ -705,6 +763,7 @@ avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
             LoadSidreView(sidre_meta["view"][tree_curr],
                           tree_cache,
                           tree_id,
+                          file_path,
                           tree_root,
                           curr_path + tree_curr  + "/",
                           out);
@@ -956,46 +1015,34 @@ std::string
 avtBlueprintTreeCache::Expand(const std::string pattern,
                               int idx) const
 {
-    //
-    // Note: This currently only handles format strings :
-    // "%05d" "%06d" "%07d"
-    //
-
-    std::size_t idx_pattern = pattern.find("%05d");
-
-    if(idx_pattern != std::string::npos)
+    const std::vector<std::string> patterns{"%08d", "%07d", "%06d", "%05d",
+                                            "%04d", "%03d", "%02d", "%d"};
+    for(const auto &p : patterns)
     {
-        char buff[16];
-        snprintf(buff,16,"%05d",idx);
-        return StringHelpers::Replace(pattern,
-                                      "%05d",
-                                      std::string(buff));
+        if(pattern.find(p) != std::string::npos)
+        {
+            char buff[16];
+            snprintf(buff, 16, p.c_str(), idx);
+            return StringHelpers::Replace(pattern,
+                                          p,
+                                          std::string(buff));
+        }
     }
-
-    idx_pattern = pattern.find("%06d");
-
-    if(idx_pattern != std::string::npos)
+    if(pattern.find("%") != std::string::npos)
     {
-        char buff[16];
-        snprintf(buff,16,"%06d",idx);    
-        return StringHelpers::Replace(pattern,
-                                      "%06d",
-                                      std::string(buff));
-    }
-
-    idx_pattern = pattern.find("%07d");
-
-    if(idx_pattern != std::string::npos)
-    {
-        char buff[16];
-        snprintf(buff,16,"%07d",idx);    
-        return StringHelpers::Replace(pattern,
-                                      "%07d",
-                                      std::string(buff));
+        BP_PLUGIN_EXCEPTION1(InvalidFilesException,
+            "Unsupported pattern in \"" << pattern << "\".");
     }
     return pattern;
 }
 
+
+//----------------------------------------------------------------------------/
+void
+avtBlueprintTreeCache::SetRootDir(const std::string &root_dir)
+{
+    m_root_dir = root_dir;
+}
 
 //----------------------------------------------------------------------------/
 void
@@ -1031,33 +1078,210 @@ avtBlueprintTreeCache::SetProtocol(const std::string &protocol)
     m_protocol = protocol;
 }
 
+//-------------------------------------------------------------------//
+void
+avtBlueprintTreeCache::AddMeshParitionMap(const std::string   &mesh_name,
+                                          const std::string   &partition_pattern)
+{
+    m_part_maps[mesh_name]["pattern"] = partition_pattern;
+}
+
 
 //-------------------------------------------------------------------//
-std::string
-avtBlueprintTreeCache::GenerateFilePath(int tree_id) const
+void
+avtBlueprintTreeCache::AddMeshParitionMap(const std::string   &mesh_name,
+                                          const std::string   &partition_pattern,
+                                          const conduit::Node &partition_map)
 {
-    // for now, we only support 1 tree per file.
-    int file_id = tree_id;
-    return Expand(m_file_pattern,file_id);
+    Node &part_entry =  m_part_maps[mesh_name];
+    part_entry["pattern"] = partition_pattern;
+    part_entry["map"]     = partition_map;
+
+    // find max possible domain id
+    index_t_accessor doms = partition_map["domain"].value();
+    index_t num_domains   = doms.max() + 1;
+
+    // fill out domain to tree map
+    part_entry["domain_to_tree"].set(DataType::index_t(num_domains));
+    index_t_array dom_to_tree_vals = part_entry["domain_to_tree"].value();
+    for(index_t i=0;i<num_domains;i++)
+    {
+        dom_to_tree_vals[doms[i]] = i;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// This uses a mapping scheme created by ascent + conduit
+// Note: We will support explicit maps from the bp index in the future.
+// TODO: We should cache this, not regen every fetch
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+static void
+gen_domain_to_file_map(int num_domains,
+                       int num_files,
+                       Node &out)
+{
+    int num_domains_per_file = num_domains / num_files;
+    int left_overs = num_domains % num_files;
+
+    out["global_domains_per_file"].set(DataType::int32(num_files));
+    out["global_domain_offsets"].set(DataType::int32(num_files));
+    out["global_domain_to_file"].set(DataType::int32(num_domains));
+    
+    int32_array v_domains_per_file = out["global_domains_per_file"].value();
+    int32_array v_domains_offsets  = out["global_domain_offsets"].value();
+    int32_array v_domain_to_file   = out["global_domain_to_file"].value();
+    
+    // setup domains per file
+    for(int f=0; f < num_files; f++)
+    {
+        v_domains_per_file[f] = num_domains_per_file;
+        if( f < left_overs)
+            v_domains_per_file[f]+=1;
+    }
+
+    // prefix sum to calc offsets
+    for(int f=0; f < num_files; f++)
+    {
+        v_domains_offsets[f] = v_domains_per_file[f];
+        if(f > 0)
+            v_domains_offsets[f] += v_domains_offsets[f-1];
+    }
+    
+    // do assignment, create simple map
+    int f_idx = 0;
+    for(int d=0; d < num_domains; d++)
+    {
+        if(d >= v_domains_offsets[f_idx])
+            f_idx++;
+        v_domain_to_file[d] = f_idx;
+    }
 }
 
 //-------------------------------------------------------------------//
 std::string
-avtBlueprintTreeCache::GenerateTreePath(int tree_id) const
+avtBlueprintTreeCache::GenerateFilePath(const std::string &mesh_name,
+                                        int tree_id) const
 {
-    // the tree path should always end in a /
-    std::string res = Expand(m_tree_pattern,tree_id);
-    if( (res.size() > 0) && (res[res.size()-1] != '/') )
+    std::string res;
+    // check for the partition map case
+    if(m_part_maps.has_child(mesh_name)) 
     {
-        res += "/";
+        BP_PLUGIN_INFO( "GenerateFilePath using partition map for mesh: "
+                        << mesh_name);
+        // split out file
+        std::string tmp;
+        utils::split_string(GeneratePartitionMapFullPath(m_part_maps[mesh_name],tree_id),
+                            ":/",
+                            res,  // result is before sep
+                            tmp);
+    }
+    else // legacy case
+    {
+        int file_id = -1;
+
+        if(m_num_trees == m_num_files)
+        {
+            file_id = tree_id;
+        }
+        else if(m_num_files == 1)
+        {
+            file_id = 0;
+        }
+        else
+        {
+            Node d2f_map;
+            gen_domain_to_file_map(m_num_trees,
+                                    m_num_files,
+                                    d2f_map);
+            int num_domains_per_file = m_num_trees / m_num_files;
+            int left_overs = m_num_trees % m_num_files;
+            int32_array v_domain_to_file = d2f_map["global_domain_to_file"].value();
+            file_id = v_domain_to_file[tree_id];
+        }
+
+        BP_PLUGIN_INFO( "tree_id: " << tree_id 
+                        << " ==> file_id: " << file_id);
+
+        res = Expand(m_file_pattern,file_id);
     }
     return res;
+}
+
+//-------------------------------------------------------------------//
+std::string
+avtBlueprintTreeCache::GenerateTreePath(const std::string &mesh_name,
+                                        int tree_id) const
+{
+    std::string res;
+    // check for the partition map case
+    if(m_part_maps.has_child(mesh_name)) 
+    {
+        BP_PLUGIN_INFO( "GenerateTreePath using partition map for mesh: "
+                        << mesh_name);
+        // split out sub path
+        std::string tmp;
+        utils::split_string(GeneratePartitionMapFullPath(m_part_maps[mesh_name],tree_id),
+                            ":/",
+                            tmp,
+                            res); // result is before sep
+        // tree path should always end with "/"
+        if( (res.size() > 0) && (res[res.size()-1] != '/') )
+        {
+            res += "/";
+        }
+    }
+    else // legacy case
+    {
+        // the tree path should always end in a /
+        res = Expand(m_tree_pattern,tree_id);
+        if( (res.size() > 0) && (res[res.size()-1] != '/') )
+        {
+            res += "/";
+        }
+    }
+    return res;
+}
+
+//-------------------------------------------------------------------//
+std::string
+avtBlueprintTreeCache::GeneratePartitionMapFullPath(const conduit::Node &mesh_part_info,
+                                                    int tree_id) const
+{
+    // general case
+    if(mesh_part_info.has_child("map"))
+    {
+        std::string full_pattern = mesh_part_info["pattern"].as_string();
+        if(full_pattern[0] !=  VISIT_SLASH_STRING[0])
+        {
+            full_pattern  = m_root_dir + string(VISIT_SLASH_STRING) + full_pattern;
+        }
+        
+        index_t_array dom_to_tree_vals = mesh_part_info["domain_to_tree"].value();
+        index_t dom_lookup = dom_to_tree_vals[tree_id];
+        return conduit::utils::format(full_pattern,
+                                      mesh_part_info["map"],
+                                      dom_lookup);
+    }
+    else  // part_pattern w/o any map == single file case.
+    {
+        std::string full_pattern = mesh_part_info["pattern"].as_string();
+        if(full_pattern[0] !=  VISIT_SLASH_STRING[0])
+        {
+            full_pattern  = m_root_dir + string(VISIT_SLASH_STRING) + full_pattern;
+        }
+        return full_pattern;
+    }
 }
 
 
 //---------------------------------------------------------------------------//
 void
 avtBlueprintTreeCache::FetchBlueprintTree(int tree_id, 
+                                          const std::string &mesh_name,
                                           const std::string &sub_tree_path,
                                           conduit::Node &out)
 {
@@ -1075,8 +1299,8 @@ avtBlueprintTreeCache::FetchBlueprintTree(int tree_id,
         IO::LoadBlueprintTree(*this,
                               tree_id,
                               m_protocol,
-                              GenerateFilePath(tree_id),
-                              GenerateTreePath(tree_id),
+                              GenerateFilePath(mesh_name,tree_id),
+                              GenerateTreePath(mesh_name,tree_id),
                               sub_tree_path,
                               cache_sub_tree);
 
@@ -1102,22 +1326,22 @@ avtBlueprintTreeCache::Cache()
 
 //-----------------------------------------------------------------------//
 void
-avtBlueprintTreeCache::Read(int tree_id,
-                            const std::string &path,
+avtBlueprintTreeCache::Read(const std::string &file_path,
+                            const std::string &fetch_path,
                             conduit::Node &out)
 {
     // switch on protocol
     if(m_protocol.find("hdf5") != std::string::npos)
     {
-        hid_t h5_file_id = m_cache_map->FetchHDF5Id(GenerateFilePath(tree_id));
-        conduit::relay::io::hdf5_read(h5_file_id,path,out);
+        hid_t h5_file_id = m_cache_map->FetchHDF5Id(file_path);
+        conduit::relay::io::hdf5_read(h5_file_id,fetch_path,out);
     }
     else
     {
         // TODO proper sub tree, or read and cache at higher lvl
         Node n_full;
-        conduit::relay::io::load(GenerateFilePath(tree_id),m_protocol,n_full);
-        out = n_full[path];
+        conduit::relay::io::load(file_path,m_protocol,n_full);
+        out = n_full[fetch_path];
     }
 }
 
@@ -1126,29 +1350,29 @@ avtBlueprintTreeCache::Read(int tree_id,
 //-----------------------------------------------------------------------//
 // Note: Only used by sidre_hdf5
 bool
-avtBlueprintTreeCache::HasPath(int tree_id,
-                               const std::string &path)
+avtBlueprintTreeCache::HasPath(const std::string &file_path,
+                               const std::string &fetch_path)
 {
-    hid_t h5_file_id = m_cache_map->FetchHDF5Id(GenerateFilePath(tree_id));
-    return conduit::relay::io::hdf5_has_path(h5_file_id,path);
+    hid_t h5_file_id = m_cache_map->FetchHDF5Id(file_path);
+    return conduit::relay::io::hdf5_has_path(h5_file_id,fetch_path);
 }
 
 //-----------------------------------------------------------------------//
 // Note: Only used by sidre_hdf5
 bool
-avtBlueprintTreeCache::Read(int tree_id,
-                            const std::string &path,
+avtBlueprintTreeCache::Read(const std::string &file_path,
+                            const std::string &fetch_path,
                             const conduit::DataType &dtype,
                             conduit::Node &out)
 {
-    hid_t h5_file_id = m_cache_map->FetchHDF5Id(GenerateFilePath(tree_id));
-    
+    hid_t h5_file_id = m_cache_map->FetchHDF5Id(file_path);
+
     void *data_ptr = out.data_ptr();
     bool res = IO::ReadHDF5Slab(h5_file_id,
-                                path,
+                                fetch_path,
                                 dtype,
                                 data_ptr);
-    
+
     return res;
 }
 

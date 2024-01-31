@@ -54,6 +54,7 @@
 
 #include "visit_vtkOpenFOAMReader.h"
 
+#include <visit-config.h> // For LIB_VERSION_LE
 
 #include <algorithm>
 #include <vector>
@@ -134,6 +135,8 @@ public:
 
 typedef vtkFoamArrayVector<vtkIntArray> vtkFoamIntArrayVector;
 typedef vtkFoamArrayVector<vtkFloatArray> vtkFoamFloatArrayVector;
+namespace
+{
 struct vtkFoamIntVectorVector;
 
 struct vtkFoamError;
@@ -145,6 +148,7 @@ template <typename T> struct vtkFoamReadValue;
 struct vtkFoamEntryValue;
 struct vtkFoamEntry;
 struct vtkFoamDict;
+}
 
 //-----------------------------------------------------------------------------
 // class visit_vtkOpenFOAMReaderPrivate
@@ -342,6 +346,9 @@ private:
 };
 
 vtkStandardNewMacro(visit_vtkOpenFOAMReaderPrivate);
+
+namespace
+{
 
 //-----------------------------------------------------------------------------
 // struct vtkFoamIntVectorVector
@@ -3678,6 +3685,8 @@ void vtkFoamEntry::Read(vtkFoamIOobject& io)
     }
 }
 
+}
+
 //-----------------------------------------------------------------------------
 // visit_vtkOpenFOAMReaderPrivate constructor and destructor
 visit_vtkOpenFOAMReaderPrivate::visit_vtkOpenFOAMReaderPrivate()
@@ -6112,7 +6121,11 @@ vtkMultiBlockDataSet *visit_vtkOpenFOAMReaderPrivate::MakeBoundaryMesh(
         for (int faceI = abStartFace; faceI < abEndFace; faceI++)
           {
           vtkIdType nPoints;
+#if LIB_VERSION_LE(VTK,8,1,0)
           vtkIdType *points;
+#else
+          const vtkIdType *points;
+#endif
           this->AllBoundaries->GetCellPoints(faceI, nPoints, points);
           if (beI.BoundaryType == vtkFoamBoundaryEntry::PHYSICAL)
             {
@@ -6409,7 +6422,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
   vtkCellLinks *cl = NULL;
   if (ug)
     {
-    cl = ug->GetCellLinks();
+    cl = vtkCellLinks::SafeDownCast(ug->GetCellLinks());
     }
 
   const int nComponents = iData->GetNumberOfComponents();
@@ -6421,14 +6434,22 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
     for (int pointI = 0; pointI < nPoints; pointI++)
       {
       const int pI = (pointList ? pointList->GetValue(pointI) : pointI);
-      unsigned short nCells;
       vtkIdType *cells;
+#if LIB_VERSION_LE(VTK,8,1,0)
+      unsigned short nCells;
       if (cl)
         {
         const vtkCellLinks::Link &l = cl->GetLink(pI);
         nCells = l.ncells;
         cells = l.cells;
         }
+#else
+      vtkIdType nCells;
+      if (ug)
+        {
+        ug->GetPointCells(pI, nCells, cells);
+        }
+#endif
       else
         {
         pd->GetPointCells(pI, nCells, cells);
@@ -6451,14 +6472,22 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
     for (int pointI = 0; pointI < nPoints; pointI++)
       {
       const int pI = (pointList ? pointList->GetValue(pointI) : pointI);
-      unsigned short nCells;
       vtkIdType *cells;
+#if LIB_VERSION_LE(VTK,8,1,0)
+      unsigned short nCells;
       if (cl)
         {
         const vtkCellLinks::Link &l = cl->GetLink(pI);
         nCells = l.ncells;
         cells = l.cells;
         }
+#else
+      vtkIdType nCells;
+      if (ug)
+        {
+        ug->GetPointCells(pI, nCells, cells);
+        }
+#endif
       else
         {
         pd->GetPointCells(pI, nCells, cells);
@@ -6488,7 +6517,11 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
     for (int pointI = 0; pointI < nPoints; pointI++)
       {
       const int pI = (pointList ? pointList->GetValue(pointI) : pointI);
+#if LIB_VERSION_LE(VTK,8,1,0)
       unsigned short nCells;
+#else
+      vtkIdType nCells;
+#endif
       vtkIdType *cells;
       if (cl)
         {
@@ -8298,7 +8331,7 @@ int visit_vtkOpenFOAMReader::GetSelectionArrayStatus(vtkDataArraySelection *s,
 void visit_vtkOpenFOAMReader::SetSelectionArrayStatus(vtkDataArraySelection *s,
     const char* name, int status)
 {
-  unsigned long int mTime = s->GetMTime();
+  vtkMTimeType mTime = s->GetMTime();
   if (status)
     {
     s->EnableArray(name);
@@ -8321,7 +8354,7 @@ const char *visit_vtkOpenFOAMReader::GetSelectionArrayName(vtkDataArraySelection
 
 void visit_vtkOpenFOAMReader::DisableAllSelectionArrays(vtkDataArraySelection *s)
 {
-  unsigned long int mTime = s->GetMTime();
+  vtkMTimeType mTime = s->GetMTime();
   s->DisableAllArrays();
   if (mTime != s->GetMTime())
     {
@@ -8331,7 +8364,7 @@ void visit_vtkOpenFOAMReader::DisableAllSelectionArrays(vtkDataArraySelection *s
 
 void visit_vtkOpenFOAMReader::EnableAllSelectionArrays(vtkDataArraySelection *s)
 {
-  unsigned long int mTime = s->GetMTime();
+  vtkMTimeType mTime = s->GetMTime();
   s->EnableAllArrays();
   if (mTime != s->GetMTime())
     {
@@ -8668,7 +8701,7 @@ bool visit_vtkOpenFOAMReader::SetTimeValue(const double timeValue)
       = visit_vtkOpenFOAMReaderPrivate::SafeDownCast(this->Readers->GetNextItemAsObject()))
       != NULL)
     {
-    const unsigned long mTime = reader->GetMTime();
+    vtkMTimeType mTime = reader->GetMTime();
     reader->SetTimeValue(timeValue);
     if (reader->GetMTime() != mTime)
       {

@@ -5,6 +5,7 @@
 #include <PyToroidalPoloidalProjection.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyToroidalPoloidalProjection
@@ -34,9 +35,8 @@ struct ToroidalPoloidalProjectionObject
 // Internal prototypes
 //
 static PyObject *NewToroidalPoloidalProjection(int);
-
 std::string
-PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, const char *prefix)
+PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -98,12 +98,48 @@ ToroidalPoloidalProjection_SetR0(PyObject *self, PyObject *args)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the R0 in the object.
-    obj->data->SetR0(dval);
+    obj->data->SetR0(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -122,12 +158,48 @@ ToroidalPoloidalProjection_SetR(PyObject *self, PyObject *args)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the r in the object.
-    obj->data->SetR(dval);
+    obj->data->SetR(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -146,21 +218,54 @@ ToroidalPoloidalProjection_SetCentroidSource(PyObject *self, PyObject *args)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid centroidSource value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Manual";
+        ss << ", Auto";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the centroidSource in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCentroidSource(ToroidalPoloidalProjection::CentroidSource(ival));
-    else
-    {
-        fprintf(stderr, "An invalid centroidSource value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Manual, Auto.");
-        return NULL;
-    }
+    obj->data->SetCentroidSource(ToroidalPoloidalProjection::CentroidSource(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -179,35 +284,60 @@ ToroidalPoloidalProjection_SetCentroid(PyObject *self, PyObject *args)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
 
-    double *dvals = obj->data->GetCentroid();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetCentroid();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the centroid in the object as modified.
     obj->data->SelectCentroid();
@@ -233,12 +363,48 @@ ToroidalPoloidalProjection_SetProject2D(PyObject *self, PyObject *args)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the project2D in the object.
-    obj->data->SetProject2D(ival != 0);
+    obj->data->SetProject2D(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -283,14 +449,7 @@ ToroidalPoloidalProjection_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ToroidalPoloidalProjection_compare(PyObject *v, PyObject *w)
-{
-    ToroidalPoloidalProjection *a = ((ToroidalPoloidalProjectionObject *)v)->data;
-    ToroidalPoloidalProjection *b = ((ToroidalPoloidalProjectionObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
 {
@@ -310,36 +469,49 @@ PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
     if(strcmp(name, "project2D") == 0)
         return ToroidalPoloidalProjection_GetProject2D(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyToroidalPoloidalProjection_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyToroidalPoloidalProjection_methods[i].ml_name),
+                PyString_FromString(PyToroidalPoloidalProjection_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyToroidalPoloidalProjection_methods, self, name);
 }
 
 int
 PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "R0") == 0)
-        obj = ToroidalPoloidalProjection_SetR0(self, tuple);
+        obj = ToroidalPoloidalProjection_SetR0(self, args);
     else if(strcmp(name, "r") == 0)
-        obj = ToroidalPoloidalProjection_SetR(self, tuple);
+        obj = ToroidalPoloidalProjection_SetR(self, args);
     else if(strcmp(name, "centroidSource") == 0)
-        obj = ToroidalPoloidalProjection_SetCentroidSource(self, tuple);
+        obj = ToroidalPoloidalProjection_SetCentroidSource(self, args);
     else if(strcmp(name, "centroid") == 0)
-        obj = ToroidalPoloidalProjection_SetCentroid(self, tuple);
+        obj = ToroidalPoloidalProjection_SetCentroid(self, args);
     else if(strcmp(name, "project2D") == 0)
-        obj = ToroidalPoloidalProjection_SetProject2D(self, tuple);
+        obj = ToroidalPoloidalProjection_SetProject2D(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -347,7 +519,7 @@ static int
 ToroidalPoloidalProjection_print(PyObject *v, FILE *fp, int flags)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
-    fprintf(fp, "%s", PyToroidalPoloidalProjection_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyToroidalPoloidalProjection_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -355,7 +527,7 @@ PyObject *
 ToroidalPoloidalProjection_str(PyObject *v)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
-    return PyString_FromString(PyToroidalPoloidalProjection_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyToroidalPoloidalProjection_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -368,49 +540,70 @@ static char *ToroidalPoloidalProjection_Purpose = "Projects Exterior of Torus fr
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ToroidalPoloidalProjectionType =
+
+VISIT_PY_TYPE_OBJ(ToroidalPoloidalProjectionType,         \
+                  "ToroidalPoloidalProjection",           \
+                  ToroidalPoloidalProjectionObject,       \
+                  ToroidalPoloidalProjection_dealloc,     \
+                  ToroidalPoloidalProjection_print,       \
+                  PyToroidalPoloidalProjection_getattr,   \
+                  PyToroidalPoloidalProjection_setattr,   \
+                  ToroidalPoloidalProjection_str,         \
+                  ToroidalPoloidalProjection_Purpose,     \
+                  ToroidalPoloidalProjection_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ToroidalPoloidalProjection",                    // tp_name
-    sizeof(ToroidalPoloidalProjectionObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ToroidalPoloidalProjection_dealloc,  // tp_dealloc
-    (printfunc)ToroidalPoloidalProjection_print,     // tp_print
-    (getattrfunc)PyToroidalPoloidalProjection_getattr, // tp_getattr
-    (setattrfunc)PyToroidalPoloidalProjection_setattr, // tp_setattr
-    (cmpfunc)ToroidalPoloidalProjection_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ToroidalPoloidalProjection_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ToroidalPoloidalProjection_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ToroidalPoloidalProjectionType
+         || Py_TYPE(other) != &ToroidalPoloidalProjectionType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ToroidalPoloidalProjection *a = ((ToroidalPoloidalProjectionObject *)self)->data;
+    ToroidalPoloidalProjection *b = ((ToroidalPoloidalProjectionObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -486,7 +679,7 @@ PyToroidalPoloidalProjection_GetLogString()
 {
     std::string s("ToroidalPoloidalProjection = ToroidalPoloidalProjection()\n");
     if(currentAtts != 0)
-        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.");
+        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.", true);
     return s;
 }
 
@@ -499,7 +692,7 @@ PyToroidalPoloidalProjection_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ToroidalPoloidalProjection = ToroidalPoloidalProjection()\n");
-        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.");
+        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.", true);
         cb(s);
     }
 }

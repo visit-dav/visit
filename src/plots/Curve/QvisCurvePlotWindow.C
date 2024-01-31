@@ -163,6 +163,8 @@ QvisCurvePlotWindow::CreateWindowContents()
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -170,7 +172,7 @@ void
 QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
 {
     QGridLayout *topLayout = new QGridLayout(pageData);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -181,7 +183,7 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
  
     // Create the radio buttons for curve color source
@@ -198,8 +200,13 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(curveColorButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(curveColorClicked(int)));
+#else
+    connect(curveColorButtons, SIGNAL(idClicked(int)),
+            this, SLOT(curveColorClicked(int)));
+#endif
 
     // Create the curve color button.
     curveColor = new QvisColorButton(central);
@@ -215,7 +222,7 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(fillGroup, 1, 0, 1, 4);
 
     QGridLayout *fillLayout = new QGridLayout(fillGroup);
-    fillLayout->setMargin(5);
+    fillLayout->setContentsMargins(5,5,5,5);
     fillLayout->setSpacing(10);
 
     fillLayout->addWidget(new QLabel(tr("Fill mode"), central), 0, 0);
@@ -267,7 +274,7 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
@@ -298,13 +305,16 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 {
     QGridLayout *topLayout = new QGridLayout(pageGeometry);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     int ROW = 0;
@@ -317,7 +327,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(lineGroup);
 
     QGridLayout *lineLayout = new QGridLayout(lineGroup);
-    lineLayout->setMargin(5);
+    lineLayout->setContentsMargins(5,5,5,5);
     lineLayout->setSpacing(10);
 
     ROW = 0;
@@ -353,7 +363,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(pointGroup);
 
     QGridLayout *pointLayout = new QGridLayout(pointGroup);
-    pointLayout->setMargin(5);
+    pointLayout->setContentsMargins(5,5,5,5);
     pointLayout->setSpacing(10);
 
     ROW = 0;
@@ -372,7 +382,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     //
 #define CREATE_PIXMAP(pixobj, name, xpm) \
     QPixmap pixobj; \
-    if(!QPixmapCache::find(name, pixobj)) \
+    if(!QPixmapCache::find(name, &pixobj)) \
     { \
         char *augmentedData[35], augmentedForeground[15]; \
         for(int i = 0; i < 35; ++i) \
@@ -428,8 +438,13 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     fillModeGroup = new QButtonGroup(pointGroup);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fillModeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(symbolFillModeChanged(int)));
+#else
+    connect(fillModeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(symbolFillModeChanged(int)));
+#endif
 
     staticButton = new QRadioButton(tr("Static"), pointGroup);
     staticButton->setChecked(true);
@@ -488,7 +503,7 @@ void
 QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
     QGridLayout *topLayout = new QGridLayout(pageExtras);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -499,7 +514,7 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(timeCueGroup);
 
     QGridLayout *timeCueLayout = new QGridLayout(timeCueGroup);
-    timeCueLayout->setMargin(5);
+    timeCueLayout->setContentsMargins(5,5,5,5);
     timeCueLayout->setSpacing(10);
  
     doBallTimeCue = new QCheckBox(tr("Add Ball"), central);
@@ -558,7 +573,7 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(coordSystemGroup);
 
     QGridLayout *coordSystemLayout = new QGridLayout(coordSystemGroup);
-    coordSystemLayout->setMargin(5);
+    coordSystemLayout->setContentsMargins(5,5,5,5);
     coordSystemLayout->setSpacing(10);
 
 
@@ -603,7 +618,7 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //     topLayout->addWidget(blankGroup);
 
 //     QGridLayout *blankLayout = new QGridLayout(blankGroup);
-//     blankLayout->setMargin(5);
+//     blankLayout->setContentsMargins(5,5,5,5);
 //     blankLayout->setSpacing(10);
  
 //     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);
@@ -754,15 +769,12 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case CurveAttributes::ID_curveColor:
             { // new scope
-              if (curveColor->isEnabled())
-              {
                 QColor temp(atts->GetCurveColor().Red(),
                             atts->GetCurveColor().Green(),
                             atts->GetCurveColor().Blue());
                 curveColor->blockSignals(true);
                 curveColor->setButtonColor(temp);
                 curveColor->blockSignals(false);
-              }
             }
             break;
           case CurveAttributes::ID_showLegend:

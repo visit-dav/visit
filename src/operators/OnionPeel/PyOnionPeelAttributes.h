@@ -5,6 +5,7 @@
 #ifndef PY_ONIONPEELATTRIBUTES_H
 #define PY_ONIONPEELATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <OnionPeelAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyOnionPeelAttributes_Wrap(const OnionPeelAttributes *attr);
 void           PyOnionPeelAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyOnionPeelAttributes_SetDefaults(const OnionPeelAttributes *atts);
 std::string    PyOnionPeelAttributes_GetLogString();
-std::string    PyOnionPeelAttributes_ToString(const OnionPeelAttributes *, const char *);
+std::string    PyOnionPeelAttributes_ToString(const OnionPeelAttributes *, const char *, const bool=false);
 PyObject *     PyOnionPeelAttributes_getattr(PyObject *self, char *name);
 int            PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyOnionPeelAttributes_methods[ONIONPEELATTRIBUTES_NMETH];

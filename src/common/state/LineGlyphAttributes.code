@@ -1,0 +1,49 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const LineGlyphAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+// ****************************************************************************
+bool
+LineGlyphAttributes::ChangesRequireRecalculation(const LineGlyphAttributes &obj) const
+{
+   bool needSecondaryVar = (obj.lineType == Tube &&
+                            obj.tubeRadiusVarEnabled &&
+                            obj.tubeRadiusVar != tubeRadiusVar &&
+                            obj.tubeRadiusVar != "default" &&
+                            obj.tubeRadiusVar != "" &&
+                            obj.tubeRadiusVar != "\0") ||
+
+                           ((obj.tailStyle != None ||
+                             obj.headStyle != None) &&
+                            obj.endPointRadiusVarEnabled &&
+                            obj.endPointRadiusVar != endPointRadiusVar &&
+                            obj.endPointRadiusVar != "default" &&
+                            obj.endPointRadiusVar != "" &&
+                            obj.endPointRadiusVar != "\0");
+
+
+    bool geometryChange =  (lineType             != obj.lineType ||
+                            tubeRadiusSizeType   != obj.tubeRadiusSizeType ||
+                            tubeRadiusAbsolute   != obj.tubeRadiusAbsolute ||
+                            tubeRadiusBBox       != obj.tubeRadiusBBox ||
+                            tubeRadiusVarEnabled != obj.tubeRadiusVarEnabled ||
+                            tubeRadiusVar        != obj.tubeRadiusVar ||
+                            tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
+                            tubeResolution       != obj.tubeResolution ||
+
+                            tailStyle                != obj.tailStyle ||
+                            headStyle                != obj.headStyle ||
+                            endPointRatio            != obj.endPointRatio ||
+                            endPointRadiusSizeType   != obj.endPointRadiusSizeType ||
+                            endPointRadiusAbsolute   != obj.endPointRadiusAbsolute ||
+                            endPointRadiusBBox       != obj.endPointRadiusBBox ||
+                            endPointRadiusVarEnabled != obj.endPointRadiusVarEnabled ||
+                            endPointRadiusVar        != obj.endPointRadiusVar ||
+                            endPointRadiusVarRatio   != obj.endPointRadiusVarRatio ||
+                            endPointResolution       != obj.endPointResolution);
+
+    return needSecondaryVar || geometryChange;
+}
+

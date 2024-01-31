@@ -20,6 +20,13 @@
 #    Fixed the Qt and qwt frameworks path for OSX and the syntax error produced from
 #    filtering the right parenthesis in certain cases.
 #
+#    Kathleen Biagas, Fri March 10, 2023
+#    Filter out vtkm_* libraries as they are static.
+#
+#    Kathleen Biagas, Wed Nov  8 10:03:29 PST 2023
+#    Handle VTK9 and QT 6 named targets. For Qt, use QT_MAJOR_VERSION instead
+#    of '5' or '6', and add uitools (needed for qt 6).
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -35,6 +42,7 @@ set(VTK_SMALL_VERSION @VTK_MAJOR_VERSION@.@VTK_MINOR_VERSION@)
 set(PYTHON_SMALL_VERSION @PYTHON_MAJOR_VERSION@@PYTHON_MINOR_VERSION@)
 set(VISIT_MESAGL_DIR  @VISIT_MESAGL_DIR@)
 set(VISIT_LLVM_DIR    @VISIT_LLVM_DIR@)
+set(QT_MAJOR_VERSION  @QT_MAJOR_VERSION@)
 
 function(FILTER_VISIT_LIB_DEPENDENCIES filename)
     file(STRINGS ${filename}.in lines)
@@ -101,7 +109,7 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             endif()
         endif()
         if(VISIT_OPENEXR_DIR)
-            if(APPLE) # built as dynamic on apple and window 
+            if(APPLE) # built as dynamic on apple and window
                 string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
                                "\${VISIT_LIBRARY_DIR}"
                                 line "${line}")
@@ -125,7 +133,8 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
         # When we get here, we need to output a filtered line.
         # The line is tokenized to make filtering easier (albeit slower).
         #   * Replace vtk<lib> with vtk<lib>-<vtk_small_version>
-        #   * Replace Qt5::<lib> with Qt5<lib>
+        #   * Replace Qt${QT_MAJOR_VERSION}::<lib> with Qt${QT_MAJOR_VERSION}<lib>
+        #   * Remove vtkm_*
         #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
         set(skip_next_token FALSE)
         foreach(token ${line})
@@ -142,55 +151,78 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                                        "viewerlib_LIB_DEPENDS" newtoken ${token})
                     elseif(${token} MATCHES "gui_LIB_DEPENDS")
                         # change gui to guilib
-                        string(REPLACE "gui_LIB_DEPENDS" 
-                                       "guilib_LIB_DEPENDS" newtoken ${token}) 
+                        string(REPLACE "gui_LIB_DEPENDS"
+                                       "guilib_LIB_DEPENDS" newtoken ${token})
                     endif()
                 endif()
                 # remove surrounding quotes
                 string(REPLACE "\"" "@@@@@" replace_quote ${newtoken})
                 string(REGEX REPLACE "@@@@@([a-zA-Z_]+)_LIB_DEPENDS@@@@@"
-                       "\\1_LIB_DEPENDS" 
+                       "\\1_LIB_DEPENDS"
                        rem_quote ${replace_quote})
                 string(REPLACE "@@@@@" "\"" newtoken ${rem_quote})
-            elseif(token MATCHES "Qt5::")
+            elseif(token MATCHES "Qt${QT_MAJOR_VERSION}::")
                 if(APPLE)
-                    if(token MATCHES "Qt5::Concurrent|Qt5::Core|Qt5::Gui|Qt5::Network|Qt5::OpenGL|Qt5::PrintSupport|Qt5::Qml|Qt5::Svg|Qt5::Widgets|Qt5::Xml")
-                        # replace Qt5::libname with Qtlibname.framework
-                        string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                    if(token MATCHES "Qt${QT_MAJOR_VERSION}::Concurrent|Qt${QT_MAJOR_VERSION}::Core|Qt${QT_MAJOR_VERSION}::Gui|Qt${QT_MAJOR_VERSION}::Network|Qt${QT_MAJOR_VERSION}::OpenGL|Qt${QT_MAJOR_VERSION}::PrintSupport|Qt${QT_MAJOR_VERSION}::Qml|Qt${QT_MAJOR_VERSION}::Svg|Qt${QT_MAJOR_VERSION}::Widgets|Qt${QT_MAJOR_VERSION}::Xml|Qt${QT_MAJOR_VERSION}::UiTools")
+                        # replace Qt${QT_MAJOR_VERSION}::libname with Qtlibname.framework
+                        string(REGEX REPLACE "Qt${QT_MAJOR_VERSION}::([a-zA-Z]+)"
                                              "\${VISIT_LIBRARY_DIR}/Qt\\1.framework"
                                              newtoken ${token})
                     else()
-                        # replace Qt5::libname with Qt5libname
-                        string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
-                                             "Qt5\\1"
+                        # replace Qt${QT_MAJOR_VERSION}::libname with Qt${QT_MAJOR_VERSION}
+                        string(REGEX REPLACE "Qt${QT_MAJOR_VERSION}::([a-zA-Z]+)"
+                                             "Qt${QT_MAJOR_VERSION}\\1"
                                              newtoken ${token})
                     endif()
                 else()
-                    # replace Qt5::libname with Qt5libname
-                    string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
-                                         "Qt5\\1"
+                    # replace Qt${QT_MAJOR_VERSION}::libname with Qt${QT_MAJOR_VERSION}
+                    string(REGEX REPLACE "Qt${QT_MAJOR_VERSION}::([a-zA-Z]+)"
+                                         "Qt${QT_MAJOR_VERSION}\\1"
                                          newtoken ${token})
                 endif()
-            elseif(${token} IN_LIST VTK_TARGETS)
+            elseif(token MATCHES "VTK::")
+                string(REPLACE "VTK::" "vtk" atoken ${token})
+
                 # append VTK version to vtk lib names
-                if(token MATCHES "WrappingPythonCore")
-                    string(REPLACE "PythonCore" 
-                           "Python${PYTHON_SMALL_VERSION}Core-${VTK_SMALL_VERSION}" newtoken ${token})
-                elseif(${token} MATCHES "vtkWrappingTools")
+                if(atoken MATCHES "WrappingPythonCore")
+                    string(REPLACE "PythonCore"
+                           "Python${PYTHON_SMALL_VERSION}Core-${VTK_SMALL_VERSION}" newtoken ${atoken})
+                elseif(${atoken} MATCHES "vtkWrappingTools")
                   # Skip this static library.
-                  set(skip_next_token TRUE) 
+                  set(skip_next_token TRUE)
                   continue()
                 else()
-                    set(newtoken "${token}-${VTK_SMALL_VERSION}")
+                    set(newtoken "${atoken}-${VTK_SMALL_VERSION}")
+                endif()
+            elseif(${token} IN_LIST VTK_TARGETS)
+                if(token MATCHES "VTK::")
+                    string(REPLACE "VTK::" "vtk" atoken ${token})
+                else()
+                    set(atoken ${token})
+                endif()
+
+                # append VTK version to vtk lib names
+                if(atoken MATCHES "WrappingPythonCore")
+                    string(REPLACE "PythonCore"
+                           "Python${PYTHON_SMALL_VERSION}Core-${VTK_SMALL_VERSION}" newtoken ${atoken})
+                elseif(${atoken} MATCHES "vtkWrappingTools")
+                  # Skip this static library.
+                  set(skip_next_token TRUE)
+                  continue()
+                else()
+                    set(newtoken "${atoken}-${VTK_SMALL_VERSION}")
                 endif()
             elseif(${token} MATCHES "mpich")
               # If we are installing mpich, then VISIT_PARALLEL_LINKER_FLAGS
               # points to our installed mpich, so having it in depds list
-              # seems unnecessary, lets skip it then. 
+              # seems unnecessary, lets skip it then.
               # want to say skip the next token which should be 'general'
-              set(skip_next_token TRUE) 
+              set(skip_next_token TRUE)
               continue()
             elseif(${token} MATCHES "icet")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
+            elseif(${token} MATCHES "vtkm_")
               # Static libs, not necessary to be listed as a dependency here
               continue()
             elseif(${token} MATCHES "OSMesa")

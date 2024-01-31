@@ -166,6 +166,7 @@ void ClipAttributes::Init()
     center[2] = 0;
     radius = 1;
     sphereInverse = false;
+    crinkleClip = false;
 
     ClipAttributes::SelectAll();
 }
@@ -224,6 +225,7 @@ void ClipAttributes::Copy(const ClipAttributes &obj)
 
     radius = obj.radius;
     sphereInverse = obj.sphereInverse;
+    crinkleClip = obj.crinkleClip;
 
     ClipAttributes::SelectAll();
 }
@@ -431,7 +433,8 @@ ClipAttributes::operator == (const ClipAttributes &obj) const
             (planeToolControlledClipPlane == obj.planeToolControlledClipPlane) &&
             center_equal &&
             (radius == obj.radius) &&
-            (sphereInverse == obj.sphereInverse));
+            (sphereInverse == obj.sphereInverse) &&
+            (crinkleClip == obj.crinkleClip));
 }
 
 // ****************************************************************************
@@ -749,6 +752,7 @@ ClipAttributes::SelectAll()
     Select(ID_center,                       (void *)center, 3);
     Select(ID_radius,                       (void *)&radius);
     Select(ID_sphereInverse,                (void *)&sphereInverse);
+    Select(ID_crinkleClip,                  (void *)&crinkleClip);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -877,6 +881,12 @@ ClipAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("sphereInverse", sphereInverse));
     }
 
+    if(completeSave || !FieldsEqual(ID_crinkleClip, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("crinkleClip", crinkleClip));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -987,6 +997,8 @@ ClipAttributes::SetFromNode(DataNode *parentNode)
         SetRadius(node->AsDouble());
     if((node = searchNode->GetNode("sphereInverse")) != 0)
         SetSphereInverse(node->AsBool());
+    if((node = searchNode->GetNode("crinkleClip")) != 0)
+        SetCrinkleClip(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1117,6 +1129,13 @@ ClipAttributes::SetSphereInverse(bool sphereInverse_)
 {
     sphereInverse = sphereInverse_;
     Select(ID_sphereInverse, (void *)&sphereInverse);
+}
+
+void
+ClipAttributes::SetCrinkleClip(bool crinkleClip_)
+{
+    crinkleClip = crinkleClip_;
+    Select(ID_crinkleClip, (void *)&crinkleClip);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1261,6 +1280,12 @@ ClipAttributes::GetSphereInverse() const
     return sphereInverse;
 }
 
+bool
+ClipAttributes::GetCrinkleClip() const
+{
+    return crinkleClip;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1347,6 +1372,7 @@ ClipAttributes::GetFieldName(int index) const
     case ID_center:                       return "center";
     case ID_radius:                       return "radius";
     case ID_sphereInverse:                return "sphereInverse";
+    case ID_crinkleClip:                  return "crinkleClip";
     default:  return "invalid index";
     }
 }
@@ -1387,6 +1413,7 @@ ClipAttributes::GetFieldType(int index) const
     case ID_center:                       return FieldType_doubleArray;
     case ID_radius:                       return FieldType_double;
     case ID_sphereInverse:                return FieldType_bool;
+    case ID_crinkleClip:                  return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1427,6 +1454,7 @@ ClipAttributes::GetFieldTypeName(int index) const
     case ID_center:                       return "doubleArray";
     case ID_radius:                       return "double";
     case ID_sphereInverse:                return "bool";
+    case ID_crinkleClip:                  return "bool";
     default:  return "invalid index";
     }
 }
@@ -1566,6 +1594,11 @@ ClipAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_sphereInverse:
         {  // new scope
         retval = (sphereInverse == obj.sphereInverse);
+        }
+        break;
+    case ID_crinkleClip:
+        {  // new scope
+        retval = (crinkleClip == obj.crinkleClip);
         }
         break;
     default: retval = false;

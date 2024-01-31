@@ -1,15 +1,13 @@
 Preparing for a Release
 =======================
 
-Overview
---------
+Updating copyright notice dates
+-------------------------------
 
-VisIt_ supports three types of releases, major, minor and patch, where the
-version number consists of "major.minor.patch". Patch releases are the
-most common type of release and typically occur three to four times a year.
-Minor releases are the next most common type of release and may occur
-once or twice a year. Major releases happen very infrequently, with as much
-as 10 years passing between major releases.
+At the beginning of every calendar year, the copyright notice needs to be updated.
+There are only a handful of files that still contain copyright dates, including "/src/LICENSE".
+There is a script called "update_copyright" in "/src/tools/dev/scripts" that can be used but may need updating if copyright dates were added to any new file types.
+This should be kept to a minimum.
 
 Preparing for a Patch Release
 -----------------------------
@@ -20,6 +18,9 @@ updating a few files. These consist of ::
     VERSION
     INSTALL_NOTES
     gui/Splashscreen.C
+
+A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
+Testing for obsolete code involves configuring with the CMake var **VISIT_REMOVE_OBSOLETE_CODE** turned on, then compiling and looking for compile errors of the form:  *This code is obsolete in this version. Please remove it.*
 
 Preparing for a Minor Release
 -----------------------------
@@ -152,6 +153,66 @@ is only available on the Mac. ::
 
     cd ..
     iconutil --convert icns VisItIcon.iconset
+
+Creating a new release notes file
+"""""""""""""""""""""""""""""""""
+
+A final step in making a release is to create the release notes file for the *next*
+release. To do this, you must be reasonably certain what the next release's version
+number will be. Typically, we do 3-4 patch releases for each minor release. So,
+if the release you are *just now* making is version ``3.1.2``, then the *next* release
+is likely to be ``3.1.3``. However, if the current release is ``3.1.3``, the next
+release might be ``3.1.4`` or it might be ``3.2``.
+
+In any event, to make the release notes file for the *next* release, you need to create
+an new, empty release notes file by going to ``src/resources/help/en_US`` and copying
+either the *minor* release notes template, ``relnotes_minor_templ.html``, or the *major*
+release notes template, ``relnotes_major_templ.html`` to a file name of the form
+``relnotesA.B.C.html`` where ``A.B.C`` is the version number for the *next* release.
+The ``.C`` part of the file name is missing for *minor* releases.
+
+Patch release notes should go on the RC branch (e.g. ``3.1RC``) and minor release notes
+should go on ``develop``. *Always* assume there will be another patch release
+and just create the next patch release file. If there isn't another patch release, the
+notes from the patch release can be incorporated into the minor release notes file.
+When finishing a minor release, create the files for the next minor release *and* the
+next patch release.
+
+Manual Smoke Check Testing Check List
+-------------------------------------
+
+The following is a list of manual tests to perform once a release has been packaged.
+
+GUI Checks
+~~~~~~~~~~
+
+1. Plot Pseudocolor and Mesh plots for nodal data from curv2D.silo.
+2. Plot Pseudocolor and Mesh plots for zonal data from multi_ucd3d.silo.
+3. Test Navigation mode (rotate, pan, zoom).
+4. Test rubberband zoom.
+5. Execute a Node and Zone Pick.
+6. Execute a Pick Query.
+7. Execute a Lineout.
+8. Check for Release Notes and Help.
+9. Check VisIt manual was populated in Help.
+10. Test "Make Movie" with dba00.pdb.
+
+CLI Checks
+~~~~~~~~~~
+1. Start VisIt with CLI and check that `import numpy` works.
+2. Test `import visitmodule`.
+
+Additional macOS Checks
+~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Check install names for ``@rpath``.
+2. Test Parallel Launch by plotting procid expr on multi_ucd3d.silo.
+3. Make sure to test both the DMG / App Bundle package and the ``tar.gz`` package.
+4. Under Options->Appearance, make sure the GUI style has the macintosh option.
+5. Verify OSpray is installed (look at the 'Advanced' tab under Options->Rendering...).
+6. Verify that the xmledit tool works from the bundle (/Application/VisIt.app/Contents/Resources/bin/xmledit).
+7. Verify that the DMG has been signed with a Developer ID and works properly.
+8. Try descending into ``Downloads``, ``Documents`` and ``Desktop`` from an instance launched by double-clicking the icon and from an instance launched from the Terminal command line.
 
 Preparing for a Major Release
 -----------------------------

@@ -5,6 +5,7 @@
 #include <PyInteractorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyInteractorAttributes
@@ -34,9 +35,8 @@ struct InteractorAttributesObject
 // Internal prototypes
 //
 static PyObject *NewInteractorAttributes(int);
-
 std::string
-PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *prefix)
+PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -116,12 +116,48 @@ InteractorAttributes_SetShowGuidelines(PyObject *self, PyObject *args)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showGuidelines in the object.
-    obj->data->SetShowGuidelines(ival != 0);
+    obj->data->SetShowGuidelines(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -140,12 +176,48 @@ InteractorAttributes_SetClampSquare(PyObject *self, PyObject *args)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the clampSquare in the object.
-    obj->data->SetClampSquare(ival != 0);
+    obj->data->SetClampSquare(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -164,12 +236,48 @@ InteractorAttributes_SetFillViewportOnZoom(PyObject *self, PyObject *args)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fillViewportOnZoom in the object.
-    obj->data->SetFillViewportOnZoom(ival != 0);
+    obj->data->SetFillViewportOnZoom(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -188,21 +296,55 @@ InteractorAttributes_SetNavigationMode(PyObject *self, PyObject *args)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid navigationMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Trackball";
+        ss << ", Dolly";
+        ss << ", Flythrough";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the navigationMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetNavigationMode(InteractorAttributes::NavigationMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid navigationMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Trackball, Dolly, Flythrough.");
-        return NULL;
-    }
+    obj->data->SetNavigationMode(InteractorAttributes::NavigationMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -221,12 +363,48 @@ InteractorAttributes_SetAxisArraySnap(PyObject *self, PyObject *args)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the axisArraySnap in the object.
-    obj->data->SetAxisArraySnap(ival != 0);
+    obj->data->SetAxisArraySnap(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -245,21 +423,55 @@ InteractorAttributes_SetBoundingBoxMode(PyObject *self, PyObject *args)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid boundingBoxMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Always";
+        ss << ", Never";
+        ss << ", Auto";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the boundingBoxMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetBoundingBoxMode(InteractorAttributes::BoundingBoxMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid boundingBoxMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Always, Never, Auto.");
-        return NULL;
-    }
+    obj->data->SetBoundingBoxMode(InteractorAttributes::BoundingBoxMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -306,14 +518,7 @@ InteractorAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-InteractorAttributes_compare(PyObject *v, PyObject *w)
-{
-    InteractorAttributes *a = ((InteractorAttributesObject *)v)->data;
-    InteractorAttributes *b = ((InteractorAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *InteractorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyInteractorAttributes_getattr(PyObject *self, char *name)
 {
@@ -344,38 +549,51 @@ PyInteractorAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(InteractorAttributes::Auto));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyInteractorAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyInteractorAttributes_methods[i].ml_name),
+                PyString_FromString(PyInteractorAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyInteractorAttributes_methods, self, name);
 }
 
 int
 PyInteractorAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "showGuidelines") == 0)
-        obj = InteractorAttributes_SetShowGuidelines(self, tuple);
+        obj = InteractorAttributes_SetShowGuidelines(self, args);
     else if(strcmp(name, "clampSquare") == 0)
-        obj = InteractorAttributes_SetClampSquare(self, tuple);
+        obj = InteractorAttributes_SetClampSquare(self, args);
     else if(strcmp(name, "fillViewportOnZoom") == 0)
-        obj = InteractorAttributes_SetFillViewportOnZoom(self, tuple);
+        obj = InteractorAttributes_SetFillViewportOnZoom(self, args);
     else if(strcmp(name, "navigationMode") == 0)
-        obj = InteractorAttributes_SetNavigationMode(self, tuple);
+        obj = InteractorAttributes_SetNavigationMode(self, args);
     else if(strcmp(name, "axisArraySnap") == 0)
-        obj = InteractorAttributes_SetAxisArraySnap(self, tuple);
+        obj = InteractorAttributes_SetAxisArraySnap(self, args);
     else if(strcmp(name, "boundingBoxMode") == 0)
-        obj = InteractorAttributes_SetBoundingBoxMode(self, tuple);
+        obj = InteractorAttributes_SetBoundingBoxMode(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -383,7 +601,7 @@ static int
 InteractorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
-    fprintf(fp, "%s", PyInteractorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyInteractorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -391,7 +609,7 @@ PyObject *
 InteractorAttributes_str(PyObject *v)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
-    return PyString_FromString(PyInteractorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyInteractorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -404,49 +622,70 @@ static char *InteractorAttributes_Purpose = "This class contains attributes asso
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject InteractorAttributesType =
+
+VISIT_PY_TYPE_OBJ(InteractorAttributesType,         \
+                  "InteractorAttributes",           \
+                  InteractorAttributesObject,       \
+                  InteractorAttributes_dealloc,     \
+                  InteractorAttributes_print,       \
+                  PyInteractorAttributes_getattr,   \
+                  PyInteractorAttributes_setattr,   \
+                  InteractorAttributes_str,         \
+                  InteractorAttributes_Purpose,     \
+                  InteractorAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+InteractorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "InteractorAttributes",                    // tp_name
-    sizeof(InteractorAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)InteractorAttributes_dealloc,  // tp_dealloc
-    (printfunc)InteractorAttributes_print,     // tp_print
-    (getattrfunc)PyInteractorAttributes_getattr, // tp_getattr
-    (setattrfunc)PyInteractorAttributes_setattr, // tp_setattr
-    (cmpfunc)InteractorAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)InteractorAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    InteractorAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &InteractorAttributesType
+         || Py_TYPE(other) != &InteractorAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    InteractorAttributes *a = ((InteractorAttributesObject *)self)->data;
+    InteractorAttributes *b = ((InteractorAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -522,7 +761,7 @@ PyInteractorAttributes_GetLogString()
 {
     std::string s("InteractorAtts = InteractorAttributes()\n");
     if(currentAtts != 0)
-        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.");
+        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.", true);
     return s;
 }
 
@@ -535,7 +774,7 @@ PyInteractorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("InteractorAtts = InteractorAttributes()\n");
-        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.");
+        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.", true);
         cb(s);
     }
 }

@@ -64,6 +64,9 @@ const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME / 10.0;
 //    Hank Childs, Sun Dec 26 12:13:19 PST 2010
 //    Initialize doingStreaming.
 //
+//    Alister Maguire, Thu May 20 08:45:10 PDT 2021
+//    Initialize hasAmrMesh.
+//
 // ****************************************************************************
 
 avtFileFormat::avtFileFormat()
@@ -77,6 +80,7 @@ avtFileFormat::avtFileFormat()
     closingFile = false;
     resultMustBeProducedOnlyOnThisProcessor = false;
     strictMode = false;
+    hasAmrMesh = false;
 }
 
 
@@ -111,12 +115,52 @@ avtFileFormat::~avtFileFormat()
 //  Programmer:  Hank Childs
 //  Creation:    March 12, 2002
 //
+//  Modifications:
+//
+//      Alister Maguire, Thu May 20 14:24:03 PDT 2021
+//      Check to see if the metadata has any AMR meshes in it.
+//
 // ****************************************************************************
 
 void
 avtFileFormat::RegisterDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    //
+    // Make note when we encounter AMR meshes as these are special cases.
+    //
+    int numMeshes = md->GetNumMeshes();
+    for (int i = 0; i < numMeshes; ++i)
+    {
+        const avtMeshMetaData *meshMD = md->GetMesh(i);
+        if (meshMD->meshType == AVT_AMR_MESH)
+        {
+            hasAmrMesh = true;
+        }
+    }
+
     metadata = md;
+}
+
+// ****************************************************************************
+//  Method: avtFileFormat::HasInvariantSIL
+//
+//  Purpose:
+//      Is our SIL invariant across timesteps/databases?
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 20, 2021
+//
+// ****************************************************************************
+
+bool
+avtFileFormat::HasInvariantSIL(void) const
+{
+    //
+    // Because AMR meshes tend to vary between states, we just assume
+    // that they will by default. Note that this will return true if
+    // ANY of the plugin meshes are AMR.
+    //
+    return !hasAmrMesh;
 }
 
 
@@ -542,7 +586,7 @@ avtFileFormat::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
     for (int i = 0 ; i < ncomps ; i++)
     {
         char name[16];
-        snprintf(name, 16, "comp%02d", i);
+        snprintf(name, sizeof(name), "comp%02d", i);
         st->compNames[i] = name;
     }
     st->meshName = mesh;
@@ -583,7 +627,7 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
     {
         for (int i = 0; i < nmats; i++)
         {
-            char num[8];
+            char num[12];
             snprintf(num, sizeof(num), "%d", i);
             matnames.push_back(num);
         }
@@ -627,7 +671,7 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
     {
         for (int i = 0; i < nmats; i++)
         {
-            char num[8];
+            char num[12];
             snprintf(num, sizeof(num), "%d", i);
             matnames.push_back(num);
         }
@@ -693,6 +737,10 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //
 //    Mark C. Miller, Wed Aug  8 13:34:53 PDT 2007
 //    Adjusted regular expression to take last group of digits.
+//
+//    Mark C. Miller, Wed Dec 13 15:23:05 PST 2023
+//    Adjusted regular expression to take last group of digits BEFORE
+//    any extension if present.
 // ****************************************************************************
 
 int
@@ -702,7 +750,7 @@ avtFileFormat::GuessCycle(const char *fname, const char *re)
     if (reToUse == "")
         reToUse = re ? re : "";
     if (reToUse == "")
-        reToUse = "<([0-9]+)[^0-9]*$> \\0";
+        reToUse = "<([0-9]+)([^0-9]*)\\..*$> \\1";
 
     double d = GuessCycleOrTime(fname, reToUse.c_str());
 

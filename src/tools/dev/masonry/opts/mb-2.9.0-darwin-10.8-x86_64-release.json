@@ -21,7 +21,6 @@
                  "boxlib",
                  "ccmio",
                  "cfitsio",
-                 "fastbit",
                  "gdal",
                  "hdf4",
                  "h5part",

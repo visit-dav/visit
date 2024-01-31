@@ -83,6 +83,8 @@ private slots:
     void boundingBoxColorChanged(const QColor &);
     void boundingBoxOpacityChanged(int);
     void drawTitleToggled(bool);
+    void customTitleToggled(bool);
+    void customTitleChanged();
 
     void tickControlToggled(bool);
     void numTicksChanged(int);
@@ -115,6 +117,8 @@ private:
 
     QCheckBox              *drawMinmaxCheckBox;
     QCheckBox              *drawTitleCheckBox;
+    QCheckBox              *customTitleCheckBox;
+    QNarrowLineEdit        *customTitle;
 
     QCheckBox              *drawBoundingBoxCheckBox;
     QvisColorButton        *boundingBoxColorButton;

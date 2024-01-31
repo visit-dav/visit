@@ -5,6 +5,7 @@
 #ifndef PY_PERSISTENTPARTICLESATTRIBUTES_H
 #define PY_PERSISTENTPARTICLESATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PersistentParticlesAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyPersistentParticlesAttributes_Wrap(const PersistentParticlesAtt
 void           PyPersistentParticlesAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyPersistentParticlesAttributes_SetDefaults(const PersistentParticlesAttributes *atts);
 std::string    PyPersistentParticlesAttributes_GetLogString();
-std::string    PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *, const char *);
+std::string    PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *, const char *, const bool=false);
 PyObject *     PyPersistentParticlesAttributes_getattr(PyObject *self, char *name);
 int            PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyPersistentParticlesAttributes_methods[PERSISTENTPARTICLESATTRIBUTES_NMETH];

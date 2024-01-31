@@ -5,6 +5,7 @@
 #ifndef PY_QUERYOVERTIMEATTRIBUTES_H
 #define PY_QUERYOVERTIMEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <QueryOverTimeAttributes.h>
 #include <visitpy_exports.h>
 
@@ -22,7 +23,7 @@ VISITPY_API PyObject *     PyQueryOverTimeAttributes_Wrap(const QueryOverTimeAtt
 void VISITPY_API           PyQueryOverTimeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyQueryOverTimeAttributes_SetDefaults(const QueryOverTimeAttributes *atts);
 std::string VISITPY_API    PyQueryOverTimeAttributes_GetLogString();
-std::string VISITPY_API    PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *, const char *);
+std::string VISITPY_API    PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyQueryOverTimeAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH];

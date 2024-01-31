@@ -58,12 +58,12 @@ protected:
 
 private:
   caseType CaseType;
-  unsigned long MTimeOld;
+  vtkMTimeType MTimeOld;
   int NumProcesses;
   int ProcessId;
 
-  visit_vtkPOpenFOAMReader(const visit_vtkPOpenFOAMReader &); // Not implemented.
-  void operator=(const visit_vtkPOpenFOAMReader &); // Not implemented.
+  visit_vtkPOpenFOAMReader(const visit_vtkPOpenFOAMReader &) = delete;
+  void operator=(const visit_vtkPOpenFOAMReader &) = delete;
 
   void GatherMetaData();
   void BroadcastStatus(int &);

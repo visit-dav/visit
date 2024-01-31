@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                               avtMeshPlot.h                               //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtMeshPlot.h
+// ****************************************************************************
 
 #ifndef AVT_MESH_PLOT_H
 #define AVT_MESH_PLOT_H
@@ -17,10 +17,10 @@
 
 
 class     avtMeshFilter;
-class     avtSmoothPolyDataFilter;
 class     avtMeshPlotMapper;
+class     avtSmoothPolyDataFilter;
 class     avtVariableLegend;
-class     avtVariablePointGlyphMapper;
+class     avtVertexExtractor;
 
 
 // ****************************************************************************
@@ -122,6 +122,9 @@ class     avtVariablePointGlyphMapper;
 //    Kathleen Biagas, Thu Oct 31 12:29:18 PDT 2019
 //    Added PlotHasBeenGlyphed.
 //
+//    Kathleen Biagas, Wed Jun 10 12:55:42 PDT 2020
+//    Add avtVertexExtractor, remove glyphMapper.
+//
 // ****************************************************************************
 
 class
@@ -161,12 +164,12 @@ avtMeshPlot : public avtPlot
 
   protected:
     avtMeshPlotMapper               *mapper;
-    avtVariablePointGlyphMapper     *glyphMapper;
     avtVariableLegend               *varLegend;
     avtGhostZoneAndFacelistFilter   *ghostAndFaceFilter;
     avtMeshFilter                   *filter;
     avtLegend_p                      varLegendRefPtr;
     avtSmoothPolyDataFilter         *smooth;
+    avtVertexExtractor              *vertexExtractor;
     double                           bgColor[3];
     double                           fgColor[3];
     bool                             wireframeRenderingIsInappropriate;

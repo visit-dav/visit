@@ -1,0 +1,27 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const PointGlyphAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+// ****************************************************************************
+bool
+PointGlyphAttributes::ChangesRequireRecalculation(const PointGlyphAttributes &obj) const
+{
+   bool needSecondaryVar = (obj.pointType != Point &&
+                            obj.pointType != Sphere &&
+                            obj.pointSizeVarEnabled &&
+                            obj.pointSizeVar != pointSizeVar &&
+                            obj.pointSizeVar != "default" &&
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0");
+
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType && currentPointTypeIsPoint != newPointTypeIsPoint;
+
+    return needSecondaryVar || changingPointType;
+}
+

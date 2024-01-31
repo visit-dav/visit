@@ -68,8 +68,13 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, June 19, 2023
+#    Add call to RequiredDatabasePlugin.
+#
 # ----------------------------------------------------------------------------
 
+RequiredDatabasePlugin(("Silo", "EnSight"))
 
 OpenDatabase(silo_data_path("rect3d.silo"))
 

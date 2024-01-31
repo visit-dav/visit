@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Mili" type="database" label="Mili" version="2.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="Mili" type="database" label="Mili" version="2.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${MILI_INCLUDE_DIR}
       ${VISIT_INCLUDE_DIR}/third_party_builtin
@@ -17,10 +17,12 @@
     <Files components="M">
       avtMiliFileFormat.C
       avtMiliMetaData.C
+      avtMiliOptions.C
     </Files>
     <Files components="E">
       avtMiliFileFormat.C
       avtMiliMetaData.C
+      avtMiliOptions.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

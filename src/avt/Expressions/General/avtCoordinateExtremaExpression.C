@@ -36,12 +36,16 @@
 //    Hank Childs, Thu Jul  8 06:48:38 PDT 2010
 //    Add support for polar coordinates.
 //
+//    Alister Maguire, Fri Oct  9 11:04:05 PDT 2020
+//    Setting canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtCoordinateExtremaExpression::avtCoordinateExtremaExpression()
 {
     getMinimum = true;
     coordinateType = CT_X;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

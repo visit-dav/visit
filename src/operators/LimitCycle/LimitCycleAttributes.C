@@ -133,7 +133,7 @@ LimitCycleAttributes::IntegrationDirection_FromString(const std::string &s, Limi
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
+"LoadOnDemand", "ParallelStaticDomains", "ManagerWorker",
 "VisItSelects"};
 
 std::string
@@ -172,21 +172,21 @@ LimitCycleAttributes::ParallelizationAlgorithmType_FromString(const std::string 
 
 static const char *FieldType_strings[] = {
 "Default", "FlashField", "M3DC12DField",
-"M3DC13DField", "Nek5000Field", "NektarPPField",
-"NIMRODField"};
+"M3DC13DField", "Nek5000Field", "NektarPPField"
+};
 
 std::string
 LimitCycleAttributes::FieldType_ToString(LimitCycleAttributes::FieldType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 7) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return FieldType_strings[index];
 }
 
 std::string
 LimitCycleAttributes::FieldType_ToString(int t)
 {
-    int index = (t < 0 || t >= 7) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return FieldType_strings[index];
 }
 
@@ -194,7 +194,7 @@ bool
 LimitCycleAttributes::FieldType_FromString(const std::string &s, LimitCycleAttributes::FieldType &val)
 {
     val = LimitCycleAttributes::Default;
-    for(int i = 0; i < 7; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == FieldType_strings[i])
         {
@@ -1534,7 +1534,7 @@ LimitCycleAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 7)
+            if(ival >= 0 && ival < 6)
                 SetFieldType(FieldType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -3293,50 +3293,51 @@ LimitCycleAttributes::ChangesRequireRecalculation(const LimitCycleAttributes &ob
 // Method: LimitCycleAttributes::ProcessOldVersions
 //
 // Purpose:
-//   Updates the config settings in the data node to the current IndexSelect
-//   opertor version.
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
 //
-// Arguments:
-//   parentNode    : The data node that stores the IndexSelect attributes.
-//   configVersion : The version of the config file from which the node
-//                   was read.
-//
-// Programmer: Allen Sanderson
-// Creation:   8 March 2016
-//
-// Modifications:
+// Programmer: Mark C. Miller
+// Creation:   October 27, 2023
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 LimitCycleAttributes::ProcessOldVersions(DataNode *parentNode,
-    const char *configVersion)
+                                     const char *configVersion)
 {
     if(parentNode == 0)
         return;
 
-    if (VersionLessThan(configVersion, "2.11.0"))
+    DataNode *searchNode = parentNode->GetNode("LimitCycleAttributes");
+    if(searchNode == 0)
+        return;
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
     {
-        DataNode *searchNode = parentNode->GetNode("LimitCycleAttributes");
-        if(searchNode == 0)
-            return;
+        DataNode *dn = nullptr;
 
-        DataNode *sourceNode = searchNode->GetNode("sourceType");
-        if(sourceNode == 0)
-            return;
-
-        std::string mode = sourceNode->AsString();
-
-        if (mode == "Line_")
+        // We need deal with only ManagerWorker case here because it replaces
+        // the old entry of MasterSlave
+        if ((dn = searchNode->GetNode("parallelizationAlgorithmType")) != nullptr)
         {
-          searchNode->RemoveNode(sourceNode, true);
-          searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(LimitCycleAttributes::SpecifiedLine)));
-        }
-        else if (mode == "Plane")
-        {
-          searchNode->RemoveNode(sourceNode, true);
-          searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(LimitCycleAttributes::SpecifiedPlane)));
+            std::string type = dn->AsString();
+            if (type == "MasterSlave")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("MasterSlave",
+                    "ManagerWorker", "3.5.0"));
+#endif
+                dn->SetString(ParallelizationAlgorithmType_ToString(LimitCycleAttributes::ManagerWorker));
+            }
         }
     }
+#endif
 }
 

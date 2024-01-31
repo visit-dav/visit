@@ -5,6 +5,7 @@
 #include <PyColorAttribute.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyColorAttribute
@@ -34,9 +35,8 @@ struct ColorAttributeObject
 // Internal prototypes
 //
 static PyObject *NewColorAttribute(int);
-
 std::string
-PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix)
+PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -74,40 +74,61 @@ ColorAttribute_SetColor(PyObject *self, PyObject *args)
 {
     ColorAttributeObject *obj = (ColorAttributeObject *)self;
 
-    unsigned char *cvals = obj->data->GetColor();
-    if(!PyArg_ParseTuple(args, "cccc", &cvals[0], &cvals[1], &cvals[2], &cvals[3]))
+    typedef unsigned char uchar;
+    PyObject *packaged_args = 0;
+    uchar *vals = obj->data->GetColor();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 4)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                int c;
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    c = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    c = int(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    c = int(PyLong_AsDouble(item));
-                else
-                    c = 0;
-
-                if(c < 0) c = 0;
-                if(c > 255) c = 255;
-                cvals[i] = (unsigned char)(c);
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 4)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 4)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 4 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        long val = PyLong_AsLong(item);
+        uchar cval = uchar(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the color in the object as modified.
     obj->data->SelectColor();
@@ -151,19 +172,24 @@ ColorAttribute_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ColorAttribute_compare(PyObject *v, PyObject *w)
-{
-    ColorAttribute *a = ((ColorAttributeObject *)v)->data;
-    ColorAttribute *b = ((ColorAttributeObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ColorAttribute_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorAttribute_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "color") == 0)
         return ColorAttribute_GetColor(self, NULL);
+
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyColorAttribute_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyColorAttribute_methods[i].ml_name),
+                PyString_FromString(PyColorAttribute_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyColorAttribute_methods, self, name);
 }
@@ -171,22 +197,23 @@ PyColorAttribute_getattr(PyObject *self, char *name)
 int
 PyColorAttribute_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "color") == 0)
-        obj = ColorAttribute_SetColor(self, tuple);
+        obj = ColorAttribute_SetColor(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -194,7 +221,7 @@ static int
 ColorAttribute_print(PyObject *v, FILE *fp, int flags)
 {
     ColorAttributeObject *obj = (ColorAttributeObject *)v;
-    fprintf(fp, "%s", PyColorAttribute_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorAttribute_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -202,7 +229,7 @@ PyObject *
 ColorAttribute_str(PyObject *v)
 {
     ColorAttributeObject *obj = (ColorAttributeObject *)v;
-    return PyString_FromString(PyColorAttribute_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorAttribute_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -215,49 +242,70 @@ static char *ColorAttribute_Purpose = "This class contains RGBA color informatio
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ColorAttributeType =
+
+VISIT_PY_TYPE_OBJ(ColorAttributeType,         \
+                  "ColorAttribute",           \
+                  ColorAttributeObject,       \
+                  ColorAttribute_dealloc,     \
+                  ColorAttribute_print,       \
+                  PyColorAttribute_getattr,   \
+                  PyColorAttribute_setattr,   \
+                  ColorAttribute_str,         \
+                  ColorAttribute_Purpose,     \
+                  ColorAttribute_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ColorAttribute_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ColorAttribute",                    // tp_name
-    sizeof(ColorAttributeObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ColorAttribute_dealloc,  // tp_dealloc
-    (printfunc)ColorAttribute_print,     // tp_print
-    (getattrfunc)PyColorAttribute_getattr, // tp_getattr
-    (setattrfunc)PyColorAttribute_setattr, // tp_setattr
-    (cmpfunc)ColorAttribute_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ColorAttribute_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ColorAttribute_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &ColorAttributeType
+         || Py_TYPE(other) != &ColorAttributeType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ColorAttribute *a = ((ColorAttributeObject *)self)->data;
+    ColorAttribute *b = ((ColorAttributeObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -333,7 +381,7 @@ PyColorAttribute_GetLogString()
 {
     std::string s("ColorAttribute = ColorAttribute()\n");
     if(currentAtts != 0)
-        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.");
+        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.", true);
     return s;
 }
 
@@ -346,7 +394,7 @@ PyColorAttribute_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorAttribute = ColorAttribute()\n");
-        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.");
+        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.", true);
         cb(s);
     }
 }

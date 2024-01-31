@@ -325,6 +325,98 @@ UnifyMinMax(double *buff, int size, int altsize)
 }
 
 // ****************************************************************************
+//  Function: UnifyLogicalAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyLogicalAndValue(int myval)
+{
+    return globalContext.UnifyLogicalAndValue(myval);
+}
+
+// ****************************************************************************
+//  Function: UnifyLogicalOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyLogicalOrValue(int myval)
+{
+    return globalContext.UnifyLogicalOrValue(myval);
+}
+
+// ****************************************************************************
+//  Function: UnifyBitwiseAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyBitwiseAndValue(int myval)
+{
+    return globalContext.UnifyBitwiseAndValue(myval);
+}
+
+// ****************************************************************************
+//  Function: UnifyBitwiseOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyBitwiseOrValue(int myval)
+{
+    return globalContext.UnifyBitwiseOrValue(myval);
+}
+
+// ****************************************************************************
 //  Function: UnifyMinimumValue
 //
 //  Purpose:
@@ -586,11 +678,14 @@ SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, int nArray)
 //    Brad Whitlock, Mon Apr 20 12:06:25 PDT 2009
 //    Check MPI_VERSION and MPI_SUBVERSION before using MPI_Type_get_extent.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
-SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
-                                    VISIT_LONG_LONG *outArray, int nArray)
+SumLongLongArrayAcrossAllProcessors(long long *inArray,
+                                    long long *outArray, int nArray)
 {
     globalContext.SumLongLongArrayAcrossAllProcessors(inArray, outArray, nArray);
 }
@@ -1022,8 +1117,12 @@ void BroadcastInt(int &value)
 //  Programmer:  Hank Childs
 //  Creation:    December 10, 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
-void BroadcastLongLong(VISIT_LONG_LONG &value)
+void BroadcastLongLong(long long &value)
 {
     globalContext.BroadcastLongLong(value);
 }
@@ -1397,6 +1496,50 @@ CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&receiveCounts,
     double *sendBuf, int sendCount)
 {
     globalContext.CollectDoubleArraysOnRootProc(receiveBuf, receiveCounts, sendBuf, sendCount);
+}
+
+// ****************************************************************************
+//  Function: CollectFloatVectorsOnRootProc
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:28:13 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+CollectFloatVectorsOnRootProc(std::vector<float> &recvBuf,
+                           std::vector<int> &recvCounts,
+                           const std::vector<float> &sendBuf,
+                           int root)
+{
+    globalContext.CollectFloatVectorsOnRootProc(recvBuf, recvCounts,
+                                                sendBuf, root);
+}
+
+// ****************************************************************************
+//  Function: CollectDoubleVectorsOnRootProc
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:28:13 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
+                           std::vector<int> &recvCounts,
+                           const std::vector<double> &sendBuf,
+                           int root)
+{
+    globalContext.CollectDoubleVectorsOnRootProc(recvBuf, recvCounts,
+                                                 sendBuf, root);
 }
 
 // ****************************************************************************

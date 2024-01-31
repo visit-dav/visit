@@ -119,6 +119,7 @@ std::vector<std::string>
 VsGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
+    defaultPatterns.push_back("*.tvsh5");
     defaultPatterns.push_back("*vsh5");
     defaultPatterns.push_back("*.h5");
 

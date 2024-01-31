@@ -38,11 +38,11 @@ class Include
     {
         include = i;
     }
-    void Print(QTextStream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
             out << "        Include: (" << target << ") "
-                << include << endl;
+                << include << Endl;
     }
 };
 

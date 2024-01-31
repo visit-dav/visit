@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="GlobalLineoutAttributes" purpose="This file contains global attributes controlling Lineouts." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="GlobalLineoutAttributes" purpose="This file contains global attributes controlling Lineouts." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GlobalLineoutAttributes.code">
     <Enum name="CurveOptions">
       UpdateCurve
       CreateCurve
@@ -35,4 +35,8 @@
     <Field name="freezeInTime" label="freezeInTime" type="bool">
       false
     </Field>
+    <Function name="PyGlobalLineoutAttributes_GetLogString" user="false" member="true">
+    </Function>
+    <Function name="PyGlobalLineoutAttributes_CallLogRoutine" user="false" member="true">
+    </Function>
   </Attribute>

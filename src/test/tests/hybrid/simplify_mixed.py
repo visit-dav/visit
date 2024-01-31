@@ -17,6 +17,9 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#    Changed Pseudocolor CurrentPlot to ActualData.
 # ----------------------------------------------------------------------------
 
 
@@ -66,7 +69,7 @@ m.forceMIR = 1
 SetMaterialAttributes(m)
 AddPlot("Pseudocolor", "den")
 p = PseudocolorAttributes()
-p.limitsMode = p.CurrentPlot
+p.limitsMode = p.ActualData
 SetPlotOptions(p)
 DrawPlots()
 Test("simplify_mixed04")

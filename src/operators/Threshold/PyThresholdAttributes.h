@@ -5,6 +5,7 @@
 #ifndef PY_THRESHOLDATTRIBUTES_H
 #define PY_THRESHOLDATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ThresholdAttributes.h>
 #include <PyThresholdOpAttributes.h>
 
@@ -22,7 +23,7 @@ PyObject *     PyThresholdAttributes_Wrap(const ThresholdAttributes *attr);
 void           PyThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyThresholdAttributes_SetDefaults(const ThresholdAttributes *atts);
 std::string    PyThresholdAttributes_GetLogString();
-std::string    PyThresholdAttributes_ToString(const ThresholdAttributes *, const char *);
+std::string    PyThresholdAttributes_ToString(const ThresholdAttributes *, const char *, const bool=false);
 PyObject *     PyThresholdAttributes_getattr(PyObject *self, char *name);
 int            PyThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyThresholdAttributes_methods[THRESHOLDATTRIBUTES_NMETH];

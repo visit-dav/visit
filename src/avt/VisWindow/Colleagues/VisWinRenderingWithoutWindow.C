@@ -17,7 +17,8 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGL.h>
+#include <vtk_glew.h>
+#include <vtkRenderer.h>
 
 #define DS_NOT_CHECKED    0
 #define DS_NOT_AVAILABLE  1
@@ -30,7 +31,7 @@
 //  Creation:   February 1, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Feb 11 11:28:03 PST 2003 
+//    Kathleen Bonnell, Tue Feb 11 11:28:03 PST 2003
 //    Removed iren.
 //
 //    Tom Fogal, Tue Nov 24 11:25:39 MST 2009
@@ -40,7 +41,7 @@
 //    'vtkWin32OpenGLRenderWindow' needs OffscreenRendering set, too.
 //
 //    Cyrus Harrison, Sat Nov  3 19:37:42 PDT 2012
-//    For osx w/o mesa, 'vtkCocoaRenderWindow' needs OffscreenRendering set, 
+//    For osx w/o mesa, 'vtkCocoaRenderWindow' needs OffscreenRendering set,
 //    as well.
 //
 // ****************************************************************************
@@ -71,11 +72,11 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
 //  Creation:   February 1, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Feb 11 11:28:03 PST 2003 
+//    Kathleen Bonnell, Tue Feb 11 11:28:03 PST 2003
 //    Removed iren.
 //
 // ****************************************************************************
- 
+
 VisWinRenderingWithoutWindow::~VisWinRenderingWithoutWindow()
 {
     if (renWin != NULL)
@@ -99,7 +100,7 @@ VisWinRenderingWithoutWindow::~VisWinRenderingWithoutWindow()
 //  Creation:   February 1, 2002
 //
 // ****************************************************************************
- 
+
 vtkRenderWindow *
 VisWinRenderingWithoutWindow::GetRenderWindow(void)
 {
@@ -109,14 +110,14 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 // ****************************************************************************
 // Method: VisWinRenderingWithoutWindow::RenderRenderWindow
 //
-// Purpose: 
+// Purpose:
 //   Render the render window when it is safe to do so.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 13 16:06:22 PDT 2013
@@ -126,17 +127,53 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //   I removed support for mangled mesa.
 //
 //   Brad Whitlock, Fri Oct 17 20:02:39 PDT 2014
-//   Check to see if we have X11 before looking for the DISPLAY variable. If 
+//   Check to see if we have X11 before looking for the DISPLAY variable. If
 //   have built VisIt or VTK without X11 support then we won't get an X11-based
 //   render window. In that case, we'd like to try and render what VTK provides
 //   since it is likely a vtkOSOpenGLRenderWindow, on offscreen window. I also
 //   improved the warning message.
+//
+//   Alister Maguire, Tue May 19 12:01:24 PDT 2020
+//   Added OSPRay check. When toggling out of OSPRay mode, we need to make
+//   sure that shadows are disabled. If we don't, VTK likes to crash.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
 // ****************************************************************************
 
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
+#ifdef VISIT_OSPRAY
+    if (GetOsprayRendering() && modeIsPerspective)
+    {
+        if (canvas->GetPass() == NULL)
+        {
+            canvas->SetPass(osprayPass);
+        }
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
+    }
+#elif defined(HAVE_OSPRAY)
+    if (osprayRendering && viewIs3D)
+    {
+        if (canvas->GetPass() == NULL)
+        {
+            canvas->SetUseShadows(osprayShadows);
+            canvas->SetPass(osprayPass);
+        }
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
+    }
+#endif
+
 #if defined(__unix__) && !defined(__APPLE__) && defined(HAVE_LIBX11) && !defined(HAVE_OSMESA)
     if(displayStatus == DS_NOT_CHECKED)
     {

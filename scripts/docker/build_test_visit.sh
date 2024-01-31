@@ -28,7 +28,7 @@ tar zxf visit$version.tar.gz
 cd visit$version
 mkdir build
 cd build
-/home/visit/third-party/cmake/3.9.3/*/bin/cmake \
+/home/visit/third-party/cmake/3.18.2/*/bin/cmake \
   -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
   -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON \
   -DVISIT_CONFIG_SITE="/home/visit/visit-config.cmake" ../src

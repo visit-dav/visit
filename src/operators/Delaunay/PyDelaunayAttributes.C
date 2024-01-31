@@ -5,6 +5,7 @@
 #include <PyDelaunayAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyDelaunayAttributes
@@ -34,9 +35,8 @@ struct DelaunayAttributesObject
 // Internal prototypes
 //
 static PyObject *NewDelaunayAttributes(int);
-
 std::string
-PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix)
+PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -77,21 +77,55 @@ DelaunayAttributes_SetDimension(PyObject *self, PyObject *args)
 {
     DelaunayAttributesObject *obj = (DelaunayAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid dimension value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Automatic";
+        ss << ", Triangulation";
+        ss << ", Tetrahedralization";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dimension in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDimension(DelaunayAttributes::Dimension(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dimension value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Automatic, Triangulation, Tetrahedralization.");
-        return NULL;
-    }
+    obj->data->SetDimension(DelaunayAttributes::Dimension(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -128,14 +162,7 @@ DelaunayAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-DelaunayAttributes_compare(PyObject *v, PyObject *w)
-{
-    DelaunayAttributes *a = ((DelaunayAttributesObject *)v)->data;
-    DelaunayAttributes *b = ((DelaunayAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *DelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDelaunayAttributes_getattr(PyObject *self, char *name)
 {
@@ -149,28 +176,41 @@ PyDelaunayAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(DelaunayAttributes::Tetrahedralization));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyDelaunayAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyDelaunayAttributes_methods[i].ml_name),
+                PyString_FromString(PyDelaunayAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyDelaunayAttributes_methods, self, name);
 }
 
 int
 PyDelaunayAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "dimension") == 0)
-        obj = DelaunayAttributes_SetDimension(self, tuple);
+        obj = DelaunayAttributes_SetDimension(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -178,7 +218,7 @@ static int
 DelaunayAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
-    fprintf(fp, "%s", PyDelaunayAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDelaunayAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -186,7 +226,7 @@ PyObject *
 DelaunayAttributes_str(PyObject *v)
 {
     DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
-    return PyString_FromString(PyDelaunayAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDelaunayAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -199,49 +239,70 @@ static char *DelaunayAttributes_Purpose = "Attributes for the Delaunay Operator"
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject DelaunayAttributesType =
+
+VISIT_PY_TYPE_OBJ(DelaunayAttributesType,         \
+                  "DelaunayAttributes",           \
+                  DelaunayAttributesObject,       \
+                  DelaunayAttributes_dealloc,     \
+                  DelaunayAttributes_print,       \
+                  PyDelaunayAttributes_getattr,   \
+                  PyDelaunayAttributes_setattr,   \
+                  DelaunayAttributes_str,         \
+                  DelaunayAttributes_Purpose,     \
+                  DelaunayAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+DelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "DelaunayAttributes",                    // tp_name
-    sizeof(DelaunayAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)DelaunayAttributes_dealloc,  // tp_dealloc
-    (printfunc)DelaunayAttributes_print,     // tp_print
-    (getattrfunc)PyDelaunayAttributes_getattr, // tp_getattr
-    (setattrfunc)PyDelaunayAttributes_setattr, // tp_setattr
-    (cmpfunc)DelaunayAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)DelaunayAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    DelaunayAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &DelaunayAttributesType
+         || Py_TYPE(other) != &DelaunayAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    DelaunayAttributes *a = ((DelaunayAttributesObject *)self)->data;
+    DelaunayAttributes *b = ((DelaunayAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -317,7 +378,7 @@ PyDelaunayAttributes_GetLogString()
 {
     std::string s("DelaunayAtts = DelaunayAttributes()\n");
     if(currentAtts != 0)
-        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.");
+        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.", true);
     return s;
 }
 
@@ -330,7 +391,7 @@ PyDelaunayAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DelaunayAtts = DelaunayAttributes()\n");
-        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.");
+        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.", true);
         cb(s);
     }
 }

@@ -5,6 +5,7 @@
 #ifndef PY_EXTRUDEATTRIBUTES_H
 #define PY_EXTRUDEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExtrudeAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyExtrudeAttributes_Wrap(const ExtrudeAttributes *attr);
 void           PyExtrudeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyExtrudeAttributes_SetDefaults(const ExtrudeAttributes *atts);
 std::string    PyExtrudeAttributes_GetLogString();
-std::string    PyExtrudeAttributes_ToString(const ExtrudeAttributes *, const char *);
+std::string    PyExtrudeAttributes_ToString(const ExtrudeAttributes *, const char *, const bool=false);
 PyObject *     PyExtrudeAttributes_getattr(PyObject *self, char *name);
 int            PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyExtrudeAttributes_methods[EXTRUDEATTRIBUTES_NMETH];

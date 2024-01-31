@@ -9,6 +9,7 @@
 </head>
 <body>
 <center><b><font size="6">VisIt 3.2 Release Notes</font></b></center>
+<center><b><font size="4">March, 2021</font></b></center>
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
@@ -21,9 +22,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
-  <li><a href="#Expression_changes">Changes to expressions</a></li>
-  <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
@@ -31,82 +31,118 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.2</font></b></p>
 <ul>
-  <li>General Feature 1</li>
-  <li>General Feature 2</li>
+  <li>Updated VisIt to use Python 3.</li>
+  <li>Added the command line option <b>-py2to3</b> to the CLI, which enables limited on-the-fly Python 2 to Python 3 conversion for scripts passed via <b>-s</b> or <b>visit.Source()</b>. See VisIt's CLI manual for more details.</li>
+  <li>Upgraded VTKm to a recent version. Support was added for zone centered variables and 3D unstructured meshes with tetrahedra, pyramid and prism cells, in addition to the existing support for hexahedra.</li>
+  <li>PySide has been re-enabled using a version matching Qt-5.14.2.</li>
+  <li>The Windows package has been digitally signed, and should prevent or reduce Windows Defender and antivirus blocking/warnings.</li>
 </ul>
 
 <a name="Advanced_features"></a>
 <p><b><font size="4">Advanced features added in version 3.2</font></b></p>
 <ul>
-  <li>Advanced Feature 1</li>
-  <li>Advanced Feature 2</li>
+  <li>The -disable-ghosts-for-t-intersections flag has been reverted back to -enable-ghosts-for-t-intersections, and the creation of ghosts for t-intersections will now be off by default. This will improve performance for the default situation where ghost t-intersections are not needed or desired.</li>
 </ul>
 
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.2</font></b></p>
 <ul>
-  <li>GUI Change 1</li>
-  <li>GUI Change 2</li>
+  <li>Fixed a bug in the GUI windows where changes sometimes would not take effect when the Apply button was clicked.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.2</font></b></p>
 <ul>
   <li>A reader was added to support AVS ucd file format.</li>
-  <li>File Format 2</li>
+  <li>A reader was added to support the FMS file format.</li>
+  <li>Enhanced the MFEM reader so that it provides the original cell numbers that allow VisIt to successfully eliminate mesh lines that were not part of the original high order mesh.</li>
+  <li>Enabled the Rect reader as an optional reader on Windows.</li>
+  <li>Enabled the ZipWrapper reader on Windows.</li>
+  <li>Upgraded the CGNS library used by the CGNS reader from 3.2.1 to 4.1.2. The new CGNS library includes a fix for the handling of RIND zones in structured grids, so the results may change when viewing that type of data.</li>
+  <li>Enhanced the Conduit Blueprint reader to support material volume fractions and mixed-variable fields using <a href="https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets"> Blueprint Matsets </a>.</li>
+  <li>Enhanced the Conduit Blueprint reader to support datasets written to YAML root and data files.</li>
+  <li>Enhanced the boxlib reader to always return double precision data.</li>
+  <li>Enhanced the PlainText reader to return double precision data.</li>
+  <li>Enhanced the UNV reader to read gmsh legacy files (thanks Olivier Cessenat).</li>
+  <li>Fixed a bug with the Tecplot reader for handling cell-centered data (Thank you <a href="https://github.com/whophil">Phil Chiu!</a>).</li>
+  <li>Fixed a bug with the Boxlib reader reading double precision data.</li>
+  <li>Fixed a bug with the Silo reader that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
+  <li>Fixed a bug in the Stimulate Image reader (file extensions spr, sdt), where a negative pixel delta in the metadata resulted in incorrect pick results, incorrect sampled lineouts and potentially other erroneous behavior.</li>
+  <li>Enhanced the Xolotl reader to support the ability to visualize super clusters.</li>
+  <li>Enhanced the CGNS reader to support reading arbitrary polygons and polyhedra.</li>
+  <li>Fixed a bug with the BoxLib reader causing VisIt to crash when opening files on OSX.</li>
+  <li>Enhanced the Mili reader to support setting the global integration point for element sets. This can be accomplished by changing the default open options for Mili within the Plugin Manager. Available options are "Inner", "Middle", and "Outer".</li>
+  <li>Enhanced the Mili reader to derive variables from stress and strain. If strain does not exist in the dataset, the plugin will derive four different versions of strain from the mesh.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.2</font></b></p>
 <ul>
-  <li>Plot Change 1</li>
-  <li>Plot Change 2</li>
+  <li>Fixed a bug in the Histogram Plot where <i>Use Current Plot</i> will now use the actual data extents.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.2</font></b></p>
 <ul>
-  <li>Operator Change 1</li>
-  <li>Operator Change 2</li>
-</ul>
-
-<a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expression language in version 3.2</font></b></p>
-<ul>
-  <li>Expression Change 1</li>
-  <li>Expression Change 2</li>
-</ul>
-
-<a name="Query_changes"></a>
-<p><b><font size="4">Changes to VisIt's picks and queries in version 3.2</font></b></p>
-<ul>
-  <li>Query Change 1</li>
-  <li>Query Change 2</li>
+  <li>The Stagger operator is no longer enabled by default.</li>
+  <li>Enhanced the Clip operator to support "Crinkle" clipping, which retains whole cells that intersect with the clip boundary.</li>
+  <li>Threshold operations can now use the VTKm backend for structured meshes.</li>
+  <li>Updated the documentation for the Smooth Operator.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.2</font></b></p>
 <ul>
-  <li>Bug Fix 1</li>
-  <li>Bug Fix 2</li>
+  <li>The checkbox in the Expression window that turns on the display of expressions from the database now indicates that it displays expressions from the database and auto generated ones.</li>
+  <li>Fixed an issue preventing build_visit from being able to build IceT.</li>
+  <li>When using the resample operator in VisIt's python interface, <code>useExtents</code> will now take precedence over setting the resample dimensions explicitly, which matches the behavior in the GUI.</li>
+  <li>Fixed a bug with DataBinning (and DDFs) where it did not exclude Ghost Zones when binning.</li>
+  <li>Fixed a bug preventing the Min/Max expressions from working with domain decomposed datasets.</li>
+  <li>Fixed a bug that caused some LibSim examples to crash.</li>
+  <li>Fixed a bug where the VisIt compute engine would crash generating ghost zone information when it had incorrect structured domain boundary information. In particular, the compute engine would crash when a pair of neighbors didn't list each other as neighbors. VisIt now generates a "Bad Neighbor Index" exception when it encounters the situation.</li>
+  <li>Fixed a bug with Cinema-C and re-enabled it.</li>
+
+</ul>
+
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 3.2</font></b></p>
+<ul>
+  <li>Added host profiles for the Lawrence Livermore National Laboratory's Ruby system. Removed the host profiles for the Lawrence Livermore National Laboratory's Zin system.</li>
+  <li>Added a host profile for the pdebug queue for the Lawrence Livermore National Laboratory's Magma system.</li>
+  <li>Updated the job launching on Trinity so that the VisIt CLI could be launched from a batch job without having to load the module of the compiler used to build VisIt.</li>
+  <li>Updated the Oak Ridge National Laboratory's host profiles to only include current machines.</li>
 </ul>
 
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.2</font></b></p>
 <ul>
-  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug".
-The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li> 
-  <li>Build Feature 2</li>
+  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug". The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li>
+  <li>Removed FastBit and FastQuery from VisIt.</li>
+  <li>Fixed a bug with build_visit building IceT with MPICH.</li>
+  <li>Fixed a bug with build_visit building IceT on a system without OpenGL installed.</li>
+  <li>Added patches for Silo, CGNS and HDF5 for build_visit on macOS &ge;10.14.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.2</font></b></p>
 <ul>
-  <li>Developer Change 1</li>
-  <li>Developer Change 2</li>
+  <li>Added support for link checking in Sphinx documentation.</li>
+  <li>Added the ability to pass diff tolerances in Test()/TestText() testing methods in the test suite.</li>
+  <li>Updated the developer documentation on fuzzy matching and thresholds for testing.</li>
+  <li>Added support for <code>pdb</code> as a mode string for testing.</li>
+  <li>Removed the emptydomain cases from skip list for the test suite.</li>
+  <li>Added new assertion tests to ensure tests are running in the mode specified by the -m/--mode= command-line argument.</li>
+  <li>Updated the version of Qt to 5.14.2.</li>
+  <li>Replaced AssertXXXX() style test checks with TestValueXX, which supports more features, in the test suite.</li>
+  <li>Enhanced build_visit so that the version on the develop branch will now look for tar files in the github master branch of visit-dav/thirdparty if all other avenues fail.</li>
+  <li>Updated the version of LLVM version to 6.0.1 and added libclang to the build.</li>
+  <li>Updated the version of Mesa/OSMesa to 17.3.9.</li>
+  <li>Updated masonry to use Python 3.</li>
+  <li>Fixed textual differencing in regression testing for Windows OS.</li>
+  <li>Created a NotarizeAction in the masonry scripts so that notarization can be executed in the correct order with the rest of the actions.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.1.1.html>3.1.1</a>.</p>
+of VisIt: <a href=relnotes3.1.4.html>3.1.4</a>.</p>
 </body>
 </html>

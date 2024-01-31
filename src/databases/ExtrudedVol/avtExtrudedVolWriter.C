@@ -34,7 +34,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtExtrudedVolWriter::avtExtrudedVolWriter(DBOptionsAttributes *atts)
+avtExtrudedVolWriter::avtExtrudedVolWriter(const DBOptionsAttributes *atts)
 {
     timestep   = atts->GetInt("Time");
     nTimesteps = atts->GetInt("nTimes");

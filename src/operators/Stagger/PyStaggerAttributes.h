@@ -5,6 +5,7 @@
 #ifndef PY_STAGGERATTRIBUTES_H
 #define PY_STAGGERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <StaggerAttributes.h>
 
 //
@@ -21,7 +22,7 @@ PyObject *     PyStaggerAttributes_Wrap(const StaggerAttributes *attr);
 void           PyStaggerAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyStaggerAttributes_SetDefaults(const StaggerAttributes *atts);
 std::string    PyStaggerAttributes_GetLogString();
-std::string    PyStaggerAttributes_ToString(const StaggerAttributes *, const char *);
+std::string    PyStaggerAttributes_ToString(const StaggerAttributes *, const char *, const bool=false);
 PyObject *     PyStaggerAttributes_getattr(PyObject *self, char *name);
 int            PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyStaggerAttributes_methods[STAGGERATTRIBUTES_NMETH];

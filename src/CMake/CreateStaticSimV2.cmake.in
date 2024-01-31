@@ -11,7 +11,6 @@
 
 set(VISIT_PARALLEL @VISIT_PARALLEL@)
 set(OSMESA_FOUND @OSMESA_FOUND@)
-set(EGL_FOUND @EGL_FOUND@)
 set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
 set(VISIT_FORTRAN @VISIT_FORTRAN@)
 set(VISIT_ENABLE_XDB @VISIT_ENABLE_XDB@)
@@ -47,7 +46,7 @@ if(VISIT_PARALLEL)
                                ${VISIT_LIBS} ${TP_LIBS})
 endif()
 
-if(OSMESA_FOUND OR EGL_FOUND)
+if(OSMESA_FOUND)
     list(APPEND visit_libs_ser visit_vtk_offscreen)
     list(APPEND visit_libs_par visit_vtk_offscreen)
 endif()

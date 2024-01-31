@@ -1,2 +1,2 @@
 #!/bin/bash
-/usr/gapps/conduit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/python-2.7.11-eujx7frnxd5vpwolmye2fzq4tcylnbnv/bin/python /usr/gapps/conduit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/python-2.7.11-eujx7frnxd5vpwolmye2fzq4tcylnbnv/bin/sphinx-build -b html . _build -a
+/usr/gapps/conduit/software/ascent/0.8.0/toss_3_x86_64_ib/openmp/gnu/spack/opt/spack/linux-rhel7-broadwell/gcc-8.3.1/python-3.8.11-pevfmwyouxo6gi5vlrfbu6rjlljrdr3o/bin/python /usr/gapps/conduit/software/ascent/0.8.0/toss_3_x86_64_ib/openmp/gnu/spack/opt/spack/linux-rhel7-broadwell/gcc-8.3.1/python-3.8.11-pevfmwyouxo6gi5vlrfbu6rjlljrdr3o/bin/sphinx-build -b html . _build -a

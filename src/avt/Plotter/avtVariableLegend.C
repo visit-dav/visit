@@ -633,6 +633,9 @@ avtVariableLegend::SetColorBarVisibility(const bool val)
 //    Alister Maguire, Wed Jan 16 13:54:14 PST 2019
 //    Tell the lookup table to grey out nan values. 
 //
+//    Kathleen Biagas, Tue Sep 19, 2023
+//    Call 'SetMessage(NULL)' when not constant.
+//
 // ****************************************************************************
 
 void
@@ -646,12 +649,13 @@ avtVariableLegend::SetRange(double nmin, double nmax)
         //
         //  Set a message and don't build labels.
         //
-        SetMessage("Constant.");
+        SetMessage("Constant");
         sBar->SetNumberOfLabels(0);
         sBar->SetRange(min, max);
     }
     else if (min == FLT_MAX || max == -FLT_MAX )
     {
+        SetMessage(NULL);
         debug5 << "avtVariableLegend did not get valid range." << endl;
         //
         //  We didn't get good values for the range. 
@@ -660,6 +664,7 @@ avtVariableLegend::SetRange(double nmin, double nmax)
     }
     else 
     {
+        SetMessage(NULL);
         sBar->SetNumberOfLabels(numTicks);
         if (lut != NULL)
         {
@@ -1023,13 +1028,16 @@ avtVariableLegend::GetCalculatedLabels(doubleVector &v)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::SetBelowRangeColor(double r, double g, double b, double a)
 {
-    lut->SetBelowRangeColor(r,g,b,a);
+    if(lut)
+        lut->SetBelowRangeColor(r,g,b,a);
 }
 
 
@@ -1040,13 +1048,16 @@ avtVariableLegend::SetBelowRangeColor(double r, double g, double b, double a)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::SetAboveRangeColor(double r, double g, double b, double a)
 {
-    lut->SetAboveRangeColor(r,g,b,a);
+    if (lut)
+        lut->SetAboveRangeColor(r,g,b,a);
 }
 
 
@@ -1057,13 +1068,16 @@ avtVariableLegend::SetAboveRangeColor(double r, double g, double b, double a)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::UseBelowRangeColor(bool v)
 {
-    lut->SetUseBelowRangeColor(v);
+    if(lut)
+        lut->SetUseBelowRangeColor(v);
 }
 
 
@@ -1074,13 +1088,16 @@ avtVariableLegend::UseBelowRangeColor(bool v)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::UseAboveRangeColor(bool v)
 {
-    lut->SetUseAboveRangeColor(v);
+    if(lut)
+        lut->SetUseAboveRangeColor(v);
 }
 
 
@@ -1091,7 +1108,9 @@ avtVariableLegend::UseAboveRangeColor(bool v)
 // Creation:   January 23, 2019
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
@@ -1101,5 +1120,6 @@ avtVariableLegend::SetNanColor(double r, double g, double b, double a)
     nanColor[1] = g;
     nanColor[2] = b;
     nanColor[3] = a;
-    lut->SetNanColor(nanColor);
+    if (lut)
+        lut->SetNanColor(nanColor);
 }

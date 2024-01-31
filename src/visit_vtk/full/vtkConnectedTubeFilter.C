@@ -3,8 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "vtkConnectedTubeFilter.h"
-
+#include <visit-config.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkFloatArray.h>
@@ -159,15 +162,19 @@ vtkConnectedTubeFilter::PointSequenceList::~PointSequenceList()
 //  Method:  PointSequenceList::Build
 //
 //  Purpose:
-//    Extract the 
+//    Extract the
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2002
 //
 //  Jean Favre, Tue May  7 16:38:37 CEST 2013
 //  Used vtkIdType where needed
+//
+//  Kathleen Biagas, Thu Aug 11, 2022
+//  Support VTK9: use vtkCellArrayIterator.
+//
 // ****************************************************************************
-bool 
+bool
 vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
                                                  vtkCellArray *lines)
 {
@@ -178,27 +185,44 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
     connectivity[1] = new vtkIdType[len];
     cellindex       = new vtkIdType[len];
 
-    vtkIdType *cells = lines->GetPointer();
-
     // Initalize all points to be disconnected from each other
-    int i;
-    for (i=0; i<len; i++)
+
+    for (int i=0; i<len; i++)
     {
         numneighbors[i] = 0;
     }
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
+    vtkIdType *cells = lines->GetPointer();
     int numCells = lines->GetNumberOfCells();
-    for (i=0; i<numCells; i++)
+    for (int i=0; i<numCells; i++)
     {
         // We assume all cells are two-point lines (i.e. not polylines)
         if (cells[i*3] != 2)
         {
             return false;
         }
-
         // Get the begin and end index for this segment
         vtkIdType a = cells[i*3 + 1];
         vtkIdType b = cells[i*3 + 2];
+#else
+
+    auto iter = vtk::TakeSmartPointer(lines->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+    {
+        vtkIdType cellSize;
+        const vtkIdType *currCell = nullptr;
+        iter->GetCurrentCell(cellSize, currCell);
+        // We assume all cells are two-point lines (i.e. not polylines)
+        if (cellSize != 2)
+        {
+            return false;
+        }
+
+        // Get the begin and end index for this segment
+        const vtkIdType a = currCell[0];
+        const vtkIdType b = currCell[1];
+#endif
 
         // If we have two neighbors already, this is a T intersection
         if (numneighbors[a] >= 2 || numneighbors[b] >= 2)
@@ -211,8 +235,13 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
         connectivity[numneighbors[b]][b] = a;
         numneighbors[a]++;
         numneighbors[b]++;
+#if LIB_VERSION_LE(VTK, 8,1,0)
         cellindex[a] = i;
         cellindex[b] = i;
+#else
+        cellindex[a] = iter->GetCurrentCellId();
+        cellindex[b] = iter->GetCurrentCellId();
+#endif
     }
     return true;
 }
@@ -295,7 +324,7 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
                 previous = current;
                 current = next;
 
- 
+
                 // we must skip any sequential identical points:
                 // 1) they are useless, and 2) they mess up calculations
                 double prePt[3];
@@ -310,9 +339,9 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
                 }
 
                 // check for a loop (AFTER adding the node again...)
-                if (lookforloops && visited[current]) 
+                if (lookforloops && visited[current])
                 {
-                    break; 
+                    break;
                 }
                 visited[current] = true;
 
@@ -335,10 +364,10 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
         }
     }
 
-    if (index == len && !lookforloops) 
+    if (index == len && !lookforloops)
     {
-        lookforloops = true; 
-        index=0; 
+        lookforloops = true;
+        index=0;
         return GetNextSequence(seq);
     }
 
@@ -407,7 +436,7 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
     int numCells;
     vtkDebugMacro(<<"Building tube connectivity arrays");
 
-    if (!(inPts=input->GetPoints())               || 
+    if (!(inPts=input->GetPoints())               ||
         (numPts = inPts->GetNumberOfPoints()) < 1 ||
         !(inLines = input->GetLines())            ||
         (numCells = inLines->GetNumberOfCells()) < 1)
@@ -498,7 +527,7 @@ int vtkConnectedTubeFilter::RequestData(
         return 1;
     }
 
-    if (!(inPts=input->GetPoints())               || 
+    if (!(inPts=input->GetPoints())               ||
         (numPts = inPts->GetNumberOfPoints()) < 1 ||
         !(inLines = input->GetLines())            ||
         (numCells = inLines->GetNumberOfCells()) < 1)
@@ -524,7 +553,7 @@ int vtkConnectedTubeFilter::RequestData(
     vtkCellData   *newCD      = NULL;
     newCD = output->GetCellData();
     newCD->CopyAllocate(inCD, maxNewCells);
-    
+
     if (CreateNormals)
     {
         newNormals = inPts->GetData()->NewInstance();
@@ -619,10 +648,10 @@ int vtkConnectedTubeFilter::RequestData(
             prev_v1[0]  = v1[0];  prev_v1[1]  = v1[1];  prev_v1[2]  = v1[2];
             prev_v2[0]  = v2[0];  prev_v2[1]  = v2[1];  prev_v2[2]  = v2[2];
 
-            // Hang on to the first point index we create; we need it 
+            // Hang on to the first point index we create; we need it
             // to create the cells
             vtkIdType firstIndex = newPts->GetNumberOfPoints();
-    
+
             //double *pt = inPts->GetPoint(ix);
             inPts->GetPoint(ix, pt);
             for (int j = 0 ; j < NumberOfSides ; j++)
@@ -712,7 +741,7 @@ void vtkConnectedTubeFilter::PrintSelf(ostream& os, vtkIndent indent)
 
     os << indent << "Radius: " << this->Radius << "\n";
     os << indent << "Number Of Sides: " << this->NumberOfSides << "\n";
-    os << indent << "Create Normals: " 
+    os << indent << "Create Normals: "
        << (this->CreateNormals ? "On\n" : "Off\n");
     os << indent << "Capping: " << this->Capping << endl;
 }

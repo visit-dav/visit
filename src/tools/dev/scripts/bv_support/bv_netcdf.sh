@@ -108,13 +108,6 @@ function bv_netcdf_ensure
     fi
 }
 
-function bv_netcdf_dry_run
-{
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-        echo "Dry run option not set for netcdf."
-    fi
-}
-
 function apply_netcdf_411_macOS_patch
 {
     patch -p0 << \EOF
@@ -280,17 +273,19 @@ function apply_netcdf_patch
 
     if [[ ${NETCDF_VERSION} == 4.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
-            if [[ `sw_vers -productVersion` == 10.9.[0-9]* ||
-                  `sw_vers -productVersion` == 10.10.[0-9]* ||
-                  `sw_vers -productVersion` == 10.11.[0-9]* ||
-                  `sw_vers -productVersion` == 10.12.[0-9]* ]] ; then
+            productVersion=`sw_vers -productVersion`
+            if [[ $productVersion == 10.9.[0-9]* ||
+                  $productVersion == 10.10.[0-9]* ||
+                  $productVersion == 10.11.[0-9]* ||
+                  $productVersion == 10.12.[0-9]* ]] ; then
                 info "Applying OS X 10.9 and up patch . . ."
                 apply_netcdf_411_darwin_patch
             fi
             
-            if [[ `sw_vers -productVersion` == 10.13.[0-9]* ||
-                  `sw_vers -productVersion` == 10.14.[0-9]* ]] ; then
-                info "Applying macOS patch . . ."
+            if [[ $productVersion == 10.13.[0-9]* ||
+                  $productVersion == 10.14.[0-9]* || 
+                  $productVersion == 10.15.[0-9]* ]] ; then
+                info "Applying macOS 10.13 and up patch . . ."
                 apply_netcdf_411_macOS_patch
             fi
         fi
@@ -356,9 +351,12 @@ function build_netcdf
         fi
     fi
     EXTRA_AC_FLAGS=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          EXTRA_AC_FLAGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
@@ -370,17 +368,13 @@ function build_netcdf
     fi
     ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        FC=\"\" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
-        --disable-dap \
-        --prefix=\"$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH\""
-
+    set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 FC="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
                 --disable-dap \
                 --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "NetCDF configure failed.  Giving up"

@@ -5,6 +5,7 @@
 #include <PyavtMatSpeciesMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyavtMatSpeciesMetaData
@@ -34,9 +35,8 @@ struct avtMatSpeciesMetaDataObject
 // Internal prototypes
 //
 static PyObject *NewavtMatSpeciesMetaData(int);
-
 std::string
-PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix)
+PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -81,12 +81,48 @@ avtMatSpeciesMetaData_SetNumSpecies(PyObject *self, PyObject *args)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numSpecies in the object.
-    obj->data->numSpecies = (int)ival;
+    obj->data->numSpecies = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -105,31 +141,51 @@ avtMatSpeciesMetaData_SetSpeciesNames(PyObject *self, PyObject *args)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->speciesNames;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->speciesNames = vec;
     // Mark the speciesNames in the object as modified.
     obj->data->SelectAll();
 
@@ -154,12 +210,48 @@ avtMatSpeciesMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the validVariable in the object.
-    obj->data->validVariable = (ival != 0);
+    obj->data->validVariable = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -200,14 +292,7 @@ avtMatSpeciesMetaData_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-avtMatSpeciesMetaData_compare(PyObject *v, PyObject *w)
-{
-    avtMatSpeciesMetaData *a = ((avtMatSpeciesMetaDataObject *)v)->data;
-    avtMatSpeciesMetaData *b = ((avtMatSpeciesMetaDataObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *avtMatSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtMatSpeciesMetaData_getattr(PyObject *self, char *name)
 {
@@ -218,32 +303,45 @@ PyavtMatSpeciesMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "validVariable") == 0)
         return avtMatSpeciesMetaData_GetValidVariable(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtMatSpeciesMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtMatSpeciesMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtMatSpeciesMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtMatSpeciesMetaData_methods, self, name);
 }
 
 int
 PyavtMatSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "numSpecies") == 0)
-        obj = avtMatSpeciesMetaData_SetNumSpecies(self, tuple);
+        obj = avtMatSpeciesMetaData_SetNumSpecies(self, args);
     else if(strcmp(name, "speciesNames") == 0)
-        obj = avtMatSpeciesMetaData_SetSpeciesNames(self, tuple);
+        obj = avtMatSpeciesMetaData_SetSpeciesNames(self, args);
     else if(strcmp(name, "validVariable") == 0)
-        obj = avtMatSpeciesMetaData_SetValidVariable(self, tuple);
+        obj = avtMatSpeciesMetaData_SetValidVariable(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -251,7 +349,7 @@ static int
 avtMatSpeciesMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -259,7 +357,7 @@ PyObject *
 avtMatSpeciesMetaData_str(PyObject *v)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    return PyString_FromString(PyavtMatSpeciesMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtMatSpeciesMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -272,49 +370,70 @@ static char *avtMatSpeciesMetaData_Purpose = "Contains material species metadata
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject avtMatSpeciesMetaDataType =
+
+VISIT_PY_TYPE_OBJ(avtMatSpeciesMetaDataType,         \
+                  "avtMatSpeciesMetaData",           \
+                  avtMatSpeciesMetaDataObject,       \
+                  avtMatSpeciesMetaData_dealloc,     \
+                  avtMatSpeciesMetaData_print,       \
+                  PyavtMatSpeciesMetaData_getattr,   \
+                  PyavtMatSpeciesMetaData_setattr,   \
+                  avtMatSpeciesMetaData_str,         \
+                  avtMatSpeciesMetaData_Purpose,     \
+                  avtMatSpeciesMetaData_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+avtMatSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "avtMatSpeciesMetaData",                    // tp_name
-    sizeof(avtMatSpeciesMetaDataObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)avtMatSpeciesMetaData_dealloc,  // tp_dealloc
-    (printfunc)avtMatSpeciesMetaData_print,     // tp_print
-    (getattrfunc)PyavtMatSpeciesMetaData_getattr, // tp_getattr
-    (setattrfunc)PyavtMatSpeciesMetaData_setattr, // tp_setattr
-    (cmpfunc)avtMatSpeciesMetaData_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)avtMatSpeciesMetaData_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    avtMatSpeciesMetaData_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &avtMatSpeciesMetaDataType
+         || Py_TYPE(other) != &avtMatSpeciesMetaDataType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    avtMatSpeciesMetaData *a = ((avtMatSpeciesMetaDataObject *)self)->data;
+    avtMatSpeciesMetaData *b = ((avtMatSpeciesMetaDataObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
@@ -390,7 +509,7 @@ PyavtMatSpeciesMetaData_GetLogString()
 {
     std::string s("avtMatSpeciesMetaData = avtMatSpeciesMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.");
+        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.", true);
     return s;
 }
 
@@ -403,7 +522,7 @@ PyavtMatSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtMatSpeciesMetaData = avtMatSpeciesMetaData()\n");
-        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.");
+        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.", true);
         cb(s);
     }
 }

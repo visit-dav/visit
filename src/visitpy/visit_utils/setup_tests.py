@@ -81,6 +81,8 @@ class ExecuteTests(Command):
         """
         Helper called by 'run' to find python scripts in the 'tests' subdir.
         """
+        if not self.tests_dir in sys.path:
+            sys.path.append(self.tests_dir)
         for f in glob.glob(os.path.join(self.tests_dir,"*.py")):
             if not f.endswith('__init__.py'):
                 test = os.path.splitext(os.path.basename(f))[0]

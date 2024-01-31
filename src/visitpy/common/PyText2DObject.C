@@ -6,6 +6,9 @@
 #include <ObserverToCallback.h>
 #include <ColorAttribute.h>
 
+// CUSTOM:
+#include <Py2and3Support.h>
+
 // Functions that we need in visitmodule.C
 extern void UpdateAnnotationHelper(AnnotationObject *);
 extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
@@ -13,7 +16,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 // ****************************************************************************
 // Module: PyText2DObject
 //
-// Purpose: 
+// Purpose:
 //   This class is a Python wrapper arround AnnotationObject that makes it
 //   look like a Text2D object.
 //
@@ -441,7 +444,8 @@ Text2DObject_Delete(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static struct PyMethodDef Text2DObject_methods[] = {
+#define TEXT2DOBJECT_NMETH 24
+PyMethodDef Text2DObject_methods[TEXT2DOBJECT_NMETH] = {
     {"SetVisible", Text2DObject_SetVisible, METH_VARARGS},
     {"GetVisible", Text2DObject_GetVisible, METH_VARARGS},
     {"SetActive", Text2DObject_SetActive, METH_VARARGS},
@@ -480,13 +484,14 @@ Text2DObject_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-Text2DObject_compare(PyObject *v, PyObject *w)
-{
-    AnnotationObject *a = ((Text2DObjectObject *)v)->data;
-    AnnotationObject *b = ((Text2DObjectObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
+// OLD
+// static int
+// Text2DObject_compare(PyObject *v, PyObject *w)
+// {
+//     AnnotationObject *a = ((Text2DObjectObject *)v)->data;
+//     AnnotationObject *b = ((Text2DObjectObject *)w)->data;
+//     return (*a == *b) ? 0 : -1;
+// }
 
 static PyObject *
 Text2DObject_getattr(PyObject *self, char *name)
@@ -615,8 +620,8 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
 static PyObject *
 PyText2DObject_StringRepresentation(const AnnotationObject *atts)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         snprintf(tmpStr, 1000, "visible = 1\n");
@@ -689,50 +694,74 @@ static const char *Text2DObject_Purpose = "This class defines defines an interfa
 static char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
 #endif
 
+// CUSTOM
+static PyObject *Text2DObject_richcompare(PyObject *self, PyObject *other, int op);
+
+// CUSTOM
+
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
-static PyTypeObject Text2DObjectType =
+VISIT_PY_TYPE_OBJ( Text2DObjectType,         \
+                   "Text2DObject",           \
+                   Text2DObjectObject,       \
+                   Text2DObject_dealloc,     \
+                   Text2DObject_print,       \
+                   Text2DObject_getattr,     \
+                   Text2DObject_setattr,     \
+                   Text2DObject_str,         \
+                   Text2DObject_Purpose,     \
+                   Text2DObject_richcompare, \
+                   0); /* as_number*/
+
+// CUSTOM
+static PyObject *
+Text2DObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Text2DObject",                    // tp_name
-    sizeof(Text2DObjectObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Text2DObject_dealloc,  // tp_dealloc
-    (printfunc)Text2DObject_print,     // tp_print
-    (getattrfunc)Text2DObject_getattr, // tp_getattr
-    (setattrfunc)Text2DObject_setattr, // tp_setattr
-    (cmpfunc)Text2DObject_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)Text2DObject_str,          // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Text2DObject_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type
+    if ( Py_TYPE(self) != Py_TYPE(other)
+         || Py_TYPE(self) != &Text2DObjectType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnnotationObject *a = ((Text2DObjectObject *)self)->data;
+    AnnotationObject *b = ((Text2DObjectObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
+
 
 //
 // Helper functions for object allocation.

@@ -40,14 +40,14 @@
 //    Jeremy Meredith, Thu Sep 28 12:50:55 PDT 2000
 //    Removed CreateOutputDatasets.  Changed interface to ExecuteDomain.
 //
-//    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001 
+//    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001
 //    Made inherit from avtDomainTreeDataTreeIterator.  Added default constructor,
 //    SetLevels method.
 //
-//    Kathleen Bonnell, Tue Apr 10 11:35:39 PDT 2001 
-//    Made inherit from avtSIMODataTreeIterator.  
+//    Kathleen Bonnell, Tue Apr 10 11:35:39 PDT 2001
+//    Made inherit from avtSIMODataTreeIterator.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001
 //    Added string argument to Execute method. Added member isoLabels, to
 //    hold string representation of computed isoValues.  Added method
 //    CreateLabels.
@@ -71,6 +71,9 @@
 //    Kathleen Biagas, Wed Jan 30 10:41:17 PST 2019
 //    Removed EAVL support.
 //
+//    Kathleen Biagas, Wed July 14, 2021
+//    Added ability to retrieve the actual iso values used for contouring.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
@@ -81,18 +84,20 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
     virtual                   ~avtContourFilter();
 
     void                       ShouldCreateLabels(bool b)
-                                    { shouldCreateLabels = b; };
-    virtual const char        *GetType(void)  { return "avtContourFilter"; };
-    virtual const char        *GetDescription(void) { return "Contouring"; };
+                                    { shouldCreateLabels = b; }
+    virtual const char        *GetType(void)  { return "avtContourFilter"; }
+    virtual const char        *GetDescription(void) { return "Contouring"; }
     virtual void               ReleaseData(void);
+
+    void                       GetIsoValues(std::vector<double> &v);
 
   protected:
     bool                       stillNeedExtents;
     bool                       shouldCreateLabels;
 
     ContourOpAttributes        atts;
-    bool                       logFlag; 
-    bool                       percentFlag; 
+    bool                       logFlag;
+    bool                       percentFlag;
     int                        nLevels;
     std::vector<double>        isoValues;
     std::vector<std::string>   isoLabels;

@@ -63,13 +63,14 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     // Create the active time slider.
     QHBoxLayout *tsLayout = new QHBoxLayout(0);
-    tsLayout->setMargin(0);
+    tsLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
+    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);
@@ -80,7 +81,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
 
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(0);
-    animationLayout->setMargin(0);
+    animationLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(animationLayout);
     topLayout->setStretchFactor(animationLayout, 10);
     animationPosition = new QvisAnimationSlider(Qt::Horizontal, this);
@@ -544,6 +545,9 @@ QvisTimeSliderControlWidget::UpdateAnimationControlsEnabledState()
 //   Changed set of time field text to use SetTimeFieldText to make sure
 //   long time values remain visible.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.setNum.
+//
 // ****************************************************************************
 
 void
@@ -637,7 +641,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
                 // If we did not set the time yet, do it with the index.
                 if(timeNeedsToBeSet)
                 {
-                    timeString.sprintf("%d", timeState);
+                    timeString.setNum(timeState);
                     SetTimeFieldText(timeString);
                 }
             }
@@ -646,7 +650,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
         {
             // There was no correlation but we know the time state that we want to
             // display so let's show that in the time line edit.
-            timeString.sprintf("%d", timeState);
+            timeString.setNum(timeState);
             SetTimeFieldText(timeString);
         }
     }
@@ -670,6 +674,8 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
 // Creation:
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
@@ -677,7 +683,11 @@ void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
     int w  = timeField->width();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int nw = timeField->fontMetrics().horizontalAdvance("  " + text);
+#else
     int nw = timeField->fontMetrics().width("  " + text);
+#endif
     if(w < nw)
         timeField->setMinimumWidth(nw);
     timeField->setText(text);
@@ -701,14 +711,15 @@ QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 // Creation:   Tue Oct 14 11:31:42 PDT 2003
 //
 // Modifications:
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
 QString
 QvisTimeSliderControlWidget::FormattedCycleString(const int cycle) const
 {
-    QString retval;
-    retval.sprintf("%04d", cycle);
+    QString retval = QString("%1").arg(cycle,4,10,QLatin1Char('0'));
     return retval;
 }
 
@@ -729,6 +740,8 @@ QvisTimeSliderControlWidget::FormattedCycleString(const int cycle) const
 // Creation:   Mon Oct 13 16:03:37 PST 2003
 //
 // Modifications:
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -738,9 +751,7 @@ QvisTimeSliderControlWidget::FormattedTimeString(const double t, bool accurate) 
     QString retval("?");
     if(accurate)
     {
-        QString formatString;
-        formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
-        retval.sprintf(formatString.toStdString().c_str(), t);
+        retval = QString("%1").arg(t,0,'g',timeStateFormat.GetPrecision());
     }
     return retval;
 }
@@ -841,6 +852,9 @@ QvisTimeSliderControlWidget::ConnectPlotList(PlotList *pl)
 //   Brad Whitlock, Sun Jan 25 01:39:50 PDT 2004
 //   I made it compare the state against the active time slider's current state.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -861,8 +875,7 @@ QvisTimeSliderControlWidget::SetTimeSliderState(int state)
          }
          else
          {
-             QString msg;
-             msg.sprintf(" %d.", state);
+             QString msg =  QString(" %1.").arg(state);
              Message(tr("The active time slider is already at state") + msg);
          }
     }

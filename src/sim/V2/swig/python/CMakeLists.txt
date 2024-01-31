@@ -21,6 +21,12 @@
 #  Kathleen Biagas, Mon Jun  9 08:28:07 MST 2014
 #  Fix copy of simV2.lib.
 #
+#  Cyrus Harrison, Tue Jun 30 16:23:15 PDT 2020
+#  Use updated Find NumPy.
+#
+#  Kathleen Biagas, Wed Nov 30, 2022
+#  Remove test for VISIT_OUT_OF_SOURCE_BUILD as out-of-source is required.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -29,14 +35,15 @@ INCLUDE_DIRECTORIES(
     ${VISIT_BINARY_DIR}/sim/V2/swig/python
     ${VISIT_BINARY_DIR}/include
     ${PYTHON_INCLUDE_PATH}
+    # for python 2 + 3 helper header
+    ${VISIT_INCLUDE_DIR}/visitpy/common
     )
 
-SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake/ ${CMAKE_MODULE_PATH})
-FIND_PACKAGE(Numpy)
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindNumpy.cmake)
 SET(SIMV2_USE_NUMPY FALSE)
 IF (NUMPY_FOUND AND (NUMPY_VERSION VERSION_GREATER 1.5.0))
     SET(SIMV2_USE_NUMPY TRUE)
-    INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIR})
+    INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
 ENDIF()
 CONFIGURE_FILE(simV2_python_config.h.in simV2_python_config.h)
 
@@ -62,8 +69,7 @@ INSTALL(FILES simV2.py
     )
 
 #Copy simV2.py for use during dev work
-IF(VISIT_OUT_OF_SOURCE_BUILD)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
-        ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/simV2.py)
-ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
+EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
+    ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/simV2.py)
+

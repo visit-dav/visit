@@ -54,9 +54,9 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    If spin mode was set to be false while we are mid-spin, then honor that
 //    and stop spinning.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Retrieve the LastPosition from the renderWindowInteractor.  It is no
-//    longer a member of the parent class. 
+//    longer a member of the parent class.
 //
 //    Brad Whitlock, Wed Sep 10 16:05:08 PST 2003
 //    I added support for temporarily suspending spin mode.
@@ -70,6 +70,11 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //
 //    Kathleen Bonnell, Wed Jun  8 09:57:09 PDT 2011
 //    Use current EventPosition instead of Last.
+//
+//    Kathleen Biagas, Wed Aug 17 2022
+//    Test useOSPRay to determine if PanCamera or PanImage should be used.
+//    It will be true only if HAVE_OSPRAY is true and ospray rendering is
+//    currently being used.
 //
 // ****************************************************************************
 
@@ -91,8 +96,17 @@ Navigate3D::OnTimer(void)
         break;
 
       case VTKIS_PAN:
-        PanImage3D(Pos[0], Pos[1]);
-
+        // Currently the SetWindowCenter called from avtViewInfo.C
+        // does not get used in the vtkOSPRayCamerNode so instead pan
+        // the camera rather than the image.
+        if (useOSPRay)
+        {
+            PanCamera3D(Pos[0], Pos[1]);
+        }
+        else
+        {
+            PanImage3D(Pos[0], Pos[1]);
+        }
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
@@ -158,7 +172,7 @@ Navigate3D::OnTimer(void)
 //
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api, they are accessed
-//    directly through the Interactor now.  
+//    directly through the Interactor now.
 //
 // ****************************************************************************
 
@@ -169,11 +183,10 @@ Navigate3D::StartLeftButtonAction()
 
     StartBoundingBox();
 
-    //
-    // If ctrl or shift is pushed, pan, otherwise rotate.  Save which one we
-    // did so we can issue the proper "End.." statement when the button is
-    // released.
-    //
+    // If ctrl or shift is pressed, pan otherwise rotate.
+
+    // Regarless of the operation save which one so the proper "End.."
+    // statement is issued when the button is released.
     if (Interactor->GetControlKey() || Interactor->GetShiftKey())
     {
         StartPan();
@@ -182,7 +195,6 @@ Navigate3D::StartLeftButtonAction()
     else
     {
         StartRotate();
-        ctrlOrShiftPressed = false;
     }
 }
 
@@ -208,7 +220,7 @@ Navigate3D::StartLeftButtonAction()
 //    Added support for 'spin' mode.
 //
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api. 
+//    Removed arguments to match vtk's new interactor api.
 //
 //    Eric Brugger, Thu Nov 20 15:24:48 PST 2003
 //    Added code to call the view callback.
@@ -224,6 +236,7 @@ Navigate3D::EndLeftButtonAction()
     if (ctrlOrShiftPressed)
     {
         EndPan();
+        ctrlOrShiftPressed = false;
     }
     else
     {
@@ -241,7 +254,7 @@ Navigate3D::EndLeftButtonAction()
 //  Method: Navigate3D::StartMiddleButtonAction
 //
 //  Purpose:
-//    Handles the middle button being pushed down.  For Navigate3D, this 
+//    Handles the middle button being pushed down.  For Navigate3D, this
 //    means zooming.
 //
 //  Programmer: Hank Childs
@@ -341,7 +354,7 @@ Navigate3D::OnMouseWheelForward()
 //  Method: Navigate3D::OnMouseWheelBackward()
 //
 //  Purpose:
-//    Handles the mouse wheel turned forward.  
+//    Handles the mouse wheel turned forward.
 //
 //  Arguments:
 //

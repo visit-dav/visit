@@ -334,6 +334,9 @@ CopyPointer(T *src, T *dest, int components,
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Eric Brugger, Mon May 24 11:38:21 PDT 2021
+//    Modify to handle meshes with no points or cells.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -394,7 +397,8 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
     {
         int recvDom = domainNum[d];
         vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)(meshes[d]);
-        if (mesh == NULL)
+        if (mesh == NULL ||
+            mesh->GetNumberOfPoints() == 0 || mesh->GetNumberOfCells() == 0)
             continue;
         int nOldPoints = mesh->GetNumberOfPoints();
 

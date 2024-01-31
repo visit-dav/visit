@@ -20,7 +20,7 @@ using std::string;
 // ****************************************************************************
 // Method: QvisMaterialWindow::QvisMaterialWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: Jeremy Meredith
@@ -47,14 +47,14 @@ QvisMaterialWindow::QvisMaterialWindow(MaterialAttributes *subj,
 // ****************************************************************************
 // Method: QvisMaterialWindow::~QvisMaterialWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Thu Oct 24 10:03:40 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisMaterialWindow::~QvisMaterialWindow()
@@ -65,7 +65,7 @@ QvisMaterialWindow::~QvisMaterialWindow()
 // ****************************************************************************
 // Method: QvisMaterialWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Jeremy Meredith
@@ -74,7 +74,7 @@ QvisMaterialWindow::~QvisMaterialWindow()
 // Modifications:
 //    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
 //    Added a toggle for forcing full connectivity.
-//   
+//
 //    Jeremy Meredith, Mon Sep 15 17:16:55 PDT 2003
 //    Added a toggle for the new material algorithm.
 //
@@ -155,7 +155,7 @@ QvisMaterialWindow::CreateWindowContents()
             this, SLOT(cleanZonesOnlyChanged(bool)));
     mainLayout->addWidget(cleanZonesOnly, 4,0);
 
-    simplifyHeavilyMixedZones = new QCheckBox(tr("Simplify heavily mixed zones"), 
+    simplifyHeavilyMixedZones = new QCheckBox(tr("Simplify heavily mixed zones"),
                                               central);
     connect(simplifyHeavilyMixedZones, SIGNAL(toggled(bool)),
             this, SLOT(simplifyHeavilyMixedZonesChanged(bool)));
@@ -170,7 +170,7 @@ QvisMaterialWindow::CreateWindowContents()
             SLOT(maxMatsPerZoneProcessText()));
     mainLayout->addWidget(maxMatsPerZone, 6, 1);
 
-    isoVolumeFractionLabel = new QLabel(tr("Volume fraction for isovolume"), 
+    isoVolumeFractionLabel = new QLabel(tr("Volume fraction for isovolume"),
                                         central);
     mainLayout->addWidget(isoVolumeFractionLabel,7,0);
     isoVolumeFraction = new QNarrowLineEdit(central);
@@ -179,13 +179,13 @@ QvisMaterialWindow::CreateWindowContents()
     mainLayout->addWidget(isoVolumeFraction, 7,1);
 
     // Iteration options
-    enableIteration = new QCheckBox(tr("Enable iteration (Equi-Z, Isovolume only)"), 
+    enableIteration = new QCheckBox(tr("Enable iteration (Equi-Z, Isovolume only)"),
                                               central);
     connect(enableIteration, SIGNAL(toggled(bool)),
             this, SLOT(enableIterationChanged(bool)));
     mainLayout->addWidget(enableIteration, 8,0);
 
-    numIterationsLabel = new QLabel(tr("Number of iterations"), 
+    numIterationsLabel = new QLabel(tr("Number of iterations"),
                                         central);
     mainLayout->addWidget(numIterationsLabel,9,0);
     numIterations = new QNarrowLineEdit(central);
@@ -193,7 +193,7 @@ QvisMaterialWindow::CreateWindowContents()
             this, SLOT(numIterationsProcessText()));
     mainLayout->addWidget(numIterations, 9,1);
 
-    iterationDampingLabel = new QLabel(tr("Convergence rate (>0)"), 
+    iterationDampingLabel = new QLabel(tr("Convergence rate (>0)"),
                                         central);
     mainLayout->addWidget(iterationDampingLabel,10,0);
     iterationDamping = new QNarrowLineEdit(central);
@@ -214,7 +214,7 @@ QvisMaterialWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisMaterialWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Jeremy Meredith
@@ -223,7 +223,7 @@ QvisMaterialWindow::CreateWindowContents()
 // Modifications:
 //    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
 //    Added a toggle for forcing full connectivity.
-//   
+//
 //    Jeremy Meredith, Mon Sep 15 17:20:57 PDT 2003
 //    Added a toggle for the new MIR algorithm.
 //
@@ -248,6 +248,9 @@ QvisMaterialWindow::CreateWindowContents()
 //
 //    Jeremy Meredith, Thu Mar 25 12:27:49 EDT 2010
 //    Renamed some algorithms.
+//
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace QString.asprintf with QString.setNum.
 //
 // ****************************************************************************
 
@@ -306,7 +309,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             }
             annealingTime->setEnabled(atts->GetAlgorithm() == MaterialAttributes::Discrete);
             annealingTimeLabel->setEnabled(atts->GetAlgorithm() == MaterialAttributes::Discrete);
-                
+
             smoothing->setEnabled(
                    atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::EquiT);
@@ -340,7 +343,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             maxMatsPerZoneLabel->setEnabled(atts->GetSimplifyHeavilyMixedZones());
             break;
           case MaterialAttributes::ID_maxMaterialsPerZone:
-            temp.sprintf("%d", atts->GetMaxMaterialsPerZone());
+            temp.setNum(atts->GetMaxMaterialsPerZone());
             maxMatsPerZone->setText(temp);
             break;
           case MaterialAttributes::ID_isoVolumeFraction:
@@ -399,7 +402,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisMaterialWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
@@ -408,7 +411,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 // Modifications:
 //    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
 //    Added a toggle for forcing full connectivity.
-//   
+//
 //    Jeremy Meredith, Mon Sep 15 17:17:12 PDT 2003
 //    Added the toggle for the new MIR algorithm.
 //
@@ -600,7 +603,7 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisMaterialWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
@@ -652,14 +655,14 @@ QvisMaterialWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisMaterialWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Oct 24 10:03:40 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -672,14 +675,14 @@ QvisMaterialWindow::apply()
 // ****************************************************************************
 // Method: QvisMaterialWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when "Make default" button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Oct 24 10:03:40 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -694,14 +697,14 @@ QvisMaterialWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisMaterialWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when reset button is clicked.
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 24, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

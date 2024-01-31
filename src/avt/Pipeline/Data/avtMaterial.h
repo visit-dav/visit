@@ -130,7 +130,13 @@ struct MatZoneMap
 //
 //    Mark C. Miller, Wed Feb 11 17:02:22 PST 2015
 //    Added AssertSelfIsValid which is only ever active in debug builds. It
-//    does a more thorough check of the material object that gets constucted.  
+//    does a more thorough check of the material object that gets constructed.
+//
+//    Cyrus Harrison, Wed Feb 17 10:43:50 PST 2021
+//    Added variable names to avtMaterial(int nmats, std::vector<string> ... )
+//    variant of the constructor to make it easer to interpret what data 
+//    is needed.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -148,12 +154,17 @@ class PIPELINE_API avtMaterial
                                                  const float *mixv, 
                                                  const char *domain = NULL,
                                                  int mat0 = 0);
-                                     avtMaterial(int, 
-                                              const std::vector<std::string>&,
-                                              int, const int *, int,
-                                              const int *, const int *,
-                                              const int *,
-                                              const float *);
+
+                                     avtMaterial(int nmats,
+                                                 const std::vector<std::string> &matnames,
+                                                 int nzones,
+                                                 const int *mat_list,
+                                                 int mix_len,
+                                                 const int *mix_mat,
+                                                 const int *mix_next,
+                                                 const int *mix_zone,
+                                                 const float *mix_vf);
+
                                      avtMaterial(int nTotMats,
                                                  const int *mats,
                                                  const char **names,
