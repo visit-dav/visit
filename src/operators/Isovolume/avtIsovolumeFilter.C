@@ -377,7 +377,6 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
     else
         out_dr = ExecuteData_VTK(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
 
-    std::cout<<"out_dr= "<<out_dr<<std::endl;
     return out_dr;
 }
 
@@ -487,6 +486,7 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
 //    I replaced VTKh with VTKm.
 //
 // ****************************************************************************
+
 bool
 avtIsovolumeFilter::VTKmAble(avtDataRepresentation *in_dr) const
 {
