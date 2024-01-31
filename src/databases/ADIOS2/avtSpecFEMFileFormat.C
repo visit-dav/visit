@@ -305,7 +305,7 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         if (vname.find("/array") == string::npos)
             continue;
         vname = GetVariable(vname);
-        //cout<<"VARNAME= "<<vname<<endl;
+        //debug5<<"VARNAME= "<<vname<<endl;
 
         if (kernelFile)
         {
@@ -1175,7 +1175,7 @@ void
 avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                     bool xyzMesh, int ptOffset)
 {
-    //cout<<"AddRegionMesh: "<<dom<<endl;
+    //debug5<<"AddRegionMesh: "<<dom<<endl;
 
     vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)ds;
     vtkPoints *pts = mesh->GetPoints();
@@ -1197,7 +1197,7 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
     //int N = ib->GetNumberOfTuples();
     adios2::Variable<int> ibV = meshIO.InquireVariable<int>(iNm);
     auto ibBlkInfo = (meshReader.BlocksInfo(ibV, 0))[dom];
-    //cout<<"ib blocks: "<<meshReader.BlocksInfo(ibV, 0).size()<<endl;
+    //debug5<<"ib blocks: "<<meshReader.BlocksInfo(ibV, 0).size()<<endl;
     int N = ibBlkInfo.Count[0];
     vtkIntArray *ib = vtkIntArray::New();
     ib->SetNumberOfTuples(N);
@@ -1294,7 +1294,7 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                             double verts[8][3];
                             for (int p = 0; p < 8; p++)
                                 pts->GetPoint(v[p], verts[p]);
-                            cout<<eCnt<<": "<<endl;
+                            debug5<<eCnt<<": "<<endl;
                             for (int p = 0; p < 8; p++)
                             {
                                 double px = verts[p][0];
@@ -1306,7 +1306,7 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                 double ny = (R==0.0 ? 0.0 : acos(pz/R));
                                 double nz = (RR==0.0 ? 0.0 : M_PI + atan2(-py, -px));
 
-                                cout<<p<<" ["<<verts[p][0]<<" "<<verts[p][1]<<" "<<verts[p][2]<<"] ["<<nx<<" "<<ny<<" "<<nz<<"] 2pi= "<<2.0*M_PI<<endl;
+                                debug5<<p<<" ["<<verts[p][0]<<" "<<verts[p][1]<<" "<<verts[p][2]<<"] ["<<nx<<" "<<ny<<" "<<nz<<"] 2pi= "<<2.0*M_PI<<endl;
                             }
                         }
                         */
@@ -1665,7 +1665,7 @@ avtSpecFEMFileFormat::Initialize()
 
     //See if it's a kernel file.
     auto variables = dataIO.AvailableVariables();
-    //cout<<"dataVars: "<<variables<<endl;
+    //debug5<<"dataVars: "<<variables<<endl;
     if (variables.find("betav_kl_crust_mantle") != variables.end())
         kernelFile = true;
 
@@ -1677,7 +1677,7 @@ avtSpecFEMFileFormat::Initialize()
         if (var.first.find("reg") == string::npos || var.first.find("array") == string::npos)
             continue;
 
-        //cout<<"VAR= "<<var<<endl;
+        //debug5<<"VAR= "<<var<<endl;
         regions[GetRegion(var.first)-1] = true;
         if (numBlocks == -1)
         {
@@ -1690,7 +1690,7 @@ avtSpecFEMFileFormat::Initialize()
                 for (int i = 0; i < numBlocks; i++)
                 {
                     auto blk = blockInfo[i];
-                    cout<<i<<": "<<blk.BlockID<<" "<<blk.Start<<" "<<blk.Count<<endl;
+                    debug5<<i<<": "<<blk.BlockID<<" "<<blk.Start<<" "<<blk.Count<<endl;
                 }
                 */
             }
@@ -1779,15 +1779,15 @@ avtSpecFEMFileFormat::IsMeshFile(const string &fname)
     auto variables = io.AvailableVariables();
 
     /*
-    cout<<"MESH: "<<endl;
-    cout<<"  ATTR:"<<endl;
+    debug5<<"MESH: "<<endl;
+    debug5<<"  ATTR:"<<endl;
     for (auto &a : attributes)
     {
-        cout<<"       "<<a.first<<" "<<a.second<<endl;
+        debug5<<"       "<<a.first<<" "<<a.second<<endl;
     }
-    cout<<"  VARS:"<<endl;
+    debug5<<"  VARS:"<<endl;
     for (auto &v : variables)
-        cout<<"       "<<v.first<<" "<<v.second<<endl;
+        debug5<<"       "<<v.first<<" "<<v.second<<endl;
     */
 
     if (variables.find("reg1/nspec") == variables.end() ||
