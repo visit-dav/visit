@@ -61,21 +61,6 @@ class avtPixie3DFileFormat : public avtMTMDFileFormat
 
     virtual           ~avtPixie3DFileFormat() {}
 
-    //
-    // This is used to return unconvention data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      *GetAuxiliaryData(const char *var, int domain,
-    //                                     const char *type, void *args,
-    //                                     DestructorFunction &);
-    //
-
-    //
-    // If you know the cycle number, overload this function.
-    // Otherwise, VisIt will make up a reasonable one for you.
-    //
-    // virtual int         GetCycle(void);
-    //
     virtual int            GetNTimesteps() {Initialize(); return numTimeSteps;}
     virtual void           GetCycles(std::vector<int> &c) {Initialize(); c = cycles;}
     virtual void           GetTimes(std::vector<double> &t) {Initialize(); t = times;}
