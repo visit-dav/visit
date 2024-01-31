@@ -102,9 +102,9 @@ stages:
            git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
            git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
            git lfs pull --include blueprint_v0.8.6_rz_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.6_1d_curve_examples
-           git lfs pull --include blueprint_v0.8.7_venn_modded_matnos_example
-           git lfs pull --include blueprint_v0.8.7_polytopal_mesh_no_offsets
+           git lfs pull --include blueprint_v0.8.6_1d_curve_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.7_venn_modded_matnos_example.tar.xz
+           git lfs pull --include blueprint_v0.8.7_polytopal_mesh_no_offsets.tar.xz
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
@@ -124,9 +124,9 @@ stages:
            tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
            tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
            tar xvf ../../data/blueprint_v0.8.6_rz_examples.tar.xz
-           tar xvf ../../data/blueprint_v0.8.6_1d_curve_examples
-           tar xvf ../../data/blueprint_v0.8.7_venn_modded_matnos_example
-           tar xvf ../../data/blueprint_v0.8.7_polytopal_mesh_no_offsets
+           tar xvf ../../data/blueprint_v0.8.6_1d_curve_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.7_venn_modded_matnos_example.tar.xz
+           tar xvf ../../data/blueprint_v0.8.7_polytopal_mesh_no_offsets.tar.xz
         displayName: 'Prep Test Data'
 
       - script: |
