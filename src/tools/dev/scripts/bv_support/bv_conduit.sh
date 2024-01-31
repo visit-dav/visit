@@ -38,12 +38,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.7"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.8"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.8.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="a7747fedfa4f1452a8410d555e21eacf"
-    export CONDUIT_SHA256_CHECKSUM="f3bf44d860783f4e0d61517c5e280c88144af37414569f4cf86e2d29b3ba5293"
+    export CONDUIT_MD5_CHECKSUM="9a22a25b8d8a58d8c48982675b4ffc3e"
+    export CONDUIT_SHA256_CHECKSUM="99811e9c464b6f841f52fcd47e982ae47cbb01cba334cff43eabe13eea58c0df"
 }
 
 function bv_conduit_print
