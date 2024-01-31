@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtADIOSFileFormat.C                           //
+//                           avtADIOS2FileFormat.C                           //
 // ************************************************************************* //
 
 #include <avtFileFormatInterface.h>
@@ -13,6 +13,7 @@
 
 #include <avtADIOS2BaseFileFormat.h>
 #include <avtGTCFileFormat.h>
+#include <avtPixie3DFileFormat.h>
 #include <avtLAMMPSFileFormat.h>
 #include <avtSpecFEMFileFormat.h>
 #include <avtMEUMMAPSFileFormat.h>
@@ -47,9 +48,9 @@
 //
 //   Dave Pugmire, Thu Oct 30 11:59:40 EDT 2014
 //   Added a LAMMPS reader. Modified the flavor flag to an enum for clarity.
-// 
+//
 //   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
-//   Removed adios2::DebugON since it is not present in newer versions of 
+//   Removed adios2::DebugON since it is not present in newer versions of
 //   adios2.
 //   Added special logic for BP5 files.
 //
@@ -59,15 +60,15 @@ avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {GTC, BASIC, MEUMMAPS, LAMMPS, SPECFEM, FAIL};
+    enum Flavor {GTC, BASIC, MEUMMAPS, LAMMPS, SPECFEM, PIXIE3D, FAIL};
     bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
     bool isHDF5 = (std::string(list[0]).find(".h5") != std::string::npos);
     bool isWDM = (std::string(list[0]).find(".ssc") != std::string::npos);
     bool stagingMode = isSST || isWDM;
 
-    cout<<__FILE__<<" "<<__LINE__<<" isSST "<<isSST<<endl;
-    cout<<__FILE__<<" "<<__LINE__<<" isWDM "<<isWDM<<endl;
-    cout<<__FILE__<<" "<<__LINE__<<" isHDF5 "<<isHDF5<<endl;
+    debug5 << __FILE__ << " " << __LINE__ << " isSST " << isSST << endl;
+    debug5 << __FILE__ << " " << __LINE__ << " isWDM " << isWDM << endl;
+    debug5 << __FILE__ << " " << __LINE__ << " isHDF5 " << isHDF5 << endl;
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
@@ -85,8 +86,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
 
             io.SetEngine(engineName);
-            //cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."
-            //   <<" engine "<<engineName<<" ..."<<endl;
+            //debug5 << __FILE__ << " " << __LINE__ << " Connect to stream " << fileName << " ..."
+            //   << " engine " << engineName << " ..." << endl;
             if (engineName == "BP5")
                 reader = io.Open(fileName, adios2::Mode::ReadRandomAccess);
             else
@@ -94,13 +95,13 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
 
             if (stagingMode)
             {
-                cout<<__FILE__<<" "<<__LINE__<<" Get first step "<<endl;
+                debug5 << __FILE__ << " " << __LINE__ << " Get first step " << endl;
                 adios2::StepStatus status =
                     reader.BeginStep(adios2::StepMode::Read, -1.0f);
                 if (status == adios2::StepStatus::OK)
                 {
-                    std::cout<<" Identifier received streaming step = "
-                        <<reader.CurrentStep()<<endl;
+                    debug5 << " Identifier received streaming step = "
+                        << reader.CurrentStep() << endl;
                     variables = io.AvailableVariables();
                     attributes = io.AvailableAttributes();
 
@@ -113,6 +114,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                         flavor = LAMMPS;
                     else if (avtMEUMMAPSFileFormat::IdentifyADIOS2(variables,attributes))
                         flavor = MEUMMAPS;
+                    else if (avtPixie3DFileFormat::IdentifyADIOS2(variables,attributes))
+                        flavor = PIXIE3D;
 
                     // generic with staging engines
                     else
@@ -126,9 +129,9 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 variables = io.AvailableVariables();
                 attributes = io.AvailableAttributes();
 #if MDSERVER
-                std::cout<<" MDSERVER Identifier has " << variables.size() << " variables"<<endl;
+                debug5 << " MDSERVER Identifier has " << variables.size() << " variables" << endl;
 #else
-                std::cout<<" Identifier has " << variables.size() << " variables"<<endl;
+                debug5 << " Identifier has " << variables.size() << " variables" << endl;
 #endif
                 // add formats here that support reading from HDF5
                 if (avtGTCFileFormat::Identify(fileName.c_str()))
@@ -139,6 +142,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                     flavor = MEUMMAPS;
                 else if (avtSpecFEMFileFormat::Identify(fileName.c_str()))
                     flavor = SPECFEM;
+                else if (avtPixie3DFileFormat::Identify(fileName.c_str()))
+                    flavor = PIXIE3D;
 
                 // generic with HDF5 file
                 else if (isHDF5)
@@ -157,9 +162,13 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
         ENDTRY
 
-        cout<<"FLAVOR= "<<flavor<<endl;
+        debug5 << "FLAVOR= " << flavor << endl;
         switch(flavor)
         {
+          case PIXIE3D:
+            ffi = avtPixie3DFileFormat::CreateInterfaceADIOS2(
+                    list, nList, nBlock, adios, reader, io, variables, attributes);
+            break;
           case GTC:
             ffi = avtGTCFileFormat::CreateInterfaceADIOS2(
                     list, nList, nBlock, adios, reader, io, variables, attributes);
@@ -178,7 +187,6 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                     list, nList, nBlock);
             break;
           case BASIC:
-              cout<<"OPEN A BASIC READER"<<endl;
             ffi = avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
                     list, nList, nBlock, adios, reader, io, variables, attributes);
             break;
@@ -187,6 +195,5 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
     }
 
-    //cout<<"RETURN ADIOS READER"<<endl;
     return ffi;
 }

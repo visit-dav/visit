@@ -24,6 +24,7 @@
 
 #include <InvalidVariableException.h>
 #include <VisItStreamUtil.h>
+#include <DebugStream.h>
 
 using namespace std;
 
@@ -96,13 +97,13 @@ avtADIOS2SSTFileFormat::avtADIOS2SSTFileFormat(const char *filename)
       avtMTSDFileFormat(&filename, 1)
 {
     io.SetEngine("SST");
-    cout<<"Open "<<filename<<endl;
+    debug5<<"Open "<<filename<<endl;
 
-    cout<<__FILE__<<" "<<__LINE__<<endl;
+    debug5<<__FILE__<<" "<<__LINE__<<endl;
     reader = io.Open(filename, adios2::Mode::Read);
-    cout<<__FILE__<<" "<<__LINE__<<endl;
+    debug5<<__FILE__<<" "<<__LINE__<<endl;
     variables = io.AvailableVariables();
-    cout<<__FILE__<<" "<<__LINE__<<endl;
+    debug5<<__FILE__<<" "<<__LINE__<<endl;
 
     if (variables.size() > 0)
     {
@@ -112,7 +113,7 @@ avtADIOS2SSTFileFormat::avtADIOS2SSTFileFormat(const char *filename)
     }
 
     for (auto &v : variables)
-        cout<<"Var: "<<v.first<<endl;
+        debug5<<"Var: "<<v.first<<endl;
 }
 
 
@@ -130,7 +131,7 @@ avtADIOS2SSTFileFormat::avtADIOS2SSTFileFormat(const char *filename)
 int
 avtADIOS2SSTFileFormat::GetNTimesteps()
 {
-    cout<<"avtADIOS2SSTFileFormat::GetNTimesteps()"<<endl;
+    debug5<<"avtADIOS2SSTFileFormat::GetNTimesteps()"<<endl;
     return numTimeSteps;
 }
 
@@ -293,7 +294,7 @@ avtADIOS2SSTFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtADIOS2SSTFileFormat::GetVar(int timestate, const char *varname)
 {
-    cout<<"GetVar: "<<varname<<endl;
+    debug5<<"GetVar: "<<varname<<endl;
 
     if (variables.find(varname) == variables.end())
         return NULL;
@@ -303,7 +304,7 @@ avtADIOS2SSTFileFormat::GetVar(int timestate, const char *varname)
     if (varType == "double")
     {
         adios2::Variable<double> v = io.InquireVariable<double>(varname);
-        cout<<"DIMS= "<<v.Shape()<<endl;
+        debug5<<"DIMS= "<<v.Shape()<<endl;
         v.SetSelection(adios2::Box<adios2::Dims>({0,0,0}, v.Shape()));
         v.SetStepSelection({timestate, 1});
 

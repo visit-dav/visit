@@ -42,7 +42,7 @@ avtMEUMMAPSFileFormat::Identify(const char *fname)
         reader.BeginStep(adios2::StepMode::Read, -1.0f);
     if (status == adios2::StepStatus::OK)
     {
-        //std::cout<<" Identifier for MEUMAPPS received streaming step = "<<reader.CurrentStep()<<endl;
+        //debug5<<" Identifier for MEUMAPPS received streaming step = "<<reader.CurrentStep()<<endl;
 
         std::map<std::string, adios2::Params> variables, attributes;
         variables = io.AvailableVariables();
@@ -153,7 +153,7 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
     variables = io.AvailableVariables();
     auto attributes = io.AvailableAttributes();
 //    for (auto &a : attributes)
-//        cout<<"Attr: "<<a.first<<" "<<a.second<<endl;
+//        debug5<<"Attr: "<<a.first<<" "<<a.second<<endl;
 
     if (variables.size() > 0)
     {
@@ -163,7 +163,7 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
     }
 
 //    for (auto &v : variables)
-//        cout<<"Var: "<<v.first<<endl;
+//        debug5<<"Var: "<<v.first<<endl;
 
     origin = {0,0,0};
     spacing.push_back(std::stof(variables["dx"]["Value"]));
@@ -174,7 +174,7 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
     meshSz.push_back(std::stoi(variables["Nz"]["Value"]) + 1);
 
     dT = std::stof(variables["dt"]["Value"]);
-//    cout<<"NT= "<<numTimeSteps<<endl;
+//    debug5<<"NT= "<<numTimeSteps<<endl;
 }
 
 avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
@@ -198,7 +198,7 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adio
     }
 
 //    for (auto &v : variables)
-//        cout<<"Var: "<<v.first<<endl;
+//        debug5<<"Var: "<<v.first<<endl;
 
     origin = {0,0,0};
     spacing.push_back(std::stof(variables["dx"]["Value"]));
@@ -209,7 +209,7 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adio
     meshSz.push_back(std::stoi(variables["Nz"]["Value"]) + 1);
 
     dT = std::stof(variables["dt"]["Value"]);
-//    cout<<"NT= "<<numTimeSteps<<endl;
+//    debug5<<"NT= "<<numTimeSteps<<endl;
 }
 
 // ****************************************************************************
@@ -266,7 +266,7 @@ avtMEUMMAPSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     }
 
     AddMeshToMetaData(md, "mesh", AVT_RECTILINEAR_MESH, NULL, numBlocks, 0, 3, 3);
-//    cout<<"numblocks= "<<numBlocks<<endl;
+//    debug5<<"numblocks= "<<numBlocks<<endl;
 }
 
 
@@ -308,7 +308,7 @@ avtMEUMMAPSFileFormat::GetMesh(int ts, int domain, const char *meshname)
     int iy1 = (i1/nz) % ny;
     int iz1 = i1/(ny*nz);
 
-//    cout<<"GetMesh: "<<domain<<" "<<info.Start<<" "<<info.Count<<" ("<<ix0<<" "<<iy0<<" "<<iz0<<") ("<<ix1<<" "<<iy1<<" "<<iz1<<")"<<endl;
+//    debug5<<"GetMesh: "<<domain<<" "<<info.Start<<" "<<info.Count<<" ("<<ix0<<" "<<iy0<<" "<<iz0<<") ("<<ix1<<" "<<iy1<<" "<<iz1<<")"<<endl;
 
     int dims[3] = {ix1-ix0, iy1-iy0, iz1-iz0};
 
@@ -337,7 +337,7 @@ avtMEUMMAPSFileFormat::GetMesh(int ts, int domain, const char *meshname)
     int i0, i1;
     GetDomainIdx(domain, i0, i1);
 
-    cout<<"CreateMesh sz= "<<meshSz<<endl;
+    debug5<<"CreateMesh sz= "<<meshSz<<endl;
     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
     int dims[3] = {meshSz[0], meshSz[1], meshSz[2]};
 
@@ -385,7 +385,7 @@ avtMEUMMAPSFileFormat::GetMesh(int ts, int domain, const char *meshname)
 vtkDataArray *
 avtMEUMMAPSFileFormat::GetVar(int ts, int domain, const char *varname)
 {
-//    cout<<"GetVar: "<<varname<<endl;
+//    debug5<<"GetVar: "<<varname<<endl;
 
     if (variables.find(varname) == variables.end())
         return NULL;
@@ -398,8 +398,8 @@ avtMEUMMAPSFileFormat::GetVar(int ts, int domain, const char *varname)
     if (varType == "double")
     {
         adios2::Variable<double> v = io.InquireVariable<double>(varname);
-//        cout<<"DIMS= "<<v.Shape()<<endl;
-//        cout<<variables[varname]<<endl;
+//        debug5<<"DIMS= "<<v.Shape()<<endl;
+//        debug5<<variables[varname]<<endl;
 
         v.SetSelection(adios2::Box<adios2::Dims>({0}, v.Shape()));
 
