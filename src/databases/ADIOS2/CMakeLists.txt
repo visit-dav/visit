@@ -18,6 +18,7 @@ ${COMMON_SOURCES}
 avtADIOS2FileFormat.C
 avtMEUMMAPSFileFormat.C
 avtGTCFileFormat.C
+avtPixie3DFileFormat.C
 avtADIOS2BaseFileFormat.C
 avtADIOS2SSTFileFormat.C
 avtLAMMPSFileFormat.C
@@ -31,6 +32,7 @@ ${COMMON_SOURCES}
 avtADIOS2FileFormat.C
 avtMEUMMAPSFileFormat.C
 avtGTCFileFormat.C
+avtPixie3DFileFormat.C
 avtADIOS2BaseFileFormat.C
 avtADIOS2SSTFileFormat.C
 avtLAMMPSFileFormat.C

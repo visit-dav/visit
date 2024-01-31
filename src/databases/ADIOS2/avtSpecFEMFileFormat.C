@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtADIOSFileFormat.C                           //
+//                          avtSpecFEMFileFormat.C                           //
 // ************************************************************************* //
 
 #include <avtMTMDFileFormatInterface.h>
@@ -106,10 +106,10 @@ avtSpecFEMFileFormat::CreateInterface(const char *const *list,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
-// 
+//
 //  Modifications:
 //    Justin Privitera, Thu Jan 18 09:56:51 PST 2024
-//    Removed adios2::DebugON since it is not present in newer versions of 
+//    Removed adios2::DebugON since it is not present in newer versions of
 //    adios2.
 //
 // ****************************************************************************
@@ -305,7 +305,7 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         if (vname.find("/array") == string::npos)
             continue;
         vname = GetVariable(vname);
-        //cout<<"VARNAME= "<<vname<<endl;
+        //debug5<<"VARNAME= "<<vname<<endl;
 
         if (kernelFile)
         {
@@ -331,7 +331,7 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
             {
                 if (regions[i])
                 {
-                    char mesh[128], mesh2[128], var[128], var2[128];
+                    char mesh[128], mesh2[128], var[128], var2[128], edef[128];
                     sprintf(mesh, "reg%d/mesh", i+1);
                     sprintf(mesh2, "reg%d/LatLon_mesh", i+1);
                     sprintf(var, "reg%d/%s", i+1, vname.c_str());
@@ -341,6 +341,29 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 
                     sprintf(var, "reg%d/LatLonR_coords", i+1);
                     AddVectorVarToMetaData(md, var, mesh, AVT_NODECENT, 3);
+
+                    //Add lat/lon/depth for the xyz mesh.
+                    Expression exprLat, exprLon, exprDepth;
+                    sprintf(var, "reg%d/Lat", i+1);
+                    sprintf(edef, "<reg%d/LatLonR_coords>[0]", i+1);
+                    exprLat.SetName(var);
+                    exprLat.SetType(Expression::ScalarMeshVar);
+                    exprLat.SetDefinition(edef);
+                    md->AddExpression(&exprLat);
+
+                    sprintf(var, "reg%d/Lon", i+1);
+                    sprintf(edef, "<reg%d/LatLonR_coords>[1]", i+1);
+                    exprLon.SetName(var);
+                    exprLon.SetType(Expression::ScalarMeshVar);
+                    exprLon.SetDefinition(edef);
+                    md->AddExpression(&exprLon);
+
+                    sprintf(var, "reg%d/Depth", i+1);
+                    sprintf(edef, "<reg%d/LatLonR_coords>[2]", i+1);
+                    exprDepth.SetName(var);
+                    exprDepth.SetType(Expression::ScalarMeshVar);
+                    exprDepth.SetDefinition(edef);
+                    md->AddExpression(&exprDepth);
                 }
             }
         }
@@ -1152,7 +1175,7 @@ void
 avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                     bool xyzMesh, int ptOffset)
 {
-    //cout<<"AddRegionMesh: "<<dom<<endl;
+    //debug5<<"AddRegionMesh: "<<dom<<endl;
 
     vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)ds;
     vtkPoints *pts = mesh->GetPoints();
@@ -1174,7 +1197,7 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
     //int N = ib->GetNumberOfTuples();
     adios2::Variable<int> ibV = meshIO.InquireVariable<int>(iNm);
     auto ibBlkInfo = (meshReader.BlocksInfo(ibV, 0))[dom];
-    //cout<<"ib blocks: "<<meshReader.BlocksInfo(ibV, 0).size()<<endl;
+    //debug5<<"ib blocks: "<<meshReader.BlocksInfo(ibV, 0).size()<<endl;
     int N = ibBlkInfo.Count[0];
     vtkIntArray *ib = vtkIntArray::New();
     ib->SetNumberOfTuples(N);
@@ -1271,7 +1294,7 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                             double verts[8][3];
                             for (int p = 0; p < 8; p++)
                                 pts->GetPoint(v[p], verts[p]);
-                            cout<<eCnt<<": "<<endl;
+                            debug5<<eCnt<<": "<<endl;
                             for (int p = 0; p < 8; p++)
                             {
                                 double px = verts[p][0];
@@ -1283,7 +1306,7 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                 double ny = (R==0.0 ? 0.0 : acos(pz/R));
                                 double nz = (RR==0.0 ? 0.0 : M_PI + atan2(-py, -px));
 
-                                cout<<p<<" ["<<verts[p][0]<<" "<<verts[p][1]<<" "<<verts[p][2]<<"] ["<<nx<<" "<<ny<<" "<<nz<<"] 2pi= "<<2.0*M_PI<<endl;
+                                debug5<<p<<" ["<<verts[p][0]<<" "<<verts[p][1]<<" "<<verts[p][2]<<"] ["<<nx<<" "<<ny<<" "<<nz<<"] 2pi= "<<2.0*M_PI<<endl;
                             }
                         }
                         */
@@ -1642,7 +1665,7 @@ avtSpecFEMFileFormat::Initialize()
 
     //See if it's a kernel file.
     auto variables = dataIO.AvailableVariables();
-    //cout<<"dataVars: "<<variables<<endl;
+    //debug5<<"dataVars: "<<variables<<endl;
     if (variables.find("betav_kl_crust_mantle") != variables.end())
         kernelFile = true;
 
@@ -1654,7 +1677,7 @@ avtSpecFEMFileFormat::Initialize()
         if (var.first.find("reg") == string::npos || var.first.find("array") == string::npos)
             continue;
 
-        //cout<<"VAR= "<<var<<endl;
+        //debug5<<"VAR= "<<var<<endl;
         regions[GetRegion(var.first)-1] = true;
         if (numBlocks == -1)
         {
@@ -1667,7 +1690,7 @@ avtSpecFEMFileFormat::Initialize()
                 for (int i = 0; i < numBlocks; i++)
                 {
                     auto blk = blockInfo[i];
-                    cout<<i<<": "<<blk.BlockID<<" "<<blk.Start<<" "<<blk.Count<<endl;
+                    debug5<<i<<": "<<blk.BlockID<<" "<<blk.Start<<" "<<blk.Count<<endl;
                 }
                 */
             }
@@ -1726,7 +1749,7 @@ avtSpecFEMFileFormat::GenerateFileNames(const std::string &nm,
 //
 // Modifications:
 //    Justin Privitera, Thu Jan 18 09:56:51 PST 2024
-//    Removed adios2::DebugON since it is not present in newer versions of 
+//    Removed adios2::DebugON since it is not present in newer versions of
 //    adios2.
 //
 //****************************************************************************
@@ -1756,15 +1779,15 @@ avtSpecFEMFileFormat::IsMeshFile(const string &fname)
     auto variables = io.AvailableVariables();
 
     /*
-    cout<<"MESH: "<<endl;
-    cout<<"  ATTR:"<<endl;
+    debug5<<"MESH: "<<endl;
+    debug5<<"  ATTR:"<<endl;
     for (auto &a : attributes)
     {
-        cout<<"       "<<a.first<<" "<<a.second<<endl;
+        debug5<<"       "<<a.first<<" "<<a.second<<endl;
     }
-    cout<<"  VARS:"<<endl;
+    debug5<<"  VARS:"<<endl;
     for (auto &v : variables)
-        cout<<"       "<<v.first<<" "<<v.second<<endl;
+        debug5<<"       "<<v.first<<" "<<v.second<<endl;
     */
 
     if (variables.find("reg1/nspec") == variables.end() ||
