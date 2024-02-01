@@ -33,7 +33,6 @@ function bv_pyqt_info
     export PYQT_VERSION=${PYQT_VERSION:-"0"}
     export PYQT_COMPATIBILITY_VERSION=${PYQT_COMPATIBILITY_VERSION:-"0"}
     export PYQT_BUILD_DIR=${PYQT_BUILD_DIR:-"pyqt"}
-    export PYQT_MD5_CHECKSUM=""
     export PYQT_SHA256_CHECKSUM=""
 }
 

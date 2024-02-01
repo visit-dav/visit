@@ -76,7 +76,6 @@ function bv_adios_info
     export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"${ADIOS_VERSION}"}
     export ADIOS_URL=${ADIOS_URL:-"http://users.nccs.gov/~pnorbert"}
     export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-${ADIOS_VERSION}"}
-    export ADIOS_MD5_CHECKSUM="6e9eb73953231aebbbc8788f39f08618"
     export ADIOS_SHA256_CHECKSUM="684096cd7e5a7f6b8859601d4daeb1dfaa416dfc2d9d529158a62df6c5bcd7a0"
 }
 

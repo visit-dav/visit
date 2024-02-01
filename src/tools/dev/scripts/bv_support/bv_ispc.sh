@@ -51,7 +51,6 @@ function bv_ispc_info
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/osx/"}
         # these are binary builds, not source tarballs so the mdf5s and shas differ 
         # between platforms 
-        export ISPC_MD5_CHECKSUM="387cce62a6c63def5e6eb1c0a468a3db"
         export ISPC_SHA256_CHECKSUM="aa307b97bea67d71aff046e3f69c0412cc950eda668a225e6b909dba752ef281"
         export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-osx
     else
@@ -59,7 +58,6 @@ function bv_ispc_info
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/linux/"}
         # these are binary builds, not source tarballs so the mdf5s and shas differ 
         # between platforms 
-        export ISPC_MD5_CHECKSUM="0178a33a065ae65d0be00be23871cf9f"
         export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"
         export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-linux
     fi

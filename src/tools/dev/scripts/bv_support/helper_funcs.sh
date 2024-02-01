@@ -370,7 +370,6 @@ function uncompress_untar
 #                                                                             #
 # Purpose: Verify the checksum of the given file                              #
 #                                                                             #
-#          verify_md5_checksum: checks md5                                    #
 #          verify_sha_checksum: checks sha (256,512)                          #
 #          verfiy_checksum_by_lookup: pick which checksum method to use       #
 #                                     based on if they are defined giving     #
@@ -383,32 +382,9 @@ function uncompress_untar
 #   Modified verify_checksum_by_lookup to also check that the checksum is     #
 #   not blank in addition to being defined before using it.                   #
 #                                                                             #
+#   Cyrus Harrison, Thu, Jan 25, 2024  9:35:18 PM                             #
+#   Removed md5 logic, standrize on sha256                                    #
 # *************************************************************************** #
-
-function verify_md5_checksum
-{
-    checksum=$1
-    dfile=$2
-    md5cmd=md5sum
-
-    tmp=`which $md5cmd`
-    if [[ $? != 0 ]]; then
-        tmp=`which md5`
-        if [[ $? != 0 ]]; then
-            info "could not find md5sum or md5 commands, disabling check"
-            return 0
-        fi
-        md5cmd=md5
-    fi
-    tmp=`$md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'`
-    if [[ $tmp == ${checksum} ]]; then
-        info "verified"
-        return 0
-    fi
-
-    info "md5 checksum failed: looking for $checksum got $tmp"
-    return 1
-}
 
 function verify_sha_checksum
 {
@@ -447,23 +423,13 @@ function verify_checksum
 
     info "verifying $checksum_type checksum $checksum for $dfile . . ."
 
-    if [[ "$checksum_type" == "MD5" ]]; then
-        verify_md5_checksum $checksum $dfile
-        return $?
-    fi
-
     if [[ $checksum_type = "SHA256" ]]; then
         verify_sha_checksum 256 $checksum $dfile
         return $?
     fi
 
-    if [[ $checksum_type = "SHA512" ]]; then
-        verify_sha_checksum 512 $checksum $dfile
-        return $?
-    fi
-
     #since this is an optional check, all cases should pass if it gets here..
-    info "checksum string not MD5, SHA256, or SHA512, check disabled"
+    info "checksum string not SHA256, check disabled"
     return 0
 }
 
@@ -478,24 +444,16 @@ function verify_checksum_by_lookup
         var=$(echo $var | cut -d '=' -f1)
         if [[ ${!var} = $dlfile ]]; then
             varbase=$(echo $var | sed -e 's/_FILE$//')
-            md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
-            sha512_varname=${varbase}_SHA512_CHECKSUM
-            if [ ! -z ${!sha512_varname} ]; then
-                verify_checksum SHA512 ${!sha512_varname} $dlfile
-                return $?
-            elif [ ! -z ${!sha256_varname} ]; then
+            if [ ! -z ${!sha256_varname} ]; then
                 verify_checksum SHA256 ${!sha256_varname} $dlfile
-                return $?
-            elif [ ! -z ${!md5sum_varname} ]; then
-                verify_checksum MD5 ${!md5sum_varname} $dlfile
                 return $?
             fi
         fi
     done
 
     # since this is an optional check, all cases should pass if it gets here.
-    info "unable to find a MD5, SHA256, or SHA512, checksum associated with $dlfile; check disabled"
+    info "unable to find a SHA256 checksum associated with $dlfile; check disabled"
     return 0
 }
 
