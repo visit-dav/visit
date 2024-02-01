@@ -30,7 +30,6 @@ function bv_damaris_info
     export DAMARIS_COMPATIBILITY_VERSION=${DAMARIS_COMPATIBILITY_VERSION:-"1.0"}
     export DAMARIS_URL=${DAMARIS_URL:-"https://gforge.inria.fr/frs/download.php/file/35204"}
     export DAMARIS_BUILD_DIR=${DAMARIS_BUILD_DIR:-"damaris-${DAMARIS_VERSION}"}
-    export DAMARIS_MD5_CHECKSUM=""
     export DAMARIS_SHA256_CHECKSUM=""
 }
 

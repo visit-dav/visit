@@ -4,5 +4,5 @@
 
 # Use the BLOSC_DIR hint from the config-site .cmake file
 
-SET_UP_THIRD_PARTY(BLOSC2 LIBS libblosc2)
+SET_UP_THIRD_PARTY(BLOSC2 LIBS blosc2)
 

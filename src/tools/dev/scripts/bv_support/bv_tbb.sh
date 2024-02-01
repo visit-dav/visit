@@ -53,11 +53,9 @@ function bv_tbb_info
     export TBB_VERSION=${TBB_VERSION:-"tbb2018_20171205oss"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export TBB_FILE=${TBB_FILE:-"${TBB_VERSION}_mac.tgz"}
-        export TBB_MD5_CHECKSUM="ff7a02f58fee4e2e637db6da19a21806"
         export TBB_SHA256_CHECKSUM="00955b15609298c13104c0b2a500757ea57a5e0ae9fe80a71ce20f29d76629ed"
     else
         export TBB_FILE=${TBB_FILE:-"${TBB_VERSION}_lin.tgz"}
-        export TBB_MD5_CHECKSUM="d637d29f59ee31fe5830a0366e2e973a"
         export TBB_SHA256_CHECKSUM="7c2ec94f6f1c2b95293fc0fc7652e0fdeefabfc10cdb66f7176fbf6d99431fb6"
     fi
     export TBB_COMPATIBILITY_VERSION=${TBB_COMPATIBILITY_VERSION:-"${TBB_VERSION}"}

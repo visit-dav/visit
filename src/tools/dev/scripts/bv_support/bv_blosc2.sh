@@ -19,6 +19,7 @@ function bv_blosc2_disable
 # Where to get the module, the version, etc...
 function bv_blosc2_info
 {
+    BLOSC2_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
     # note this is c-blosc2, NOT c-blosc
     export BLOSC2_VERSION=${BLOSC2_VERSION:-"2.11.3"}
     export BLOSC2_FILE=${BLOSC2_FILE:-"c-blosc2-${BLOSC2_VERSION}.tar.gz"}
@@ -27,7 +28,6 @@ function bv_blosc2_info
     # export BLOSC2_URL=${BLOSC2_URL:-"https://github.com/Blosc/c-blosc2/releases/tag"}
     # to use that download you'd need to rename the file once downloaded.
     export BLOSC2_BUILD_DIR=${BLOSC2_BUILD_DIR:-"c-blosc2-${BLOSC2_VERSION}"}
-    export BLOSC2_MD5_CHECKSUM="129756ae2d833b1bc2c5cac46f03c75d"
     export BLOSC2_SHA256_CHECKSUM="7273ec3ab42adc247425ab34b0601db86a6e2a6aa1a97a11e29df02e078f5037"
 }
 
@@ -78,7 +78,7 @@ function build_blosc2
 
     cd $BLOSC2_BUILD_DIR || error "Can't cd to BLOSC2 source dir."
 
-    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${BLOSC2_DIR}"
+    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
