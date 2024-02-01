@@ -99,7 +99,6 @@ function bv_vtk_info
         export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"8.1"}
-        export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
         export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
     fi
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}

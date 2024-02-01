@@ -30,7 +30,6 @@ function bv_fms_info
     export FMS_FILE=${FMS_FILE:-"FMS-${FMS_VERSION}.tar.gz"}
     export FMS_BUILD_DIR=${FMS_BUILD_DIR:-"FMS-${FMS_VERSION}"}
     export FMS_URL=${FMS_URL:-"https://github.com/CEED/FMS/archive/refs/tags/v0.2.tar.gz"}
-    export FMS_MD5_CHECKSUM="5d2f8a154cee67ff1fb61bfebfa9f60c"
     export FMS_SHA256_CHECKSUM="872489a1325b247968dbb7265b8736660af94121a86c93f7938441ce7478183e"
 }
 
