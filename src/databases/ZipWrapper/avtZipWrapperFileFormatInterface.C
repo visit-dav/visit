@@ -23,6 +23,7 @@
 #include <shlwapi.h>
 #include <process.h>
 #else
+#include <dirent.h>
 #include <unistd.h>
 #include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
 #endif
@@ -60,6 +61,11 @@ string avtZipWrapperFileFormatInterface::decompCmd;
 vector<avtZipWrapperFileFormatInterface*> avtZipWrapperFileFormatInterface::objList;
 int avtZipWrapperFileFormatInterface::maxDecompressedFiles = 50;
 static bool atExiting = false;
+
+typedef struct DecompressedFileInfo {
+    string rmDirname;
+    avtFileFormatInterface *iface;
+} DecompressedFileInfo;
 
 // ****************************************************************************
 //  Class: avtZWGenercDatabase
@@ -191,6 +197,58 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 
 };
 
+static void
+RemoveDirTree(char const *dirname)
+{
+    static int issuedWarnings = 0;
+
+    DIR *dirp = opendir(dirname);
+    if (!dirp)
+    {
+        if (issuedWarnings < 5)
+        {
+            debug5 << "Unable to descend into directory \"" << dirname << "\" to remove its contents." << endl;
+            cerr << "Unable to descend into directory \"" << dirname << "\" to remove its contents." << endl;
+            issuedWarnings++;
+        }
+        return;
+    }
+
+    // Remove contents of this directory.
+    struct dirent *dp;
+    while ((dp = readdir(dirp)))
+    {
+        if (!strcmp(dp->d_name, "."))
+            continue;
+        if (!strcmp(dp->d_name, ".."))
+            continue;
+        string tmp = string(dirname) + "/" + string(dp->d_name);
+
+        // try to unlink this entry.
+        if (unlink(tmp.c_str()) == 0)
+            continue;
+
+        // If the above unlink fails, its probably a dir we need to recruse on.
+        RemoveDirTree(tmp.c_str());
+    }
+    closedir(dirp);
+
+    // Now, remove the directory itself.
+    errno = 0;
+    if (rmdir(dirname) != 0)
+    {
+        if (issuedWarnings < 5)
+        {
+            int errnotmp = errno;
+            debug5 << "Unable to rmdir() \"" << dirname << "\"" << endl;
+            debug5 << "rmdir() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
+            cerr << "Unable to rmdir() \"" << dirname << "\"" << endl;
+            cerr << "rmdir() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
+            issuedWarnings++;
+        }
+    }
+}
+
 // ****************************************************************************
 //  Static Function: FreeUpCacheSlot
 //
@@ -202,23 +260,35 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 // ****************************************************************************
 static void FreeUpCacheSlot(void *item)
 {
-    avtZWFileFormatInterface *iface = (avtZWFileFormatInterface*) item;
+    DecompressedFileInfo *finfo = (DecompressedFileInfo*) item;
+    avtZWFileFormatInterface *iface = (avtZWFileFormatInterface*) finfo->iface;
     string filename = iface->GetFilename(0);
-    debug5 << "Removing decompressed file \"" << filename << "\"" << endl;
+    debug5 << "Removing decompressed entry \"" << filename << "\"" << endl;
     delete iface;
-    errno = 0;
-    if (unlink(filename.c_str()) != 0 && errno != ENOENT)
+    static int issuedWarnings = 0;
+
+    if (finfo->rmDirname == "")
     {
-        static int issuedWarning = 0;
-        if (issuedWarning < 5)
+        errno = 0;
+        if (unlink(filename.c_str()) != 0 && errno != ENOENT)
         {
-            debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
-            debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-            cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
-            cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-            issuedWarning++;
+            if (issuedWarnings < 5)
+            {
+                int errnotmp = errno;
+                debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
+                debug5 << "unlink() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
+                cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
+                cerr << "unlink() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
+                issuedWarnings++;
+            }
         }
     }
+    else
+    {
+        RemoveDirTree(finfo->rmDirname.c_str());
+    }
+
+    delete finfo;
 }
 
 // ****************************************************************************
@@ -382,26 +452,32 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
            << " decompressed files " << (procCount > 1 ? "per-processor" : "")
            << " at any one time." << endl;
 
-    char procNumStr[32];
-    snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
-    tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName + "_" +
-             string(VisItInit::GetComponentName()) +
-             (procCount > 1 ? string(procNumStr) : "");
+    char pidStr[32];
+    snprintf(pidStr, sizeof(pidStr), "_%lu", (unsigned long)
+#ifdef WIN32
+        _getpid());
+#else
+        getpid());
+#endif
+    if (tmpDir.back() == string(VISIT_SLASH_STRING).back())
+        tmpDir.pop_back();
+    tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName +
+               "_" + string(VisItInit::GetComponentName()) +
+               string(pidStr);
     debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
 
     // Make the temporary directory
     // (will have different name on mdserver and engine)
-    errno = 0;
 #ifdef WIN32
-    if(_mkdir(tmpDir.c_str()) != 0 && errno != EEXIST)
+    if(_mkdir(tmpDir.c_str()) != 0)
 #else
-    if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
+    if (mkdir(tmpDir.c_str(), 0777))
 #endif
-
     {
+        int errnotmp = errno;
         static char errMsg[1024];
         snprintf(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
-            errno, strerror(errno));
+            errnotmp, strerror(errnotmp));
         EXCEPTION1(InvalidFilesException, errMsg);
     }
 
@@ -423,17 +499,20 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
 void
 avtZipWrapperFileFormatInterface::Finalize()
 {
-    errno = 0;
+    if (tmpDir == "")
+        return;
+
 #ifdef WIN32
-    if (_rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+    if (_rmdir(tmpDir.c_str()) != 0)
 #else
-    if (rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+    if (rmdir(tmpDir.c_str()) != 0)
 #endif
     {
+        int errnotmp = errno;
         debug5 << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
-        debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        debug5 << "rmdir() reported errno=" << errnotmp << " (\"" << strerror(errnotmp) << "\")" << endl;
         cerr << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
-        cerr << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        cerr << "rmdir() reported errno=" << errnotmp << " (\"" << strerror(errnotmp) << "\")" << endl;
     }
 }
 
@@ -491,9 +570,10 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     //
     // Make sure the necessary real plugin is loaded.
     //
-    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(gz|bz|bz2|zip)$>");
+    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$>");
     const char *bname = FileFunctions::Basename(inputFileList[0][0].c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
+
 
     // Save the pointer to the plugin manager.
     pluginManager = zwinfo->GetPluginManager();
@@ -578,13 +658,14 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
     // we must explicitly call clear cache here to ensure items in it are
     // deleted *before* we enter Finalize
     decompressedFilesCache.clear();
+    if (tmpDir.size())
+    {
+        RemoveDirTree(tmpDir.c_str());
+        tmpDir = "";
+    }
 
     delete dummyFileFormat;
-
-    // We use FreeUpCacheSlot here even though dummyInterface isn't cached
-    // because FreeUpCacheSlot is where all the logic for deleting the
-    // decompressed file associated with an interface resides.
-    FreeUpCacheSlot(dummyInterface);
+    delete dummyInterface;
 
     // if this is the last instance we have, finalize the class too
     if (objList.size() == 0)
@@ -701,7 +782,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     if (decompressedFilesCache.exists(compressedName))
     {
         debug5 << "Found interface object for file \"" << compressedName << "\" in cache" << endl;
-        avtFileFormatInterface *retval = decompressedFilesCache[compressedName];
+        DecompressedFileInfo *finfo = decompressedFilesCache[compressedName];
+        avtFileFormatInterface *retval = finfo->iface;
         // Always update the interface object to whatever the dummy format thinks
         // is right before returning the object for use.
         UpdateRealFileFormatInterface(retval);
@@ -709,9 +791,14 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
-    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(gz|bz|bz2|zip)$>");
-    const char *bname = FileFunctions::Basename(compressedName.c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
+    string zext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$>");
+    string vext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<(.*)(\\..*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\2");
+    string bname = FileFunctions::Basename(compressedName);
+    string dcname = StringHelpers::ExtractRESubstr(bname.c_str(), "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
+    string bnameNoExt = FileFunctions::Basename(compressedName, vext+zext);
+printf("bnameNoExt = \"%s\"\n",bnameNoExt.c_str());
+printf("zext = \"%s\"\n", zext.c_str());
+printf("vext = \"%s\"\n", vext.c_str());
 
     string dcmd = decompCmd;
     if (dcmd == "")
@@ -736,13 +823,21 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         }
 
 #else
-        if (ext == ".gz")
+        // have to handle tar archives first in this logic
+        if (zext == ".tar.gz" || zext == ".tgz" ||
+            zext == ".tar.bz" || zext == ".tbz" ||
+            zext == ".tar.bz2" || zext == ".tbz2" ||
+            zext == ".tar.xz" || zext == ".txz")
+            dcmd = "tar xvf";
+        else if (zext == ".gz")
             dcmd = "gunzip -f";
-        else if (ext == ".bz")
+        else if (zext == ".xz")
+            dcmd = "unxz -f";
+        else if (zext == ".bz")
             dcmd = "bunzip -f";
-        else if (ext == ".bz2")
+        else if (zext == ".bz2")
             dcmd = "bunzip2 -f";
-        else if (ext == "zip")
+        else if (zext == "zip")
             dcmd = "unzip -o";
 #endif
     }
@@ -829,18 +924,27 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
     }
     // delete the .bat file
-    if (unlink(tmpcmd) != 0 && errno != ENOENT)
+    if (unlink(tmpcmd) != 0)
     {
+        int errnotmp = errno;
         debug5 << "Unable to unlink() bat file \"" << tmpcmd << "\"" << endl;
-        debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        debug5 << "unlink() reported errno=" << errnotmp << " (\"" << strerror(errnotmp) << "\")" << endl;
     }
 #else
     char tmpcmd[1024];
     snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
-        tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
+        tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname.c_str(), dcname.c_str());
     debug5 << "Using decompression command: \"" << tmpcmd << "\"" << endl;
+
+    // check that we have a shell to run a system command
+    if (system(0) == 0)
+    {
+        EXCEPTION1(InvalidDBTypeException, "No shell for system() to decompress files.");
+    }
+
+    // Ok, run the decompression commands
     int ret = system(tmpcmd);
-    if (WIFEXITED(ret))
+    if (ret != -1 && ret != 127 && WIFEXITED(ret))
     {
         if (WEXITSTATUS(ret) != 0)
         {
@@ -875,9 +979,14 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
     if (!dontCache)
     {
+        DecompressedFileInfo *finfo = new DecompressedFileInfo();
+        finfo->iface = realInterface;
+        finfo->rmDirname = "";
+        if (dcmd.substr(0,5) == "tar x")
+            finfo->rmDirname = tmpDir + VISIT_SLASH_STRING + bnameNoExt;
         UpdateRealFileFormatInterface(realInterface);
         realInterface->SetDatabaseMetaData(&mdCopy, 0);
-        decompressedFilesCache[compressedName] = realInterface;
+        decompressedFilesCache[compressedName] = finfo;
     }
 
     return realInterface;

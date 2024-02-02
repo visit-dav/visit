@@ -79,12 +79,21 @@ typedef enum
     FILE_TYPE_NOT_KNOWN
 } FileType;
 
+typedef enum
+{
+    REMOVE_ENTRY,  // file or empty dir
+    REMOVE_LEAFAN, // dir and children none of which are dirs
+    REMOVE_TREE    // dir and all things below it
+} RemoveMode;
+
 VisItStat_t* const FILE_TYPE_DONT_STAT = ((VisItStat_t*)0x1);
 
 PermissionsResult MISC_API CheckPermissions(const std::string &filename);
 
 int         MISC_API VisItStat(const std::string &filename, VisItStat_t *buf);
 int         MISC_API VisItFstat(int fd, VisItStat_t *buf);
+int         MISC_API VisItRemove(char const *path, RemoveMode mode = REMOVE_ENTRY);
+int         MISC_API VisItRemove(std::string const &path, RemoveMode mode = REMOVE_ENTRY);
 bool        MISC_API ReadAndProcessDirectory(const std::string &,
                                       ProcessDirectoryCallback *,
                                       void * = 0,
