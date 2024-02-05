@@ -2573,6 +2573,10 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 // 
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+// 
+//     Justin Privitera, Mon Feb  5 14:14:19 PST 2024
+//     Removed unnecessary material numbers logic now that we have a new 
+//     Conduit.
 //
 // ****************************************************************************
 avtMaterial *
