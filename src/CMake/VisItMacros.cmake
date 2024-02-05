@@ -14,6 +14,10 @@
 #    Change VISIT_PLUGIN_TARGET_RTOD to VISIT_PLUGIN_TARGET_OUTPUT_DIR and
 #    added  support for non windows (moved from <plugintype>/CMakeLists.txt).
 #
+#    Kathleen Biagas, Mon Dec 11, 2023
+#    Remove replacement of debug flags. Now handled by setting of
+#    CMAKE_MSVC_RUNTIME_LIBRARY to "MultiThreadedDLL" in root CMakeLists.txt.
+#
 #*****************************************************************************
 
 if(WIN32)
@@ -21,39 +25,6 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
     add_definitions(-D_SCL_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-
-    # cmake automatically uses _DEBUG and MDd for Debug flags, but our
-    # third-party libs are NOT debug versions, so we won't be able to
-    # link against them if those defines are used.  Replace those flags:
-    # When we allow users to supply their own third-party libs, then
-    # this will have to be rethought -- they may want to be able to c
-    # change them and this currently forces.
-
-    macro(REPLACE_FLAG OLD_FLAG NEW_FLAG FLAG_TYPE FLAG_STRING)
-        string(REPLACE "${OLD_FLAG}" "${NEW_FLAG}" TMP "${${FLAG_TYPE}}")
-        set(${FLAG_TYPE} "${TMP}" CACHE STRING "${FLAG_STRING}" FORCE)
-    endmacro()
-
-    # Remove /_DEBUG From debug builds
-    if(VISIT_REPLACE_DEBUG_FLAGS)
-        REPLACE_FLAG("/D_DEBUG" "" CMAKE_CXX_FLAGS_DEBUG
-                     "Flags used by the compiler during debug builds")
-        REPLACE_FLAG("/D_DEBUG" "" CMAKE_C_FLAGS_DEBUG
-                     "Flags used by the compiler during debug builds")
-        REPLACE_FLAG("/D_DEBUG" "" CMAKE_EXE_LINKER_FLAGS_DEBUG
-                     "Flags used by the linker during debug builds")
-        REPLACE_FLAG("/D_DEBUG" "" CMAKE_MODULE_LINKER_FLAGS_DEBUG
-                     "Flags used by the linker during debug builds")
-        # Change /MDd to /MD for debug builds
-        REPLACE_FLAG("/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG
-                     "Flags used by the compiler during debug builds")
-        REPLACE_FLAG("/MDd" "/MD" CMAKE_C_FLAGS_DEBUG
-                     "Flags used by the compiler during debug builds")
-        REPLACE_FLAG("/MDd" "/MD" CMAKE_EXE_LINKER_FLAGS_DEBUG
-                     "Flags used by the linker during debug builds")
-        REPLACE_FLAG("/MDd" "/MD" CMAKE_MODULE_LINKER_FLAGS_DEBUG
-                     "Flags used by the linker during debug builds")
-    endif()
 endif()
 
 function(ADD_TARGET_INCLUDE target)
