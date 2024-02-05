@@ -220,7 +220,7 @@ function build_mfem
     fi
     echo "\"${CMAKE_BIN}\" ${vopts} .." >> $CMS
     cat $CMS
-    issue_command bash $CMS || error "FMS configuration failed."
+    issue_command bash $CMS || error "MFEM configuration failed."
 
     #
     # Build mfem
