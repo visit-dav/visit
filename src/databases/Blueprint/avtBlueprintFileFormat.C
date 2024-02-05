@@ -2639,15 +2639,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             mix_next = n_silo_matset["mix_next"].as_int_ptr();
         }
 
-        // we need to adjust the matlist.
-        for(int i=0;i<nzones;i++)
-        {
-            if(matlist[i] > 0 )
-            {
-                matlist[i]--;
-            }
-        }
-
         int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
 
         float *mix_vf = NULL;
