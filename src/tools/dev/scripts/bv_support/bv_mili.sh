@@ -101,153 +101,6 @@ EOF
     return 0
 }
 
-function apply_mili_151_darwin_patch1
-{
-    info "Applying Mili 15.1 darwin patch 1."
-    patch -p0 << \EOF
-diff -c mili-22.1/src/mesh_u.c mili.patched/src/mesh_u.c
-*** mili-22.1/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
---- mili.patched/src/mesh_u.c   2015-10-19 12:44:52.000000000 -0700
-***************
-*** 14,20 ****
-  
-  #include <string.h>
-  #ifndef _MSC_VER
-! #include <values.h>
-  #include <sys/time.h>
-  #endif
-  #include <time.h>
---- 14,20 ----
-  
-  #include <string.h>
-  #ifndef _MSC_VER
-! #include <limits.h>
-  #include <sys/time.h>
-  #endif
-  #include <time.h>
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 1 to Mili 15.1"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_151_darwin_patch2
-{
-    info "Applying Mili 15.1 darwin patch 2."
-    patch -p0 << \EOF
-*** mili-22.1/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
---- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
-***************
-*** 386,393 ****
-        done
-  
-  uninstall:
-- 
-- ifneq ($(OS_NAME),Linux)
-- include $(OBJS:.o=.d)
-- endif
-- 
---- 386,388 ----
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 2 to Mili 15.1"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_151_darwin_patch3
-{
-    return 0
-    info "Applying Mili 15.1 darwin patch 3."
-    patch -p0 << \EOF
-*** mili-22.1/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
---- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
-***************
-*** 534,542 ****
-   * Library-private file family management routines and data.
-   */
-  
-! int host_index;
-! int internal_sizes[QTY_PD_ENTRY_TYPES + 1];
-! int mili_verbose;
-  Return_value validate_fam_id( Famid fam_id );
-  Return_value parse_control_string( char *ctl_str, Mili_family *fam,
-                                     Bool_type *p_create );
---- 534,542 ----
-   * Library-private file family management routines and data.
-   */
-  
-! extern int host_index;
-! extern int internal_sizes[QTY_PD_ENTRY_TYPES + 1];
-! extern int mili_verbose;
-  Return_value validate_fam_id( Famid fam_id );
-  Return_value parse_control_string( char *ctl_str, Mili_family *fam,
-                                     Bool_type *p_create );
-***************
-*** 604,610 ****
-  Return_value load_directories( Mili_family *fam );
-  
-  /* param.c - parameter management routines. */
-! char *dtype_names[QTY_PD_ENTRY_TYPES + 1];
-  Return_value read_scalar( Mili_family *fam, Param_ref *p_pr,  void *p_value );
-  Return_value mili_read_string( Mili_family *fam, Param_ref *p_pr,
-                                 char *p_value );
---- 604,610 ----
-  Return_value load_directories( Mili_family *fam );
-  
-  /* param.c - parameter management routines. */
-! extern char *dtype_names[QTY_PD_ENTRY_TYPES + 1];
-  Return_value read_scalar( Mili_family *fam, Param_ref *p_pr,  void *p_value );
-  Return_value mili_read_string( Mili_family *fam, Param_ref *p_pr,
-                                 char *p_value );
-***************
-*** 647,653 ****
-  /* dep.c - routines for handling architecture dependencies. */
-  Return_value set_default_io_routines( Mili_family *fam );
-  Return_value set_state_data_io_routines( Mili_family *fam );
-! void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
-  
-  /* svar.c - routines for managing state variables. */
-  Bool_type valid_svar_data( Aggregate_type atype, char *name,
---- 647,653 ----
-  /* dep.c - routines for handling architecture dependencies. */
-  Return_value set_default_io_routines( Mili_family *fam );
-  Return_value set_state_data_io_routines( Mili_family *fam );
-! extern void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
-  
-  /* svar.c - routines for managing state variables. */
-  Bool_type valid_svar_data( Aggregate_type atype, char *name,
-***************
-*** 740,746 ****
-  void mili_delete_mo_class_data( void *p_data );
-  
-  /* wrap_c.c - C-half of FORTRAN-to-C wrappers. */
-! int fortran_api;
-  /* write_db.c */
-  Return_value
-  write_state_data( int state_num, Mili_analysis *out_db );
---- 740,746 ----
-  void mili_delete_mo_class_data( void *p_data );
-  
-  /* wrap_c.c - C-half of FORTRAN-to-C wrappers. */
-! extern int fortran_api;
-  /* write_db.c */
-  Return_value
-  write_state_data( int state_num, Mili_analysis *out_db );
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 3 to Mili 15.1"
-        return 1
-    fi
-
-    return 0
-}
-
 function apply_mili_221_cflags_patch
 {
     info "Applying Mili 22.1 CFLAGS patch."
@@ -583,21 +436,6 @@ EOF
 
 function apply_mili_patch
 {
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        apply_mili_151_darwin_patch1
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_151_darwin_patch2
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_151_darwin_patch3
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
     if [[ ${MILI_VERSION} == 22.1 ]] ; then
         apply_mili_221_cflags_patch
         if [[ $? != 0 ]] ; then
@@ -714,7 +552,7 @@ EOF
     # Build Mili
     #
     info "Building Mili . . . (~2 minutes)"
-    cd MILI-*-*
+    cd MILI-*-* || cd mili-*-*
     $MAKE opt fortran=false
 
     #
