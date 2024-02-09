@@ -84,6 +84,7 @@ function build_cfitsio
     info "Configuring CFITSIO . . ."
     cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
