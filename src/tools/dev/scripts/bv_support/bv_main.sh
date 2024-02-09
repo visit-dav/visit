@@ -337,15 +337,11 @@ function initialize_build_visit()
         #  export VISITARCH=${VISITARCH-${ARCH}}
         export SO_EXT="dylib"
         VER=$(uname -r)
-        # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will
-        # default to 10.1
 	
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
         # work See issue https://github.com/visit-dav/visit/issues/1506
-
-        # use gcc for 10.9 & earlier
 
 	VER_MAJOR=${VER%%.*}
 
@@ -358,38 +354,9 @@ function initialize_build_visit()
 	# conditional one must use "-lt"
         # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
 	    
-        if [[ ${VER_MAJOR} -lt 8 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.3
-        elif [[ ${VER_MAJOR} == 8 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.4
-        elif [[ ${VER_MAJOR} == 9 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.5
-        elif [[ ${VER_MAJOR} == 10 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.6
-        elif [[ ${VER_MAJOR} == 11 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.7
-        elif [[ ${VER_MAJOR} == 12 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.8
-        elif [[ ${VER_MAJOR} == 13 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.9
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 14 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.10
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 15 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.11
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 16 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.12
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 17 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.13
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        if [[ ${VER_MAJOR} -lt 18 ]] ; then
+            echo "Unsupported Darwin major version, ${VER_MAJOR}."
+            exit 1
         elif [[ ${VER_MAJOR} == 18 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.14
             export C_COMPILER=${C_COMPILER:-"clang"}
@@ -402,10 +369,14 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=11.0
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        else
-            export MACOSX_DEPLOYMENT_TARGET=10.14
+        elif [[ ${VER_MAJOR} == 21 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=12.0
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        else
+            echo "Unsupported Darwin major version, ${VER_MAJOR}."
+            echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"
+            exit 1
         fi
 
         export C_COMPILER=${C_COMPILER:-"gcc"}
