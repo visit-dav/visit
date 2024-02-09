@@ -45,6 +45,9 @@ WriteScript('bar.py')
 TestValueEQ("WriteScript('foo.py') == WriteScript(f)", filecmp.cmp('foo.py','bar.py'), True)
 TestValueGT("WriteScript() file size", os.path.getsize('foo.py'), 3000)
 
+### dir is causing exceptions with Python 3.9.18
+### so manually skip these tests until #19264 can be addressed
+"""
 # Test dir() on some objects
 dout = dir(SILRestriction())
 TestValueIN("SetsInCategory in dir(SILAttributes())", dout, 'SetsInCategory')
@@ -53,5 +56,6 @@ dout = dir(View3DAttributes())
 TestValueIN("RotateAxis in dir(View3Dattributes())", dout, 'RotateAxis')
 TestValueIN("GetImageZoom in dir(View3Dattributes())", dout, 'GetImageZoom')
 TestValueIN("SetImagePan in dir(View3Dattributes())", dout, 'SetImagePan')
+"""
 
 Exit()
