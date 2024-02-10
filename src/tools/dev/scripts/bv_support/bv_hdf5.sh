@@ -567,6 +567,14 @@ function build_hdf5
         cf_zlib="--with-zlib=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
     fi
 
+    cf_extra_flags=""
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        if [[ "$(uname -m)" == "arm64" ]]; then
+            # cf_extra_flags="-fsigned-char -D_FILE_OFFSET_BITS=64"
+            cf_extra_flags="-Wno-error=implicit-function-declaration"
+        fi
+    fi
+
     # Disable Fortran on Darwin since it causes HDF5 builds to fail.
     if [[ "$OPSYS" == "Darwin" ]]; then
         cf_fortranargs=""
@@ -627,7 +635,7 @@ function build_hdf5
         info "Invoking command to configure $bt HDF5"
         set -x
         sh -c "../configure CC=\"$cf_c_compiler\" \
-            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $cf_extra_flags\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
             ${cf_build_parallel} ${extra_ac_flags} $build_mode"
