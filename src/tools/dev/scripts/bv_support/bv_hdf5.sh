@@ -570,7 +570,6 @@ function build_hdf5
     cf_extra_flags=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "$(uname -m)" == "arm64" ]]; then
-            # cf_extra_flags="-fsigned-char -D_FILE_OFFSET_BITS=64"
             cf_extra_flags="-Wno-error=implicit-function-declaration"
         fi
     fi
