@@ -101,6 +101,59 @@ EOF
     return 0
 }
 
+function apply_mili_2302_darwin_patch1
+{
+    info "Applying Mili 23.02 darwin patch 1."
+    patch -p0 << \EOF
+*** mili-23.02/Makefile.Library.orig	2024-02-09 10:50:45.000000000 -0800
+--- mili-23.02/Makefile.Library	2024-02-09 10:51:03.000000000 -0800
+*************** install-chmod:
+*** 407,416 ****
+  	           echo "[$$dir] \t\t Mili version $(MILI_VERSION) is missing"; \
+  	        fi; \
+  	done
+- 
+- uninstall:
+- 
+- ifneq ($(OS_NAME),Linux)
+- include $(OBJS:.o=.d)
+- endif
+- 
+--- 407,409 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply Darwin patch 1 to Mili 23.02"
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_mili_2302_darwin_patch2
+{
+    info "Applying Mili 23.02 darwin patch 2."
+    patch -p0 << \EOF
+*** mili-23.02/src/mesh_u.c.orig	2024-02-09 11:02:26.000000000 -0800
+--- mili-23.02/src/mesh_u.c	2024-02-09 11:02:35.000000000 -0800
+***************
+*** 38,44 ****
+  
+  #include <string.h>
+  #ifndef _MSC_VER
+- #include <values.h>
+  #include <sys/time.h>
+  #endif
+  #include <time.h>
+--- 38,43 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply Darwin patch 2 to Mili 23.02"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_221_cflags_patch
 {
     info "Applying Mili 22.1 CFLAGS patch."
@@ -436,6 +489,17 @@ EOF
 
 function apply_mili_patch
 {
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_mili_2302_darwin_patch1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mili_2302_darwin_patch2
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
     if [[ ${MILI_VERSION} == 22.1 ]] ; then
         apply_mili_221_cflags_patch
         if [[ $? != 0 ]] ; then
@@ -523,8 +587,9 @@ function build_mili
     config_script=configure
     if [[ ${MILI_VERSION} == 19.2 && "$OPSYS" == "Darwin" ]]; then
         config_script=configure_15_1
-    elif [[ ${MILI_VERSION} == 22.1 && "$OPSYS" == "Darwin" ]] ; then
-        # Mili 22.1 configure expects fortran compiler even if no intention to use it.
+    elif [[ ${MILI_VERSION} == 22.01 && "$OPSYS" == "Darwin" ]] ||
+         [[ ${MILI_VERSION} == 23.02 && "$OPSYS" == "Darwin" ]] ; then
+        # Mili 22.1/23.02 configure expects fortran compiler even if no intention to use it.
         # We spoof fortran compiler here to fool configure.
        cat << \EOF > spoof_f77.sh
 #!/bin/sh
@@ -552,7 +617,7 @@ EOF
     # Build Mili
     #
     info "Building Mili . . . (~2 minutes)"
-    cd MILI-*-* || cd mili-*-*
+    cd MILI-*-*
     $MAKE opt fortran=false
 
     #

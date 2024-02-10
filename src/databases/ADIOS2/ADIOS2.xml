@@ -31,6 +31,7 @@
     </LIBS>
     <LIBS components="EPar">
       ${ADIOS2_PAR_LIB}
+      ${ADIOS2_LIB}
     </LIBS>
     <Files components="M,E">
       avtADIOS2FileFormat.C
