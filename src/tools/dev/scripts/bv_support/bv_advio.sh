@@ -301,6 +301,7 @@ function build_advio
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         ADVIO_DEBUG="--enable-debug"
     fi
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
