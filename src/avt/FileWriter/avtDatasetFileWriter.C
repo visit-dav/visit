@@ -383,6 +383,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    the colors associated with these two texture coordinates, producing a color
 //    that may not be in the table. To work-around this behavior, we *pad* the color
 //    texture duplicating the minimum and maximum color pixels on each end.
+// 
+//    Justin Privitera, Mon Feb 12 15:20:31 PST 2024
+//    I moved the extents calculation to the beginning to get around the bugged
+//    vtkCellDataToPointData.
 //
 // ****************************************************************************
 
