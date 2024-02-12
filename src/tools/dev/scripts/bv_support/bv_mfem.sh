@@ -176,8 +176,12 @@ function build_mfem
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    # Version 4.0 now requires c++11
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS -std=c++11\""
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    vopts="${vopts} -DMFEM_ENABLE_MINIAPPS:BOOL=OFF"
+    # MFEM 4.6 is hard coded to use C++11
+    #  In the future, we want to change this to C++14
+    vopts="${vopts} -DCMAKE_CXX_STANDARD=11"
+    vopts="${vopts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
@@ -185,6 +189,14 @@ function build_mfem
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
     vopts="${vopts} -DMFEM_USE_EXCEPTIONS:BOOL=ON"
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        vopts="${vopts} -DMFEM_USE_ZLIB=ON"
+        vopts="${vopts} -DCMAKE_PREFIX_PATH:PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+    else
+        vopts="${vopts} -DMFEM_USE_ZLIB=OFF"
+    fi
+
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_CONDUIT=ON -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
     fi
@@ -200,8 +212,6 @@ function build_mfem
     else
         vopts="${vopts} -DMFEM_USE_FMS=OFF"
     fi
-    vopts="${vopts} -DMFEM_USE_ZLIB=ON"
-
     #
     # Call configure
     #
@@ -212,12 +222,6 @@ function build_mfem
     fi
     CMS=bv_run_cmake.sh
     echo "#!/bin/bash" > $CMS
-    echo "# Find the right ZLIB" >> $CMS
-    echo "export CMAKE_PREFIX_PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}" >> $CMS
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        echo "# Find the right HDF5" >> $CMS
-        echo "export HDF5_ROOT=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}" >> $CMS
-    fi
     echo "\"${CMAKE_BIN}\" ${vopts} .." >> $CMS
     cat $CMS
     issue_command bash $CMS || error "MFEM configuration failed."
