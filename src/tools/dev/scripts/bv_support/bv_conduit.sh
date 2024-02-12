@@ -21,6 +21,10 @@ function bv_conduit_depends_on
         depends_on="hdf5"
     fi
 
+    if [[ "$DO_SILO" == "yes" ]] ; then
+        depends_on="silo"
+    fi
+
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         depends_on="$depends_on zlib"
     fi
@@ -38,11 +42,11 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.8"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.9.1"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.8.0"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.9.1"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_SHA256_CHECKSUM="99811e9c464b6f841f52fcd47e982ae47cbb01cba334cff43eabe13eea58c0df"
+    export CONDUIT_SHA256_CHECKSUM="a3f1168738dcf72f8ebf83299850301aaf56e803f40618fc1230a755d0d05363"
 }
 
 function bv_conduit_print
@@ -70,9 +74,19 @@ function bv_conduit_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
+
+        CONDUIT_HC_LIBDEPS=""
         if [[ "$DO_HDF5" == "yes" ]] ; then
+            CONDUIT_HC_LIBDEPS="HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP}"
+        fi
+
+        if [[ "$DO_SILO" == "yes" ]] ; then
+            CONDUIT_HC_LIBDEPS="${CONDUIT_HC_LIBDEPS} \${VISIT_SILO_LIBDEP}"
+        fi
+
+        if [[ "$CONDUIT_HC_LIBDEPS" != "" ]] ; then
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP ${CONDUIT_HC_LIBDEPS} TYPE STRING)" \
                 >> $HOSTCONF
         fi
     fi
@@ -199,6 +213,10 @@ function build_conduit
                 cfg_opts="${cfg_opts} -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=\"\" -DCMAKE_OSX_SYSROOT:STRING=/"
             fi
         fi
+    fi
+
+    if [[ "$DO_SILO" == "yes" ]] ; then
+        cfg_opts="${cfg_opts} -DSILO_DIR:STRING=$VISITDIR/silo/$SILO_VERSION/$VISITARCH/"
     fi
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
