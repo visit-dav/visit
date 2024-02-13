@@ -13226,7 +13226,7 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn, int domain)
         // so that it can be obtained through the GetAuxiliaryData call
         //
         void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
-        cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, 
+        cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep, 
                             domain, vr);
     }
     
@@ -14017,12 +14017,12 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        rv = (void *) GetGlobalNodeIds(domain, var);
+        rv = (void *) GetGlobalIds(domain, var, "node");
         df = avtVariableCache::DestructVTKObject;
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_ZONE_IDS) == 0)
     {
-        rv = (void *) GetGlobalZoneIds(domain, var);
+        rv = (void *) GetGlobalIds(domain, var, "zone");
         df = avtVariableCache::DestructVTKObject;
     }
     else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
@@ -14303,15 +14303,16 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 
 
 // ****************************************************************************
-//  Method: avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh
+//  Method: avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType
 //
 //  Purpose:
-//      Allocate space for and determine the real mesh name for a ucd mesh,
-//      which may be a multimesh 
+//      Allocate space for and determine the real mesh name for a multiblock
+//      mesh of a specific type.
 //
 //  Arguments:
 //      dom     The domain of the mesh.
-//      mesh    The mesh we want the real name for 
+//      mesh    The mesh we want the real name for .
+//      mtype   The Silo type for the mesh.
 //
 //  Returns:    The real mesh name 
 //
@@ -14326,7 +14327,8 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 // ****************************************************************************
 
 char *
-avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh)
+avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType(int dom,
+    const char *mesh, int mtype)
 {
     //
     // Get the file handle, throw an exception if it hasn't already been opened
@@ -14341,11 +14343,10 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh
     int type = DBInqVarType(dbfile, m);
     VisitMutexUnlock("avtSiloFileFormat");
 
-    if (type != DB_MULTIMESH && type != DB_UCDMESH)
+    if (type != DB_MULTIMESH && type != mtype)
     {
         //
-        // This is not a ucd mesh or a multi-mesh, so it does not have a
-        // facelist.
+        // This is not the desired mesh type or a multi-mesh.
         //
         return NULL;
     }
@@ -14368,14 +14369,14 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh
         {
             EXCEPTION2(BadDomainException, dom, mm->nblocks);
         }
-        if (mm_ent->MeshType(dom) != DB_UCDMESH)
+        if (mm_ent->MeshType(dom) != mtype)
         {
             return NULL;
         }
         mb_meshname = mm_ent->GenerateName(dom);
         meshname = CXX_strdup(mb_meshname.c_str());
     }
-    else // (type == DB_UCDMESH)
+    else // (type == mtype)
     {
         if (dom != 0)
         {
@@ -14433,7 +14434,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 
     DBfile *dbfile = GetFile(tocIndex);
 
-    char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
+    char *meshname = AllocAndDetermineMeshnameForMeshType(dom, mesh, DB_UCDMESH);
     if (meshname == NULL || string(meshname) == "EMPTY")
         return NULL;
 
@@ -14456,9 +14457,8 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     return rv;
 }
 
-
 // ****************************************************************************
-//  Method: avtSiloFileFormat::GetGlobalNodeIds
+//  Method: avtSiloFileFormat::GetGlobalIds
 //
 //  Purpose:
 //      Gets the global node ids from the Silo file
@@ -14492,18 +14492,37 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    down so that it appears in debug logs only when there is actually data
 //    being read and returned from the plugin.
 // ****************************************************************************
+#define LOAD_GLOBAL_IDS(DBTYP, GETFUNC, FREEFUNC, MASK, GIDTYP, NIDS, IDS) \
+do {                                                                       \
+    DBSetDataReadMask2(MASK);                                              \
+    DBTYP *obj = GETFUNC(domain_file, directory_mesh.c_str());             \
+    if (obj && obj->IDS)                                                   \
+    {                                                                      \
+        gids = obj->IDS;                                                   \
+        ngids = obj->NIDS;                                                 \
+        gidtype = obj->GIDTYP;                                             \
+        obj->IDS = 0;                                                      \
+    }                                                                      \
+    FREEFUNC(obj);                                                         \
+} while (0)
 
 vtkDataArray *
-avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
+avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
 {
     DBfile *dbfile = GetFile(tocIndex);
 
-    char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
+    int mtype = DB_UCDMESH;
+    char *meshname = AllocAndDetermineMeshnameForMeshType(dom, mesh, mtype);
     if (meshname == NULL || string(meshname) == "EMPTY")
     {
-        if (meshname != NULL)
-            delete [] meshname;
-        return NULL;
+        mtype = DB_POINTMESH;
+        meshname = AllocAndDetermineMeshnameForMeshType(dom, mesh, mtype);
+        if (meshname == NULL || string(meshname) == "EMPTY")
+        {
+            if (meshname != NULL)
+                delete [] meshname;
+            return NULL;
+        }
     }
 
     //
@@ -14517,31 +14536,32 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
     unsigned long long mask = DBGetDataReadMask2();
-    DBSetDataReadMask2(DBUMGlobNodeNo);
-    DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
-    DBSetDataReadMask2(mask);
-    if (um == NULL)
+
+    int ngids, gidtype;
+    void *gids = 0;
+    if (mtype == DB_UCDMESH)
     {
-        if (!ignoreMissingBlocks)
-        {
-            EXCEPTION1(InvalidVariableException, mesh);
-        }
-        return 0;
+        if (string(idtype) == "node")
+            LOAD_GLOBAL_IDS(DBucdmesh, DBGetUcdmesh, DBFreeUcdmesh, DBUMGlobNodeNo, gnznodtype, nnodes, gnodeno);
+        else
+            LOAD_GLOBAL_IDS(DBucdmesh, DBGetUcdmesh, DBFreeUcdmesh, DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo,
+                zones->gnznodtype, zones->nzones, zones->gzoneno);
     }
+    else if (mtype == DB_POINTMESH)
+    {
+        LOAD_GLOBAL_IDS(DBpointmesh, DBGetPointmesh, DBFreePointmesh, DBPMGlobNodeNo, gnznodtype, nels, gnodeno);
+    }
+    DBSetDataReadMask2(mask);
 
     vtkDataArray *rv = NULL;
-    if (um->gnodeno != NULL)
+    if (gids)
     {
 
-        debug5 << "Reading in domain " << dom << ", global node ids for " << mesh << endl;
+        debug5 << "Reading in domain " << dom << ", global " << idtype << " ids for " << mesh << endl;
         debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
-        rv = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes);
-        um->gnodeno = 0; // vtkDataArray owns the data now.
-
+        rv = CreateDataArray(gidtype, gids, ngids);
     }
-
-    DBFreeUcdmesh(um);
 
     delete [] meshname;
 
@@ -14630,90 +14650,6 @@ avtSiloFileFormat::GetLocalDomainBoundaryInfo(int domain, const char *var)
 
     //res->Print(cout);
     return res;
-}
-
-// ****************************************************************************
-//  Method: avtSiloFileFormat::GetGlobalZoneIds
-//
-//  Purpose:
-//      Gets the global zone ids from the Silo file
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 9, 2004
-//
-//  Modifications:
-//    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
-//    Uncommented the data read mask
-//
-//    Mark C. Miller, Tue Jun 28 17:28:56 PDT 2005
-//    Made it handle the new "EMPTY" domain convention
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Moved code to set data read mask back to its original value to *before*
-//    throwing of exeption.
-//
-//    Mark C. Miller, Thu Oct 15 21:31:07 PDT 2009
-//    Add DBZonelistInfo to data read mask to work around a bug in Silo
-//    library where attempt to DBGetUcdmesh causes call to DBGetZonelist
-//    and a subsequent segv down in the bowels of Silo due to invalid
-//    assumptions regarding the existence of certain zonelist strutures.
-//
-//    Mark C. Miller, Tue Jan 12 17:55:54 PST 2010
-//    Use CreateDataArray for global zone numbers, handling long long too.
-//
-//    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
-//    Limited support for Silo nameschemes, use new multi block cache data
-//    structures.
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
-{
-    debug5 << "Reading in domain " << dom << ", global zone ids for " << mesh << endl;
-    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
-
-    DBfile *dbfile = GetFile(tocIndex);
-
-    char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
-    if (meshname == NULL || string(meshname) == "EMPTY")
-        return NULL;
-
-    //
-    // Some Silo objects are distributed across several files,
-    // so handle that here.
-    //
-    DBfile *domain_file = dbfile;
-    string directory_mesh;
-    DetermineFileAndDirectory(meshname, "", domain_file, directory_mesh);
-
-    // We want to get just the global node ids.  So we need to get the ReadMask,
-    // set it to read global node ids, then set it back.
-    unsigned long long mask = DBGetDataReadMask2();
-    DBSetDataReadMask2(DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo);
-    DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
-    DBSetDataReadMask2(mask);
-    if (um == NULL)
-    {
-        if (!ignoreMissingBlocks)
-        {
-            EXCEPTION1(InvalidVariableException, mesh);
-        }
-        return 0;
-    }
-
-    vtkDataArray *rv = NULL;
-    if (um->zones->gzoneno != NULL)
-    {
-        rv = CreateDataArray(um->zones->gnznodtype, um->zones->gzoneno, um->zones->nzones); 
-        um->zones->gzoneno = 0; // vtkDataArray owns the data now.
-    }
-
-    DBFreeUcdmesh(um);
-
-    delete [] meshname;
-
-    return rv;
 }
 
 // ****************************************************************************

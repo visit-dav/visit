@@ -453,8 +453,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtFacelist          *CalcExternalFacelist(DBfile *, const char *);
     avtMaterial          *CalcMaterial(DBfile *, const char *, const char *, int dom);
     avtSpecies           *CalcSpecies(DBfile *, const char *);
-    vtkDataArray         *GetGlobalNodeIds(int, const char *);
-    vtkDataArray         *GetGlobalZoneIds(int, const char *);
+    vtkDataArray         *GetGlobalIds(int, char const *, char const *);
 
     avtIntervalTree      *GetSpatialExtents(const char *);
     avtIntervalTree      *GetDataExtents(const char *);
@@ -489,7 +488,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                                         std::string &location_out);
 
     void                  GetRelativeVarName(const char *,const char *,char *);
-    char                 *AllocAndDetermineMeshnameForUcdmesh(int, const char *);
+    char                 *AllocAndDetermineMeshnameForMeshType(int, const char *, int);
 
     std::string           DetermineMultiMeshForSubVariable(DBfile *dbfile,
                                                            const char *name,
