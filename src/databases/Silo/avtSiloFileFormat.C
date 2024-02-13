@@ -14461,7 +14461,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //  Method: avtSiloFileFormat::GetGlobalIds
 //
 //  Purpose:
-//      Gets the global node ids from the Silo file
+//      Gets global mesh entity (nodes or zones) ids from the Silo file
 //
 //  Programmer: Mark C. Miller
 //  Creation:   August 4, 2004
@@ -14491,12 +14491,24 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Moved debug5 output lines indicating that global node ids are being read
 //    down so that it appears in debug logs only when there is actually data
 //    being read and returned from the plugin.
+//
+//    Mark C. Miller, Mon Feb 12 20:26:21 PST 2024
+//    Refactored away GetGlobalZoneIds and GetGlobalNodeIds into this one
+//    method that does both and does so for both UCD and POINT meshes.
+//    The main tricks are to a) set Silo's data read mask appropriately (and
+//    then also reset it when done) and then b) to allow VisIt's cache to take
+//    ownership of the resulting data. We do this by zeroing the Silo object's
+//    data member holding the global ids and keeping a separate local pointer
+//    to the data. For point meshes, nodes and zones are one in the same so the
+//    logic for both is the same. For UCD meshes, there is separate logic for
+//    global node ids and global zone ids embodied by a different set of args
+//    to the LOAD_GLOBAL_IDS macro'd logic.
 // ****************************************************************************
-#define LOAD_GLOBAL_IDS(DBTYP, GETFUNC, FREEFUNC, MASK, GIDTYP, NIDS, IDS) \
+#define LOAD_GLOBAL_IDS(DBTYP, GETFUNC, CKMEMBR, FREEFUNC, MASK, GIDTYP, NIDS, IDS) \
 do {                                                                       \
     DBSetDataReadMask2(MASK);                                              \
     DBTYP *obj = GETFUNC(domain_file, directory_mesh.c_str());             \
-    if (obj && obj->IDS)                                                   \
+    if (obj && obj->CKMEMBR)                                               \
     {                                                                      \
         gids = obj->IDS;                                                   \
         ngids = obj->NIDS;                                                 \
@@ -14533,25 +14545,25 @@ avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
     string directory_mesh;
     DetermineFileAndDirectory(meshname, "", domain_file, directory_mesh);
 
-    // We want to get just the global node ids.  So we need to get the ReadMask,
-    // set it to read global node ids, then set it back.
-    unsigned long long mask = DBGetDataReadMask2();
+    // Save whatever current data read mask is
+    unsigned long long saved_mask = DBGetDataReadMask2();
 
     int ngids, gidtype;
     void *gids = 0;
     if (mtype == DB_UCDMESH)
     {
         if (string(idtype) == "node")
-            LOAD_GLOBAL_IDS(DBucdmesh, DBGetUcdmesh, DBFreeUcdmesh, DBUMGlobNodeNo, gnznodtype, nnodes, gnodeno);
+            LOAD_GLOBAL_IDS(DBucdmesh, DBGetUcdmesh, gnodeno, DBFreeUcdmesh, DBUMGlobNodeNo, gnznodtype, nnodes, gnodeno);
         else
-            LOAD_GLOBAL_IDS(DBucdmesh, DBGetUcdmesh, DBFreeUcdmesh, DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo,
+            LOAD_GLOBAL_IDS(DBucdmesh, DBGetUcdmesh, zones && obj->zones->gzoneno, DBFreeUcdmesh,
+                DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo,
                 zones->gnznodtype, zones->nzones, zones->gzoneno);
     }
     else if (mtype == DB_POINTMESH)
     {
-        LOAD_GLOBAL_IDS(DBpointmesh, DBGetPointmesh, DBFreePointmesh, DBPMGlobNodeNo, gnznodtype, nels, gnodeno);
+        LOAD_GLOBAL_IDS(DBpointmesh, DBGetPointmesh, gnodeno, DBFreePointmesh, DBPMGlobNodeNo, gnznodtype, nels, gnodeno);
     }
-    DBSetDataReadMask2(mask);
+    DBSetDataReadMask2(saved_mask);
 
     vtkDataArray *rv = NULL;
     if (gids)
@@ -14567,7 +14579,6 @@ avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
 
     return rv;
 }
-
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetLocalDomainBoundaryInfo
