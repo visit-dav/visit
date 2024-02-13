@@ -3173,6 +3173,58 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         AddMiliDerivedVariables(md, meshId, std::string(meshName));
     }
 
+    // global node id magic
+
+    for (int dom = 0; dom < nDomains; dom ++)
+    {
+        if (!meshRead[dom])
+        {
+            ReadMesh(dom);
+        }
+    }
+
+    std::map<int, std::vector<intVector>> globalNodeIds;
+
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        char meshName[32];
+        snprintf(meshName, 32, "mesh%d", meshId + 1);
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        globalNodeIds[meshId] = miliClass->GetLabelIds();
+    }
+
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+
+        int max_global_domain_id = 0;
+        for (int dom = 0; dom < nDomains; dom ++)
+        {
+            for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
+            {
+                int val = globalNodeIds[meshId][dom][i];
+                if (val > max_global_domain_id)
+                {
+                    max_global_domain_id = val;
+                }
+            }
+        }
+
+        intVector idsCounter(max_global_domain_id + 1);
+        for (int dom = 0; dom < nDomains; dom ++)
+        {
+            for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
+            {
+                int dom_id = globalNodeIds[meshId][dom][i];
+                idsCounter[dom_id] ++;
+            }
+        }
+    }
+
+
+
     //
     // Set the cycle and time information.
     //
@@ -3224,7 +3276,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
     {
         return NULL;
     }
@@ -3234,7 +3286,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         ReadMesh(dom);
     }
 
-    if (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") == 0)
+    if (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
         //
         // Retrieve the node/zone labels.
