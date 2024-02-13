@@ -2612,7 +2612,25 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
 
-        int nmats = static_cast<int>(n_matset["matnames"].number_of_children());
+        std::cout << "avtMaterial" << std::endl;
+
+        std::vector<std::string> matnames;
+        for (const auto &matname : n_silo_matset["material_map"].child_names())
+        {
+            // const int matno = n_silo_matset["material_map"][matname].to_int64();
+            // const std::string mat_num_and_name = std::to_string(matno) + " " + matname;
+            // matnames.push_back(mat_num_and_name);
+            matnames.push_back(matname);
+            // std::cout << mat_num_and_name << std::endl;
+        }
+
+        // package up char ptrs
+        std::vector<const char *> matnames_ptrs;
+        for (const auto &matname : matnames)
+            matnames_ptrs.push_back(matname.c_str());
+        auto names = const_cast<char **>(matnames_ptrs.data());
+
+        int nmats = static_cast<int>(matnames.size());
         int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
         int *matlist  = NULL;
         int *mix_mat  = NULL;
@@ -2626,23 +2644,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             const Node &n_mat = matmap_itr.next();
             matnos.push_back(n_mat.to_int());
         }
-
-        std::cout << "avtMaterial" << std::endl;
-
-        std::vector<std::string> matnames;
-        for (const auto &matname : n_silo_matset["material_map"].child_names())
-        {
-            const int matno = n_silo_matset["material_map"][matname].to_int64();
-            const std::string mat_num_and_name = std::to_string(matno) + " " + matname;
-            // matnames.push_back(mat_num_and_name);
-            matnames.push_back(matname);
-            // std::cout << mat_num_and_name << std::endl;
-        }
-        // package up char ptrs
-        std::vector<const char *> matnames_ptrs;
-        for (const auto &matname : matnames)
-            matnames_ptrs.push_back(matname.c_str());
-        auto names = const_cast<char **>(matnames_ptrs.data());
 
         // we need int ptrs for the avtMaterial object,
         // convert if needed
