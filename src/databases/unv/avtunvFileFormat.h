@@ -19,52 +19,68 @@
 // Define my classes for the mesh
 class UnvRange { // Element class
 public:
-  double trange[6] ;
+    double trange[6] ;
 } ;
 class UnvElement { // Element class
 public:
-  int number;
-  int label;
-  int typelt ;
-  mutable int matid ; // mutable
-  int* nodes ;
-  struct compare_UnvElement
-  {
-    bool operator () (const UnvElement& e1, const UnvElement& e2) const
+    int number;
+    int label;
+    int typelt ;
+    int nbnel;
+    mutable int matid ; // mutable
+    int* nodes ;
+    struct compare_UnvElement
     {
-      return (e1.label < e2.label);
+        bool operator () (const UnvElement& e1, const UnvElement& e2) const
+        {
+            return (e1.label < e2.label);
+        };
     };
-  };
 };
 
 class UnvNode { // Node class
 public:
-  int number; // Numbered nodes
-  int label; // Global node label
-  double x,y,z ;
-  mutable std::vector<int> nod2elts; // Reverse mesh connectivity
-  struct compare_UnvNode
-  {
-    bool operator () (const UnvNode& n1, const UnvNode& n2) const
+    int number; // Numbered nodes
+    int label; // Global node label
+    double x,y,z ;
+    mutable std::vector<int> nod2elts; // Reverse mesh connectivity
+    struct compare_UnvNode
     {
-      return (n1.label < n2.label);
+        bool operator () (const UnvNode& n1, const UnvNode& n2) const
+        {
+            return (n1.label < n2.label);
+        };
     };
-  };
 };
+
+class UnvInterface { // Interface class
+public:
+    int number;
+    int label;
+    mutable std::string name ;
+    struct compare_UnvInterface
+    {
+        bool operator () (const UnvInterface& n1, const UnvInterface& n2) const
+        {
+            return (n1.label < n2.label);
+        };
+    };
+};
+
 class UnvFace { // Face class, can be a boundary face or internal one
 public:
-  int number;
-  int element ;
-  int facloc ;
-  int matid ;
-  double pressure ;
+    int number;
+    int element ;
+    int facloc ;
+    int matid ;
+    double pressure ;
 };
 class UnvFacePressure { // a set of faces
 public:
-  int number;
-  int label ;
-  std::string name ;
-  std::vector<UnvFace> faces;
+    int number;
+    int label ;
+    std::string name ;
+    std::vector<UnvFace> faces;
 };
 // ****************************************************************************
 //  Class: avtunvFileFormat
@@ -79,8 +95,8 @@ public:
 
 class avtunvFileFormat : public avtSTSDFileFormat
 {
-  public:
-                       avtunvFileFormat(const char *filename);
+public:
+    avtunvFileFormat(const char *filename);
     virtual           ~avtunvFileFormat() {;};
 
     //
@@ -88,7 +104,7 @@ class avtunvFileFormat : public avtSTSDFileFormat
     // information to information about block connectivity.
     //
     virtual void      *GetAuxiliaryData(const char *var, const char *type,
-                                      void *args, DestructorFunction &);
+                                        void *args, DestructorFunction &);
     //
 
     //
@@ -100,14 +116,16 @@ class avtunvFileFormat : public avtSTSDFileFormat
     // virtual double    GetTime(void);
     //
 
-    virtual const char    *GetType(void)   { return "unv"; };
-    virtual void           FreeUpResources(void); 
+    virtual const char    *GetType(void)   {
+        return "unv";
+    };
+    virtual void           FreeUpResources(void);
 
     virtual vtkDataSet    *GetMesh(const char *);
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
- 
-  protected:
+
+protected:
     // DATA MEMBERS
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
@@ -115,8 +133,7 @@ class avtunvFileFormat : public avtSTSDFileFormat
     virtual int is3DKnownElt(int ); // Provides 3D element value in connectivity nodefac array
     virtual int is2DKnownElt(int ); // Provides 2D element value in connectivity nodefac array
     virtual int is1DKnownElt(int ); // Provides 1D element value in connectivity nodefac array
-    virtual int isKnownElt(int ); // Provides element value in counter array nbletsptyp
-    virtual int getNbnodes(int ); // Provides 3D element number of nodes
+    virtual int getNbvertices(int ); // Provides 3D element number of nodes
     virtual int getNbfaces(int ); // Provides 3D element number of faces
     virtual int getEltDim(int ); // Provides element topological dimension
 
@@ -129,15 +146,17 @@ class avtunvFileFormat : public avtSTSDFileFormat
     virtual int getNbnolsv( ); // Provides the number of nodes to build the Face Pressure Load-Set nbnolsv
     virtual int getNbfaextv( ); // Provides the number of free faces nbfaextv
     virtual int getfastNbfaextv( ); // Provides the number of free faces nbfaextv
-    virtual int getNbnodesFreeFaces( ); // Provides the number of nodes to build the Face Faces nbnff
+    virtual int getNbverticesFreeFaces( ); // Provides the number of nodes to build the Face Faces nbnff
     virtual void getNormal3D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre, int iflo, int facloc); // Provides the normal to a face
     virtual void getNormal2D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre, int facloc); // Provides the normal to a segment
-    virtual void getvolNormal2D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre); // Provides the normal to a 2D face 
+    virtual void getvolNormal2D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre); // Provides the normal to a 2D face
+    virtual void getvolTangent1D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre); // Provides the tangent to a 1D edge
 
     virtual int getNbfreeSets(); // Gets the number of boundaries, i.e. free connected faces
 
     FILE* handle; // File handle for unv file
     gzFile gzhandle ; // File handle for unv.gz file
+    char * fileinfo_str ;
     int nbnodes ; // Total number of nodes in the mesh
     int maxnodl ; // Maximum node label in the mesh
     int nb3dmats ; // Highest material numbre for 3D elements
@@ -148,7 +167,7 @@ class avtunvFileFormat : public avtSTSDFileFormat
     int nb1dcells ; // Store the total number of surface cells
     std::string filename; // Mesh file name, including .unv or .unv.gz extension
     bool fileRead; // Says if file has already been read or not
-    int debuglevel ; 
+    int debuglevel ;
     double range[6] ; // geometrical mesh range
     int nbloadsets ; // Number of load-sets of 3D face pressure
     int nbfalsv ; // Number of known 3D elements in load-sets
@@ -163,6 +182,8 @@ class avtunvFileFormat : public avtSTSDFileFormat
     std::set<UnvElement, UnvElement::compare_UnvElement> meshUnvElements;  // Full mesh all types of elements
     std::vector<UnvFacePressure> meshUnvFacePressures; // read face pressure load sets
     std::vector<UnvFace> freeUnvFaces; // List of free faces for 3D mesh.
+    std::set<UnvInterface, UnvInterface::compare_UnvInterface> meshUnvInterfaces;
+    std::vector<UnvInterface> listUnvInterfaces;
 };
 
 
