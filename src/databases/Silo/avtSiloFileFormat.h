@@ -262,6 +262,10 @@ typedef struct _GroupInfo
 //    Mark C. Miller, Wed Jun 15 09:16:56 PDT 2016
 //    Added support for loading the block decomposition as a variable
 //    under certain conditions.
+//
+//    Mark C. Miller, Tue Feb 13 10:08:31 PST 2024
+//    Switch char * AllocAndDetermineMeshnameForUcdmesh to
+//    string AllocAndDetermineMeshnameForMeshType
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -488,7 +492,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                                         std::string &location_out);
 
     void                  GetRelativeVarName(const char *,const char *,char *);
-    char                 *AllocAndDetermineMeshnameForMeshType(int, const char *, int);
+    std::string           DetermineMeshnameForMeshType(int, const char *, int);
 
     std::string           DetermineMultiMeshForSubVariable(DBfile *dbfile,
                                                            const char *name,

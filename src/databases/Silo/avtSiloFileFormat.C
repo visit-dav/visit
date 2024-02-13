@@ -14303,11 +14303,10 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 
 
 // ****************************************************************************
-//  Method: avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType
+//  Method: avtSiloFileFormat::DetermineMeshnameForMeshType
 //
 //  Purpose:
-//      Allocate space for and determine the real mesh name for a multiblock
-//      mesh of a specific type.
+//      Determine the real mesh name for a multiblock mesh of a specific type.
 //
 //  Arguments:
 //      dom     The domain of the mesh.
@@ -14324,23 +14323,24 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Tue Feb 13 09:23:13 PST 2024
+//    Switch from char * to string return value.
 // ****************************************************************************
 
-char *
-avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType(int dom,
-    const char *mesh, int mtype)
+string
+avtSiloFileFormat::DetermineMeshnameForMeshType(int dom, const char *mesh, int mtype)
 {
     //
     // Get the file handle, throw an exception if it hasn't already been opened
     //
+    string       mb_meshname = "";
     DBfile *dbfile = GetFile(tocIndex);
 
     //
     // Silo can't accept consts, so cast it away.
     //
-    char *m = const_cast< char * >(mesh);
     VisitMutexLock("avtSiloFileFormat");
-    int type = DBInqVarType(dbfile, m);
+    int type = DBInqVarType(dbfile, mesh);
     VisitMutexUnlock("avtSiloFileFormat");
 
     if (type != DB_MULTIMESH && type != mtype)
@@ -14348,22 +14348,20 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType(int dom,
         //
         // This is not the desired mesh type or a multi-mesh.
         //
-        return NULL;
+        return mb_meshname;
     }
 
     DBmultimesh *mm = NULL;
     avtSiloMultiMeshCacheEntry *mm_ent = NULL;
-    string       mb_meshname = "";
-    char        *meshname = NULL;
 
     if (type == DB_MULTIMESH)
     {
-        GetMultiMesh("", m, &mm_ent);
+        GetMultiMesh("", mesh, &mm_ent);
         if(mm_ent != NULL)
             mm = mm_ent->DataObject();
         if (mm == NULL)
         {
-            EXCEPTION1(InvalidFilesException, m);
+            EXCEPTION1(InvalidFilesException, mesh);
         }
         if (dom >= mm->nblocks || dom < 0 )
         {
@@ -14371,10 +14369,9 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType(int dom,
         }
         if (mm_ent->MeshType(dom) != mtype)
         {
-            return NULL;
+            return mb_meshname;
         }
         mb_meshname = mm_ent->GenerateName(dom);
-        meshname = CXX_strdup(mb_meshname.c_str());
     }
     else // (type == mtype)
     {
@@ -14382,10 +14379,9 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForMeshType(int dom,
         {
             EXCEPTION2(BadDomainException, dom, 1);
         }
-        meshname = CXX_strdup(mesh);
     }
 
-    return meshname;
+    return mb_meshname;
 }
 
 
@@ -14434,8 +14430,8 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 
     DBfile *dbfile = GetFile(tocIndex);
 
-    char *meshname = AllocAndDetermineMeshnameForMeshType(dom, mesh, DB_UCDMESH);
-    if (meshname == NULL || string(meshname) == "EMPTY")
+    string meshname = DetermineMeshnameForMeshType(dom, mesh, DB_UCDMESH);
+    if (meshname == "" || meshname == "EMPTY")
         return NULL;
 
     //
@@ -14444,15 +14440,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     //
     DBfile *domain_file = dbfile;
     string directory_mesh;
-    DetermineFileAndDirectory(meshname, "", domain_file,  directory_mesh);
+    DetermineFileAndDirectory(meshname.c_str(), "", domain_file,  directory_mesh);
 
     avtFacelist *rv = CalcExternalFacelist(domain_file, directory_mesh.c_str());
-
-    if (meshname != NULL)
-    {
-        delete [] meshname;
-        meshname = NULL;
-    }
 
     return rv;
 }
@@ -14524,17 +14514,13 @@ avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
     DBfile *dbfile = GetFile(tocIndex);
 
     int mtype = DB_UCDMESH;
-    char *meshname = AllocAndDetermineMeshnameForMeshType(dom, mesh, mtype);
-    if (meshname == NULL || string(meshname) == "EMPTY")
+    string meshname = DetermineMeshnameForMeshType(dom, mesh, mtype);
+    if (meshname == "" || meshname == "EMPTY")
     {
         mtype = DB_POINTMESH;
-        meshname = AllocAndDetermineMeshnameForMeshType(dom, mesh, mtype);
-        if (meshname == NULL || string(meshname) == "EMPTY")
-        {
-            if (meshname != NULL)
-                delete [] meshname;
+        meshname = DetermineMeshnameForMeshType(dom, mesh, mtype);
+        if (meshname == "" || meshname == "EMPTY")
             return NULL;
-        }
     }
 
     //
@@ -14543,7 +14529,7 @@ avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
     //
     DBfile *domain_file = dbfile;
     string directory_mesh;
-    DetermineFileAndDirectory(meshname, "", domain_file, directory_mesh);
+    DetermineFileAndDirectory(meshname.c_str(), "", domain_file, directory_mesh);
 
     // Save whatever current data read mask is
     unsigned long long saved_mask = DBGetDataReadMask2();
@@ -14574,8 +14560,6 @@ avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
 
         rv = CreateDataArray(gidtype, gids, ngids);
     }
-
-    delete [] meshname;
 
     return rv;
 }
