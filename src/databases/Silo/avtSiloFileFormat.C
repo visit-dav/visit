@@ -13226,7 +13226,7 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn, int domain)
         // so that it can be obtained through the GetAuxiliaryData call
         //
         void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
-        cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep, 
+        cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, 
                             domain, vr);
     }
     
