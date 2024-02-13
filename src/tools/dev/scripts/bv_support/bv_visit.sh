@@ -20,7 +20,6 @@ function bv_visit_depends_on
 
 function bv_visit_info
 {
-    export VISIT_MD5_CHECKSUM=""
     export VISIT_SHA256_CHECKSUM=""
 }
 

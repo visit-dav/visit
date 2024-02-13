@@ -95,6 +95,10 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Cyrus Harrison, Tue Feb 23 17:04:32 PST 2021
 //    Use MPI_Comm_c2f handle to init mpicom module.
 //
+//    Kathleen Biagas, Wed Jan 24, 2024
+//    When running a dev version on Windows, add ThirdParty directory
+//    to dll directory.
+//
 // ****************************************************************************
 
 bool
@@ -113,6 +117,16 @@ avtPythonFilterEnvironment::Initialize()
     if(!pyi->AddSystemPath(vlibsp)) // vtk module is symlinked here
         return false;
 
+#ifdef _WIN32
+    // need to add ThirdParty dll directory to dll path if it is available
+    // (eg for development builds)
+    if(GetIsDevelopmentVersion())
+    {
+        string vdlldir = GetVisItThirdPartyDirectory();
+        if(!vdlldir.empty() && !pyi->AddDLLPath(vdlldir))
+            return false;
+    }
+#endif
     // import pyavt and vtk
     if(!pyi->RunScript("from pyavt.filters import *\n"))
         return false;

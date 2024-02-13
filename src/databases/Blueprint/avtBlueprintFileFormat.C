@@ -2580,6 +2580,10 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 // 
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+// 
+//     Justin Privitera, Mon Feb  5 14:14:19 PST 2024
+//     Removed unnecessary material numbers logic now that we have a new 
+//     Conduit.
 //
 // ****************************************************************************
 avtMaterial *
@@ -2644,15 +2648,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             matlist  = n_silo_matset["matlist"].as_int_ptr();
             mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
             mix_next = n_silo_matset["mix_next"].as_int_ptr();
-        }
-
-        // we need to adjust the matlist.
-        for(int i=0;i<nzones;i++)
-        {
-            if(matlist[i] > 0 )
-            {
-                matlist[i]--;
-            }
         }
 
         int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());

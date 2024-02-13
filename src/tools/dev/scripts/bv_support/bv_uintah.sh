@@ -61,7 +61,6 @@ function bv_uintah_info
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
     export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}"}
-    export UINTAH_MD5_CHECKSUM="27206aae5bc2ff4f976c885b8f500c64"
     export UINTAH_SHA256_CHECKSUM="446f6426d019f277635002e2ec6f7f93227abfe7f433db2ecc59871dcd4afa84"
 }
 

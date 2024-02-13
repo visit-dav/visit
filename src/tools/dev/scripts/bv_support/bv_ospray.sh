@@ -87,8 +87,7 @@ function bv_ospray_info
         export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
         export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
         export OSPRAY_URL=${OSPRAY_URL:-"https://github.com/ospray/OSPRay/archive/v${OSPRAY_VERSION}"}
-#        export OSPRAY_MD5_CHECKSUM="1654f0582de2443db0b717986d82fbbe"
-#        export OSPRAY_SHA256_CHECKSUM="074bfd83b5a554daf8da8d9b778b6ef1061e54a1688eac13e0bdccf95593883d"
+        export OSPRAY_SHA256_CHECKSUM="d8d8e632d77171c810c0f38f8d5c8387470ca19b75f5b80ad4d3d12007280288"
     else
         export OSPRAY_VERSION=${OSPRAY_VERSION:-"1.6.1"}
         export OSPRAY_VISIT_MODULE_VERSION=${OSPRAY_VISIT_MODULE_VERSION:-"1.6.x"}
@@ -103,7 +102,6 @@ function bv_ospray_info
         export OSPRAY_VISIT_MODULE_UNTAR_DIR=${OSPRAY_VISIT_MODULE_UNTAR_DIR:-"module_visit-${OSPRAY_VISIT_MODULE_VERSION}"}
         export OSPRAY_VISIT_MODULE_BUILD_DIR=${OSPRAY_VISIT_MODULE_BUILD_DIR:-"${OSPRAY_BUILD_DIR}/modules/module_visit"}
         export OSPRAY_VISIT_MODULE_DOWNLOAD_URL=${OSPRAY_VISIT_MODULE_DOWNLOAD_URL:-"https://github.com/wilsonCernWq/module_visit/releases/download/v1.6.x"}
-        export OSPRAY_MD5_CHECKSUM="58cfed6a24e8023389f63f65455466aa"
         export OSPRAY_SHA256_CHECKSUM="e080ca1161cbb987d889bb2ce308be7a38e0928afe7c9e952afd8273e29de432"
     fi
 }

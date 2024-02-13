@@ -24,14 +24,12 @@ function bv_openexr_info
     export OPENEXR_VERSION=${OPENEXR_VERSION:-"2.2.0"}
     export OPENEXR_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"2.2.0"}
     export OPENEXR_BUILD_DIR=${OPENEXR_BUILD_DIR:-"openexr-2.2.0"}
-    export OPENEXR_MD5_CHECKSUM="b64e931c82aa3790329c21418373db4e"
     export OPENEXR_SHA256_CHECKSUM="36a012f6c43213f840ce29a8b182700f6cf6b214bea0d5735594136b44914231"
 
     export ILMBASE_FILE=${ILMBASE_FILE:-"ilmbase-2.2.0.tar.gz"}
     export ILMBASE_VERSION=${ILMBASE_VERSION:-"2.2.0"}
     export ILMBASE_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"2.2.0"}
     export ILMBASE_BUILD_DIR=${ILMBASE_BUILD_DIR:-"ilmbase-2.2.0"}
-    export ILMBASE_MD5_CHECKSUM="b540db502c5fa42078249f43d18a4652"
     export ILMBASE_SHA256_CHECKSUM="ecf815b60695555c1fbc73679e84c7c9902f4e8faa6e8000d2f905b8b86cedc7"
 }
 
@@ -122,9 +120,19 @@ function build_ilmbase
          EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
+    # Open EXR does not suport c++17, a few examples of errors:
+    #
+    #  ISO C++17 does not allow dynamic exception specifications
+    #  ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+    #
+    # If c++17 s the compiler default it will fail to build
+    # Use --std=c++14 to avoid problems while building/
+    #
+    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
+
     set -x
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
                 $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
     set +x
     if [[ $? != 0 ]] ; then
@@ -196,8 +204,18 @@ function build_openexr
          EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
+    # Open EXR does not suport c++17, a few examples of errors:
+    #
+    #  ISO C++17 does not allow dynamic exception specifications
+    #  ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+    #
+    # If c++17 s the compiler default it will fail to build
+    # Use --std=c++14 to avoid problems while building/
+    #
+    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
+
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
                 $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
                 --with-ilmbase-prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
                 --with-pic --enable-imfexamples $DISABLE_BUILDTYPE

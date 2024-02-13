@@ -42,7 +42,6 @@ function bv_vtkm_info
     export VTKM_VERSION=${VTKM_VERSION:-"v1.9.0"}
     export VTKM_FILE=${VTKM_FILE:-"vtk-m-${VTKM_VERSION}.tar.gz"}
     export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-${VTKM_VERSION}"}
-    export VTKM_MD5_CHECKSUM="8c236061c546e528a66372d556f3991c"
     export VTKM_SHA256_CHECKSUM="12355dea1a24ec32767260068037adeb71abb3df2f9f920c92ce483f35ff46e4"
 }
 

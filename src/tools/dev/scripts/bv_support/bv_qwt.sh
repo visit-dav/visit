@@ -60,7 +60,6 @@ function bv_qwt_info
         export QWT_VERSION=${QWT_VERSION:-"6.1.2"}
         export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.0"}
         export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.1.2"}
-        export QWT_MD5_CHECKSUM="9c88db1774fa7e3045af063bbde44d7d"
         export QWT_SHA256_CHECKSUM="2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
     else
         export QWT_FILE=${QWT_FILE:-"qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz"}

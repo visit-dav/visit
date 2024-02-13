@@ -27,7 +27,6 @@ function bv_mpich_info
     export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
     export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
     export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
-    export MPICH_MD5_CHECKSUM="9ed4cabd3fb86525427454381b25f6af"
     export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
 }
 

@@ -68,7 +68,6 @@ function bv_adios2_info
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
     export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/refs/tags/v${ADIOS2_VERSION}"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="99e55ad8346551c632515905379c3cc1"
     export ADIOS2_SHA256_CHECKSUM="8b72142bd5aabfb80c7963f524df11b8721c09ef20caea6df5fb00c31a7747c0"
 }
 
@@ -201,10 +200,21 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
 
-        # Use Blosc2?
+        # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
+            BLOSC2_INSTALL_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
+            BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
+            # note: lib dir can be `lib``, or `lib64` depending on the platform
+            if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
+                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.so"
+            fi
+
+            if [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
+                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.so"
+            fi
+
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:BOOL=ON"
-            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_DIR}"
+            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
         fi
