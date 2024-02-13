@@ -706,11 +706,11 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
     {
         const double sizeInGigaBytes = (pimpl->outData.size() * sizeof(FloatType)) / (double)1e9;
         debug5 << "avtFlattenQuery XML output:\n" << pimpl->outInfo.ToXML() << std::endl;
-        qA->SetXmlResult(pimpl->outInfo.ToXML());
         qA->SetResultsMessage("Success!\nNOTE: This query should only "
                         "be used in the CLI via the Flatten() function.");
         if(pimpl->useSharedMemory)
         {
+            qA->SetXmlResult(pimpl->outInfo.ToXML());
             WriteSharedMemory();
         }
         else if(sizeInGigaBytes > pimpl->maxDataSize)
@@ -727,6 +727,7 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
         }
         else
         {
+            qA->SetXmlResult(pimpl->outInfo.ToXML());
             SwapIntoQueryAttributes(*qA, pimpl->outData);
         }
     }
