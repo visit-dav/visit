@@ -259,6 +259,11 @@ function bv_python_info
     export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
     export PYTHON_SHA256_CHECKSUM="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354"
 
+    export SETUPTOOLS_URL=""
+    export SETUPTOOLS_FILE="setuptools-68.0.0.tar.gz"
+    export SETUPTOOLS_BUILD_DIR="setuptools-68.0.0"
+    export SETUPTOOLS_SHA256_CHECKSUM=""
+
     export PILLOW_URL=${PILLOW_URL:-"https://github.com/python-pillow/Pillow/archive/refs/tags/"}
     export PILLOW_FILE="Pillow-10.0.0.tar.gz"
     export PILLOW_BUILD_DIR="Pillow-10.0.0"
@@ -651,12 +656,64 @@ function build_python
         return 1
     fi
 
-    fix_py_permissions
-
     cd "$START_DIR"
     info "Done with Python"
 
+
+    # wheel and its dependencies
+    download_py_module ${FLITCORE_FILE} ${FLITCORE_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+  
+    download_py_module ${WHEEL_FILE} ${WHEEL_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE}  "flit_core"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${WHEEL_BUILD_DIR} "wheel"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    # setuptools
+    # need the newest version required by a module, not the default
+    # version from python
+    download_py_module ${SETUPTOOLS_FILE} ${SETUPTOOLS_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${SETUPTOOLS_BUILD_DIR} ${SETUPTOOLS_FILE} "setuptools"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${SETUPTOOLS_BUILD_DIR} "setuptools"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    fix_py_permissions
+
+    info "Done with python setuptools module."
     return 0
+
 }
 
 # *************************************************************************** #
@@ -982,46 +1039,6 @@ function build_mpi4py
 
     install_py_module ${MPI4PY_BUILD_DIR} "mpi4py"
     if test $? -ne 0 ; then
-        return 1
-    fi
-
-    fix_py_permissions
-
-    return 0
-}
-
-# *************************************************************************** #
-#                                  build_wheel                                #
-# *************************************************************************** #
-function build_wheel
-{
-    download_py_module ${FLITCORE_FILE} ${FLITCORE_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-  
-    download_py_module ${WHEEL_FILE} ${WHEEL_URL}
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE}  "flit_core"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    install_py_module ${WHEEL_BUILD_DIR} "wheel"
-    if [[ $? != 0 ]] ; then
         return 1
     fi
 
@@ -1580,17 +1597,6 @@ function bv_python_build
             # of these python modules
             export PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
             export PYTHON_COMMAND="${PYHOME}/bin/python3"
-
-            # most every module needs wheel to build properly via pip
-            check_if_py_module_installed "wheel"
-            if [[ $? != 0 ]] ; then
-                info "Building the wheel module"
-                build_wheel
-                if [[ $? != 0 ]] ; then
-                    error "wheel build failed. Bailing out."
-                fi
-                info "Done building the wheel module."
-            fi
 
             check_if_py_module_installed "numpy"
             if [[ $? != 0 ]] ; then
