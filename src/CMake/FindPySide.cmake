@@ -433,10 +433,11 @@ function(PYSIDE_ADD_HYBRID_MODULE module_name
 
     message(STATUS "Configuring PySide hybrid module: ${module_name}")
 
-    PYTHON_ADD_PIP_SETUP("${module_name}_py_setup"
-                         ${dest_dir}
-                         ${mod_py_setup}
-                         ${mod_py_sources})
+    PYTHON_ADD_PIP_SETUP(NAME "${module_name}_py_setup"
+                         DEST_DIR ${dest_dir}
+                         PY_MODULE_DIR {module_name}
+                         PY_SETUP_FILE ${mod_py_setup}
+                         PY_SOURCES ${mod_py_sources})
 
     PYSIDE_ADD_MODULE(${module_name}
                   ${dest_dir}/${module_name}

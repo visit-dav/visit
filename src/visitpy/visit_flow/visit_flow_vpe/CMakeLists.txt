@@ -9,14 +9,14 @@
 #
 #****************************************************************************
 
-PYTHON_ADD_PIP_SETUP(visit_flow_vpe_py_setup
-                     site-packages
-                     setup.py
-                     src/__init__.py
-                     src/visit_flow_exec.vpe
-                     src/visit_flow_vpe.py)
 
-
+PYTHON_ADD_PIP_SETUP(NAME visit_flow_vpe_py_setup
+                     DEST_DIR site-packages
+                     PY_MODULE_DIR visit_flow_vpe
+                     PY_SETUP_FILE setup.py
+                     PY_SOURCES  src/__init__.py
+                                 src/visit_flow_exec.vpe
+                                 src/visit_flow_vpe.py)
 
 
 
