@@ -439,24 +439,6 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
 
 ENDFUNCTION(PYTHON_ADD_PIP_SETUP)
 
-function(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
-    message(STATUS "Configuring hybrid python module: ${target_name}")
-    PYTHON_ADD_DISTUTILS_SETUP("${target_name}_py_setup"
-                               ${dest_dir}
-                               ${setup_file}
-                               ${py_sources})
-    PYTHON_ADD_MODULE(${target_name} ${ARGN})
-    if(NOT WIN32)
-        set_target_properties(${target_name} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
-    else()
-        set_target_properties(${target_name} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${dest_dir}/${target_name}/")
-    endif()
-    add_dependencies(${target_name} "${target_name}_py_setup")
-    VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
-
-endfunction()
 
 ##############################################################################
 # Macro to create a pip script and compiled python module
@@ -509,16 +491,19 @@ FUNCTION(PYTHON_ADD_HYBRID_MODULE)
                          PY_SOURCES    ${args_PY_SOURCES}
                          FOLDER        ${args_FOLDER})
 
-    PYTHON_ADD_MODULE(${target_name} ${ARGN})
+    PYTHON_ADD_MODULE(${args_NAME} ${args_SOURCES})
+
+
+    ##### visit specific code:
     if(NOT WIN32)
-         set_target_properties(${target_name} PROPERTIES
-             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
+         set_target_properties(${args_NAME} PROPERTIES
+             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${args_DEST_DIR}/${args_NAME}/)
     else()
-        set_target_properties(${target_name} PROPERTIES
-             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${dest_dir}/${target_name}/")
+        set_target_properties(${args_NAME} PROPERTIES
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${args_DEST_DIR}/${args_NAME}/")
     endif()
-    add_dependencies(${target_name} "${target_name}_py_setup")
-    VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
+    add_dependencies(${args_NAME} "${target_name}_py_setup")
+    VISIT_INSTALL_TARGETS_RELATIVE(${args_DEST_DIR}/${target_name} ${args_NAME})
 
 ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
 
