@@ -522,7 +522,7 @@ function bv_qt6_build
 
 
             # tools submodule
-            if test -f QT6_INSTALL_DIR/modules/Tools.json ; then
+            if test -f ${QT6_INSTALL_DIR}/modules/Tools.json ; then
                 info "Qt 6 submodule tools already exists"
             else
                 info "Building QT6 tools (~4 minutes)"
@@ -530,7 +530,7 @@ function bv_qt6_build
             fi
 
             # svg submodule
-            if test -f QT6_INSTALL_DIR/modules/Svg.json ; then
+            if test -f ${QT6_INSTALL_DIR}/modules/Svg.json ; then
                 info "Qt 6 submodule svg already exists"
             else
                 info "Building QT6 svg (~2 minutes)"
