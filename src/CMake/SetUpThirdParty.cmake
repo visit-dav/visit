@@ -589,11 +589,12 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
 
+    # adios2 needs blosc2
+    include(${VISIT_SOURCE_DIR}/CMake/FindBlosc2.cmake)
     include(${VISIT_SOURCE_DIR}/CMake/FindADIOS2.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindBlosc.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
 

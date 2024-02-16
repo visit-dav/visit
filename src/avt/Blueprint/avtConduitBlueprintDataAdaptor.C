@@ -659,8 +659,20 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     }
 
     points->SetDataTypeToDouble();
-    points->SetNumberOfPoints(npts);
 
+    int n_elems = npts;
+    if (n_topo["type"].as_string() == "unstructured" &&
+        n_topo.has_path("elements/shape") &&
+        n_topo["elements/shape"].as_string() == "point" &&
+        n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
+    {
+        n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
+        points->SetNumberOfPoints(n_elems);
+    }
+    else
+    {
+        points->SetNumberOfPoints(npts);
+    }
 
     if(ndstrided) // strided case
     {
@@ -686,12 +698,28 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     }
     else // default, simplest case
     {
-        for (vtkIdType i = 0; i < npts; i++)
+        // we need to look at the topo to decide what points to write
+        // we are in the unstructured case
+        if (npts != n_elems)
         {
-            double x = x_vals[i];
-            double y = have_y ? y_vals[i] : 0;
-            double z = have_z ? z_vals[i] : 0;
-            points->SetPoint(i, x, y, z);
+            int_accessor conn = n_topo["elements/connectivity"].value();
+            for (vtkIdType i = 0; i < n_elems; i++)
+            {
+                double x = x_vals[conn[i]];
+                double y = have_y ? y_vals[conn[i]] : 0;
+                double z = have_z ? z_vals[conn[i]] : 0;
+                points->SetPoint(i, x, y, z);
+            }
+        }
+        else
+        {
+            for (vtkIdType i = 0; i < npts; i++)
+            {
+                double x = x_vals[i];
+                double y = have_y ? y_vals[i] : 0;
+                double z = have_z ? z_vals[i] : 0;
+                points->SetPoint(i, x, y, z);
+            }
         }
     }
 
@@ -722,34 +750,37 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to conduit blueprint data adaptor.
+// 
+//    Justin Privitera, Thu Jan 18 14:53:32 PST 2024
+//    Added back in logic for unstructured points.
 //
 // ****************************************************************************
 
 vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
-                                       int /* npts -- UNUSED */)
+                                       int npts)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
     // TODO, I don't think we need this logic any more
-    // // Handle empty and point topology
-    // if (!n_topo.has_path("elements/connectivity") ||
-    //     (n_topo.has_path("elements/shape") &&
-    //      n_topo["elements/shape"].as_string() == "point"))
-    // {
-    //     // TODO, why is this 2 * npts?
-    //     ida->SetNumberOfTuples(2*npts);
-    //     for (int i = 0 ; i < npts; i++)
-    //     {
-    //         ida->SetComponent(2*i  , 0, 1);
-    //         ida->SetComponent(2*i+1, 0, i);
-    //     }
-    //     ca->SetCells(npts, ida);
-    //     ida->Delete();
-    // }
-    // else
-    // {
+    // Handle empty and point topology
+    if (!n_topo.has_path("elements/connectivity") ||
+        (n_topo.has_path("elements/shape") &&
+         n_topo["elements/shape"].as_string() == "point"))
+    {
+        // TODO, why is this 2 * npts?
+        ida->SetNumberOfTuples(2*npts);
+        for (int i = 0 ; i < npts; i++)
+        {
+            ida->SetComponent(2*i  , 0, 1);
+            ida->SetComponent(2*i+1, 0, i);
+        }
+        ca->SetCells(npts, ida);
+        ida->Delete();
+    }
+    else
+    {
 
         int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
         int csize = VTKCellTypeSize(ctype);
@@ -779,7 +810,7 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         }
         ca->SetCells(ncells, ida);
         ida->Delete();
-    // }
+    }
     return ca;
 }
 

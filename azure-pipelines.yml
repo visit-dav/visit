@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2023-03-23-shafe8254
+  container_tag: visitdav/visit-ci-develop:2024-02-10-sha117ab0
 
 # only build merge target pr to develop
 trigger: none
@@ -20,6 +20,7 @@ pr:
   branches:
     include:
     - develop
+    - 3.4RC
 
 # fast fail sanity checks
 stages:
@@ -96,10 +97,14 @@ stages:
            git lfs pull --include blueprint_v0.7.0_venn_test_data.tar.xz
            git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
            git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.3_devilray_mfem_test_data
            git lfs pull --include blueprint_v0.8.4_part_map_examples.tar.xz
            git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
            git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
            git lfs pull --include blueprint_v0.8.6_rz_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.6_1d_curve_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.7_venn_modded_matnos_example.tar.xz
+           git lfs pull --include blueprint_v0.8.7_polytopal_mesh_no_offsets.tar.xz
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
@@ -114,9 +119,14 @@ stages:
            tar xvf ../../data/blueprint_v0.7.0_venn_test_data.tar.xz
            tar xvf ../../data/blueprint_v0.8.2_braid_examples_test_data.tar.xz
            tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.3_devilray_mfem_test_data
            tar xvf ../../data/blueprint_v0.8.4_part_map_examples.tar.xz
            tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
            tar xvf ../../data/blueprint_v0.8.6_rz_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.6_1d_curve_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.7_venn_modded_matnos_example.tar.xz
+           tar xvf ../../data/blueprint_v0.8.7_polytopal_mesh_no_offsets.tar.xz
         displayName: 'Prep Test Data'
 
       - script: |
@@ -125,13 +135,12 @@ stages:
            #################################
            # run test suite
            cd build/test
-           # find vtk, ospray and tbb
+           # find qt, vtk, and ospray
+           export QT_LIB_DIR=`ls -d ${TPLS_PATH}/qt/*/ci/lib/`
            export VTK_LIB_DIR=`ls -d ${TPLS_PATH}/vtk/*/ci/lib/`
-           export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/lib/`
-           # note: tbb has extra paths under lib
-           export TBB_LIB_DIR=`ls -d ${TPLS_PATH}/tbb/*/ci/lib/intel64/gcc4.7/`
+           export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/ospray/lib/`
            # add to ld_lib path (rpaths are missing?)
-           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
+           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
            export TESTS=../../src/test/tests/databases/silo.py
            export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"

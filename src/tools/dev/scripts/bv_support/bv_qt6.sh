@@ -1,4 +1,4 @@
-
+ 
 function bv_qt6_initialize
 {
     export DO_QT6="no"
@@ -323,7 +323,7 @@ function build_qt6_base
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_opengl_LIBRARY:STRING="
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
-        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_GL_PREFERENCE:STRING=LEGACY"
+        qt_cmake_flags="${qt_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
     fi
     info "Configuring Qt6 base: . . . "
     set -x
@@ -343,7 +343,7 @@ function build_qt6_base
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building Qt6 base . . . "
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
 
     if [[ $? != 0 ]] ; then
         warn "Qt6 base build failed.  Giving up"
@@ -351,7 +351,7 @@ function build_qt6_base
     fi
 
     info "Installing Qt6  base . . . "
-    $MAKE install
+    ${CMAKE_COMMAND} --install .
 
     # Qt screws up permissions in some cases.  Try to fix that.
     chmod -R a+rX ${VISITDIR}/qt/${QT6_VERSION}

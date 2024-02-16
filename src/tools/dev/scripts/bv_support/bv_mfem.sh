@@ -36,7 +36,6 @@ function bv_mfem_info
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
     export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-6"}
-    export MFEM_MD5_CHECKSUM="467f246903078e10cf52242ecf3ed1e9"
     export MFEM_SHA256_CHECKSUM="5fa9465b5bec56bfb777a4d2826fba48d85fbace4aed8b64a2fd4059bf075b15"
 }
 
@@ -177,8 +176,12 @@ function build_mfem
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    # Version 4.0 now requires c++11
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS -std=c++11\""
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    vopts="${vopts} -DMFEM_ENABLE_MINIAPPS:BOOL=OFF"
+    # MFEM 4.6 is hard coded to use C++11
+    #  In the future, we want to change this to C++14
+    vopts="${vopts} -DCMAKE_CXX_STANDARD=11"
+    vopts="${vopts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
@@ -186,16 +189,29 @@ function build_mfem
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
     vopts="${vopts} -DMFEM_USE_EXCEPTIONS:BOOL=ON"
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        vopts="${vopts} -DMFEM_USE_ZLIB=ON"
+        vopts="${vopts} -DCMAKE_PREFIX_PATH:PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+    else
+        vopts="${vopts} -DMFEM_USE_ZLIB=OFF"
+    fi
+
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_CONDUIT=ON -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
     fi
+
+    # when using conduit, mfem's cmake logic requires HDF5_DIR to find HDF5
+    # (NOTE: mfem could use CONDUIT_HDF5_DIR)
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        vopts="${vopts} -DHDF5_DIR=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
+    fi
+
     if [[ "$DO_FMS" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
     else
         vopts="${vopts} -DMFEM_USE_FMS=OFF"
     fi
-    vopts="${vopts} -DMFEM_USE_ZLIB=ON"
-
     #
     # Call configure
     #
@@ -206,15 +222,9 @@ function build_mfem
     fi
     CMS=bv_run_cmake.sh
     echo "#!/bin/bash" > $CMS
-    echo "# Find the right ZLIB" >> $CMS
-    echo "export CMAKE_PREFIX_PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}" >> $CMS
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        echo "# Find the right HDF5" >> $CMS
-        echo "export HDF5_ROOT=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}" >> $CMS
-    fi
     echo "\"${CMAKE_BIN}\" ${vopts} .." >> $CMS
     cat $CMS
-    issue_command bash $CMS || error "FMS configuration failed."
+    issue_command bash $CMS || error "MFEM configuration failed."
 
     #
     # Build mfem

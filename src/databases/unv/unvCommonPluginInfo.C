@@ -55,6 +55,6 @@ unvCommonPluginInfo::SetupDatabase(const char *const *list,
         }
     }
     avtSTSDFileFormatInterface *inter
-           = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
+        = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
     return new avtGenericDatabase(inter);
 }
