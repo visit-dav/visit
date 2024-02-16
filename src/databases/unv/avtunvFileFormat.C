@@ -4,8 +4,21 @@
 
 // ************************************************************************* //
 //                            avtunvFileFormat.C
-// A reader for SDRC I-Deas Master Series unv files:
-//   Show the mesh, free faces and normals.
+// A reader for SDRC I-Deas Master Series unv files.
+// SDRC format:
+//   https://victorsndvg.github.io/FEconv/formats/unv.xhtml
+// VTK order (store in vtk order please)
+//   https://examples.vtk.org/site/VTKBook/08Chapter8/
+//   https://kitware.github.io/vtk-js/api/Common_DataModel_CellTypes.html
+// Aster code order: ordre identique TetP2 pour vTK et Aster
+//   https://code-aster.org/V2/doc/default/fr/man_u/u3/u3.03.01.pdf
+// Linear beams tip:
+//   https://www.eng-tips.com/viewthread.cfm?qid=30398
+// Siemens NX documentation:
+//   https://docs.plm.automation.siemens.com/tdoc/nx/12/nx_help#uid:xid1128419:index_advanced:xid1404601:xid1404604:id625791
+//   119 Solid Linear Pyramid [aka 312]
+//   120 Solid Parabolic Pyramid  [aka 313]
+// Show the mesh, free faces and normals.
 // Makes prints go to terminal or to vlog files as usual
 #define INTERACTIVEPLOT 0
 #define INTERACTIVEREAD 0
@@ -117,15 +130,21 @@ int avtunvFileFormat::is3DKnownElt (int typelt)
     int n;
     switch (typelt)
     {
+    case 118:
     case 111:
         n = 0;
         break;
+    case 116:
     case 115:
         n = 1;
         break;
+    case 113:
     case 112:
         n = 2;
         break;
+    case 119:
+    case 120:
+    case 313:
     case 312:
         n = 3;
         break;
@@ -140,10 +159,22 @@ int avtunvFileFormat::is2DKnownElt (int typelt)
     int n;
     switch (typelt)
     {
-    case 91 : case 81:
+    case 92: // Triangles P2
+    case 82:
+    case 42:
+    case 91: // Triangles P1
+    case 81:
+    case 41:
         n = 0;
         break;
-    case 94 : case 84:
+    case 96: // Quads P2 Cubic
+    case 95: // Quads P2 Parabolic
+    case 85:
+    case 45:
+    case 94: // Quads P1
+    case 84:
+    case 44:
+    case 122:
         n = 1;
         break;
     default:
@@ -155,36 +186,76 @@ int avtunvFileFormat::is2DKnownElt (int typelt)
 int avtunvFileFormat::is1DKnownElt (int typelt)
 {
     int n = -1;
-    if (typelt == 21)
+    if (typelt == 21 || typelt == 11 || typelt == 22 || typelt == 24)
     {
         n = 0;
     }
     return(n);
 }
+
+// Gets the topological dimension of an element
+// Now includes some quadratic elements
 int avtunvFileFormat::getEltDim (int typelt)
 {
     int n;
     switch (typelt)
     {
-    case 111:
+    case 118: // Tet P2
         n = 3;
         break;
-    case 115:
+    case 111: // Tet P1
         n = 3;
         break;
-    case 112:
+    case 116: // Hex P2
         n = 3;
         break;
-    case 312:
+    case 115: // Hex P1
         n = 3;
         break;
-    case 91 : case 81:
+    case 113: // Wedge P2
+        n = 3;
+        break;
+    case 112: // Wedge P1
+        n = 3;
+        break;
+    case 120:
+    case 313: // Pyramid P2, code and ordering guessed
+        n = 3;
+        break;
+    case 119:
+    case 312: // Pyramid
+        n = 3;
+        break;
+    case 34: // Polygon
         n = 2;
         break;
-    case 94 : case 84:
+    case 91: // Triangles P1
+    case 81:
+    case 41:
         n = 2;
         break;
-    case 21:
+    case 92: // Triangles P2
+    case 82:
+    case 42:
+        n = 2;
+        break;
+    case 122: // Quads P1
+    case 94:
+    case 84:
+    case 44:
+        n = 2;
+        break;
+    case 95: // Quads P2
+    case 85:
+    case 45:
+        n = 2;
+        break;
+    case 21: // 1D P1
+    case 11:
+        n = 1;
+        break;
+    case 24: // 1D P2
+    case 22:
         n = 1;
         break;
     default:
@@ -194,65 +265,51 @@ int avtunvFileFormat::getEltDim (int typelt)
     return(n);
 }
 
-// Provides position in a private ranking array of elements
-int avtunvFileFormat::isKnownElt (int typelt)
+// Provides the number of first order nodes per element type, i.e. vertices
+int avtunvFileFormat::getNbvertices (int typelt)
 {
     int n;
     switch (typelt)
     {
-    case 111:
-        n = 0;
-        break;
-    case 115:
-        n = 1;
-        break;
-    case 112:
-        n = 2;
-        break;
-    case 312:
-        n = 3;
-        break;
-    case 91 : case 81:
-        n = 4;
-        break;
-    case 94 : case 84:
-        n = 5;
-        break;
-    case 21:
-        n = 6;
-        break;
-    default:
-        n = -1;
-        break;
-    }
-    return(n);
-}
-
-// Provides the number of nodes per element type
-int avtunvFileFormat::getNbnodes (int typelt)
-{
-    int n;
-    switch (typelt)
-    {
+    case 118:
     case 111:
         n = 4;
         break;
+    case 116:
     case 115:
         n = 8;
         break;
+    case 113:
     case 112:
         n = 6;
         break;
+    case 119:
+    case 120:
+    case 313:
     case 312:
         n = 5;
         break;
-    case 91 : case 81:
+    case 92: // Triangles P2
+    case 82:
+    case 42:
+    case 91: // Triangles P1
+    case 81:
+    case 41:
         n = 3;
         break;
-    case 94 : case 84:
+    case 95: // Quads P2
+    case 85:
+    case 45:
+    case 122: // Quads P1
+    case 94:
+    case 84:
+    case 44:
         n = 4;
         break;
-    case 21:
+    case 24: // 1D P2
+    case 22:
+    case 21: // 1D P1
+    case 11:
         n = 2;
         break;
     default:
@@ -268,25 +325,45 @@ int avtunvFileFormat::getNbfaces (int typelt)
     int n;
     switch (typelt)
     {
+    case 118:
     case 111:
         n = 4;
         break;
+    case 116:
     case 115:
         n = 6;
         break;
+    case 113:
     case 112:
         n = 5;
         break;
+    case 119:
+    case 120:
+    case 313:
     case 312:
         n = 5;
         break;
-    case 91 : case 81:
+    case 92: // Triangles P2
+    case 82:
+    case 42:
+    case 91: // Triangles P1
+    case 81:
+    case 41:
         n = 3;
         break;
-    case 94 : case 84:
+    case 95: // Quads P2
+    case 85:
+    case 45:
+    case 122: // Quads P1
+    case 94:
+    case 84:
+    case 44:
         n = 4;
         break;
-    case 21:
+    case 24: // 1D P2
+    case 22:
+    case 21: // 1D P1
+    case 11:
         n = 2;
         break;
     default:
@@ -432,7 +509,7 @@ avtunvFileFormat::getNormal3D (float *one_entry,
     one_entry[1] = 0.5*(z1*x2-z2*x1);
     one_entry[2] = 0.5*(x1*y2-x2*y1);
 }
-// Provides the number of nodes for 2D element:
+
 void
 avtunvFileFormat::getNormal2D (float *one_entry,
                                set<UnvElement, UnvElement::compare_UnvElement>::iterator itre,
@@ -442,7 +519,10 @@ avtunvFileFormat::getNormal2D (float *one_entry,
     UnvNode anUnvNode;
     set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
     // First compute the normal to the element:
-    int nbnos = avtunvFileFormat::getNbnodes(itre->typelt);
+    int nbnos = avtunvFileFormat::getNbvertices(itre->typelt);
+    if (itre->typelt == 34)
+        nbnos = itre->nbnel ;
+
     if (nbnos == 3)
     {
         for (int ln=0; ln<nbnos; ln++)
@@ -471,8 +551,11 @@ avtunvFileFormat::getNormal2D (float *one_entry,
                 z2 += itrg->z;
             }
         }
+        one_entry[0] = (y1*z2-y2*z1);
+        one_entry[1] = (z1*x2-z2*x1);
+        one_entry[2] = (x1*y2-x2*y1);
     }
-    else
+    else if (nbnos == 4)
     {
         for (int ln=0; ln<4; ln++)
         {
@@ -503,10 +586,44 @@ avtunvFileFormat::getNormal2D (float *one_entry,
                 z1 -= itrg->z;
             }
         }
+        one_entry[0] = 0.5*(y1*z2-y2*z1);
+        one_entry[1] = 0.5*(z1*x2-z2*x1);
+        one_entry[2] = 0.5*(x1*y2-x2*y1);
     }
-    one_entry[0] = (y1*z2-y2*z1);
-    one_entry[1] = (z1*x2-z2*x1);
-    one_entry[2] = (x1*y2-x2*y1);
+    else
+    {
+        // More complicated
+        // First compute the barycenter :
+        double x0 = 0, y0 = 0, z0 = 0 ;
+        for (int ln=0; ln<nbnos; ln++)
+        {
+            anUnvNode.label = itre->nodes[ln];
+            itrg = meshUnvNodes.find(anUnvNode);
+            x0 += itrg->x;
+            y0 += itrg->y;
+            z0 += itrg->z;
+        }
+        // Then compute the area:
+        one_entry[0] = 0.0 ;
+        one_entry[1] = 0.0 ;
+        one_entry[2] = 0.0 ;
+        for (int ln=0; ln<nbnos; ln++)
+        {
+            anUnvNode.label = itre->nodes[ln];
+            itrg = meshUnvNodes.find(anUnvNode);
+            x1 = itrg->x - x0;
+            y1 = itrg->y - y0;
+            z1 = itrg->z - z0;
+            anUnvNode.label = itre->nodes[ (ln+1) %nbnos ];
+            itrg = meshUnvNodes.find(anUnvNode);
+            x2 = itrg->x - x0;
+            y2 = itrg->y - y0;
+            z2 = itrg->z - z0;
+            one_entry[0] += 0.5*(y1*z2-y2*z1);
+            one_entry[1] += 0.5*(z1*x2-z2*x1);
+            one_entry[2] += 0.5*(x1*y2-x2*y1);
+        }
+    }
     double fac=1./sqrt(one_entry[0]*one_entry[0]+one_entry[1]*one_entry[1]+one_entry[2]*one_entry[2]);
     x2 = fac * one_entry[0];
     y2 = fac * one_entry[1];
@@ -514,28 +631,60 @@ avtunvFileFormat::getNormal2D (float *one_entry,
 #if INTERACTIVEREAD
     if (debuglevel >= 4) fprintf(stdout,"\t* 2D Element Normal=(%lf,%lf,%lf)\n",x2,y2,z2);
 #endif
-    int iflo = avtunvFileFormat::is2DKnownElt(itre->typelt);
-    for (int ln=0; ln<2; ln++)
+    if (itre->typelt == 34)
     {
-        int in = nodefac2[iflo][facloc-1][ln];
-        if (in > 0)
+        // Check facloc is positive
+        for (int ln=0; ln<2; ln++)
         {
-            anUnvNode.label = itre->nodes[in-1];
-            itrg = meshUnvNodes.find(anUnvNode);
+            int in = (facloc-1+ln) % nbnos ;
+            if (in >= 0)
+            {
+                anUnvNode.label = itre->nodes[in];
+                itrg = meshUnvNodes.find(anUnvNode);
 #if INTERACTIVEREAD
-            if (debuglevel >= 4) fprintf(stdout,"\t\t Node=(%lf,%lf,%lf)\n",itrg->x,itrg->y,itrg->z);
+                if (debuglevel >= 4) fprintf(stdout,"\t\t Node=(%lf,%lf,%lf)\n",itrg->x,itrg->y,itrg->z);
 #endif
-            if (ln == 0)
-            {
-                x1 = -itrg->x;
-                y1 = -itrg->y;
-                z1 = -itrg->z;
+                if (ln == 0)
+                {
+                    x1 = -itrg->x;
+                    y1 = -itrg->y;
+                    z1 = -itrg->z;
+                }
+                else
+                {
+                    x1 += itrg->x;
+                    y1 += itrg->y;
+                    z1 += itrg->z;
+                }
             }
-            else
+        }
+
+    }
+    else
+    {
+        int iflo = avtunvFileFormat::is2DKnownElt(itre->typelt);
+        for (int ln=0; ln<2; ln++)
+        {
+            int in = nodefac2[iflo][facloc-1][ln];
+            if (in > 0)
             {
-                x1 += itrg->x;
-                y1 += itrg->y;
-                z1 += itrg->z;
+                anUnvNode.label = itre->nodes[in-1];
+                itrg = meshUnvNodes.find(anUnvNode);
+#if INTERACTIVEREAD
+                if (debuglevel >= 4) fprintf(stdout,"\t\t Node=(%lf,%lf,%lf)\n",itrg->x,itrg->y,itrg->z);
+#endif
+                if (ln == 0)
+                {
+                    x1 = -itrg->x;
+                    y1 = -itrg->y;
+                    z1 = -itrg->z;
+                }
+                else
+                {
+                    x1 += itrg->x;
+                    y1 += itrg->y;
+                    z1 += itrg->z;
+                }
             }
         }
     }
@@ -551,16 +700,41 @@ avtunvFileFormat::getNormal2D (float *one_entry,
 #endif
 }
 
-// Provides the number of nodes for 2D element:
+void
+avtunvFileFormat::getvolTangent1D (float *one_entry,
+                                   set<UnvElement, UnvElement::compare_UnvElement>::iterator itre)
+{
+    UnvNode anUnvNode;
+    set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
+    // First compute the normal to the element:
+    int nbnos = avtunvFileFormat::getNbvertices(itre->typelt);
+    if (nbnos == 2)
+    {
+        anUnvNode.label = itre->nodes[0];
+        itrg = meshUnvNodes.find(anUnvNode);
+        one_entry[0] = itrg->x;
+        one_entry[1] = itrg->y;
+        one_entry[2] = itrg->z;
+        anUnvNode.label = itre->nodes[1];
+        itrg = meshUnvNodes.find(anUnvNode);
+        one_entry[0] -= itrg->x;
+        one_entry[1] -= itrg->y;
+        one_entry[2] -= itrg->z;
+    }
+}
+
 void
 avtunvFileFormat::getvolNormal2D (float *one_entry,
-                               set<UnvElement, UnvElement::compare_UnvElement>::iterator itre)
+                                  set<UnvElement, UnvElement::compare_UnvElement>::iterator itre)
 {
     double x1,x2,y1,y2,z1,z2;
     UnvNode anUnvNode;
     set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
     // First compute the normal to the element:
-    int nbnos = avtunvFileFormat::getNbnodes(itre->typelt);
+    int nbnos = avtunvFileFormat::getNbvertices(itre->typelt);
+    if (itre->typelt == 34)
+        nbnos = itre->nbnel ;
+
     if (nbnos == 3)
     {
         for (int ln=0; ln<nbnos; ln++)
@@ -593,7 +767,7 @@ avtunvFileFormat::getvolNormal2D (float *one_entry,
         one_entry[1] = 0.5*(z1*x2-z2*x1);
         one_entry[2] = 0.5*(x1*y2-x2*y1);
     }
-    else
+    else if (nbnos == 4)
     {
         for (int ln=0; ln<4; ln++)
         {
@@ -604,36 +778,78 @@ avtunvFileFormat::getvolNormal2D (float *one_entry,
                 x2 = -itrg->x;
                 y2 = -itrg->y;
                 z2 = -itrg->z;
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout,"  Q0(0) = (%lf,%lf,%lf)\n",itrg->x, itrg->y, itrg->z) ;
+#endif
             }
             else if (ln == 1)
             {
                 x1 = itrg->x;
                 y1 = itrg->y;
                 z1 = itrg->z;
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout,"  Q1(0) = (%lf,%lf,%lf)\n",itrg->x, itrg->y, itrg->z) ;
+#endif
             }
             else if (ln == 2)
             {
                 x2 += itrg->x;
                 y2 += itrg->y;
                 z2 += itrg->z;
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout,"  Q0(2) = (%lf,%lf,%lf)\n",itrg->x, itrg->y, itrg->z) ;
+                if (debuglevel >= 5) fprintf(stdout,"  x2 = (%lf,%lf,%lf)\n",x2,y2,z2) ;
+#endif
             }
             else if (ln == 3)
             {
                 x1 -= itrg->x;
                 y1 -= itrg->y;
                 z1 -= itrg->z;
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout,"  Q1(3) = (%lf,%lf,%lf)\n",itrg->x, itrg->y, itrg->z) ;
+                if (debuglevel >= 5) fprintf(stdout,"  x1 = (%lf,%lf,%lf)\n",x1,y1,z1) ;
+#endif
             }
         }
-        one_entry[0] = (y1*z2-y2*z1);
-        one_entry[1] = (z1*x2-z2*x1);
-        one_entry[2] = (x1*y2-x2*y1);
+        one_entry[0] = 0.5*(y1*z2-y2*z1);
+        one_entry[1] = 0.5*(z1*x2-z2*x1);
+        one_entry[2] = 0.5*(x1*y2-x2*y1);
     }
-#if 0
-    double fac=1./sqrt(one_entry[0]*one_entry[0]+one_entry[1]*one_entry[1]+one_entry[2]*one_entry[2]);
-    one_entry[0] = fac * one_entry[0];
-    one_entry[1] = fac * one_entry[1];
-    one_entry[2] = fac * one_entry[2];
-#endif
+    else
+    {
+        // More complicated
+        // First compute the barycenter :
+        double x0 = 0, y0 = 0, z0 = 0 ;
+        for (int ln=0; ln<nbnos; ln++)
+        {
+            anUnvNode.label = itre->nodes[ln];
+            itrg = meshUnvNodes.find(anUnvNode);
+            x0 += itrg->x;
+            y0 += itrg->y;
+            z0 += itrg->z;
+        }
+        // Then compute the area:
+        one_entry[0] = 0.0 ;
+        one_entry[1] = 0.0 ;
+        one_entry[2] = 0.0 ;
+        for (int ln=0; ln<nbnos; ln++)
+        {
+            anUnvNode.label = itre->nodes[ln];
+            itrg = meshUnvNodes.find(anUnvNode);
+            x1 = itrg->x - x0;
+            y1 = itrg->y - y0;
+            z1 = itrg->z - z0;
+            anUnvNode.label = itre->nodes[ (ln+1) %nbnos ];
+            itrg = meshUnvNodes.find(anUnvNode);
+            x2 = itrg->x - x0;
+            y2 = itrg->y - y0;
+            z2 = itrg->z - z0;
+            one_entry[0] += 0.5*(y1*z2-y2*z1);
+            one_entry[1] += 0.5*(z1*x2-z2*x1);
+            one_entry[2] += 0.5*(x1*y2-x2*y1);
+        }
+    }
 #if INTERACTIVEREAD
     if (debuglevel >= 4) fprintf(stdout,"\t* 2D Element Normal=(%lf,%lf,%lf)\n",one_entry[0],one_entry[1],one_entry[2]);
 #endif
@@ -701,7 +917,7 @@ int avtunvFileFormat::getNbnolsv ()
 }
 
 // Gets the number of unique nodes on all free faces, nbnff
-int avtunvFileFormat::getNbnodesFreeFaces ()
+int avtunvFileFormat::getNbverticesFreeFaces ()
 {
     if (nbfaextv == 0)
     {
@@ -748,6 +964,26 @@ int avtunvFileFormat::getNbnodesFreeFaces ()
                     if (in > 0)
                     {
                         anUnvNode.label = itre->nodes[in-1];
+                        itrg = meshUnvNodes.find(anUnvNode);
+                        itrl = maliste.find(anUnvNode);
+                        if (itrl == maliste.end())
+                        {
+                            anotherUnvNode.label = anUnvNode.label;
+                            maliste.insert(anotherUnvNode);
+                            anotherUnvNode.number++;
+                        }
+                    }
+                }
+            }
+            else if (itre->typelt == 34)
+            {
+                // Check facloc is positive
+                for (int ln=0; ln<2; ln++)
+                {
+                    int in = (facloc-1+ln) % itre->nbnel ;
+                    if (in >= 0)
+                    {
+                        anUnvNode.label = itre->nodes[in];
                         itrg = meshUnvNodes.find(anUnvNode);
                         itrl = maliste.find(anUnvNode);
                         if (itrl == maliste.end())
@@ -976,7 +1212,10 @@ int avtunvFileFormat::getfastNbfaextv ()
     {
         if (avtunvFileFormat::getEltDim(itre->typelt) == cdim) {
             int ilab = itre->label ;
-            int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+            int nn = avtunvFileFormat::getNbvertices(itre->typelt);
+            if (itre->typelt == 34)
+                nn = itre->nbnel ;
+
             for (int i=0; i < nn; i++)
             {
                 int label = itre->nodes[i];
@@ -1020,7 +1259,10 @@ int avtunvFileFormat::getfastNbfaextv ()
         if (avtunvFileFormat::getEltDim(itre->typelt) == cdim) // Element of the right dimension
         {
             set<UnvNode, UnvNode::compare_UnvNode>::iterator itrgs[8]; // Global node iterator
-            int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+            int nn = avtunvFileFormat::getNbvertices(itre->typelt);
+            if (itre->typelt == 34)
+                nn = itre->nbnel ;
+
             int label ;
             for (int i=0; i < nn; i++)
             {
@@ -1039,6 +1281,28 @@ int avtunvFileFormat::getfastNbfaextv ()
                     in2 = nodefac[iflo3][facloc][1];
                     in3 = nodefac[iflo3][facloc][2];
                     int jel = getfastNeighbour3D(label, in1-1, in2-1, in3-1, itrgs);
+                    if (jel <= 0)
+                    {
+                        UnvFace anUnvFace; // Elementary face
+                        anUnvFace.number = nbfaextv;
+                        anUnvFace.element = label;
+                        anUnvFace.facloc = facloc + 1; // Set local face number to Ideas convention (starting at 1)
+                        freeUnvFaces.push_back(anUnvFace); // Add this face to the list of free faces
+                        nbfaextv++;
+#if INTERACTIVEREAD
+                        if (debuglevel >= 5) fprintf(stdout,"Element %d, face %d has a no neighbour %d\n",label,facloc+1,nbfaextv);
+#endif
+                    }
+                }
+            }
+            else if (cdim == 2 && itre->typelt == 34)
+            {
+                nf = itre->nbnel ;
+                for (int facloc=0; facloc < nf; facloc++)
+                {
+                    in1 = facloc ;
+                    in2 = (facloc + 1) % nf ;
+                    int jel = getfastNeighbour2D(label, in1, in2, itrgs);
                     if (jel <= 0)
                     {
                         UnvFace anUnvFace; // Elementary face
@@ -1137,7 +1401,10 @@ int avtunvFileFormat::getNbfaextv ()
         revconnect = 1;
         for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
         {
-            int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+            int nn = avtunvFileFormat::getNbvertices(itre->typelt);
+            if (itre->typelt == 34)
+                nn = itre->nbnel ;
+
             for (int i=0; i < nn; i++)
             {
                 anUnvNode.label = itre->nodes[i];
@@ -1178,14 +1445,18 @@ int avtunvFileFormat::getNbfaextv ()
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre2;
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre3;
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre4;
-        int iflo3 = -1, iflo2 = -1, iflo1 = -1; (void) iflo1;
+        int iflo3 = -1, iflo2 = -1, iflo1 = -1;
+        (void) iflo1;
         // Now loop on elements and on their faces and look for their neighbours:
         for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
         {
             if (avtunvFileFormat::getEltDim(itre->typelt) == cdim) // Element of the right dimension
             {
                 set<UnvNode, UnvNode::compare_UnvNode>::iterator itrgs[8]; // Global node iterator
-                int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+                int nn = avtunvFileFormat::getNbvertices(itre->typelt);
+                if (itre->typelt == 34)
+                    nn = itre->nbnel ;
+
                 for (int i=0; i < nn; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
@@ -1243,7 +1514,8 @@ int avtunvFileFormat::getNbfaextv ()
                     else
                     {
                         // STL technique:
-                        int nf = avtunvFileFormat::getNbfaces(itre->typelt); (void) nf;
+                        int nf = avtunvFileFormat::getNbfaces(itre->typelt);
+                        (void) nf;
                         int nodes[4]; // Maximum 4 nodes per face
                         iflo3 = avtunvFileFormat::is3DKnownElt(itre->typelt);
                         if (iflo3 < 0)
@@ -1346,7 +1618,9 @@ int avtunvFileFormat::getNbfaextv ()
                         {
                             anUnvElement.label = itre2->label;
                             itre3 = meshUnvElements.find(anUnvElement);
-                            int nbno = avtunvFileFormat::getNbnodes(itre3->typelt);
+                            int nbno = avtunvFileFormat::getNbvertices(itre3->typelt);
+                            if (itre3->typelt == 34)
+                                nbno = itre3->nbnel ;
                             iok = 0;
                             for (int jn=0; jn<nbno; jn++)
                             {
@@ -1447,6 +1721,10 @@ int avtunvFileFormat::getNbfreeSets ()
             if (iflo3 < 0)
             {
                 iflo2 = avtunvFileFormat::is2DKnownElt(itre->typelt);
+                if (itre->typelt == 34)
+                {
+                    iflo2 = 2 ;
+                }
                 if (iflo2 < 0)
                 {
                     iflo1 = avtunvFileFormat::is1DKnownElt(itre->typelt);
@@ -1488,6 +1766,11 @@ int avtunvFileFormat::getNbfreeSets ()
                     if (iflo3 >= 0)
                     {
                         in = nodefac[iflo3][facloc-1][ln]; // local node number
+                    }
+                    else if (itre->typelt == 34)
+                    {
+                        in = (facloc-1+ln) % itre->nbnel ;
+                        in++ ;
                     }
                     else if (iflo2 >= 0)
                     {
@@ -1550,7 +1833,10 @@ int avtunvFileFormat::getNbfreeSets ()
             // Debugging the standard elemenst to nodes:
             for (itre = freeelts.begin(); itre != freeelts.end(); itre++)
             {
-                int nbnel = avtunvFileFormat::getNbnodes(itre->typelt);
+                int nbnel = avtunvFileFormat::getNbvertices(itre->typelt);
+                if (itre->typelt == 34)
+                    nbnel = itre->nbnel ;
+
                 fprintf(stdout,"Element %d has #nodes=%d : ",itre->label,nbnel);
                 for (int i=0; i < nbnel; i++)
                 {
@@ -1604,7 +1890,10 @@ int avtunvFileFormat::getNbfreeSets ()
                 anUnvElement.label = itre->label;
                 itre2 = freeelts.find(anUnvElement);
                 // Look for it's neighbours using nodes:
-                int nbnel = avtunvFileFormat::getNbnodes(itre2->typelt);
+                int nbnel = avtunvFileFormat::getNbvertices(itre2->typelt);
+                if (itre2->typelt == 34)
+                    nbnel = itre2->nbnel ;
+
 #if INTERACTIVEREAD
                 if (debuglevel >= 4) fprintf(stdout,"\t Elt %d has %d nodes\n",itre2->label,nbnel);
 #endif
@@ -1837,6 +2126,16 @@ avtunvFileFormat::FreeUpResources(void)
         meshUnvFacePressures[i].faces.clear();
 
     meshUnvFacePressures.clear();
+
+    // Remove Materials if any
+    meshUnvInterfaces.clear();
+    listUnvInterfaces.clear() ;
+
+    if (fileinfo_str != NULL) {
+        free(fileinfo_str) ;
+        fileinfo_str = NULL ;
+    }
+
     fileRead = false;
 }
 
@@ -1861,8 +2160,13 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->SetFormatCanDoDomainDecomposition(true) ;
 #endif
     // CODE TO ADD A MESH
+    fileinfo_str = NULL ;
     ReadFile();
-    //
+    // inform the DB of the file info string:
+    if (fileinfo_str != NULL) {
+        md->SetDatabaseComment(fileinfo_str);
+    }
+    // CODE TO ADD A MESH
     string meshname = "mesh";
     //
     // AVT_RECTILINEAR_MESH, AVT_CURVILINEAR_MESH, AVT_UNSTRUCTURED_MESH,
@@ -1879,7 +2183,10 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
-    if (cdim == 2 && nb1dcells == 0) 
+    // Add the bounding box right now:
+    AddMeshToMetaData(md, "bbox", AVT_RECTILINEAR_MESH, extents, nblocks, block_origin,
+                      spatial_dimension, topological_dimension);
+    if (cdim == 2 && nb1dcells == 0)
     {
         AddVectorVarToMetaData(md, "normals2d", meshname, AVT_ZONECENT, 3);
         Expression my_expr;
@@ -1888,7 +2195,7 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         my_expr.SetType(Expression::VectorMeshVar);
         md->AddExpression(&my_expr);
     }
-    
+
     if (nb3dcells > 0  && (nb2dcells > 0 || nb1dcells > 0))
         AddMeshToMetaData(md, "volmesh", mt, extents, nblocks, block_origin,
                           spatial_dimension, 3);
@@ -1905,9 +2212,13 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(&my_expr);
     }
     if ((nb3dcells > 0 || nb2dcells > 0)  && nb1dcells > 0)
+    {
         AddMeshToMetaData(md, "wiremesh", mt, extents, nblocks, block_origin,
                           spatial_dimension, 1);
-
+        AddVectorVarToMetaData(md, "tangents1d", "wiremesh", AVT_ZONECENT, 3);
+    }
+    else if (nb1dcells > 0)
+        AddVectorVarToMetaData(md, "tangents1d", meshname, AVT_ZONECENT, 3);
     // Add the face presure stuffs:
     if (nbloadsets > 0)
     {
@@ -1984,6 +2295,13 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         char str[32];
         sprintf(str, "mat%d", i+1);
+        if (listUnvInterfaces.size() > 0)
+        {
+            int label = listUnvInterfaces[i].label ;
+            int ij1 = (label >> 15) - 32  ;
+            int ij2 = (label % 32768) - 32 ;
+            sprintf(str, "interface_%d_%d", ij1, ij2);
+        }
 #if INTERACTIVEREAD
         if (debuglevel >= 4) fprintf(stdout,"Material %s.\n",str);
 #else
@@ -2034,7 +2352,7 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         my_expr.SetType(Expression::VectorMeshVar);
         md->AddExpression(&my_expr);
         // Read the data or assume a reasonable number of boundaries ?
-        int nmats = 20; // avtunvFileFormat::getNbfreeSets();
+        int nmats = 50; // avtunvFileFormat::getNbfreeSets();
         if (nmats > 0)
         {
             // Propose a list of boundaries:
@@ -2075,7 +2393,7 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
     //md->AddExpression(&KineticEnergy_expr);
 #ifdef PARALLEL
-    if (PAR_Rank() != 0) 
+    if (PAR_Rank() != 0)
         avtunvFileFormat::FreeUpResources() ;
 #endif
 }
@@ -2141,8 +2459,8 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
         }
         ugrid->Allocate(nb3dcells+nb2dcells+nb1dcells);
-        vtkIdType verts[8]; // Element nodes in Ideas convention
-        vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
+        vtkIdType verts[20]; // Element nodes in Ideas convention
+        // vtkIdType cverts[20]; // Element nodes in VTK convention, may differ on some kinds of elements
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre;
         UnvNode anUnvNode;
 #if INTERACTIVEPLOT
@@ -2154,6 +2472,20 @@ avtunvFileFormat::GetMesh(const char *meshname)
         {
             switch (itre->typelt)
             {
+            case 118:
+                for (int i=0; i < 10; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout, "elt %d, nodes=(%d,%d,%d,%d)\n",
+                                                 itre->number,itre->nodes[0],itre->nodes[1],itre->nodes[2],itre->nodes[3]);
+#endif
+                // https://vtk.org/doc/release/6.0/html/vtkQuadraticTetra_8h_source.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_TETRA, 10, verts);
+                break;
             case 111:
                 for (int i=0; i < 4; i++)
                 {
@@ -2167,15 +2499,15 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                 ugrid->InsertNextCell(VTK_TETRA, 4, verts);
                 break;
-            case 115:
-                for (int i=0; i < 8; i++)
+            case 116:
+                for (int i=0; i < 20; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
                     itrn = meshUnvNodes.find(anUnvNode);
 #if UNVCHECK
                     if (itrn == meshUnvNodes.end())
                     {
-                        fprintf(stderr,"Probleme element %d local node %d\n",itre->label,i);
+                        fprintf(stderr,"Problem element %d local node %d\n",itre->label,i);
                     }
 #endif
                     verts[i] = itrn->number;
@@ -2184,6 +2516,27 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 if (debuglevel >= 5) fprintf(stdout, "elt %d, nodes=(%d,%d)\n",
                                                  itre->number,itre->nodes[0],itre->nodes[7]);
 #endif
+                // https://vtk.org/doc/nightly/html/classvtkQuadraticHexahedron.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_HEXAHEDRON, 20, verts);
+                break;
+            case 115:
+                for (int i=0; i < 8; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+#if UNVCHECK
+                    if (itrn == meshUnvNodes.end())
+                    {
+                        fprintf(stderr,"Problem element %d local node %d\n",itre->label,i);
+                    }
+#endif
+                    verts[i] = itrn->number;
+                }
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout, "elt %d, nodes=(%d,%d)\n",
+                                                 itre->number,itre->nodes[0],itre->nodes[7]);
+#endif
+#if KOOLDNUM
                 cverts[0]=verts[1];
                 cverts[1]=verts[2];
                 cverts[2]=verts[3];
@@ -2192,7 +2545,18 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 cverts[5]=verts[6];
                 cverts[6]=verts[7];
                 cverts[7]=verts[4];
-                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, cverts);
+#endif
+                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
+                break;
+            case 113:
+                for (int i=0; i < 15; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+                // https://vtk.org/doc/nightly/html/classvtkQuadraticWedge.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_WEDGE, 15, verts);
                 break;
             case 112:
                 for (int i=0; i < 6; i++)
@@ -2202,7 +2566,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #if UNVCHECK
                     if (itrn == meshUnvNodes.end())
                     {
-                        fprintf(stderr,"Probleme element %d local node %d\n",itre->label,i);
+                        fprintf(stderr,"Problem element %d local node %d\n",itre->label,i);
                     }
 #endif
                     verts[i] = itrn->number;
@@ -2211,14 +2575,28 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 if (debuglevel >= 5) fprintf(stdout, "elt %d, nodes=(%d,%d)\n",
                                                  itre->number,itre->nodes[0],itre->nodes[5]);
 #endif
+#if KOOLDNUM
                 cverts[0]=verts[0];
                 cverts[1]=verts[2];
                 cverts[2]=verts[1];
                 cverts[3]=verts[3];
                 cverts[4]=verts[5];
                 cverts[5]=verts[4];
+#endif
                 ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
                 break;
+            case 120:
+            case 313:
+                for (int i=0; i < 13; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+                // https://vtk.org/doc/nightly/html/vtkQuadraticPyramid_8h_source.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_PYRAMID, 13, verts);
+                break;
+            case 119:
             case 312:
                 for (int i=0; i < 5; i++)
                 {
@@ -2227,7 +2605,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #if UNVCHECK
                     if (itrn == meshUnvNodes.end())
                     {
-                        fprintf(stderr,"Probleme element %d local node %d\n",itre->label,i);
+                        fprintf(stderr,"Problem element %d local node %d\n",itre->label,i);
                     }
 #endif
                     verts[i] = itrn->number;
@@ -2238,7 +2616,24 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                 ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
                 break;
-            case 91 : case 81:
+            case 92:
+            case 82:
+            case 42:
+                for (int i=0; i < 6; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+#if INTERACTIVEPLOT
+                    if (debuglevel >= 5) fprintf(stdout, "elt %d, node label=%d or number=%d\n",itre->number,itre->nodes[i],(int)verts[i]);
+#endif
+                }
+                // https://vtk.org/doc/release/6.0/html/vtkQuadraticTriangle_8h_source.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_TRIANGLE, 6, verts);
+                break;
+            case 91:
+            case 81:
+            case 41:
                 for (int i=0; i < 3; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
@@ -2250,7 +2645,25 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 }
                 ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
                 break;
-            case 94 : case 84:
+            case 95:
+            case 85:
+            case 45:
+                for (int i=0; i < 8; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+#if INTERACTIVEPLOT
+                    if (debuglevel >= 5) fprintf(stdout, "elt %d, node=%d\n",itre->number,itre->nodes[i]);
+#endif
+                }
+                // https://vtk.org/doc/release/6.0/html/vtkQuadraticQuad_8h_source.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
+                break;
+            case 122:
+            case 94:
+            case 84:
+            case 44:
                 for (int i=0; i < 4; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
@@ -2262,6 +2675,36 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 }
                 ugrid->InsertNextCell(VTK_QUAD, 4, verts);
                 break;
+            case 34:
+            {
+                int nbnel = itre->nbnel ;
+                vtkIdType cverts[nbnel];
+                for (int i=0; i < nbnel; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    cverts[i] = itrn->number;
+#if INTERACTIVEPLOT
+                    if (debuglevel >= 5) fprintf(stdout, "elt %d, node label=%d or number=%d\n",itre->number,itre->nodes[i],(int)cverts[i]);
+#endif
+                }
+                ugrid->InsertNextCell(VTK_POLYGON, nbnel, cverts);
+                break;
+            }
+            case 24:
+            case 22:
+                for (int i=0; i < 3; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout, "elt %d, node=%d\n",itre->number,itre->nodes[0]);
+#endif
+                ugrid->InsertNextCell(VTK_QUADRATIC_EDGE, 3, verts);
+                break;
+            case 11:
             case 21:
                 for (int i=0; i < 2; i++)
                 {
@@ -2279,6 +2722,29 @@ avtunvFileFormat::GetMesh(const char *meshname)
             }
         }
         return ugrid;
+    }
+    else if (strcmp(meshname, "bbox") == 0)
+    {
+        debug2 << "MSH: GetMesh function match to BoundingBox" << endl ;
+        vtkRectilinearGrid  *rgrid   = vtkRectilinearGrid::New();
+        vtkFloatArray   *coords[3];
+        int dims[3] ; // is the number of nodes
+        for (int i = 0 ; i < 3 ; i++)
+        {
+            dims[i] = 2 ;
+            coords[i] = vtkFloatArray::New();
+            coords[i]->SetNumberOfTuples(2); // Min and Max only
+            coords[i]->SetComponent(0, 0, range[i*2+0]);
+            coords[i]->SetComponent(1, 0, range[i*2+1]);
+        }
+        rgrid->SetDimensions(dims);
+        rgrid->SetXCoordinates(coords[0]);
+        rgrid->SetYCoordinates(coords[1]);
+        rgrid->SetZCoordinates(coords[2]);
+        coords[0]->Delete();
+        coords[1]->Delete();
+        coords[2]->Delete();
+        return rgrid;
     }
     else if (strcmp(meshname, "surfmesh") == 0)
     {
@@ -2301,7 +2767,10 @@ avtunvFileFormat::GetMesh(const char *meshname)
             anUnvNode.number = 0 ;
             for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
                 if (avtunvFileFormat::is2DKnownElt(itre->typelt) >= 0) {
-                    int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+                    int nn = avtunvFileFormat::getNbvertices(itre->typelt);
+                    if (itre->typelt == 34)
+                        nn = itre->nbnel ;
+
                     for (int i=0; i < nn; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2318,7 +2787,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #else
             debug3 << "Reduced set of #nodes=" << anUnvNode.number << endl ;
 #endif
-       }
+        }
         else
         {
             pts->SetNumberOfPoints(nbnodes);
@@ -2337,7 +2806,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
         else
             for (itrn = meshUnvNodes.begin(); itrn != meshUnvNodes.end(); itrn++)
                 pts->SetPoint(itrn->number, itrn->x, itrn->y, itrn->z);
-        
+
         ugrid->Allocate(nb2dcells);
         vtkIdType verts[8]; // Element nodes in Ideas convention
         //vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
@@ -2347,7 +2816,21 @@ avtunvFileFormat::GetMesh(const char *meshname)
             {
                 switch (itre->typelt)
                 {
-                case 91 : case 81:
+                case 92:
+                case 82:
+                case 42:
+                    for (int i=0; i < 6; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        verts[i] = itrn->number;
+                    }
+                    // https://vtk.org/doc/release/6.0/html/vtkQuadraticTriangle_8h_source.html
+                    ugrid->InsertNextCell(VTK_QUADRATIC_TRIANGLE, 6, verts);
+                    break;
+                case 91:
+                case 81:
+                case 41:
                     for (int i=0; i < 3; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2356,7 +2839,22 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     }
                     ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
                     break ;
-                case 94 : case 84:
+                case 95:
+                case 85:
+                case 45:
+                    for (int i=0; i < 8; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        verts[i] = itrn->number;
+                    }
+                    // https://vtk.org/doc/release/6.0/html/vtkQuadraticQuad_8h_source.html
+                    ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
+                    break;
+                case 122:
+                case 94:
+                case 84:
+                case 44:
                     for (int i=0; i < 4; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2365,6 +2863,22 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     }
                     ugrid->InsertNextCell(VTK_QUAD, 4, verts);
                     break ;
+                case 34:
+                {
+                    int nbnel = itre->nbnel ;
+                    vtkIdType cverts[nbnel];
+                    for (int i=0; i < nbnel; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        cverts[i] = itrn->number;
+#if INTERACTIVEPLOT
+                        if (debuglevel >= 5) fprintf(stdout, "elt %d, node label=%d or number=%d\n",itre->number,itre->nodes[i],(int)cverts[i]);
+#endif
+                    }
+                    ugrid->InsertNextCell(VTK_POLYGON, nbnel, cverts);
+                    break;
+                }
                 default:
                     break ;
                 }
@@ -2376,7 +2890,21 @@ avtunvFileFormat::GetMesh(const char *meshname)
             {
                 switch (itre->typelt)
                 {
-                case 91 : case 81:
+                case 92:
+                case 82:
+                case 42:
+                    for (int i=0; i < 6; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        verts[i] = itrn->number;
+                    }
+                    // https://vtk.org/doc/release/6.0/html/vtkQuadraticTriangle_8h_source.html
+                    ugrid->InsertNextCell(VTK_QUADRATIC_TRIANGLE, 6, verts);
+                    break;
+                case 91:
+                case 81:
+                case 41:
                     for (int i=0; i < 3; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2385,7 +2913,22 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     }
                     ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
                     break ;
-                case 94 : case 84:
+                case 95:
+                case 85:
+                case 45:
+                    for (int i=0; i < 8; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        verts[i] = itrn->number;
+                    }
+                    // https://vtk.org/doc/release/6.0/html/vtkQuadraticQuad_8h_source.html
+                    ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
+                    break;
+                case 122:
+                case 94:
+                case 84:
+                case 44:
                     for (int i=0; i < 4; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2394,11 +2937,27 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     }
                     ugrid->InsertNextCell(VTK_QUAD, 4, verts);
                     break ;
+                case 34:
+                {
+                    int nbnel = itre->nbnel ;
+                    vtkIdType cverts[nbnel];
+                    for (int i=0; i < nbnel; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        cverts[i] = itrn->number;
+#if INTERACTIVEPLOT
+                        if (debuglevel >= 5) fprintf(stdout, "elt %d, node label=%d or number=%d\n",itre->number,itre->nodes[i],(int)cverts[i]);
+#endif
+                    }
+                    ugrid->InsertNextCell(VTK_POLYGON, nbnel, cverts);
+                    break;
+                }
                 default:
                     break ;
                 }
             }
-        
+
         return ugrid;
     }
     else if (strcmp(meshname, "wiremesh") == 0)
@@ -2422,7 +2981,10 @@ avtunvFileFormat::GetMesh(const char *meshname)
             anUnvNode.number = 0 ;
             for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
                 if (avtunvFileFormat::is1DKnownElt(itre->typelt) >= 0) {
-                    int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+                    int nn = avtunvFileFormat::getNbvertices(itre->typelt);
+                    if (itre->typelt == 34)
+                        nn = itre->nbnel ;
+
                     for (int i=0; i < nn; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2446,7 +3008,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
         }
         ugrid->SetPoints(pts);
         pts->Delete();
-        
+
         if (nb3dcells+nb2dcells > nb1dcells)
             // Loop on reduced list of nodes:
             for (itrn = maliste.begin(); itrn != maliste.end(); itrn++)
@@ -2458,16 +3020,29 @@ avtunvFileFormat::GetMesh(const char *meshname)
         else
             for (itrn = meshUnvNodes.begin(); itrn != meshUnvNodes.end(); itrn++)
                 pts->SetPoint(itrn->number, itrn->x, itrn->y, itrn->z);
-        
+
         ugrid->Allocate(nb1dcells);
-        vtkIdType verts[8]; // Element nodes in Ideas convention
+        vtkIdType verts[4]; // Element nodes in Ideas convention
         //vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
         if (nb3dcells+nb2dcells > nb1dcells)
         {
             for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
             {
-                if (itre->typelt == 21)
+                switch (itre->typelt)
                 {
+                case 24:
+                case 22:
+                    for (int i=0; i < 3; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        verts[i] = itrn->number;
+                    }
+                    // https://vtk.org/doc/nightly/html/vtkQuadraticEdge_8h_source.html
+                    ugrid->InsertNextCell(VTK_QUADRATIC_EDGE, 3, verts);
+                    break;
+                case 11:
+                case 21:
                     for (int i=0; i < 2; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2475,6 +3050,9 @@ avtunvFileFormat::GetMesh(const char *meshname)
                         verts[i] = itrn->number;
                     }
                     ugrid->InsertNextCell(VTK_LINE, 2, verts);
+                    break;
+                default:
+                    break;
                 }
             }
             maliste.clear() ;
@@ -2482,8 +3060,20 @@ avtunvFileFormat::GetMesh(const char *meshname)
         else
             for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
             {
-                if (itre->typelt == 21)
+                switch (itre->typelt)
                 {
+                case 24:
+                case 22:
+                    for (int i=0; i < 3; i++)
+                    {
+                        anUnvNode.label = itre->nodes[i];
+                        itrn = meshUnvNodes.find(anUnvNode);
+                        verts[i] = itrn->number;
+                    }
+                    ugrid->InsertNextCell(VTK_QUADRATIC_EDGE, 3, verts);
+                    break;
+                case 11:
+                case 21:
                     for (int i=0; i < 2; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2491,9 +3081,12 @@ avtunvFileFormat::GetMesh(const char *meshname)
                         verts[i] = itrn->number;
                     }
                     ugrid->InsertNextCell(VTK_LINE, 2, verts);
+                    break;
+                default:
+                    break;
                 }
             }
-        
+
         return ugrid;
     }
     else if (strcmp(meshname, "volmesh") == 0)
@@ -2508,16 +3101,26 @@ avtunvFileFormat::GetMesh(const char *meshname)
         set<UnvNode, UnvNode::compare_UnvNode>::iterator itrn;
         for (itrn = meshUnvNodes.begin(); itrn != meshUnvNodes.end(); itrn++)
             pts->SetPoint(itrn->number, itrn->x, itrn->y, itrn->z);
-        
+
         ugrid->Allocate(nb3dcells);
-        vtkIdType verts[8]; // Element nodes in Ideas convention
-        vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
+        vtkIdType verts[20]; // Element nodes in Ideas convention
+        // vtkIdType cverts[20]; // Element nodes in VTK convention, may differ on some kinds of elements
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre;
         UnvNode anUnvNode;
         for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
         {
             switch (itre->typelt)
             {
+            case 118:
+                for (int i=0; i < 10; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+                // https://vtk.org/doc/release/6.0/html/vtkQuadraticTetra_8h_source.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_TETRA, 10, verts);
+                break;
             case 111:
                 for (int i=0; i < 4; i++)
                 {
@@ -2527,6 +3130,16 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 }
                 ugrid->InsertNextCell(VTK_TETRA, 4, verts);
                 break ;
+            case 116:
+                for (int i=0; i < 20; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+                // https://vtk.org/doc/nightly/html/classvtkQuadraticHexahedron.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_HEXAHEDRON, 20, verts);
+                break;
             case 115:
                 for (int i=0; i < 8; i++)
                 {
@@ -2534,6 +3147,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     itrn = meshUnvNodes.find(anUnvNode);
                     verts[i] = itrn->number;
                 }
+#if KOOLDNUM
                 cverts[0]=verts[1];
                 cverts[1]=verts[2];
                 cverts[2]=verts[3];
@@ -2542,8 +3156,19 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 cverts[5]=verts[6];
                 cverts[6]=verts[7];
                 cverts[7]=verts[4];
-                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, cverts);
+#endif
+                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
                 break ;
+            case 113:
+                for (int i=0; i < 15; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+                // https://vtk.org/doc/nightly/html/classvtkQuadraticWedge.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_WEDGE, 15, verts);
+                break;
             case 112:
                 for (int i=0; i < 6; i++)
                 {
@@ -2551,14 +3176,28 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     itrn = meshUnvNodes.find(anUnvNode);
                     verts[i] = itrn->number;
                 }
+#if KOOLDNUM
                 cverts[0]=verts[0];
                 cverts[1]=verts[2];
                 cverts[2]=verts[1];
                 cverts[3]=verts[3];
                 cverts[4]=verts[5];
                 cverts[5]=verts[4];
+#endif
                 ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
                 break ;
+            case 120:
+            case 313:
+                for (int i=0; i < 13; i++)
+                {
+                    anUnvNode.label = itre->nodes[i];
+                    itrn = meshUnvNodes.find(anUnvNode);
+                    verts[i] = itrn->number;
+                }
+                // https://vtk.org/doc/nightly/html/vtkQuadraticPyramid_8h_source.html
+                ugrid->InsertNextCell(VTK_QUADRATIC_PYRAMID, 13, verts);
+                break;
+            case 119:
             case 312:
                 for (int i=0; i < 5; i++)
                 {
@@ -2586,8 +3225,11 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #else
         debug2 << "Number of free faces=" << nbcells << endl;
 #endif
+        if (nbcells <= 0)
+            return NULL ;
         // Computes the lowest nodes number:
-        int nbn = avtunvFileFormat::getNbnodesFreeFaces(); // Number of nodes for the structure
+        int nbn = avtunvFileFormat::getNbverticesFreeFaces(); // Number of nodes for the structure
+        fprintf(stdout,"Number of free nodes=%d\n",nbn);
 #if INTERACTIVEPLOT
         if (debuglevel >= 2) fprintf(stdout,"Number of free nodes=%d\n",nbn);
 #else
@@ -2658,6 +3300,36 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 else
                     ugrid->InsertNextCell(VTK_QUAD, 4, verts);
 
+            }
+            else if (itre->typelt == 34)
+            {
+                nbcells++;
+                for (int ln=0; ln<2; ln++)
+                {
+                    int in = (facloc-1+ln) % itre->nbnel ;
+                    if (in >= 0)
+                    {
+                        anUnvNode.label = itre->nodes[in];
+                        itrg = meshUnvNodes.find(anUnvNode);
+#if INTERACTIVEPLOT
+                        if (debuglevel >= 5) fprintf(stdout," Conn Elt %d fac %d Node %d at (%lf,%lf,%lf)\n",
+                                                         iel,facloc,itrg->label,itrg->x,itrg->y,itrg->z);
+#endif
+                        itrl = maliste.find(anUnvNode);
+                        if (itrl != maliste.end())
+                            // Already known stuff:
+                            verts[ln] = itrl->number;
+                        else
+                        {
+                            anotherUnvNode.label = anUnvNode.label;
+                            maliste.insert(anotherUnvNode);
+                            pts->SetPoint(anotherUnvNode.number, itrg->x, itrg->y, itrg->z);
+                            verts[ln] = anotherUnvNode.number;
+                            anotherUnvNode.number++; // This is the actual number of nodes
+                        }
+                    }
+                }
+                ugrid->InsertNextCell(VTK_LINE, 2, verts);
             }
             else
             {
@@ -2949,6 +3621,8 @@ avtunvFileFormat::GetVectorVar(const char *varname)
         {
             ntuples = avtunvFileFormat::getNbfaextv();
             rv->SetNumberOfTuples(ntuples);
+            if (ntuples == 0)
+                return NULL ;
         }
         ntuples = 0;
         if (strcmp(varname, "sets_normals") == 0)
@@ -3009,6 +3683,17 @@ avtunvFileFormat::GetVectorVar(const char *varname)
                     rv->SetTuple(ntuples, one_entry);
                     ntuples++;
                 }
+                else if (itre->typelt == 34)
+                {
+                    int facloc = freeUnvFaces[j].facloc;
+                    avtunvFileFormat::getNormal2D(one_entry, itre, facloc);
+#if INTERACTIVEPLOT
+                    if (debuglevel >= 5) fprintf(stdout," Normal(%d)=(%lf,%lf,%lf)\n",
+                                                     ntuples,one_entry[0],one_entry[1],one_entry[2]);
+#endif
+                    rv->SetTuple(ntuples, one_entry);
+                    ntuples++;
+                }
                 else
                 {
                     iflo = avtunvFileFormat::is2DKnownElt(itre->typelt);
@@ -3034,10 +3719,42 @@ avtunvFileFormat::GetVectorVar(const char *varname)
         delete [] one_entry;
         return rv;
     }
+    else if (strcmp(varname, "tangents1d") == 0)
+    {
+        int ncomps = 3;  // Vector rank in 3D is 3
+        int ntuples = nb1dcells ; // Numbre of known faces
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->SetNumberOfComponents(ncomps);
+        float *one_entry = new float[ncomps];
+        rv->SetNumberOfTuples(ntuples);
+#if INTERACTIVEPLOT
+        if (debuglevel >= 3) fprintf(stdout,"Constructing %d tangents1d\n",ntuples);
+#else
+        debug3 << "Constructing " << ntuples << " tangents1d" << endl;
+#endif
+        ntuples = 0 ;
+        set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
+        for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+            if (avtunvFileFormat::is1DKnownElt(itre->typelt) >= 0)
+            {
+                avtunvFileFormat::getvolTangent1D(one_entry, itre);
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout," Normal(%d)=(%lf,%lf,%lf)\n",
+                                                 ntuples,one_entry[0],one_entry[1],one_entry[2]);
+#else
+                debug5 << "Normal(" <<  ntuples << ")=(" << one_entry[0] << "," << one_entry[1] << "," << one_entry[2] << ")" << endl ;
+#endif
+                rv->SetTuple(ntuples, one_entry);
+                ntuples++;
+            }
+
+        delete [] one_entry;
+        return rv;
+    }
     else if (strcmp(varname, "normals2d") == 0)
     {
         int ncomps = 3;  // Vector rank in 3D is 3
-        int ntuples = nb2dcells ; // Numbre of known faces
+        int ntuples = nb2dcells ; // Number of known faces
         vtkFloatArray *rv = vtkFloatArray::New();
         rv->SetNumberOfComponents(ncomps);
         float *one_entry = new float[ncomps];
@@ -3055,7 +3772,19 @@ avtunvFileFormat::GetVectorVar(const char *varname)
                 avtunvFileFormat::getvolNormal2D(one_entry, itre);
 #if INTERACTIVEPLOT
                 if (debuglevel >= 5) fprintf(stdout," Normal(%d)=(%lf,%lf,%lf)\n",
-                                             ntuples,one_entry[0],one_entry[1],one_entry[2]);
+                                                 ntuples,one_entry[0],one_entry[1],one_entry[2]);
+#else
+                debug5 << "Normal(" <<  ntuples << ")=(" << one_entry[0] << "," << one_entry[1] << "," << one_entry[2] << ")" << endl ;
+#endif
+                rv->SetTuple(ntuples, one_entry);
+                ntuples++;
+            }
+            else if (itre->typelt == 34)
+            {
+                avtunvFileFormat::getvolNormal2D(one_entry, itre);
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout," Normal(%d)=(%lf,%lf,%lf)\n",
+                                                 ntuples,one_entry[0],one_entry[1],one_entry[2]);
 #else
                 debug5 << "Normal(" <<  ntuples << ")=(" << one_entry[0] << "," << one_entry[1] << "," << one_entry[2] << ")" << endl ;
 #endif
@@ -3105,7 +3834,7 @@ avtunvFileFormat::ReadFile()
         nbfalsv=0;
         nbnolsv=0;
         int readingFile = visitTimer->StartTimer();
-        if (strstr(filename.c_str(), ".unv") != NULL && strstr(filename.c_str(), ".unv.gz") == NULL)
+        if (strcasestr(filename.c_str(), ".unv") != NULL && strcasestr(filename.c_str(), ".unv.gz") == NULL)
         {
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
@@ -3123,6 +3852,7 @@ avtunvFileFormat::ReadFile()
             int code;
             int label;
             double fac = 1.;
+            int ideas = 7 ;
             while (fgets(buf, len, handle) != NULL)
             {
                 if (strstr((const char *)buf, "    -1") != NULL)
@@ -3138,10 +3868,39 @@ avtunvFileFormat::ReadFile()
 #else
                         debug3 << "Found code=" << code << endl;
 #endif
-                        if (code == 2412)
+                        if (code == 151)
                         {
-                            UnvElement anUnvElement; (void) anUnvElement;
-                            int nod[8];
+                            // Version code :
+                            if (fgets(buf, len, handle) != NULL)
+                                if (fgets(buf, len, handle) != NULL)
+                                    if (fgets(buf, len, handle) != NULL)
+                                    {
+                                        // Look for version
+                                        if (strncmp(buf, "CAEDS", 5) == 0)
+                                        {
+                                            ideas = 4 ;
+                                        }
+                                        else if (strncmp(buf, "SDRC", 4) == 0 || strncmp(buf, "CAED", 4) == 0)
+                                        {
+                                            ideas = 6 ;
+                                        }
+                                    }
+                            while (fgets(buf, len, handle) != NULL)
+                                if (strstr(buf, "    -1") != NULL)
+                                {
+#if INTERACTIVEREAD
+                                    if (debuglevel >= 3) fprintf(stdout,"Found End section code=%d\n",code);
+#else
+                                    debug3 << "Found End section code=" << code << endl;
+#endif
+                                    break;
+                                }
+                        }
+                        else if (code == 2412 || code == 780 && ideas == 6 || code == 71 && ideas == 4)
+                        {
+                            UnvElement anUnvElement;
+                            (void) anUnvElement;
+                            int nod[20];
                             anUnvElement.number=0;
 #if INTERACTIVEREAD
                             if (debuglevel >= 3) fprintf(stdout,"Found Element code\n");
@@ -3151,7 +3910,20 @@ avtunvFileFormat::ReadFile()
                             while (fgets(buf, len, handle) != NULL)
                             {
                                 int typelt, numprop,numat,colour,nbnel;
-                                sscanf(buf, "%d%d%d%d%d%d\n", &label, &typelt, &numprop, &numat, &colour, &nbnel);
+                                if (ideas == 6)
+                                {
+                                    int i0, i2 ;
+                                    sscanf(buf, "%d%d%d%d%d%d%d%d\n", &label, &typelt, &i0, &i2, &numprop, &numat, &colour, &nbnel);
+                                }
+                                else if (ideas == 4)
+                                {
+                                    int i0 ;
+                                    sscanf(buf, "%d%d%d%d%d%d%d\n", &label, &i0, &typelt, &numprop, &numat, &colour, &nbnel);
+                                }
+                                else
+                                    sscanf(buf, "%d%d%d%d%d%d\n", &label, &typelt, &numprop, &numat, &colour, &nbnel);
+
+                                if (numat <= 0) numat = 1;
                                 if (label < 0)
                                 {
 #if INTERACTIVEREAD
@@ -3167,61 +3939,128 @@ avtunvFileFormat::ReadFile()
                                     //if (typelt == 111) {
                                     switch (typelt)
                                     {
+                                    case 118:
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[0], &nod[4], &nod[1], &nod[5], &nod[2], &nod[6], &nod[7], &nod[8]);
+                                        if (fgets(buf, len, handle) != NULL)
+                                            sscanf(buf, "%d %d\n", &nod[9], &nod[3]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 0;
+                                        break;
                                     case 111:
                                         sscanf(buf, "%d %d %d %d\n", &nod[0], &nod[1], &nod[2], &nod[3]);
                                         nb3dcells++;
                                         nb3dmats = max(nb3dmats, numat);
                                         ier = 0;
                                         break;
+                                    case 116:
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[0], &nod[8], &nod[1], &nod[9], &nod[2], &nod[10], &nod[3], &nod[11]);
+                                        if (fgets(buf, len, handle) != NULL)
+                                            sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[16], &nod[17], &nod[18], &nod[19], &nod[4], &nod[12], &nod[5], &nod[13]);
+                                        if (fgets(buf, len, handle) != NULL)
+                                            sscanf(buf, "%d %d %d %d\n", &nod[6], &nod[14], &nod[7], &nod[15]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 0;
+                                        break;
                                     case 115:
-                                        //} else if (typelt == 115) {
                                         sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[0], &nod[1], &nod[2], &nod[3], &nod[4], &nod[5], &nod[6], &nod[7]);
                                         nb3dcells++;
                                         nb3dmats = max(nb3dmats, numat);
                                         ier = 1;
                                         break;
+                                    case 113:
+                                        // Solid Parabolic Wedge, assume def is https://code-aster.org/V2/doc/default/fr/man_u/u3/u3.03.01.pdf
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[0], &nod[6], &nod[1], &nod[7], &nod[2], &nod[8], &nod[12], &nod[13]);
+                                        if (fgets(buf, len, handle) != NULL)
+                                            sscanf(buf, "%d %d %d %d %d %d %d\n", &nod[14], &nod[3], &nod[9], &nod[4], &nod[10], &nod[5], &nod[11]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 2;
+                                        break;
                                     case 112:
-                                        //} else if (typelt == 112) {
                                         sscanf(buf, "%d %d %d %d %d %d\n", &nod[0], &nod[1], &nod[2], &nod[3], &nod[4], &nod[5]);
                                         nb3dcells++;
                                         nb3dmats = max(nb3dmats, numat);
                                         ier = 2;
                                         break;
+                                    case 120:
+                                    case 313:
+                                        // Assume it is a quadratic Pyramid. Assume an ordering.
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[0], &nod[4], &nod[1], &nod[5], &nod[2], &nod[6], &nod[3], &nod[7]);
+                                        if (fgets(buf, len, handle) != NULL)
+                                            sscanf(buf, "%d %d %d %d %d\n", &nod[8], &nod[9], &nod[10], &nod[11], &nod[4]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 3;
+                                        break;
+                                    case 119:
                                     case 312:
-                                        //} else if (typelt == 312) {
                                         sscanf(buf, "%d %d %d %d %d\n", &nod[0], &nod[1], &nod[2], &nod[3], &nod[4]);
                                         nb3dcells++;
                                         nb3dmats = max(nb3dmats, numat);
                                         ier = 3;
                                         break;
-                                    case 91 : case 81:
-                                        //} else if (typelt == 91) {
+                                    case 92:
+                                    case 82:
+                                    case 42:
+                                        // Triangle P2 : put in VTK order
+                                        sscanf(buf, "%d %d %d %d %d %d\n", &nod[0], &nod[3], &nod[1], &nod[4], &nod[2], &nod[5]);
+                                        nb2dcells++;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        ier = 4;
+                                        break;
+                                    case 91:
+                                    case 81:
+                                    case 41:
+                                        // Triangle P1
                                         sscanf(buf, "%d %d %d\n", &nod[0], &nod[1], &nod[2]);
                                         nb2dcells++;
                                         nb2dmats = max(nb2dmats, numat);
                                         ier = 4;
                                         break;
-                                    case 94 : case 84:
-                                        //} else if (typelt == 94) {
+                                    case 95:
+                                    case 85:
+                                    case 45:
+                                        // Quad P2 : put in VTK order, which is more uitable than the I-Deas one
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nod[0], &nod[4], &nod[1], &nod[5], &nod[2], &nod[6], &nod[3], &nod[7]);
+                                        nb2dcells++;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        ier = 5;
+                                        break;
+                                    case 122:
+                                    case 94:
+                                    case 84:
+                                    case 44:
+                                        // Quad P1
                                         sscanf(buf, "%d %d %d %d\n", &nod[0], &nod[1], &nod[2], &nod[3]);
                                         nb2dcells++;
                                         nb2dmats = max(nb2dmats, numat);
                                         ier = 5;
                                         break;
-                                    case 21:
-                                        //} else if (typelt == 21) {
-                                        // Linear beams
+                                    case 22:
+                                    case 24:
+                                        // Linear beams P2
                                         if (fgets(buf, len, handle) != NULL)
-                                            if (typelt == 21)
-                                            {
-                                                sscanf(buf, "%d %d\n", &nod[0], &nod[1]);
-                                                nb1dcells++;
-                                                nb1dmats = max(nb1dmats, numat);
-                                                ier = 6;
-                                            }
+                                        {
+                                            sscanf(buf, "%d %d %d\n", &nod[0], &nod[2], &nod[1]);
+                                            nb1dcells++;
+                                            nb1dmats = max(nb1dmats, numat);
+                                            ier = 6;
+                                        }
+                                        break;
+                                    case 11:
+                                    case 21:
+                                        // Linear beams P1
+                                        if (fgets(buf, len, handle) != NULL)
+                                        {
+                                            sscanf(buf, "%d %d\n", &nod[0], &nod[1]);
+                                            nb1dcells++;
+                                            nb1dmats = max(nb1dmats, numat);
+                                            ier = 6;
+                                        }
                                         break;
                                     default:
-                                        //} else {
                                         ier = -1;
                                         if (typelt < 25)
                                             if (fgets(buf, len, handle) == NULL)
@@ -3244,7 +4083,7 @@ avtunvFileFormat::ReadFile()
 
 #if INTERACTIVEREAD
                                         if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
-                                            anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+                                                                         anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
 #else
                                         debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
 #endif
@@ -3255,7 +4094,7 @@ avtunvFileFormat::ReadFile()
                                 }
                             }
                         }
-                        else if (code == 2411)
+                        else if (code == 2411 || code == 781 && ideas == 6 || code == 15 && ideas == 4)
                         {
                             UnvNode anode;
                             anode.number=0;
@@ -3351,11 +4190,12 @@ avtunvFileFormat::ReadFile()
                                 }
                             }
                         }
-                        else if (code == 790)
+                        else if (code == 790 && ideas == 7)
                         {
                             int id, i1, i3;
-                            if (fgets(buf, len, handle) != NULL)
-                                sscanf(buf, "%d%d\n", &id, &i3);
+                            if (ideas >= 6)
+                                if (fgets(buf, len, handle) != NULL)
+                                    sscanf(buf, "%d%d\n", &id, &i3);
 
                             if (fgets(buf, len, handle) != NULL)
                             {
@@ -3386,7 +4226,8 @@ avtunvFileFormat::ReadFile()
                                 debug3 << "Adding a load set id=" << anfp.label << " name='" << anfp.name << "'." << endl;
 #endif
                                 UnvFace anUnvFace; // Elementary face pressure object
-                                UnvElement anUnvElement; (void) anUnvElement; // an element object, assuming already built
+                                UnvElement anUnvElement;
+                                (void) anUnvElement; // an element object, assuming already built
                                 set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
                                 while (fgets(buf, len, handle) != NULL)
                                 {
@@ -3472,8 +4313,657 @@ avtunvFileFormat::ReadFile()
             }
             fclose(handle);
         }
+        else if (strstr(filename.c_str(), ".mailm") != NULL)
+        {
+            handle = fopen(filename.c_str(), "r");
+            if (handle == NULL)
+            {
+                EXCEPTION1(InvalidDBTypeException, "This mailm file could not be openend.");
+            }
+#if INTERACTIVEREAD
+            if (debuglevel >= 1) fprintf(stdout,"On the way to read mailm file %s\n",filename.c_str());
+#else
+            debug1 << "On the way to read mailm file " << filename << endl ;
+#endif
+            const int len = 2048 ; // Longest line length
+            char buf[len] ; // A line length
+            int label ;
+            int i1 ;
+            int nbcells ;
+            if (fgets(buf, len, handle) != NULL) {
+                fileinfo_str = strdup(buf) ;
+                if (fgets(buf, len, handle) != NULL) {
+                    // Doc indicates np, ne, ndofs, nmat, nbvif, njonc, ngene ...
+                    sscanf(buf, "%d %d %d %d", &nbnodes, &nbcells, &i1, &nb2dmats) ;
+#if INTERACTIVEREAD
+                    if (debuglevel >= 2) fprintf(stdout,"Found #nodes=%d and #elements=%d\n", nbnodes, nbcells);
+#else
+                    debug2 << "Found #nodes=" << nbnodes << " and #lements=" << nbcells << endl;
+#endif
+                    // fprintf(stdout,"#nodes=%d, #elts=%d\n", nbnodes, nbcells) ;
+                    if (fgets(buf, len, handle) != NULL) {
+                        // Reading nodes
+                        double x, y, z ;
+                        UnvNode anode;
+                        anode.number=0;
+                        for (int k=0; k<nbnodes; k++) {
+                            //while (fgets(buf, len, handle) != NULL) {
+                            if (fgets(buf, len, handle) != NULL) {
+                                for (i1=0; i1<strlen(buf); i1++) {
+                                    if (buf[i1] == 'D')
+                                        buf[i1] = 'E' ;
+                                }
+                                sscanf(buf, "%d %lf %lf %lf\n", &label, &x, &y, &z) ;
+#if INTERACTIVEREAD
+                                if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
+#else
+                                debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
+#endif
+                                range[0] = min(range[0],x) ;
+                                range[1] = max(range[1],x) ;
+                                range[2] = min(range[2],y) ;
+                                range[3] = max(range[3],y) ;
+                                range[4] = min(range[4],z) ;
+                                range[5] = max(range[5],z) ;
+                                anode.label = label ;
+                                maxnodl = max(maxnodl, label);
+                                anode.x = x ;
+                                anode.y = y ;
+                                anode.z = z ;
+                                meshUnvNodes.insert(anode);
+                                anode.number++ ;
+                            }
+                            else {
+                                fclose(handle) ;
+                                EXCEPTION1(InvalidDBTypeException, "This mailm file could not be read: nodes.");
+                            }
+                        }
+#if INTERACTIVEREAD
+                        if (debuglevel >= 2) fprintf(stdout,"Actual #nodes=%d\n", anode.number);
+#else
+                        debug2 << "Actual #nodes=" << anode.number << endl;
+#endif
+                        // fprintf(stdout,"Actual #nodes=%d\n", anode.number) ;
+                        // Reading elements 2D elements only for the moment
+                        UnvElement anUnvElement;
+                        (void) anUnvElement;
+                        anUnvElement.number=0;
+
+                        // Double materials management:
+                        UnvInterface anUnvInterface;
+                        (void) anUnvInterface;
+                        anUnvInterface.number=0;
+                        set<UnvInterface, UnvInterface::compare_UnvInterface>::iterator itrm; // Global elements iterator
+
+                        int ica, icb ;
+                        for (int k=0; k<nbcells; k++) {
+                            if (fgets(buf, len, handle) != NULL) {
+                                // mat1, mat2 et non numat, colour
+                                int numat1, numat2, numat, nbnel=0, typelt ;
+                                int nod[8];
+                                if (sscanf(buf, "%d %d %d %d\n", &label, &ica,&numat1, &numat2) == 4) {
+                                    switch (ica)
+                                    {
+                                    case 2:
+                                    case 1:
+                                        sscanf(buf, "%d %d %d %d %d %d %d\n", &label, &icb,&numat1, &numat2, &nod[0], &nod[1], &nod[2]);
+                                        nb2dcells++ ;
+                                        typelt = 91 ;
+                                        nbnel = 3 ;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        break;
+                                    case 4:
+                                        sscanf(buf, "%d %d %d %d %d %d\n", &label, &i1,&numat1, &numat2, &nod[0], &nod[1]) ;
+                                        nb1dcells++;
+                                        typelt = 21 ;
+                                        nbnel = 2 ;
+                                        nb1dmats = max(nb2dmats, numat);
+                                        break;
+                                    case -9:
+                                    case 9:
+                                        // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d %d\n", &label, &icb,&numat1, &numat2, &nod[0], &nod[1], &nod[2], &nod[3], &nod[4], &nod[5]);
+                                        nb2dcells++ ;
+                                        typelt = 92 ;
+                                        nbnel = 6 ;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        break;
+                                    case -16:
+                                    case 16:
+                                        // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &icb,&numat1, &numat2, &nod[0], &nod[1], &nod[2], &nod[3], &nod[4], &nod[5], &nod[6], &nod[7]);
+                                        nb2dcells++ ;
+                                        typelt = 95 ;
+                                        nbnel = 8 ;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        break;
+                                    }
+                                }
+                                if (nbnel > 0)
+                                {
+                                    anUnvInterface.label = ((numat1 + 32 ) << 15) + (numat2 + 32) ;
+                                    itrm = meshUnvInterfaces.find(anUnvInterface);
+                                    if (itrm == meshUnvInterfaces.end())
+                                    {
+                                        // Material not known yet:
+                                        meshUnvInterfaces.insert(anUnvInterface) ;
+                                        anUnvInterface.number++ ;
+                                        listUnvInterfaces.push_back(anUnvInterface) ;
+                                    }
+                                    itrm = meshUnvInterfaces.find(anUnvInterface);
+                                    numat = itrm->number ;
+                                    nb2dmats = max(nb2dmats, numat+1);
+                                    anUnvElement.matid = numat ;
+#if 0
+                                    anUnvElement.matid = numat + 1 ; // Seems to start at 0...
+#endif
+                                    anUnvElement.label = label ;
+                                    anUnvElement.typelt = typelt ;
+                                    anUnvElement.nodes = new int[nbnel] ;
+                                    for (int i=0; i < nbnel; i++) {
+                                        anUnvElement.nodes[i] = nod[i] ;
+                                    }
+#if INTERACTIVEREAD
+                                    if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
+                                                                     anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+#else
+                                    debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
+#endif
+                                    meshUnvElements.insert(anUnvElement) ;
+                                    anUnvElement.number++ ;
+                                }
+                            }
+                            // Anyway read the DoF line
+                            fgets(buf, len, handle) ;
+                        }
+                        nb2dmats = listUnvInterfaces.size() ;
+#if INTERACTIVEREAD
+                        if (debuglevel >= 2) fprintf(stdout,"Actual #elements=%d\n", anUnvElement.number);
+#else
+                        debug2 << "Actual #elements=" << anUnvElement.number << endl;
+#endif
+                        // fprintf(stdout,"Actual #elts=%d\n", anUnvElement.number) ;
+                    }
+                }
+            }
+            fclose(handle) ;
+        }
+        else if (strstr(filename.c_str(), ".mail") != NULL || strstr(filename.c_str(), ".maila") != NULL)
+        {
+            handle = fopen(filename.c_str(), "r");
+            if (handle == NULL)
+            {
+                EXCEPTION1(InvalidDBTypeException, "This mail file could not be openend.");
+            }
+#if INTERACTIVEREAD
+            if (debuglevel >= 1) fprintf(stdout,"On the way to read mail file %s\n",filename.c_str());
+#else
+            debug1 << "On the way to read mail file " << filename << endl ;
+#endif
+            const int len = 2048 ; // Longest line length
+            char buf[len] ; // A line length
+            int label ;
+            int i1 ;
+            if (fgets(buf, len, handle) == NULL) {
+                fclose(handle) ;
+                EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: nodes.");
+            }
+            int igtyp = 0 ;
+            // Time to decide whether this is "LIBR" file or a "GEOM" file
+            if (strncmp(buf, "GEOM", (size_t)4) == 0)
+                igtyp = 1 ;
+            else if (strncmp(buf, "INEW", (size_t)4) == 0)
+                igtyp = 2 ;
+            else if (strncmp(buf, "ARLE", (size_t)4) == 0)
+                igtyp = 3 ;
+            else if (strncmp(buf, "LIBR", (size_t)4) == 0)
+                igtyp = -2 ;
+
+            if (igtyp == 3)
+            {
+                // This is the ARL format:
+                char sousbuf[10];
+                int ic ;
+                int nbcells ;
+                sscanf(buf+4, "%d%d%d", &nbnodes, &nbcells, &nb2dmats) ;
+
+                nb2dmats = 1 ;
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"ARL format, found #nodes=%d and #elements=%d\n", nbnodes, nbcells);
+#else
+                debug2 << "ARL format, found #nodes=" << nbnodes << " and #elements=" << nbcells << endl;
+#endif
+                // Reading nodes
+                UnvNode anode;
+                anode.number=0;
+                double x, y, z ;
+                z = (double) 0.0 ;
+                for (int inod=0; inod<nbnodes; inod++) {
+                    if (fgets(buf, len, handle) == NULL) {
+                        fclose(handle) ;
+                        EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: nodes.");
+                    }
+                    for (i1=0; i1<strlen(buf); i1++) {
+                        if (buf[i1] == 'D')
+                            buf[i1] = 'E' ;
+                    }
+                    strncpy(sousbuf, buf, (size_t)10) ;
+                    sousbuf[10] = '\0';
+                    sscanf(sousbuf, "%d", &label) ;
+                    sscanf(buf+10, "%lf%lf%lf", &x, &y, &z) ;
+#if INTERACTIVEREAD
+                    if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
+#else
+                    debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
+#endif
+                    range[0] = min(range[0],x) ;
+                    range[1] = max(range[1],x) ;
+                    range[2] = min(range[2],y) ;
+                    range[3] = max(range[3],y) ;
+                    range[4] = min(range[4],z) ;
+                    range[5] = max(range[5],z) ;
+                    anode.label = label ;
+                    maxnodl = max(maxnodl, label);
+                    anode.x = x ;
+                    anode.y = y ;
+                    anode.z = z ;
+                    meshUnvNodes.insert(anode);
+                    anode.number++ ;
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Actual #nodes=%d\n", anode.number);
+#else
+                debug2 << "Actual #nodes=" << anode.number << endl;
+#endif
+                // fprintf(stdout,"Actual #nodes=%d\n", anode.number) ;
+                // Reading elements 2D elements only for the moment
+                UnvElement anUnvElement;
+                (void) anUnvElement;
+                anUnvElement.number=0;
+                int colour, numat, nbnel, typelt ;
+                int numat1, numat2 ;
+                int nod[8];
+
+                // Double materials management:
+                UnvInterface anUnvInterface;
+                (void) anUnvInterface;
+                anUnvInterface.number=0;
+                set<UnvInterface, UnvInterface::compare_UnvInterface>::iterator itrm; // Global elements iterator
+                for (int kel=0; kel<nbcells; kel++) {
+                    if (fgets(buf, len, handle) == NULL) {
+                        fclose(handle) ;
+                        EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: elements.");
+                    }
+                    strncpy(sousbuf, buf, (size_t)8) ;
+                    sousbuf[8] = '\0';
+                    sscanf(sousbuf, "%d", &label) ;
+
+                    strncpy(sousbuf, buf+8, (size_t)4) ;
+                    sousbuf[12] = '\0';
+                    nbnel = 0 ;
+                    if (strncmp(sousbuf, "TR3", (size_t)3) == 0)
+                    {
+                        nbnel = 3 ;
+                        typelt = 91 ;
+                        nb2dcells++ ;
+                    }
+                    else if (strncmp(sousbuf, "QUAD", (size_t)4) == 0)
+                    {
+                        nbnel = 4 ;
+                        typelt = 94 ;
+                        nb2dcells++ ;
+                    }
+                    else if (strncmp(sousbuf, "JNC3", (size_t)4) == 0)
+                    {
+                        nbnel = 4 ;
+                        typelt = 94 ;
+                        nb2dcells++ ;
+                    }
+                    else if (strncmp(sousbuf, "FIL2", (size_t)4) == 0 || strncmp(sousbuf, "    ", (size_t)4) == 0)
+                    {
+                        nbnel = 2 ;
+                        typelt = 21 ;
+                        nb1dcells++ ;
+                    }
+                    if (nbnel == 3)
+                        sscanf(buf+11, "%d%d%d%d%d", &numat1, &numat2, &nod[0], &nod[1], &nod[2]) ;
+                    else if (nbnel == 4)
+                        sscanf(buf+12, "%d%d%d%d%d%d", &numat1, &numat2, &nod[0], &nod[1], &nod[2], &nod[3]) ;
+                    else if (nbnel == 2)
+                        sscanf(buf+12, "%d%d%d%d", &numat1, &numat2, &nod[0], &nod[1]) ;
+
+                    if (nbnel > 0)
+                    {
+                        anUnvInterface.label = ((numat1 + 32) << 15) + (numat2 + 32) ;
+                        itrm = meshUnvInterfaces.find(anUnvInterface);
+                        if (itrm == meshUnvInterfaces.end())
+                        {
+                            // Material not known yet:
+                            meshUnvInterfaces.insert(anUnvInterface) ;
+                            anUnvInterface.number++ ;
+                            listUnvInterfaces.push_back(anUnvInterface) ;
+                        }
+                        itrm = meshUnvInterfaces.find(anUnvInterface);
+                        numat = itrm->number ;
+                        nb2dmats = max(nb2dmats, numat+1);
+                        anUnvElement.label = label ;
+                        anUnvElement.typelt = typelt;
+                        anUnvElement.matid = numat ;
+                        anUnvElement.nodes = new int[nbnel] ;
+                        for (int i=0; i < nbnel; i++) {
+                            anUnvElement.nodes[i] = nod[i] ;
+                        }
+#if INTERACTIVEREAD
+                        if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
+                                                         anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+#else
+                        debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
+#endif
+                        meshUnvElements.insert(anUnvElement) ;
+                        anUnvElement.number++ ;
+#if 0
+                        nb2dmats = max(nb2dmats, numat1);
+                        anUnvElement.label = label ;
+                        anUnvElement.typelt = typelt;
+                        anUnvElement.matid = numat1 ;
+                        anUnvElement.nodes = new int[nbnel] ;
+                        for (int i=0; i < nbnel; i++) {
+                            anUnvElement.nodes[i] = nod[i] ;
+                        }
+                        meshUnvElements.insert(anUnvElement) ;
+                        anUnvElement.number++ ;
+
+                        nb2dmats = max(nb2dmats, numat2);
+                        anUnvElement.label = -label ;
+                        anUnvElement.typelt = typelt;
+                        anUnvElement.matid = numat2 ;
+                        anUnvElement.nodes = new int[nbnel] ;
+                        for (int i=0; i < nbnel; i++) {
+                            anUnvElement.nodes[i] = nod[nbnel-1-i] ;
+                        }
+                        meshUnvElements.insert(anUnvElement) ;
+                        anUnvElement.number++ ;
+#endif
+                    }
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Actual #elements=%d\n", anUnvElement.number);
+#else
+                debug2 << "Actual #elements=" << anUnvElement.number << endl;
+#endif
+            }
+            else if (igtyp > 0)
+            {
+                // This is the legacy format:
+                char sousbuf[10];
+                int ic ;
+                for (ic=0; ic < 4; ic++)
+                {
+                    strncpy(sousbuf, buf+4+ic*10, (size_t)10) ;
+                    sousbuf[10] = '\0';
+                    if (ic == 0)
+                        sscanf(sousbuf, "%d", &nbnodes) ;
+                    if (ic == 1)
+                        sscanf(sousbuf, "%d", &nb2dcells) ;
+                    if (ic == 2)
+                        sscanf(sousbuf, "%d", &nb2dmats) ; // Not sure if this is 2 or 3...
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Legacy format, found #nodes=%d and #elements=%d\n", nbnodes, nb2dcells);
+#else
+                debug2 << "Legacy format, found #nodes=" << nbnodes << " and #elements=" << nb2dcells << endl;
+#endif
+#if !defined(MDSERVER)
+                // Reading nodes
+                UnvNode anode;
+                anode.number=0;
+                double x, y, z ;
+                z = (double) 0.0 ;
+                for (int inod=0; inod<nbnodes; inod++) {
+                    if (fgets(buf, len, handle) == NULL) {
+                        fclose(handle) ;
+                        EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: nodes.");
+                    }
+                    for (i1=0; i1<strlen(buf); i1++) {
+                        if (buf[i1] == 'D')
+                            buf[i1] = 'E' ;
+                    }
+                    if (igtyp == 1)
+                    {
+                        for (ic=0; ic < 3; ic++)
+                        {
+                            strncpy(sousbuf, buf+ic*10, (size_t)10) ;
+                            sousbuf[10] = '\0';
+                            if (ic == 0)
+                                sscanf(sousbuf, "%d", &label) ;
+                            if (ic == 1)
+                                sscanf(sousbuf, "%lf", &x) ;
+                            if (ic == 2)
+                                sscanf(sousbuf, "%lf", &y) ;
+                        }
+                    }
+                    else if (igtyp == 2)
+                    {
+                        for (ic=0; ic < 2; ic++)
+                        {
+                            strncpy(sousbuf, buf+ic*10, (size_t)10) ;
+                            sousbuf[10] = '\0';
+                            if (ic == 0)
+                                sscanf(sousbuf, "%d", &label) ;
+                            if (ic == 1)
+                                sscanf(buf+ic*10, "%lf%lf%lf", &x, &y, &z) ;
+                        }
+                    }
+#if INTERACTIVEREAD
+                    if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
+#else
+                    debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
+#endif
+                    range[0] = min(range[0],x) ;
+                    range[1] = max(range[1],x) ;
+                    range[2] = min(range[2],y) ;
+                    range[3] = max(range[3],y) ;
+                    range[4] = min(range[4],z) ;
+                    range[5] = max(range[5],z) ;
+                    anode.label = label ;
+                    maxnodl = max(maxnodl, label);
+                    anode.x = x ;
+                    anode.y = y ;
+                    anode.z = z ;
+                    meshUnvNodes.insert(anode);
+                    anode.number++ ;
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Actual #nodes=%d\n", anode.number);
+#else
+                debug2 << "Actual #nodes=" << anode.number << endl;
+#endif
+                // fprintf(stdout,"Actual #nodes=%d\n", anode.number) ;
+                // Reading elements 2D elements only for the moment
+                UnvElement anUnvElement;
+                (void) anUnvElement;
+                anUnvElement.number=0;
+                int colour, numat, nbnel, typelt ;
+                int numat1, numat2 ;
+                int nod[8];
+
+                for (int kel=0; kel<nb2dcells; kel++) {
+                    if (fgets(buf, len, handle) == NULL) {
+                        fclose(handle) ;
+                        EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: elements.");
+                    }
+                    nbnel = 3 ;
+                    if (igtyp == 1)
+                        for (ic=0; ic < 3+nbnel; ic++)
+                        {
+                            strncpy(sousbuf, buf+ic*5, (size_t)5) ;
+                            sousbuf[5] = '\0';
+                            if (ic == 0)
+                                sscanf(sousbuf, "%d", &label) ;
+                            else if (ic == 1)
+                            {
+                                if (strncmp(sousbuf, "  TR3", (size_t)5) == 0)
+                                {
+                                    typelt = 91 ;
+                                }
+                                if (strncmp(sousbuf, " QUAD", (size_t)5) == 0)
+                                {
+                                    nbnel = 4 ;
+                                    typelt = 94 ;
+                                }
+                            }
+                            else if (ic == 2)
+                                sscanf(sousbuf, "%d", &numat) ;
+                            else if (ic >= 3)
+                                sscanf(sousbuf, "%d", &nod[ic-3]) ;
+                        }
+                    else if (igtyp == 2)
+                        for (ic=0; ic < 3+nbnel; ic++)
+                        {
+                            strncpy(sousbuf, buf+ic*8, (size_t)8) ;
+                            sousbuf[8] = '\0';
+                            if (ic == 0)
+                                sscanf(sousbuf, "%d", &label) ;
+                            else if (ic == 1)
+                            {
+                                if (strncmp(sousbuf, "TR3", (size_t)3) == 0)
+                                {
+                                    typelt = 91 ;
+                                }
+                                if (strncmp(sousbuf, "QUAD", (size_t)4) == 0)
+                                {
+                                    nbnel = 4 ;
+                                    typelt = 94 ;
+                                }
+                            }
+                            else if (ic == 2)
+                                sscanf(sousbuf, "%d", &numat) ;
+                            else if (ic >= 3)
+                                sscanf(sousbuf, "%d", &nod[ic-3]) ;
+                        }
+
+                    nb2dmats = max(nb2dmats, numat);
+                    anUnvElement.label = label ;
+                    anUnvElement.typelt = typelt;
+                    anUnvElement.matid = numat ; // Seems to start at 1...
+                    anUnvElement.nodes = new int[nbnel] ;
+                    for (int i=0; i < nbnel; i++) {
+                        anUnvElement.nodes[i] = nod[i] ;
+                    }
+#if INTERACTIVEREAD
+                    if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
+                                                     anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+#else
+                    debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
+#endif
+                    meshUnvElements.insert(anUnvElement) ;
+                    anUnvElement.number++ ;
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Actual #elements=%d\n", anUnvElement.number);
+#else
+                debug2 << "Actual #elements=" << anUnvElement.number << endl;
+#endif
+                // fprintf(stdout,"Actual #elts=%d\n", anUnvElement.number) ;
+#endif
+            }
+            else
+            {
+                sscanf(buf+4, "%d %d %d %d", &nbnodes, &nb2dcells, &nb2dmats, &i1) ;
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Libr format, Found #nodes=%d and #elements=%d\n", nbnodes, nb2dcells);
+#else
+                debug2 << "Libr format, Found #nodes=" << nbnodes << " and #lements=" << nb2dcells << endl;
+#endif
+                // fprintf(stdout,"#nodes=%d, #elts=%d\n", nbnodes, nb2dcells) ;
+#if !defined(MDSERVER)
+                // Reading nodes
+                UnvNode anode;
+                anode.number=0;
+                double x, y, z ;
+                z = (double) 0.0 ;
+                for (int inod=0; inod<nbnodes; inod++) {
+                    if (fgets(buf, len, handle) == NULL) {
+                        fclose(handle) ;
+                        EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: nodes.");
+                    }
+                    for (i1=0; i1<strlen(buf); i1++) {
+                        if (buf[i1] == 'D')
+                            buf[i1] = 'E' ;
+                    }
+                    sscanf(buf, "%d %lf %lf\n", &label, &x, &y) ;
+#if INTERACTIVEREAD
+                    if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf)\n",label,anode.number,x,y);
+#else
+                    debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << ")" << endl ;
+#endif
+                    // fprintf(stdout," - read node %d at (%lf,%lf)\n", label, x, y) ;
+                    range[0] = min(range[0],x) ;
+                    range[1] = max(range[1],x) ;
+                    range[2] = min(range[2],y) ;
+                    range[3] = max(range[3],y) ;
+                    range[4] = min(range[4],z) ;
+                    range[5] = max(range[5],z) ;
+                    anode.label = label ;
+                    maxnodl = max(maxnodl, label);
+                    anode.x = x ;
+                    anode.y = y ;
+                    anode.z = (double)0.0 ;
+                    meshUnvNodes.insert(anode);
+                    anode.number++ ;
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Actual #nodes=%d\n", anode.number);
+#else
+                debug2 << "Actual #nodes=" << anode.number << endl;
+#endif
+                // fprintf(stdout,"Actual #nodes=%d\n", anode.number) ;
+                // Reading elements 2D elements only for the moment
+                UnvElement anUnvElement;
+                (void) anUnvElement;
+                anUnvElement.number=0;
+                int colour, numat, nbnel = 3, typelt = 91 ;
+                int nod[8];
+                for (int kel=0; kel<nb2dcells; kel++) {
+                    if (fgets(buf, len, handle) == NULL) {
+                        fclose(handle) ;
+                        EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: elements.");
+                    }
+                    sscanf(buf, " %d %d %d %d %d\n", &label, &numat, &nod[0], &nod[1], &nod[2]) ;
+                    // fprintf(stdout," - read elt %d / %d label %d nodes (%d,%d,%d)\n", kel, nb2dcells, label, nod[0], nod[1], nod[2]) ;
+                    // fprintf(stdout," - buf (%s)\n", buf) ;
+
+                    // EXCEPTION1(InvalidDBTypeException, "This mail file could not be read: fun.");
+                    nb2dmats = max(nb2dmats, numat);
+                    anUnvElement.label = label ;
+                    anUnvElement.typelt = typelt ;
+                    anUnvElement.matid = numat ; // Seems to start at 1...
+                    anUnvElement.nodes = new int[nbnel] ;
+                    for (int i=0; i < nbnel; i++) {
+                        anUnvElement.nodes[i] = nod[i] ;
+                    }
+#if INTERACTIVEREAD
+                    if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
+                                                     anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+#else
+                    debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
+#endif
+                    meshUnvElements.insert(anUnvElement) ;
+                    anUnvElement.number++ ;
+                }
+#if INTERACTIVEREAD
+                if (debuglevel >= 2) fprintf(stdout,"Actual #elements=%d\n", anUnvElement.number);
+#else
+                debug2 << "Actual #elements=" << anUnvElement.number << endl;
+#endif
+                // fprintf(stdout,"Actual #elts=%d\n", anUnvElement.number) ;
+#endif
+            }
+            // Whatever the master we close the file
+            fclose(handle) ;
+        }
 #if GZSTUFF
-        else if (strstr(filename.c_str(), ".unv.gz") != NULL)
+        else if (strcasestr(filename.c_str(), ".unv.gz") != NULL)
         {
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"File %s is a compressed one, using C reader\n",filename.c_str());
@@ -3491,6 +4981,7 @@ avtunvFileFormat::ReadFile()
             int code;
             int label;
             double fac = 1.;
+            int ideas = 7 ;
             while (gzgets(gzhandle, buf, len) != Z_NULL)
             {
                 if (strstr((const char*)buf, "    -1") != NULL)
@@ -3503,10 +4994,39 @@ avtunvFileFormat::ReadFile()
 #else
                         debug3 << "Found code=" << code << endl;
 #endif
-                        if (code == 2412)
+                        if (code == 151)
                         {
-                            UnvElement anUnvElement; (void) anUnvElement;
-                            int nodes[8];
+                            // Version code :
+                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                    if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                    {
+                                        // Look for version
+                                        if (strncmp(buf, "CAEDS", 5) == 0)
+                                        {
+                                            ideas = 4 ;
+                                        }
+                                        else if (strncmp(buf, "SDRC", 4) == 0 || strncmp(buf, "CAED", 4) == 0)
+                                        {
+                                            ideas = 6 ;
+                                        }
+                                    }
+                            while (gzgets(gzhandle, buf, len) != Z_NULL)
+                                if (strstr(buf, "    -1") != NULL)
+                                {
+#if INTERACTIVEREAD
+                                    if (debuglevel >= 3) fprintf(stdout,"Found End section code=%d\n",code);
+#else
+                                    debug3 << "Found End section code=" << code << endl;
+#endif
+                                    break;
+                                }
+                        }
+                        else if (code == 2412 || code == 780 && ideas == 6 || code == 71 && ideas == 4)
+                        {
+                            UnvElement anUnvElement;
+                            (void) anUnvElement;
+                            int nodes[20];
                             anUnvElement.number=0;
 #if INTERACTIVEREAD
                             if (debuglevel >= 3) fprintf(stdout,"Found Element code\n");
@@ -3527,21 +5047,51 @@ avtunvFileFormat::ReadFile()
                                 else
                                 {
                                     int typelt, numprop,numat,colour,nbnel;
-                                    sscanf(buf, "%d%d%d%d%d%d\n", &label, &typelt, &numprop, &numat, &colour, &nbnel);
+                                    if (ideas == 6)
+                                    {
+                                        int i0, i2 ;
+                                        sscanf(buf, "%d%d%d%d%d%d%d%d\n", &label, &typelt, &i0, &i2, &numprop, &numat, &colour, &nbnel);
+                                    }
+                                    else if (ideas == 4)
+                                    {
+                                        int i0 ;
+                                        sscanf(buf, "%d%d%d%d%d%d%d\n", &label, &i0, &typelt, &numprop, &numat, &colour, &nbnel);
+                                    }
+                                    else
+                                        sscanf(buf, "%d%d%d%d%d%d\n", &label, &typelt, &numprop, &numat, &colour, &nbnel);
+
+                                    if (numat <= 0) numat = 1;
                                     // fprintf(stdout,"Read element label=%d type=%d\n",label, typelt);
                                     if (gzgets(gzhandle, buf, len) != Z_NULL)
                                     {
                                         int ier; // = avtunvFileFormat::isKnownElt(typelt);
                                         switch (typelt)
                                         {
+                                        case 118:
+                                            sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nodes[0], &nodes[4], &nodes[1], &nodes[5], &nodes[2], &nodes[6], &nodes[7], &nodes[8]);
+                                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                                sscanf(buf, "%d %d\n", &nodes[9], &nodes[3]);
+                                            nb3dcells++;
+                                            nb3dmats = max(nb3dmats, numat);
+                                            ier = 0;
+                                            break;
                                         case 111:
-                                            //if (typelt == 111) {
                                             sscanf(buf, "%d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3]);
 #if INTERACTIVEREAD
                                             if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d,%d,%d)\n",nodes[0], nodes[1], nodes[2], nodes[3]);
 #else
                                             debug4 << "\t Nodes=(" << nodes[0] << "," << nodes[1] << "," <<  nodes[2] << "," <<  nodes[3]  << ")" << endl;
 #endif
+                                            nb3dcells++;
+                                            nb3dmats = max(nb3dmats, numat);
+                                            ier = 0;
+                                            break;
+                                        case 116:
+                                            sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nodes[0], &nodes[8], &nodes[1], &nodes[9], &nodes[2], &nodes[10], &nodes[3], &nodes[11]);
+                                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                                sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nodes[16], &nodes[17], &nodes[18], &nodes[19], &nodes[4], &nodes[12], &nodes[5], &nodes[13]);
+                                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                                sscanf(buf, "%d %d %d %d\n", &nodes[6], &nodes[14], &nodes[7], &nodes[15]);
                                             nb3dcells++;
                                             nb3dmats = max(nb3dmats, numat);
                                             ier = 0;
@@ -3558,8 +5108,17 @@ avtunvFileFormat::ReadFile()
                                             nb3dmats = max(nb3dmats, numat);
                                             ier = 1;
                                             break;
+                                        case 113:
+                                            // Solid Parabolic Wedge, assume def is https://code-aster.org/V2/doc/default/fr/man_u/u3/u3.03.01.pdf
+                                            sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nodes[0], &nodes[6], &nodes[1], &nodes[7], &nodes[2], &nodes[8], &nodes[12], &nodes[13]);
+                                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                                sscanf(buf, "%d %d %d %d %d %d %d\n", &nodes[14], &nodes[3], &nodes[9], &nodes[4], &nodes[10], &nodes[5], &nodes[11]);
+                                            nb3dcells++;
+                                            nb3dmats = max(nb3dmats, numat);
+                                            ier = 2;
+                                            break;
                                         case 112:
-                                            //} else if (typelt == 112) {
+                                            // Prism
                                             sscanf(buf, "%d %d %d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5]);
 #if INTERACTIVEREAD
                                             if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d,%d,%d,%d,%d)\n",nodes[0], nodes[1], nodes[2], nodes[3], nodes[4], nodes[5]);
@@ -3570,8 +5129,18 @@ avtunvFileFormat::ReadFile()
                                             nb3dmats = max(nb3dmats, numat);
                                             ier = 2;
                                             break;
+                                        case 120:
+                                        case 313:
+                                            // Assume it is a quadratic Pyramid. Assume an ordering.
+                                            sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nodes[0], &nodes[4], &nodes[1], &nodes[5], &nodes[2], &nodes[6], &nodes[3], &nodes[7]);
+                                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                                sscanf(buf, "%d %d %d %d %d\n", &nodes[8], &nodes[9], &nodes[10], &nodes[11], &nodes[4]);
+                                            nb3dcells++;
+                                            nb3dmats = max(nb3dmats, numat);
+                                            ier = 3;
+                                            break;
+                                        case 119:
                                         case 312:
-                                            // } else if (typelt == 312) {
                                             sscanf(buf, "%d %d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4]);
 #if INTERACTIVEREAD
                                             if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d,%d,%d,%d)\n",nodes[0], nodes[1], nodes[2], nodes[3], nodes[4]);
@@ -3582,8 +5151,19 @@ avtunvFileFormat::ReadFile()
                                             nb3dmats = max(nb3dmats, numat);
                                             ier = 3;
                                             break;
-                                        case 91 : case 81:
-                                            //} else if (typelt == 91) {
+                                        case 92:
+                                        case 82:
+                                        case 42:
+                                            // Triangle P2 : put in VTK order
+                                            sscanf(buf, "%d %d %d %d %d %d\n", &nodes[0], &nodes[3], &nodes[1], &nodes[4], &nodes[2], &nodes[5]);
+                                            nb2dcells++;
+                                            nb2dmats = max(nb2dmats, numat);
+                                            ier = 4;
+                                            break;
+                                        case 91:
+                                        case 81:
+                                        case 41:
+                                            // Triangle P1
                                             sscanf(buf, "%d %d %d\n", &nodes[0], &nodes[1], &nodes[2]);
 #if INTERACTIVEREAD
                                             if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d,%d)\n",nodes[0], nodes[1], nodes[2]);
@@ -3594,8 +5174,20 @@ avtunvFileFormat::ReadFile()
                                             nb2dmats = max(nb2dmats, numat);
                                             ier = 4;
                                             break;
-                                        case 94 : case 84:
-                                            //} else if (typelt == 94) {
+                                        case 95:
+                                        case 85:
+                                        case 45:
+                                            // Quad P2 : put in VTK order
+                                            sscanf(buf, "%d %d %d %d %d %d %d %d\n", &nodes[0], &nodes[4], &nodes[1], &nodes[5], &nodes[2], &nodes[6], &nodes[3], &nodes[7]);
+                                            nb2dcells++;
+                                            nb2dmats = max(nb2dmats, numat);
+                                            ier = 5;
+                                            break;
+                                        case 122:
+                                        case 94:
+                                        case 84:
+                                        case 44:
+                                            // Quad P1
                                             sscanf(buf, "%d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3]);
 #if INTERACTIVEREAD
                                             if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d,%d,%d)\n",nodes[0], nodes[1], nodes[2], nodes[3]);
@@ -3606,24 +5198,32 @@ avtunvFileFormat::ReadFile()
                                             nb2dmats = max(nb2dmats, numat);
                                             ier = 5;
                                             break;
-                                        case 21:
-                                            //} else if (typelt < 25) {
-                                            // Linear beams
+                                        case 22:
+                                        case 24:
+                                            // Linear beams P2
                                             if (gzgets(gzhandle, buf, len) != Z_NULL)
-                                                if (typelt == 21)
-                                                {
-                                                    sscanf(buf, "%d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3]); ///TODO check fix had 4 %ds but only had &nodes[0], &nodes[1] -- added &nodes[2], &nodes[3]
+                                            {
+                                                sscanf(buf, "%d %d %d\n", &nodes[0], &nodes[2], &nodes[1]);
+                                                nb1dcells++;
+                                                nb1dmats = max(nb1dmats, numat);
+                                                ier = 6;
+                                            }
+                                            break;
+                                        case 11:
+                                        case 21:
+                                            // Linear beams P1
+                                            if (gzgets(gzhandle, buf, len) != Z_NULL)
+                                            {
+                                                sscanf(buf, "%d %d\n", &nodes[0], &nodes[1]);
 #if INTERACTIVEREAD
-                                                    if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d)\n",nodes[0], nodes[1]);
+                                                if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d)\n",nodes[0], nodes[1]);
 #else
-                                                    debug4 << "\t Nodes=(" << nodes[0] << "," << nodes[1]  << ")" << endl;
+                                                debug4 << "\t Nodes=(" << nodes[0] << "," << nodes[1]  << ")" << endl;
 #endif
-                                                    nb1dcells++;
-                                                    nb1dmats = max(nb1dmats, numat);
-                                                }
-
+                                                nb1dcells++;
+                                                nb1dmats = max(nb1dmats, numat);
+                                            }
                                         default:
-                                            //} else {
                                             ier = -1;
                                             if (typelt < 25)
                                                 if (gzgets(gzhandle, buf, len) != Z_NULL)
@@ -3658,7 +5258,7 @@ avtunvFileFormat::ReadFile()
                                 }
                             }
                         }
-                        else if (code == 2411)
+                        else if (code == 2411 || code == 781 && ideas == 6 || code == 15 && ideas == 4)
                         {
                             UnvNode anode;
                             anode.number=0;
@@ -3753,11 +5353,12 @@ avtunvFileFormat::ReadFile()
                                 }
                             }
                         }
-                        else if (code == 790)
+                        else if (code == 790 && ideas == 7)
                         {
                             int id, i1, i3;
-                            if (gzgets(gzhandle, buf, len) != NULL)
-                                sscanf(buf, "%d%d\n", &id, &i3);
+                            if (ideas >= 6)
+                                if (gzgets(gzhandle, buf, len) != NULL)
+                                    sscanf(buf, "%d%d\n", &id, &i3);
 
                             if (gzgets(gzhandle, buf, len) != NULL)
                             {
@@ -3766,7 +5367,6 @@ avtunvFileFormat::ReadFile()
                                 for (i1=0; i1<(int)strlen(buf); i1++)
                                     if (buf[i1] == ' ')
                                         buf[i1] = '_';
-
 
                                 for (i1=strlen(buf)-2; i1>0; i1--)
                                     if (buf[i1] != '_')
@@ -3789,7 +5389,8 @@ avtunvFileFormat::ReadFile()
                                 debug3 << "Adding a load set id=" << anfp.label << " name='" << anfp.name << "'." << endl;
 #endif
                                 UnvFace anUnvFace; // Elementary face pressure object
-                                UnvElement anUnvElement; (void) anUnvElement; // an element object, assuming already built
+                                UnvElement anUnvElement;
+                                (void) anUnvElement; // an element object, assuming already built
                                 set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
                                 while (gzgets(gzhandle, buf, len) != NULL)
                                 {
@@ -3883,7 +5484,7 @@ avtunvFileFormat::ReadFile()
 #endif
         }
 #endif
-        else if (strstr(filename.c_str(), ".msh") != NULL)
+        else if (strcasestr(filename.c_str(), ".msh") != NULL)
         {
             // Format description in http://gmsh.info//doc/texinfo/gmsh.html#MSH-file-format
             handle = fopen(filename.c_str(), "r");
@@ -3902,7 +5503,7 @@ avtunvFileFormat::ReadFile()
             {
                 if (strstr((const char *)buf, "$MeshFormat") != NULL)
                 {
-                    // Assume modern format
+                    // Assume modern format V4
                     if (fgets(buf, len, handle) != NULL)
                     {
                         float version ;
@@ -3929,7 +5530,7 @@ avtunvFileFormat::ReadFile()
                                         if (debuglevel >= 2) fprintf(stdout, "Reading %d nodes\n",nbnodes) ;
 #else
                                         debug2 << "Reading " << nbnodes << " nodes" << endl ;
-#endif                                        
+#endif
                                         int number = 0 ;
                                         int label ;
                                         UnvNode anode;
@@ -3945,7 +5546,7 @@ avtunvFileFormat::ReadFile()
                                             if (debuglevel >= 3) fprintf(stdout, " + Reading %d nodes\n",lbnodes) ;
 #else
                                             debug3 << " + Reading " << lbnodes << " nodes" << endl ;
-#endif                                        
+#endif
                                             int *nodes = new int[lbnodes] ;
                                             // Reading the nodes labels
                                             lumber = 0 ;
@@ -3963,7 +5564,7 @@ avtunvFileFormat::ReadFile()
                                                 for (int i1=0; i1<(int)strlen(buf); i1++)
                                                     if (buf[i1] == 'D')
                                                         buf[i1] = 'E';
-                                                
+
                                                 sscanf(buf, "%lf %lf %lf\n", &x, &y, &z);
                                                 // fprintf(stdout,"  node buf 2(%d<=%d)=%s\n",number, nbnodes, buf) ;
                                                 range[0] = min(range[0],x);
@@ -4007,10 +5608,12 @@ avtunvFileFormat::ReadFile()
                                     {
                                         // Reading the elements
                                         int nodes[20];
-                                        UnvElement anUnvElement; (void) anUnvElement;
+                                        UnvElement anUnvElement;
+                                        (void) anUnvElement;
                                         anUnvElement.number=0;
                                         int number = 0 ;
-                                        int nbnel=0; int label=0 ;
+                                        int nbnel=0;
+                                        int label=0 ;
                                         int nument, idim, one ; // numat
                                         int nbelts, lbelts ; // Total number of elements, local number for current entity and type
                                         int gtypelt, numprop=1, numat=1 ;
@@ -4019,7 +5622,7 @@ avtunvFileFormat::ReadFile()
                                         if (debuglevel >= 3) fprintf(stdout, "Reading %d elements\n",nbelts) ;
 #else
                                         debug3 << "Reading " << nbelts << " elements" << endl ;
-#endif                                        
+#endif
                                         while (fgets(buf, len, handle) != NULL && number < nbelts)
                                         {
                                             sscanf(buf, "%d %d %d %d\n", &idim, &one, &gtypelt, &lbelts);
@@ -4028,6 +5631,14 @@ avtunvFileFormat::ReadFile()
                                             int itypelt = 0 ;
                                             switch (gtypelt)
                                             {
+                                            case 11:
+                                                // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
+                                                itypelt = 118 ;
+                                                nbnel = 10 ;
+                                                nb3dcells+=lbelts;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 0;
+                                                break;
                                             case 4:
                                                 // 4-node tetrahedron (111)
                                                 itypelt = 111 ;
@@ -4035,6 +5646,14 @@ avtunvFileFormat::ReadFile()
                                                 nb3dcells+=lbelts;
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 0;
+                                                break;
+                                            case 17:
+                                                // 20-node second order hexahedron (8 nodes associated with the vertices and 12 with the edges).
+                                                itypelt = 116 ;
+                                                nbnel = 20 ;
+                                                nb3dcells+=lbelts;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 1;
                                                 break;
                                             case 5:
                                                 // 8-node hexahedron (115)
@@ -4044,21 +5663,45 @@ avtunvFileFormat::ReadFile()
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 1;
                                                 break;
+                                            case 18:
+                                                // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
+                                                itypelt = 113 ; // Assume Solid Parabolic Wedge is such
+                                                nbnel = 15 ;
+                                                nb3dcells+=lbelts;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 2;
+                                                break;
                                             case 6:
-                                                // 6-node prism (112) 
+                                                // 6-node prism (112)
                                                 itypelt = 112 ;
                                                 nbnel = 6 ;
                                                 nb3dcells+=lbelts;
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 2;
                                                 break;
+                                            case 19:
+                                                // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+                                                itypelt = 313 ; // TODO: gets the info a bout I-deas element code.
+                                                nbnel = 13 ;
+                                                nb3dcells+=lbelts;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 3;
+                                                break;
                                             case 7:
-                                                // 5-node pyramid (312) 
+                                                // 5-node pyramid (312)
                                                 itypelt = 312 ;
                                                 nbnel = 5 ;
                                                 nb3dcells+=lbelts;
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 3;
+                                                break;
+                                            case 9:
+                                                // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
+                                                itypelt = 92 ;
+                                                nbnel = 6 ;
+                                                nb2dcells+=lbelts;
+                                                nb2dmats = max(nb2dmats, numat);
+                                                ier = 4;
                                                 break;
                                             case 2:
                                                 // 3-node triangle (91)
@@ -4068,6 +5711,15 @@ avtunvFileFormat::ReadFile()
                                                 nb2dmats = max(nb2dmats, numat);
                                                 ier = 4;
                                                 break;
+                                            case 16:
+                                                // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
+                                                // TODO: checks SDRC has that the same way
+                                                itypelt = 95 ;
+                                                nbnel = 8 ;
+                                                nb2dcells+=lbelts;
+                                                nb2dmats = max(nb2dmats, numat);
+                                                ier = 5;
+                                                break;
                                             case 3:
                                                 // 4-node quadrangle (94)
                                                 itypelt = 94 ;
@@ -4075,6 +5727,14 @@ avtunvFileFormat::ReadFile()
                                                 nb2dcells+=lbelts;
                                                 nb2dmats = max(nb2dmats, numat);
                                                 ier = 5;
+                                                break;
+                                            case 8:
+                                                // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
+                                                itypelt = 22 ;
+                                                nbnel = 3 ;
+                                                nb1dcells+=lbelts;
+                                                nb1dmats = max(nb1dmats, numat);
+                                                ier = 6;
                                                 break;
                                             case 1:
                                                 // 2-node line (21)
@@ -4084,13 +5744,22 @@ avtunvFileFormat::ReadFile()
                                                 nb1dmats = max(nb1dmats, numat);
                                                 ier = 6;
                                                 break;
+                                            case 34:
+                                                // polyline, undocumented
+                                                itypelt = 34 ;
+                                                nbnel = 100 ; // This sets the maximum value
+                                                nb2dcells+=lbelts;
+                                                nb2dmats = max(nb2dmats, numat);
+                                                ier = 5;
+                                                break;
                                             }
 #if INTERACTIVEREAD
-                                            if (debuglevel >= 3) fprintf(stdout, " + Reading %d elements type %d\n",lbelts, itypelt) ;
+                                            if (debuglevel >= 3) fprintf(stdout, " + Reading %d elements type %d\n", lbelts, itypelt) ;
 #else
                                             debug3 << " + Reading " << lbelts << " elements type " << itypelt << endl ;
-#endif                                        
+#endif
                                             int lumber = 0 ;
+                                            int mbnel = nbnel ;
                                             while (lumber < lbelts && fgets(buf, len, handle) != NULL)
                                             {
                                                 lumber++ ;
@@ -4104,30 +5773,69 @@ avtunvFileFormat::ReadFile()
                                                     nbletsptyp[ier]++;
 #if !defined(MDSERVER)
                                                     // Reads the nodes as much as we need, not as we can
-                                                    for (int inod=0; inod < nbnel; inod++)
+                                                    for (int inod=0; inod < mbnel; inod++)
                                                     {
                                                         int temp;
                                                         if (sscanf(ptr, "%d %n", &temp, &nchar) != 1)
                                                         {
                                                             // error: not a number
+                                                            nbnel = inod ;
                                                             break;
                                                         }
                                                         nodes[inod] = temp ;
 #if INTERACTIVEREAD
                                                         if (debuglevel >= 5) fprintf(stdout, "nod(%d)=%d\n",inod,temp);
-#endif                                                        
+#endif
                                                         ptr += nchar ;
                                                     }
                                                     anUnvElement.label = label;
                                                     anUnvElement.typelt = itypelt;
+                                                    anUnvElement.nbnel = nbnel;
                                                     anUnvElement.matid = numat;
                                                     anUnvElement.nodes = new int[nbnel];
                                                     for (int i=0; i < nbnel; i++)
                                                         anUnvElement.nodes[i] = nodes[i];
-                                                    
+                                                    switch (itypelt)
+                                                    {
+                                                    case 118:
+                                                        anUnvElement.nodes[9] = nodes[8];
+                                                        anUnvElement.nodes[8] = nodes[9];
+                                                        break;
+                                                    case 116:
+                                                        anUnvElement.nodes[11] = nodes[9] ;
+                                                        anUnvElement.nodes[16] = nodes[10] ;
+                                                        anUnvElement.nodes[9] = nodes[11] ;
+                                                        anUnvElement.nodes[17] = nodes[12] ;
+                                                        anUnvElement.nodes[10] = nodes[13] ;
+                                                        anUnvElement.nodes[18] = nodes[14] ;
+                                                        anUnvElement.nodes[19] = nodes[15] ;
+                                                        anUnvElement.nodes[12] = nodes[16] ;
+                                                        anUnvElement.nodes[15] = nodes[17] ;
+                                                        anUnvElement.nodes[13] = nodes[18] ;
+                                                        anUnvElement.nodes[14] = nodes[19] ;
+                                                        break;
+                                                    case 113:
+                                                        anUnvElement.nodes[8] = nodes[7];
+                                                        anUnvElement.nodes[12] = nodes[8];
+                                                        anUnvElement.nodes[7] = nodes[9];
+                                                        anUnvElement.nodes[13] = nodes[10];
+                                                        anUnvElement.nodes[14] = nodes[11];
+                                                        anUnvElement.nodes[9] = nodes[12];
+                                                        anUnvElement.nodes[11] = nodes[13];
+                                                        anUnvElement.nodes[10] = nodes[14];
+                                                        break;
+                                                    case 313:
+                                                        anUnvElement.nodes[8] = nodes[6];
+                                                        anUnvElement.nodes[9] = nodes[7];
+                                                        anUnvElement.nodes[6] = nodes[8];
+                                                        anUnvElement.nodes[10] = nodes[9];
+                                                        anUnvElement.nodes[7] = nodes[10];
+                                                        break;
+                                                    }
+
 #if INTERACTIVEREAD
                                                     if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
-                                                                                 anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+                                                                                     anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
 #else
                                                     debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
 #endif
@@ -4149,8 +5857,8 @@ avtunvFileFormat::ReadFile()
                                         for (int i=0; i< 7; i++)
                                             fprintf(stdout,"Element type=%d, count=%d\n",i,nbletsptyp[i]) ;
 #else
-                                        for (int i=0; i< 7; i++)
-                                            debug2 << "Element type=" << i << ", count=" << nbletsptyp[i] << endl ;
+                                    for (int i=0; i< 7; i++)
+                                        debug2 << "Element type=" << i << ", count=" << nbletsptyp[i] << endl ;
 #endif
                                 }
                             }
@@ -4169,7 +5877,7 @@ avtunvFileFormat::ReadFile()
                                         if (debuglevel >= 2) fprintf(stdout, "Reading %d nodes\n",nbnodes) ;
 #else
                                         debug2 << "Reading " << nbnodes << " nodes" << endl ;
-#endif                                        
+#endif
                                         // Reading the nodes
                                         int label = 0 ;
                                         double x, y, z;
@@ -4180,28 +5888,34 @@ avtunvFileFormat::ReadFile()
                                             for (int i1=0; i1<(int)strlen(buf); i1++)
                                                 if (buf[i1] == 'D')
                                                     buf[i1] = 'E';
-                                            
-                                            sscanf(buf, "%d %lf %lf %lf\n", &label, &x, &y, &z);
-                                            range[0] = min(range[0],x);
-                                            range[1] = max(range[1],x);
-                                            range[2] = min(range[2],y);
-                                            range[3] = max(range[3],y);
-                                            range[4] = min(range[4],z);
-                                            range[5] = max(range[5],z);
+
+                                            int nchar ;
+                                            char *ptr = buf ;
+                                            while (sscanf(ptr, "%d %lf %lf %lf %n\n", &label, &x, &y, &z, &nchar) >=4)
+                                            {
+                                                range[0] = min(range[0],x);
+                                                range[1] = max(range[1],x);
+                                                range[2] = min(range[2],y);
+                                                range[3] = max(range[3],y);
+                                                range[4] = min(range[4],z);
+                                                range[5] = max(range[5],z);
 #if !defined(MDSERVER)
-                                            anode.label = label;
-                                            maxnodl = max(maxnodl, label);
-                                            anode.x = x;
-                                            anode.y = y;
-                                            anode.z = z;
-                                            meshUnvNodes.insert(anode);
+                                                anode.label = label;
+                                                maxnodl = max(maxnodl, label);
+                                                anode.x = x;
+                                                anode.y = y;
+                                                anode.z = z;
+                                                meshUnvNodes.insert(anode);
 #if INTERACTIVEREAD
-                                            if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
+                                                if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
 #else
-                                            debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
+                                                debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
 #endif
 #endif
-                                            anode.number++;
+                                                anode.number++;
+                                                ptr += nchar ;
+                                            }
+
                                         }
 #if INTERACTIVEREAD
                                         if (debuglevel >= 2) fprintf(stdout,"X Range is [%f : %f]\n",range[0],range[1]);
@@ -4226,13 +5940,15 @@ avtunvFileFormat::ReadFile()
                                         if (debuglevel >= 2) fprintf(stdout, "Reading %d elements\n",nbelts) ;
 #else
                                         debug2 << "Reading " << nbelts << " elements" << endl ;
-#endif                                        
+#endif
                                         // Reading the elements
                                         int nodes[20];
-                                        UnvElement anUnvElement; (void) anUnvElement;
+                                        UnvElement anUnvElement;
+                                        (void) anUnvElement;
                                         anUnvElement.number=0;
                                         int number = 0 ;
-                                        int nbnel=0; int label=0 ;
+                                        int nbnel=0;
+                                        int label=0 ;
                                         while (fgets(buf, len, handle) != NULL && number < nbelts)
                                         {
                                             number++ ;
@@ -4250,12 +5966,21 @@ avtunvFileFormat::ReadFile()
                                                     // error: not a number
                                                     break;
                                                 }
+                                                numat = temp ;
                                                 ptr += nchar ;
                                             }
                                             int ier = -1; // = avtunvFileFormat::isKnownElt(typelt);
                                             int itypelt = 0 ;
                                             switch (gtypelt)
                                             {
+                                            case 11:
+                                                // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
+                                                itypelt = 118 ;
+                                                nbnel = 10 ;
+                                                nb3dcells++;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 0;
+                                                break;
                                             case 4:
                                                 // 4-node tetrahedron (111)
                                                 itypelt = 111 ;
@@ -4263,6 +5988,14 @@ avtunvFileFormat::ReadFile()
                                                 nb3dcells++;
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 0;
+                                                break;
+                                            case 17:
+                                                // 20-node second order hexahedron (8 nodes associated with the vertices and 12 with the edges).
+                                                itypelt = 116 ;
+                                                nbnel = 20 ;
+                                                nb3dcells++;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 1;
                                                 break;
                                             case 5:
                                                 // 8-node hexahedron (115)
@@ -4272,21 +6005,45 @@ avtunvFileFormat::ReadFile()
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 1;
                                                 break;
+                                            case 18:
+                                                // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
+                                                itypelt = 113 ; // Assume Solid Parabolic Wedge is such
+                                                nbnel = 15 ;
+                                                nb3dcells++;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 2;
+                                                break;
                                             case 6:
-                                                // 6-node prism (112) 
+                                                // 6-node prism (112)
                                                 itypelt = 112 ;
                                                 nbnel = 6 ;
                                                 nb3dcells++;
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 2;
                                                 break;
+                                            case 19:
+                                                // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+                                                itypelt = 313 ; // TODO: gets the info a bout I-deas element code.
+                                                nbnel = 13 ;
+                                                nb3dcells++;
+                                                nb3dmats = max(nb3dmats, numat);
+                                                ier = 3;
+                                                break;
                                             case 7:
-                                                // 5-node pyramid (312) 
+                                                // 5-node pyramid (312)
                                                 itypelt = 312 ;
                                                 nbnel = 5 ;
                                                 nb3dcells++;
                                                 nb3dmats = max(nb3dmats, numat);
                                                 ier = 3;
+                                                break;
+                                            case 9:
+                                                // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
+                                                itypelt = 92 ;
+                                                nbnel = 6 ;
+                                                nb2dcells++;
+                                                nb2dmats = max(nb2dmats, numat);
+                                                ier = 4;
                                                 break;
                                             case 2:
                                                 // 3-node triangle (91)
@@ -4296,6 +6053,15 @@ avtunvFileFormat::ReadFile()
                                                 nb2dmats = max(nb2dmats, numat);
                                                 ier = 4;
                                                 break;
+                                            case 16:
+                                                // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
+                                                // TODO: checks SDRC has that the same way
+                                                itypelt = 95 ;
+                                                nbnel = 8 ;
+                                                nb2dcells++;
+                                                nb2dmats = max(nb2dmats, numat);
+                                                ier = 5;
+                                                break;
                                             case 3:
                                                 // 4-node quadrangle (94)
                                                 itypelt = 94 ;
@@ -4303,6 +6069,14 @@ avtunvFileFormat::ReadFile()
                                                 nb2dcells++;
                                                 nb2dmats = max(nb2dmats, numat);
                                                 ier = 5;
+                                                break;
+                                            case 8:
+                                                // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
+                                                itypelt = 22 ;
+                                                nbnel = 3 ;
+                                                nb1dcells++;
+                                                nb1dmats = max(nb1dmats, numat);
+                                                ier = 6;
                                                 break;
                                             case 1:
                                                 // 2-node line (21)
@@ -4312,18 +6086,28 @@ avtunvFileFormat::ReadFile()
                                                 nb1dmats = max(nb1dmats, numat);
                                                 ier = 6;
                                                 break;
+                                            case 34:
+                                                // polyline, undocumented
+                                                itypelt = 34 ;
+                                                nbnel = 100 ; // This sets the maximum value
+                                                nb2dcells++;
+                                                nb2dmats = max(nb2dmats, numat);
+                                                ier = 5;
+                                                break;
                                             }
+                                            int mbnel = nbnel ;
                                             if (ier != -1)
                                             {
                                                 nbletsptyp[ier]++;
 #if !defined(MDSERVER)
                                                 // Reads the nodes as much as we need, not as we can
-                                                for (int inod=0; inod < nbnel; inod++)
+                                                for (int inod=0; inod < mbnel; inod++)
                                                 {
                                                     int temp;
                                                     if (sscanf(ptr, "%d %n", &temp, &nchar) != 1)
                                                     {
                                                         // error: not a number
+                                                        nbnel = inod ;
                                                         break;
                                                     }
                                                     nodes[inod] = temp ;
@@ -4331,14 +6115,51 @@ avtunvFileFormat::ReadFile()
                                                 }
                                                 anUnvElement.label = label;
                                                 anUnvElement.typelt = itypelt;
+                                                anUnvElement.nbnel = nbnel;
                                                 anUnvElement.matid = numat;
                                                 anUnvElement.nodes = new int[nbnel];
                                                 for (int i=0; i < nbnel; i++)
                                                     anUnvElement.nodes[i] = nodes[i];
-                                         
+                                                switch (itypelt)
+                                                {
+                                                case 118:
+                                                    anUnvElement.nodes[9] = nodes[8];
+                                                    anUnvElement.nodes[8] = nodes[9];
+                                                    break;
+                                                case 116:
+                                                    anUnvElement.nodes[11] = nodes[9] ;
+                                                    anUnvElement.nodes[16] = nodes[10] ;
+                                                    anUnvElement.nodes[9] = nodes[11] ;
+                                                    anUnvElement.nodes[17] = nodes[12] ;
+                                                    anUnvElement.nodes[10] = nodes[13] ;
+                                                    anUnvElement.nodes[18] = nodes[14] ;
+                                                    anUnvElement.nodes[19] = nodes[15] ;
+                                                    anUnvElement.nodes[12] = nodes[16] ;
+                                                    anUnvElement.nodes[15] = nodes[17] ;
+                                                    anUnvElement.nodes[13] = nodes[18] ;
+                                                    anUnvElement.nodes[14] = nodes[19] ;
+                                                    break;
+                                                case 113:
+                                                    anUnvElement.nodes[8] = nodes[7];
+                                                    anUnvElement.nodes[12] = nodes[8];
+                                                    anUnvElement.nodes[7] = nodes[9];
+                                                    anUnvElement.nodes[13] = nodes[10];
+                                                    anUnvElement.nodes[14] = nodes[11];
+                                                    anUnvElement.nodes[9] = nodes[12];
+                                                    anUnvElement.nodes[11] = nodes[13];
+                                                    anUnvElement.nodes[10] = nodes[14];
+                                                    break;
+                                                case 313:
+                                                    anUnvElement.nodes[8] = nodes[6];
+                                                    anUnvElement.nodes[9] = nodes[7];
+                                                    anUnvElement.nodes[6] = nodes[8];
+                                                    anUnvElement.nodes[10] = nodes[9];
+                                                    anUnvElement.nodes[7] = nodes[10];
+                                                    break;
+                                                }
 #if INTERACTIVEREAD
                                                 if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
-                                                                             anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+                                                                                 anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
 #else
                                                 debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
 #endif
@@ -4359,7 +6180,7 @@ avtunvFileFormat::ReadFile()
                 }
                 else if (strstr((const char *)buf, "$NOD") != NULL)
                 {
-                    // Assume MSH file format version 1 (Legacy) 
+                    // Assume MSH file format version 1 (Legacy)
                     if (fgets(buf, len, handle) != NULL)
                     {
                         sscanf(buf, "%d\n", &nbnodes);
@@ -4367,7 +6188,7 @@ avtunvFileFormat::ReadFile()
                         if (debuglevel >= 2) fprintf(stdout, "Reading %d nodes\n",nbnodes) ;
 #else
                         debug2 << "Reading " << nbnodes << " nodes" << endl ;
-#endif                                        
+#endif
                         // Reading the nodes
                         int label = 0 ;
                         double x, y, z;
@@ -4378,28 +6199,33 @@ avtunvFileFormat::ReadFile()
                             for (int i1=0; i1<(int)strlen(buf); i1++)
                                 if (buf[i1] == 'D')
                                     buf[i1] = 'E';
-                    
-                            sscanf(buf, "%d %lf %lf %lf\n", &label, &x, &y, &z);
-                            range[0] = min(range[0],x);
-                            range[1] = max(range[1],x);
-                            range[2] = min(range[2],y);
-                            range[3] = max(range[3],y);
-                            range[4] = min(range[4],z);
-                            range[5] = max(range[5],z);
+
+                            int nchar ;
+                            char *ptr = buf ;
+                            while (sscanf(ptr, "%d %lf %lf %lf %n\n", &label, &x, &y, &z, &nchar) >=4)
+                            {
+                                range[0] = min(range[0],x);
+                                range[1] = max(range[1],x);
+                                range[2] = min(range[2],y);
+                                range[3] = max(range[3],y);
+                                range[4] = min(range[4],z);
+                                range[5] = max(range[5],z);
 #if !defined(MDSERVER)
-                            anode.label = label;
-                            maxnodl = max(maxnodl, label);
-                            anode.x = x;
-                            anode.y = y;
-                            anode.z = z;
-                            meshUnvNodes.insert(anode);
+                                anode.label = label;
+                                maxnodl = max(maxnodl, label);
+                                anode.x = x;
+                                anode.y = y;
+                                anode.z = z;
+                                meshUnvNodes.insert(anode);
 #if INTERACTIVEREAD
-                            if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
+                                if (debuglevel >= 5) fprintf(stdout,"label=%d, n=%d, pos=(%lf,%lf,%lf)\n",label,anode.number,x,y,z);
 #else
-                            debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
+                                debug5 << "label=" << label << " n=" << anode.number << ",pos=(" << x << "," << y << "," << z << ")" << endl ;
 #endif
 #endif
-                            anode.number++;
+                                anode.number++;
+                                ptr += nchar ;
+                            }
                         }
 #if INTERACTIVEREAD
                         if (debuglevel >= 2) fprintf(stdout,"X Range is [%f : %f]\n",range[0],range[1]);
@@ -4413,96 +6239,180 @@ avtunvFileFormat::ReadFile()
                     }
                     while (fgets(buf, len, handle) != NULL)
                     {
-                         if (strstr((const char *)buf, "$ELM") != NULL)
-                         {
-                             if (fgets(buf, len, handle) != NULL)
-                             {
-                                 int nbelts ;
-                                 int gtypelt, numprop=1, numat=1 ;
-                                 int regphys, regelem, gbnel ;
-                                 sscanf(buf, "%d\n", &nbelts);
+                        if (strstr((const char *)buf, "$ELM") != NULL)
+                        {
+                            if (fgets(buf, len, handle) != NULL)
+                            {
+                                int nbelts ;
+                                int gtypelt, numprop=1, numat=1 ;
+                                int regphys, regelem, gbnel ;
+                                sscanf(buf, "%d\n", &nbelts);
 #if INTERACTIVEREAD
-                                 if (debuglevel >= 2) fprintf(stdout, "Reading %d elements\n",nbelts) ;
+                                if (debuglevel >= 2) fprintf(stdout, "Reading %d elements\n",nbelts) ;
 #else
-                                 debug2 << "Reading " << nbelts << " elements" << endl ;
-#endif                                        
-                                 // Reading the elements
-                                 int nodes[8];
-                                 UnvElement anUnvElement; (void) anUnvElement;
-                                 anUnvElement.number=0;
-                                 int number = 0 ;
-                                 int nbnel=0; int label=0 ;
-                                 while (fgets(buf, len, handle) != NULL && number < nbelts)
-                                 {
-                                     number++ ;
-                                     sscanf(buf, "%d %d\n", &label, &gtypelt);
-                                     int ier = -1; // = avtunvFileFormat::isKnownElt(typelt);
-                                     int itypelt = 0 ;
-                                     switch (gtypelt)
-                                     {
-                                     case 4:
-                                         // 4-node tetrahedron (111)
-                                         itypelt = 111 ;
-                                         break;
-                                     case 5:
-                                         // 8-node hexahedron (115)
-                                         itypelt = 115 ;
-                                         break;
-                                     case 6:
-                                         // 6-node prism (112) 
-                                         itypelt = 112 ;
-                                         break;
-                                     case 7:
-                                         // 5-node pyramid (312) 
-                                         itypelt = 312 ;
-                                         break;
-                                     case 2:
-                                         // 3-node triangle (91)
-                                         itypelt = 91 ;
-                                         break;
-                                     case 3:
-                                         // 4-node quadrangle (94)
-                                         itypelt = 94 ;
-                                         break;
-                                     case 1:
-                                         // 2-node line (21)
-                                         itypelt = 21 ;
-                                         break;
-                                     }
-                                     switch (itypelt)
-                                     {
-                                     case 111:
-                                         // 4-node tetrahedron (111)
-                                         nbnel = 4 ;
-                                         sscanf(buf, "%d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3]);
-                                         nb3dcells++;
-                                         nb3dmats = max(nb3dmats, numat);
-                                         ier = 0;
-                                         break;
-                                     case 115:
-                                         // 8-node hexahedron (115)
-                                         nbnel = 8 ;
-                                         sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[6], &nodes[7]);
-                                         nb3dcells++;
-                                         nb3dmats = max(nb3dmats, numat);
-                                         ier = 1;
-                                         break;
-                                     case 112:
-                                         // 6-node prism (112) 
-                                         nbnel = 6 ;
-                                         sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5]);
-                                         nb3dcells++;
-                                         nb3dmats = max(nb3dmats, numat);
-                                         ier = 2;
-                                         break;
-                                     case 312:
-                                         // 5-node pyramid (312) 
-                                         nbnel = 5 ;
-                                         sscanf(buf, "%d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4]);
-                                         nb3dcells++;
-                                         nb3dmats = max(nb3dmats, numat);
-                                         ier = 3;
-                                         break;
+                                debug2 << "Reading " << nbelts << " elements" << endl ;
+#endif
+                                // Reading the elements
+                                int nodes[20];
+                                UnvElement anUnvElement;
+                                (void) anUnvElement;
+                                anUnvElement.number=0;
+                                int number = 0 ;
+                                int nbnel=0;
+                                int label=0 ;
+                                while (fgets(buf, len, handle) != NULL && number < nbelts)
+                                {
+                                    number++ ;
+                                    sscanf(buf, "%d %d\n", &label, &gtypelt);
+                                    int ier = -1; // = avtunvFileFormat::isKnownElt(typelt);
+                                    int itypelt = 0 ;
+                                    switch (gtypelt)
+                                    {
+                                    case 11:
+                                        // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
+                                        itypelt = 118 ;
+                                        break;
+                                    case 4:
+                                        // 4-node tetrahedron (111)
+                                        itypelt = 111 ;
+                                        break;
+                                    case 17:
+                                        // 20-node second order hexahedron (8 nodes associated with the vertices and 12 with the edges).
+                                        itypelt = 116 ;
+                                        break;
+                                    case 5:
+                                        // 8-node hexahedron (115)
+                                        itypelt = 115 ;
+                                        break;
+                                    case 18:
+                                        // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
+                                        itypelt = 113 ; // Assume Solid Parabolic Wedge is such
+                                        break;
+                                    case 6:
+                                        // 6-node prism (112)
+                                        itypelt = 112 ;
+                                        break;
+                                    case 19:
+                                        // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+                                        itypelt = 313 ; // TODO: gets the info a bout I-deas element code.
+                                        break;
+                                    case 7:
+                                        // 5-node pyramid (312)
+                                        itypelt = 312 ;
+                                        break;
+                                    case 9:
+                                        // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
+                                        itypelt = 92 ;
+                                        break;
+                                    case 2:
+                                        // 3-node triangle (91)
+                                        itypelt = 91 ;
+                                        break;
+#if 0
+                                    case 10:
+                                        // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with the face).
+                                        // TODO: checks SDRC has that the same way
+                                        itypelt = 96 ;
+                                        break;
+#endif
+                                    case 16:
+                                        // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
+                                        // TODO: checks SDRC has that the same way
+                                        itypelt = 95 ;
+                                        break;
+                                    case 3:
+                                        // 4-node quadrangle (94)
+                                        itypelt = 94 ;
+                                        break;
+                                    case 8:
+                                        // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
+                                        itypelt = 22 ;
+                                        break;
+                                    case 1:
+                                        // 2-node line (21)
+                                        itypelt = 21 ;
+                                        break;
+                                    case 34:
+                                        // polyline, undocumented
+                                        itypelt = 34 ;
+                                        break;
+                                    }
+                                    switch (itypelt)
+                                    {
+                                    case 118:
+                                        // Tetra P2, the two last ones are inversed between vtk and gmsh.
+                                        nbnel = 10 ;
+                                        sscanf(buf, "%d %d %d %d %d  %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[6], &nodes[7], &nodes[9], &nodes[8]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 0;
+                                        break;
+                                    case 111:
+                                        // 4-node tetrahedron (111)
+                                        nbnel = 4 ;
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 0;
+                                        break;
+                                    case 116:
+                                        // Hex P2, order differs, cmp https://examples.vtk.org/site/VTKBook/08Chapter8/ with https://gmsh.info//doc/texinfo/gmsh.html#MSH-file-format
+                                        nbnel = 20 ;
+                                        sscanf(buf, "%d %d %d %d %d  %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[6], &nodes[7], &nodes[8], &nodes[11], &nodes[16], &nodes[9], &nodes[17], &nodes[10], &nodes[18], &nodes[19], &nodes[12], &nodes[15], &nodes[13], &nodes[14]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 1;
+                                        break;
+                                    case 115:
+                                        // 8-node hexahedron (115)
+                                        nbnel = 8 ;
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[6], &nodes[7]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 1;
+                                        break;
+                                    case 113:
+                                        // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges). aka Solid Parabolic Wedge ?
+                                        nbnel = 15 ;
+                                        sscanf(buf, "%d %d %d %d %d  %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[6], &nodes[8], &nodes[12], &nodes[7], &nodes[13], &nodes[14], &nodes[9], &nodes[11], &nodes[10]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 2;
+                                        break;
+                                    case 112:
+                                        // 6-node prism (112)
+                                        nbnel = 6 ;
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 2;
+                                        break;
+                                    case 120:
+                                    case 313:
+                                        // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+                                        nbnel = 13 ;
+                                        sscanf(buf, "%d %d %d %d %d  %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[8], &nodes[9], &nodes[6], &nodes[10], &nodes[7], &nodes[11], &nodes[12], &nodes[10]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 3;
+                                        break;
+                                    case 119:
+                                    case 312:
+                                        // 5-node pyramid (312)
+                                        nbnel = 5 ;
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4]);
+                                        nb3dcells++;
+                                        nb3dmats = max(nb3dmats, numat);
+                                        ier = 3;
+                                        break;
+                                    case 92:
+                                        // Triangle P2
+                                        nbnel = 6 ;
+                                        sscanf(buf, "%d %d %d %d %d  %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5]);
+                                        nb2dcells++;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        ier = 4;
+                                        break;
                                     case 91:
                                         // 3-node triangle (91)
                                         nbnel = 3 ;
@@ -4510,6 +6420,14 @@ avtunvFileFormat::ReadFile()
                                         nb2dcells++;
                                         nb2dmats = max(nb2dmats, numat);
                                         ier = 4;
+                                        break;
+                                    case 95:
+                                        // Quad P2
+                                        nbnel = 8 ;
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2], &nodes[3], &nodes[4], &nodes[5], &nodes[6], &nodes[7]);
+                                        nb2dcells++;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        ier = 5;
                                         break;
                                     case 94:
                                         // 4-node quadrangle (94)
@@ -4519,6 +6437,14 @@ avtunvFileFormat::ReadFile()
                                         nb2dmats = max(nb2dmats, numat);
                                         ier = 5;
                                         break;
+                                    case 22:
+                                        //  Line P2
+                                        nbnel = 3;
+                                        sscanf(buf, "%d %d %d %d %d %d %d %d\n", &label, &gtypelt, &regphys, &regelem, &gbnel, &nodes[0], &nodes[1], &nodes[2]);
+                                        nb1dcells++;
+                                        nb1dmats = max(nb1dmats, numat);
+                                        ier = 6;
+                                        break;
                                     case 21:
                                         //  2-node line (21)
                                         nbnel = 2 ;
@@ -4527,31 +6453,56 @@ avtunvFileFormat::ReadFile()
                                         nb1dmats = max(nb1dmats, numat);
                                         ier = 6;
                                         break;
-                                     }
-                                     if (ier != -1)
-                                     {
-                                         nbletsptyp[ier]++;
-#if !defined(MDSERVER)
-                                         anUnvElement.label = label;
-                                         anUnvElement.typelt = itypelt;
-                                         anUnvElement.matid = numat;
-                                         anUnvElement.nodes = new int[nbnel];
-                                         for (int i=0; i < nbnel; i++)
-                                             anUnvElement.nodes[i] = nodes[i];
-                                         
+                                    case 34:
+                                        // polyline, undocumented
+                                        int nchar ;
+                                        sscanf(buf, "%d %d %d %d %d %n\n", &label, &gtypelt, &regphys, &regelem, &nbnel, &nchar);
+                                        char *ptr = buf ;
+                                        ptr += nchar ;
+                                        for (int inod=0; inod < nbnel; inod++)
+                                        {
+                                            int temp;
+                                            if (sscanf(ptr, "%d %n", &temp, &nchar) != 1)
+                                            {
+                                                // error: not a number
+                                                break;
+                                            }
+                                            nodes[inod] = temp ;
 #if INTERACTIVEREAD
-                                         if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
-                                                                      anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
+                                            if (debuglevel >= 5) fprintf(stdout, "nod(%d)=%d\n",inod,temp);
+#endif
+                                            ptr += nchar ;
+                                        }
+                                        nb2dcells++;
+                                        nb2dmats = max(nb2dmats, numat);
+                                        ier = 6;
+                                        break;
+                                    }
+                                    if (ier != -1)
+                                    {
+                                        nbletsptyp[ier]++;
+#if !defined(MDSERVER)
+                                        anUnvElement.label = label;
+                                        anUnvElement.typelt = itypelt;
+                                        anUnvElement.nbnel = nbnel;
+                                        anUnvElement.matid = numat;
+                                        anUnvElement.nodes = new int[nbnel];
+                                        for (int i=0; i < nbnel; i++)
+                                            anUnvElement.nodes[i] = nodes[i];
+
+#if INTERACTIVEREAD
+                                        if (debuglevel >= 4) fprintf(stdout, "\telt %d, #nodes=%d, first/last node=(%d,%d)\n",
+                                                                         anUnvElement.label,nbnel,anUnvElement.nodes[0],anUnvElement.nodes[nbnel-1]);
 #else
-                                         debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
+                                        debug4 << "\telt " << anUnvElement.label << ", #nodes=" << nbnel << ", first/last node=(" << anUnvElement.nodes[0] << "," << anUnvElement.nodes[nbnel-1] << ")" << endl;
 #endif
-                                         meshUnvElements.insert(anUnvElement);
+                                        meshUnvElements.insert(anUnvElement);
 #endif
-                                         anUnvElement.number++;
-                                     }
-                                 }
-                             }
-                         }
+                                        anUnvElement.number++;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 else
@@ -4581,7 +6532,7 @@ avtunvFileFormat::ReadFile()
             {
                 if (strstr((const char *)buf, "Triangle mesh") != NULL)
                 {
-                    for (ipos=0;ipos<strlen(buf);ipos++)
+                    for (ipos=0; ipos<strlen(buf); ipos++)
                     {
                         if (buf[ipos] == '"')
                         {
@@ -4591,7 +6542,7 @@ avtunvFileFormat::ReadFile()
                     // Look for "Triangle mesh contains %d vertices and %d faces"
                     if (2 == sscanf((const char *)buf+ipos+1, "Triangle mesh contains %d vertices and %d faces", &nbnodes, &nb2dcells))
                     {
-                        iok = 1 ; 
+                        iok = 1 ;
                         nb2dmats = 1 ;
 #if defined(MDSERVER)
                         break ;
@@ -4610,7 +6561,7 @@ avtunvFileFormat::ReadFile()
                         for (int i1=0; i1<(int)strlen(buf); i1++)
                             if (buf[i1] == 'D')
                                 buf[i1] = 'E';
-                    
+
                         sscanf(buf, "%lf %lf %lf\n", &x, &y, &z);
                         label++ ;
                         range[0] = min(range[0],x);
@@ -4643,11 +6594,14 @@ avtunvFileFormat::ReadFile()
                 else if (iok == 1 && strstr((const char *)buf, "coordIndex") != NULL)
                 {
                     int nodes[4];
-                    UnvElement anUnvElement; (void) anUnvElement;
+                    UnvElement anUnvElement;
+                    (void) anUnvElement;
                     int numat = 1 ;
                     anUnvElement.number=0;
-                    int nbnel=0; int label=0; int typelt=91 ;
-                    int ier ; 
+                    int nbnel=0;
+                    int label=0;
+                    int typelt=91 ; // This is an only triangle format
+                    int ier ;
                     int j ;
                     while (fgets(buf, len, handle) != NULL && label < nb2dcells)
                     {
@@ -4687,7 +6641,7 @@ avtunvFileFormat::ReadFile()
                                 else
                                 {
                                     nodes[nbnel] = (j + 1) ;
-                                    nbnel++ ;  
+                                    nbnel++ ;
                                 }
                             }
                         }
@@ -4760,9 +6714,22 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             for (int i=0; i<nmats; i++)
             {
                 matnos[i] = i+1;
-                sprintf(str, "mat%d", i+1);
-                names[i] = new char[strlen(str)+1];
-                sprintf(names[i], "%s", str);
+                if (listUnvInterfaces.size() > 0)
+                {
+                    int label = listUnvInterfaces[i].label ;
+                    int ij1 = (label >> 15) - 32  ;
+                    int ij2 = (label % 32768) - 32 ;
+                    sprintf(str, "interface_%d_%d", ij1, ij2);
+                    names[i] = new char[strlen(str)+1];
+                    sprintf(names[i], "%s", str);
+                    matnos[i] = i;
+                }
+                else
+                {
+                    sprintf(str, "mat%d", i+1);
+                    names[i] = new char[strlen(str)+1];
+                    sprintf(names[i], "%s", str);
+                }
 #if INTERACTIVEPLOT
                 if (debuglevel >= 4) fprintf(stdout,"Material %s.\n",names[i]);
 #else
@@ -4798,7 +6765,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 debug3 << "3D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
-                    if (avtunvFileFormat::is3DKnownElt(itre->typelt) >= 0) 
+                    if (avtunvFileFormat::is3DKnownElt(itre->typelt) >= 0)
                     {
                         matlist[k] = itre->matid;
                         k++ ;
@@ -4840,10 +6807,10 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 if (debuglevel >= 3) fprintf(stdout,"Material #cells=%d\n",dims[0]);
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
-                    {
-                        matlist[k] = itre->matid;
-                        k++ ;
-                    }
+                {
+                    matlist[k] = itre->matid;
+                    k++ ;
+                }
             }
 
 #if INTERACTIVEPLOT
@@ -4977,6 +6944,11 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             for (size_t j=0; j<freeUnvFaces.size(); j++)
                 matlist[j] = freeUnvFaces[j].matid;
 
+#if INTERACTIVEPLOT
+            if (debuglevel >= 4)
+                for (size_t j=0; j<freeUnvFaces.size(); j++)
+                    fprintf(stdout," j=%ld m=%d\n",j, matlist[j]);
+#endif
             mat = new avtMaterial(nmats,matnos,names,ndims,dims,0,matlist,
                                   0, // length of mix arrays
                                   0, // mix_mat array
