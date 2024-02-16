@@ -269,10 +269,10 @@ function bv_python_info
     export PILLOW_BUILD_DIR="Pillow-10.0.0"
     export PILLOW_SHA256_CHECKSUM=""
 
-    export PYPARSING_URL=""
-    export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
-    export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
-    export PYPARSING_SHA256_CHECKSUM=""
+    # export PYPARSING_URL=""
+    # export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
+    # export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
+    # export PYPARSING_SHA256_CHECKSUM=""
 
     export REQUESTS_URL=""
     export REQUESTS_FILE="requests-2.31.0.tar.gz"
@@ -1516,13 +1516,13 @@ function bv_python_is_installed
 
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
 
-        check_if_py_module_installed "pyparsing"
-        if [[ $? != 0 ]] ; then
-            if [[ $PY_CHECK_ECHO != 0 ]] ; then
-                info "python module pyparsing is not installed"
-            fi
-            PY_OK=0
-          fi
+        # check_if_py_module_installed "pyparsing"
+        # if [[ $? != 0 ]] ; then
+        #     if [[ $PY_CHECK_ECHO != 0 ]] ; then
+        #         info "python module pyparsing is not installed"
+        #     fi
+        #     PY_OK=0
+        #   fi
 
         check_if_py_module_installed "sphinx"
         if [[ $? != 0 ]] ; then
@@ -1643,14 +1643,14 @@ function bv_python_build
                     info "Done building the requests python module."
                 fi
 
-                check_if_py_module_installed "pyparsing"
-                if [[ $? != 0 ]] ; then
-                    build_pyparsing
-                    if [[ $? != 0 ]] ; then
-                        error "pyparsing python module build failed. Bailing out."
-                    fi
-                    info "Done building the pyparsing python module."
-                fi
+                # check_if_py_module_installed "pyparsing"
+                # if [[ $? != 0 ]] ; then
+                #     build_pyparsing
+                #     if [[ $? != 0 ]] ; then
+                #         error "pyparsing python module build failed. Bailing out."
+                #     fi
+                #     info "Done building the pyparsing python module."
+                # fi
 
                 check_if_py_module_installed "sphinx"
                 if [[ $? != 0 ]] ; then
