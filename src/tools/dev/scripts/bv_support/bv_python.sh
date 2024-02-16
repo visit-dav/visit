@@ -1514,15 +1514,15 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "pyparsing"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module pyparsing is not installed"
-        fi
-        PY_OK=0
-    fi
-
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
+
+        check_if_py_module_installed "pyparsing"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module pyparsing is not installed"
+            fi
+            PY_OK=0
+          fi
 
         check_if_py_module_installed "sphinx"
         if [[ $? != 0 ]] ; then
@@ -1641,6 +1641,15 @@ function bv_python_build
                         error "requests python module build failed. Bailing out."
                     fi
                     info "Done building the requests python module."
+                fi
+
+                check_if_py_module_installed "pyparsing"
+                if [[ $? != 0 ]] ; then
+                    build_pyparsing
+                    if [[ $? != 0 ]] ; then
+                        error "pyparsing python module build failed. Bailing out."
+                    fi
+                    info "Done building the pyparsing python module."
                 fi
 
                 check_if_py_module_installed "sphinx"
