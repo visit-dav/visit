@@ -67,9 +67,9 @@ else()
                           py_src/visit_test_suite.py)
 
 
-    PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
-                               site-packages
-                               ${pytesting_sources})
+    PYTHON_ADD_PIP_SETUP(visit_testing_py_setup
+                         site-packages
+                         ${pytesting_sources})
 
     if(BUILD_CTEST_TESTING)
         add_subdirectory(tests)

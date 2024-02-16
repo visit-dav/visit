@@ -69,10 +69,10 @@ IF(VISIT_PARALLEL)
 
 ELSE(VISIT_PARALLEL)
     # we still need to build the module w/ the mpi stub
-    PYTHON_ADD_DISTUTILS_SETUP(mpicom_py_setup
-                               site-packages
-                               setup.py
-                               ${MPICOM_PY_SOURCES})
+    PYTHON_ADD_PIP_SETUP(mpicom_py_setup
+                         site-packages
+                         setup.py
+                         ${MPICOM_PY_SOURCES})
 # add to main target?
 ENDIF(VISIT_PARALLEL)
 

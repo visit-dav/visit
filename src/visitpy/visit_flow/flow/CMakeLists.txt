@@ -4,6 +4,8 @@
 
 #****************************************************************************/
 # Modifications:
+#  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
+#  Use new cmake commands for pip setup.
 #
 #****************************************************************************/
 
@@ -34,10 +36,10 @@ SET(visit_flow_sources src/__init__.py
                        src/parser/generator.py
                        src/parser/parser.py)
 
-PYTHON_ADD_DISTUTILS_SETUP(visit_flow_py_setup
-                           site-packages
-                           setup.py
-                           ${visit_flow_sources})
+PYTHON_ADD_PIP_SETUP(visit_flow_py_setup
+                     site-packages
+                     setup.py
+                     ${visit_flow_sources})
 
 
 
