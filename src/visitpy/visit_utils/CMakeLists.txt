@@ -7,38 +7,40 @@
 #
 #****************************************************************************
 
-PYTHON_ADD_DISTUTILS_SETUP(visit_utils_py_setup
-                           site-packages
-                           setup.py
-                           src/__init__.py
-                           # core mods
-                           src/common.py
-                           src/encoding.py
-                           src/engine.py
-                           src/exprs.py
-                           src/host_profile.py
-                           src/moab.py
-                           src/property_tree.py
-                           src/query.py
-                           src/slurm.py
-                           src/status.py
-                           src/ult.py
-                           src/windows.py
-                           # builtin module
-                           src/builtin/__init__.py
-                           src/builtin/convert2to3.py
-                           src/builtin/evalfuncs.py
-                           src/builtin/flatten.py
-                           src/builtin/writescript.py
-                           # qannote module
-                           src/qannote/__init__.py
-                           src/qannote/canvas.py
-                           src/qannote/items.py
-                           src/qannote/xinit.py
-                           # qplot module
-                           src/qplot/__init__.py
-                           src/qplot/plots.py
-                           src/qplot/scene.py
+PYTHON_ADD_PIP_SETUP(NAME visit_utils_py_setup
+                     DEST_DIR site-packages
+                     PY_MODULE_DIR visit_utils
+                     PY_SETUP_FILE  setup.py
+                     PY_SOURCES
+                     src/__init__.py
+                     # core mods
+                     src/common.py
+                     src/encoding.py
+                     src/engine.py
+                     src/exprs.py
+                     src/host_profile.py
+                     src/moab.py
+                     src/property_tree.py
+                     src/query.py
+                     src/slurm.py
+                     src/status.py
+                     src/ult.py
+                     src/windows.py
+                     # builtin module
+                     src/builtin/__init__.py
+                     src/builtin/convert2to3.py
+                     src/builtin/evalfuncs.py
+                     src/builtin/flatten.py
+                     src/builtin/writescript.py
+                     # qannote module
+                     src/qannote/__init__.py
+                     src/qannote/canvas.py
+                     src/qannote/items.py
+                     src/qannote/xinit.py
+                     # qplot module
+                     src/qplot/__init__.py
+                     src/qplot/plots.py
+                     src/qplot/scene.py
                        )
 
 # gen scripts that help us test the visit_utils module
