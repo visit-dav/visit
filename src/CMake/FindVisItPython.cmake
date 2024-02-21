@@ -125,13 +125,13 @@ if(PYTHONINTERP_FOUND)
     message(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
 
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
+                            "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
                     OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
                     ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
     message(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
 
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                            "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
+                            "import sys;from sysconfig import get_path;sys.stdout.write(get_path('include'))"
                     OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
                     ERROR_VARIABLE ERROR_FINDING_INCLUDES)
     message(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
@@ -139,7 +139,8 @@ if(PYTHONINTERP_FOUND)
     if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
         message(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
     endif()
-
+    
+    # TODO: replacing distutils.get_python_lib() isn't straight forward
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                             "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
                     OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
@@ -167,7 +168,7 @@ if(PYTHONINTERP_FOUND)
     endif()
 
     # our goal is to find the specific python lib, based on info
-    # we extract from distutils.sysconfig from the python executable
+    # we extract from sysconfig from the python executable
     #
     # check if python libs differs for windows python installs
     if(NOT WIN32)
@@ -183,22 +184,22 @@ if(PYTHONINTERP_FOUND)
         #  LIBPL + LIBRARY
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBPL)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
 
