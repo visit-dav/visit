@@ -212,7 +212,7 @@ then
    then
       mv ${build_visit_script}_log.poodle ${build_visit_script}_log
    fi
-   if [ ! -d ${dest_dir}]
+   if [ ! -d ${dest_dir} ]
    then
       mkdir -p ${dest_dir}
    fi
