@@ -43,7 +43,7 @@ setup(name='visit_flow',
       author_email = 'cyrush@llnl.gov',
       description  ='visit_flow: A small, flexible python data flow framework.',
       package_dir  = {'visit_flow':'src'},
-      packages=['visit_flow','visit_flow.core','visit_flow.parser','visit_flow.filters']})
+      packages=['visit_flow','visit_flow.core','visit_flow.parser','visit_flow.filters'])
       #cmdclass = { 'test': setup_tests.ExecuteTests})
 
 if using_visit:
