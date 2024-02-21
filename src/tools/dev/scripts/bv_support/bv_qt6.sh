@@ -412,10 +412,10 @@ function build_qt6_tools
         ${CMAKE_COMMAND} ${copts} ../${QT6_TOOLS_SOURCE_DIR}
 
     info "Building Qt6 tools . . . "
-    $MAKE $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
 
     info "Installing Qt6 tools . . . "
-    $MAKE install 
+    ${CMAKE_COMMAND} --install .
 
     return 0;
 }
@@ -454,17 +454,21 @@ function build_qt6_svg
     copts="${copts} -DCMAKE_INSTALL_PREFIX:PATH=${QT6_INSTALL_DIR}"
     copts="${copts} -DCMAKE_CXX_STANDARD:STRING=17"
     copts="${copts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
+    info "qt6 svg options: $copts"
+    info "cmake_install ${CMAKE_INSTALL}"
+    info "cmake_command ${CMAKE_COMMAND}"
     qt6_path="${CMAKE_INSTALL}:$PATH"
-   
+    info "qt6 svg path: $qt6_path"
+
     info "Configuring Qt6 svg . . . "
     env PATH="${qt6_path}" CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${CMAKE_COMMAND} ${copts} ../${QT6_SVG_SOURCE_DIR}
+        ${CMAKE_COMMAND} ${copts} ../${QT6_SVG_SOURCE_DIR} 
 
     info "Building Qt6 svg . . . "
-    $MAKE $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
 
     info "Installing Qt6 svg . . . "
-    $MAKE install 
+    ${CMAKE_COMMAND} --install .
 
     return 0;
 }
@@ -522,7 +526,7 @@ function bv_qt6_build
 
 
             # tools submodule
-            if test -f QT6_INSTALL_DIR/modules/Tools.json ; then
+            if test -f ${QT6_INSTALL_DIR}/modules/Tools.json ; then
                 info "Qt 6 submodule tools already exists"
             else
                 info "Building QT6 tools (~4 minutes)"
@@ -530,7 +534,7 @@ function bv_qt6_build
             fi
 
             # svg submodule
-            if test -f QT6_INSTALL_DIR/modules/Svg.json ; then
+            if test -f ${QT6_INSTALL_DIR}/modules/Svg.json ; then
                 info "Qt 6 submodule svg already exists"
             else
                 info "Building QT6 svg (~2 minutes)"
