@@ -269,11 +269,6 @@ function bv_python_info
     export PILLOW_BUILD_DIR="Pillow-10.0.0"
     export PILLOW_SHA256_CHECKSUM=""
 
-    export PYPARSING_URL=""
-    export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
-    export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
-    export PYPARSING_SHA256_CHECKSUM=""
-
     export REQUESTS_URL=""
     export REQUESTS_FILE="requests-2.31.0.tar.gz"
     export REQUESTS_BUILD_DIR="requests-2.31.0"
@@ -770,34 +765,6 @@ function build_pillow
     return 0
 }
 
-# *************************************************************************** #
-#                            Function 7.2, build_pyparsing                    #
-# *************************************************************************** #
-function build_pyparsing
-{
-
-    download_py_module ${PYPARSING_FILE} ${PYPARSING_URL}
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    extract_py_module ${PYPARSING_BUILD_DIR} ${PYPARSING_FILE} "pyparsing"
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    install_py_module ${PYPARSING_BUILD_DIR} "pyparsing"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    # pyparsing installs into site-packages dir of Visit's Python.
-    # Simply re-execute the python perms command.
-    fix_py_permissions
-
-    info "Done with pyparsing."
-    return 0
-}
 
 # *************************************************************************** #
 #                            Function 7.3, build_requests                     #
@@ -1510,14 +1477,6 @@ function bv_python_is_installed
     if [[ $? != 0 ]] ; then
         if [[ $PY_CHECK_ECHO != 0 ]] ; then
             info "python module numpy is not installed"
-        fi
-        PY_OK=0
-    fi
-
-    check_if_py_module_installed "pyparsing"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module pyparsing is not installed"
         fi
         PY_OK=0
     fi
