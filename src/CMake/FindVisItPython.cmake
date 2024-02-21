@@ -502,8 +502,8 @@ FUNCTION(PYTHON_ADD_HYBRID_MODULE)
         set_target_properties(${args_NAME} PROPERTIES
              LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${args_DEST_DIR}/${args_NAME}/")
     endif()
-    add_dependencies(${args_NAME} "${target_name}_py_setup")
-    VISIT_INSTALL_TARGETS_RELATIVE(${args_DEST_DIR}/${target_name} ${args_NAME})
+    add_dependencies(${args_NAME} "${args_NAME}_py_setup")
+    VISIT_INSTALL_TARGETS_RELATIVE(${args_DEST_DIR}/${args_NAME} ${args_NAME})
 
 ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
 
