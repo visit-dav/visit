@@ -11,24 +11,17 @@
 #
 #
 # Modifications:
-#
+#  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
+#  Move to use setuptools.
 #
 ###############################################################################
 
-import sys
-from distutils.core import setup
-from distutils.command.install_egg_info import install_egg_info
-
-# disable install_egg_info
-class SkipEggInfo(install_egg_info):
-    def run(self):
-        pass
+from setuptools import setup
 
 
 setup (name = 'pyside_gui',
        description = 'pyside_gui',
        package_dir = {'pyside_gui':'py_src'},
-       packages=['pyside_gui'],
-       cmdclass={'install_egg_info': SkipEggInfo})
+       packages=['pyside_gui'])
 
 

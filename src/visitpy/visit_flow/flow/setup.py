@@ -14,9 +14,12 @@
 import sys
 __system_bytecode_setting = sys.dont_write_bytecode
 sys.dont_write_bytecode = True
-from distutils.core import setup
+from setuptools import setup
 import sys
-import setup_tests
+# TODO: update setup_tests
+# and cmdclass = { 'test': setup_tests.ExecuteTests}
+#import setup_tests
+
 
 
 #
@@ -36,13 +39,12 @@ except:
     pass
 
 setup(name='visit_flow',
-      version      ='0.1',
       author       = 'Cyrus Harrison',
       author_email = 'cyrush@llnl.gov',
       description  ='visit_flow: A small, flexible python data flow framework.',
       package_dir  = {'visit_flow':'src'},
-      packages=['visit_flow','visit_flow.core','visit_flow.parser','visit_flow.filters'],
-      cmdclass = { 'test': setup_tests.ExecuteTests})
+      packages=['visit_flow','visit_flow.core','visit_flow.parser','visit_flow.filters'])
+      #cmdclass = { 'test': setup_tests.ExecuteTests})
 
 if using_visit:
     sys.exit(0)

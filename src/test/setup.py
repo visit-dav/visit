@@ -6,9 +6,11 @@
 # distutils gen + setup script for the 'visit_testing' module.
 #
 # Modifications:
-#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
-#    Refactor to use real source dir.
+#  Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#  Refactor to use real source dir.
 #
+#  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
+#  Move to use setuptools.
 # ----------------------------------------------------------------------------
 
 
@@ -17,7 +19,7 @@ import os
 import shutil
 
 from os.path import join  as pjoin
-from distutils.core import setup
+from setuptools import setup
 
 
 #
@@ -38,7 +40,6 @@ except:
 
 
 setup(name='visit_testing',
-      version='0.1',
       author = 'VisIt Team',
       description='VisIt Testing Module',
       package_dir = {'visit_testing':'py_src'},

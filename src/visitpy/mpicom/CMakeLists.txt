@@ -34,11 +34,12 @@ IF(VISIT_PARALLEL)
 
 
     # Create the mpicom
-    PYTHON_ADD_HYBRID_MODULE(mpicom
-                             site-packages
-                             setup.py
-                             "${MPICOM_PY_SOURCES}"
-                             ${MPICOM_SOURCES})
+    PYTHON_ADD_HYBRID_MODULE(NAME mpicom
+                             DEST_DIR lib/site-packages
+                             PY_MODULE_DIR mpicom
+                             PY_SETUP_FILE setup.py
+                             PY_SOURCES "${MPICOM_PY_SOURCES}"
+                             SOURCES ${MPICOM_SOURCES})
 
     IF(UNIX)
         SET_TARGET_PROPERTIES(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
@@ -69,10 +70,12 @@ IF(VISIT_PARALLEL)
 
 ELSE(VISIT_PARALLEL)
     # we still need to build the module w/ the mpi stub
-    PYTHON_ADD_DISTUTILS_SETUP(mpicom_py_setup
-                               site-packages
-                               setup.py
-                               ${MPICOM_PY_SOURCES})
+    PYTHON_ADD_PIP_SETUP(NAME mpicom_py_setup
+                         DEST_DIR lib/site-packages
+                         PY_MODULE_DIR mpicom
+                         PY_SETUP_FILE setup.py
+                         PY_SOURCES ${MPICOM_PY_SOURCES})
+
 # add to main target?
 ENDIF(VISIT_PARALLEL)
 
