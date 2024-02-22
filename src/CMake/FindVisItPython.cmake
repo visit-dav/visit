@@ -81,6 +81,9 @@
 #   Kathleen Biagas, Thu Sep 28 16:33:45 PDT 2023
 #   Set PYLIB to the python library name, used by PluginVsInstall.cmake.in.
 #
+#   Cyrus Harrison, Fri Feb 16 13:37:57 PST 2024
+#   Refactor PYTHON_ADD_DISTUTILS_SETUP to PYTHON_ADD_PIP_SETUP.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -122,13 +125,13 @@ if(PYTHONINTERP_FOUND)
     message(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
 
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
+                            "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
                     OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
                     ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
     message(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
 
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                            "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
+                            "import sys;from sysconfig import get_path;sys.stdout.write(get_path('include'))"
                     OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
                     ERROR_VARIABLE ERROR_FINDING_INCLUDES)
     message(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
@@ -136,7 +139,8 @@ if(PYTHONINTERP_FOUND)
     if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
         message(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
     endif()
-
+    
+    # TODO: replacing distutils.get_python_lib() isn't straight forward
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                             "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
                     OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
@@ -164,7 +168,7 @@ if(PYTHONINTERP_FOUND)
     endif()
 
     # our goal is to find the specific python lib, based on info
-    # we extract from distutils.sysconfig from the python executable
+    # we extract from sysconfig from the python executable
     #
     # check if python libs differs for windows python installs
     if(NOT WIN32)
@@ -180,22 +184,22 @@ if(PYTHONINTERP_FOUND)
         #  LIBPL + LIBRARY
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBPL)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
+                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
 
@@ -340,93 +344,169 @@ function(PYTHON_ADD_MODULE _NAME )
 endfunction()
 
 
-#
-# Function that calls a distutils based setup python script
-# and installs a python module.
-#
+##############################################################################
+# Macro to use a pure python pip setup script
+##############################################################################
+FUNCTION(PYTHON_ADD_PIP_SETUP)
+    set(singleValuedArgs NAME DEST_DIR PY_MODULE_DIR PY_SETUP_FILE FOLDER)
+    set(multiValuedArgs  PY_SOURCES)
 
-function(PYTHON_ADD_DISTUTILS_SETUP target_name dest_dir setup_file)
-    message(STATUS "Configuring python distutils setup: ${target_name}")
-    if(NOT WIN32)
-        add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
-                COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-                build
-                --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-                install
-                --install-purelib=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}
-                DEPENDS  ${setup_file} ${ARGN}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    ## parse the arguments to the macro
+    cmake_parse_arguments(args
+            "${options}" "${singleValuedArgs}" "${multiValuedArgs}" ${ARGN} )
 
-        add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
-        # Also use distutils for the install ...
-        #
-        # The following if uses the CMAKE_INSTALL_PREFIX directly if it
-        # is an absolute path, otherwise it prepends the VISIT_BINARY_DIR
-        # to it. Also note that adding STATUS to the message call causes
-        # the message to not get output.
-        install(CODE
+    # check req'd args
+    if(NOT DEFINED args_NAME)
+       message(FATAL_ERROR
+               "PYTHON_ADD_PIP_SETUP: Missing required argument NAME")
+    endif()
+
+    if(NOT DEFINED args_DEST_DIR)
+       message(FATAL_ERROR
+               "PYTHON_ADD_PIP_SETUP: Missing required argument DEST_DIR")
+    endif()
+
+    if(NOT DEFINED args_PY_MODULE_DIR)
+       message(FATAL_ERROR
+       "PYTHON_ADD_PIP_SETUP: Missing required argument PY_MODULE_DIR")
+    endif()
+
+    if(NOT DEFINED args_PY_SETUP_FILE)
+       message(FATAL_ERROR
+       "PYTHON_ADD_PIP_SETUP: Missing required argument PY_SETUP_FILE")
+    endif()
+
+    if(NOT DEFINED args_PY_SOURCES)
+       message(FATAL_ERROR
+       "PYTHON_ADD_PIP_SETUP: Missing required argument PY_SOURCES")
+    endif()
+
+    MESSAGE(STATUS "Configuring python pip setup: ${args_NAME}")
+
+    # dest for build dir
+    set(abs_dest_path ${CMAKE_BINARY_DIR}/${args_DEST_DIR})
+    if(WIN32)
+        # on windows, python seems to need standard "\" style paths
+        string(REGEX REPLACE "/" "\\\\" abs_dest_path  ${abs_dest_path})
+    endif()
+
+    # NOTE: With pip, you can't directly control build dir with an arg
+    # like we were able to do with distutils, you have to use TMPDIR
+    # TODO: we might want to  explore this in the future
+    add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build
+            COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
+            --disable-pip-version-check --no-warn-script-location
+            --target "${abs_dest_path}"
+            DEPENDS  ${args_PY_SETUP_FILE} ${args_PY_SOURCES}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+    add_custom_target(${args_NAME} ALL DEPENDS
+                      ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build)
+
+    # also use pip for the install ...
+    # if PYTHON_MODULE_INSTALL_PREFIX is set, install there
+    if(PYTHON_MODULE_INSTALL_PREFIX)
+        set(py_mod_inst_prefix ${PYTHON_MODULE_INSTALL_PREFIX})
+        # make sure windows style paths don't ruin our day (or night)
+        if(WIN32)
+            string(REGEX REPLACE "/" "\\\\" py_mod_inst_prefix  ${PYTHON_MODULE_INSTALL_PREFIX})
+        endif()
+        INSTALL(CODE
             "
-            if(\"\${CMAKE_INSTALL_PREFIX}\" MATCHES \"^/.*\")
-               set(PREFIX_DIR_ABSOLUTE \"\${CMAKE_INSTALL_PREFIX}\")
-            else()
-               get_filename_component(PREFIX_DIR_ABSOLUTE \"${CMAKE_INSTALL_PREFIX}\" ABSOLUTE BASE_DIR \"${VISIT_BINARY_DIR}\")
-            endif()
-            execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-                    build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
-                    install --install-purelib=\${PREFIX_DIR_ABSOLUTE}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+            EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
+                --disable-pip-version-check --no-warn-script-location
+                --target ${py_mod_inst_prefix}
                 OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
-            message(\"\${PY_DIST_UTILS_INSTALL_OUT}\")
+            MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
             ")
     else()
-        file(TO_NATIVE_PATH ${VISIT_LIBRARY_DIR} VLD_NATIVE)
-        string(REPLACE "\\" "\\\\" VLD_ESC_PATH "${VLD_NATIVE}")
-        file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CCBD_NATIVE)
-        string(REPLACE "\\" "\\\\" CCBD_ESC_PATH "${CCBD_NATIVE}")
-
-        add_custom_target(${target_name} ALL
-            COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-            build
-            --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-            install
-            --install-purelib=${VLD_NATIVE}/${dest_dir}
-            DEPENDS  ${setup_file} ${ARGN}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-        set_target_properties(${target_name} PROPERTIES FOLDER visit_py_setup)
-        visit_add_to_util_builds(${target_name})
-
-        # also use distutils for the install ...
-        file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB} VIVL_NATIVE)
-        string(REPLACE "\\" "\\\\" VIVL_ESC_PATH "${VIVL_NATIVE}")
-        install(CODE
-           "
-           EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-               COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-               build   \"--build-base=${CCBD_ESC_PATH}\\\\build_install\"
-               install \"--install-purelib=${VIVL_ESC_PATH}\\\\${dest_dir}\")
-           message(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
-           ")
+        # else install to the dest dir under CMAKE_INSTALL_PREFIX
+        INSTALL(CODE
+            "
+            EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
+                --disable-pip-version-check --no-warn-script-location
+                --target \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${args_DEST_DIR}
+                OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
+            MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
+            ")
     endif()
-endfunction()
 
-function(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
-    message(STATUS "Configuring hybrid python module: ${target_name}")
-    PYTHON_ADD_DISTUTILS_SETUP("${target_name}_py_setup"
-                               ${dest_dir}
-                               ${setup_file}
-                               ${py_sources})
-    PYTHON_ADD_MODULE(${target_name} ${ARGN})
+    # set folder if passed
+    if(DEFINED args_FOLDER)
+        blt_set_target_folder(TARGET ${args_NAME} FOLDER ${args_FOLDER})
+    endif()
+
+ENDFUNCTION(PYTHON_ADD_PIP_SETUP)
+
+
+##############################################################################
+# Macro to create a pip script and compiled python module
+##############################################################################
+FUNCTION(PYTHON_ADD_HYBRID_MODULE)
+    set(singleValuedArgs NAME DEST_DIR PY_MODULE_DIR PY_SETUP_FILE FOLDER)
+    set(multiValuedArgs  PY_SOURCES SOURCES)
+
+    ## parse the arguments to the macro
+    cmake_parse_arguments(args
+            "${options}" "${singleValuedArgs}" "${multiValuedArgs}" ${ARGN} )
+
+     # check req'd args
+    if(NOT DEFINED args_NAME)
+        message(FATAL_ERROR
+                "PYTHON_ADD_HYBRID_MODULE: Missing required argument NAME")
+    endif()
+
+    if(NOT DEFINED args_DEST_DIR)
+        message(FATAL_ERROR
+                "PYTHON_ADD_HYBRID_MODULE: Missing required argument DEST_DIR")
+    endif()
+
+    if(NOT DEFINED args_PY_MODULE_DIR)
+        message(FATAL_ERROR
+        "PYTHON_ADD_HYBRID_MODULE: Missing required argument PY_MODULE_DIR")
+    endif()
+
+    if(NOT DEFINED args_PY_SETUP_FILE)
+        message(FATAL_ERROR
+        "PYTHON_ADD_HYBRID_MODULE: Missing required argument PY_SETUP_FILE")
+    endif()
+
+    if(NOT DEFINED args_PY_SOURCES)
+        message(FATAL_ERROR
+        "PYTHON_ADD_HYBRID_MODULE: Missing required argument PY_SOURCES")
+    endif()
+
+    if(NOT DEFINED args_SOURCES)
+        message(FATAL_ERROR
+                "PYTHON_ADD_HYBRID_MODULE: Missing required argument SOURCES")
+    endif()
+
+    MESSAGE(STATUS "Configuring hybrid python module: ${args_NAME}")
+
+    PYTHON_ADD_PIP_SETUP(NAME          "${args_NAME}_py_setup"
+                         DEST_DIR      ${args_DEST_DIR}
+                         PY_MODULE_DIR ${args_PY_MODULE_DIR}
+                         PY_SETUP_FILE ${args_PY_SETUP_FILE}
+                         PY_SOURCES    ${args_PY_SOURCES}
+                         FOLDER        ${args_FOLDER})
+
+    PYTHON_ADD_MODULE(${args_NAME} ${args_SOURCES})
+
+
+    ##### visit specific code:
     if(NOT WIN32)
-        set_target_properties(${target_name} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
+         set_target_properties(${args_NAME} PROPERTIES
+             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${args_DEST_DIR}/${args_NAME}/)
     else()
-        set_target_properties(${target_name} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${dest_dir}/${target_name}/")
+        set_target_properties(${args_NAME} PROPERTIES
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${args_DEST_DIR}/${args_NAME}/")
     endif()
-    add_dependencies(${target_name} "${target_name}_py_setup")
-    VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
+    add_dependencies(${args_NAME} "${args_NAME}_py_setup")
+    VISIT_INSTALL_TARGETS_RELATIVE(${args_DEST_DIR}/${args_NAME} ${args_NAME})
 
-endfunction()
+ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
 
 
 # Deal with install targets
