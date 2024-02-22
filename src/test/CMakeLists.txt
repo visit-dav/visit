@@ -67,7 +67,7 @@ else()
                           py_src/visit_test_suite.py)
 
     PYTHON_ADD_PIP_SETUP(NAME visit_testing_py_setup
-                         DEST_DIR site-packages
+                         DEST_DIR lib/site-packages
                          PY_MODULE_DIR visit_testing
                          PY_SETUP_FILE setup.py
                          PY_SOURCES ${pytesting_sources})

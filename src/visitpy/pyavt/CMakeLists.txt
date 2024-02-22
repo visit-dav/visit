@@ -24,7 +24,7 @@ SET(pyavt_sources py_src/__init__.py
                   py_src/templates/simple_query.py)
 
 PYTHON_ADD_PIP_SETUP(NAME pyavt_py_setup
-                     DEST_DIR site-packages
+                     DEST_DIR lib/site-packages
                      PY_MODULE_DIR pyavt
                      PY_SETUP_FILE setup.py
                      PY_SOURCES ${pyavt_sources})

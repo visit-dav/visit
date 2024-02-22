@@ -38,7 +38,7 @@ SET(visit_flow_sources src/__init__.py
 
 
 PYTHON_ADD_PIP_SETUP(NAME visit_flow_py_setup
-                     DEST_DIR site-packages
+                     DEST_DIR lib/site-packages
                      PY_MODULE_DIR visit_flow
                      PY_SETUP_FILE setup.py
                      PY_SOURCES  ${visit_flow_sources})

@@ -35,7 +35,7 @@ IF(VISIT_PARALLEL)
 
     # Create the mpicom
     PYTHON_ADD_HYBRID_MODULE(NAME mpicom
-                             DEST_DIR site-packages
+                             DEST_DIR lib/site-packages
                              PY_MODULE_DIR mpicom
                              PY_SETUP_FILE setup.py
                              PY_SOURCES "${MPICOM_PY_SOURCES}"
@@ -71,7 +71,7 @@ IF(VISIT_PARALLEL)
 ELSE(VISIT_PARALLEL)
     # we still need to build the module w/ the mpi stub
     PYTHON_ADD_PIP_SETUP(NAME mpicom_py_setup
-                         DEST_DIR site-packages
+                         DEST_DIR lib/site-packages
                          PY_MODULE_DIR mpicom
                          PY_SETUP_FILE setup.py
                          PY_SOURCES ${MPICOM_PY_SOURCES})
