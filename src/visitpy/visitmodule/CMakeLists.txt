@@ -12,13 +12,12 @@
 #
 #****************************************************************************
 
-PYTHON_ADD_DISTUTILS_SETUP(visitmodule_py_setup
-                           site-packages
-                           setup.py
-                           py_src/__init__.py
-                           py_src/frontend.py
-                           )
-
+PYTHON_ADD_PIP_SETUP(NAME visitmodule_py_setup
+                     DEST_DIR lib/site-packages
+                     PY_MODULE_DIR visit_flow_vpe
+                     PY_SETUP_FILE setup.py
+                     PY_SOURCES  py_src/__init__.py
+                                 py_src/frontend.py)
 
 
 

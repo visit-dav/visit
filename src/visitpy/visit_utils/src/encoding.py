@@ -27,7 +27,6 @@ import subprocess
 import glob
 import re
 import string
-import distutils.spawn
 import platform
 import shutil
 
@@ -648,14 +647,8 @@ def ffmpeg_bin():
     """
     Returns path to the 'ffmpeg' binary, or None if this binary is not available.
     """
-    if (platform.system() == "Windows"):
-        return distutils.spawn.find_executable("ffmpeg")
-    else:
-        res = sexe("which ffmpeg",ret_output=True)[1].strip()
-        if os.path.exists(res):
-            return res
-        else:
-            return None
+    return shutil.which("ffmpeg")
+
 
 def ffmpeg_version():
     """
