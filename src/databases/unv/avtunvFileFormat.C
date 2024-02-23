@@ -61,6 +61,11 @@
 #include <avtParallel.h>
 #endif
 
+#ifdef _MSC_VER
+#include <shlwapi.h>
+#define strcasestr StrStrIA
+#endif
+
 using     std::string;
 using namespace std;
 
@@ -2678,7 +2683,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
             case 34:
             {
                 int nbnel = itre->nbnel ;
-                vtkIdType cverts[nbnel];
+                vtkIdType *cverts = new vtkIdType[nbnel];
                 for (int i=0; i < nbnel; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
@@ -2689,6 +2694,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                 }
                 ugrid->InsertNextCell(VTK_POLYGON, nbnel, cverts);
+                delete [] cverts;
                 break;
             }
             case 24:
@@ -2866,7 +2872,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 case 34:
                 {
                     int nbnel = itre->nbnel ;
-                    vtkIdType cverts[nbnel];
+                    vtkIdType *cverts = new vtkIdType[nbnel];
                     for (int i=0; i < nbnel; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2877,6 +2883,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                     }
                     ugrid->InsertNextCell(VTK_POLYGON, nbnel, cverts);
+                    delete [] cverts;
                     break;
                 }
                 default:
@@ -2940,7 +2947,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
                 case 34:
                 {
                     int nbnel = itre->nbnel ;
-                    vtkIdType cverts[nbnel];
+                    vtkIdType *cverts = new vtkIdType[nbnel];
                     for (int i=0; i < nbnel; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2951,6 +2958,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                     }
                     ugrid->InsertNextCell(VTK_POLYGON, nbnel, cverts);
+                    delete [] cverts;
                     break;
                 }
                 default:
