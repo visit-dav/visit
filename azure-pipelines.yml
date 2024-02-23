@@ -164,7 +164,7 @@ stages:
            # make docs
            #################################
            # make docs
-           cd build resources/help/en_US/manual
+           cd build
            make docs
         displayName: 'Docs'
 
