@@ -90,7 +90,7 @@ done
 
 # Find the most recent VisIt python
 visitpython=""
-dir="$(dirname $0)"
+dir="$(dirname $(realpath $0))"
 for ver in $versions; do
     thispython="$dir/../$ver/$platform/bin/python"
     thispython3="$dir/../$ver/$platform/bin/python3"
@@ -176,10 +176,10 @@ if test "$version" != ""; then
 fi
 
 # Execute VisIt's Python or system Python, depending on what's available
-frontendlauncherpy="$(dirname $0)/frontendlauncher.py"
+frontendlauncherpy="$(dirname $(realpath $0))/frontendlauncher.py"
 unset PYTHONHOME
 if test -n "$visitpython"; then
-    visitdir="$(dirname $(dirname $visitpython))"
+    visitdir="$(dirname $(dirname $(realpath $visitpython)))"
 
     # Which Python was VisIt built against? Look for python<ver> executable
     # next to the python binary we located already.
