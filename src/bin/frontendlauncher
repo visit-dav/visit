@@ -49,7 +49,7 @@
 # Function to resolve through potential symlinks to actual dir where script lives
 #
 script_dirname() {
-    lnk=$(readlink -f "$0")
+    lnk=$(readlink -f "$1")
     scrdir=$(dirname $lnk)
     echo $scrdir
 }
