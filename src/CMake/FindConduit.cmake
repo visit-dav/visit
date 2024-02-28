@@ -2,6 +2,14 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
+#-----------------------------------------------------------------------------
+# Modifications:
+#   Kathleen Biagas, Wed Feb 28, 2024
+#   Removed install logic for conduit python.  Now handled in
+#   lib/CMakeLists.txt with build/lib/site-packages/ directory install.
+#
+#-----------------------------------------------------------------------------
+
 #
 # Use the CONDUIT_DIR hint from the config-site .cmake file 
 #
@@ -17,30 +25,6 @@ if(VISIT_PARALLEL)
     SET_UP_THIRD_PARTY(CONDUIT_MPI
         INCDIR include/conduit
         LIBS conduit_relay_mpi conduit_blueprint_mpi)
-endif()
-
-
-# check if conduit was built with python support, if so we want
-# to install conduit's python modules
-if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
-    message(STATUS "Found Conduit Python Wrappers - ${CONDUIT_DIR}/python-modules/conduit")
-    install(DIRECTORY ${CONDUIT_DIR}/python-modules/conduit
-            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-            FILE_PERMISSIONS
-                    OWNER_WRITE
-                    OWNER_READ
-                    GROUP_WRITE
-                    GROUP_READ
-                    WORLD_READ
-            DIRECTORY_PERMISSIONS
-                    OWNER_WRITE
-                    OWNER_READ
-                    OWNER_EXECUTE
-                    GROUP_WRITE
-                    GROUP_READ
-                    GROUP_EXECUTE
-                    WORLD_READ WORLD_EXECUTE
-                )
 endif()
 
 if(CONDUIT_FOUND)
