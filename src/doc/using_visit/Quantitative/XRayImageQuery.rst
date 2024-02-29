@@ -494,10 +494,13 @@ x ray image shows some variation. ::
   params = GetQueryParameters("XRay Image")
   params['image_size'] = (300, 300)
   params['divide_emis_by_absorb'] = 1
-  params['width'] = 4.
-  params['height'] = 4.
-  params['theta'] = 90.
-  params['phi'] = 0.
+  params['parallel_scale'] = 2.
+  params['near_plane'] = -40.0
+  params['far_plane'] = 40.0
+  params['normal'] = (1,0,0)
+  params['focus'] = (0,0,0)
+  params['view_up'] = (0,1,0)
+  params['perspective'] = 0
   params['vars'] = ("w1", "v1")
   Query("XRay Image", params)
 
