@@ -810,6 +810,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
 
+        // TODO why is this loop duplicated
         for (int i = 0; i < nNodes; ++i)
         {
             ghostNodePtr[i] = 0;
@@ -849,6 +850,40 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             {
                 avtGhostData::AddGhostZoneType(ghostZonePtr[i],
                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
+            }
+        }
+
+        intVector &globalNodeIdsForDom = globalNodeIds[meshId][dom];
+        if (globalNodeIdsForDom.size() != static_cast<size_t>(nNodes))
+        {
+            debug1 << "Mismatch in the number of global and local nodes "
+                   << "for domain " << dom << endl;
+        }
+        else
+        {
+            for (int localNodeId = 0; localNodeId < nNodes; localNodeId ++)
+            {
+                const int globalNodeId = globalNodeIdsForDom[localNodeId];
+                // how many times is this nodeId used?
+                const int idCount = idsCounter[meshId][globalNodeId];
+                // has this node been marked as duplicate yet?
+                const int duplicateMark = globalIdNotMarkedAsDuplicate[meshId][globalNodeId];
+                // if it is used multiple times, it is shared across domains
+                if (idCount > 1)
+                {
+                    // you get a pass the very first time
+                    if (duplicateMark == 0)
+                    {
+                        globalIdNotMarkedAsDuplicate[meshId][globalNodeId] = 1;
+                    }
+                    else
+                    {
+                        // so we can ghost it
+                        avtGhostData::AddGhostNodeType(
+                            ghostNodePtr[localNodeId],
+                            DUPLICATED_NODE);
+                    }
+                }
             }
         }
 
@@ -3183,8 +3218,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
     }
 
-    std::map<int, std::vector<intVector>> globalNodeIds;
-
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         char meshName[32];
@@ -3196,31 +3229,44 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         globalNodeIds[meshId] = miliClass->GetLabelIds();
     }
 
+    idsCounter.resize(nMeshes);
+    globalIdNotMarkedAsDuplicate.resize(nMeshes);
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
-
-        int max_global_domain_id = 0;
+        int maxGlobalDomainId = 0;
         for (int dom = 0; dom < nDomains; dom ++)
         {
             for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
             {
                 int val = globalNodeIds[meshId][dom][i];
-                if (val > max_global_domain_id)
+                if (val > maxGlobalDomainId)
                 {
-                    max_global_domain_id = val;
+                    maxGlobalDomainId = val;
                 }
             }
         }
 
-        intVector idsCounter(max_global_domain_id + 1);
+        // set the idsCounter to have enough room for all global domain ids,
+        // and set the initial count for each one to zero
+        idsCounter[meshId].resize(maxGlobalDomainId + 1, 0);
         for (int dom = 0; dom < nDomains; dom ++)
         {
             for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
             {
-                int dom_id = globalNodeIds[meshId][dom][i];
-                idsCounter[dom_id] ++;
+                const int globalNodeId = globalNodeIds[meshId][dom][i];
+                idsCounter[meshId][globalNodeId] ++;
             }
         }
+
+        // The way this works is there is one entry per global node id per mesh.
+        // When we eventually mark nodes as duplicated across domains, we don't
+        // wish to mark the same node as a duplicate across every domain. If my
+        // zone only has nodes that are marked as duplicates on every domain, 
+        // then that zone will disappear. The solution is to make sure that a 
+        // node is NOT marked as duplicate a single time on some domain. So this
+        // array lives in parallel with the idsCounter, and we can index into it
+        // the same way.
+        globalIdNotMarkedAsDuplicate[meshId].resize(maxGlobalDomainId + 1, 0);
     }
 
 
