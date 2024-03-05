@@ -449,6 +449,68 @@ def TestGlobalIntegrationPoint():
     DeleteAllPlots()
     CloseDatabase(db_path)
 
+def TestMaterialEdgeLinesDoNotAppear():
+    TestSection("Material Edge Lines")
+
+    db_path = multi_domain_path + "/d3samp6.plt.mili"
+    OpenDatabase(db_path)
+
+    AddPlot("FilledBoundary", "materials1", 1, 1)
+    DrawPlots()
+
+    AddPlot("FilledBoundary", "materials1", 1, 1)
+    DrawPlots()
+    SetActivePlots(1)
+    FilledBoundaryAtts = FilledBoundaryAttributes()
+    FilledBoundaryAtts.colorType = FilledBoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+    FilledBoundaryAtts.colorTableName = "Default"
+    FilledBoundaryAtts.invertColorTable = 0
+    FilledBoundaryAtts.legendFlag = 1
+    FilledBoundaryAtts.lineWidth = 0
+    FilledBoundaryAtts.singleColor = (0, 0, 0, 255)
+    FilledBoundaryAtts.SetMultiColor(0, (176, 89, 238, 255))
+    FilledBoundaryAtts.SetMultiColor(1, (255, 179, 38, 255))
+    FilledBoundaryAtts.SetMultiColor(2, (0, 0, 255, 255))
+    FilledBoundaryAtts.SetMultiColor(3, (0, 255, 255, 255))
+    FilledBoundaryAtts.SetMultiColor(4, (255, 0, 255, 255))
+    FilledBoundaryAtts.boundaryNames = ("es_1", "es_12", "es_13", "slide1s", "slide1m")
+    FilledBoundaryAtts.opacity = 1
+    FilledBoundaryAtts.wireframe = 1
+    FilledBoundaryAtts.drawInternal = 0
+    FilledBoundaryAtts.smoothingLevel = 0
+    FilledBoundaryAtts.cleanZonesOnly = 0
+    FilledBoundaryAtts.mixedColor = (255, 255, 255, 255)
+    FilledBoundaryAtts.pointSize = 0.05
+    FilledBoundaryAtts.pointType = FilledBoundaryAtts.Point  # Box, Axis, Icosahedron, Octahedron, Tetrahedron, SphereGeometry, Point, Sphere
+    FilledBoundaryAtts.pointSizeVarEnabled = 0
+    FilledBoundaryAtts.pointSizeVar = "default"
+    FilledBoundaryAtts.pointSizePixels = 2
+    SetPlotOptions(FilledBoundaryAtts)
+
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.533729, 0.243454, -0.809854)
+    View3DAtts.focus = (0.75, 0.75, 5)
+    View3DAtts.viewUp = (-0.708652, 0.651343, -0.271229)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 5.11126
+    View3DAtts.nearPlane = -10.2225
+    View3DAtts.farPlane = 10.2225
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1.77156
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0.75, 0.75, 5)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+
+    Test("mili_material_edge_lines")
+
+    DeleteAllPlots()
+    CloseDatabase(db_path)
 
 def Main():
     TestComponentVis()
@@ -467,6 +529,7 @@ def Main():
     TestMultiSubrecRead()
     TestDerivedVariables()
     TestGlobalIntegrationPoint()
+    TestMaterialEdgeLinesDoNotAppear()
 
 Main()
 Exit()
