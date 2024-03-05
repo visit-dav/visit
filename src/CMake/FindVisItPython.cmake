@@ -88,6 +88,11 @@
 #   Removed install(CODE ...) logic for PIP installed modules, in favor of
 #   direct install of build/lib/site-packages directory via lib/CMakeLists.txt
 #
+#   Kathleen Biagas, Tue Mar 5, 2024
+#   In PYTHON_ADD_PIP_SETUP, changed setting of abs_dest_path from using
+#   CMAKE_BINARY_DIR to VISIT_LIBRARY_DIR which accounts for build
+#   configuration being part of the library path on Windows.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -388,7 +393,7 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     MESSAGE(STATUS "Configuring python pip setup: ${args_NAME}")
 
     # dest for build dir
-    set(abs_dest_path ${CMAKE_BINARY_DIR}/${args_DEST_DIR})
+    set(abs_dest_path ${VISIT_LIBRARY_DIR}/${args_DEST_DIR})
     if(WIN32)
         # on windows, python seems to need standard "\" style paths
         string(REGEX REPLACE "/" "\\\\" abs_dest_path  ${abs_dest_path})
@@ -410,6 +415,10 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     # set folder if passed
     if(DEFINED args_FOLDER)
         blt_set_target_folder(TARGET ${args_NAME} FOLDER ${args_FOLDER})
+    endif()
+    
+    if(WIN32)
+        visit_add_to_util_builds(${args_NAME})
     endif()
 
 ENDFUNCTION(PYTHON_ADD_PIP_SETUP)
