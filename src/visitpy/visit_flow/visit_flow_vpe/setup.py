@@ -14,9 +14,11 @@
 import sys
 __system_bytecode_setting = sys.dont_write_bytecode
 sys.dont_write_bytecode = True
-from distutils.core import setup
+from setuptools import setup
 import sys
-import setup_tests
+# TODO: update setup_tests
+# and cmdclass = { 'test': setup_tests.ExecuteTests}
+#import setup_tests
 
 
 #
@@ -36,14 +38,13 @@ except:
     pass
 
 setup(name='flow',
-      version      ='0.1',
       author       = 'Cyrus Harrison',
       author_email = 'cyrush@llnl.gov',
       description  ='visit_flow_vpe',
       package_dir  = {'visit_flow_vpe':'src'},
       packages=['visit_flow_vpe'],
-      package_data= { "visit_flow_vpe": ["*.vpe"]},
-      cmdclass = { 'test': setup_tests.ExecuteTests})
+      package_data= { "visit_flow_vpe": ["*.vpe"]})
+      # cmdclass = { 'test': setup_tests.ExecuteTests})
 
 if using_visit:
     sys.exit(0)

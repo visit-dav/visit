@@ -11,23 +11,16 @@
 #
 #
 # Modifications:
-#
+#  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
+#  Move to use setuptools.
 #
 ###############################################################################
 
-import sys
-from distutils.core import setup
-from distutils.command.install_egg_info import install_egg_info
-
-# disable install_egg_info
-class SkipEggInfo(install_egg_info):
-    def run(self):
-        pass
+from setuptools import setup
 
 setup (name = 'visit',
        description = 'visit',
        package_dir = {'visit':'py_src'},
-       packages=['visit'],
-       cmdclass={'install_egg_info': SkipEggInfo})
+       packages=['visit'])
 
 

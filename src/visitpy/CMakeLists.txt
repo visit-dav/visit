@@ -478,7 +478,7 @@ ELSE(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 #
-# For distutils setup of the pure python parts of the visit module
+# For module setup of the pure python parts of the visit module
 #
 ADD_SUBDIRECTORY(visitmodule)
 ADD_SUBDIRECTORY(visit_utils)
