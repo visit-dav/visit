@@ -49,6 +49,11 @@
 #    Kathleen Biagas, Tue Jan 31, 2023
 #    visit_special_builds renamed to visit_util_builds.
 #
+#    Kathleen Biagas, Wed Feb 28, 2024
+#    Add direct install of build/lib/site-packages dir.
+#    Change conduit-python-libs from using symlink to direct copy, to play
+#    well with new direct install of build/lib/site-packages dir.
+#
 #----------------------------------------------------------------------------
 
 IF(VISIT_PYTHON_DIR)
@@ -73,6 +78,27 @@ IF(VISIT_PYTHON_DIR)
 ENDIF()
 
 # prepare site-packages
+
+# is this the correct if-test ?
+if(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
+
+    # there were unresolvable issues with the INSTALL(CODE ...
+    # in FindVisItPython for pip-installed modules
+    # this direct copy of the lib/site-packages dir from the
+    # build works.
+
+    install(DIRECTORY ${VISIT_LIBRARY_DIR}/site-packages
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/
+            FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                             GROUP_WRITE GROUP_READ
+                                         WORLD_READ
+            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                              WORLD_READ WORLD_EXECUTE)
+
+endif()
+
+
 IF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE))
     IF(NOT WIN32)
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -171,30 +197,16 @@ if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)
     set(CONDUIT_PY_MODULE ${CONDUIT_DIR}/python-modules/conduit)
     if(NOT EXISTS ${CONDUIT_PY_MODULE})
         message(WARNING "Failed to find Conduit Python Module at ${CONDUIT_PY_MODULE}")
-    endif()
-    if(NOT WIN32)
-        
-        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f
-                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
-                                 RESULT_VARIABLE CONDUIT_PY_SYM_REMOTE)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                                ${CONDUIT_PY_MODULE}
-                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
-                                RESULT_VARIABLE CONDUIT_PY_SYM_CREATE)
-
-        if(NOT "${CONDUIT_PY_SYM_CREATE}" STREQUAL "0")
-            message(WARNING "Failed to create Conduit Python module symlink in lib/site-packages/")
-        endif()
-
-    else() # NOT WIN32
-        # correct lib/${CFG} directory
+    else()
         add_custom_target(conduit_python_module ALL
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CONDUIT_PY_MODULE}
                     ${VISIT_LIBRARY_DIR}/site-packages/conduit
             COMMENT "Copying ${CONDUIT_PY_MODULE} to ${VISIT_LIBRARY_DIR}/site-packages/conduit"
         )
-        visit_add_to_util_builds(conduit_python_module)
+        if(WIN32)
+            visit_add_to_util_builds(conduit_python_module)
+        endif()
     endif()
 endif()
 

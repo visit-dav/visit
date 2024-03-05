@@ -10,11 +10,14 @@
 #   Cyrus Harrison, Wed Feb 24 10:12:20 PST 2021
 #   Moved PySide logic into visit_utils.builtin
 #
+#   Kathleen Biagas, Wed Feb 28, 2024
+#   Changed PY_MODULE_DIR from visit_flow_vpe to visit.
+#
 #****************************************************************************
 
 PYTHON_ADD_PIP_SETUP(NAME visitmodule_py_setup
                      DEST_DIR lib/site-packages
-                     PY_MODULE_DIR visit_flow_vpe
+                     PY_MODULE_DIR visit
                      PY_SETUP_FILE setup.py
                      PY_SOURCES  py_src/__init__.py
                                  py_src/frontend.py)
