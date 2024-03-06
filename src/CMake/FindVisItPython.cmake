@@ -92,6 +92,7 @@
 #   In PYTHON_ADD_PIP_SETUP, changed setting of abs_dest_path from using
 #   CMAKE_BINARY_DIR to VISIT_LIBRARY_DIR which accounts for build
 #   configuration being part of the library path on Windows.
+#   Also added cleanup of build artifacts left in source by `pip install`.
 #
 #****************************************************************************/
 
@@ -402,10 +403,22 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     # NOTE: With pip, you can't directly control build dir with an arg
     # like we were able to do with distutils, you have to use TMPDIR
     # TODO: we might want to  explore this in the future
+
+    # add some cleanup (rm -rf) for the build artifacts left in source
+    # by pip-install
+    # since the egg-info dir for flow_vpe doesn't match its dirname
+    # (flow.egg-info instead of visit_flow_vpe.egg-info)
+    # there isn't a reliable way to only delete it when visit_flow_vpe
+    # calls this function. So, go ahead and add it to all the pip installs
+    # the 'rm -rf' will not error out if the dir doesn't exist
+
     add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build
             COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
             --disable-pip-version-check --no-warn-script-location
             --target "${abs_dest_path}"
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/build
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/${args_PY_MODULE_DIR}.egg-info
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/flow.egg-info
             DEPENDS  ${args_PY_SETUP_FILE} ${args_PY_SOURCES}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
