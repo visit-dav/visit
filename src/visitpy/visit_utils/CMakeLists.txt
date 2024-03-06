@@ -4,11 +4,14 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Tue Mar 5, 2024
+#  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
+#  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
 #
 #****************************************************************************
 
 PYTHON_ADD_PIP_SETUP(NAME visit_utils_py_setup
-                     DEST_DIR lib/site-packages
+                     DEST_DIR site-packages
                      PY_MODULE_DIR visit_utils
                      PY_SETUP_FILE setup.py
                      PY_SOURCES src/__init__.py
