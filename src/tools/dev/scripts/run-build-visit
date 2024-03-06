@@ -206,7 +206,7 @@ if [ "$poodle" = "true" ]
 then
    echo "Building on poodle"
    ran_build_visit=true
-   dest_dir=/usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
    dest_group=visit
    if [ -f ${build_visit_script}_log.poodle ]
    then
@@ -235,6 +235,7 @@ if [ "$lassen" = "true" ]
 then
    echo "Building on lassen"
    ran_build_visit=true
+   # I'm guessing that the "wsa" needs to disappear here too, but I haven't tested. - Justin on 03/06/24
    dest_dir=/usr/workspace/wsa/visit/visit/thirdparty_shared/$version/blueos
    dest_group=visit
    if [ -f ${build_visit_script}_log.lassen ]
