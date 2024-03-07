@@ -43,6 +43,10 @@
 #
 #    Cyrus Harrison, Tue Feb 20 16:56:21 PST 2024
 #    Various updates for lassen and toss4, removed stripack
+# 
+#    Justin Privitera, Thu Mar  7 14:44:01 PST 2024
+#    Changed /usr/workspace/wsa/visit/visit/... to
+#    /usr/workspace/visit/visit/... for poodle.
 #
 #-----------------------------------------------------------------------
 
