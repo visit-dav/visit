@@ -168,6 +168,15 @@ function build_cmake
     fi
 
     #
+    # CMake's logic to test for C++11 constructs like unique_ptr is broken. It fails anytime 'warning'
+    # appears on stderr. But, 'warning' can appear on stderr for all sorts of reasons some of which
+    # are totally unrelated to the test. One example is file system clock skew...which was happening
+    # on LANL's Crossroads. I don't see any benefit in confirming these C++11 constructs now that it
+    # is 2024. We just entirely disable these tests by setting these bootstrap flags.
+    #
+    CMAKE_BOOTSTRAP_FLAGS="-- -DCMake_HAVE_CXX_MAKE_UNIQUE=1 -DCMake_HAVE_CXX_UNIQUE_PTR=1 CMake_HAVE_CXX_UNIQUE_PTR=1"
+
+    #
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
     info "Bootstrapping CMake . . ."
@@ -177,7 +186,7 @@ function build_cmake
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     else
-        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH --parallel=8 ${CMAKE_BOOTSTRAP_FLAGS}"
     fi
     if [[ $? != 0 ]] ; then
         warn "Bootstrap for cmake failed, giving up."
