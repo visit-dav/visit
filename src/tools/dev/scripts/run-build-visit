@@ -43,6 +43,10 @@
 #
 #    Cyrus Harrison, Tue Feb 20 16:56:21 PST 2024
 #    Various updates for lassen and toss4, removed stripack
+# 
+#    Justin Privitera, Thu Mar  7 14:44:01 PST 2024
+#    Changed /usr/workspace/wsa/visit/visit/... to
+#    /usr/workspace/visit/visit/... for poodle.
 #
 #-----------------------------------------------------------------------
 
@@ -206,7 +210,7 @@ if [ "$poodle" = "true" ]
 then
    echo "Building on poodle"
    ran_build_visit=true
-   dest_dir=/usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
    dest_group=visit
    if [ -f ${build_visit_script}_log.poodle ]
    then
@@ -235,6 +239,7 @@ if [ "$lassen" = "true" ]
 then
    echo "Building on lassen"
    ran_build_visit=true
+   # I'm guessing that the "wsa" needs to disappear here too, but I haven't tested. - Justin on 03/06/24
    dest_dir=/usr/workspace/wsa/visit/visit/thirdparty_shared/$version/blueos
    dest_group=visit
    if [ -f ${build_visit_script}_log.lassen ]
