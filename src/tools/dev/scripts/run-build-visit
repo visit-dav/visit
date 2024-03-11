@@ -124,7 +124,7 @@ then
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
    echo "    poodle    (LC, Linux, x86_64, toss4),"
    echo "    lassen    (LC, Linux, power9),"
-   echo "    rzwhippet (LC, Linux, x86_64, toss3),"
+   echo "    rzwhippet (LC, Linux, x86_64, toss4),"
    echo "    rztopaz   (LC, Linux, x86_64, toss4),"
    echo "    trinity   (LANL, Linux, x86_64)"
    exit
