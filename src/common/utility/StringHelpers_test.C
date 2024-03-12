@@ -68,16 +68,16 @@ int main(int argc, char **argv)
         falseNegatives.push_back(__LINE__);
 
     size_t s_to_num_tmp;
-    if(str_to_u_numeric<size_t>("42", &s_to_num_tmp) == false ||
-       s_to_num_tmp != 42)
+    s_to_num_tmp = vstrtonum<size_t>("42");
+    if (s_to_num_tmp != 42)
         falseNegatives.push_back(__LINE__);
 
-    if(str_to_u_numeric<size_t>("0", &s_to_num_tmp) == false ||
-       s_to_num_tmp != 0)
+    s_to_num_tmp = vstrtonum<size_t>("0");
+    if (s_to_num_tmp != 0)
         falseNegatives.push_back(__LINE__);
 
-    if(str_to_u_numeric<size_t>("2147483648", &s_to_num_tmp) == false ||
-       s_to_num_tmp != 2147483648UL)
+    s_to_num_tmp = vstrtonum<size_t>("2147483648");
+    if (s_to_num_tmp != 2147483648UL)
         falseNegatives.push_back(__LINE__);
 
     {
@@ -353,6 +353,30 @@ int main(int argc, char **argv)
     CHECK_ABSNAME("/foo/bar/mark//./../sandy/sue/..////.././steve",
                   "../kerry/apple///banana/./././///../../../grape",
                   "/foo/bar/grape");
+
+#if 0
+#define CHECK_STRTONUM(T, S, V, DF, L, E) \
+T v = vstrtonum<T>(S); \
+if (v != V
+
+
+
+    CHECK_STRTONUM("555", 555, 555
+    //
+    // Check strtonum conversion cases
+    //
+    char *numstrs[] = {"555", "0555", "0x555", "0x555.5", "555.5", " \t-1", "abcdef", "1.5e-1207",
+        "0xFFFFFFFF", "4290000000", "15E+3", "7.652abc"};
+    for (int i = 0; i < sizeof(numstrs)/sizeof(numstrs[0]); i++)
+    {
+        int iv = vstrtonum<int>(numstrs[i], 0, i, "int", &std::cerr);
+        double dv = vstrtonum<double>(numstrs[i], 0, i, "double", &std::cerr);
+        unsigned int uiv = vstrtonum<unsigned int>(numstrs[i], 0, i, "unsigned", &std::cerr);
+        printf("str = \"%s\", int=%d, double=%g, unsigned int=%u\n", numstrs[i], iv, dv, uiv);
+    }
+#endif
+
+
 
     int all_errors = falseNegatives.size() +
                      falsePositives.size() +

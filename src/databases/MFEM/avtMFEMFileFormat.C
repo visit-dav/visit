@@ -20,6 +20,7 @@
 #include <Expression.h>
 #include <FileFunctions.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
@@ -32,18 +33,6 @@
 #include <visit_gzstream.h>
 
 #include <JSONRoot.h>
-
-
-#ifdef _WIN32
-#define strncasecmp _strnicmp
-static unsigned long long
-v_strtoull(const char *__restrict str, char **__restrict endptr, int base)
-{
-    return (unsigned long long)strtoul(str, endptr, base);
-}
-#else
-#define v_strtoull strtoull
-#endif
 
 using     std::string;
 using     std::ostringstream;
@@ -160,7 +149,7 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
 
     string line;
     std::getline(catfile, line);
-    size_t hdrsz = (size_t) v_strtoull(&line[0], 0, 10);
+    size_t hdrsz = vstrtonum<size_t>(&line[0]);
     size_t zip = strchr(&line[0], 'z')==0?(size_t)0:(size_t)1;
     catFileMap["@header_size@"] = std::pair<size_t,size_t>(hdrsz,hdrsz);
     catFileMap["@compressed@"] = std::pair<size_t,size_t>(zip,zip);
@@ -172,8 +161,8 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
         std::getline(catfile, line);
         size_t offat = line.find_last_of(' ');
         size_t sizat = line.find_last_of(' ', offat-1);
-        size_t off = (size_t) v_strtoull(&line[offat+1], 0, 10);
-        size_t siz = (size_t) v_strtoull(&line[sizat+1], 0, 10);
+        size_t off = (size_t) vstrtonum<size_t>(&line[offat+1]);
+        size_t siz = (size_t) vstrtonum<size_t>(&line[sizat+1]);
         line.resize(sizat);
         debug5 << "    key=\"" << line << "\", size=" << siz << ", off=" << off << endl;
         catFileMap[line] = std::pair<size_t,size_t>(siz,off);
@@ -313,8 +302,8 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         JSONRootDataSet &dset =  root_md.DataSet(dset_names[i]);
         int nblocks      = dset.NumberOfDomains();
-        int spatial_dim  = atoi(dset.Mesh().Tag("spatial_dim").c_str());
-        int topo_dim     = atoi(dset.Mesh().Tag("topo_dim").c_str());
+        int spatial_dim  = vstrtonum<int>(dset.Mesh().Tag("spatial_dim").c_str());
+        int topo_dim     = vstrtonum<int>(dset.Mesh().Tag("topo_dim").c_str());
         int block_origin = 0;
         double *extents = NULL;
 
@@ -329,7 +318,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           block_origin,
                           spatial_dim, topo_dim);
 
-        md->GetMeshes(i).LODs = atoi(dset.Mesh().Tag("max_lods").c_str());
+        md->GetMeshes(i).LODs = vstrtonum<int>(dset.Mesh().Tag("max_lods").c_str());
         // Indicate that we're providing original cells.
         md->GetMeshes(i).containsOriginalCells = true;
         // Add builtin mfem fields related to the mesh:
@@ -353,7 +342,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
             std::string slod = field.Tag("lod");
-            int ilod = std::min(md->GetMeshes(i).LODs,atoi(slod.c_str()));
+            int ilod = std::min(md->GetMeshes(i).LODs,vstrtonum<int>(slod.c_str()));
             selectedLOD = std::max(selectedLOD,ilod);
             std::string f_assoc = field.Tag("assoc");
 
@@ -847,7 +836,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
     string field_path = field.Path().Expand(domain);
     bool var_is_nodal = field.Tag("assoc") == "nodes";
-    int  ncomps       = atoi(field.Tag("comps").c_str());
+    int  ncomps       = vstrtonum<int>(field.Tag("comps").c_str());
     string cat_path = root->DataSet(mesh_name).CatPath().Get();
 
     GridFunction *gf = 0;

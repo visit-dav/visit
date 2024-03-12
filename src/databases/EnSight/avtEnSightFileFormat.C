@@ -40,6 +40,7 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 
 using std::vector;
@@ -170,7 +171,7 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
         if(line.find("filename start number:") != std::string::npos)
         {
             std::string fileStart = line.substr(line.find(":")+1);
-            geomFileNameStart = atoi(fileStart.c_str());
+            geomFileNameStart = vstrtonum<int>(fileStart.c_str());
         }
     }
 

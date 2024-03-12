@@ -34,6 +34,11 @@
 
 #include <Expression.h>
 #include <DebugStream.h>
+using DebugStream::Level4;
+using DebugStream::Stream4;
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
@@ -1542,6 +1547,9 @@ avtCaleHDF5FileFormat::GetCycle(void)
 //
 //  Purpose: Return the cycle associated with this file
 //
+//  Modifications:
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ***************************************************************************
 
 int
@@ -1576,7 +1584,7 @@ avtCaleHDF5FileFormat::GetCycleFromFilename(const char *f) const
     if (j > 0)
     {
         strncpy(cycstr,f+i+1,j);
-        c = atoi(cycstr);
+        c = vstrtonum<int>(cycstr,10,0,Level4()?Stream4():NO_OSTREAM);
     }
     else
     {

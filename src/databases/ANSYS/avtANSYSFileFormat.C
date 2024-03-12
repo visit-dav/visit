@@ -9,7 +9,7 @@
 #include <avtANSYSFileFormat.h>
 
 #include <algorithm>
-#include <errno.h>
+#include <cmath>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,6 +37,8 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 using     std::string;
 
@@ -169,32 +171,19 @@ avtANSYSFileFormat::ActivateTimestep()
 // 
 //    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
 //    Changed 'supressed' to 'suppressed'.
+//
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
-
-int
-get_errno()
-{
-   int eno = 0;
-#ifdef WIN32
-    _get_errno(&eno);
-#else
-    eno = errno;
-#endif
-    return eno;
-}
-
-
 
 #define CHECK_COORD_COMPONENT(Coord)                                \
 do {                                                                \
-    int _errno = get_errno();                                       \
-    char msg[512] = "Further warnings will be suppressed";           \
-    if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
+    char msg[512] = "Further warnings will be suppressed";          \
+    if (std::isnan(Coord) && invalidCoordCompWarning++ < 5)         \
     {                                                               \
         if (invalidCoordCompWarning < 5)                            \
             snprintf(msg, sizeof(msg),"Encountered invalid value "  \
-                "\"%s\" (%s) at or near line %d", strerror(_errno), \
-                valstart, lineIndex);                               \
+                "\"%s\" at or near line %d", valstart, lineIndex);  \
         debug1 << msg;                                              \
         TRY                                                         \
         {                                                           \
@@ -206,8 +195,8 @@ do {                                                                \
             cerr << msg << endl;                                    \
         }                                                           \
         ENDTRY                                                      \
+        Coord = 0;                                                  \
     }                                                               \
-    endptr = 0;                                                     \
 } while (0)
 
 bool
@@ -282,10 +271,8 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         if(expectedLineLength > 0 && linelen < expectedLineLength)
         {
              memset(line + linelen + 1, 0, (MAX_ANSYS_LINE - linelen - 1) * sizeof(char));
-#if 0
              debug5 << "Padding line with NULLs" << endl;
              debug5 << line << endl;
-#endif
         }
 
         // Give it a chance to break out of coordinate reading.
@@ -307,31 +294,28 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + fieldStart;
             char *valend = valstart + fieldWidth;
-            char *endptr = 0;
-            pt[2] = strtod(valstart, &endptr);
+            pt[2] = vstrtonum<float>(valstart,10,NAN);
             CHECK_COORD_COMPONENT(pt[2]);
 
             valstart -= fieldWidth;
             valend -= fieldWidth;
             *valend = '\0';
-            pt[1] = strtod(valstart, &endptr);
+            pt[1] = vstrtonum<float>(valstart,10,NAN);
             CHECK_COORD_COMPONENT(pt[1]);
 
             valstart -= fieldWidth;
             valend -= fieldWidth;
             *valend = '\0';
-            pt[0] = strtod(valstart, &endptr);
+            pt[0] = vstrtonum<float>(valstart,10,NAN);
             CHECK_COORD_COMPONENT(pt[0]);
-#if 0
-            debug4 << pt[0] << ", " << pt[1] << ", " << pt[2] << endl;
-#endif
+            debug5 << pt[0] << ", " << pt[1] << ", " << pt[2] << endl;
             pts->InsertNextPoint(pt);
         }
         else if(readingConnectivity)
         {
             // Get whether this cell is real from column 0
             line[fieldWidth] = '\0';
-            bool realCell = atoi(line) > 0;
+            bool realCell = vstrtonum<int>(line) > 0;
             if(!realCell)
             {
                 expectedLineLength = 0;
@@ -344,7 +328,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             line[ncellsColumn * fieldWidth] = '\0';
             if(nverts == -1)
             {
-              nverts = atoi(line + (ncellsColumn-1) * fieldWidth);
+              nverts = vstrtonum<int>(line + (ncellsColumn-1) * fieldWidth);
             }
 
             if(nverts == 8)
@@ -353,18 +337,16 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 char *valend   = valstart + fieldWidth;
                 for(int i = 0; i < 8; ++i)
                 {
-                    int ivalue = atoi(valstart);
+                    int ivalue = vstrtonum<int>(valstart);
                     verts[7-i] = (ivalue > 0) ? (ivalue - 1) : ivalue;
                     valstart -= fieldWidth;
                     valend   -= fieldWidth;
                     *valend = '\0';
                 }
 
-#if 0
                 for(int j = 0; j < 8; ++j)
-                    debug4 << ", " << verts[j];
-                debug4 << endl;
-#endif
+                    debug5 << ", " << verts[j];
+                debug5 << endl;
                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
             }
             else if(nverts == 10)
@@ -373,7 +355,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 char *valend   = valstart + fieldWidth;
                 for(int i = 0; i < 8; ++i)
                 {
-                    int ivalue = atoi(valstart);
+                    int ivalue = vstrtonum<int>(valstart);
                     verts[7-i] = (ivalue > 0) ? (ivalue - 1) : ivalue;
                     valstart -= fieldWidth;
                     valend   -= fieldWidth;
@@ -386,18 +368,16 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 *valend = '\0';
                 for(int i = 0; i < 2; ++i)
                 {
-                    int ivalue = atoi(valstart);
+                    int ivalue = vstrtonum<int>(valstart);
                     verts[9-i] = (ivalue > 0) ? (ivalue - 1) : ivalue;
                     valstart -= fieldWidth;
                     valend   -= fieldWidth;
                     *valend = '\0';
                 }
 
-#if 0
                 for(int j = 0; j < 10; ++j)
-                    debug4 << ", " << verts[j];
-                debug4 << endl;
-#endif
+                    debug5 << ", " << verts[j];
+                debug5 << endl;
                 ugrid->InsertNextCell(VTK_QUADRATIC_TETRA, 10, verts);
 
             }
@@ -418,7 +398,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             if(comma != 0)
             {
                 char *cols = comma + 1;
-                numFields = atoi(cols);
+                numFields = vstrtonum<int>(cols);
                 debug4 << mName << "Coordinate data stored in "
                        << numFields << " columns." << endl;
                 char *comma2 = strstr(comma+1, ",");
@@ -468,7 +448,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                   // these cells are wrong (they have the incorrect amount of vertices listed
                   // as well as repeated vertex ids) and we ignore them.
                   char *cols = comma + 1;
-                  numFields = atoi(cols);
+                  numFields = vstrtonum<int>(cols);
                   debug4 << mName << "Connectivity data stored in "
                        << numFields << " columns." << endl;
                   recognized = true;

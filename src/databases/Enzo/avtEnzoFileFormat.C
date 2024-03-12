@@ -31,6 +31,8 @@
 #include <Expression.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -381,7 +383,7 @@ avtEnzoFileFormat::ReadHierachyFile()
             buff = "";
             while ((c=h.get()) != '[');
             while ((c=h.get()) != ']') buff += c;
-            int gridID = atoi(buff.c_str());
+            int gridID = vstrtonum<int>(buff.c_str());
             h.get(); // -
             h.get(); // >
             h >> buff;
@@ -844,7 +846,7 @@ int avtEnzoFileFormat::GetCycleFromFilename(const char *cfilename) const
     if (f.length() > 4)
         f = f.substr(f.length() - 4);
 
-    return atoi(f.c_str());
+    return vstrtonum<int>(f.c_str());
 }
 
 // ****************************************************************************

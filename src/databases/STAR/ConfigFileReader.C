@@ -42,6 +42,9 @@
 // stardata includes
 #include "StarObject.h"
 #include "ConfigFileReader.h"
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 
 #include <string>
 #include <vector>
@@ -302,7 +305,7 @@ int ConfigFileReader::findIntValue(const char* id, const char* section)
     char* endptr = NULL;
     int   value  = 0;
 
-    value = strtol(findValue(id,section), &endptr, 10);
+    value = vstrtonum<int>(findValue(id,section),10,-9999,NO_OSTREAM,&endptr);
 
     if(endptr != NULL and endptr[0] != '\0') {
         WARNING("Parse Error: Unable to convert string '%s' "
@@ -327,7 +330,7 @@ long long ConfigFileReader::findLongValue(const char* id, const char* section)
     char* endptr = NULL;
     long long value  = 0;
 
-    value = strtoll(findValue(id,section), &endptr, 10);
+    value = vstrtonum<long long>(findValue(id,section),10,-999999,NO_OSTREAM,&endptr);
 
     if(endptr != NULL and endptr[0] != '\0') {
         WARNING("Parse Error: Unable to convert string '%s' "
@@ -352,7 +355,7 @@ float ConfigFileReader::findFloatValue(const char* id, const char* section)
     char* endptr = NULL;
     float value  = 0.0;
 
-    value = strtof(findValue(id,section), &endptr);
+    value = vstrtonum<float>(findValue(id,section),10,-999.99,NO_OSTREAM,&endptr);
 
     if(endptr != NULL and endptr[0] != '\0') {
         WARNING("Parse Error: Unable to convert string '%s' "
@@ -377,7 +380,7 @@ double ConfigFileReader::findDoubleValue(const char* id, const char* section)
     char* endptr = NULL;
     float value  = 0.0;
 
-    value = strtod(findValue(id,section), &endptr);
+    value = vstrtonum<float>(findValue(id,section),10,-999.99,NO_OSTREAM,&endptr);
 
     if(endptr != NULL and endptr[0] != '\0') {
         WARNING("Parse Error: Unable to convert string '%s' "

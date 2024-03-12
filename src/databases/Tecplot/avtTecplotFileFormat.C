@@ -27,6 +27,9 @@
 #include <InvalidFilesException.h>
 #include <Expression.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 
 #ifdef _MSC_VER
 #include<shlwapi.h>
@@ -37,14 +40,6 @@ using std::vector;
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
-
-
-#if defined(_MSC_VER) || !defined(HAVE_STRTOF) || !defined(HAVE_STRTOF_PROTOTYPE)
-#ifndef strtof
-#define strtof(f1,f2) ((float)strtod(f1,f2))
-#endif
-#endif
-
 
 // ****************************************************************************
 //  Method:  GetCoord/GuessCoord
@@ -412,12 +407,12 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
                     char *endptr;
                     const char *cptr;
                     repeatCounter   = 1;
-                    currentValue    = strtof((cptr=tok.c_str()), &endptr);
+                    currentValue    = vstrtonum<float>((cptr=tok.c_str()),10,0,NO_OSTREAM,&endptr);
                     int   numparsed = endptr-cptr;
                     if (numparsed < toklen && tok[numparsed] == '*')
                     {
-                        currentValue  = atof(tok.substr(numparsed+1).c_str());
-                        repeatCounter = atoi(tok.substr(0,numparsed).c_str());
+                        currentValue  = vstrtonum<float>(tok.substr(numparsed+1).c_str());
+                        repeatCounter = vstrtonum<int>(tok.substr(0,numparsed).c_str());
                     }
                 }
                 allptr[v][i] = currentValue;
@@ -525,12 +520,12 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
                     char *endptr;
                     const char *cptr;
                     repeatCounter   = 1;
-                    currentValue    = strtof((cptr=tok.c_str()), &endptr);
+                    currentValue    = vstrtonum<float>((cptr=tok.c_str()),10,0,NO_OSTREAM,&endptr);
                     int   numparsed = endptr-cptr;
                     if (numparsed < toklen && tok[numparsed] == '*')
                     {
-                        currentValue  = atof(tok.substr(numparsed+1).c_str());
-                        repeatCounter = atoi(tok.substr(0,numparsed).c_str());
+                        currentValue  = vstrtonum<float>(tok.substr(numparsed+1).c_str());
+                        repeatCounter = vstrtonum<int>(tok.substr(0,numparsed).c_str());
                     }
                 }
 
@@ -677,7 +672,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
                     tok = GetNextToken();
                 }
 
-                int val = atoi(tok.c_str());
+                int val = vstrtonum<int>(tok.c_str());
                 *nl++ = val - 1;
             }
         }
@@ -1358,27 +1353,27 @@ avtTecplotFileFormat::ReadFile()
                 else if (tok == "I")
                 {
                     GetNextToken(); // skip the equals sign
-                    numI = atoi(GetNextToken().c_str());
+                    numI = vstrtonum<int>(GetNextToken().c_str());
                 }
                 else if (tok == "J")
                 {
                     GetNextToken(); // skip the equals sign
-                    numJ = atoi(GetNextToken().c_str());
+                    numJ = vstrtonum<int>(GetNextToken().c_str());
                 }
                 else if (tok == "K")
                 {
                     GetNextToken(); // skip the equals sign
-                    numK = atoi(GetNextToken().c_str());
+                    numK = vstrtonum<int>(GetNextToken().c_str());
                 }
                 else if (tok == "N" || tok == "NODES")
                 {
                     GetNextToken(); // skip the equals sign
-                    numNodes = atoi(GetNextToken().c_str());
+                    numNodes = vstrtonum<int>(GetNextToken().c_str());
                 }
                 else if (tok == "E" || tok == "ELEMENTS")
                 {
                     GetNextToken(); // skip the equals sign
-                    numElements = atoi(GetNextToken().c_str());
+                    numElements = vstrtonum<int>(GetNextToken().c_str());
                 }
                 else if (tok == "ET" || tok == "ZONETYPE")
                 {
@@ -1438,14 +1433,14 @@ avtTecplotFileFormat::ReadFile()
                                     // eventually do something like that....
                                     string first = c.substr(0,pos);
                                     string last  = c.substr(pos+1);
-                                    int beg = atoi(first.c_str());
-                                    int end = atoi(last.c_str());
+                                    int beg = vstrtonum<int>(first.c_str());
+                                    int end = vstrtonum<int>(last.c_str());
                                     for (int ind=beg; ind<=end; ind++)
                                         varindices.push_back(ind);
                                 }
                                 else
                                 {
-                                    varindices.push_back(atoi(c.c_str()));
+                                    varindices.push_back(vstrtonum<int>(c.c_str()));
                                 }
                                 c = GetNextToken();
                             }
@@ -1536,14 +1531,14 @@ avtTecplotFileFormat::ReadFile()
                                     // eventually do something like that....
                                     string first = c.substr(0,pos);
                                     string last  = c.substr(pos+1);
-                                    int beg = atoi(first.c_str());
-                                    int end = atoi(last.c_str());
+                                    int beg = vstrtonum<int>(first.c_str());
+                                    int end = vstrtonum<int>(last.c_str());
                                     for (int ind=beg; ind<=end; ind++)
                                         varindices.push_back(ind);
                                 }
                                 else
                                 {
-                                    varindices.push_back(atoi(c.c_str()));
+                                    varindices.push_back(vstrtonum<int>(c.c_str()));
                                 }
                                 c = GetNextToken();
                             }
@@ -1552,7 +1547,7 @@ avtTecplotFileFormat::ReadFile()
                             if (c == "=")
                             {
                                 c = GetNextToken();
-                                dest = atoi(c.c_str());
+                                dest = vstrtonum<int>(c.c_str());
                                 // next....
                                 c = GetNextToken();
                             }
@@ -1576,7 +1571,7 @@ avtTecplotFileFormat::ReadFile()
                 {
                     GetNextToken(); // skip the equals sign
                     string fromzone = GetNextToken(); 
-                    connectivitycopy = atoi(fromzone.c_str()) - 1; // change 1-origin to 0-origin
+                    connectivitycopy = vstrtonum<int>(fromzone.c_str()) - 1; // change 1-origin to 0-origin
                 }
                 tok = GetNextToken();
                 debug5 << "Tecplot:    NEXT TOKEN: " << tok << "\n";

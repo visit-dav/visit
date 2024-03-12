@@ -43,6 +43,8 @@
 #include <BadIndexException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #define EXPOSE_DEPTH
 #ifdef EXPOSE_DEPTH
@@ -274,12 +276,12 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
                 continue;
             if (strncmp(line, "Z_START:", strlen("Z_START:")) == 0)
             {
-                zStart = atof(line + strlen("Z_START:"));
+                zStart = vstrtonum<float>(line + strlen("Z_START:"));
                 specifiedZStart = true;
             }    
             else if (strncmp(line, "Z_STEP:", strlen("Z_STEP:")) == 0)
             {
-                zStep = atof(line + strlen("Z_STEP:"));
+                zStep = vstrtonum<float>(line + strlen("Z_STEP:"));
                 specifiedZStep = true;
             }    
             else

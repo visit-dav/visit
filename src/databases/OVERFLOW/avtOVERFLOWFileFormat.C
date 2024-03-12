@@ -21,6 +21,8 @@
 #include <avtDatabase.h>
 #include <avtGhostData.h>
 #include <Expression.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -732,7 +734,7 @@ avtOVERFLOWFileFormat::GetVar(int domain, const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    int varindex = atoi(&varname[1]) - 1;
+    int varindex = vstrtonum<int>(&varname[1]) - 1;
     if (varindex < 0 || varindex >= nq)
     {
         EXCEPTION1(InvalidVariableException, varname);

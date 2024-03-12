@@ -36,6 +36,8 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InstallationFunctions.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <dlfcn.h>
 #include <string>
@@ -1327,7 +1329,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
     int matlNo = -1;
     if (matl.compare("*") != 0)
-      matlNo = atoi(matl.c_str());
+      matlNo = vstrtonum<int>(matl.c_str());
 
     // int t2 = visitTimer->StartTimer();
 
@@ -1379,7 +1381,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         // same as GetVar(timestate, domain, "particleID");
         int matlNo = -1;
         if (matl.compare("*") != 0)
-          matlNo = atoi(matl.c_str());
+          matlNo = vstrtonum<int>(matl.c_str());
 
         ParticleDataRaw *pd = NULL;
 
@@ -1764,7 +1766,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     int matlNo = -1;
     if (matl.compare("*") != 0)
-      matlNo = atoi(matl.c_str());
+      matlNo = vstrtonum<int>(matl.c_str());
 
     ParticleDataRaw *pd = NULL;
 
@@ -1992,7 +1994,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
       int matlNo = -1;
       if (matl.compare("All") != 0)
-        matlNo = atoi(matl.c_str());
+        matlNo = vstrtonum<int>(matl.c_str());
 
 #ifdef SERIALIZED_READS
       int numProcs, rank;

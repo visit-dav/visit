@@ -18,6 +18,8 @@
 #include <BadIndexException.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 
 
@@ -450,7 +452,7 @@ int avtFluentFileFormat::GetCaseIndex()
     {
     sindex.push_back(CaseBuffer.at(i++));
     }
-  return atoi(sindex.c_str());
+  return vstrtonum<int>(sindex.c_str());
 }
 
 //----------------------------------------------------------------------------
@@ -493,7 +495,7 @@ int avtFluentFileFormat::GetDataIndex()
     {
     sindex.push_back(DataBuffer.at(i++));
     }
-  return atoi(sindex.c_str());
+  return vstrtonum<int>(sindex.c_str());
 }
 
 //----------------------------------------------------------------------------
@@ -2278,7 +2280,7 @@ int avtFluentFileFormat::GetDimension()
   int start = CaseBuffer.find('(', 1);
   //int end = CaseBuffer.find(')',1);
   string info = CaseBuffer.substr(start+4, 1 );
-  return atoi(info.c_str());
+  return vstrtonum<int>(info.c_str());
 }
 
 //----------------------------------------------------------------------------

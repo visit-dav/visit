@@ -44,6 +44,8 @@
 #include <errno.h>
 #include <UserFields.h>
 #include <string.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 static const entier cache_info_level = 5;
 static const entier filter_info_level = 4;
 
@@ -52,10 +54,8 @@ entier LataOptions::read_int_opt(const Nom & s)
   const char *ptr = strstr(s, "=");
   if (!ptr) 
     ptr = s;
-  errno = 0;
-  char *errorptr = 0;
-  entier x = strtol(ptr+1, &errorptr, 0 /* base 10 par defaut */);
-  if (errno || *errorptr != 0) {
+  entier x = vstrtonum<int>(ptr+1,10,-9999,Journal());
+  if (x == -9999) {
     Journal() << "LataOptions error reading int parameter: " << s << endl;
     throw;
   }
@@ -67,10 +67,8 @@ double LataOptions::read_float_opt(const Nom & s)
   const char *ptr = strstr(s, "=");
   if (!ptr) 
     ptr = s;
-  errno = 0;
-  char *errorptr = 0;
-  double x = strtod(ptr+1, &errorptr);
-  if (errno || *errorptr != 0) {
+  double x = vstrtonum<double>(ptr+1,10,-9999.9999,Journal());
+  if (x == -9999.9999) {
     Journal() << "LataOptions error reading float parameter: " << s << endl;
     throw;
   }
