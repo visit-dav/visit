@@ -250,7 +250,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     std::vector<Famid>     dbid;
     std::string            globalIntegrationPoint;
     std::vector<intVector> idsCounter;
-    std::vector<intVector> globalIdNotMarkedAsDuplicate;
+    std::vector<intVector> domainOwner;
 
     // map mesh ids to lists of node ids for each domain
     std::map<int, std::vector<intVector>> globalNodeIds;

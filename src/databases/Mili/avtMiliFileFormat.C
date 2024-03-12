@@ -866,17 +866,11 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 const int globalNodeId = globalNodeIdsForDom[localNodeId];
                 // how many times is this nodeId used?
                 const int idCount = idsCounter[meshId][globalNodeId];
-                // has this node been marked as duplicate yet?
-                const int duplicateMark = globalIdNotMarkedAsDuplicate[meshId][globalNodeId];
                 // if it is used multiple times, it is shared across domains
                 if (idCount > 1)
                 {
-                    // you get a pass the very first time
-                    if (duplicateMark == 0)
-                    {
-                        globalIdNotMarkedAsDuplicate[meshId][globalNodeId] = 1;
-                    }
-                    else
+                    // if this domain doesn't own this
+                    // if (domainOwner[meshId][globalNodeId] != dom)
                     {
                         // so we can ghost it
                         avtGhostData::AddGhostNodeType(
@@ -3230,7 +3224,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
     idsCounter.resize(nMeshes);
-    globalIdNotMarkedAsDuplicate.resize(nMeshes);
+    domainOwner.resize(nMeshes);
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         int maxGlobalDomainId = 0;
@@ -3249,24 +3243,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // set the idsCounter to have enough room for all global domain ids,
         // and set the initial count for each one to zero
         idsCounter[meshId].resize(maxGlobalDomainId + 1, 0);
+        domainOwner[meshId].resize(maxGlobalDomainId + 1, -1);
         for (int dom = 0; dom < nDomains; dom ++)
         {
             for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
             {
                 const int globalNodeId = globalNodeIds[meshId][dom][i];
+                if (idsCounter[meshId][globalNodeId] == 0)
+                {
+                    domainOwner[meshId][globalNodeId] = dom;
+                }
                 idsCounter[meshId][globalNodeId] ++;
             }
         }
-
-        // The way this works is there is one entry per global node id per mesh.
-        // When we eventually mark nodes as duplicated across domains, we don't
-        // wish to mark the same node as a duplicate across every domain. If my
-        // zone only has nodes that are marked as duplicates on every domain, 
-        // then that zone will disappear. The solution is to make sure that a 
-        // node is NOT marked as duplicate a single time on some domain. So this
-        // array lives in parallel with the idsCounter, and we can index into it
-        // the same way.
-        globalIdNotMarkedAsDuplicate[meshId].resize(maxGlobalDomainId + 1, 0);
     }
 
 
