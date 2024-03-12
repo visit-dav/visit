@@ -44,6 +44,10 @@
 # 
 #    Justin Privitera, Thu Jan 18 14:53:32 PST 2024
 #    Added test for unstructured points.
+# 
+#    Justin Privitera, Tue Mar 12 13:29:30 PDT 2024
+#    Now that blueprint presents material ids alongside material names, we 
+#    must use the ids and names to get specific materials.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
