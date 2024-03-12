@@ -16,6 +16,10 @@
 #  Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
 #  Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
 #
+#  Kathleen Biagas, Tue Mar 5, 2024
+#  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
+#  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
+#
 #****************************************************************************
 
 SET(MPICOM_PY_SOURCES py_src/__init__.py
@@ -35,7 +39,7 @@ IF(VISIT_PARALLEL)
 
     # Create the mpicom
     PYTHON_ADD_HYBRID_MODULE(NAME mpicom
-                             DEST_DIR lib/site-packages
+                             DEST_DIR site-packages
                              PY_MODULE_DIR mpicom
                              PY_SETUP_FILE setup.py
                              PY_SOURCES "${MPICOM_PY_SOURCES}"
@@ -71,7 +75,7 @@ IF(VISIT_PARALLEL)
 ELSE(VISIT_PARALLEL)
     # we still need to build the module w/ the mpi stub
     PYTHON_ADD_PIP_SETUP(NAME mpicom_py_setup
-                         DEST_DIR lib/site-packages
+                         DEST_DIR site-packages
                          PY_MODULE_DIR mpicom
                          PY_SETUP_FILE setup.py
                          PY_SOURCES ${MPICOM_PY_SOURCES})

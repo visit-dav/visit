@@ -76,13 +76,23 @@
 #
 #   Kathleen Biagas, Wed Jan 18, 2023
 #   Fix a few uses of paths on Windows, now that VISIT_INSTALLED_VERSION_XXX
-#   are relative paths. 
+#   are relative paths.
 #
 #   Kathleen Biagas, Thu Sep 28 16:33:45 PDT 2023
 #   Set PYLIB to the python library name, used by PluginVsInstall.cmake.in.
 #
 #   Cyrus Harrison, Fri Feb 16 13:37:57 PST 2024
 #   Refactor PYTHON_ADD_DISTUTILS_SETUP to PYTHON_ADD_PIP_SETUP.
+#
+#   Kathleen Biagas, Wed Feb 28, 2024
+#   Removed install(CODE ...) logic for PIP installed modules, in favor of
+#   direct install of build/lib/site-packages directory via lib/CMakeLists.txt
+#
+#   Kathleen Biagas, Tue Mar 5, 2024
+#   In PYTHON_ADD_PIP_SETUP, changed setting of abs_dest_path from using
+#   CMAKE_BINARY_DIR to VISIT_LIBRARY_DIR which accounts for build
+#   configuration being part of the library path on Windows.
+#   Also added cleanup of build artifacts left in source by `pip install`.
 #
 #****************************************************************************/
 
@@ -139,7 +149,7 @@ if(PYTHONINTERP_FOUND)
     if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
         message(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
     endif()
-    
+
     # TODO: replacing distutils.get_python_lib() isn't straight forward
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                             "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
@@ -384,7 +394,7 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     MESSAGE(STATUS "Configuring python pip setup: ${args_NAME}")
 
     # dest for build dir
-    set(abs_dest_path ${CMAKE_BINARY_DIR}/${args_DEST_DIR})
+    set(abs_dest_path ${VISIT_LIBRARY_DIR}/${args_DEST_DIR})
     if(WIN32)
         # on windows, python seems to need standard "\" style paths
         string(REGEX REPLACE "/" "\\\\" abs_dest_path  ${abs_dest_path})
@@ -393,49 +403,35 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     # NOTE: With pip, you can't directly control build dir with an arg
     # like we were able to do with distutils, you have to use TMPDIR
     # TODO: we might want to  explore this in the future
+
+    # add some cleanup (rm -rf) for the build artifacts left in source
+    # by pip-install
+    # since the egg-info dir for flow_vpe doesn't match its dirname
+    # (flow.egg-info instead of visit_flow_vpe.egg-info)
+    # there isn't a reliable way to only delete it when visit_flow_vpe
+    # calls this function. So, go ahead and add it to all the pip installs
+    # the 'rm -rf' will not error out if the dir doesn't exist
+
     add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build
             COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
             --disable-pip-version-check --no-warn-script-location
             --target "${abs_dest_path}"
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/build
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/${args_PY_MODULE_DIR}.egg-info
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/flow.egg-info
             DEPENDS  ${args_PY_SETUP_FILE} ${args_PY_SOURCES}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_custom_target(${args_NAME} ALL DEPENDS
                       ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build)
 
-    # also use pip for the install ...
-    # if PYTHON_MODULE_INSTALL_PREFIX is set, install there
-    if(PYTHON_MODULE_INSTALL_PREFIX)
-        set(py_mod_inst_prefix ${PYTHON_MODULE_INSTALL_PREFIX})
-        # make sure windows style paths don't ruin our day (or night)
-        if(WIN32)
-            string(REGEX REPLACE "/" "\\\\" py_mod_inst_prefix  ${PYTHON_MODULE_INSTALL_PREFIX})
-        endif()
-        INSTALL(CODE
-            "
-            EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
-                --disable-pip-version-check --no-warn-script-location
-                --target ${py_mod_inst_prefix}
-                OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
-            MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
-            ")
-    else()
-        # else install to the dest dir under CMAKE_INSTALL_PREFIX
-        INSTALL(CODE
-            "
-            EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
-                --disable-pip-version-check --no-warn-script-location
-                --target \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${args_DEST_DIR}
-                OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
-            MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
-            ")
-    endif()
-
     # set folder if passed
     if(DEFINED args_FOLDER)
         blt_set_target_folder(TARGET ${args_NAME} FOLDER ${args_FOLDER})
+    endif()
+    
+    if(WIN32)
+        visit_add_to_util_builds(${args_NAME})
     endif()
 
 ENDFUNCTION(PYTHON_ADD_PIP_SETUP)
@@ -574,10 +570,10 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             # KSB
             #  WIN32  PYTHON_INCLUDE_PATH is
             #    'path-to-python/include'
-            #  Non-WIN32 PYTHON_INCLUDE_PATH is: 
+            #  Non-WIN32 PYTHON_INCLUDE_PATH is:
             #    'path-to-python/include/python<vermaj>.<vermin>m'
             #  So Non-WIN32 needs extra 'include' appended to DESTINATION
-                
+
             set(pyIncDest ${VISIT_INSTALLED_VERSION_INCLUDE}/python)
             if(NOT WIN32)
                 string(APPEND pyIncDest "/include")
