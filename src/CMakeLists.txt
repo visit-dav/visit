@@ -560,6 +560,10 @@
 #    Rename Windows visit_special_builds to visit_util_builds, add function
 #    for easier use of this uber-target.
 #
+#    Kathleen Biagas, Tue Mar 5, 2024
+#    Modified VISIT_LIBRARY_DIR to use $<CONFIG> instead of
+#    ${CMAKE_CFG_INTDIR} on Windows, since the latter is deprecated.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -730,9 +734,14 @@ if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
 endif()
 
+set(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-set(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-set(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+if(WIN32)
+    string(APPEND VISIT_LIBRARY_DIR "/$<CONFIG>")
+    string(APPEND VISIT_EXECUTABLE_DIR "/$<CONFIG>")
+endif()
+
 set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #-----------------------------------------------------------------------------

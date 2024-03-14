@@ -99,6 +99,89 @@ EOF
 
 }
 
+function apply_endian_patch
+{
+    patch -p0 << \EOF
+--- ccse-1.3.5/Src/C_BaseLib/FPC.cpp	2016-02-18 18:15:45.000000000 -0800
++++ ccse-1.3.5-patched/Src/C_BaseLib/FPC.cpp	2024-02-16 09:03:09.837102000 -0800
+@@ -23,7 +23,8 @@
+ IntDescriptor&
+ FPC::NativeLongDescriptor ()
+ {
+-#if defined(__i486__) || \
++#if (defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)) || \
++    defined(__i486__) || \
+     defined(WIN32) || \
+     defined(i386) || \
+     defined(__i386__) || \
+@@ -33,7 +34,8 @@
+     static const IntDescriptor nld(sizeof(long), IntDescriptor::ReverseOrder);
+ #endif
+ 
+-#if defined(__sgi) || \
++#if (defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)) || \
++    defined(__sgi) || \
+     defined(__sun) || \
+     defined(_AIX)  || \
+     defined(__ppc__) || \
+@@ -50,7 +52,8 @@
+ RealDescriptor&
+ FPC::NativeRealDescriptor ()
+ {
+-#if defined(__i486__) || \
++#if (defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)) || \
++    defined(__i486__) || \
+     defined(WIN32) || \
+     defined(i386) || \
+     defined(__i386__) || \
+@@ -63,7 +66,8 @@
+ #endif
+ #endif
+ 
+-#if defined(__sgi) || \
++#if (defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)) || \
++    defined(__sgi) || \
+     defined(__sun) || \
+     defined(_AIX)  || \
+     defined(__ppc__) || \
+@@ -85,7 +89,8 @@
+ RealDescriptor&
+ FPC::Native32RealDescriptor ()
+ {
+-#if defined(__i486__) || \
++#if (defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)) || \
++    defined(__i486__) || \
+     defined(WIN32) || \
+     defined(i386) || \
+     defined(__i386__) || \
+@@ -94,7 +99,8 @@
+     static const RealDescriptor n32rd(ieee_float, reverse_float_order, 4);
+ #endif
+ 
+-#if defined(__sgi) || \
++#if (defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)) || \
++    defined(__sgi) || \
+     defined(__sun) || \
+     defined(_AIX)  || \
+     defined(__ppc__) || \
+@@ -138,6 +144,7 @@
+       defined(__hpux)   || \
+       defined(powerpc)  || \
+       defined(_MSC_VER) || \
++      defined(__BYTE_ORDER__) || \
+       defined(_AIX))
+ #error We do not yet support FAB I/O on this machine
+ #endif
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "endianness patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+
 function apply_darwin_patch_1
 {
     patch -p0 << \EOF
@@ -141,6 +224,11 @@ EOF
 function apply_boxlib_patch
 {
     apply_nan_inf_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    apply_endian_patch
     if [[ $? != 0 ]]; then
         return 1
     fi

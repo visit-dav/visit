@@ -1222,6 +1222,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // 
 //   Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //   Fixed warnings.
+// 
+//   Justin Privitera, Wed Feb 14 11:37:06 PST 2024
+//   Present material ids alongside material names.
 //
 // ****************************************************************************
 void
@@ -1326,6 +1329,13 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         BP_PLUGIN_INFO("Matset Info for "
                        << mesh_matset_name
                        << " : " << m_matset_info[mesh_matset_name].to_yaml())
+
+        // we want to add the matnos to the names
+        for (size_t i = 0; i < matnames.size(); i ++)
+        {
+            int matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
+            matnames[i] = std::to_string(matno) + " " + matnames[i];
+        }
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
                                                            mesh_topo_name,
@@ -2573,6 +2583,13 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 // 
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+// 
+//     Justin Privitera, Mon Feb  5 14:14:19 PST 2024
+//     Removed unnecessary material numbers logic now that we have a new 
+//     Conduit.
+// 
+//     Justin Privitera, Wed Feb 14 11:37:06 PST 2024
+//     Present material ids alongside material names.
 //
 // ****************************************************************************
 avtMaterial *
@@ -2590,13 +2607,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                             mat_name,
                             n_matset);
 
-        std::vector<std::string> matnames = n_matset["matnames"].child_names();
-        // package up char ptrs
-        std::vector<const char *> matnames_ptrs;
-        for (const auto &matname : matnames)
-            matnames_ptrs.push_back(matname.c_str());
-        auto names = const_cast<char **>(matnames_ptrs.data());
-
         // use to_silo util to convert from bp to the mixslot rep
         // that silo and visit use
 
@@ -2604,7 +2614,7 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
 
-        int nmats = static_cast<int>(matnames.size());
+        int nmats = static_cast<int>(n_silo_matset["material_map"].number_of_children());
         int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
         int *matlist  = NULL;
         int *mix_mat  = NULL;
@@ -2618,6 +2628,20 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             const Node &n_mat = matmap_itr.next();
             matnos.push_back(n_mat.to_int());
         }
+
+        std::vector<std::string> matnames;
+        for (const auto &matname : n_silo_matset["material_map"].child_names())
+        {
+            const int matno = n_silo_matset["material_map"][matname].to_int64();
+            const std::string mat_num_and_name = std::to_string(matno) + " " + matname;
+            matnames.push_back(mat_num_and_name);
+        }
+
+        // package up char ptrs
+        std::vector<const char *> matnames_ptrs;
+        for (const auto &matname : matnames)
+            matnames_ptrs.push_back(matname.c_str());
+        auto names = const_cast<char **>(matnames_ptrs.data());
 
         // we need int ptrs for the avtMaterial object,
         // convert if needed
@@ -2637,15 +2661,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             matlist  = n_silo_matset["matlist"].as_int_ptr();
             mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
             mix_next = n_silo_matset["mix_next"].as_int_ptr();
-        }
-
-        // we need to adjust the matlist.
-        for(int i=0;i<nzones;i++)
-        {
-            if(matlist[i] > 0 )
-            {
-                matlist[i]--;
-            }
         }
 
         int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());

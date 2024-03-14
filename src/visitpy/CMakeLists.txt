@@ -59,6 +59,10 @@
 #  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #  Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
+#  Kathleen Biagas, Wed Feb 28, 2024
+#  Make visitmodule depend on visitmodule_py_setup, so it will be built after
+#  the python module. Prevents pip install from deleting visitmodule.so
+#
 #****************************************************************************
 
 #########################################################
@@ -478,9 +482,13 @@ ELSE(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 #
-# For distutils setup of the pure python parts of the visit module
+# For module setup of the pure python parts of the visit module
 #
 ADD_SUBDIRECTORY(visitmodule)
+# the visitmodule subdir added above creates the visitmodule_py_setup target
+# visitmodule needs to depend on it so it is built after the py module,
+# otherwise pip install will overwrite the directory and delete visitmodule.so
+add_dependencies(visitmodule visitmodule_py_setup)
 ADD_SUBDIRECTORY(visit_utils)
 ADD_SUBDIRECTORY(visit_flow)
 
