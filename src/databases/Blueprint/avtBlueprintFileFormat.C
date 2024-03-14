@@ -1334,17 +1334,11 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         for (size_t i = 0; i < matnames.size(); i ++)
         {
             std::cout << matnames[i] << std::endl;
-            int matno;
             if (m_matset_info[mesh_matset_name]["matnames"].has_child(matnames[i]))
             {
-                matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
+                const int matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
+                matnames[i] = std::to_string(matno) + " " + matnames[i];
             }
-            else
-            {
-                matno = static_cast<int>(matnames.size()) - 1;
-            }
-            std::cout << matno << std::endl;
-            matnames[i] = std::to_string(matno) + " " + matnames[i];
         }
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
