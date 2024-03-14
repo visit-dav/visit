@@ -1333,7 +1333,17 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         // we want to add the matnos to the names
         for (size_t i = 0; i < matnames.size(); i ++)
         {
-            int matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
+            std::cout << matnames[i] << std::endl;
+            int matno;
+            if (m_matset_info[mesh_matset_name]["matnames"].has_child(matnames[i]))
+            {
+                matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
+            }
+            else
+            {
+                matno = static_cast<int>(matnames.size()) - 1;
+            }
+            std::cout << matno << std::endl;
             matnames[i] = std::to_string(matno) + " " + matnames[i];
         }
 

@@ -120,9 +120,9 @@ def test3():
     Test("blueprint_axom_klee_3_00")
     DeleteAllPlots()
 
-    DefineScalarExpression("vf_inner", 'matvf(shaping_mesh_material, "inner")')
-    DefineScalarExpression("vf_middle", 'matvf(shaping_mesh_material, "middle")')
-    DefineScalarExpression("vf_outer", 'matvf(shaping_mesh_material, "outer")')
+    DefineScalarExpression("vf_inner", 'matvf(shaping_mesh_material, "0 inner")')
+    DefineScalarExpression("vf_middle", 'matvf(shaping_mesh_material, "1 middle")')
+    DefineScalarExpression("vf_outer", 'matvf(shaping_mesh_material, "2 outer")')
     AddPlot("Pseudocolor", "vf_inner")
     AddOperator("MultiresControl")
     op = MultiresControlAttributes()
