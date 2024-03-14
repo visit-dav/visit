@@ -459,8 +459,9 @@ cd /usr/tmp/$user/lassen/visitbuild
 tar -xzvf $dist.tar.gz > buildlog 2>&1
 ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-cmake -S $dist/src -B build -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-cmake --build build --target manuals >> buildlog 2>&1
+# skip manuals, old openssl on lassen undermines us
+cmake -S $dist/src -B build -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+# cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 mv build/visit\$ver2.linux-x86_64.tar.gz .
 rm -f resultlog
