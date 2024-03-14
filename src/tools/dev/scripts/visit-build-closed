@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 #-----------------------------------------------------------------------
 #
 # VISIT-BUILD-CLOSED - Build the visit distributions on the closed
@@ -113,6 +114,10 @@
 #
 #   Eric Brugger, Thu Jul 27 16:51:41 PDT 2023
 #   I added magma.
+# 
+#   Justin Privitera, Thu Mar 14 10:58:55 PDT 2024
+#   Removed jade. Bye bye toss3.
+#   Updated magma.
 #
 #-----------------------------------------------------------------------
 
@@ -124,7 +129,6 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 magma=true
-jade=true
 sierra=true
 trinity=true
 
@@ -140,7 +144,6 @@ do
    case $1 in
       -none)
          magma=false
-         jade=false
          sierra=false
          trinity=false
          shift
@@ -151,14 +154,6 @@ do
          ;;
       +magma)
          magma=true
-         shift
-         ;;
-      -jade)
-         jade=false
-         shift
-         ;;
-      +jade)
-         jade=true
          shift
          ;;
       -sierra)
@@ -187,12 +182,11 @@ done
 #
 # Check that the distribution name was provided.
 #
-if [ $dist = undefined ]
+if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    magma (LC, x86_64)"
-   echo "    jade (LC, x86_64)"
    echo "    sierra (LC, ppc)"
    echo "    trinity (LANL, x86_64)"
    exit
@@ -214,102 +208,46 @@ fi
 rm -f magma
 cat <<EOF > magma
 #!/bin/sh
+set -e
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 if test ! -d /usr/tmp/$user/magma ; then
-   mkdir /usr/tmp/$user/magma
+   mkdir -p /usr/tpm/$user/magma
 fi
 rm -rf /usr/tmp/$user/magma/visitbuild
 mkdir /usr/tmp/$user/magma/visitbuild
 mv magma_$dist.tar.gz /usr/tmp/$user/magma/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/magma/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4/cmake/3.18.2/linux-x86_64_gcc-10.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 24 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
+cmake -S $dist/src -B build -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+mv build/visit\$ver2.linux-x86_64.tar.gz .
 rm -f resultlog
 echo "        build of visit on magma"        > resultlog 2>&1
 echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls src/plugins/databases/libI* | sed "s/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $magma = true ]
+if [ "$magma" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       echo "Building on magma"
       scp magma magma:magma_buildit
       scp $dist.tar.gz magma:magma_$dist.tar.gz
       ssh magma190 "chmod 750 magma_buildit;./magma_buildit" &
-   fi
-fi
-
-
-#
-# Build on jade.
-#
-rm -f jade
-cat <<EOF > jade
-#!/bin/sh
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/jade ; then
-   mkdir /usr/tmp/$user/jade
-fi
-rm -rf /usr/tmp/$user/jade/visitbuild
-mkdir /usr/tmp/$user/jade/visitbuild
-mv jade_$dist.tar.gz /usr/tmp/$user/jade/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/jade/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 8 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on jade"         > resultlog 2>&1
-echo "       ------------------------"        >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $jade = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on jade"
-      scp jade jade962:jade_buildit
-      scp $dist.tar.gz jade962:jade_$dist.tar.gz
-      ssh jade962 "chmod 750 jade_buildit;./jade_buildit" &
    fi
 fi
 
@@ -319,6 +257,7 @@ fi
 rm -f sierra
 cat <<EOF > sierra
 #!/bin/sh
+set -e
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
@@ -352,9 +291,9 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $sierra = true ]
+if [ "$sierra" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       echo "Building on sierra"
       scp sierra sierra4358:sierra_buildit
@@ -369,6 +308,7 @@ fi
 rm -f trinity
 cat <<EOF > trinity
 #!/bin/sh
+set -e
 if test ! -d /tmp/$user ; then
    mkdir /tmp/$user
 fi
@@ -402,9 +342,9 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $trinity = true ]
+if [ "$trinity" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       echo "Building on trinity"
       cp trinity trinity_buildit
@@ -416,7 +356,7 @@ fi
 #
 # Clean up.
 #
-if [ $test = no ]
+if [ "$test" = "no" ]
 then
-   rm -f magma jade sierra trinity
+   rm -f magma sierra trinity
 fi
