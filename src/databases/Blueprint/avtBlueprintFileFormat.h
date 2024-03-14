@@ -114,6 +114,10 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                                          std::string const &mesh_name,
                                                          const conduit::Node &n_mesh_info);
 
+    void                   AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
+                                                       std::string const &mesh_name,
+                                                       const conduit::Node &n_mesh_info);
+
     void                   ReadRootFile();
 
     void                   ReadRootIndexItems(const std::string &root_fname,
@@ -139,6 +143,10 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     void                   ReadBlueprintMatset(int domain,
                                                const std::string &abs_matsetname,
                                                conduit::Node &out);
+
+    void                   ReadBlueprintSpecset(int domain,
+                                                const std::string &abs_matsetname,
+                                                conduit::Node &out);
 
     void                   FetchMeshAndTopoNames(const std::string &name_name_full,
                                                  std::string &mesh_name,
