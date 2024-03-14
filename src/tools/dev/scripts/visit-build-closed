@@ -227,6 +227,7 @@ echo "number of operator plugins = "\`ls src/plugins/operators/libI* | wc -l\` >
 echo "number of plot plugins = "\`ls src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
+# TODO this doesn't work
 ls src/plugins/databases/libI* | sed "s/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
