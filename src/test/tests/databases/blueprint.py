@@ -44,6 +44,10 @@
 # 
 #    Justin Privitera, Thu Jan 18 14:53:32 PST 2024
 #    Added test for unstructured points.
+# 
+#    Justin Privitera, Tue Mar 12 13:29:30 PDT 2024
+#    Now that blueprint presents material ids alongside material names, we 
+#    must use the ids and names to get specific materials.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -423,10 +427,10 @@ def test_venn(tag_name, venn_db_file):
     TestSection("Blueprint Matset Example Tests: {0} Matvf Exprs".format(tag_name))
 
     # check all volume fractions
-    vf_exprs = {"vf_bg":'matvf(mesh_topo_matset,"background")',
-                "vf_c_a":'matvf(mesh_topo_matset,"circle_a")',
-                "vf_c_b":'matvf(mesh_topo_matset,"circle_b")',
-                "vf_c_c":'matvf(mesh_topo_matset,"circle_c")'}
+    vf_exprs = {"vf_bg":'matvf(mesh_topo_matset,"0 background")',
+                "vf_c_a":'matvf(mesh_topo_matset,"1 circle_a")',
+                "vf_c_b":'matvf(mesh_topo_matset,"2 circle_b")',
+                "vf_c_c":'matvf(mesh_topo_matset,"3 circle_c")'}
 
     for ename,edef in vf_exprs.items():
         DefineScalarExpression(ename,edef);
@@ -449,10 +453,10 @@ def test_venn(tag_name, venn_db_file):
     TestSection("Blueprint Matset Example Tests: {0} Val4mat Exprs".format(tag_name))
     
     # check all volume fractions
-    v4m_exprs = {"v4m_bg":'val4mat(<mesh_topo/mat_check>,"background")',
-                 "v4m_c_a":'val4mat(<mesh_topo/mat_check>,"circle_a")',
-                 "v4m_c_b":'val4mat(<mesh_topo/mat_check>,"circle_b")',
-                 "v4m_c_c":'val4mat(<mesh_topo/mat_check>,"circle_c")'}
+    v4m_exprs = {"v4m_bg":'val4mat(<mesh_topo/mat_check>,"0 background")',
+                 "v4m_c_a":'val4mat(<mesh_topo/mat_check>,"1 circle_a")',
+                 "v4m_c_b":'val4mat(<mesh_topo/mat_check>,"2 circle_b")',
+                 "v4m_c_c":'val4mat(<mesh_topo/mat_check>,"3 circle_c")'}
 
     v4m_test_vals = {"v4m_bg":     1,
                      "v4m_c_a":   20,
