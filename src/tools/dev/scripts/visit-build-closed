@@ -118,6 +118,7 @@ set -e
 #   Justin Privitera, Thu Mar 14 10:58:55 PDT 2024
 #   Removed jade. Bye bye toss3.
 #   Updated magma and sierra.
+#   Removed trinity.
 #
 #-----------------------------------------------------------------------
 
@@ -128,9 +129,8 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-magma=true
-sierra=true
-trinity=true
+magma="true"
+sierra="true"
 
 dist=undefined
 
@@ -143,33 +143,24 @@ for abc
 do
    case $1 in
       -none)
-         magma=false
-         sierra=false
-         trinity=false
+         magma="false"
+         sierra="false"
          shift
          ;;
       -magma)
-         magma=false
+         magma="false"
          shift
          ;;
       +magma)
-         magma=true
+         magma="true"
          shift
          ;;
       -sierra)
-         sierra=false
+         sierra="false"
          shift
          ;;
       +sierra)
-         sierra=true
-         shift
-         ;;
-      -trinity)
-         trinity=false
-         shift
-         ;;
-      +trinity)
-         trinity=true
+         sierra="true"
          shift
          ;;
       -d)
@@ -188,7 +179,6 @@ then
    echo "Valid machine names:"
    echo "    magma (LC, x86_64)"
    echo "    sierra (LC, ppc)"
-   echo "    trinity (LANL, x86_64)"
    exit
 fi
 
@@ -213,7 +203,7 @@ XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 if test ! -d /usr/tmp/$user/magma ; then
-   mkdir -p /usr/tpm/$user/magma
+   mkdir -p /usr/tmp/$user/magma
 fi
 rm -rf /usr/tmp/$user/magma/visitbuild
 mkdir /usr/tmp/$user/magma/visitbuild
@@ -300,60 +290,9 @@ then
 fi
 
 #
-# Build on trinity.
-#
-rm -f trinity
-cat <<EOF > trinity
-#!/bin/sh
-set -e
-if test ! -d /tmp/$user ; then
-   mkdir /tmp/$user
-fi
-if test ! -d /tmp/$user/trinity ; then
-   mkdir /tmp/$user/trinity
-fi
-rm -rf /tmp/$user/trinity/visitbuild
-mkdir /tmp/$user/trinity/visitbuild
-mv trinity_$dist.tar.gz /tmp/$user/trinity/visitbuild/$dist.tar.gz
-cd /tmp/$user/trinity/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/usr/projects/views/visit/thirdparty_shared/3.3.1/cmake/3.18.2/linux-x86_64_cc/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on trinity"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ "$trinity" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on trinity"
-      cp trinity trinity_buildit
-      cp $dist.tar.gz trinity_$dist.tar.gz
-      chmod 750 trinity_buildit;./trinity_buildit &
-   fi
-fi
-
-#
 # Clean up.
 #
 if [ "$test" = "no" ]
 then
-   rm -f magma sierra trinity
+   rm -f magma sierra
 fi
