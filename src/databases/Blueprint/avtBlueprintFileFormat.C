@@ -909,8 +909,6 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 
         // provide material_map
         out["matnames"] = n_mat_names;
-
-        std::cout << n_mat_names.to_yaml() << std::endl;
     }
 }
 
@@ -1227,6 +1225,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // 
 //   Justin Privitera, Wed Feb 14 11:37:06 PST 2024
 //   Present material ids alongside material names.
+// 
+//   Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
+//   Revert previous change.
 //
 // ****************************************************************************
 void
@@ -2585,6 +2586,9 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 // 
 //     Justin Privitera, Wed Feb 14 11:37:06 PST 2024
 //     Present material ids alongside material names.
+// 
+//     Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
+//     Revert previous change.
 //
 // ****************************************************************************
 avtMaterial *

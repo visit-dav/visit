@@ -48,6 +48,9 @@
 #    Justin Privitera, Tue Mar 12 13:29:30 PDT 2024
 #    Now that blueprint presents material ids alongside material names, we 
 #    must use the ids and names to get specific materials.
+# 
+#    Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
+#    Revert prior change.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
