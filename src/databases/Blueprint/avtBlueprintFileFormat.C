@@ -1607,6 +1607,27 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
             }
         }
 
+        const int nmat = n_specset["matset_values"].number_of_children();
+
+        std::vector<int> numSpecies;
+        std::vector<std::vector<std::string>> speciesNames;
+
+        auto matset_vals_itr = n_specset["matset_values"].children();
+        while (matset_vals_itr.has_next())
+        {
+            const Node &matset_val = matset_vals_itr.next();
+            numSpecies.push_back(matset_val.number_of_children());
+
+            auto specie_itr = matset_val.children();
+            while (specie_itr.has_next())
+            {
+                specie_itr.next();
+                const std::string specname = specie_itr.name();
+                speciesNames.push_back(specname);
+            }
+        }
+
+
         // get matnames vec. No need to sort
         std::vector<string> matnames = m_matset_info[mesh_specset_name]["matnames"].child_names();
 
@@ -1644,6 +1665,16 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         mmd->validVariable = true;
         mmd->hideFromGUI = false;
         md->Add(mmd);
+
+
+        avtSpeciesMetaData *smd = new avtSpeciesMetaData(
+            mesh_specset_name, // The name of the species
+            mesh_topo_name,    // The name of the mesh the species is defined on.
+            matset_name,       // The name of the material the species is defined on.
+            nmat,              // The number of materials in the matset.
+            numSpecies,        // The number of species for each material.
+            speciesNames);     // The name of each species for each material.
+        md->Add(smd);
     }
 }
 
