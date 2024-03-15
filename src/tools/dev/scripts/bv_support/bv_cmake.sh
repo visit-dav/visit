@@ -186,7 +186,7 @@ function build_cmake
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     else
-        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH --parallel=8 ${CMAKE_BOOTSTRAP_FLAGS}"
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" --parallel=8 ${CMAKE_BOOTSTRAP_FLAGS}
     fi
     if [[ $? != 0 ]] ; then
         warn "Bootstrap for cmake failed, giving up."
