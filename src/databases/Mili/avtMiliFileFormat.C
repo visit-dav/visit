@@ -818,6 +818,34 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
 
+        intVector &globalNodeIdsForDom = globalNodeIds[meshId][dom];
+        if (globalNodeIdsForDom.size() != static_cast<size_t>(nNodes))
+        {
+            debug1 << "Mismatch in the number of global and local nodes "
+                   << "for domain " << dom << endl;
+        }
+        else
+        {
+            for (int localNodeId = 0; localNodeId < nNodes; localNodeId ++)
+            {
+                const int globalNodeId = globalNodeIdsForDom[localNodeId];
+                // how many times is this nodeId used?
+                const int idCount = idsCounter[meshId][globalNodeId];
+                // if it is used multiple times, it is shared across domains
+                if (idCount > 1)
+                {
+                    // if this domain doesn't own this
+                    if (domainOwner[meshId][globalNodeId] != dom)
+                    {
+                        // so we can ghost it
+                        avtGhostData::AddGhostNodeType(
+                            ghostNodePtr[localNodeId],
+                            DUPLICATED_NODE);
+                    }
+                }
+            }
+        }
+
         for (int i = 0; i < nCells; ++i)
         {
             ghostZonePtr[i] = 0;
@@ -840,6 +868,15 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 {
                     for (int j = 0; j < nCellPts; ++j)
                     {
+                        // if (avtGhostData::IsGhostNodeType(
+                        //     ghostNodePtr[cellPts[j]],
+                        //     DUPLICATED_NODE))
+                        // {
+                        //     avtGhostData::RemoveGhostNodeType(
+                        //         ghostNodePtr[cellPts[j]],
+                        //         DUPLICATED_NODE);
+                        // }
+
                         avtGhostData::RemoveGhostNodeType(
                             ghostNodePtr[cellPts[j]],
                             NODE_NOT_APPLICABLE_TO_PROBLEM);
@@ -853,33 +890,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
 
-        intVector &globalNodeIdsForDom = globalNodeIds[meshId][dom];
-        if (globalNodeIdsForDom.size() != static_cast<size_t>(nNodes))
-        {
-            debug1 << "Mismatch in the number of global and local nodes "
-                   << "for domain " << dom << endl;
-        }
-        else
-        {
-            for (int localNodeId = 0; localNodeId < nNodes; localNodeId ++)
-            {
-                const int globalNodeId = globalNodeIdsForDom[localNodeId];
-                // how many times is this nodeId used?
-                const int idCount = idsCounter[meshId][globalNodeId];
-                // if it is used multiple times, it is shared across domains
-                if (idCount > 1)
-                {
-                    // if this domain doesn't own this
-                    // if (domainOwner[meshId][globalNodeId] != dom)
-                    {
-                        // so we can ghost it
-                        avtGhostData::AddGhostNodeType(
-                            ghostNodePtr[localNodeId],
-                            DUPLICATED_NODE);
-                    }
-                }
-            }
-        }
 
         delete [] sandBuffer;
 
@@ -3257,8 +3267,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             }
         }
     }
-
-
 
     //
     // Set the cycle and time information.
