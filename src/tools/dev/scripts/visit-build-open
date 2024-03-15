@@ -400,7 +400,7 @@ cat <<EOF > poodle
 set -e
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-PATH=/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 if test ! -d /usr/tmp/$user/poodle ; then
    mkdir -p /usr/tmp/$user/poodle
 fi
