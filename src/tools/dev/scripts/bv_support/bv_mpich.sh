@@ -22,21 +22,12 @@ function bv_mpich_depends_on
 
 function bv_mpich_info
 {
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        export MPICH_VERSION=${MPICH_VERSION:-"3.3.1-libtool-2.4.6"}
-        export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}.tar.gz"}
-        export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
-        export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
-        export MPICH_URL=${MPICH_URL:-https://media.githubusercontent.com/media/visit-dav/third-party/master/lib/}
-        export MPICH_SHA256_CHECKSUM="899908c78df8e5c4caf076d27e4c83cd0e8b05e8526d8bda9e3bff0de0349f1a"
-    else
-        export MPICH_VERSION=${MPICH_VERSION:-"3.3.1"}
-        export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}.tar.gz"}
-        export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
-        export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
-        export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
-        export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
-    fi
+    export MPICH_VERSION=${MPICH_VERSION:-"3.3.1"}
+    export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}.tar.gz"}
+    export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
+    export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
+    export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
+    export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
 }
 
 function bv_mpich_print
@@ -137,7 +128,7 @@ function build_mpich
     fi
 
     set -x
-    issue_command env CXX="$CXX_COMPILER" \
+    issue_command env PATH=`pwd`:${PATH} CXX="$CXX_COMPILER" \
                   CC="$C_COMPILER" \
                   CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
                   CXXFLAGS="$MPICH_CXXFLAGS $MPICH_CXX_OPT_FLAGS"\
@@ -154,7 +145,7 @@ function build_mpich
     # Build MPICH
     #
     info "Building MPICH . . . (~5 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    env PATH=`pwd`:${PATH} $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "MPICH build failed.  Giving up"
         return 1
