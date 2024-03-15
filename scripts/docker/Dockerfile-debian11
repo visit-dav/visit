@@ -101,4 +101,5 @@ RUN /bin/bash run_build_visit.sh
 COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
 COPY --chown=visit:visit build_test_visit.sh /home/visit
 COPY --chown=visit:visit test_visit.py /home/visit
-RUN /bin/bash build_test_visit.sh
+RUN /bin/bash build_test_visit.sh -v 3.4.1
+
