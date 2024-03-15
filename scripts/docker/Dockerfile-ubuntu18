@@ -1,5 +1,5 @@
 FROM ubuntu:bionic
-MAINTAINER Eric Brugger <brugger1@llnl.gov>
+MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
 
 # fetch build env
 ENV DEBIAN_FRONTEND=noninteractive
@@ -94,18 +94,16 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_4_1 /home/visit
-COPY run_build_visit-ubuntu18.sh /home/visit
-COPY build_visit_docker_cleanup.py /home/visit
+COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit run_build_visit-ubuntu18.sh /home/visit
+COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
 # build thirdparty libraries
 RUN /bin/bash run_build_visit-ubuntu18.sh
 
 # build and test visit
-COPY build_test_visit.sh /home/visit
-COPY test_visit.py /home/visit
-COPY visit3.4.1.tar.gz /home/visit
+COPY --chown=visit:visit build_test_visit.sh /home/visit
+COPY --chown=visit:visit test_visit.py /home/visit
+COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
 # Build visit, package, install and test.
 RUN /bin/bash build_test_visit.sh -v 3.4.1
-
-
 
