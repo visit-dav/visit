@@ -1330,20 +1330,21 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                        << mesh_matset_name
                        << " : " << m_matset_info[mesh_matset_name].to_yaml())
 
-        // we want to add the matnos to the names
-        for (size_t i = 0; i < matnames.size(); i ++)
-        {
-            if (m_matset_info[mesh_matset_name]["matnames"].has_child(matnames[i]))
-            {
-                const int matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
-                matnames[i] = std::to_string(matno) + " " + matnames[i];
-            }
-            else
-            {
-                // TODO this is so busted
-                matnames[i] = std::to_string(matnames.size() - 1) + " " + matnames[i];
-            }
-        }
+        // // we want to add the matnos to the names
+        // for (size_t i = 0; i < matnames.size(); i ++)
+        // {
+        //     if (m_matset_info[mesh_matset_name]["matnames"].has_child(matnames[i]))
+        //     {
+        //         const int matno = m_matset_info[mesh_matset_name]["matnames"][matnames[i]].to_int64();
+        //         matnames[i] = std::to_string(matno) + " " + matnames[i];
+        //     }
+        //     else
+        //     {
+        //         // TODO this is so busted
+        //         // matnames[i] = std::to_string(matnames.size() - 1) + " " + matnames[i];
+        //         matnames[i] = std::to_string(3) + " " + matnames[i];
+        //     }
+        // }
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
                                                            mesh_topo_name,
@@ -2640,17 +2641,22 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         std::vector<std::string> matnames;
         for (const auto &matname : n_silo_matset["material_map"].child_names())
         {
-            // TODO figure this out
+            // // TODO figure this out
             // if (n_silo_matset["material_map"].has_child(matname))
             // {
-                const int matno = n_silo_matset["material_map"][matname].to_int64();
-                const std::string mat_num_and_name = std::to_string(matno) + " " + matname;
-                matnames.push_back(mat_num_and_name);
+            //     const int matno = n_silo_matset["material_map"][matname].to_int64();
+            //     const std::string mat_num_and_name = std::to_string(matno) + " " + matname;
+            //     matnames.push_back(mat_num_and_name);
             // }
             // else
             // {
-                // matnames.push_back(matname);
+            //     // const int matno = matnames.size() - 1;
+            //     const int matno = 3;
+            //     const std::string mat_num_and_name = std::to_string(matno) + " " + matname;
+            //     matnames.push_back(mat_num_and_name);
+            //     // matnames.push_back(matname);
             // }
+            matnames.push_back(matname);
         }
 
         // package up char ptrs
