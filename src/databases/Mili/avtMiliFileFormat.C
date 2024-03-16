@@ -810,11 +810,40 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
 
+        // TODO why is this loop duplicated
         for (int i = 0; i < nNodes; ++i)
         {
             ghostNodePtr[i] = 0;
             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+        }
+
+        intVector &globalNodeIdsForDom = globalNodeIds[meshId][dom];
+        if (globalNodeIdsForDom.size() != static_cast<size_t>(nNodes))
+        {
+            debug1 << "Mismatch in the number of global and local nodes "
+                   << "for domain " << dom << endl;
+        }
+        else
+        {
+            for (int localNodeId = 0; localNodeId < nNodes; localNodeId ++)
+            {
+                const int globalNodeId = globalNodeIdsForDom[localNodeId];
+                // how many times is this nodeId used?
+                const int idCount = idsCounter[meshId][globalNodeId];
+                // if it is used multiple times, it is shared across domains
+                if (idCount > 1)
+                {
+                    // if this domain doesn't own this
+                    if (domainOwner[meshId][globalNodeId] != dom)
+                    {
+                        // so we can ghost it
+                        avtGhostData::AddGhostNodeType(
+                            ghostNodePtr[localNodeId],
+                            DUPLICATED_NODE);
+                    }
+                }
+            }
         }
 
         for (int i = 0; i < nCells; ++i)
@@ -839,6 +868,15 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 {
                     for (int j = 0; j < nCellPts; ++j)
                     {
+                        // if (avtGhostData::IsGhostNodeType(
+                        //     ghostNodePtr[cellPts[j]],
+                        //     DUPLICATED_NODE))
+                        // {
+                        //     avtGhostData::RemoveGhostNodeType(
+                        //         ghostNodePtr[cellPts[j]],
+                        //         DUPLICATED_NODE);
+                        // }
+
                         avtGhostData::RemoveGhostNodeType(
                             ghostNodePtr[cellPts[j]],
                             NODE_NOT_APPLICABLE_TO_PROBLEM);
@@ -851,6 +889,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
             }
         }
+
 
         delete [] sandBuffer;
 
@@ -3173,6 +3212,62 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         AddMiliDerivedVariables(md, meshId, std::string(meshName));
     }
 
+    // global node id magic
+
+    for (int dom = 0; dom < nDomains; dom ++)
+    {
+        if (!meshRead[dom])
+        {
+            ReadMesh(dom);
+        }
+    }
+
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        char meshName[32];
+        snprintf(meshName, 32, "mesh%d", meshId + 1);
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        globalNodeIds[meshId] = miliClass->GetLabelIds();
+    }
+
+    idsCounter.resize(nMeshes);
+    domainOwner.resize(nMeshes);
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        int maxGlobalDomainId = 0;
+        for (int dom = 0; dom < nDomains; dom ++)
+        {
+            for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
+            {
+                int val = globalNodeIds[meshId][dom][i];
+                if (val > maxGlobalDomainId)
+                {
+                    maxGlobalDomainId = val;
+                }
+            }
+        }
+
+        // set the idsCounter to have enough room for all global domain ids,
+        // and set the initial count for each one to zero
+        idsCounter[meshId].resize(maxGlobalDomainId + 1, 0);
+        domainOwner[meshId].resize(maxGlobalDomainId + 1, -1);
+        for (int dom = 0; dom < nDomains; dom ++)
+        {
+            for (int i = 0; i < globalNodeIds[meshId][dom].size(); i ++)
+            {
+                const int globalNodeId = globalNodeIds[meshId][dom][i];
+                if (idsCounter[meshId][globalNodeId] == 0)
+                {
+                    domainOwner[meshId][globalNodeId] = dom;
+                }
+                idsCounter[meshId][globalNodeId] ++;
+            }
+        }
+    }
+
     //
     // Set the cycle and time information.
     //
@@ -3224,7 +3319,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
     {
         return NULL;
     }
@@ -3234,7 +3329,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         ReadMesh(dom);
     }
 
-    if (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") == 0)
+    if (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
         //
         // Retrieve the node/zone labels.
