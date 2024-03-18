@@ -438,7 +438,7 @@ then
    then
       echo "Building on poodle"
       cp poodle poodle_buildit
-      scp $dist.tar.gz poodle_$dist.tar.gz
+      cp $dist.tar.gz poodle_$dist.tar.gz
       chmod 750 poodle_buildit
       ./poodle_buildit
    fi
@@ -490,7 +490,7 @@ then
    then
       echo "Building on lassen"
       cp lassen lassen_buildit
-      scp $dist.tar.gz lassen_$dist.tar.gz
+      cp $dist.tar.gz lassen_$dist.tar.gz
       chmod 750 lassen_buildit
       ./lassen_buildit
    fi
@@ -540,9 +540,10 @@ then
    if [ "$test" = "no" ]
    then
       echo "Building on rzwhippet"
-      scp rzwhippet rzwhippet:rzwhippet_buildit
-      scp $dist.tar.gz rzwhippet:rzwhippet_$dist.tar.gz
-      ssh rzwhippet "chmod 750 rzwhippet_buildit;./rzwhippet_buildit" &
+      cp rzwhippet rzwhippet_buildit
+      cp $dist.tar.gz rzwhippet_$dist.tar.gz
+      chmod 750 zwhippet_buildit
+      ./zwhippet_buildit
    fi
 fi
 
