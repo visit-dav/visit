@@ -542,8 +542,8 @@ then
       echo "Building on rzwhippet"
       cp rzwhippet rzwhippet_buildit
       cp $dist.tar.gz rzwhippet_$dist.tar.gz
-      chmod 750 zwhippet_buildit
-      ./zwhippet_buildit
+      chmod 750 rzwhippet_buildit
+      ./rzwhippet_buildit
    fi
 fi
 
