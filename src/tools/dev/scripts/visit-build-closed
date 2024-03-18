@@ -207,12 +207,15 @@ if test ! -d /usr/tmp/$user/magma ; then
 fi
 rm -rf /usr/tmp/$user/magma/visitbuild
 mkdir /usr/tmp/$user/magma/visitbuild
-mv magma_$dist.tar.gz /usr/tmp/$user/magma/visitbuild/$dist.tar.gz
+cp magma_$dist.tar.gz /usr/tmp/$user/magma/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/magma/visitbuild
 tar -xzvf $dist.tar.gz > buildlog 2>&1
 ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-cmake -S $dist/src -B build -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/magma190.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 mv build/visit\$ver2.linux-x86_64.tar.gz .
@@ -235,9 +238,10 @@ then
    if [ "$test" = "no" ]
    then
       echo "Building on magma"
-      scp magma magma:magma_buildit
-      scp $dist.tar.gz magma:magma_$dist.tar.gz
-      ssh magma190 "chmod 750 magma_buildit;./magma_buildit" &
+      cp magma magma_buildit
+      cp $dist.tar.gz magma_$dist.tar.gz
+      chmod 750 magma_buildit
+      ./magma_buildit
    fi
 fi
 
@@ -254,13 +258,16 @@ if test ! -d /usr/tmp/$user/sierra ; then
 fi
 rm -rf /usr/tmp/$user/sierra/visitbuild
 mkdir /usr/tmp/$user/sierra/visitbuild
-mv sierra_$dist.tar.gz /usr/tmp/$user/sierra/visitbuild/$dist.tar.gz
+cp sierra_$dist.tar.gz /usr/tmp/$user/sierra/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/sierra/visitbuild
 tar -xzvf $dist.tar.gz > buildlog 2>&1
 ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-# skip manuals, old openssl on lassen undermines us... (TODO is this true on sierra also?)
-cmake -S $dist/src -B build -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/sierra4358.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+# skip manuals, old openssl on lassen undermines us
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 mv build/visit\$ver2.linux-x86_64.tar.gz .
@@ -283,9 +290,10 @@ then
    if [ "$test" = "no" ]
    then
       echo "Building on sierra"
-      scp sierra sierra4358:sierra_buildit
-      scp $dist.tar.gz sierra4358:sierra_$dist.tar.gz
-      ssh sierra4358 "chmod 750 sierra_buildit;./sierra_buildit" &
+      cp sierra sierra_buildit
+      cp $dist.tar.gz sierra_$dist.tar.gz
+      chmod 750 sierra_buildit
+      ./sierra_buildit
    fi
 fi
 
