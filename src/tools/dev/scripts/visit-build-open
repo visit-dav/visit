@@ -223,6 +223,8 @@ set -e
 test=no
 
 user=`whoami`
+result_dir=/usr/workspace/visit/visit/_release_builds/
+
 
 #
 # Set the user e-mail address.
@@ -521,7 +523,9 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.rzwhippet
 mv build/visit\$ver2.linux-x86_64.tar.gz .
+cp visit\$ver2.linux-x86_64.tar.gz  $result_dir/visit\$ver2.linux-x86_64-rwhippet.tar.gz
 rm -f resultlog
 echo "        build of visit on rzwhippet"    > resultlog 2>&1
 echo "       ---------------------------"     >> resultlog 2>&1
@@ -534,6 +538,7 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.rzwhippet
 mail  -s "VisIt build ($dist): rzwhippet" $emailName < resultlog
 EOF
 
