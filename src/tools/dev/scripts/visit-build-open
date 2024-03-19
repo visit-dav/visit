@@ -320,6 +320,13 @@ then
 fi
 
 #
+# make sure landing place for results exist
+#
+if test ! -d $result_dir ; then
+   mkdir -p $result_dir
+fi
+
+#
 # Build on kickit.
 #
 rm -f kickit
