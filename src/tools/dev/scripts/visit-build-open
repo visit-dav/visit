@@ -419,7 +419,8 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
-mv build/visit\$ver2.linux-x86_64.tar.gz .
+cp buildlog $result_dir/buildlog.poodle
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
 rm -f resultlog
 echo "        build of visit on poodle"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
@@ -471,7 +472,8 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
-mv build/visit\$ver2.linux-x86_64.tar.gz .
+cp buildlog $result_dir/buildlog.lassen
+cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
 rm -f resultlog
 echo "        build of visit on lassen"       > resultlog 2>&1
 echo "       -------------------------- "     >> resultlog 2>&1
@@ -483,7 +485,10 @@ echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\`
 echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.poodle
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.poodle
+mail  -s "VisIt build ($dist): poodle" $emailName < resultlog
 EOF
 
 if [ "$lassen" = "true" ]
@@ -524,8 +529,7 @@ cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 cp buildlog $result_dir/buildlog.rzwhippet
-mv build/visit\$ver2.linux-x86_64.tar.gz .
-cp visit\$ver2.linux-x86_64.tar.gz  $result_dir/visit\$ver2.linux-x86_64-rwhippet.tar.gz
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rwhippet.tar.gz
 rm -f resultlog
 echo "        build of visit on rzwhippet"    > resultlog 2>&1
 echo "       ---------------------------"     >> resultlog 2>&1
