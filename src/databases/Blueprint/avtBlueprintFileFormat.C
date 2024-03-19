@@ -1579,34 +1579,6 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         BP_PLUGIN_INFO("adding species set "
                         <<  mesh_topo_name << " " <<  mesh_specset_name);
 
-        if (n_specset.has_child("material_map") )
-        {
-            BP_PLUGIN_INFO("material map " << n_specset["material_map"].to_yaml());
-        
-            NodeConstIterator itr = n_specset["material_map"].children();
-            while (itr.has_next())
-            {
-                const Node &curr_mat = itr.next();
-                const int32 mat_id = curr_mat.to_int32();
-                const std::string matname = itr.name();
-                m_matset_info[mesh_specset_name]["matnames"][matname] = mat_id;
-            }
-        }
-        else // "materials" case, old path
-        {
-            BP_PLUGIN_INFO("material names " << n_specset["materials"].to_yaml());
-
-            NodeConstIterator itr = n_specset["materials"].children();
-            while (itr.has_next())
-            {
-                itr.next();
-                int32 mat_id = static_cast<int32>(itr.index());
-                std::string mat_name = itr.name();
-                // cache mat names and idx (implied order)
-                m_matset_info[mesh_specset_name]["matnames"][mat_name] = mat_id;
-            }
-        }
-
         const int nmat = n_specset["matset_values"].number_of_children();
 
         std::vector<int> numSpecies;
@@ -1627,45 +1599,15 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
             }
         }
 
-
-        // get matnames vec. No need to sort
-        std::vector<string> matnames = m_matset_info[mesh_specset_name]["matnames"].child_names();
-
-        // If the materials were HO then we may need to add a "free" material
-        // to the list.
-        std::map<std::string, std::string> matFields;
-        std::string freeMatName;
-        if(DetectHOMaterial(mesh_name, topo_name, matnames, matFields, freeMatName))
-        {
-            if(!freeMatName.empty())
-                matnames.push_back(freeMatName);
-        }
-
-        m_matset_info[mesh_specset_name]["full_mesh_name"] = mesh_topo_name;
-        m_matset_info[mesh_specset_name]["mesh_name"] = mesh_name;
-        m_matset_info[mesh_specset_name]["topo_name"] = topo_name;
-        m_matset_info[mesh_specset_name]["matset_name"] = specset_name;
+        m_specset_info[mesh_specset_name]["full_mesh_name"] = mesh_topo_name;
+        m_specset_info[mesh_specset_name]["mesh_name"] = mesh_name;
+        m_specset_info[mesh_specset_name]["topo_name"] = topo_name;
+        m_specset_info[mesh_specset_name]["matset_name"] = matset_name;
+        m_specset_info[mesh_specset_name]["specset_name"] = specset_name;
         
-        BP_PLUGIN_INFO("Matset Info for "
+        BP_PLUGIN_INFO("Specset Info for "
                        << mesh_specset_name
-                       << " : " << m_matset_info[mesh_specset_name].to_yaml())
-
-        // we want to add the matnos to the names
-        for (size_t i = 0; i < matnames.size(); i ++)
-        {
-            int matno = m_matset_info[mesh_specset_name]["matnames"][matnames[i]].to_int64();
-            matnames[i] = std::to_string(matno) + " " + matnames[i];
-        }
-
-        avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_specset_name,
-                                                           mesh_topo_name,
-                                                           static_cast<int>(matnames.size()),
-                                                           matnames);
-
-        mmd->validVariable = true;
-        mmd->hideFromGUI = false;
-        md->Add(mmd);
-
+                       << " : " << m_specset_info[mesh_specset_name].to_yaml())
 
         avtSpeciesMetaData *smd = new avtSpeciesMetaData(
             mesh_specset_name, // The name of the species
