@@ -127,7 +127,7 @@ done
 #
 # Check that the version was provided.
 #
-if [ $ver = undefined ]
+if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    exit
@@ -151,8 +151,8 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f magma_install
 cat <<EOF > magma_install
 #!/bin/sh
+set -e
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on magma"              >> resultlog 2>&1
@@ -186,6 +186,7 @@ fi
 rm -f sierra_install
 cat <<EOF > sierra_install
 #!/bin/sh
+set -e
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
