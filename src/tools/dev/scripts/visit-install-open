@@ -390,7 +390,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.rztrona
+rm -f resultlog.rzwhippet
 mv resultlog resultlog.rzwhippet
 mail -s "VisIt install ($ver): rzwhippet" $emailName < resultlog.rzwhippet
 EOF
