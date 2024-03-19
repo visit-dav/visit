@@ -198,7 +198,6 @@ kickit=false
 poodle=false
 lassen=false
 rzwhippet=false
-cooley=false
 
 ver=undefined
 
@@ -230,10 +229,6 @@ do
          rzansel=true
          shift
          ;;
-      -cooley)
-         cooley=true
-         shift
-         ;;
       -v)
          ver=$2
          shift 2
@@ -248,7 +243,7 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rzwhippet cooley"
+   echo "    kickit poodle lassen rzwhippet"
    exit
 fi
 
@@ -397,8 +392,8 @@ echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 rm -f resultlog.rztrona
-mv resultlog resultlog.rztrona
-mail -s "VisIt install ($ver): rztrona" $emailName < resultlog.rzwhippet
+mv resultlog resultlog.rzwhippet
+mail -s "VisIt install ($ver): rzwhippet" $emailName < resultlog.rzwhippet
 EOF
 
 if [ "$rzwhippet" = "true" ]

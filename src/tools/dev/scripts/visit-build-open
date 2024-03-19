@@ -485,10 +485,10 @@ echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\`
 echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-cp resultlog $result_dir/resultlog.poodle
+cp resultlog $result_dir/resultlog.lassen
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-cp resultlog $result_dir/resultlog.poodle
-mail  -s "VisIt build ($dist): poodle" $emailName < resultlog
+cp resultlog $result_dir/resultlog.lassen
+mail  -s "VisIt build ($dist): lassen" $emailName < resultlog
 EOF
 
 if [ "$lassen" = "true" ]
