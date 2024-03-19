@@ -1,0 +1,105 @@
+FROM debian:bookworm
+MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
+
+# fetch build env
+ENV TZ=America/Los_Angeles
+RUN apt-get update && apt-get install -y \
+    git \
+    wget \
+    curl \
+    unzip \
+    build-essential \
+    gcc \
+    g++ \
+    gfortran \
+    zlib1g-dev \
+    python3 \
+    libsm-dev \
+    libice-dev \
+    fontconfig \
+    libfreetype6 \
+    libxrender1 \
+    libxcb-render0 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxcb-randr0 \
+    libxcb-xfixes0 \
+    libxcb-xkb1 \
+    libxcb-sync1 \
+    libxcb-shm0 \
+    libxcb-icccm4 \
+    libxcb-keysyms1 \
+    libxcb-image0 \
+    libxcb-util1 \
+    libxcb-cursor0 \
+    libxkbcommon0 \
+    libxkbcommon-x11-0 \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libx11-dev \
+    libx11-xcb-dev \
+    libxext-dev \
+    libxfixes-dev \
+    libxi-dev \
+    libxrender-dev \
+    libxcb-cursor-dev \
+    libxcb-glx0-dev \
+    libxcb-keysyms1-dev \
+    libxcb-image0-dev \
+    libxcb-shm0-dev \
+    libxcb-icccm4-dev \
+    libxcb-sync-dev \
+    libxcb-xfixes0-dev \
+    libxcb-shape0-dev \
+    libxcb-randr0-dev \
+    libxcb-render-util0-dev \
+    libxcb-util-dev \
+    libxcb-xinerama0-dev \
+    libxcb-xkb-dev \
+    libxkbcommon-dev \
+    libxkbcommon-x11-dev \
+    libxcb-dri2-0 \
+    libxcb-dri2-0-dev \
+    libssl-dev \
+    xutils-dev \
+    xorg-dev \
+    autoconf \
+    libtool \
+    m4 \
+    automake \
+    libxml2 \
+    libxml2-dev \
+    vim \
+    emacs \
+    cpio \
+    libegl1-mesa \
+    libegl1-mesa-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG en_US.utf8
+
+RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
+WORKDIR /home/visit
+
+# Create the third-party directory
+RUN mkdir /home/visit/third-party
+# Copy build_visit and the script to run it
+COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit run_build_visit.sh /home/visit
+COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
+# Build the third party libraries
+RUN /bin/bash run_build_visit.sh
+
+# Copy necesary files build visit install and test
+COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
+COPY --chown=visit:visit build_test_visit.sh /home/visit
+COPY --chown=visit:visit test_visit.py /home/visit
+#RUN /bin/bash build_test_visit.sh -v 3.4.1
+
