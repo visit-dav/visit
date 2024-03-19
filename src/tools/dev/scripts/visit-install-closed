@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 #-----------------------------------------------------------------------
 #
 # VISIT-INSTALL-CLOSED - Install the visit distributions on the closed
