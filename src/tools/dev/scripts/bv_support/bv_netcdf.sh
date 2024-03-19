@@ -409,10 +409,10 @@ function build_netcdf
 
     C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    env ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                FC="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
-                --disable-dap \
+                FC="" FCFLAGS="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS \
+                --disable-dap --disable-fortran \
                 --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
     set +x
 
@@ -422,10 +422,16 @@ function build_netcdf
         return 1
     fi
 
-    # there is an include file on newer macOS #include <version> which case-clashes
-    # with any file living in a dir that is -I included on the compilation line
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ -n "$(uname -rs | grep 'Darwin 21')" ]] ; then
+        # there is an include file on newer macOS #include <version> which case-clashes
+        # with any file living in a dir that is -I included on the compilation line
         mv -f VERSION VERSION.orig
+
+        # Apparently, netCDF is often compiled with undefined refs to methods that should not
+        # be used in the current configuration. However, sometimes it won't set the flags needed
+        # so the linker will ignore those. Here, we just override libtool with what it would have
+        # had specified if it had configured correctly.
+        sed -I "" -E -e 's@^allow_undefined_flag="?([^"]*)"?$@allow_undefined_flag="\1 \\${wl}-flat_namespace \\${wl}-undefined \\${wl}suppress"@' libtool
     fi
 
     #
