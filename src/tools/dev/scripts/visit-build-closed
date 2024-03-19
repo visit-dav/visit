@@ -194,6 +194,13 @@ then
 fi
 
 #
+# make sure landing place for results exist
+#
+if test ! -d $result_dir ; then
+   mkdir -p $result_dir
+fi
+
+#
 # Build on magma
 #
 rm -f magma
@@ -219,9 +226,6 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
-if test ! -d $result_dir ; then
-   mkdir -p $result_dir
-fi
 cp buildlog $result_dir/buildlog.magma
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
 rm -f resultlog
@@ -276,9 +280,6 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
-if test ! -d $result_dir ; then
-   mkdir -p $result_dir
-fi
 cp buildlog $result_dir/buildlog.sierra
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-sierra.tar.gz
 rm -f resultlog
