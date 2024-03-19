@@ -153,240 +153,6 @@ function bv_cmake_ensure
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
-function apply_cmake_patch_5
-{
-    patch -p0 <<\EOF
-*** cmake-3.8.1/Source/kwsys/SystemInformation.cxx	Tue May  2 05:59:43 2017
---- cmake-3.8.1-new/Source/kwsys/SystemInformation.cxx	Thu Jun 29 11:18:38 2017
-***************
-*** 4805,4811 ****
-    std::string lastArg = command.substr(start + 1, command.size() - start - 1);
-    args.push_back(lastArg.c_str());
-  
-!   args.push_back(0);
-  
-    std::string buffer = this->RunProcess(args);
-  
---- 4805,4811 ----
-    std::string lastArg = command.substr(start + 1, command.size() - start - 1);
-    args.push_back(lastArg.c_str());
-  
-!   args.push_back(nullptr);
-  
-    std::string buffer = this->RunProcess(args);
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 5 to cmake."
-        return 1
-    else
-        return 0
-    fi
-}
-
-function apply_cmake_patch_4
-{
-    patch -p0 <<\EOF
---- cmake-3.0.2/Source/cmMakefileTargetGenerator.cxx
-+++ cmake-3.0.2-new/Source/cmMakefileTargetGenerator.cxx
-@@ -306,6 +306,11 @@ std::string cmMakefileTargetGenerator::G
-     // Add target-specific flags.
-     this->LocalGenerator->AddCompileOptions(flags, this->Target,
-                                             lang, this->ConfigName);
-+#if 1
-+    for(size_t j = 0; j < flags.size(); ++j)
-+        if(flags[j] == '"') 
-+            flags[j] = ' ';
-+#endif
- 
-     ByLanguageMap::value_type entry(l, flags);
-     i = this->FlagsByLanguage.insert(entry).first;
-@@ -1773,6 +1778,19 @@ cmMakefileTargetGenerator
-     // shell no-op ":".
-     if(!cmd->empty() && (*cmd)[0] != ':')
-       {
-+#if 1
-+      // Work around a problem with random quotes being inserted into the link line.
-+      std::string::size_type pos = cmd->find("\"");
-+      if(pos != std::string::npos)
-+      {
-+          std::string cp(*cmd);
-+          for(size_t j = 0; j < cp.size(); ++j)
-+              if(cp[j] == '"')
-+                  cp[j] = ' ';
-+          linkScriptStream << cp << "\n";
-+          continue;
-+      }
-+#endif
-       linkScriptStream << *cmd << "\n";
-       }
-     }
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 4 ${CMAKE_VERSION} to cmake."
-        return 1
-    else
-        return 0
-    fi
-}
-
-function apply_cmake_patch_3
-{
-    patch -p0 <<\EOF
-*** cmake-2.8.12.2/Modules/Platform/Darwin.cmake
---- cmake-2.8.12.2/Modules/Platform/Darwin.cmake.patched
-***************
-*** 201,208 ****
-    endif()
-  endif()
-  
-  # Make sure the combination of SDK and Deployment Target are allowed
-! if(CMAKE_OSX_DEPLOYMENT_TARGET)
-    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
-      set(_sdk_ver "${CMAKE_MATCH_1}")
-    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
---- 201,213 ----
-    endif()
-  endif()
-  
-+ #
-+ # This sanity check fails on OS X 10.8 regardless of how values are
-+ # set. It has been disabled for this installation of VisIt by using
-+ # 'FALSE' as the triggering condition.
-+ #
-  # Make sure the combination of SDK and Deployment Target are allowed
-! if(FALSE)
-    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
-      set(_sdk_ver "${CMAKE_MATCH_1}")
-    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 3 to cmake."
-        return 1
-    else
-        return 0
-    fi
-}
-
-function apply_cmake_patch_2
-{
-    patch -p0 <<\EOF
-*** cmake-2.8.10.2/Modules/Platform/Darwin.cmake
---- cmake-2.8.10.2/Modules/Platform/Darwin.cmake.patched
-***************
-*** 180,187 ****
-    endif()
-  endif()
-  
-  # Make sure the combination of SDK and Deployment Target are allowed
-! if(CMAKE_OSX_DEPLOYMENT_TARGET)
-    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
-      set(_sdk_ver "${CMAKE_MATCH_1}")
-    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
---- 180,192 ----
-    endif()
-  endif()
-  
-+ #
-+ # This sanity check fails on OS X 10.8 regardless of how values are
-+ # set. It has been disabled for this installation of VisIt by using
-+ # 'FALSE' as the triggering condition.
-+ #
-  # Make sure the combination of SDK and Deployment Target are allowed
-! if(FALSE)
-    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
-      set(_sdk_ver "${CMAKE_MATCH_1}")
-    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 2 to cmake."
-        return 1
-    else
-        return 0
-    fi
-}
-
-function apply_cmake_patch_1
-{
-    patch -p0 <<\EOF
-diff -c a/Modules/Platform/UnixPaths.cmake cmake-2.8.8/Modules/Platform/UnixPaths.cmake
-*** a/Modules/Platform/UnixPaths.cmake
---- cmake-2.8.8/Modules/Platform/UnixPaths.cmake
-***************
-*** 67,72 ****
---- 67,75 ----
-    /usr/pkg/lib
-    /opt/csw/lib /opt/lib
-    /usr/openwin/lib
-+
-+   # Ubuntu 11.04
-+   /usr/lib/x86_64-linux-gnu
-    )
-
-  LIST(APPEND CMAKE_SYSTEM_PROGRAM_PATH
-***************
-*** 75,80 ****
---- 78,86 ----
-
-  LIST(APPEND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-    /lib /usr/lib /usr/lib32 /usr/lib64
-+
-+   # Ubuntu 11.04
-+   /usr/lib/x86_64-linux-gnu
-    )
-
-  LIST(APPEND CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 1 to cmake."
-        return 1
-    else
-        return 0
-    fi
-}
-
-function apply_cmake_patch
-{
-    info "Patching CMake . . ."
-
-    if [[ "${CMAKE_VERSION}" == "2.8.0" ]]; then
-        apply_cmake_patch_1
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    if [[ "${CMAKE_VERSION}" == "2.8.10.2" ]]; then
-        apply_cmake_patch_2
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    if [[ "${CMAKE_VERSION}" == "2.8.12.2" ]]; then
-        apply_cmake_patch_3
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    if [[ "${CMAKE_VERSION}" == "3.0.2" && "$BUILD_VISIT_BGQ" == "yes" ]]; then
-        apply_cmake_patch_4
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    CXX_COMPILER_BASENAME=$(basename ${CXX_COMPILER})
-    if [[ "${CMAKE_VERSION}" == "3.8.1" &&  "${CXX_COMPILER_BASENAME}" == "icpc" ]]; then
-        apply_cmake_patch_5
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    return 0
-}
-
 function build_cmake
 {
     #
@@ -402,23 +168,20 @@ function build_cmake
     fi
 
     #
-    # Patch cmake
+    # CMake's logic to test for C++11 constructs like unique_ptr is broken. It fails anytime 'warning'
+    # appears on stderr. But, 'warning' can appear on stderr for all sorts of reasons some of which
+    # are totally unrelated to the test. One example is file system clock skew...which was happening
+    # on LANL's Crossroads. I don't see any benefit in confirming these C++11 constructs now that it
+    # is 2024. We just entirely disable these tests by setting these bootstrap flags.
     #
-    apply_cmake_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_cmake == 1 ]] ; then
-            warn "Giving up on CMake build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
+    CMAKE_BOOTSTRAP_FLAGS="-- -DCMake_HAVE_CXX_MAKE_UNIQUE=1 -DCMake_HAVE_CXX_UNIQUE_PTR=1 CMake_HAVE_CXX_UNIQUE_PTR=1"
 
     #
     # Issue "bootstrap", which takes the place of configure for CMake.
+    #
+    # It would be better to use --parallel=n here and doing so on slow machines/filesystems certainly
+    # does help quite a bit. But, CMake says the n in --parallel=n is a "node count". We're not really
+    # sure what they mean by that and so deciding not to include it here yet.
     #
     info "Bootstrapping CMake . . ."
     cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
@@ -427,7 +190,7 @@ function build_cmake
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     else
-        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" ${CMAKE_BOOTSTRAP_FLAGS}
     fi
     if [[ $? != 0 ]] ; then
         warn "Bootstrap for cmake failed, giving up."
