@@ -359,28 +359,20 @@ function initialize_build_visit()
             exit 1
         elif [[ ${VER_MAJOR} == 18 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.14
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         elif [[ ${VER_MAJOR} == 19 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.15
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         elif [[ ${VER_MAJOR} == 20 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=11.0
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         elif [[ ${VER_MAJOR} == 21 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=12.0
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"
             exit 1
         fi
 
-        export C_COMPILER=${C_COMPILER:-"gcc"}
-        export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+        export C_COMPILER=${C_COMPILER:-"clang"}
+        export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
