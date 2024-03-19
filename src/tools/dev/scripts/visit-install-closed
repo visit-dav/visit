@@ -152,7 +152,7 @@ rm -f magma_install
 cat <<EOF > magma_install
 #!/bin/sh
 set -e
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-magma /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on magma"              >> resultlog 2>&1
