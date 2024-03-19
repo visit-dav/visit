@@ -21,7 +21,6 @@
                        "tbb",
                        "ospray",
                        "python",
-                       "vtk",
                        "vtk9",
                        "qt6",
                        "qwt",
