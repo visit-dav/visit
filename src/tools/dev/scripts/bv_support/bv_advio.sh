@@ -76,7 +76,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -90,7 +91,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -104,7 +106,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -118,7 +121,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -132,7 +136,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -146,7 +151,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -160,7 +166,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -174,7 +181,8 @@ function apply_advio_12_darwin_patch
  #include "confdefs.h"
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
@@ -192,7 +200,8 @@ function apply_advio_12_darwin_patch
 -#endif
  #include <stdio.h>
 +#include <stdlib.h>
- main()
+-main()
++int main()
  {
    FILE *f=fopen("conftestval", "w");
    if (!f) exit(1);
