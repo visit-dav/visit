@@ -96,10 +96,8 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-winnipeg=false
-jade=false
-sierra=false
-trinity=false
+magma="false"
+sierra="false"
 
 ver=undefined
 
@@ -111,20 +109,12 @@ ver=undefined
 for abc
 do
    case $1 in
-      -winnipeg)
-         winnipeg=true
-         shift
-         ;;
-      -jade)
-         jade=true
+      -magma)
+         magma="true"
          shift
          ;;
       -sierra)
-         sierra=true
-         shift
-         ;;
-      -trinity)
-         trinity=true
+         sierra="true"
          shift
          ;;
       -v)
@@ -156,71 +146,37 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
-# Install on winnipeg.
+# Install on magma.
 #
-rm -f winnipeg_install
-cat <<EOF > winnipeg_install
-#!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-kickit_opengl /misc/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                          > resultlog 2>&1
-echo "        install of visit on winnipeg"      >> resultlog 2>&1
-echo "       ------------------------------"     >> resultlog 2>&1
-echo ""                                          >> resultlog 2>&1
-df -k /misc/gapps/visit                          >> resultlog 2>&1
-echo ""                                          >> resultlog 2>&1
-ls -l /misc/gapps/visit/$ver+/linux-x86_64/bin   >> resultlog 2>&1
-echo ""                                          >> resultlog 2>&1
-echo "number of database plugins = "\`ls /misc/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /misc/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /misc/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                          >> resultlog 2>&1
-echo "The database plugins:"                     >> resultlog 2>&1
-ls /misc/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/misc\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.winnipeg
-mv resultlog resultlog.winnipeg
-EOF
-
-if [ $winnipeg = true ]
-then
-   if [ $test = no ]
-   then
-      chmod 750 winnipeg_install;./winnipeg_install
-   fi
-fi
-
-#
-# Install on jade.
-#
-rm -f jade_install
-cat <<EOF > jade_install
+rm -f magma_install
+cat <<EOF > magma_install
 #!/bin/sh
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
-echo "        install of visit on jade"              >> resultlog 2>&1
+echo "        install of visit on magma"              >> resultlog 2>&1
 echo "       --------------------------"             >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 df -k /usr/gapps/visit                               >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin  >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin  >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.jade
-mv resultlog resultlog.jade
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.magma
+mv resultlog resultlog.magma
 EOF
 
-if [ $jade = true ]
+if [ "$magma" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
-      chmod 750 jade_install;./jade_install
+      chmod 750 magma_install;./magma_install
    fi
 fi
 
@@ -250,53 +206,18 @@ rm -f resultlog.sierra
 mv resultlog resultlog.sierra
 EOF
 
-if [ $sierra = true ]
+if [ "$sierra" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       chmod 750 sierra_install;./sierra_install
    fi
 fi
 
 #
-# Install on trinity.
-#
-rm -f trinity_install
-cat <<EOF > trinity_install
-#!/bin/sh
-./visit-install -private -c llnl_closed -l $ver linux-x86_64-trinity /usr/projects/views/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                                > resultlog 2>&1
-echo "        install of visit on trinity"             >> resultlog 2>&1
-echo "       -----------------------------"            >> resultlog 2>&1
-echo ""                                                >> resultlog 2>&1
-df -k /usr/projects/views/visit                        >> resultlog 2>&1
-echo ""                                                >> resultlog 2>&1
-ls -l /usr/projects/views/visit/$ver+/linux-x86_64/bin >> resultlog 2>&1
-echo ""                                                >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                                >> resultlog 2>&1
-echo "The database plugins:"                           >> resultlog 2>&1
-ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/projects\/views\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.trinity
-mv resultlog resultlog.trinity
-EOF
-
-if [ $trinity = true ]
-then
-   if [ $test = no ]
-   then
-      cp /tmp/$user/trinity/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-trinity.tar.gz
-      chmod 750 trinity_install;./trinity_install
-   fi
-fi
-
-#
 # Clean up.
 #
-if [ $test = no ]
+if [ "$test" = "no" ]
 then
-   rm -f winnipeg_install jade_install sierra_install trinity_install
+   rm -f magma_install sierra_install
 fi
