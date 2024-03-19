@@ -179,6 +179,10 @@ function build_cmake
     #
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
+    # It would be better to use --parallel=n here and doing so on slow machines/filesystems certainly
+    # does help quite a bit. But, CMake says the n in --parallel=n is a "node count". We're not really
+    # sure what they mean by that and so deciding not to include it here yet.
+    #
     info "Bootstrapping CMake . . ."
     cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
     if [[ "$OPSYS" == "AIX" ]]; then
@@ -186,7 +190,7 @@ function build_cmake
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     else
-        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" --parallel=8 ${CMAKE_BOOTSTRAP_FLAGS}
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" ${CMAKE_BOOTSTRAP_FLAGS}
     fi
     if [[ $? != 0 ]] ; then
         warn "Bootstrap for cmake failed, giving up."
