@@ -199,6 +199,7 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Sodium:STRING=NO"
 
         # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
@@ -206,11 +207,11 @@ function build_adios2
             BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
             # note: lib dir can be `lib``, or `lib64` depending on the platform
             if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.so"
+                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.${SO_EXT}"
             fi
 
             if [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.so"
+                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
             fi
 
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:BOOL=ON"

@@ -519,9 +519,13 @@ function build_silo
     info "Building Silo . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "Silo build failed.  Giving up"
-        return 1
+        $MAKE $MAKE_OPT_FLAGS LIBS=-lstdc++
+        if [[ $? != 0 ]] ; then
+            warn "Silo build failed.  Giving up"
+            return 1
+        fi
     fi
+
     #
     # Install into the VisIt third party location.
     #
