@@ -281,7 +281,7 @@ cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 cp buildlog $result_dir/buildlog.sierra
-cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-sierra.tar.gz
+cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
 rm -f resultlog
 echo "        build of visit on sierra"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
