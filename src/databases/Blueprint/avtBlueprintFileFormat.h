@@ -154,6 +154,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
     avtMaterial           *GetMaterial(int domain, const char *mat_name);
 
+    avtMaterial           *GetSpecies(int domain, const char *spec_name);
+
     const conduit::Node   *GetBlueprintIndexForField(const conduit::Node &fields,
                                                      const std::string &abs_varname) const;
 

@@ -15,6 +15,7 @@
 #include "avtResolutionSelection.h"
 
 #include "avtMaterial.h"
+#include "avtSpecies.h"
 #include "avtMixedVariable.h"
 #include "avtVariableCache.h"
 #include "DBOptionsAttributes.h"
@@ -917,7 +918,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //  Method: avtBlueprintFileFormat::ReadBlueprintSpecset
 //
 //  Purpose:
-//      TODO Reads matset info for the given domain into the `out` conduit Node.
+//      TODO Reads specset info for the given domain into the `out` conduit Node.
 //
 //
 //  Programmer: TODO
@@ -939,22 +940,22 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
     // replace colons, etc
     specset_name_str = sanitize_var_name(specset_name_str);
 
-    // we need to know what mesh name this matset is associated with
-    const Node &mset_info = m_matset_info[specset_name_str];
+    // we need to know what mesh name this specset is associated with
+
+    const Node &specset_info = m_specset_info[specset_name_str];
+    const string matset_name = specset_info["matset_name"].as_string();
+    const Node &mset_info = m_matset_info[matset_name];
     
-    string abs_meshname = mset_info["full_mesh_name"].as_string();
+    const string abs_meshname = mset_info["full_mesh_name"].as_string();
+    BP_PLUGIN_INFO("specset " << specset_name << " is defined on mesh " << abs_meshname);
 
-    BP_PLUGIN_INFO("matset " << specset_name << " is defined on mesh " << abs_meshname);
-
-    string mesh_name = mset_info["mesh_name"].as_string();
-    string topo_name = mset_info["topo_name"].as_string();
-    string matset_name = mset_info["matset_name"].as_string();
-    const Node &n_mat_names = mset_info["matnames"];
+    const string mesh_name = specset_info["mesh_name"].as_string();
+    const string topo_name = specset_info["topo_name"].as_string();
 
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
     BP_PLUGIN_INFO("matset name: " << matset_name);
-    BP_PLUGIN_INFO("matnames: " << n_mat_names.to_yaml());
+    BP_PLUGIN_INFO("specset name: " << specset_name_str);
 
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
@@ -968,117 +969,35 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
                              "matset " << matset_name << " not found in blueprint index");
     }
 
-    const Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["matsets"][matset_name];
-    BP_PLUGIN_INFO(bp_index_matset.to_yaml());
-
-    string topo_tag  = bp_index_matset["topology"].as_string();
-    string data_path = bp_index_matset["path"].as_string();
-
-    // See whether the materials in the index correspond to HO fields.
-    std::vector<std::string> matNames;
-    for(conduit::index_t i = 0; i < n_mat_names.number_of_children(); i++)
-        matNames.push_back(n_mat_names[i].name());
-    std::map<std::string, std::string> matFields;
-    std::string freeMatName;
-    if(DetectHOMaterial(mesh_name, topo_name, matNames, matFields, freeMatName))
+    if (!m_root_node["blueprint_index"][mesh_name]["specsets"].has_child(specset_name_str))
     {
-        const std::string line("=============================================================================");
-        BP_PLUGIN_INFO(line << endl
-                            << " Start Reading HO material " << specset_name_str << endl
-                            << line);
-
-        // See whether a free material needs to be created.
-        bool make_free_mat = !freeMatName.empty();
-        std::vector<float> freevf;
-
-        conduit::Node &vf = out["volume_fractions"];
-        conduit::Node &mn = out["matnames"];
-        int idx = 0;
-        for(auto it = matFields.begin(); it != matFields.end(); it++)
-        {
-            // Make a variable name for the volume fraction field and read it.
-            std::string matVar = mesh_name + "_" + topo_name + "/" + it->second;
-            // If there is a display_name, use that to request the data.
-            const Node &bp_idx_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
-            const Node *bpi = GetBlueprintIndexForField(bp_idx_fields, it->second);
-            if(bpi != nullptr && bpi->has_child(DISPLAY_NAME))
-                matVar = bpi->fetch_existing(DISPLAY_NAME).as_string();
-            vtkDataArray *da = GetVar(domain, matVar.c_str());
-
-            // Save the material field as float into the new out node.
-            conduit::Node &f = vf[it->first];
-            auto nzones = static_cast<vtkIdType>(da->GetNumberOfTuples());
-            f.set(conduit::DataType::float32(nzones));
-            float *fptr = f.as_float32_ptr();
-            for(vtkIdType zi = 0; zi < nzones; ++zi)
-                fptr[zi] = static_cast<float>(da->GetTuple1(zi));
-            da->Delete();
-
-            // If we need to make a free material, do it.
-            if(make_free_mat)
-            {
-                if(freevf.empty())
-                    freevf.resize(static_cast<size_t>(nzones), 1.f);
-                // Now, subtract the current vf from the free mat.
-                for(vtkIdType zi = 0; zi < nzones; ++zi)
-                    freevf[static_cast<size_t>(zi)] -= fptr[zi];
-            }
-
-            // Add the material name to the list.
-            mn[it->first] = idx++;
-        }
-        // Append the free material.
-        if(make_free_mat)
-        {
-            // See whether any zones have sufficient free material.
-            auto it = std::find_if(freevf.begin(), freevf.end(), [](float value)
-            {
-                constexpr float SUFFICIENT_MATERIAL = 1.e-6f;
-                return (1.f - value) > SUFFICIENT_MATERIAL;
-            });
-            if(it != freevf.end())
-            {
-                vf[freeMatName].set(freevf);
-                mn[freeMatName] = idx++;
-            }
-        }
-        out["topology"] = mesh_name;
-
-        // Save the LOD used to make the material. This way we know if we need
-        // to purge it the next time we ask for the mesh.
-        BP_PLUGIN_INFO("Record that material " << specset_name
-                       << " is at LOD " << (m_selected_lod + 1));
-        m_mfem_material_map[topo_name] = std::make_pair(specset_name_str, m_selected_lod + 1);
-
-        BP_PLUGIN_INFO(line << endl
-                            << " Done Reading HO material " << specset_name_str << endl
-                            << line);
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "specset " << specset_name_str << " not found in blueprint index");
     }
-    else
+
+    const Node &bp_index_specset = m_root_node["blueprint_index"][mesh_name]["specsets"][specset_name_str];
+    BP_PLUGIN_INFO(bp_index_specset.to_yaml());
+
+    string data_path = bp_index_specset["path"].as_string();
+
+    try
     {
-        // Non-HO path.
-        try
-        {
-            m_tree_cache->FetchBlueprintTree(domain,
-                                             mesh_name,
-                                             data_path,
-                                             out);
+        m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
+                                         data_path,
+                                         out);
 
-            BP_PLUGIN_INFO("done loading conduit data for " 
-                            << specset_name << " [domain "<< domain << "]" );
-        }
-        catch(InvalidVariableException const&)
-        {
-            BP_PLUGIN_WARNING("failed to load conduit data for "
-                               << specset_name << " [domain "<< domain << "]"
-                               << " -- skipping field for this domain");
-            // if something went wrong, reset the output node to
-            // signal the read failed, and return.
-            out.reset();
-        }
-
-        // provide material_map
-        out["matnames"] = n_mat_names;
+        BP_PLUGIN_INFO("done loading conduit data for " 
+                        << specset_name << " [domain "<< domain << "]" );
+    }
+    catch(InvalidVariableException const&)
+    {
+        BP_PLUGIN_WARNING("failed to load conduit data for "
+                           << specset_name << " [domain "<< domain << "]"
+                           << " -- skipping field for this domain");
+        // if something went wrong, reset the output node to
+        // signal the read failed, and return.
+        out.reset();
     }
 }
 
@@ -2822,6 +2741,12 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
         df = avtMaterial::Destruct;
     }
 
+    if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = static_cast<void *>(GetSpecies(domain, var));
+        df = avtSpecies::Destruct;
+    }
+
     return rv;
 }
 
@@ -2964,6 +2889,131 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         std::ostringstream err_oss;
         err_oss <<  "Conduit Exception in Blueprint Plugin "
                     << "avtBlueprintFileFormat::GetMaterial: " << endl
+                    << e.message();
+        BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
+    }
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::GetSpecies
+//
+//  Purpose:
+//      Gets the auxiliary data from a Blueprint Database.
+//
+//  Arguments:
+//      domain     The domain of interest.
+//      spec_name  The species set of interest.
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Justin Privitera
+//  Creation:   TODO
+//
+//  Modifications:
+//
+// ****************************************************************************
+avtMaterial *
+avtBlueprintFileFormat::GetSpecies(int domain,
+                                   const char *spec_name)
+{
+    try
+    {
+        BP_PLUGIN_INFO("avtBlueprintFileFormat::GetSpecies " 
+                        << domain << " "
+                        << spec_name);
+
+        Node n_matset;
+        ReadBlueprintSpecset(domain,
+                             spec_name,
+                             n_matset);
+
+        std::vector<std::string> matnames = n_matset["matnames"].child_names();
+        // package up char ptrs
+        std::vector<const char *> matnames_ptrs;
+        for (const auto &matname : matnames)
+            matnames_ptrs.push_back(matname.c_str());
+        auto names = const_cast<char **>(matnames_ptrs.data());
+
+        // use to_silo util to convert from bp to the mixslot rep
+        // that silo and visit use
+
+        Node n_silo_matset;
+        conduit::blueprint::mesh::matset::to_silo(n_matset,
+                                                  n_silo_matset);
+
+        int nmats = static_cast<int>(matnames.size());
+        int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
+        int *matlist  = NULL;
+        int *mix_mat  = NULL;
+        int *mix_next = NULL;
+
+        // get the material numbers
+        std::vector<int> matnos;
+        auto matmap_itr = n_silo_matset["material_map"].children();
+        while (matmap_itr.has_next())
+        {
+            const Node &n_mat = matmap_itr.next();
+            matnos.push_back(n_mat.to_int());
+        }
+
+        // we need int ptrs for the avtMaterial object,
+        // convert if needed
+
+        Node n_tmp;
+        if(!n_silo_matset["matlist"].dtype().is_int())
+        {
+            n_silo_matset["matlist"].to_int_array(n_tmp["matlist"]);
+            n_silo_matset["mix_mat"].to_int_array(n_tmp["mix_mat"]);
+            n_silo_matset["mix_next"].to_int_array(n_tmp["mix_next"]);
+            matlist  = n_tmp["matlist"].as_int_ptr();
+            mix_mat  = n_tmp["mix_mat"].as_int_ptr();
+            mix_next = n_tmp["mix_next"].as_int_ptr();
+        }
+        else
+        {
+            matlist  = n_silo_matset["matlist"].as_int_ptr();
+            mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
+            mix_next = n_silo_matset["mix_next"].as_int_ptr();
+        }
+
+        int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
+
+        float *mix_vf = NULL;
+        if(n_silo_matset["mix_vf"].dtype().is_float())
+        {
+            mix_vf = n_silo_matset["mix_vf"].as_float_ptr();
+        }
+        else
+        {
+            n_silo_matset["mix_vf"].to_float_array(n_silo_matset["mix_vf_float"]);
+            mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
+        }
+
+        const std::string domain_name = std::to_string(domain);
+
+        avtMaterial *mat = new avtMaterial(nmats,               // The number of materials
+                                           matnos.data(),       // material numbers
+                                           names,               // material names
+                                           1,                   // number of dimensions
+                                           &nzones,             // pointer to dimensions
+                                           0,                   // major order. row major is 0
+                                           matlist,             // matlist
+                                           mix_len,             // length of mix arrays
+                                           mix_mat,             // mix_mat array
+                                           mix_next,            // mix_next array
+                                           NULL,                // mix_zone array (OPTIONAL)
+                                           mix_vf,              // mix_vf array
+                                           domain_name.c_str(), // domain name
+                                           0);                  // allow mat0
+
+        return mat;
+    }
+    catch (conduit::Error &e)
+    {
+        std::ostringstream err_oss;
+        err_oss <<  "Conduit Exception in Blueprint Plugin "
+                    << "avtBlueprintFileFormat::GetSpecies: " << endl
                     << e.message();
         BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
     }
