@@ -61,7 +61,6 @@ function bv_ospray_check_openmp
 function bv_ospray_depends_on
 {
     if [[ "$DO_VTK9" == "yes" ]]; then
-
         depends_on="cmake"
    else
         depends_on="cmake ispc embree"
@@ -373,9 +372,28 @@ function build_ospray
         #    $MAKE $MAKE_OPT_FLAGS
         ${CMAKE_BIN} --build .
 
-        if [[ $? != 0 ]] ; then
-            warn "OSPRAY build failed. Giving up"
-            return 1
+        #
+        # On Darwin, the build can fail in a cmake -E copy_directory due to
+        # bad symlinks created fron unzipping a data file containing binary
+        # tbb libs. So, we try to fix those and re-run the build a second time.
+        #
+        if [[ $? != 0 ]]; then
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                pushd embree/src/lib 1>/dev/null 2>&1
+                rm -f libtbb.a libtbb.dylib libtbb.12.dylib libtbb.12.5.dylib
+                ln -sf ../../../tbb/src/lib/libtbb.12.10.dylib .
+                ln -sf ../../../tbb/src/lib/libtbb.12.dylib .
+                ln -sf ../../../tbb/src/lib/libtbb.dylib .
+                popd 1>/dev/null 2>&1
+                ${CMAKE_BIN} --build .
+                if [[ $? != 0 ]] ; then
+                    warn "OSPRAY build failed. Giving up"
+                    return 1
+                fi
+            else
+                warn "OSPRAY build failed. Giving up"
+                return 1
+            fi
         fi
 
         #
