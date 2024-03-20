@@ -631,6 +631,7 @@ function build_hdf5
 
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
+        C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
         info "Invoking command to configure $bt HDF5"
         set -x
         sh -c "../configure CC=\"$cf_c_compiler\" \

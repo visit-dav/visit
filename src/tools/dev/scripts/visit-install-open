@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 #-----------------------------------------------------------------------
 #
 # VISIT-INSTALL-OPEN - Install the visit distributions on the open
@@ -151,6 +152,9 @@
 #   Turning on a machine is now done with -<machine_name> instead of
 #   +<machine_name>.
 #
+#   Cyrus Harrison, Mon Mar 11 12:57:17 PDT 2024
+#   I removed rzgenie, replaced with rzwhippet. Removed rzansel.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -194,10 +198,7 @@ esac
 kickit=false
 poodle=false
 lassen=false
-rztrona=false
-rzgenie=false
-rzansel=false
-cooley=false
+rzwhippet=false
 
 ver=undefined
 
@@ -221,20 +222,12 @@ do
          lassen=true
          shift
          ;;
-      -rztrona)
-         rztrona=true
-         shift
-         ;;
-      -rzgenie)
-         rzgenie=true
+      -rzwhippet)
+         rzwhippet=true
          shift
          ;;
       -rzansel)
          rzansel=true
-         shift
-         ;;
-      -cooley)
-         cooley=true
          shift
          ;;
       -v)
@@ -247,11 +240,11 @@ done
 #
 # Check that the version was provided.
 #
-if [ $ver = undefined ]
+if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rztrona rzgenie rzansel cooley"
+   echo "    kickit poodle lassen rzwhippet"
    exit
 fi
 
@@ -273,6 +266,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f kickit_install
 cat <<EOF > kickit_install
 #!/bin/sh
+set -e
 ./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-rhel7 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
@@ -292,9 +286,9 @@ rm -f resultlog.kickit
 mv resultlog resultlog.kickit
 EOF
 
-if [ $kickit = true ]
+if [ "$kickit" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       cp /home/$user/kickit/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel7.tar.gz
       cp /home/$user/kickit/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-rhel7-wmesa.tar.gz
@@ -308,8 +302,8 @@ fi
 rm -f poodle_install
 cat <<EOF > poodle_install
 #!/bin/sh
+set -e
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on poodle"            >> resultlog 2>&1
@@ -317,21 +311,21 @@ echo "       ----------------------------"           >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 df -k /usr/gapps/visit                               >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin  >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin  >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 rm -f resultlog.poodle
 mv resultlog resultlog.poodle
 EOF
 
-if [ $poodle = true ]
+if [ "$poodle" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       cp /usr/tmp/$user/poodle/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-poodle.tar.gz
       chmod 750 poodle_install;./poodle_install
@@ -344,6 +338,7 @@ fi
 rm -f lassen_install
 cat <<EOF > lassen_install
 #!/bin/sh
+set -e
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
@@ -364,9 +359,9 @@ rm -f resultlog.lassen
 mv resultlog resultlog.lassen
 EOF
 
-if [ $lassen = true ]
+if [ "$lassen" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       scp lassen708:/usr/tmp/$user/lassen/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-lassen.tar.gz
       chmod 750 lassen_install;./lassen_install
@@ -374,54 +369,20 @@ then
 fi
 
 #
-# Install on rztrona.
+# Install on rzwhippet
 #
-rm -f rztrona_install
-cat <<EOF > rztrona_install
+rm -f rzwhippet_install
+cat <<EOF > rzwhippet_install
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+set -e
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64-rzwhippet /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on rztrona"          > resultlog 2>&1
+echo "        install of visit on rzwhippet"        > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
 df -k /usr/gapps/visit                              >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-echo "The database plugins:"                        >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.rztrona
-mv resultlog resultlog.rztrona
-mail -s "VisIt install ($ver): rztrona" $emailName < resultlog.rztrona
-EOF
-
-if [ $rztrona = true ]
-then
-   if [ $test = no ]
-   then
-      chmod 750 rztrona_install;./rztrona_install
-   fi
-fi
-
-#
-# Install on rzgenie
-#
-rm -f rzgenie_install
-cat <<EOF > rzgenie_install
-#!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on rzgenie"          > resultlog 2>&1
-echo "       -----------------------------"         >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-df -k /usr/gapps/visit                              >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
 echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
@@ -429,92 +390,23 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.rzgenie
-mv resultlog resultlog.rzgenie
-mail -s "VisIt install ($ver): rzgenie" $emailName < resultlog.rzgenie
+rm -f resultlog.rzwhippet
+mv resultlog resultlog.rzwhippet
+mail -s "VisIt install ($ver): rzwhippet" $emailName < resultlog.rzwhippet
 EOF
 
-if [ $rzgenie = true ]
+if [ "$rzwhippet" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
-      chmod 750 rzgenie_install;./rzgenie_install
-   fi
-fi
-
-#
-# Install on rzansel
-#
-rm -f rzansel_install
-cat <<EOF > rzansel_install
-#!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on rzansel"          > resultlog 2>&1
-echo "       -----------------------------"         >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-df -k /usr/gapps/visit                              >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-intel/bin        >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                             >> resultlog 2>&1
-echo "The database plugins:"                        >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.rzansel
-mv resultlog resultlog.rzansel
-mail -s "VisIt install ($ver): rzansel" $emailName < resultlog.rzansel
-EOF
-
-if [ $rzansel = true ]
-then
-   if [ $test = no ]
-   then
-      chmod 750 rzansel_install;./rzansel_install
-   fi
-fi
-
-#
-# Install on cooley
-#
-rm -f cooley_install
-cat <<EOF > cooley_install
-#!/bin/sh
-./visit-install -private -c anl -l $ver linux-cooley /soft/visualization/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on cooley"               > resultlog 2>&1
-echo "       ----------------------------"              >> resultlog 2>&1
-echo ""                                                 >> resultlog 2>&1
-df -k /soft/visualization/visit                         >> resultlog 2>&1
-echo ""                                                 >> resultlog 2>&1
-ls -l /soft/visualization/visit/$ver+/linux-x86_64/bin  >> resultlog 2>&1
-echo ""                                                 >> resultlog 2>&1
-echo "number of database plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                                 >> resultlog 2>&1
-echo "The database plugins:"                            >> resultlog 2>&1
-ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f resultlog.cooley
-mv resultlog resultlog.cooley
-mail -s "VisIt install ($ver): cooley" $emailName < resultlog.cooley
-EOF
-
-if [ $cooley = true ]
-then
-   if [ $test = no ]
-   then
-      cp /home/ebrugger/cooley/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-cooley.tar.gz
-      chmod 750 cooley_install;./cooley_install
+      chmod 750 rzwhippet_install;./rzwhippet_install
    fi
 fi
 
 #
 # Clean up.
 #
-if [ $test = no ]
+if [ "$test" = "no" ]
 then
-   rm -f kickit_install poodle_install lassen_install rztrona_install rzgenie_install rzansel_install cooley_install
+   rm -f kickit_install poodle_install lassen_install rzwhippet_install
 fi

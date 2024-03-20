@@ -128,7 +128,7 @@ function build_mpich
     fi
 
     set -x
-    issue_command env CXX="$CXX_COMPILER" \
+    issue_command env PATH=`pwd`:${PATH} CXX="$CXX_COMPILER" \
                   CC="$C_COMPILER" \
                   CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
                   CXXFLAGS="$MPICH_CXXFLAGS $MPICH_CXX_OPT_FLAGS"\
@@ -145,7 +145,7 @@ function build_mpich
     # Build MPICH
     #
     info "Building MPICH . . . (~5 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    env PATH=`pwd`:${PATH} $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "MPICH build failed.  Giving up"
         return 1

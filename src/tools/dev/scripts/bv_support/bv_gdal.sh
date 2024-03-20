@@ -168,6 +168,8 @@ function build_gdal
             apply_gdal_linux_x86_64_patch
         fi
     fi
+    
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
