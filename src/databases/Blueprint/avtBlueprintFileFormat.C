@@ -2923,12 +2923,12 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                         << domain << " "
                         << spec_name);
 
-        Node n_matset;
+        Node n_specset;
         ReadBlueprintSpecset(domain,
                              spec_name,
-                             n_matset);
+                             n_specset);
 
-        std::vector<std::string> matnames = n_matset["matnames"].child_names();
+        std::vector<std::string> matnames = n_specset["matnames"].child_names();
         // package up char ptrs
         std::vector<const char *> matnames_ptrs;
         for (const auto &matname : matnames)
@@ -2939,7 +2939,7 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         // that silo and visit use
 
         Node n_silo_matset;
-        conduit::blueprint::mesh::matset::to_silo(n_matset,
+        conduit::blueprint::mesh::matset::to_silo(n_specset,
                                                   n_silo_matset);
 
         int nmats = static_cast<int>(matnames.size());
@@ -3008,6 +3008,18 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                            0);                  // allow mat0
 
         return mat;
+
+        avtSpecies *spec = nullptr;
+        spec = new avtSpecies(/*[ ]*/ silospec->nmat,
+                              /*[ ]*/ silospec->nmatspec,
+                              /*[ ]*/ silospec->ndims,
+                              /*[ ]*/ silospec->dims,
+                              /*[ ]*/ silospec->speclist,
+                              /*[ ]*/ silospec->mixlen,
+                              /*[ ]*/ silospec->mix_speclist,
+                              /*[ ]*/ silospec->nspecies_mf,
+                              /*[ ]*/ species_mf);
+        return spec;
     }
     catch (conduit::Error &e)
     {
