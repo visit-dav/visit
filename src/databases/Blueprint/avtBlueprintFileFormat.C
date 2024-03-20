@@ -1519,6 +1519,10 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         m_specset_info[mesh_specset_name]["topo_name"] = topo_name;
         m_specset_info[mesh_specset_name]["matset_name"] = matset_name;
         m_specset_info[mesh_specset_name]["specset_name"] = specset_name;
+
+        m_specset_info[mesh_specset_name]["nmat"] = nmat;
+        m_specset_info[mesh_specset_name]["nmatspec"].set(numSpecies.data(), numSpecies.size());
+
         
         BP_PLUGIN_INFO("Specset Info for "
                        << mesh_specset_name
@@ -2928,97 +2932,78 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                              spec_name,
                              n_specset);
 
-        std::vector<std::string> matnames = n_specset["matnames"].child_names();
-        // package up char ptrs
-        std::vector<const char *> matnames_ptrs;
-        for (const auto &matname : matnames)
-            matnames_ptrs.push_back(matname.c_str());
-        auto names = const_cast<char **>(matnames_ptrs.data());
+        // std::vector<std::string> matnames = n_specset["matnames"].child_names();
+        // // package up char ptrs
+        // std::vector<const char *> matnames_ptrs;
+        // for (const auto &matname : matnames)
+        //     matnames_ptrs.push_back(matname.c_str());
+        // auto names = const_cast<char **>(matnames_ptrs.data());
 
-        // use to_silo util to convert from bp to the mixslot rep
-        // that silo and visit use
+        // // use to_silo util to convert from bp to the mixslot rep
+        // // that silo and visit use
 
-        Node n_silo_matset;
-        conduit::blueprint::mesh::matset::to_silo(n_specset,
-                                                  n_silo_matset);
+        // Node n_silo_matset;
+        // conduit::blueprint::mesh::matset::to_silo(n_specset,
+        //                                           n_silo_matset);
 
-        int nmats = static_cast<int>(matnames.size());
-        int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
-        int *matlist  = NULL;
-        int *mix_mat  = NULL;
-        int *mix_next = NULL;
+        // int nmats = static_cast<int>(matnames.size());
+        // int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
+        // int *matlist  = NULL;
+        // int *mix_mat  = NULL;
+        // int *mix_next = NULL;
 
-        // get the material numbers
-        std::vector<int> matnos;
-        auto matmap_itr = n_silo_matset["material_map"].children();
-        while (matmap_itr.has_next())
-        {
-            const Node &n_mat = matmap_itr.next();
-            matnos.push_back(n_mat.to_int());
-        }
+        // // get the material numbers
+        // std::vector<int> matnos;
+        // auto matmap_itr = n_silo_matset["material_map"].children();
+        // while (matmap_itr.has_next())
+        // {
+        //     const Node &n_mat = matmap_itr.next();
+        //     matnos.push_back(n_mat.to_int());
+        // }
 
-        // we need int ptrs for the avtMaterial object,
-        // convert if needed
+        // // we need int ptrs for the avtMaterial object,
+        // // convert if needed
 
-        Node n_tmp;
-        if(!n_silo_matset["matlist"].dtype().is_int())
-        {
-            n_silo_matset["matlist"].to_int_array(n_tmp["matlist"]);
-            n_silo_matset["mix_mat"].to_int_array(n_tmp["mix_mat"]);
-            n_silo_matset["mix_next"].to_int_array(n_tmp["mix_next"]);
-            matlist  = n_tmp["matlist"].as_int_ptr();
-            mix_mat  = n_tmp["mix_mat"].as_int_ptr();
-            mix_next = n_tmp["mix_next"].as_int_ptr();
-        }
-        else
-        {
-            matlist  = n_silo_matset["matlist"].as_int_ptr();
-            mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
-            mix_next = n_silo_matset["mix_next"].as_int_ptr();
-        }
+        // Node n_tmp;
+        // if(!n_silo_matset["matlist"].dtype().is_int())
+        // {
+        //     n_silo_matset["matlist"].to_int_array(n_tmp["matlist"]);
+        //     n_silo_matset["mix_mat"].to_int_array(n_tmp["mix_mat"]);
+        //     n_silo_matset["mix_next"].to_int_array(n_tmp["mix_next"]);
+        //     matlist  = n_tmp["matlist"].as_int_ptr();
+        //     mix_mat  = n_tmp["mix_mat"].as_int_ptr();
+        //     mix_next = n_tmp["mix_next"].as_int_ptr();
+        // }
+        // else
+        // {
+        //     matlist  = n_silo_matset["matlist"].as_int_ptr();
+        //     mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
+        //     mix_next = n_silo_matset["mix_next"].as_int_ptr();
+        // }
 
-        int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
+        // int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
 
-        float *mix_vf = NULL;
-        if(n_silo_matset["mix_vf"].dtype().is_float())
-        {
-            mix_vf = n_silo_matset["mix_vf"].as_float_ptr();
-        }
-        else
-        {
-            n_silo_matset["mix_vf"].to_float_array(n_silo_matset["mix_vf_float"]);
-            mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
-        }
-
-        const std::string domain_name = std::to_string(domain);
-
-        avtMaterial *mat = new avtMaterial(nmats,               // The number of materials
-                                           matnos.data(),       // material numbers
-                                           names,               // material names
-                                           1,                   // number of dimensions
-                                           &nzones,             // pointer to dimensions
-                                           0,                   // major order. row major is 0
-                                           matlist,             // matlist
-                                           mix_len,             // length of mix arrays
-                                           mix_mat,             // mix_mat array
-                                           mix_next,            // mix_next array
-                                           NULL,                // mix_zone array (OPTIONAL)
-                                           mix_vf,              // mix_vf array
-                                           domain_name.c_str(), // domain name
-                                           0);                  // allow mat0
-
-        return mat;
+        // float *mix_vf = NULL;
+        // if(n_silo_matset["mix_vf"].dtype().is_float())
+        // {
+        //     mix_vf = n_silo_matset["mix_vf"].as_float_ptr();
+        // }
+        // else
+        // {
+        //     n_silo_matset["mix_vf"].to_float_array(n_silo_matset["mix_vf_float"]);
+        //     mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
+        // }
 
         avtSpecies *spec = nullptr;
-        spec = new avtSpecies(/*[ ]*/ silospec->nmat,
-                              /*[ ]*/ silospec->nmatspec,
-                              /*[ ]*/ silospec->ndims,
-                              /*[ ]*/ silospec->dims,
-                              /*[ ]*/ silospec->speclist,
-                              /*[ ]*/ silospec->mixlen,
-                              /*[ ]*/ silospec->mix_speclist,
-                              /*[ ]*/ silospec->nspecies_mf,
-                              /*[ ]*/ species_mf);
+        spec = new avtSpecies(/*[ ]*/ nmat, // number of materials
+                              /*[ ]*/ nmatspec, // number of species associated with each material
+                              /*[ ]*/ ndims, // number of dimensions in the speclist array
+                              /*[ ]*/ dims, // array of length ndims that defines the shape of the speclist array
+                              /*[ ]*/ speclist, // indices into species_mf and mix_spec
+                              /*[ ]*/ mixlen, // length of mix_spec array
+                              /*[ ]*/ mix_speclist, // array of length mixlen containing indices into the species_mf array
+                              /*[ ]*/ nspecies_mf, // length of the species_mf array
+                              /*[ ]*/ species_mf); // mass fractions of the matspecies in an array of length nspecies_mf
         return spec;
     }
     catch (conduit::Error &e)
