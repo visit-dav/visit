@@ -90,9 +90,11 @@ set -e
 #
 #-----------------------------------------------------------------------
 
-test=no
+test="no"
 
 user=`whoami`
+
+result_dir=/usr/workspace/visit/visit/_release_builds/
 
 #
 # Parse the execute line, providing default values for error checking.
@@ -100,7 +102,7 @@ user=`whoami`
 magma="false"
 sierra="false"
 
-ver=undefined
+ver="undefined"
 
 #
 # The loop is executed once for each symbol on the execute line.  This means
@@ -177,6 +179,7 @@ if [ "$magma" = "true" ]
 then
    if [ "$test" = "no" ]
    then
+      cp $result_dir/visit$ver2.linux-x86_64-magma.tar.gz .
       chmod 750 magma_install;./magma_install
    fi
 fi
@@ -212,6 +215,7 @@ if [ "$sierra" = "true" ]
 then
    if [ "$test" = "no" ]
    then
+      cp $result_dir/visit$ver2.linux-x86_64-sierra.tar.gz .
       chmod 750 sierra_install;./sierra_install
    fi
 fi
