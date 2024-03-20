@@ -277,7 +277,7 @@ echo "Version: \$ver"
 export CONFIG_SITE=\`readlink -f $dist/src/config-site/sierra4358.cmake\`
 echo "CONFIG_SITE=\${CONFIG_SITE}"
 # skip manuals, old openssl on lassen undermines us
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> buildlog 2>&1
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 cp buildlog $result_dir/buildlog.sierra
