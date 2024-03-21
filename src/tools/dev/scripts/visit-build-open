@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 #-----------------------------------------------------------------------
 #
 # VISIT-BUILD-OPEN - Build the visit distributions on the open network.
@@ -214,11 +215,16 @@
 #   since all the machines are now off by default. Turning on a machine
 #   is now done with -<machine_name> instead of +<machine_name>.
 #
+#   Cyrus Harrison, Mon Mar 11 12:57:17 PDT 2024
+#   I removed rzgenie, replaced with rzwhippet. Removed cooley.
+#
 #-----------------------------------------------------------------------
 
 test=no
 
 user=`whoami`
+result_dir=/usr/workspace/visit/visit/_release_builds/
+
 
 #
 # Set the user e-mail address.
@@ -257,8 +263,7 @@ esac
 kickit=false
 poodle=false
 lassen=false
-rzgenie=false
-cooley=false
+rzwhippet=false
 
 dist=undefined
 
@@ -282,12 +287,8 @@ do
          lassen=true
          shift
          ;;
-      -rzgenie)
-         rzgenie=true
-         shift
-         ;;
-      -cooley)
-         cooley=true
+      -rzwhippet)
+         rzwhippet=true
          shift
          ;;
       -d)
@@ -300,11 +301,11 @@ done
 #
 # Check that the distribution name was provided.
 #
-if [ $dist = undefined ]
+if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rzgenie cooley"
+   echo "    kickit poodle lassen rzwhippet"
    exit
 fi
 
@@ -319,11 +320,19 @@ then
 fi
 
 #
+# make sure landing place for results exist
+#
+if test ! -d $result_dir ; then
+   mkdir -p $result_dir
+fi
+
+#
 # Build on kickit.
 #
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
+set -e
 export PATH=/usr/gapps/gcc/gcc-9.1/bin:\$PATH
 export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64
 if test ! -e /home/$user/kickit ; then
@@ -380,9 +389,9 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $kickit = true ]
+if [ "$kickit" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       echo "Building on kickit"
       cp kickit ~/kickit_buildit
@@ -397,51 +406,51 @@ fi
 rm -f poodle
 cat <<EOF > poodle
 #!/bin/sh
+set -e
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
+PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 if test ! -d /usr/tmp/$user/poodle ; then
-   mkdir /usr/tmp/$user/poodle
+   mkdir -p /usr/tmp/$user/poodle
 fi
 rm -rf /usr/tmp/$user/poodle/visitbuild
 mkdir /usr/tmp/$user/poodle/visitbuild
-mv poodle_$dist.tar.gz /usr/tmp/$user/poodle/visitbuild/$dist.tar.gz
+cp poodle_$dist.tar.gz /usr/tmp/$user/poodle/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/poodle/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-mkdir ../build
-cd ../build
-/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 24 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/poodle18.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.poodle
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
 rm -f resultlog
 echo "        build of visit on poodle"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $poodle = true ]
+if [ "$poodle" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       echo "Building on poodle"
-      scp poodle poodle:poodle_buildit
-      scp $dist.tar.gz poodle:poodle_$dist.tar.gz
-      ssh poodle18 "chmod 750 poodle_buildit;./poodle_buildit" &
+      cp poodle poodle_buildit
+      cp $dist.tar.gz poodle_$dist.tar.gz
+      chmod 750 poodle_buildit
+      ./poodle_buildit
    fi
 fi
 
@@ -451,153 +460,108 @@ fi
 rm -f lassen
 cat <<EOF > lassen
 #!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
+set -e
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
 if test ! -d /usr/tmp/$user/lassen ; then
-   mkdir /usr/tmp/$user/lassen
+   mkdir -p /usr/tmp/$user/lassen
 fi
 rm -rf /usr/tmp/$user/lassen/visitbuild
 mkdir /usr/tmp/$user/lassen/visitbuild
 mv lassen_$dist.tar.gz /usr/tmp/$user/lassen/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/lassen/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-mkdir ../build
-cd ../build
-/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.0/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-intel.tar.gz ../..
-cd ../..
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/lassen708.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+# skip manuals, old openssl on lassen undermines us
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+# cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.lassen
+cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
 rm -f resultlog
 echo "        build of visit on lassen"       > resultlog 2>&1
 echo "       -------------------------- "     >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.lassen
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.lassen
+mail  -s "VisIt build ($dist): lassen" $emailName < resultlog
 EOF
 
-if [ $lassen = true ]
+if [ "$lassen" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
       echo "Building on lassen"
-      scp lassen lassen708:lassen_buildit
-      scp $dist.tar.gz lassen708:lassen_$dist.tar.gz
-      ssh lassen708 "chmod 750 lassen_buildit;./lassen_buildit" &
+      cp lassen lassen_buildit
+      cp $dist.tar.gz lassen_$dist.tar.gz
+      chmod 750 lassen_buildit
+      ./lassen_buildit
    fi
 fi
 
 #
-# Build on rzgenie.
+# Build on rzwhippet.
 #
-rm -f rzgenie
-cat <<EOF > rzgenie
+rm -f rzwhippet
+cat <<EOF > rzwhippet
 #!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
+set -e
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+if test ! -d /usr/tmp/$user/rzwhippet ; then
+   mkdir -p /usr/tmp/$user/rzwhippet
 fi
-if test ! -d /usr/tmp/$user/rzgenie ; then
-   mkdir /usr/tmp/$user/rzgenie
-fi
-rm -rf /usr/tmp/$user/rzgenie/visitbuild
-mkdir /usr/tmp/$user/rzgenie/visitbuild
-mv rzgenie_$dist.tar.gz /usr/tmp/$user/rzgenie/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzgenie/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
+rm -rf /usr/tmp/$user/rzwhippet/visitbuild
+mkdir /usr/tmp/$user/rzwhippet/visitbuild
+mv rzwhippet_$dist.tar.gz /usr/tmp/$user/rzwhippet/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzwhippet/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-export PATH=\$PATH:/usr/bin/X11
-mkdir ../build
-cd ../build
-/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss3/cmake/3.24.3/linux-x86_64_gcc-8.3/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 12 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/rzwhippet17.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.rzwhippet
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
 rm -f resultlog
-echo "        build of visit on rzgenie"      > resultlog 2>&1
+echo "        build of visit on rzwhippet"    > resultlog 2>&1
 echo "       ---------------------------"     >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): rzgenie" $emailName < resultlog
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.rzwhippet
+mail  -s "VisIt build ($dist): rzwhippet" $emailName < resultlog
 EOF
 
-if [ $rzgenie = true ]
+if [ "$rzwhippet" = "true" ]
 then
-   if [ $test = no ]
+   if [ "$test" = "no" ]
    then
-      echo "Building on rzgenie"
-      scp rzgenie rzgenie:rzgenie_buildit
-      scp $dist.tar.gz rzgenie:rzgenie_$dist.tar.gz
-      ssh rzgenie5 "chmod 750 rzgenie_buildit;./rzgenie_buildit" &
-   fi
-fi
-
-#
-# Build on cooley
-#
-rm -f cooley
-cat <<EOF > cooley
-#!/bin/sh
-if test ! -d /home/ebrugger/cooley; then
-   mkdir /home/ebrugger/cooley
-fi
-rm -rf /home/ebrugger/cooley/visitbuild
-mkdir /home/ebrugger/cooley/visitbuild
-mv cooley_$dist.tar.gz /home/ebrugger/cooley/visitbuild/$dist.tar.gz
-cd /home/ebrugger/cooley/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-mkdir ../build
-cd ../build
-/home/ebrugger/buildvisit/third_party/cmake/3.24.3/linux-rhel_7-x86_64_gcc-4.8/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on cooley"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): cooley" $emailName < resultlog
-EOF
-
-if [ $cooley = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on cooley"
-      cp cooley cooley_buildit
-      cp $dist.tar.gz cooley_$dist.tar.gz
-      chmod 750 cooley_buildit;./cooley_buildit &
+      echo "Building on rzwhippet"
+      cp rzwhippet rzwhippet_buildit
+      cp $dist.tar.gz rzwhippet_$dist.tar.gz
+      chmod 750 rzwhippet_buildit
+      ./rzwhippet_buildit
    fi
 fi
 
@@ -605,7 +569,7 @@ fi
 #
 # Clean up.
 #
-if [ $test = no ]
+if [ "$test" = "no" ]
 then
-   rm -f kickit poodle lassen rzgenie cooley
+   rm -f kickit poodle lassen rzwhippet
 fi

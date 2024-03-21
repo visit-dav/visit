@@ -608,29 +608,15 @@ void avtXdmfFileFormat::GetDims(int exts[6], int dims[3])
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications
+//    Mark C. Miller, Fri Mar  8 22:57:05 PST 2024
+//    Replace space-backslash-escaping logic with expression systems escape
+//    bracketing. Did space-escaping ever work?
 // ****************************************************************************
 
 std::string avtXdmfFileFormat::GetFormattedExpressionName(std::string & attributeName)
 {
-    std::stringstream formatted;
-
-    // Deal with whitespace
-    std::stringstream stream(attributeName);
-    std::istream_iterator<std::string> it(stream);
-    std::istream_iterator<std::string> end;
-    std::vector<std::string> tokens(it, end);
-
-    std::vector<std::string>::const_iterator iter = tokens.begin();
-    if (iter != tokens.end()) {
-        formatted << *iter;
-        iter++;
-    }
-
-    for (; iter != tokens.end(); ++iter) {
-        formatted << "\\ " << *iter;
-    }
-
-    return formatted.str();
+    return "<" + attributeName + ">";
 }
 
 // ****************************************************************************
