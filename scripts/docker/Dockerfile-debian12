@@ -92,10 +92,10 @@ WORKDIR /home/visit
 RUN mkdir /home/visit/third-party
 # Copy build_visit and the script to run it
 COPY --chown=visit:visit build_visit3_4_1 /home/visit
-COPY --chown=visit:visit run_build_visit.sh /home/visit
+COPY --chown=visit:visit run_build_visit-debian12.sh /home/visit
 COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
 # Build the third party libraries
-RUN /bin/bash run_build_visit.sh
+RUN /bin/bash run_build_visit-debian12.sh
 
 # Copy necesary files build visit install and test
 COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
