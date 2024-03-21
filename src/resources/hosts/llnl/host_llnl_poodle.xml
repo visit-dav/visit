@@ -42,7 +42,7 @@
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
-        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="arguments" type="stringVector">--exclusive</Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">

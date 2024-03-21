@@ -5,12 +5,13 @@
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">"rzansel#.llnl.gov rzansel##.llnl.gov rzansel# rzansel##"</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
-    <Field name="tunnelSSH" type="bool">true</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
     <Field name="sshCommandSpecified" type="bool">false</Field>
     <Field name="sshCommand" type="stringVector">"ssh" </Field>
+    <Field name="useGateway" type="bool">false</Field>
+    <Field name="gatewayHost" type="string"></Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Field name="manualClientHostName" type="string"></Field>
     <Field name="tunnelSSH" type="bool">true</Field>
