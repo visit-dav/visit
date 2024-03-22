@@ -2719,11 +2719,11 @@ function build_vtk
 
     # Some linker flags.
     lf=""
-    if test "${OPSYS}" = "Darwin" ; then
-        lf="-Wl,-headerpad_max_install_names"
-        lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
-        lf="${lf},-current_version,${VTK_VERSION}"
-    fi
+#    if test "${OPSYS}" = "Darwin" ; then
+#        lf="-Wl,-headerpad_max_install_names"
+#        lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
+#        lf="${lf},-current_version,${VTK_VERSION}"
+#    fi
 
     # Add some extra arguments to the VTK cmake command line via the
     # VTK_EXTRA_OPTIONS environment variable.

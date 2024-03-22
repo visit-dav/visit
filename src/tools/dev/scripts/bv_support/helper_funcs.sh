@@ -607,20 +607,32 @@ function download_file
 #   Specify explicit path to system curl so that we do not use another
 #   version without SSL support
 #
+#   Mark C. Miller, Thu Mar 21 10:39:14 PDT 2024
+#   Prevent interruptions to downloads with trap
 # ***************************************************************************
 
 function try_download_file
 {
+    no_download_tool=0
+
+    trap '' SIGINT SIGTERM SIGHUP SIGQUIT
+
     if [[ "$OPSYS" == "Darwin" ]]; then
         # MaxOS X comes with curl
         /usr/bin/curl -ksfLO $1
     else
         check_wget
         if [[ $? != 0 ]] ; then
-            error "Need to download $1, but \
-                   cannot locate the wget utility to do so."
+            no_download_tool=1
         fi
         wget $WGET_OPTS -o /dev/null $1
+    fi
+
+    trap - SIGINT SIGTERM SIGHUP SIGQUIT
+
+    if [[ ${no_download_tool} -ne 0 ]]; then
+        error "Need to download $1, but \
+               cannot locate a download utility to do so."
     fi
 
     verify_checksum_by_lookup `basename $1`
