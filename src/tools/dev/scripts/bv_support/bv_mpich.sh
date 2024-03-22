@@ -174,7 +174,7 @@ function build_mpich
     #
     mpich_opts="--enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single CPPFLAGS=-DMPICH_MPI_FROM_PMPI"
+        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
     fi
 
     #
