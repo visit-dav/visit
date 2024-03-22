@@ -105,7 +105,7 @@ function apply_mpich_331_libtool_darwin_patch
           _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
        esac
      ;;
-EOF 
+EOF
 
     if [[ $? != 0 ]] ; then
         warn "mpich 3.3.1 patch for confdb/libtool.m4 failed."
@@ -122,7 +122,6 @@ function apply_mpich_patch
             return 1
         fi
     fi
-    
 }
 
 # *************************************************************************** #
@@ -170,9 +169,11 @@ function build_mpich
     info "Invoking command to configure MPICH"
 
     #
-    # Turn on shared version of the libs
+    # Turning off maintainer mode avoids need for any local autotools tools.
+    # We should not ever need them because we are not developing mpich.
+    # I guess we need shared libs.
     #
-    mpich_opts="--enable-shared"
+    mpich_opts="--disable-maintainer-mode --enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
         mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
     fi
