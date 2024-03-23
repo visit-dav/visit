@@ -608,7 +608,8 @@ function download_file
 #   version without SSL support
 #
 #   Mark C. Miller, Thu Mar 21 10:39:14 PDT 2024
-#   Prevent interruptions to downloads with trap
+#   Use trap to prevent interruptions to downloads which can leave
+#   corrupted tarballs.
 # ***************************************************************************
 
 function try_download_file
@@ -624,8 +625,9 @@ function try_download_file
         check_wget
         if [[ $? != 0 ]] ; then
             no_download_tool=1
+        else
+            wget $WGET_OPTS -o /dev/null $1
         fi
-        wget $WGET_OPTS -o /dev/null $1
     fi
 
     trap - SIGINT SIGTERM SIGHUP SIGQUIT
