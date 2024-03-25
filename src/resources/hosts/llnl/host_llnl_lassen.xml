@@ -67,7 +67,7 @@
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">pdebug</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">guests</Field>
+        <Field name="bank" type="string">wbronze</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">30</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
@@ -107,7 +107,7 @@
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">pbatch</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">guests</Field>
+        <Field name="bank" type="string">wbronze</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">30</Field>
         <Field name="launchMethodSet" type="bool">true</Field>

@@ -28,7 +28,7 @@
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel interactive pdebug</Field>
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">32</Field>
+        <Field name="numProcessors" type="int">56</Field>
         <Field name="numNodesSet" type="bool">false</Field>
         <Field name="numNodes" type="int">0</Field>
         <Field name="partitionSet" type="bool">true</Field>
@@ -42,7 +42,9 @@
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
-        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">--exclusive</Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
