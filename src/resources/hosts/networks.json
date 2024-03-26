@@ -165,16 +165,13 @@
           "name": "host_llnl_ruby.xml"
         },
         {
-          "name": "host_llnl_rzalastor.xml"
-        },
-        {
           "name": "host_llnl_rzansel.xml"
         },
         {
           "name": "host_llnl_rzgenie.xml"
         },
         {
-          "name": "host_llnl_rzhasgpu.xml"
+          "name": "host_llnl_rzhound.xml"
         },
         {
           "name": "host_llnl_rztopaz.xml"
@@ -203,13 +200,13 @@
       "network": "llnl_closed",
       "files": [
         {
-          "name": "host_lanl_closed_trinity.xml"
-        },
-        {
           "name": "host_llnl_closed_agate.xml"
         },
         {
           "name": "host_llnl_closed_bengal.xml"
+        },
+        {
+          "name": "host_llnl_closed_cslic.xml"
         },
         {
           "name": "host_llnl_closed_jade.xml"
@@ -235,16 +232,13 @@
       "network": "llnl_rz",
       "files": [
         {
-          "name": "host_llnl_rzalastor.xml"
-        },
-        {
           "name": "host_llnl_rzansel.xml"
         },
         {
           "name": "host_llnl_rzgenie.xml"
         },
         {
-          "name": "host_llnl_rzhasgpu.xml"
+          "name": "host_llnl_rzhound.xml"
         },
         {
           "name": "host_llnl_rztopaz.xml"
