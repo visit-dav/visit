@@ -87,6 +87,10 @@ set -e
 #   I removed the "-none" option since all the machines are now off by
 #   default. Turning on a machine is now done with -<machine_name>
 #   instead of +<machine_name>.
+# 
+#   Justin Privitera, Tue Mar 26 13:07:18 PDT 2024
+#   Removed winnipeg, jade, trinity
+#   Added magma and updated sierra.
 #
 #-----------------------------------------------------------------------
 
