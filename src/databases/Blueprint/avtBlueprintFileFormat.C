@@ -154,6 +154,7 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_selected_lod(0),
       m_mesh_and_topo_info(),
       m_matset_info(),
+      m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
       m_new_refine(true)
@@ -1951,6 +1952,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
     m_mesh_and_topo_info.reset();
     // clear full matset to info map
     m_matset_info.reset();
+    m_specset_info.reset();
 
     try
     {
@@ -2962,6 +2964,8 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                              spec_name,
                              n_specset);
 
+        const std::string matset_name = m_specset_info[mesh_specset_name]["matset_name"].as_string();
+
         const int nmat = m_specset_info[spec_name]["nmat"].value();
         const int_accessor nmatspec = m_specset_info[spec_name]["nmatspec"].value();
 
@@ -3001,27 +3005,50 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         // to avoid writing unneeded data
         // that could be expensive though
 
-        // TODO JUSTIN LEFT OFF HERE
+        // TODO make sure I am handling m_specset_info everywhere I am handling m_matset_info
+
+
+        // check that specset matches matset
+        auto matset_vals_itr = n_specset_compact["matset_values"].children();
+        const std::vector<string> matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
+        if (n_specset_compact["matset_values"].number_of_children() == static_cast<int>(matnames.size()) &&
+            static_cast<int>(matnames.size()) == nmat)
+        {
+            int index = 0;
+            while (matset_vals_itr.has_next() && index < nmat)
+            {
+                matset_vals_itr.next();
+                const std::string mat_name = matset_vals_itr.name();
+                if (mat_name != matnames[index])
+                {
+                    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                         "specset " << specset_name_str << " has materials in a "
+                                         "different order than its associated matset: " << matset_name);
+                }
+                index ++;
+            }
+        }
+        else
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "specset " << specset_name_str << " does not have the same number "
+                                 "of materials as its associated matset: " << matset_name);
+        }
 
         // get the datatype of the species_mf
         const int datatype = DB_DOUBLE; // make sure these data types match
         std::vector<float64> species_mf;
-        std::vector<std::string> specnames;
         // need to iterate across all species for all materials at once
         for (int i = 0; i < nzones; i ++)
         {
-            auto matset_vals_itr = n_specset_compact["matset_values"].children();
-            // TODO pray that these materials are in the same order as in the matset?
+            matset_vals_itr.to_front();
             while (matset_vals_itr.has_next())
             {
                 const Node &individual_mat_spec = matset_vals_itr.next();
-                // const std::string mat_name = matset_vals_itr.name();
                 auto spec_itr = individual_mat_spec.children();
                 while (spec_itr.has_next())
                 {
                     const Node &spec = spec_itr.next();
-                    const std::string spec_name = spec_itr.name();
-                    specnames.push_back(spec_name);
                     float64_accessor species_mass_fractions = spec.value();
                     species_mf.push_back(species_mass_fractions[i]);
                 }
@@ -3090,8 +3117,7 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                                     decltype(nmatspec_vec)::value_type(1));
 
             // we save the final index for this zone
-            const int final_index = outer_index + local_index;
-            return final_index;
+            return outer_index + local_index;
 
             // TODO return a zero here if the material in the zone contains only 1 species.
             // This is a further optimization. It doesn't matter for now since we are
@@ -3154,13 +3180,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
 
         // get the length of the mixed data arrays
         const int mixlen = static_cast<int>(mix_spec.size());
-
-        // package up char ptrs for silo
-        std::vector<const char *> specname_ptrs;
-        for (size_t i = 0; i < specnames.size(); i ++)
-        {
-            specname_ptrs.push_back(specnames[i].c_str());
-        }
 
         //////////////////////////
 
@@ -3231,11 +3250,11 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                               /*[x]*/ nmatspec, // number of species associated with each material
                               /*[ ]*/ ndims, // number of dimensions in the speclist array
                               /*[ ]*/ dims, // array of length ndims that defines the shape of the speclist array
-                              /*[ ]*/ speclist, // indices into species_mf and mix_spec
-                              /*[ ]*/ mixlen, // length of mix_spec array
-                              /*[ ]*/ mix_speclist, // array of length mixlen containing indices into the species_mf array
-                              /*[ ]*/ nspecies_mf, // length of the species_mf array
-                              /*[ ]*/ species_mf); // mass fractions of the matspecies in an array of length nspecies_mf
+                              /*[x]*/ speclist, // indices into species_mf and mix_spec
+                              /*[x]*/ mixlen, // length of mix_spec array
+                              /*[x]*/ mix_spec, // array of length mixlen containing indices into the species_mf array
+                              /*[x]*/ nspecies_mf, // length of the species_mf array
+                              /*[x]*/ species_mf); // mass fractions of the matspecies in an array of length nspecies_mf
         return spec;
     }
     catch (conduit::Error &e)
