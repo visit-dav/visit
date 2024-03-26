@@ -196,6 +196,7 @@ AddPlot("Vector", "free_normals", 1, 1)
 AddPlot("Vector", "normals2d", 1, 1)
 
 DrawPlots()
+ResetView()
 SaveWindowAtts = SaveWindowAttributes()
 SaveWindowAtts.width = 1024
 SaveWindowAtts.height = 1024

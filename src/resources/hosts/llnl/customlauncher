@@ -19,6 +19,9 @@
 #   Eric Brugger, Thu Mar 29 08:32:40 PDT 2018
 #   I modified the script to set ttc when running on rztrona.
 #
+#   Cyrus Harrison, Tue Mar 19 13:02:27 PDT 2024
+#   Use basic linux platform for toss4, instead of it being special
+#
 ###############################################################################
 
 class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
@@ -304,16 +307,6 @@ class LLNLLauncher(MainLauncher):
 
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
-
-        #
-        # Set the visitarch to linux-x86_64-toss4 if the kernel version
-        # starts with "4" and processor type is "x86_64".
-        #
-        kernel = subprocess.run(['uname', '-r'], stdout=subprocess.PIPE)
-        proc = subprocess.run(['uname', '-p'], stdout=subprocess.PIPE)
-        if proc.stdout.decode('utf-8')[:6] == "x86_64" and \
-           kernel.stdout.decode('utf-8')[:1] == "4":
-            self.visitarch = "linux-x86_64-toss4"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can

@@ -1,8 +1,7 @@
-FROM ubuntu:bionic
+FROM debian:bookworm
 MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
 
 # fetch build env
-ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Los_Angeles
 RUN apt-get update && apt-get install -y \
     git \
@@ -13,58 +12,56 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     gfortran \
-    libssl-dev \
-    python \
+    zlib1g-dev \
     python3 \
+    libsm-dev \
+    libice-dev \
+    fontconfig \
+    libfreetype6 \
     libxrender1 \
-    libxrender-dev \
-    libxcb1 \
-    libxcb1-dev \
-    libxcb-cursor0 \
-    libxcb-cursor-dev \
     libxcb-render0 \
     libxcb-render-util0 \
     libxcb-shape0 \
-    libxcb-shape0-dev \
     libxcb-randr0 \
-    libxcb-randr0-dev \
-    libxcb-xfixes0-dev \
+    libxcb-xfixes0 \
     libxcb-xkb1 \
-    libxcb-xkb-dev \
     libxcb-sync1 \
-    libxcb-sync-dev \
     libxcb-shm0 \
-    libxcb-shm0-dev \
     libxcb-icccm4 \
-    libxcb-icccm4-dev \
     libxcb-keysyms1 \
-    libxcb-keysyms1-dev \
     libxcb-image0 \
-    libxcb-image0-dev \
     libxcb-util1 \
+    libxcb-cursor0 \
+    libxkbcommon0 \
+    libxkbcommon-x11-0 \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libx11-dev \
+    libx11-xcb-dev \
+    libxext-dev \
+    libxfixes-dev \
+    libxi-dev \
+    libxrender-dev \
+    libxcb-cursor-dev \
+    libxcb-glx0-dev \
+    libxcb-keysyms1-dev \
+    libxcb-image0-dev \
+    libxcb-shm0-dev \
+    libxcb-icccm4-dev \
+    libxcb-sync-dev \
+    libxcb-xfixes0-dev \
+    libxcb-shape0-dev \
+    libxcb-randr0-dev \
+    libxcb-render-util0-dev \
     libxcb-util-dev \
     libxcb-xinerama0-dev \
-    libxcb-glx0-dev \
-    libxcb-dri2-0-dev \
-    libxkbcommon0 \
+    libxcb-xkb-dev \
     libxkbcommon-dev \
-    libxkbcommon-x11-0 \
     libxkbcommon-x11-dev \
-    libx11-6 \
-    libx11-dev \
-    libx11-xcb1 \
-    libx11-xcb-dev \
-    libxfixes-dev \
-    libfontconfig1 \
-    libfontconfig1-dev \
-    libfreetype6 \
-    libfreetype6-dev \
-    libxext6 \
-    libxext-dev \
-    libsm6 \
-    libice6 \
-    libglib2.0-0 \
-    libxi-dev \
+    libxcb-dri2-0 \
+    libxcb-dri2-0-dev \
+    libssl-dev \
+    xutils-dev \
     xorg-dev \
     autoconf \
     libtool \
@@ -75,7 +72,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     emacs \
     cpio \
-    libegl1 \
+    libegl1-mesa \
     libegl1-mesa-dev \
  && rm -rf /var/lib/apt/lists/*
 
@@ -92,18 +89,17 @@ USER visit
 WORKDIR /home/visit
 
 # Create the third-party directory
-RUN mkdir third-party
+RUN mkdir /home/visit/third-party
 # Copy build_visit and the script to run it
 COPY --chown=visit:visit build_visit3_4_1 /home/visit
-COPY --chown=visit:visit run_build_visit-ubuntu18.sh /home/visit
+COPY --chown=visit:visit run_build_visit-debian12.sh /home/visit
 COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
-# build thirdparty libraries
-RUN /bin/bash run_build_visit-ubuntu18.sh
+# Build the third party libraries
+RUN /bin/bash run_build_visit-debian12.sh
 
-# build and test visit
+# Copy necesary files build visit install and test
+COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
 COPY --chown=visit:visit build_test_visit.sh /home/visit
 COPY --chown=visit:visit test_visit.py /home/visit
-COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
-# Build visit, package, install and test.
 RUN /bin/bash build_test_visit.sh -v 3.4.1
 

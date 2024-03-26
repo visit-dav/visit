@@ -7,6 +7,10 @@
 #  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
 #  Use new cmake commands for pip setup.
 #
+#  Kathleen Biagas, Tue Mar 5, 2024
+#  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
+#  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
+#
 #****************************************************************************/
 
 # deps for flow
@@ -38,7 +42,7 @@ SET(visit_flow_sources src/__init__.py
 
 
 PYTHON_ADD_PIP_SETUP(NAME visit_flow_py_setup
-                     DEST_DIR lib/site-packages
+                     DEST_DIR site-packages
                      PY_MODULE_DIR visit_flow
                      PY_SETUP_FILE setup.py
                      PY_SOURCES  ${visit_flow_sources})

@@ -101,147 +101,53 @@ EOF
     return 0
 }
 
-function apply_mili_151_darwin_patch1
+function apply_mili_2302_darwin_patch1
 {
-    info "Applying Mili 15.1 darwin patch 1."
+    info "Applying Mili 23.02 darwin patch 1."
     patch -p0 << \EOF
-diff -c mili-22.1/src/mesh_u.c mili.patched/src/mesh_u.c
-*** mili-22.1/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
---- mili.patched/src/mesh_u.c   2015-10-19 12:44:52.000000000 -0700
-***************
-*** 14,20 ****
-  
-  #include <string.h>
-  #ifndef _MSC_VER
-! #include <values.h>
-  #include <sys/time.h>
-  #endif
-  #include <time.h>
---- 14,20 ----
-  
-  #include <string.h>
-  #ifndef _MSC_VER
-! #include <limits.h>
-  #include <sys/time.h>
-  #endif
-  #include <time.h>
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 1 to Mili 15.1"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_151_darwin_patch2
-{
-    info "Applying Mili 15.1 darwin patch 2."
-    patch -p0 << \EOF
-*** mili-22.1/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
---- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
-***************
-*** 386,393 ****
-        done
-  
-  uninstall:
+*** mili-23.02/Makefile.Library.orig	2024-02-09 10:50:45.000000000 -0800
+--- mili-23.02/Makefile.Library	2024-02-09 10:51:03.000000000 -0800
+*************** install-chmod:
+*** 407,416 ****
+  	           echo "[$$dir] \t\t Mili version $(MILI_VERSION) is missing"; \
+  	        fi; \
+  	done
+- 
+- uninstall:
 - 
 - ifneq ($(OS_NAME),Linux)
 - include $(OBJS:.o=.d)
 - endif
 - 
---- 386,388 ----
+--- 407,409 ----
 EOF
     if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 2 to Mili 15.1"
+        warn "Unable to apply Darwin patch 1 to Mili 23.02"
         return 1
     fi
 
     return 0
 }
 
-function apply_mili_151_darwin_patch3
+function apply_mili_2302_darwin_patch2
 {
-    return 0
-    info "Applying Mili 15.1 darwin patch 3."
+    info "Applying Mili 23.02 darwin patch 2."
     patch -p0 << \EOF
-*** mili-22.1/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
---- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
+*** mili-23.02/src/mesh_u.c.orig	2024-02-09 11:02:26.000000000 -0800
+--- mili-23.02/src/mesh_u.c	2024-02-09 11:02:35.000000000 -0800
 ***************
-*** 534,542 ****
-   * Library-private file family management routines and data.
-   */
+*** 38,44 ****
   
-! int host_index;
-! int internal_sizes[QTY_PD_ENTRY_TYPES + 1];
-! int mili_verbose;
-  Return_value validate_fam_id( Famid fam_id );
-  Return_value parse_control_string( char *ctl_str, Mili_family *fam,
-                                     Bool_type *p_create );
---- 534,542 ----
-   * Library-private file family management routines and data.
-   */
-  
-! extern int host_index;
-! extern int internal_sizes[QTY_PD_ENTRY_TYPES + 1];
-! extern int mili_verbose;
-  Return_value validate_fam_id( Famid fam_id );
-  Return_value parse_control_string( char *ctl_str, Mili_family *fam,
-                                     Bool_type *p_create );
-***************
-*** 604,610 ****
-  Return_value load_directories( Mili_family *fam );
-  
-  /* param.c - parameter management routines. */
-! char *dtype_names[QTY_PD_ENTRY_TYPES + 1];
-  Return_value read_scalar( Mili_family *fam, Param_ref *p_pr,  void *p_value );
-  Return_value mili_read_string( Mili_family *fam, Param_ref *p_pr,
-                                 char *p_value );
---- 604,610 ----
-  Return_value load_directories( Mili_family *fam );
-  
-  /* param.c - parameter management routines. */
-! extern char *dtype_names[QTY_PD_ENTRY_TYPES + 1];
-  Return_value read_scalar( Mili_family *fam, Param_ref *p_pr,  void *p_value );
-  Return_value mili_read_string( Mili_family *fam, Param_ref *p_pr,
-                                 char *p_value );
-***************
-*** 647,653 ****
-  /* dep.c - routines for handling architecture dependencies. */
-  Return_value set_default_io_routines( Mili_family *fam );
-  Return_value set_state_data_io_routines( Mili_family *fam );
-! void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
-  
-  /* svar.c - routines for managing state variables. */
-  Bool_type valid_svar_data( Aggregate_type atype, char *name,
---- 647,653 ----
-  /* dep.c - routines for handling architecture dependencies. */
-  Return_value set_default_io_routines( Mili_family *fam );
-  Return_value set_state_data_io_routines( Mili_family *fam );
-! extern void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
-  
-  /* svar.c - routines for managing state variables. */
-  Bool_type valid_svar_data( Aggregate_type atype, char *name,
-***************
-*** 740,746 ****
-  void mili_delete_mo_class_data( void *p_data );
-  
-  /* wrap_c.c - C-half of FORTRAN-to-C wrappers. */
-! int fortran_api;
-  /* write_db.c */
-  Return_value
-  write_state_data( int state_num, Mili_analysis *out_db );
---- 740,746 ----
-  void mili_delete_mo_class_data( void *p_data );
-  
-  /* wrap_c.c - C-half of FORTRAN-to-C wrappers. */
-! extern int fortran_api;
-  /* write_db.c */
-  Return_value
-  write_state_data( int state_num, Mili_analysis *out_db );
+  #include <string.h>
+  #ifndef _MSC_VER
+- #include <values.h>
+  #include <sys/time.h>
+  #endif
+  #include <time.h>
+--- 38,43 ----
 EOF
     if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 3 to Mili 15.1"
+        warn "Unable to apply Darwin patch 2 to Mili 23.02"
         return 1
     fi
 
@@ -584,15 +490,11 @@ EOF
 function apply_mili_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
-        apply_mili_151_darwin_patch1
+        apply_mili_2302_darwin_patch1
         if [[ $? != 0 ]] ; then
             return 1
         fi
-        apply_mili_151_darwin_patch2
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_151_darwin_patch3
+        apply_mili_2302_darwin_patch2
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -685,8 +587,9 @@ function build_mili
     config_script=configure
     if [[ ${MILI_VERSION} == 19.2 && "$OPSYS" == "Darwin" ]]; then
         config_script=configure_15_1
-    elif [[ ${MILI_VERSION} == 22.1 && "$OPSYS" == "Darwin" ]] ; then
-        # Mili 22.1 configure expects fortran compiler even if no intention to use it.
+    elif [[ ${MILI_VERSION} == 22.01 && "$OPSYS" == "Darwin" ]] ||
+         [[ ${MILI_VERSION} == 23.02 && "$OPSYS" == "Darwin" ]] ; then
+        # Mili 22.1/23.02 configure expects fortran compiler even if no intention to use it.
         # We spoof fortran compiler here to fool configure.
        cat << \EOF > spoof_f77.sh
 #!/bin/sh
