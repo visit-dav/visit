@@ -191,7 +191,7 @@ rm -f sierra_install
 cat <<EOF > sierra_install
 #!/bin/sh
 set -e
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-sierra /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on sierra"            >> resultlog 2>&1
@@ -215,7 +215,7 @@ if [ "$sierra" = "true" ]
 then
    if [ "$test" = "no" ]
    then
-      cp $result_dir/visit$ver2.linux-x86_64-sierra.tar.gz .
+      cp $result_dir/visit$ver2.linux-intel-sierra.tar.gz .
       chmod 750 sierra_install;./sierra_install
    fi
 fi
