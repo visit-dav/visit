@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">bengal.llnl.gov</Field>
-    <Field name="hostAliases" type="string">bengal#.llnl.gov bengal##.llnl.gov bengal###.llnl.gov bengal####.llnl.gov bengal# bengal## bengal### bengal####</Field>
-    <Field name="hostNickname" type="string">LLNL Closed Bengal</Field>
+    <Field name="host" type="string">dane.llnl.gov</Field>
+    <Field name="hostAliases" type="string">dane#.llnl.gov dane##.llnl.gov dane###.llnl.gov dane####.llnl.gov dane# dane## dane###  dane####</Field>
+    <Field name="hostNickname" type="string">LLNL Dane</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
@@ -42,12 +42,13 @@
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel batch pbatch</Field>
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">56</Field>
+        <Field name="numProcessors" type="int">112</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>
