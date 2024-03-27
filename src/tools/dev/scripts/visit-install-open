@@ -160,6 +160,7 @@ set -e
 test=no
 
 user=`whoami`
+result_dir=/usr/workspace/visit/visit/_release_builds/
 
 #
 # Set the user e-mail address.
@@ -327,6 +328,7 @@ if [ "$poodle" = "true" ]
 then
    if [ "$test" = "no" ]
    then
+      cp $result_dir/visit$ver2.linux-x86_64-poodle.tar.gz .
       chmod 750 poodle_install;./poodle_install
    fi
 fi
@@ -362,6 +364,7 @@ if [ "$lassen" = "true" ]
 then
    if [ "$test" = "no" ]
    then
+      cp $result_dir/visit$ver2.linux-intel-lassen.tar.gz .
       chmod 750 lassen_install;./lassen_install
    fi
 fi
@@ -397,7 +400,8 @@ if [ "$rzwhippet" = "true" ]
 then
    if [ "$test" = "no" ]
    then
-      chmod 750 rzwhippet_install;./rzwhippet_install
+     cp $result_dir/visit$ver2.linux-x86_64-rzwhippet.tar.gz .
+     chmod 750 rzwhippet_install;./rzwhippet_install
    fi
 fi
 
