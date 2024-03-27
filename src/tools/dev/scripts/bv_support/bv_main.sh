@@ -350,7 +350,7 @@ function initialize_build_visit()
 	# as such one must use parenthesis (( .. )) and not square brackets.
 	# i.e. if (( ${VER_MAJOR} < 8 )) ; then
 
-	# Square brackets are for contionals only. To make it a
+	# Square brackets are for conditionals only. To make it a
 	# conditional one must use "-lt"
         # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
 	    
@@ -365,6 +365,14 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=11.0
         elif [[ ${VER_MAJOR} == 21 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=12.0
+        elif [[ ${VER_MAJOR} == 22 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=13.0
+        elif [[ ${VER_MAJOR} == 23 ]] ; then
+            # keep 13 (ventura)
+            export MACOSX_DEPLOYMENT_TARGET=13.0 
+        elif [[ ${VER_MAJOR} == 24 ]] ; then
+            # keep 13 (ventura)
+            export MACOSX_DEPLOYMENT_TARGET=13.0
         else
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"
