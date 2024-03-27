@@ -109,6 +109,8 @@ avtVolumeRenderer::New(void)
 //  Creation:    October  1, 2003
 //
 //  Modifications:
+//    Kathleen Biagas, Tues Feb 6 2024
+//    Pass input dataset to NeedImage.
 //
 // ****************************************************************************
 
@@ -151,7 +153,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
     // The data and opacity ranges must be known before calling
     // UpdateRenderingState.
-    if( NeedImage() )
+    if( NeedImage(in_ds) )
     {
         // Get the local data range so to ignore NO_DATA_VALUE values.
         // dataArr->GetRange( m_dataRange );

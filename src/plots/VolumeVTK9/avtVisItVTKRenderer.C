@@ -221,12 +221,26 @@ avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
 //  Creation:  30 November 2021
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Feb 6 2024
+//    Check if current input matches previous (only doing pointer comparison).
+//    This will allow multi-domain problems that were not resampled to still
+//    have all their domains rendered (as long as they are rect grids).
 //
 // ****************************************************************************
 
 bool
-avtVisItVTKRenderer::NeedImage()
+avtVisItVTKRenderer::NeedImage(vtkDataSet *input)
 {
+    // if the input is different than previous we are probably
+    // dealing with a multi-domain that wasn't resampled.
+    // Set m_firstPass to true so m_needImage will be re-evaluated
+    // and the new dataset/domain can be rendered.
+    if(input != previousInput)
+    {
+        m_firstPass = true;
+        previousInput = input;
+    }
+
     if( m_firstPass == true ||
 
         // Color variable change or min/max change. The active var

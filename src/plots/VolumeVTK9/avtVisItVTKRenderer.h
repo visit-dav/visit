@@ -20,6 +20,20 @@ class vtkVolume;
 class vtkVolumeMapper;
 class vtkVolumeProperty;
 
+
+// ****************************************************************************
+//  Class: avtVisItVTKRenderer
+//
+//  Purpose:
+//
+//  Modifications:
+//    Added storage for previousInput, so multiple inputs can be rendered
+//    if the current being rendered doesn't match previous.
+//    Added vtkDataSet* argument to NeedImage.
+//
+// ****************************************************************************
+
+
 class avtVisItVTKRenderer
 {
 public:
@@ -33,7 +47,7 @@ protected:
     int            NumberOfComponents(const std::string activeVariable,
                                       const std::string opacityVariable);
 
-    bool           NeedImage();
+    bool           NeedImage(vtkDataSet *);
     void           UpdateRenderingState(vtkDataSet * in_ds,
                                         vtkRenderer* renderer);
 
@@ -74,6 +88,8 @@ protected:
     vtkVolumeProperty         *m_volumeProperty{nullptr};
     vtkVolumeMapper           *m_volumeMapper  {nullptr};
     vtkVolume                 *m_volume        {nullptr};
+
+    vtkDataSet                *previousInput{nullptr};
 };
 
 #endif

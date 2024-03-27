@@ -399,6 +399,8 @@ avtVisItVTKRenderFilter::CreateFinalImage(const void *colorBuffer,
 //  Creation:   30 November 2021
 //
 //  Modifications:
+//   Kathleen Biagas, Tue Feb 6, 2024
+//   Pass in_ds to NeedImage.
 //
 // ****************************************************************************
 
@@ -433,7 +435,8 @@ avtVisItVTKRenderFilter::Execute()
 
     // The data and opacity ranges must be known before calling
     // UpdateRenderingState.
-    if( NeedImage() )
+    vtkDataSet* in_ds = datasetPtrs[ 0 ];
+    if( NeedImage(in_ds) )
     {
         // GetDataExtents is a parallel call so do them regardless if
         // there is data or not. Otherwise MPI crashes.
@@ -498,7 +501,6 @@ avtVisItVTKRenderFilter::Execute()
             renderer->SetAmbient(1., 1., 1.);
         }
 
-        vtkDataSet* in_ds = datasetPtrs[ 0 ];
 
         UpdateRenderingState(in_ds, renderer);
 
