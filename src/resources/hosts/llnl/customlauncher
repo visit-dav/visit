@@ -227,6 +227,9 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Eric Brugger, Fri Feb 17 14:33:43 PST 2023
 #   Added logic to set the visitarch appropriately on toss4 x86_64 systems.
 #
+#   Cyrus Harrison, Wed Mar 27 09:45:27 PDT 2024
+#   Cleanup and added toss4 logic needed to run on CTS-2 with srun.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -249,21 +252,6 @@ class LLNLLauncher(MainLauncher):
 
     def Customize(self):
         #
-        # BG/Q networking changes for parallel engine. We override the host
-        # with an IP address.
-        #
-        if self.parallelArgs.parallel and \
-           (self.generalArgs.exe_name.find("_par") != -1 or \
-            self.generalArgs.exe_name.find("_ser") != -1):
-            if self.sectorname() == "vulcanlac" or \
-               self.sectorname() == "rzuseqlac" or \
-               self.sectorname() == "seqlac":
-                self.generalArgs.host = self.GetIPAddress()
-                self.generalArgs.guesshost = 0
-                self.generalArgs.sshtunneling = 0
-                self.generalArgs.noloopback = 1
-
-        #
         # Convert the host name to the ip address on jade.
         #
         if self.generalArgs.host == "jade188.llnl.gov":
@@ -284,26 +272,29 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.3"
 
         #
+        # TODO: This is for trinity, what do we need (if anything) for crossroads (xr-fe)?
+        #
         # Set the LD_LIBRARY_PATH on trinity to include the directory
         # with the standard C++ library used by the compiler used to
         # compile visit.
-        #
         if self.sectorname() == "tr-fe" or self.sectorname() == "nid":
             ld_library_path = GETENV("LD_LIBRARY_PATH")
             new_ld_library_path = self.joinpaths(["/opt/gcc/9.3.0/snos/lib64", ld_library_path])
             SETENV("LD_LIBRARY_PATH", new_ld_library_path)
 
         #
-        # Set the LD_LIBRARY_PATH to include the path to MPI on toss3 or
-        # toss4 x86_64 systems.
+        # Set the LD_LIBRARY_PATH to include the path to MPI on toss4 x86_64 systems.
         #
         sys_type = GETENV("SYS_TYPE")
-        if sys_type == "toss_3_x86_64" or sys_type == "toss_3_x86_64_ib":
-            mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
-            SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
-        elif sys_type == "toss_4_x86_64" or sys_type == "toss_4_x86_64_ib":
+        if sys_type == "toss_4_x86_64" or sys_type == "toss_4_x86_64_ib":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-gcc-10.3.1/lib"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+            #######################
+            # srun env setting fix
+            #######################
+            # w/o these direct srun to debug queues will hang for task counts > 36 per node
+            SETENV("MV2_ENABLE_TOPO_AWARE_COLLECTIVES", 0)
+            SETENV("MV2_USE_SHMEM_COLL", 0)
 
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
