@@ -44,7 +44,6 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector"></Field>
         <Field name="launchArgsSet" type="bool">true</Field>
-        <Field name="launchArgs" type="string">--exclusive</Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
