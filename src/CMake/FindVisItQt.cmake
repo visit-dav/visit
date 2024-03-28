@@ -42,8 +42,12 @@
 #   Kathleen Biagas, Wed May 10, 2023
 #   Add support for Qt6. 
 #
-#   Kathleen Biagas, Wed Dec 16, 20223
+#   Kathleen Biagas, Wed Dec 16, 2023
 #   Add Concurrent to core list of qt modules to ensure it gets installed.
+#
+#   Kathleen Biagas, Wed Mar 27, 2024
+#   Add 'tls', 'imageformats', 'iconengines' to the plugins.
+#   Reworked logic related to plugins.
 #
 #*****************************************************************************
 
@@ -192,69 +196,64 @@ if(NOT VISIT_QT_SKIP_INSTALL)
                         GROUP_READ GROUP_WRITE
                         WORLD_READ)
 
-    # Platform plugins
     if(WIN32)
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
-      if(${QT_MAJOR_VERSION} EQUAL 5)
-          install(DIRECTORY ${VISIT_QT_DIR}/plugins/printsupport
-                  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
-      endif()
-
-        # We also need platforms and qt.conf in the build dir.
+        # We also need plugins and qt.conf in the build dir.
         file(WRITE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf
                  "[Paths]\nPlugins=../ThirdParty/qtplugins\n")
 
         add_custom_target(copy_qt_plugins ALL
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/qt.conf
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${VISIT_QT_DIR}/plugins/platforms
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/platforms)
-        if(${QT_MAJOR_VERSION} EQUAL 5)
-            add_custom_command(TARGET copy_qt_plugins
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${VISIT_QT_DIR}/plugins/printsupport
-                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/printsupport)
-        endif()
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/qt.conf)
+    endif()
 
-         visit_add_to_util_builds(copy_qt_plugins)
 
-    elseif(APPLE)
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mcurvit.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
-
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mcurvit.app/Contents/MacOS)
+    # Plugins
+    set(needed_plugins "platforms"  "iconengines"  "imageformats")
+    if(${QT_MAJOR_VERSION} EQUAL 6)
+        list(APPEND needed_plugins "tls")
+    endif()
+ 
+    if(LINUX)
+        list(APPEND needed_plugins "xcbglintegrations" "printsupport")
     else()
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)
+        list(APPEND needed_plugins "styles")
+        if(WIN32 AND ${QT_MAJOR_VERSION} EQUAL 5)
+            list(APPEND needed_plugins "printsupport")
+        endif()
+    endif()
+
+    if(WIN32)
+       set(plugin_loc ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
+    else()
+       set(plugin_loc ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)
+    endif()
+
+    foreach(p ${needed_plugins})
+        if(APPLE)
+            foreach(app gui.app viewer.app xmledit.app mcurvit.app)
+                install(DIRECTORY ${VISIT_QT_DIR}/plugins/${p}
+                        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${app}/Contents/MacOS)
+            endforeach()
+        else()
+            install(DIRECTORY ${VISIT_QT_DIR}/plugins/${p}
+                    DESTINATION ${plugin_loc})
+
+            if(WIN32)
+                # also needed for build dir
+                add_custom_command(TARGET copy_qt_plugins
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        ${VISIT_QT_DIR}/plugins/${p}
+                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/${p})
+            endif()
+        endif()
+    endforeach()
+    
+    if(WIN32)
+         visit_add_to_util_builds(copy_qt_plugins)
     endif()
 
     if(LINUX)
-        # Xcb related plugins
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/xcbglintegrations
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)
-
          # there is also a platform-plugin related library that
          # needs to be installed, but there doesn't seem to be
          # a way to find this via Qt's cmake mechanisms, hence this
