@@ -3682,6 +3682,10 @@ Variant::Read(Connection &conn)
 //   Don't use sprintf for the String or String Vector cases.
 //   The 5000 character buffer may be too small & lead to a crash.
 //
+//   Kathleen Biagas, Mon Mar 25 16:23:06 PDT 2024
+//   Remove () and , from being written to surround and separate items
+//   in a vector type.
+//
 // ****************************************************************************
 
 string &
@@ -3730,106 +3734,90 @@ Variant::ConvertToString()
     }
     else if (dataType == BOOL_VECTOR_TYPE)
     {
-        tmp = "(";
         const boolVector &vec = AsBoolVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"%s",vec[i] ? "true" : "false");
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == CHAR_VECTOR_TYPE)
     {
-        tmp = "(";
         const charVector &vec = AsCharVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"\'%c\'",vec[i]);
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
-        tmp = "(";
         const unsignedCharVector &vec = AsUnsignedCharVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"%d",vec[i]);
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == INT_VECTOR_TYPE)
     {
-        tmp = "(";
         const intVector &vec = AsIntVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"%d",vec[i]);
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == LONG_VECTOR_TYPE)
     {
-        tmp = "(";
         const longVector &vec = AsLongVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"%ld",vec[i]);
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == FLOAT_VECTOR_TYPE)
     {
-        tmp = "(";
         const floatVector &vec = AsFloatVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"%g",vec[i]);
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == DOUBLE_VECTOR_TYPE)
     {
-        tmp = "(";
         const doubleVector &vec = AsDoubleVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             sprintf(retval,"%g",vec[i]);
             tmp += retval;
         }
-        tmp += ")";
     }
     else if (dataType == STRING_VECTOR_TYPE)
     {
-        tmp = "(";
         const stringVector &vec = AsStringVector();
         for(size_t i=0;i<vec.size();i++)
         {
             if (i != 0)
-                tmp += ", ";
+                tmp += " ";
             tmp += "\"" + vec[i] + "\"";
         }
-        tmp += ")";
     }
     return tmp;
 }
