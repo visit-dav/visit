@@ -209,18 +209,14 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
 
     # Plugins
-    set(needed_plugins "platforms"  "iconengines"  "imageformats")
-    if(${QT_MAJOR_VERSION} EQUAL 6)
-        list(APPEND needed_plugins "tls")
-    endif()
- 
-    if(LINUX)
-        list(APPEND needed_plugins "xcbglintegrations" "printsupport")
-    else()
-        list(APPEND needed_plugins "styles")
-        if(WIN32 AND ${QT_MAJOR_VERSION} EQUAL 5)
-            list(APPEND needed_plugins "printsupport")
+    set(install_plugins platforms)
+    foreach(p  iconengines  imageformats printsupport styles tls)
+        if(EXISTS ${VISIT_QT_DIR}/plugins/${p})
+            list(APPEND install_plugins ${p})
         endif()
+    endforeach()
+    if(LINUX)
+        list(APPEND install_plugins "xcbglintegrations")
     endif()
 
     if(WIN32)
@@ -229,7 +225,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
        set(plugin_loc ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)
     endif()
 
-    foreach(p ${needed_plugins})
+    foreach(p ${install_plugins})
         if(APPLE)
             foreach(app gui.app viewer.app xmledit.app mcurvit.app)
                 install(DIRECTORY ${VISIT_QT_DIR}/plugins/${p}
