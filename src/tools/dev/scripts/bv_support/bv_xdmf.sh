@@ -53,23 +53,18 @@ function bv_xdmf_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
-        if [[ "$DO_VTK9" == "yes" ]] ; then
-            xml64=""
-            xmlsep="-"
-            if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
-                xml64="64"
-            fi
-            if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
-                xmlsep="."
-            fi
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
-                    >> $HOSTCONF
-        else
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS libvtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
-                >> $HOSTCONF
+
+        xml64=""
+        xmlsep="-"
+        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
+            xml64="64"
         fi
+        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
+            xmlsep="."
+        fi
+        echo \
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
+                >> $HOSTCONF
     fi
 }
 
@@ -304,21 +299,16 @@ function build_xdmf
         LIBEXT="${SO_EXT}"
     fi
 
-    if [[ "$DO_VTK9" == "yes" ]] ; then
-        xml64=""
-        xmlsep="-"
-        xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2/include
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
-            xml64="64"
-        fi
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
-            xmlsep="."
-        fi
-        xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
-    else
-        xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2
-        xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
+    xml64=""
+    xmlsep="-"
+    xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2/include
+    if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
+        xml64="64"
     fi
+    if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
+        xmlsep="."
+    fi
+    xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
 
     set -x
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
