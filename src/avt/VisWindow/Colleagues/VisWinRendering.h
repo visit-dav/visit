@@ -17,7 +17,7 @@
 #include <avtImageType.h>
 #include <ColorAttribute.h>
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
 #include <vtkOSPRayPass.h>
 #endif
 
@@ -384,10 +384,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      GetCompactDomainsAutoThreshold() const
                                  { return compactDomainsAutoThreshold; }
     int                      SetCompactDomainsAutoThreshold(int val);
-#ifdef VISIT_OSPRAY
-    void                     SetModePerspective(bool modePerspective);
-#endif
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     void                     SetOsprayRendering(bool enabled);
     bool                     GetOsprayRendering() const
                                  { return osprayRendering; }
@@ -446,16 +443,12 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     bool                          osprayRendering {false};
     int                           ospraySPP {1};
     int                           osprayAO {0};
     bool                          osprayShadows {false};
     vtkOSPRayPass                *osprayPass {nullptr};
-#endif
-#ifdef VISIT_OSPRAY
-    bool                          modeIsPerspective;
-#elif defined(HAVE_OSPRAY)
     bool                          viewIs3D {true};
 #endif
 

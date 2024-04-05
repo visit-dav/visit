@@ -592,54 +592,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
 
-#ifdef VISIT_OSPRAY
-    // Create the OSPRay rendering toggle
-    osprayRenderingToggle = new QCheckBox(tr("OSPRay rendering"),
-            advancedOptions);
-    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(osprayRenderingToggled(bool)));
-    advLayout->addWidget(osprayRenderingToggle, row, 0, 1, 3);
-    row++;
-
-    ospraySPPLabel = new QLabel(tr("Samples per pixel"), advancedOptions);
-    ospraySPPLabel->setEnabled(false);
-    advLayout->addWidget(ospraySPPLabel, row, 1, 1, 2);
-    ospraySPP = new QSpinBox(advancedOptions);
-    ospraySPP->setMinimum(1);
-    ospraySPP->setEnabled(false);
-    connect(ospraySPP, SIGNAL(valueChanged(int)),
-            this, SLOT(ospraySPPChanged(int)));
-    advLayout->addWidget(ospraySPP, row, 3);
-    row++;
-    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
-            ospraySPPLabel, SLOT(setEnabled(bool)));
-    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
-            ospraySPP, SLOT(setEnabled(bool)));
-
-    osprayAOLabel = new QLabel(tr("Ambient occlusion samples"), advancedOptions);
-    osprayAOLabel->setEnabled(false);
-    advLayout->addWidget(osprayAOLabel, row, 1, 1, 2);
-    osprayAO = new QSpinBox(advancedOptions);
-    osprayAO->setMinimum(0);
-    osprayAO->setEnabled(false);
-    connect(osprayAO, SIGNAL(valueChanged(int)),
-            this, SLOT(osprayAOChanged(int)));
-    advLayout->addWidget(osprayAO, row, 3);
-    row++;
-    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
-            osprayAOLabel, SLOT(setEnabled(bool)));
-    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
-            osprayAO, SLOT(setEnabled(bool)));
-
-    osprayShadowsToggle = new QCheckBox(tr("Shadows"), advancedOptions);
-    osprayShadowsToggle->setEnabled(false);
-    connect(osprayShadowsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(osprayShadowsToggled(bool)));
-    advLayout->addWidget(osprayShadowsToggle, row, 1, 1, 2);
-    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
-            osprayShadowsToggle, SLOT(setEnabled(bool)));
-    row++;
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     QFrame *line = new QFrame(advancedOptions);
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
@@ -1007,28 +960,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             numberOfPeels->setText(tmp);
             numberOfPeels->blockSignals(false);
             break;
-#ifdef VISIT_OSPRAY
-        case RenderingAttributes::ID_osprayRendering:
-            osprayRenderingToggle->blockSignals(true);
-            osprayRenderingToggle->setChecked(renderAtts->GetOsprayRendering());
-            osprayRenderingToggle->blockSignals(false);
-            break;
-        case RenderingAttributes::ID_ospraySPP:
-            ospraySPP->blockSignals(true);
-            ospraySPP->setValue(int(renderAtts->GetOspraySPP()));
-            ospraySPP->blockSignals(false);
-            break;
-        case RenderingAttributes::ID_osprayAO:
-            osprayAO->blockSignals(true);
-            osprayAO->setValue(int(renderAtts->GetOsprayAO()));
-            osprayAO->blockSignals(false);
-            break;
-        case RenderingAttributes::ID_osprayShadows:
-            osprayShadowsToggle->blockSignals(true);
-            osprayShadowsToggle->setChecked(renderAtts->GetOsprayShadows());
-            osprayShadowsToggle->blockSignals(false);
-            break;
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
         case RenderingAttributes::ID_osprayRendering:
             enabled = renderAtts->GetOsprayRendering();
             osprayGroup->blockSignals(true);

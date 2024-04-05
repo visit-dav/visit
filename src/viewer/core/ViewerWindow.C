@@ -6573,7 +6573,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetCompressionActivationMode(
         (RenderingAttributes::TriStateMode) compressionActivationMode);
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     renderAtts.SetOsprayRendering(GetOsprayRendering());
     renderAtts.SetOsprayShadows(GetOsprayShadows());
     renderAtts.SetOspraySPP(GetOspraySPP());
@@ -8572,7 +8572,7 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
     return visWindow->GetCompactDomainsAutoThreshold();
 }
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
 // ****************************************************************************
 // Method:  ViewerWindow::SetOsprayRendering
 //

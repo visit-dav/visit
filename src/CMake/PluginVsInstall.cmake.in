@@ -196,7 +196,8 @@ set(VISIT_DBIO_ONLY              @VISIT_DBIO_ONLY@)
 set(VISIT_PARALLEL               @VISIT_PARALLEL@)
 set(VISIT_JAVA                   @VISIT_JAVA@)
 set(VISIT_SLIVR                  @VISIT_SLIVR@)
-set(VISIT_OSPRAY                 @VISIT_OSPRAY@)
+set(HAVE_LIBOSPRAY               @HAVE_LIBOSPRAY@)
+set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
 
 # Set up VTK
 set(VTK_VERSION @VTK_VERSION@)
@@ -248,11 +249,6 @@ include(${VISIT_ROOT_INCLUDE_DIR}/VisItIncludeVars.cmake)
 
 # plugin vs install needs visit's base include dir as well
 list(PREPEND ${VISIT_COMMON_INCLUDES} ${VISIT_INCLUDE_DIR})
-
-if(VISIT_OSPRAY)
-    set(OSPRAY_INCLUDE_DIR    ${VISIT_ROOT_INCLUDE_DIR})
-    set(OSPRAY_LIBRARIES      @OSPRAY_LIBRARIES@)
-endif()
 
 # Set up 3rd party I/O libraries
 set(ADIOS_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios/include)
