@@ -35,14 +35,10 @@ Surface
 Tensor
 Truecolor
 Vector
+Volume
 WellBore
 )
 
-# Changes in Volume plot for VTK9 are too significant
-# to handle within the source files with conditional compilations.
-# Especially for the changes to the enums in the atts.
-# So just use a different directory
-list(APPEND REQUIRED_PLOT_PLUGINS VolumeVTK9)
 
 SET(OPTIONAL_PLOT_PLUGINS
 Topology
