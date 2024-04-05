@@ -2526,24 +2526,6 @@ function apply_vtk_patch
             return 1
         fi
 
-        # vtk8 version needs to be reworked for 9.1.0
-        #apply_vtk9_vtkopenfoamreader_patch
-        #if [[ $? != 0 ]] ; then
-        #    return 1
-        #fi
-
-        # vtk8 version needs to be reworked for 9.1.0
-        #apply_vtk9_vtkopenglspheremapper_h_patch
-        #if [[ $? != 0 ]] ; then
-        #    return 1
-        #fi
-
-        # vtk8 version needs to be reworked for 9.1.0
-        #apply_vtk9_vtkopenglspheremapper_patch
-        #if [[ $? != 0 ]] ; then
-        #    return 1
-        #fi
-
         apply_vtk9_vtkospray_patches
         if [[ $? != 0 ]] ; then
             return 1
@@ -2719,11 +2701,11 @@ function build_vtk
 
     # Some linker flags.
     lf=""
-#    if test "${OPSYS}" = "Darwin" ; then
-#        lf="-Wl,-headerpad_max_install_names"
-#        lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
-#        lf="${lf},-current_version,${VTK_VERSION}"
-#    fi
+    if test "${OPSYS}" = "Darwin" ; then
+        lf="-Wl,-headerpad_max_install_names"
+        lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
+        lf="${lf},-current_version,${VTK_VERSION}"
+    fi
 
     # Add some extra arguments to the VTK cmake command line via the
     # VTK_EXTRA_OPTIONS environment variable.
@@ -2759,9 +2741,24 @@ function build_vtk
         vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
         vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
     fi
+
     if test "${OPSYS}" = "Darwin" ; then
+
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
+
+        # On Intel-Mac Monterey, VTK 9.2.6 is installing with names like
+        # libvtkxxx9.2.dylib --> libvtkxxx9.2.1.dylib --> libvtkxxx9.2.9.2.6.dylib
+        # Aside from being completely baffeling and wrong, when these got copied to
+        # the install point, they were missing the intermediate 9.2.1 symlinks and
+        # so were completely broken. After trying a large number of variations, the
+        # only way I found to have it do something close to the right thing was to
+        # tweek the CMakeLists.txt and set the custom lib suffix to "".
+        if test "${VTK_VERSION} = "9.2.6" ; then
+            vopts="${vopts} -DVTK_CUSTOM_LIBRARY_SUFFIX:STRING=\"\""
+            sed -i.orig -e 's/^  SOVERSION           "1"/  SOVERSION           "9.2"/' ../${VTK_SRC_DIR}/CMakeLists.txt
+        fi
+
         if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
             # If building on 10.10 (Yosemite) check if we are building with Xcode 7 ...
             XCODE_VER=$(xcodebuild -version | head -n 1 | awk '{print $2}')
