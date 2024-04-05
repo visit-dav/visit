@@ -63,7 +63,7 @@ function bv_xdmf_host_profile
                     >> $HOSTCONF
         else
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS libvtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
                 >> $HOSTCONF
         fi
     fi
@@ -312,6 +312,7 @@ function build_xdmf
         xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
     fi
 
+    set -x
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
@@ -334,6 +335,7 @@ function build_xdmf
                  -DLIBXML2_INCLUDE_PATH:PATH="${xmlinc}" \
                  -DLIBXML2_LIBRARY:FILEPATH="${xmllib}" \
                  .
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Xdmf configure failed.  Giving up"
