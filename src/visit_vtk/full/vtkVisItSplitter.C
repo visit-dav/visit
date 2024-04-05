@@ -4,8 +4,6 @@
 
 #include <vtkVisItSplitter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkAppendFilter.h>
 #include <vtkBinaryPartitionVolumeFromVolume.h>
 #include <vtkCellData.h>
@@ -414,11 +412,7 @@ public:
         cellType = (dims[2] <= 1) ? VTK_QUAD : VTK_HEXAHEDRON;
         nCellPts = (dims[2] <= 1) ? 4 : 8;
     }
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
-#else
     inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
-#endif
     {
         const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
         const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
@@ -523,15 +517,9 @@ public:
         return pd->GetCellType(cellId);
     }
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
-    {
-        vtkIdType *cellPts = NULL;
-#else
     inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
         const vtkIdType *cellPts = NULL;
-#endif
         pd->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -552,15 +540,9 @@ public:
     {
         return ug->GetCellType(cellId);
     }
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
-    {
-        vtkIdType *cellPts = NULL;
-#else
     inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
         const vtkIdType *cellPts = NULL;
-#endif
         ug->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -585,11 +567,7 @@ public:
         return cellPoints.GetCellType(cellId);
     }
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
-#else
     inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
-#endif
     {
         return cellPoints.GetCellPoints(cellId, nCellPts);
     }
@@ -642,11 +620,7 @@ public:
         return cellPoints.GetCellType(cellId);
     }
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
-#else
     inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
-#endif
     {
         return cellPoints.GetCellPoints(cellId, nCellPoints);
     }
@@ -730,11 +704,7 @@ vtkVisItSplitter_Algorithm(Bridge bridge, ScalarAccess scalar,
         vtkIdType cellId = (state.CellList != NULL ? state.CellList[i] : i);
         int cellType = bridge.GetCellType(cellId);
         vtkIdType nCellPts = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
-#else
         const vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
-#endif
 
         // If it's something we can't clip, skip this output
         switch (cellType)

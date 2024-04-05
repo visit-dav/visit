@@ -8,13 +8,9 @@
 
 #include <avtLineToPolylineFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkDataSet.h>
 #include <vtkPolyData.h>
 
@@ -166,19 +162,12 @@ avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
     std::set<edge> freeEdges;
     const vtkIdType numVerts = input->GetVerts()->GetNumberOfCells();
     vtkIdType toCellId = numVerts;
-#if LIB_VERSION_LE(VTK,8,1,0)
-    inlines->InitTraversal();
-    vtkIdType *cellPts = nullptr;
-    for(vtkIdType cellid = 0; inlines->GetNextCell(n, cellPts); ++cellid)
-    {
-#else
     const vtkIdType *cellPts = nullptr;
     vtkIdType cellid = 0;
     auto iter = vtk::TakeSmartPointer(inlines->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell(), cellid++)
     {
         iter->GetCurrentCell(n, cellPts);
-#endif
         vtkIdType fromCellId = cellid + numVerts;
         if(n == 2)
         {

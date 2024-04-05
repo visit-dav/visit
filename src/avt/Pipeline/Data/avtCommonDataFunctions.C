@@ -161,7 +161,6 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
         else if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
         {
             double bounds[6];
-#if LIB_VERSION_GE(VTK,9,1,0)
             // VTK-9, GetBounds for PolyData now returns extents of the
             // point set, not the geometry so we must use GetCellsBounds
             // here to preserve previous behavior
@@ -170,7 +169,6 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
                 ((vtkPolyData*)ds)->GetCellsBounds(bounds);
             }
             else
-#endif
             {
                 ds->GetBounds(bounds);
             }
@@ -489,7 +487,6 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
     if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
         ds->GetNumberOfCells() > 0)
     {
-#if LIB_VERSION_GE(VTK,9,1,0)
         // KSB 7-20-22 look for singleton PointData arrays (constant-expressions).
         // With VTK-9.1, vtkGeometryFilter will convert these single-tuple PD arrays
         // into nPoints-tuples PD arrays (via CopyAllocate and CopyData vs old
@@ -514,18 +511,15 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
                 }
             }
         }
-#endif
         vtkNew<vtkGeometryFilter> geoFilter;
         geoFilter->SetInputData(ds);
         geoFilter->Update();
         vtkPolyData *out_pd = geoFilter->GetOutput();
         out_pd->Register(NULL);
 
-#if LIB_VERSION_GE(VTK,9,1,0)
         for(size_t i = 0; i < singletons.size(); ++i)
             out_pd->GetPointData()->AddArray(singletons[i]); 
 
-#endif
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
     }

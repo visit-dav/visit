@@ -4,8 +4,6 @@
 
 #include "TetMIR.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
@@ -482,44 +480,6 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     int *mix_index = new int[nmat];
     float *zone_vf = new float[nmat];
     Tetrahedralizer tetrahedralizer(nmat);
-#if LIB_VERSION_LE(VTK,8,1,0)
-    const vtkIdType *c_ptr = conn.connectivity;
-    for (int c=0; c<nCells; c++,  c_ptr += (*c_ptr)+1)
-    {
-        bool clean       = (*real_clean_zones)[c];
-        int  clean_matno = mat->GetMatlist()[c];
-
-        if (options.leaveCleanZonesWhole && clean)
-        {
-            someClean = true;
-            ReconstructCleanCell(clean_matno, c, *c_ptr, c_ptr+1,
-                                 conn.celltype[c]);
-            continue;
-        }
-
-        mat->ExtractCellMatInfo(c, zone_vf, mix_index);
-
-        ExtractCellVFs(c, *c_ptr, c_ptr+1, conn.celltype[c], nmat,
-                       zone_vf, node_list, face_hash, edge_hash,
-                       vf_zone, vf_node, vf_face, vf_edge);
-
-        tetrahedralizer.Tetrahedralize(subdivisionLevel, conn.celltype[c],
-                                       *c_ptr, c_ptr+1, vf_zone, vf_node, vf_face, vf_edge);
-        for (int t=0; t<tetrahedralizer.GetNumberOfTets(); t++)
-        {
-            if (clean)
-            {
-                ReconstructCleanTet(clean_matno, c, *c_ptr, c_ptr+1,
-                                    tetrahedralizer.GetTet(t));
-            }
-            else
-            {
-                ReconstructTet(c, *c_ptr, c_ptr+1, tetrahedralizer.GetTet(t),
-                               vf_zone, mix_index, nmat);
-            }
-        }
-    }
-#else
     for (int c=0; c<nCells; c++)
     {
         bool clean       = (*real_clean_zones)[c];
@@ -557,7 +517,6 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
             }
         }
     }
-#endif
 
     visitTimer->StopTimer(timerHandle6, "MIR: Tetrahedron based cell reconstruction");
 
@@ -798,41 +757,6 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     int *mix_index = new int[nmat];
     float *zone_vf = new float[nmat];
     Triangulator triangulator(nmat);
-#if LIB_VERSION_LE(VTK,8,1,0)
-    const vtkIdType *c_ptr = conn.connectivity;
-    for (int c=0; c<nCells; c++,  c_ptr += (*c_ptr)+1)
-    {
-        bool clean       = (*real_clean_zones)[c];
-        int  clean_matno = mat->GetMatlist()[c];
-
-        if (options.leaveCleanZonesWhole && clean)
-        {
-            someClean = true;
-            ReconstructCleanCell(clean_matno, c, *c_ptr, c_ptr+1,
-                                 conn.celltype[c]);
-            continue;
-        }
-
-        mat->ExtractCellMatInfo(c, zone_vf, mix_index);
-
-        ExtractCellVFs(c, *c_ptr, c_ptr+1, conn.celltype[c], nmat,
-                       zone_vf, node_list, NULL, edge_hash,
-                       vf_zone, vf_node, NULL, vf_edge);
-
-        triangulator.Triangulate(subdivisionLevel, conn.celltype[c],
-                                 *c_ptr, c_ptr+1, vf_zone, vf_node, vf_edge);
-
-        for (int t=0; t<triangulator.GetNumberOfTris(); t++)
-        {
-            if (clean)
-                ReconstructCleanTri(clean_matno, c, *c_ptr, c_ptr+1,
-                                    triangulator.GetTri(t));
-            else
-                ReconstructTri(c, *c_ptr, c_ptr+1, triangulator.GetTri(t),
-                               vf_zone, mix_index, nmat);
-        }
-    }
-#else
     for (int c=0; c<nCells; c++)
     {
         bool clean       = (*real_clean_zones)[c];
@@ -868,7 +792,6 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
                                vf_zone, mix_index, nmat);
         }
     }
-#endif
 
     visitTimer->StopTimer(timerHandle6,
                           "MIR: Triangle based cell reconstruction");
@@ -959,38 +882,23 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkIdType *conn_ptr = conn.connectivity;
-#endif
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int        nIds = *conn_ptr;
-        const vtkIdType *ids = conn_ptr+1;
-#else
         // use of c+1 is safe here because offsets size is nCells+1
         vtkIdType        nIds = conn.offsets[c+1] - conn.offsets[c];
         const vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
-#endif
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
         zone.mat        = matlist[c];
         zone.celltype   = conn.celltype[c];
-#if LIB_VERSION_LE(VTK,8,1,0)
-        zone.nnodes     = nIds;
-#else
         zone.nnodes     = int(nIds);
-#endif
         zone.startindex = (int)indexList.size();
         zone.mix_index  = -1;
 
         for (int n=0; n<nIds; n++)
             indexList.push_back(ids[n]);
-#if LIB_VERSION_LE(VTK,8,1,0)
-        conn_ptr += nIds+1;
-#endif
     }
 
     return true;
@@ -2677,20 +2585,10 @@ CreateFaceHash(MIRConnectivity &conn, int nmat,
 {
     FaceHash *face_hash = new FaceHash(conn.ncells*3, hashfunc);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    int nCells = conn.ncells;
-    vtkIdType *c_ptr = conn.connectivity;
-    for (int c=0; c<nCells; c++)
-    {
-        AddFaces(conn.celltype[c], c_ptr+1, face_hash, nmat);
-        c_ptr += *c_ptr+1;
-    }
-#else
     for (int c=0; c < conn.ncells; c++)
     {
         AddFaces(conn.celltype[c], &conn.connectivity[conn.offsets[c]], face_hash, nmat);
     }
-#endif
 
     return face_hash;
 }
@@ -2850,19 +2748,10 @@ CreateEdgeHash(MIRConnectivity &conn, int nmat,
     int nCells = conn.ncells;
     EdgeHash *edge_hash = new EdgeHash(nCells*3, hashfunc);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    const vtkIdType *c_ptr = conn.connectivity;
-    for (int c=0; c<nCells; c++)
-    {
-        AddEdges(conn.celltype[c], c_ptr+1, edge_hash, nmat);
-        c_ptr += *c_ptr+1;
-    }
-#else
     for (int c=0; c<nCells; c++)
     {
         AddEdges(conn.celltype[c], &conn.connectivity[conn.offsets[c]], edge_hash, nmat);
     }
-#endif
 
     return edge_hash;
 }
@@ -3057,28 +2946,17 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
     {
         dom_mat[i] = -1;
     }
-#if LIB_VERSION_LE(VTK,8,1,0)
-    const vtkIdType *c_ptr = conn.connectivity;
-#endif
     for (int c=0; c<nCells; c++)
     {
         if (mat->GetMatlist()[c] < 0)
         {
             nrealmixed++;
-#if LIB_VERSION_LE(VTK,8,1,0)
-            c_ptr += *c_ptr+1;
-#endif
             continue;
         }
         int        clean_mat = mat->GetMatlist()[c];
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int        nPts = *c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-#else
         // use of c+1 is safe here because offsets size is nCells +1
         vtkIdType        nPts = conn.offsets[c+1]-conn.offsets[c];
         const vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
-#endif
 
         bool       real_clean = mat_cnt[c] < 3;
         for (int n=0; n<nPts && real_clean; n++)
@@ -3101,9 +2979,6 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
             if (vf_list[dom_mat[id]] > clean_vf)
                 real_clean = false;
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        c_ptr += *c_ptr+1;
-#endif
 
         (*real_clean_zones)[c] = real_clean;
         if (real_clean)
@@ -3184,20 +3059,11 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
     // Go through each cell, extract the materials from the avtMaterial,
     // and subsample the zone volume fractions to the nodes and the faces.
     //
-#if LIB_VERSION_LE(VTK,8,1,0)
-    const vtkIdType *c_ptr = conn.connectivity;
-    int c;
-    for (c=0; c<nCells; c++)
-    {
-        int        nPts = *c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-#else
     for (int c=0; c<nCells; c++)
     {
         // use of c+1 is safe here because offsets size is nCells+1
         vtkIdType        nPts = conn.offsets[c+1] - conn.offsets[c];
         const vtkIdType *ids  = &conn.connectivity[conn.offsets[c]];
-#endif
 
         //
         // Create a list of materials and their corresponding volume
@@ -3242,9 +3108,6 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
             AddEdges(conn.celltype[c], ids, edge_hash, nMat,
                      nRealMat, materials, volumeFractions);
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        c_ptr += *c_ptr+1;
-#endif
     }
 
 
@@ -3283,19 +3146,11 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
     // Go through each cell and determine how many non-zero material
     // fractions it has at any node.
     //
-#if LIB_VERSION_LE(VTK,8,1,0)
-    c_ptr = conn.connectivity;
-    for (c=0; c<nCells; c++)
-    {
-        int        nPts = *c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-#else
     for (int c=0; c<nCells; c++)
     {
         // use of c+1 is safe here because offsets size is nCells+1
         vtkIdType        nPts = conn.offsets[c+1]-conn.offsets[c];
         const vtkIdType *ids  = &conn.connectivity[conn.offsets[c]];
-#endif
 
         mat_cnt[c] = 0;
         for (int m=0; m<nMat; m++)
@@ -3309,9 +3164,6 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
                 }
             }
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        c_ptr += *c_ptr+1;
-#endif
     }
 
     delete [] materials;

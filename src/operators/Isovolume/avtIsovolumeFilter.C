@@ -8,8 +8,6 @@
 
 #include <avtIsovolumeFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #ifdef HAVE_LIBVTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
@@ -612,11 +610,7 @@ avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<do
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
-#if LIB_VERSION_LE(VTK,8,1,0)
-            vtkIdType *pts;
-#else
             const vtkIdType *pts;
-#endif
             vtkIdType npts;
             ugrid->GetCellPoints(i, npts, pts);
             out_pd->InsertNextCell(celltype, npts, pts);

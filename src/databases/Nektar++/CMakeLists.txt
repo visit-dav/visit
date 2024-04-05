@@ -41,11 +41,7 @@ if(LINUX)
     add_definitions(-fext-numeric-literals)
 endif()
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_libs vtkIOXML )
-else()
-    set(vtk_libs VTK::IOXML )
-endif()
+set(vtk_libs VTK::IOXML )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS} )
 

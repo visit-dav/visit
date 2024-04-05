@@ -17,12 +17,8 @@
 =========================================================================*/
 #include <vtkVisItFeatureEdges.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
@@ -110,11 +106,7 @@ int vtkVisItFeatureEdges::RequestData(
   double cosAngle = 0;
   vtkIdType lineIds[2];
   vtkIdType npts = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *pts = 0;
-#else
   const vtkIdType *pts = 0;
-#endif
   vtkCellArray *inPolys, *newPolys;
   vtkFloatArray *polyNormals = NULL;
   vtkIdType numPts, numCells, numPolys, numStrips, nei;
@@ -175,16 +167,10 @@ int vtkVisItFeatureEdges::RequestData(
       {
       newPolys->Allocate(newPolys->EstimateSize(numStrips,5));
       }
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *inStrips = input->GetStrips();
-    for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); )
-      {
-#else
     auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
     for ( inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell())
       {
       inStrips->GetCurrentCell(npts,pts);
-#endif
       vtkTriangleStrip::DecomposeStrip(npts, pts, newPolys);
       }
     Mesh->SetPolys(newPolys);
@@ -230,17 +216,11 @@ int vtkVisItFeatureEdges::RequestData(
     polyNormals->SetNumberOfComponents(3);
     polyNormals->Allocate(3*newPolys->GetNumberOfCells());
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType cellId = 0;
-    for (newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts); cellId++)
-      {
-#else
     auto iter = vtk::TakeSmartPointer(newPolys->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
       {
       vtkIdType cellId = iter->GetCurrentCellId();
       iter->GetCurrentCell(npts,pts);
-#endif
       vtkPolygon::ComputeNormal(inPts,npts,pts,n);
       polyNormals->InsertTuple(cellId,n);
       }
@@ -255,17 +235,11 @@ int vtkVisItFeatureEdges::RequestData(
   vtkIdType progressInterval=numCells/20+1;
 
   numBEdges = numNonManifoldEdges = numFedges = numManifoldEdges = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType cellId = 0;
-  for (newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts) && !abort; cellId++)
-    {
-#else
   auto iter = vtk::TakeSmartPointer(newPolys->NewIterator());
   for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal() && !abort; iter->GoToNextCell())
     {
     vtkIdType cellId = iter->GetCurrentCellId();
     iter->GetCurrentCell(npts,pts);
-#endif
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
       this->UpdateProgress ((double)cellId / numCells);

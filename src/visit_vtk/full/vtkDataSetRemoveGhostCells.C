@@ -4,8 +4,6 @@
 
 #include "vtkDataSetRemoveGhostCells.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
 #include <vtkExecutive.h>
@@ -276,11 +274,7 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
           continue;
 
       vtkIdType npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-      vtkIdType *pts;
-#else
       const vtkIdType *pts;
-#endif
       inGrid->GetCellPoints(i, npts, pts);
       *ct++ = inGrid->GetCellType(i);
       *cl++ = currentIndex;
@@ -405,11 +399,7 @@ vtkDataSetRemoveGhostCells::PolyDataExecute()
   outGrid->Allocate(nCells);
   inGrid->BuildCells();
   vtkIdType npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *pts;
-#else
   const vtkIdType *pts;
-#endif
   int cell = 0;
   for (int i = 0 ; i < nCells ; i++)
     {

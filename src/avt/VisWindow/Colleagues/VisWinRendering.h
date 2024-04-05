@@ -446,9 +446,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
-#if LIB_VERSION_LE(VTK,8,2,0)
-    int                           multiSamples;
-#endif
 #if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     bool                          osprayRendering {false};
     int                           ospraySPP {1};

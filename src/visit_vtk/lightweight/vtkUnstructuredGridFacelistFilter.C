@@ -7,11 +7,8 @@
 // ************************************************************************* //
 
 #include "vtkUnstructuredGridFacelistFilter.h"
-#include <visit-config.h> // For LIB_VERSION_GE/LE
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -443,32 +440,6 @@ static int tri_reorder_list[6][3] =
 //
 // Function prototypes
 //
-
-#if LIB_VERSION_LE(VTK, 8,1,0)
-
-static void AddTetrahedron(vtkIdType *, int, HashEntryList &);
-static void AddWedge(vtkIdType *, int, HashEntryList &);
-static void AddPyramid(vtkIdType *, int, HashEntryList &);
-static void AddHexahedron(vtkIdType *, int, HashEntryList &);
-static void AddVoxel(vtkIdType *, int, HashEntryList &);
-
-static void AddQuadraticTriangle(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticQuad(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticTetrahedron(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticPyramid(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticWedge(vtkIdType *, int, HashEntryList &);
-
-static void AddQuadraticLinearQuad(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticLinearWedge(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticTriangle(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuad(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuadraticWedge(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
-static void AddTriQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
-
-#else
-
 static void AddTetrahedron(const vtkIdType *, int, HashEntryList &);
 static void AddWedge(const vtkIdType *, int, HashEntryList &);
 static void AddPyramid(const vtkIdType *, int, HashEntryList &);
@@ -489,8 +460,6 @@ static void AddBiQuadraticQuad(const vtkIdType *, int, HashEntryList &);
 static void AddBiQuadraticQuadraticWedge(const vtkIdType *, int, HashEntryList &);
 static void AddBiQuadraticQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
 static void AddTriQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
-
-#endif
 
 static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
@@ -1869,20 +1838,12 @@ LoopOverVertexCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -1933,20 +1894,12 @@ LoopOverLineCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2006,20 +1959,12 @@ LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2076,20 +2021,12 @@ LoopOverStripCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-#if LIB_VERSION_LE(VTK, 8, 1, 0)
-    vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2153,20 +2090,12 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
     vtkIdType   cellId;
     vtkIdType   npts;
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2285,13 +2214,8 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -2328,13 +2252,8 @@ AddTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddVoxel(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddVoxel(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2385,13 +2304,8 @@ AddVoxel(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2442,13 +2356,8 @@ AddHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddWedge(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2492,13 +2401,8 @@ AddWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2540,13 +2444,8 @@ AddPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2583,13 +2482,8 @@ AddQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2634,13 +2528,8 @@ AddQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     // Break up the surface of the quadratic tet into triangles.
     const int triangles[][3] = {
@@ -2675,13 +2564,8 @@ AddQuadraticTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     // Break up the surface of the quadratic hex into triangles.
     const int triangles[][3] = {
@@ -2719,13 +2603,8 @@ AddQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     const int triangles[][3] = {
        {0,5,9},{5,10,9},{5,1,10},{9,10,4},
@@ -2770,13 +2649,8 @@ AddQuadraticPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2824,13 +2698,8 @@ AddQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticLinearQuad(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticLinearQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2867,13 +2736,8 @@ AddQuadraticLinearQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddQuadraticLinearWedge(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddQuadraticLinearWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2918,13 +2782,8 @@ AddQuadraticLinearWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddBiQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddBiQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2969,13 +2828,8 @@ AddBiQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddBiQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddBiQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -3028,13 +2882,8 @@ AddBiQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddBiQuadraticQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddBiQuadraticQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -3072,13 +2921,8 @@ AddBiQuadraticQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &li
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},
@@ -3120,13 +2964,8 @@ AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryLis
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
-#else
 void
 AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
-#endif
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},

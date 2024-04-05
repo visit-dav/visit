@@ -35,11 +35,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_libs vtkCommonSystem vtksys )
-else()
-    set(vtk_libs VTK::CommonSystem VTK::vtksys )
-endif()
+set(vtk_libs VTK::CommonSystem VTK::vtksys )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 

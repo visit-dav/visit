@@ -30,21 +30,7 @@ LINK_DIRECTORIES(
 ${LIBRARY_OUTPUT_DIRECTORY}
 )
 
-if(VTK_VERSION VERSION_LESS_EQUAL "8.1.0")
-    set(REQUIRED_VTK_LIBS
-        vtkCommonCore
-        vtkCommonDataModel
-        vtkCommonExecutionModel
-        vtkFiltersGeometry
-        vtkFiltersHybrid
-        vtkFiltersSources
-        vtkIOImage
-        vtkRenderingCore
-        vtkRenderingOpenGL2
-        vtkRenderingFreeType
-        vtkInteractionStyle)
-else()
-    set(REQUIRED_VTK_LIBS
+set(REQUIRED_VTK_LIBS
         VTK::CommonCore
         VTK::CommonDataModel
         VTK::CommonExecutionModel
@@ -56,7 +42,6 @@ else()
         VTK::RenderingOpenGL2
         VTK::RenderingFreeType
         VTK::InteractionStyle)
-endif()
 
 IF(NOT WIN32)
     SET(LIBDL dl)

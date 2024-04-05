@@ -133,32 +133,6 @@ IF(VISIT_SLIVR)
     ADD_DEFINITIONS(-DVISIT_SLIVR)
 ENDIF()
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
-    LIST(APPEND AVTFILTERS_SOURCES
-         avtOSPRayCommon.C
-         avtOSPRayImageCompositor.C
-         avtOSPRayRayTracer.C
-         avtOSPRaySamplePointExtractor.C
-         avtOSPRayVoxelExtractor.C
-         )
-    IF(ICET_FOUND)
-        # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
-        # We need to link with OpenGL on Mac when we have IceT.
-        IF(APPLE)
-            SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
-        ENDIF(APPLE)
-        # Link icet libraries using absolute pathes
-        SET(ICET_FULLPATH_LIB ${ICET_OPENGL})
-        FOREACH(X ${ICET_LIB})
-            LIST(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
-        ENDFOREACH()
-        # Other setups
-        INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
-        LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
-        ADD_DEFINITIONS(-DVISIT_OSPRAY_ICET)
-    ENDIF()
-endif() # VTK VERSION == 8.1.0
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -185,14 +159,7 @@ ${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
-  if(VISIT_OSPRAY)
-    include_directories(${OSPRAY_INCLUDE_DIR})
-  endif()
-else()
-    set(vtklibs VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
-endif()
+set(vtklibs VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
@@ -200,12 +167,6 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
 TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts ${vtklibs})
-IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
-    TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
-    IF(ICET_FOUND)
-        TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
-    ENDIF()
-ENDIF() 
 if(HAVE_LIBVTKM)
     target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
     if(NOT WIN32)
@@ -221,12 +182,6 @@ VISIT_INSTALL_TARGETS(avtfilters_ser)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
     TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts ${vtklibs})
-    IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
-        TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
-        IF(ICET_FOUND)
-            TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
-        ENDIF()
-    ENDIF()
     if(HAVE_LIBVTKM)
         target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
         if(NOT WIN32)

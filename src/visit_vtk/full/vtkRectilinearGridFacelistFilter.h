@@ -72,13 +72,8 @@ private:
   void operator=(const vtkRectilinearGridFacelistFilter&);
 
   void ConsolidateFacesWithoutGhostZones(vtkRectilinearGrid *, vtkPolyData *);
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkPolyData *ConsolidateFacesWithGhostZones(vtkPolyData *, vtkIdTypeArray *,
-                       std::vector<int>&, std::vector<int>&,std::vector<int>&);
-#else
   vtkPolyData *ConsolidateFacesWithGhostZones(vtkPolyData *, vtkIdTypeArray *,
                vtkIdTypeArray *, std::vector<int>&, std::vector<int>&,std::vector<int>&);
-#endif
 
   static const vtkIdType quads2[1][4];
   static const vtkIdType quads3[6][4];

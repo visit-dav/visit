@@ -42,11 +42,7 @@ WellBore
 # to handle within the source files with conditional compilations.
 # Especially for the changes to the enums in the atts.
 # So just use a different directory
-if(VTK_VERSION VERSION_LESS_EQUAL "8.1.0")
-    list(APPEND REQUIRED_PLOT_PLUGINS Volume)
-else()
-    list(APPEND REQUIRED_PLOT_PLUGINS VolumeVTK9)
-endif()
+list(APPEND REQUIRED_PLOT_PLUGINS VolumeVTK9)
 
 SET(OPTIONAL_PLOT_PLUGINS
 Topology

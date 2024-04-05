@@ -559,9 +559,7 @@ include(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-if(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0")
-    include(${VISIT_SOURCE_DIR}/CMake/FindTiff.cmake)
-endif()
+include(${VISIT_SOURCE_DIR}/CMake/FindTiff.cmake)
 
 
 # Configure Qt and Qwt support.
@@ -573,14 +571,12 @@ endif()
 include(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
 # Configure PySide Support
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
-                          AND NOT VISIT_DBIO_ONLY
-                          AND NOT VISIT_ENGINE_ONLY
-                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    include(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
-  endif()
-endif()
+#if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
+#                          AND NOT VISIT_DBIO_ONLY
+#                          AND NOT VISIT_ENGINE_ONLY
+#                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+#    include(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
+#endif()
 
 # Include Ice-T support if we can.
 if(VISIT_PARALLEL)
@@ -634,10 +630,7 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
-    endif()
-
+    #include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
     include(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
 endif()
 

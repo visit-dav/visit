@@ -8,13 +8,10 @@
 
 #include <avtCreateBondsFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -432,21 +429,6 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 
     if (nVerts > 0)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vtkCellArray *inVerts = in->GetVerts();
-        vtkIdType *vertPtr = inVerts->GetPointer();
-        for (int v=0; v<nVerts; v++)
-        {
-            if (*vertPtr == 1)
-            {
-                vtkIdType id = *(vertPtr+1);
-                int outcell = outVerts->InsertNextCell(1);
-                outVerts->InsertCellPoint(id);
-                outCD->CopyData(inCD, v, outcell);
-            }
-            vertPtr += (*vertPtr+1);
-        }
-#else
         auto inVerts = vtk::TakeSmartPointer(in->GetVerts()->NewIterator());
         for (inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell())
         {
@@ -458,7 +440,6 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
                 outCD->CopyData(inCD, inVerts->GetCurrentCellId(), outcell);
             }
         }
-#endif
     }
 
     int natoms = in->GetNumberOfPoints();
@@ -816,21 +797,6 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
 
     if (nVerts > 0)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vtkCellArray *inVerts = in->GetVerts();
-        vtkIdType *vertPtr = inVerts->GetPointer();
-        for (int v=0; v<nVerts; v++)
-        {
-            if (*vertPtr == 1)
-            {
-                vtkIdType id = *(vertPtr+1);
-                int outcell = outVerts->InsertNextCell(1);
-                outVerts->InsertCellPoint(id);
-                outCD->CopyData(inCD, v, outcell);
-            }
-        }
-        vertPtr += (*vertPtr+1);
-#else
         auto inVerts = vtk::TakeSmartPointer(in->GetVerts()->NewIterator());
         for (inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell())
         {
@@ -842,7 +808,6 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
                 outCD->CopyData(inCD, inVerts->GetCurrentCellId(), outcell);
             }
         }
-#endif
     }
 
     int natoms = in->GetNumberOfPoints();

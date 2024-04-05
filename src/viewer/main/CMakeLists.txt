@@ -190,11 +190,7 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0)")
-    set(vtkqtlib vtkGUISupportQt)
-else()
-    set(vtkqtlib VTK::GUISupportQt)
-endif()
+set(vtkqtlib VTK::GUISupportQt)
 
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")

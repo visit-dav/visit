@@ -32,11 +32,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_libs vtkIOPLY )
-else()
-    set(vtk_libs VTK::IOPLY )
-endif()
+set(vtk_libs VTK::IOPLY )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
@@ -53,11 +49,7 @@ ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EPLYDatabase_ser ${LIBE_SOURCES})
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_elibsSer vtkRenderingCore )
-else()
-    set(vtk_elibsSer VTK::RenderingCore )
-endif()
+set(vtk_elibsSer VTK::RenderingCore )
 
 TARGET_LINK_LIBRARIES(EPLYDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${vtk_libs} ${vtk_elibsSer} )
 ADD_TARGET_DEFINITIONS(EPLYDatabase_ser ENGINE)
@@ -66,11 +58,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EPLYDatabase_ser)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EPLYDatabase_par ${LIBE_SOURCES})
 
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        set(vtk_elibsPar vtkRenderingCore )
-    else()
-        set(vtk_elibsPar VTK::RenderingCore )
-    endif()
+    set(vtk_elibsPar VTK::RenderingCore )
 
     TARGET_LINK_LIBRARIES(EPLYDatabase_par visitcommon avtpipeline_par avtdatabase_par ${vtk_libs} ${vtk_elibsPar} )
     ADD_TARGET_DEFINITIONS(EPLYDatabase_par ENGINE)

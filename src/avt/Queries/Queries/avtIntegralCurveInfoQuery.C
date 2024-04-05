@@ -8,14 +8,11 @@
 
 #include <avtIntegralCurveInfoQuery.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
 
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -312,20 +309,11 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
     {
       vtkIdType nLines = ds->GetNumberOfLines();
       vtkIdType nPts;
-#if LIB_VERSION_LE(VTK,8,1,0)
-      vtkCellArray *lines = ds->GetLines();
-      vtkIdType *segptr = lines->GetPointer();
-      for (unsigned int i=0; i<nLines; ++i)
-      {
-        nPts = *segptr;
-        ++segptr;  // Segptr now points to the first vertex index.
-#else
       auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
       for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
       {
         const vtkIdType *segptr;
         lines->GetCurrentCell(nPts, segptr);
-#endif
         double arcLength = 0.0;
         std::vector<double> steps;
 
@@ -372,9 +360,6 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
             slData.push_back((double)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        segptr += nPts;
-#endif
       }
     }
 }

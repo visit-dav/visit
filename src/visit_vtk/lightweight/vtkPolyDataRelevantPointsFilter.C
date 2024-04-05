@@ -3,11 +3,8 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "vtkPolyDataRelevantPointsFilter.h"
-#include <visit-config.h> // For LIB_VERSION_LE
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -121,20 +118,6 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   for (int i = 0 ; i < 4 ; i++)
     {
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType ncells = arrays[i]->GetNumberOfCells();
-    vtkIdType *ptr = arrays[i]->GetPointer();
-    for (vtkIdType j = 0 ; j < ncells ; j++)
-      {
-      int npts = *ptr++;
-      for (int k = 0 ; k < npts ; k++)
-        {
-        int oldPt = *ptr++;
-        if (oldToNew[oldPt] == -1)
-          {
-          newToOld[numNewPts] = oldPt;
-          oldToNew[oldPt] = numNewPts;
-#else
     auto iter = vtk::TakeSmartPointer(arrays[i]->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
       {
@@ -147,7 +130,6 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
           {
           newToOld[numNewPts] = ptr[k];
           oldToNew[ptr[k]] = numNewPts;
-#endif
           numNewPts++;
           }
         }
@@ -224,11 +206,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   int nIdStoreSize = 1024;
   vtkIdType *pts = new vtkIdType[nIdStoreSize];
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *oldPts = nullptr;
-#else
   const vtkIdType *oldPts = nullptr;
-#endif
   vtkIdType nids = 0;
   input->BuildCells();
   for (vtkIdType i = 0; i < numCells; i++)

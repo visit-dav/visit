@@ -17,12 +17,8 @@
 =========================================================================*/
 #include "vtkVisItCutter.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkContourValues.h>
 #include <vtkDataSet.h>
@@ -496,13 +492,9 @@ vtkVisItCutter::UnstructuredGridCutter()
   int cut=0;
 
   vtkUnstructuredGrid *grid = vtkUnstructuredGrid::SafeDownCast(input);
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *cellArrayPtr = grid->GetCells()->GetPointer();
-#else
   auto cellIter = vtk::TakeSmartPointer(grid->GetCells()->NewIterator());
   vtkIdType numCellPts;
   const vtkIdType *ptIds;
-#endif
   double *scalarArrayPtr = cutScalars->GetPointer(0);
   double tempScalar;
   cellScalars = cutScalars->NewInstance();
@@ -519,11 +511,7 @@ vtkVisItCutter::UnstructuredGridCutter()
       // Loop over all cells; get scalar values for all cell points
       // and process each cell.
       //
-#if LIB_VERSION_LE(VTK, 8,1,0)
-      for (vtkIdType cellId=0, cellArrayIt=0; cellId < numCells && !abortExecute; cellId++)
-#else
       for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal() && !abortExecute; cellIter->GoToNextCell())
-#endif
         {
         if ( !(++cut % progressInterval) )
           {
@@ -531,20 +519,6 @@ vtkVisItCutter::UnstructuredGridCutter()
           this->UpdateProgress ((double)cut/numCuts);
           abortExecute = this->GetAbortExecute();
           }
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        vtkIdType numCellPts = cellArrayPtr[cellArrayIt];
-        cellArrayIt++;
-
-        //find min and max values in scalar data
-        range[0] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        cellArrayIt++;
-
-        for (vtkIdType i = 1; i < numCellPts; i++)
-          {
-          tempScalar = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-          cellArrayIt++;
-#else
         cellIter->GetCurrentCell(numCellPts, ptIds);
 
         //find min and max values in scalar data
@@ -554,7 +528,6 @@ vtkVisItCutter::UnstructuredGridCutter()
         for (vtkIdType i = 1; i < numCellPts; i++)
           {
           tempScalar = scalarArrayPtr[ptIds[i]];
-#endif
           if (tempScalar <= range[0])
             {
             range[0] = tempScalar;
@@ -574,9 +547,7 @@ vtkVisItCutter::UnstructuredGridCutter()
 
         if (needCell)
           {
-#if LIB_VERSION_GE(VTK, 9,1,0)
           vtkIdType cellId = cellIter->GetCurrentCellId();
-#endif
           vtkCell *cell = input->GetCell(cellId);
           vtkIdList *cellIds = cell->GetPointIds();
           cutScalars->GetTuples(cellIds,cellScalars);
@@ -605,22 +576,6 @@ vtkVisItCutter::UnstructuredGridCutter()
     // Loop over all cells; get scalar values for all cell points
     // and process each cell.
     //
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    for (vtkIdType cellId=0, cellArrayIt=0; cellId < numCells && !abortExecute; cellId++)
-      {
-      vtkIdType numCellPts = cellArrayPtr[cellArrayIt];
-      cellArrayIt++;
-
-      //find min and max values in scalar data
-      range[0] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-      range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-      cellArrayIt++;
-
-      for (vtkIdType i = 1; i < numCellPts; i++)
-        {
-        tempScalar = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        cellArrayIt++;
-#else
     for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal() && !abortExecute; cellIter->GoToNextCell())
       {
       cellIter->GetCurrentCell(numCellPts, ptIds);
@@ -632,7 +587,6 @@ vtkVisItCutter::UnstructuredGridCutter()
       for (vtkIdType i = 1; i < numCellPts; i++)
         {
         tempScalar = scalarArrayPtr[ptIds[i]];
-#endif
         if (tempScalar <= range[0])
           {
           range[0] = tempScalar;
@@ -656,9 +610,7 @@ vtkVisItCutter::UnstructuredGridCutter()
 
       if (needCell)
         {
-#if LIB_VERSION_GE(VTK, 9,1,0)
         vtkIdType cellId = cellIter->GetCurrentCellId();
-#endif
         vtkCell *cell = input->GetCell(cellId);
         vtkIdList *cellIds = cell->GetPointIds();
         cutScalars->GetTuples(cellIds,cellScalars);

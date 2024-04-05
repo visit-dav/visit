@@ -99,11 +99,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${SIMV2_PLUGIN_DIR}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkIOCore vtktiff vtkpng vtkjpeg)
-else()
-    set(vtklibs VTK::CommonCore VTK::IOCore VTK::tiff VTK::png VTK::jpeg)
-endif()
+set(vtklibs VTK::CommonCore VTK::IOCore VTK::tiff VTK::png VTK::jpeg)
 
 LINK_DIRECTORIES(
 ${LIBRARY_OUTPUT_DIRECTORY}
