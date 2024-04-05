@@ -106,11 +106,9 @@ function build_mpich
     # We should not ever need them because we are not developing mpich.
     # I guess we need shared libs.
     #
-    ldflags=""
     mpich_opts="--disable-maintainer-mode --enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
-        ldflags="-Wl,-flat_namespace -Wl,-undefined -Wl,suppress"
+        mpich_opts="${mpich_opts} --enable-threads=single"
     fi
 
     #
@@ -133,13 +131,12 @@ function build_mpich
     fi
 
     set -x
-    issue_command env PATH=`pwd`:${PATH} CXX="$CXX_COMPILER" \
+    issue_command env CXX="$CXX_COMPILER" \
                   CC="$C_COMPILER" \
                   CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
                   CXXFLAGS="$MPICH_CXXFLAGS $MPICH_CXX_OPT_FLAGS"\
                   FFLAGS="$MPICH_FCFLAGS"\
                   ./configure ${mpich_opts} \
-                  LDFLAGS="${ldflags}" \
                   --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
     set +x
     if [[ $? != 0 ]] ; then
@@ -151,11 +148,22 @@ function build_mpich
     # Build MPICH
     #
     info "Building MPICH . . . (~5 minutes)"
-    env PATH=`pwd`:${PATH} $MAKE $MAKE_OPT_FLAGS
+    env $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "MPICH build failed.  Giving up"
-        return 1
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            warn "MPICH build failed but maybe due to LDFLAGS.\n" \
+                 "Retrying MPICH build with LDFLAGS set."
+            env $MAKE $MAKE_OPT_FLAGS LDFLAGS="-Wl,-flat_namespace -Wl,-undefined -Wl,suppress"
+            if [[ $? != 0 ]] ; then
+                warn "MPICH build failed.  Giving up"
+                return 1
+            fi
+        else
+            warn "MPICH build failed.  Giving up"
+            return 1
+        fi
     fi
+
     #
     # Install into the VisIt third party location.
     #
