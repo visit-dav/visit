@@ -23,9 +23,9 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.4.1"}
 ####
 # Trunk:
 ####
-export TRUNK_BUILD="yes"
-export RC_BUILD="no"
-export TAGGED_BUILD="no"
+# export TRUNK_BUILD="yes"
+# export RC_BUILD="no"
+# export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
