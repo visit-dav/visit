@@ -15,6 +15,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#Bugs_fixed">Bug Fixes</a></li>
   <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#TPL">Third-party Library Versions</a></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -38,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Several bugs were fixed in UNV plugin including fixing normals for quads.</li>
   <li>Fixed a problem with global node ids on point meshes from Silo plugin.</li>
   <li>Fixed a bug in the Wavefront OBJ Writer that caused zonal variables saved out using the writer to have some incorrect colors in downstream tools such as PowerPoint.</li>
+  <li>Fixed srun launch issues on LLNL TOSS4 systems.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -56,8 +58,114 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>GetPlotInformation() can now contain entries for multiple-curves when Query-over-time is performed on multiple variables. For example, if a pick-through-time was performed for variables 'u' and 'v', the curve for 'v' would be retrieved via 'GetPlotInformation()['Curves']['v']. Single variable results will still be retrieved via 'GetPlotInformation()['Curve'].</li>
   <li>The ADIOS2 database plugin learned a new flavor of file type: Pixie3D.</li>
   <li>A number of improvements were made to the UNV plugin including quadric elements, support for antique SDRC/I-Deas files prior to Master Series (versions 4,5 and 6), GMSH hidden polygon linear element.</li>
-  <li>The Docker files for Debian 10,11,12, Fedora 31, Ubuntu 18, 20,22 have all been updated for this release. All but Unbuntu18 build Qt 6.</li>
+  <li>The Docker files for Debian 10,11,12, Fedora 31, Ubuntu 18, 20,22 have all been updated for this release. All but Ubuntu 18 build Qt 6.</li>
+  <li>Updated LLNL host profiles for new systems</li>
+  <li>Ported VisIt to LANL's Crossroads (XR) System</li>
+  <li>Refactored VisIt's CMake Python logic to use pip instead of distutils.</li>
+  <li>Updated VisIt to use Python 3.9.</li>
 </ul>
+
+<a name="TPL"></a>
+<p><b><font size="4">Third-party Libraries used for version 3.4.1</font></b></p>
+<table>
+<tr><td>adios2-2.10.0-rc1</tr></td>
+<tr><td>adios-1.13.1</tr></td>
+<tr><td>AdvIO-1.2</tr></td>
+<tr><td>c-blosc2-2.11.3</tr></td>
+<tr><td>boost_1_67_0</tr></td>
+<tr><td>ccse-1.3.5</tr></td>
+<tr><td>cfe-6.0.1.src</tr></td>
+<tr><td>llvm-6.0.1.src</tr></td>
+<tr><td>cfitsio3006</tr></td>
+<tr><td>CGNS-4.1.0</tr></td>
+<tr><td>cmake-3.24.3</tr></td>
+<tr><td>conduit-v0.9.1</tr></td>
+<tr><td>embree-3.2.0.x86_64.macosx</tr></td>
+<tr><td>FMS-0.2</tr></td>
+<tr><td>gdal-2.2.4</tr></td>
+<tr><td>glu-9.0.0</tr></td>
+<tr><td>H5Part-1.6.6</tr></td>
+<tr><td>hdf5-1.8.14</tr></td>
+<tr><td>icet-master-77c708f9090236b576669b74c53e9f105eedbd7e</tr></td>
+<tr><td>ilmbase-2.2.0</tr></td>
+<tr><td>ispc-v1.9.2-osx</tr></td>
+<tr><td>mdsplus-5.0</tr></td>
+<tr><td>mesa-17.3.9</tr></td>
+<tr><td>mfem-4.6</tr></td>
+<tr><td>mili-23.02</tr></td>
+<tr><td>moab-5.5.0</tr></td>
+<tr><td>mpich-3.3.1</tr></td>
+<tr><td>nektar-5.0.0</tr></td>
+<tr><td>netcdf-4.1.1</tr></td>
+<tr><td>openexr-2.2.0</tr></td>
+<tr><td>mesa-17.3.9</tr></td>
+<tr><td>ospray-3.0.0</tr></td>
+<tr><td>PIDX-0.9.3</tr></td>
+<tr><td><b>Qt6</b></tr></td>
+<tr><td>qtbase-everywhere-src-6.4.2</tr></td>
+<tr><td>qtsvg-everywhere-src-6.4.2</tr></td>
+<tr><td>qttools-everywhere-src-6.4.2</tr></td>
+<tr><td>qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd</tr></td>
+<tr><td><b>-</b></tr></td>
+<tr><td><b>Qt5</b></tr></td>
+<tr><td>qt-everywhere-src-5.14.2</tr></td>
+<tr><td>qwt-6.1.2.tar.bz2</tr></td>
+<tr><td><b>-</b></tr></td>
+<tr><td>silo-4.10.2</tr></td>
+<tr><td>stripack-ACM.RJRenka.Sep97</tr></td>
+<tr><td>szip-2.1</tr></td>
+<tr><td>tbb2018_20171205oss_mac</tr></td>
+<tr><td>Uintah-2.6.2</tr></td>
+<tr><td>VTK-9.2.6</tr></td>
+<tr><td>vtk-m-v1.9.0</tr></td>
+<tr><td>Xdmf-2.1.1</tr></td>
+<tr><td>zlib-1.2.13</tr></td>
+<tr><td><b>Python</b></tr></td>
+<tr><td>Python-3.9.18</tr></td>
+<tr><td>alabaster-0.7.13</tr></td>
+<tr><td>Babel-2.12.1</tr></td>
+<tr><td>calver-2022.6.26</tr></td>
+<tr><td>certifi-2023.5.7</tr></td>
+<tr><td>charset-normalizer-3.2.0</tr></td>
+<tr><td>Cython-3.0.0</tr></td>
+<tr><td>docutils-0.18.1</tr></td>
+<tr><td>editables-0.5</tr></td>
+<tr><td>flit_core-3.9.0</tr></td>
+<tr><td>hatchling-1.18.0</tr></td>
+<tr><td>idna-3.4</tr></td>
+<tr><td>imagesize-1.4.1</tr></td>
+<tr><td>importlib_metadata-6.8.0</tr></td>
+<tr><td>Jinja2-3.1.2</tr></td>
+<tr><td>MarkupSafe-2.1.3</tr></td>
+<tr><td>mpi4py-3.1.4</tr></td>
+<tr><td>numpy-1.25.1</tr></td>
+<tr><td>packaging-23.1</tr></td>
+<tr><td>pathspec-0.11.2</tr></td>
+<tr><td>Pillow-10.0.0</tr></td>
+<tr><td>pluggy-1.2.0</tr></td>
+<tr><td>Pygments-2.15.1</tr></td>
+<tr><td>pyside-setup-5.14.2</tr></td>
+<tr><td>requests-2.31.0</tr></td>
+<tr><td>setuptools-68.0.0</tr></td>
+<tr><td>snowballstemmer-2.2.0</tr></td>
+<tr><td>sphinxcontrib-applehelp-1.0.4</tr></td>
+<tr><td>sphinxcontrib-devhelp-1.0.2</tr></td>
+<tr><td>sphinxcontrib-htmlhelp-2.0.1</tr></td>
+<tr><td>sphinxcontrib-jquery-4.1</tr></td>
+<tr><td>sphinxcontrib-jsmath-1.0.1</tr></td>
+<tr><td>sphinxcontrib-qthelp-1.0.3</tr></td>
+<tr><td>sphinxcontrib-serializinghtml-1.1.5</tr></td>
+<tr><td>Sphinx-7.0.1</tr></td>
+<tr><td>sphinx_rtd_theme-1.2.2</tr></td>
+<tr><td>sphinx-tabs-3.4.1</tr></td>
+<tr><td>tomli-2.0.1</tr></td>
+<tr><td>toml-0.10.2</tr></td>
+<tr><td>trove-classifiers-2023.8.7</tr></td>
+<tr><td>urllib3-2.0.3</tr></td>
+<tr><td>wheel-0.41.1</tr></td>
+<tr><td>zipp-3.16.2</tr></td>
+<tr><td><b>-</b></tr></td>
+</table>
 
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href=relnotes3.4.0.html>3.4.0</a>.</p>
