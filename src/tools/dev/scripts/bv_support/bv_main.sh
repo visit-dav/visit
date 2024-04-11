@@ -605,6 +605,7 @@ function initialize_build_visit()
     export DO_QT510="no"
     export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
+    LIST_TPS="no"
 
 
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
@@ -1223,6 +1224,7 @@ function run_build_visit()
             -h|--help) next_action="help";;
             --install-network) next_arg="install-network";;
             --java) DO_JAVA="yes";;
+            --list-tpls) LIST_TPLS="yes";;
             --makeflags) next_arg="makeflags";;
             --no-hostconf) DO_HOSTCONF="no";;
             --no-boost) DO_BOOST="no";;
@@ -1384,8 +1386,19 @@ function run_build_visit()
         fi
     fi
 
+    if [[ "$LIST_TPLS" == "yes" ]] ; then
+      info $LINES
+      info "build_visit Third-party Libraries:"
+      for var in $(set -o posix; set | grep _FILE=; set +o posix); do
+          var=$(echo $var | cut -d '=' -f1)
+          info $var ${!var}
+      done
+      info $LINES
+      exit 0
+    fi
+
     #enabling any dependent libraries, handles both dependers and dependees..
-    #TODO: handle them seperately
+    #TODO: handle them separately
     info "enabling any dependent libraries"
     enable_dependent_libraries
 
