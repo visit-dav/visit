@@ -38,9 +38,9 @@ export TAGGED_BUILD="no"
 ###
 # Tagged Release:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="no"
-#export TAGGED_BUILD="yes"
+export TRUNK_BUILD="no"
+export RC_BUILD="no"
+export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
