@@ -2754,9 +2754,9 @@ function build_vtk
         # so were completely broken. After trying a large number of variations, the
         # only way I found to have it do something close to the right thing was to
         # tweek the CMakeLists.txt and set the custom lib suffix to "".
-        if test "${VTK_VERSION} = "9.2.6" ; then
+        if test "${VTK_VERSION}" = "9.2.6" ; then
             vopts="${vopts} -DVTK_CUSTOM_LIBRARY_SUFFIX:STRING=\"\""
-            sed -i.orig -e 's/^  SOVERSION           "1"/  SOVERSION           "9.2"/' ../${VTK_SRC_DIR}/CMakeLists.txt
+            sed -i.orig -e 's/^  SOVERSION           "1"/  SOVERSION           "9.2"/' ./${VTK_SRC_DIR}/CMakeLists.txt
         fi
 
         if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
