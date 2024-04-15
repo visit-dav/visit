@@ -449,7 +449,6 @@ cd ../
 version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
-mv _install/\$version/linux-x86_64 _install/\$version/linux-x86_64-toss4 >> ../../installlog 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail

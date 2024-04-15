@@ -1,5 +1,5 @@
 FROM ubuntu:jammy
-MAINTAINER Eric Brugger <brugger1@llnl.gov>
+MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
 
 # fetch build env
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,23 +9,62 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     unzip \
-    subversion \
     build-essential \
     gcc \
     g++ \
     gfortran \
-    zlib1g-dev \
-    python2 \
-    libsm-dev \
-    libice-dev \
     libssl-dev \
-    libx11-xcb-dev \
-    libxcb-dri2-0-dev \
+    python3 \
+    libxrender1 \
+    libxrender-dev \
+    libxcb1 \
+    libxcb1-dev \
+    libxcb-cursor0 \
+    libxcb-cursor-dev \
+    libxcb-render0 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxcb-shape0-dev \
+    libxcb-randr0 \
+    libxcb-randr0-dev \
     libxcb-xfixes0-dev \
+    libxcb-xkb1 \
+    libxcb-xkb-dev \
+    libxcb-sync1 \
+    libxcb-sync-dev \
+    libxcb-shm0 \
+    libxcb-shm0-dev \
+    libxcb-icccm4 \
+    libxcb-icccm4-dev \
+    libxcb-keysyms1 \
+    libxcb-keysyms1-dev \
+    libxcb-image0 \
+    libxcb-image0-dev \
+    libxcb-util1 \
+    libxcb-util-dev \
+    libxcb-xinerama0-dev \
+    libxcb-glx0-dev \
+    libxcb-dri2-0-dev \
+    libxkbcommon0 \
     libxkbcommon-dev \
-    xutils-dev \
-    xorg-dev \
+    libxkbcommon-x11-0 \
+    libxkbcommon-x11-dev \
+    libx11-6 \
+    libx11-dev \
+    libx11-xcb1 \
+    libx11-xcb-dev \
+    libxfixes-dev \
+    libfontconfig1 \
+    libfontconfig1-dev \
+    libfreetype6 \
     libfreetype6-dev \
+    libxext6 \
+    libxext-dev \
+    libsm6 \
+    libice6 \
+    libglib2.0-0 \
+    libxi-dev \
+    xorg-dev \
     autoconf \
     libtool \
     m4 \
@@ -34,8 +73,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     vim \
     emacs \
-    bison \
-    flex \
     cpio \
     libegl1 \
     libegl1-mesa-dev \
@@ -48,9 +85,6 @@ RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* 
 ENV LANG en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
-RUN cd /usr/bin && ln -s python2 python
-
-RUN cd /usr && ln -s lib lib64
 
 RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
 USER visit
@@ -59,10 +93,16 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_3_3 /home/visit
-COPY run_build_visit_ubuntu22.sh /home/visit
-COPY build_visit_docker_cleanup.py /home/visit
-COPY build_test_visit.sh /home/visit
-COPY test_visit.py /home/visit
-# Build the third party libraries.
-RUN /bin/bash run_build_visit_ubuntu22.sh
+COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit run_build_visit-ubuntu22.sh /home/visit
+COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
+# build thirdparty libraries
+RUN /bin/bash run_build_visit-ubuntu22.sh
+
+# build and test visit
+COPY --chown=visit:visit build_test_visit.sh /home/visit
+COPY --chown=visit:visit test_visit.py /home/visit
+COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
+# Build visit, package, install and test.
+RUN /bin/bash build_test_visit.sh -v 3.4.1
+
