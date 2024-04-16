@@ -19,7 +19,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtParDomICAlgorithm.h"
 #include "avtPODICAlgorithm.h"
 #include "avtCommDSOnDemandICAlgorithm.h"
-#include "avtManagerWorkerICAlgorithm.h"
 #include "avtVariableCache.h"
 #include <visitstream.h>
 
