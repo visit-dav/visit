@@ -1332,18 +1332,6 @@ avtPICSFilter::Execute(void)
         icAlgo = new avtSerialICAlgorithm(this);
     else if (selectedAlgo == PICS_PARALLEL_OVER_DOMAINS)
         icAlgo = new avtPODICAlgorithm(this, maxCount);
-    /*
-    else if (selectedAlgo == PICS_PARALLEL_COMM_DOMAINS)
-        icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
-    else if (selectedAlgo == PICS_PARALLEL_MANAGER_WORKER)
-    {
-        icAlgo = avtManagerWorkerICAlgorithm::Create(this,
-                                                   maxCount,
-                                                   PAR_Rank(),
-                                                   PAR_Size(),
-                                                   workGroupSz);
-    }
-    */
 #else
     icAlgo = new avtSerialICAlgorithm(this);
 #endif
