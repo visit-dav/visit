@@ -196,7 +196,7 @@ def timedelta(t_start,t_end):
             "minutes":minutes,
             "seconds": seconds}
 
-def shexe(cmd,ret_output=False,echo = False,env=None):
+def shexe(cmd,ret_output=False,echo=False,env=None,redirect=None):
         """ Helper for executing shell commands. """
         kwargs = {"shell":True}
         if not env is None:
@@ -211,7 +211,13 @@ def shexe(cmd,ret_output=False,echo = False,env=None):
             res = p.communicate()[0]
             return p.returncode,res
         else:
-            return subprocess.call(cmd,**kwargs),""
+            if redirect is not None:
+                with open(redirect, 'w') as file:
+                    kwargs["stdout"] = file
+                    kwargs["stderr"] = subprocess.STDOUT
+                    return subprocess.call(cmd,**kwargs),""
+            else:
+                return subprocess.call(cmd,**kwargs),""
 
 class Context(object):
     def __init__(self,enable_logging=True,log_dir=None):
@@ -318,7 +324,8 @@ class NotarizeAction(Action):
                  type="notarize",
                  description=None,
                  halt_on_error=True,
-                 env=None):
+                 env=None,
+                 redirect=None):
         super(NotarizeAction,self).__init__()
         self.params["build_dir"] = build_dir
         self.params["build_type"] = build_type
@@ -334,6 +341,7 @@ class NotarizeAction(Action):
         self.params["description"] = description
         self.params["halt_on_error"] = halt_on_error
         self.params["env"] = env
+        self.params["redirect"] = redirect
 
     def execute(self,base,key,tag,parent_res):
         t_start = timenow();
@@ -353,6 +361,7 @@ class NotarizeAction(Action):
                 "password": self.params["password"],
                 "asc_provider": self.params["asc_provider"],
                 "env": self.params["env"],
+                "redirect": self.params["redirect"],
                 "start_time":  timestamp(t_start),
                 "halt_on_error": self.params["halt_on_error"],
                 "finish_time":  None,
@@ -521,7 +530,8 @@ class ShellAction(Action):
                  working_dir=None,
                  description=None,
                  halt_on_error=True,
-                 env=None):
+                 env=None,
+                 redirect=None):
         super(ShellAction,self).__init__()
         self.params["cmd"]  = cmd
         self.params["type"] = type
@@ -533,6 +543,7 @@ class ShellAction(Action):
             description = ""
         self.params["description"] = description
         self.params["env"] = env
+        self.params["redirect"] = redirect
     def execute(self,base,key,tag,parent_res):
         t_start = timenow();
         res = {"action":
@@ -543,6 +554,7 @@ class ShellAction(Action):
                 "description": self.params["description"],
                 "working_dir": self.params["working_dir"],
                 "env": self.params["env"],
+                "redirect": self.params["redirect"],
                 "start_time":  timestamp(t_start),
                 "halt_on_error": self.params["halt_on_error"],
                 "finish_time":  None,
@@ -553,6 +565,8 @@ class ShellAction(Action):
         base.log(key=key,result=parent_res)
         cwd = os.path.abspath(os.getcwd())
         env = os.environ.copy()
+        redirect=self.params["redirect"]
+        ret_output = True if redirect is None else False
         if not self.params["env"] is None:
             env.update(self.params["env"])
         try:
@@ -562,9 +576,10 @@ class ShellAction(Action):
             print("[chdir to: %s]" % self.params["working_dir"])
             os.chdir(self.params["working_dir"])
             rcode, rout = shexe(self.params["cmd"],
-                               ret_output=True,
+                               ret_output=ret_output,
                                echo=True,
-                               env=env)
+                               env=env,
+                               redirect=self.params["redirect"])
             res["action"]["output"] = rout
             res["action"]["return_code"]  = rcode
         except KeyboardInterrupt as e:
@@ -631,14 +646,16 @@ class CMakeAction(ShellAction):
                  working_dir=None,
                  description=None,
                  halt_on_error=True,
-                 env=None):
+                 env=None,
+                 redirect="cmake.out"):
         cmd = " ".join([cmake_bin,cmake_opts,src_dir])
         super(CMakeAction,self).__init__(cmd=cmd,
                                          type="cmake",
                                          working_dir=working_dir,
                                          description=description,
                                          halt_on_error=halt_on_error,
-                                         env=env)
+                                         env=env,
+                                         redirect="cmake.out")
         self.params["src_dir"]    = src_dir
         self.params["cmake_opts"] = cmake_opts
         self.params["cmake_bin"]  = cmake_bin
@@ -651,7 +668,8 @@ class MakeAction(ShellAction):
                  working_dir=None,
                  description=None,
                  halt_on_error=True,
-                 env=None):
+                 env=None,
+                 redirect="make.out"):
         cmd = " ".join([make_bin,
                         "-j%d" % nthreads,
                         target])
@@ -660,10 +678,11 @@ class MakeAction(ShellAction):
                                         working_dir=working_dir,
                                         description=description,
                                         halt_on_error=halt_on_error,
-                                        env=env)
-        self.params["target"]    = target
-        self.params["nthreads"]  = nthreads
-        self.params["make_bin"]   =make_bin
+                                        env=env,
+                                        redirect="make.out")
+        self.params["target"]   = target
+        self.params["nthreads"] = nthreads
+        self.params["make_bin"] = make_bin
 
 class InorderTrigger(Action):
     def __init__(self,actions=None):
