@@ -12,6 +12,7 @@
  "make_nthreads": 8,
  "skip_checkout": "yes",
  "git": {"mode":"ssh","git_uname":"markcmiller86"},
+ "cmake_extra_opts" : "-DCMAKE_VERBOSE_MAKEFILE=ON",
  "build_visit":  { "cmake_ver": "3.24.3",
                    "args":"--no-thirdparty",
                    "libs":["cmake",
