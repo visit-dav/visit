@@ -1,4 +1,4 @@
-export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
+export LOG_FILE=${LOG_FILE:-"$(pwd)/${0##*/}_log"}
 
 # *************************************************************************** #
 # Purpose: Flexible comparison function for version strings                   #
