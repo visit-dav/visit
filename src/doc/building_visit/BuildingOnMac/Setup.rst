@@ -151,101 +151,150 @@ Apart from commonly encountered issues building each third party library built b
       find /Volumes/VisIt-3.3.0/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64 -name '*.so -o -name '*.dylib' -exec otool -L {} \; -print | grep -v rpath
 
   will find cases of non-rpath'd library dependencies build into either shared (``.so``) or dynamic (``.dylib``) libraries.
-  Note, however, that sometimes Python EGG's contained Zip-compressed ``.so`` files that this check won't find.
+  Note, however, that sometimes Python EGG's contain Zip-compressed ``.so`` files that this check won't find.
   
   Just removing associated stuff from your ``$PATH`` will not prevent these build dependencies.
   Fixing them likely means finding some of the individual packages in ``bv_python.sh`` and adding ``site.cfg`` files or otherwise finding build switches that explicitly disable the features creating the need for these dependencies.
 * Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
   For example, Sphinx can wind up getting installed with all command-line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
   We've added patching code to ``bv_python.sh`` to help correct for this.
-* You can check whether ``VisIt.app`` is properly codesigned using this command ::
 
-      codesign -v -v /Volumes/VisIt-3.3.0/VisIt.app
+Codesigning, Notarizing and Stapling macOS Builds
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are several aspects to producing a ``.dmg`` application bundle for macOS.
+The most involved of these steps is *codesigning*.
+Codesigning involves iterating over all the libraries and executables in the bundle and doing so in a bottom-up or inside-out fashion such that the leaves of any dependenc chains are codesigned first.
+Its not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right.
+However, the remaining steps involving notarizing and stapling the notarization ticket to the ``.dmg`` bundle.
+The masonry scripts are designed to do these steps automatically as well but they can also be easily handled manually if necessary.
+Because Apple seems to change these processes frequently, we try to capture here some of t
+
+Notarizing
+""""""""""
+
+Prior to November, 2023, ``xcrun altool`` was used to notarize macOS bundles.
+This was changed by Apple to use ``xcrun notarytool``.
+`Migrating <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool>`__ from the old approach to the new one is straightforward.
+
+Old way using ``xcrun altool``... ::
+
+        xcrun altool --notarize-app --primary-bundle-id gov.llnl.visit --username APPLE_ID --password @keychain:APP_PASSWORD --asc-provider TEAM_ID --file /Users/miller86/visit/visit/34rc/release/build-mb-3.4.1-darwin-21-x86_64-release/notarize.release/VisIt.dmg --output-format xml
+
+New way using ``xcrun notarytool``... ::
+
+        xcrun notarytool submit --apple-id APPLE_ID --keychain-profile APP_PASSOWRD --team-id TEAM_ID /path/to/VisIt.dmg
+
+Where ``APPLE_ID`` is your Apple Id login with Apple, ``APP_PASSWORD`` is the clear-text name for the `app-specific password <https://support.apple.com/en-us/102654>`__ you created (once probably in the distant past and you can no longer remember the steps involved) in your keychain and ``TEAM_ID`` is the Apple Developer ID for LLNL.
+For the ``APP_PASSWORD`` to work correctly with ``notarytool``, you will need to `copy over <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain>`__ the app-specific password you were using for ``altool`` so that it can also be used for ``notarytool``.
+
+The submission process can take a while because it is uploading the (very large) ``.dmg`` file to Apple's servers and then processing it there.
+When the *submission* completes, you will see a message such as ::
+
+        Conducting pre-submission checks for VisIt.dmg and initiating connection to the Apple notary service...
+        Submission ID received
+          id: d66044ca-5cd1-4d9a-87f7-492ce2ed9bfa
+        Successfully uploaded file606 MB of 606 MB)    
+          id: d66044ca-5cd1-4d9a-87f7-492ce2ed9bfa
+          path: /path/to/VisIt.dmg
+
+That means only that the file uploaded successfully.
+The notarization will not necessarily complete right a way.
+You can check progress on the notarization by the following command ::
+
+        xcrun notarytool info --apple-id APPLE_ID --keychain-profile APP_PASSWORD --team-id TEAM_ID SUBMISSION_ID
+
+which, if it is still processing the notarization request, will produce an output like so ::
+
+        Successfully received submission info
+          createdDate: 2024-04-19T19:10:31.277Z
+          id: d66044ca-5cd1-4d9a-87f7-492ce2ed9bfa
+          name: VisIt.dmg
+          status: In Progress
+
+If the notarization has completed, the output will look like ::
+
+        Successfully received submission info
+          createdDate: 2024-04-19T19:10:31.277Z
+          id: d66044ca-5cd1-4d9a-87f7-492ce2ed9bfa
+          name: VisIt.dmg
+          status: Accepted
+
+Finally, *stapling* the notarization to the ``.dmg`` file is an easily final step ::
+
+        xcrun stapler staple /path/to/VisIt.dmg
+        Processing: /path/to/VisIt.dmg
+        Processing: /path/to/VisIt.dmg
+        The staple and validate action worked!
+
+Confirming
+""""""""""
+
+* You can check whether ``VisIt.app`` is properly codesigned by mounting the ``.dmg`` file and then using this command ::
+
+        codesign -v -v /Volumes/VisIt-3.3.0/VisIt.app
 
   which should produce output like so... ::
 
-      /Volumes/VisIt-3.3.0/VisIt.app: valid on disk
-      /Volumes/VisIt-3.3.0/VisIt.app: satisfies its Designated Requirement
+        /Volumes/VisIt-3.3.0/VisIt.app: valid on disk
+        /Volumes/VisIt-3.3.0/VisIt.app: satisfies its Designated Requirement
 
 * You can check whether ``VisIt.app`` is properly notarized using this command ::
 
-      spctl -a -t exec -vv /Volumes/VisIt-3.3.0/VisIt.app
+        spctl -a -t exec -vv /Volumes/VisIt-3.3.0/VisIt.app
 
   which should produce output like so... ::
 
-      /Volumes/VisIt-3.3.0/VisIt.app: accepted
-      source=Notarized Developer ID
-      origin=Developer ID Application: Lawrence Livermore National Laboratory (A827VH86QR)
+        /Volumes/VisIt-3.3.0/VisIt.app: accepted
+        source=Notarized Developer ID
+        origin=Developer ID Application: Lawrence Livermore National Laboratory (A827VH86QR)
 
 * You can get more details about why a notorization failed using the command ::
 
-      xcrun altool --notarization-info ``uuid`` --username ``username-email`` --password @keychain:VisIt
+        xcrun notarytool log --apple-id APPLE_ID --keychain-profile APP_PASSWORD --team-id TEAM_ID SUBMISSION_ID 
 
-  where ``uuid`` (also called the *request identifier*) is the id you get (in email or printed by masonry to the logs) and ``username-email`` is your Apple developer ID email address.
-  And, this should produce output like so... ::
+  where ``SUBMISSION_ID`` is the id you get (printed by masonry to the logs) in the ``id:`` field of the details returned from ``xcrun notarytool submit`` command.
+  And, this should produce a lot of output like so... ::
 
-      No errors getting notarization info.
+       {
+         "logFormatVersion": 1,
+         "jobId": "d66044ca-5cd1-4d9a-87f7-492ce2ed9bfa",
+         "status": "Accepted",
+         "statusSummary": "Ready for distribution",
+         "statusCode": 0,
+         "archiveFilename": "VisIt.dmg",
+         "uploadDate": "2024-04-19T19:14:50.128Z",
+         "sha256": "e70df42af4c576dd2a880935b7b9d15b4a3996e8da215f933c36ba8df755a7f4",
+         "ticketContents": [
+           {
+             "path": "VisIt.dmg",
+             "digestAlgorithm": "SHA-256",
+             "cdhash": "2c70abcb2749b8aca52f2ab028027b8a70297713"
+           },
+           {
+             "path": "VisIt.dmg/VisIt.app",
+             "digestAlgorithm": "SHA-256",
+             "cdhash": "68c549e036f09fc440ddfdd7b52d63f718276957",
+             "arch": "x86_64"
+           },
+           {
+             "path": "VisIt.dmg/VisIt.app/Contents/MacOS/VisIt",
+             "digestAlgorithm": "SHA-256",
+             "cdhash": "68c549e036f09fc440ddfdd7b52d63f718276957",
+             "arch": "x86_64"
+           },
+           {
+             "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.4.1/darwin-x86_64/bin/qvtkopenglExample",
+             "digestAlgorithm": "SHA-256",
+             "cdhash": "ed30817e765bca4e115bb6d4477ed1561551ef15",
+             "arch": "x86_64"
+           },
+        .
+        .
+        .
 
-                Date: 2022-07-18 18:59:44 +0000
-                Hash: af5e1231bae06e051e5f1a0cfa37219ec4cb5ec2f76971557d9389f1d8edcadd
-          LogFileURL: https://osxapps-ssl.itunes.apple.com/itunes-assets/Enigma122/v4/d6/a7/08/d6a7083b-c6d7-6e8f-8a3c-0db0d406d3da/developer_log.json?accessKey=1658530108_1173406174696701459_H%2BzLM3o4PjKeGN8jgdqPBTVz5wUY5BMY7R7Lvh8UrBmn6kxu%2F4XVdkvSsUE5wrAlbmW%2FCCLSRzU%2FUHBGNhgOa1DZDoXQXtXOAUx3sk1ptivix7dQhzQa11SU9EnbESN6PkZ5je9g4IOrqMdibbB7hhxhTgMvQhiKEO9BXjne9xs%3D
-         RequestUUID: 1a8b8756-9c4c-4908-b6db-387a5144ce43
-              Status: invalid
-         Status Code: 2
-      Status Message: Package Invalid
-
-  Cut and paste the ``LogFileURL`` into a browser to go examine the results.
-  Doing so for the above example yielded a json page like so... ::
-
-      {
-        "logFormatVersion": 1,
-        "jobId": "1a8b8756-9c4c-4908-b6db-387a5144ce43",
-        "status": "Invalid",
-        "statusSummary": "Archive contains critical validation errors",
-        "statusCode": 4000,
-        "archiveFilename": "VisIt.dmg",
-        "uploadDate": "2022-07-18T18:59:44Z",
-        "sha256": "af5e1231bae06e051e5f1a0cfa37219ec4cb5ec2f76971557d9389f1d8edcadd",
-        "ticketContents": null,
-        "issues": [
-          {
-            "severity": "error",
-            "code": null,
-            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_webp.cpython-37m-darwin.so",
-            "message": "The binary is not signed.",
-            "docUrl": null,
-            "architecture": "x86_64"
-          },
-          {
-            "severity": "error",
-            "code": null,
-            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_webp.cpython-37m-darwin.so",
-            "message": "The signature does not include a secure timestamp.",
-            "docUrl": null,
-            "architecture": "x86_64"
-          },
-          {
-            "severity": "error",
-            "code": null,
-            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_imagingft.cpython-37m-darwin.so",
-            "message": "The binary is not signed.",
-            "docUrl": null,
-            "architecture": "x86_64"
-          },
-          {
-            "severity": "error",
-            "code": null,
-            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_imagingft.cpython-37m-darwin.so",
-            "message": "The signature does not include a secure timestamp.",
-            "docUrl": null,
-            "architecture": "x86_64"
-          }
-        ]
-      }
-
-
-Signing macOS Builds
-~~~~~~~~~~~~~~~~~~~~
+Certificates for signing macOS Builds
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information.
 
 1. Enroll in the Apple Developer Program, if needed, and create your Developer ID certificates.
