@@ -164,11 +164,11 @@ Codesigning, Notarizing and Stapling macOS Builds
 
 There are several aspects to producing a ``.dmg`` application bundle for macOS.
 The most involved of these steps is *codesigning*.
-Codesigning involves iterating over all the libraries and executables in the bundle and doing so in a bottom-up or inside-out fashion such that the leaves of any dependenc chains are codesigned first.
+Codesigning involves iterating over all the libraries and executables in the bundle and doing so in a bottom-up or inside-out fashion such that the leaves of any dependency chains are codesigned first.
 Its not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right.
-However, the remaining steps involving notarizing and stapling the notarization ticket to the ``.dmg`` bundle.
-The masonry scripts are designed to do these steps automatically as well but they can also be easily handled manually if necessary.
-Because Apple seems to change these processes frequently, we try to capture here some of t
+However, the remaining steps involving notarizing and stapling the notarization ticket to the ``.dmg`` bundle can easily be handled manually.
+The masonry scripts are designed to do these steps automatically as well but they can also be handled manually if necessary.
+Because Apple seems to change these processes frequently, we capture here some of the key steps.
 
 Notarizing
 """"""""""
