@@ -185,11 +185,14 @@ function build_adios2
         adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
 
         cfg_opts=""
-        cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
-        cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
-        cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:STRING=OFF"
+
+        # Disable PNG and FFI dependence on macOS
         if [[ "$OPSYS" == "Darwin" ]]; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
+            cfg_opts="${cfg_opts} -DCMAKE_DISABLE_FIND_PACKAGE_LibFFI=TRUE"
         fi
 
         if test "x${DO_STATIC_BUILD}" = "xyes" ; then
@@ -201,8 +204,8 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
         cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
-        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
-        cfg_opts="${cfg_opts} -DADIOS2_USE_Sodium:STRING=NO"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:STRING=ON"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Sodium:STRING=OFF"
 
         # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
@@ -217,18 +220,18 @@ function build_adios2
                 BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
             fi
 
-            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:BOOL=ON"
+            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:STRING=ON"
             cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
         fi
 
         if [[ "$bt" == "ser" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
+            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:STRING=OFF"
             cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
             cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
         elif [[ "$bt" == "par" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=ON"
+            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:STRING=ON"
             cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${PAR_COMPILER}"
             cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
         fi
