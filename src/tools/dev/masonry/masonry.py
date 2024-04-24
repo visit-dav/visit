@@ -16,7 +16,6 @@ import time
 
 import glob
 import re
-import plistlib  # Generate and parse macOS .plist files
 
 from os.path import join as pjoin
 
@@ -450,42 +449,47 @@ class NotarizeAction(Action):
             ######################################
             # Upload to Apple Notary Service 
             ######################################
-
-            cmd = "xcrun altool --notarize-app"
-            cmd += " --primary-bundle-id %s" % self.params["bundle_id"]
-            cmd += " --username %s" % self.params["username"]
-            cmd += " --password %s" % self.params["password"]
-            cmd += " --asc-provider %s" % self.params["asc_provider"]
-            cmd += " --file %s" % temp_dmg 
-            cmd += " --output-format xml"
+            cmd = [
+                "xcrun", "notarytool", "submit",
+                "--apple-id", self.params["username"],
+                "--keychain-profile", self.params["password"],
+                "--team-id", self.params["asc_provider"],
+                "--output-format", "json",
+                temp_dmg
+            ]
             rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
             if rcode != 0:
                 raise RuntimeError("[error submitting VisIt dmg for notarization]", cmd)
 
-            pl = plistlib.readPlistFromString(rout)
-            uuid = pl["notarization-upload"]["RequestUUID"]
+            jr = json.loads(rout)
+            uuid = jr.get("notarization-info", {}).get("RequestUUID")
             print("[uuid: %s]" % uuid)
 
             # Check status of notarization request
-            cmd = "xcrun altool --notarization-info %s" % uuid
-            cmd += " --username %s" % self.params["username"]
-            cmd += " --password %s" % self.params["password"]
-            cmd += " --output-format xml"
+            cmd = [
+                "xcrun", "notarytool", "info",
+                "--apple-id", self.params["username"],
+                "--keychain-profile", self.params["password"],
+                "--team-id", self.params["asc_provider"],
+                "--output-format", "json",
+                uuid
+            ]
 
             status = "in progress"
-            while status == "in progress":
+            while "in progress" in status:
                 time.sleep(30)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                pl = plistlib.readPlistFromString(rout)
-                status = pl["notarization-info"]["Status"]
+                jr = json.loads(rout)
+                status = jr.get("notarization-info", {}).get("Status")
                 status = status.strip()
+                status = status.lower()
                 print("[status: %s]" % status)
              
             ###################################
             # Staple notarization ticket to app bundle
             ###################################
 
-            if status == "success":
+            if status == "accepted":
                 cmd = "xcrun stapler staple %s" % visit_app
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[stapler: %s]" % rout)
