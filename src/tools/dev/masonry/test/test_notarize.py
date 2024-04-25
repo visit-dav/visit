@@ -116,7 +116,7 @@ cmd = [
 ]
 status = "in progress"
 while "in progress" in status:
-    time.sleep(30)
+    time.sleep(15)
     rcode, rout = shexe(" ".join(cmd), ret_output=True, echo=True, env=env)
     if rcode != 0:
         print("checking status of notarization of zipped app failed with rcode = ", rcode)
@@ -185,7 +185,7 @@ cmd = [
 ]
 status = "in progress"
 while "in progress" in status:
-    time.sleep(30)
+    time.sleep(15)
     rcode, rout = shexe(" ".join(cmd), ret_output=True, echo=True, env=env)
     if rcode != 0:
         print("checking status of notarization of zipped app failed with rcode = ", rcode)
