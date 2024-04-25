@@ -126,6 +126,19 @@ One way to do this is to ``echo $PATH | tr ':' '\n'`` to display, line-by-line, 
     set STD_PATH=`echo $PATH | tr ':' '\n' | grep -v '/opt' | tr '\n' ':'`
     env PATH=$STD_PATH python3 src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json
 
+Sometimes, it is useful to get tracing information from the masonry scripts.
+Python has a built in `tracing feature <https://docs.python.org/3/library/trace.html>`__.
+To use it, invoke the python interpreter with the tracing module like so... ::
+
+    env PATH=$STD_PATH python3 -m trace --trace src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json | tee trace.out
+
+or ::
+
+    env PATH=$STD_PATH python3 -m trace --trace src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json >& trace.out
+
+The first command will result in unbuffered output to the screen and file.
+The second will buffer the output to the file.
+
 What Can Go Wrong?
 ~~~~~~~~~~~~~~~~~~
 
