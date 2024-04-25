@@ -350,12 +350,12 @@ def steps_visit(opts,ctx):
         steps_bv(opts,ctx)
 
     for build_type in opts["build_types"]:
-        steps_configure(opts,build_type,ctx)
-        steps_build(opts,build_type,ctx)
-        steps_manuals(opts,build_type,ctx)
-        steps_install(opts,build_type,ctx)
-        steps_install_sanity_checks(opts,build_type,ctx)
-        steps_package(opts,build_type,ctx)
+        #steps_configure(opts,build_type,ctx)
+        #steps_build(opts,build_type,ctx)
+        #steps_manuals(opts,build_type,ctx)
+        #steps_install(opts,build_type,ctx)
+        #steps_install_sanity_checks(opts,build_type,ctx)
+        #steps_package(opts,build_type,ctx)
         steps_notarize(opts,build_type,ctx)
         steps_package_sanity_checks(opts,build_type,ctx)
 

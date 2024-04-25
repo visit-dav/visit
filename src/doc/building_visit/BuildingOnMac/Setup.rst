@@ -306,6 +306,13 @@ Confirming
         .
         .
 
+A simple test application
+"""""""""""""""""""""""""
+In ``src/tools/dev/masnory/test``, there is a very simple (and very small in size so easy to run through all the notarization steps) test macOS app bundle there, ``TestDmgNotarization.app`` and a python script ``test_notarize.py``.
+To try it, use the command ``python3 test_notarize.py`` (or maybe with tracing enabled ``python3 -m trace --trace test_notarize.py``) and then take the resulting ``.dmg`` file to a different macOS system and install it and try running it.
+New developers should workout all the issues first using this test application.
+Once all the steps work, then doing a VisIt notarization should also work.
+
 Certificates for signing macOS Builds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information.
