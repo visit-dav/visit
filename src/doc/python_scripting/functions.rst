@@ -10385,12 +10385,12 @@ SetQueryFloatFormat
 
 
 format_string : string
-    A string object that provides a :ref:`printf-style <FormattingNumbers>`__ floating point format.
+    A string object that provides a :ref:`printf-style <FormattingNumbers>` floating point format.
 
 
 **Description:**
 
-    The SetQueryFloatFormat method sets a :ref:`printf-style <FormattingNumbers>`__ format string that
+    The SetQueryFloatFormat method sets a :ref:`printf-style <FormattingNumbers>` format string that
     isused by VisIt's querys to produce textual output.
 
 
