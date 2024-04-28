@@ -1,7 +1,7 @@
 .. _FormattingNumbers:
 
-Formatting numbers
-------------------
+Formatting printed numbers
+--------------------------
 In various places in VisIt_'s interfaces (both the GUI and the CLI), there is often the need to control the formatting of printed numerical data to specify how many significant digits or whether to use a fixed point (e.g. ``123.456``) or an exponential format (e.g. ``1.23e+02``).
 
 In many places in VisIt_'s interface, a `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification string is used to handle this.
