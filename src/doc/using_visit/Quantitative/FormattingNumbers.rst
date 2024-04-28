@@ -13,8 +13,8 @@ By default, VisIt_ uses ``%g`` for most numerical data which uses a default ``[.
   For precision ``p >= 1``, this rounds the number to ``p`` significant digits and then formats the result in either fixed-point or scientific notation, depending on its magnitude.
 
   Suppose that the result formatted with type specifier ``e`` and precision ``p-1`` would have exponent ``exp``.
-  Then if ``-4 <= exp < p``, the number is formatted with type specifier ``f``  and precision ``p-1-exp``.
-  Otherwise, the number is formatted with type specifier ``e`` and precision ``p-1``.
+  Then if ``-4 <= exp < p``, the number is formatted with type specifier ``f`` (e.g. fixed point format)  and precision ``p-1-exp``.
+  Otherwise, the number is formatted with type specifier ``e`` (e.g. exponential format) and precision ``p-1``.
   In both cases insignificant trailing zeros are removed from the significand, and the decimal point is also removed if there are no remaining digits following it.
   Positive and negative infinity, positive and negative zero, and nans, are formatted as ``inf``, ``-inf``, ``0``, ``-0`` and ``nan`` respectively, regardless of the precision.
   A precision of 0 is treated as equivalent to a precision of 1.
