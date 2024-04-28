@@ -2,12 +2,12 @@
 
 Formatting numbers
 ------------------
-In various places in VisIt's interfaces (both the GUI and the CLI), there is often the need to control the formatting of numerical data to, for example, specify how many significant digits to or to use a fixed point format (e.g. ``123.456``) or an exponential format (e.g. ``1.23e+02``).
+In various places in VisIt_'s interfaces (both the GUI and the CLI), there is often the need to control the formatting of numerical data to, for example, specify how many significant digits to or to use a fixed point format (e.g. ``123.456``) or an exponential format (e.g. ``1.23e+02``).
 
-In many places in VisIt's interface, a `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification string is used to handle this.
+In many places in VisIt_'s interface, a `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification string is used to handle this.
 This involves a percent sign (``%``), followed by several other *fields* of the general form ``%[flags][width][.precision][length]type`` where items in brackets are optional.
 
-By default, VisIt uses ``%g`` for most numerical data which defaults to a precision of 6 and a width determined by the actual data according to the rules below.
+By default, VisIt_ uses ``%g`` for most numerical data which defaults to a precision of 6 and a width determined by the actual data according to the rules below.
 
 For precision ``p >= 1``, this rounds the number to ``p`` significant digits and then formats the result in either fixed-point or scientific notation, depending on its magnitude.
 

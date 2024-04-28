@@ -10391,7 +10391,7 @@ format_string : string
 **Description:**
 
     The SetQueryFloatFormat method sets a :ref:`printf-style <FormattingNumbers>` format string that
-    isused by VisIt's querys to produce textual output.
+    is used by VisIt's querys to produce textual output.
 
 
 **Example:**

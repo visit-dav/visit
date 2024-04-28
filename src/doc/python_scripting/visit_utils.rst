@@ -29,7 +29,7 @@ Methods:
      encode("input.%04d.png","output.sm")
      encode("input.%04d.png","output.sm",stereo=True)
 
-   :param ipattern: Input file pattern. Requires a :ref:`printf-style <FormattingNumbers>`__ # format like "file%04d.png".
+   :param ipattern: Input file pattern. Requires a :ref:`printf-style <FormattingNumbers>` # format like "file%04d.png".
    :param ofile: Output file name
    :param fdup: Allows you to set an integer number of times to duplicate the input frames as they are passed to the encoder. (The duplication actually happens via symlinks) [Default = None]
    :param etype: Allows to select which encoder to use ( If not passed the file extension is used to select an encoder ) [Default = None] 
@@ -50,7 +50,7 @@ Methods:
       extract("movie.mpg","output%04d.png")
 
    :param ifile: Input file. 
-   :param opattern: Output file pattern. Requires a :ref:`printf-style <FormattingNumbers>`__ # format like "file%04d.png".
+   :param opattern: Output file pattern. Requires a :ref:`printf-style <FormattingNumbers>` # format like "file%04d.png".
 
 .. py:function:: visit_utils.encoding.encoders()
 

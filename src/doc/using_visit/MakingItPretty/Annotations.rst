@@ -503,7 +503,7 @@ Named database values in text annotations
 
 A variety of named database values can be displayed in text annotations.
 These are introduced with a leading ``$`` character followed by the value's name.
-An optional ``%`` character following the value's name introduces a :ref:`printf-style <FormattingNumbers>`__ formatting string which can be used to control the value's printed format.
+An optional ``%`` character following the value's name introduces a :ref:`printf-style <FormattingNumbers>` formatting string which can be used to control the value's printed format.
 
 .. warning::
 
@@ -602,7 +602,7 @@ A common use case for ``$<T>tafile<I>`` named values is for animations to displa
 Multiple named values can appear in a text annotation string and the same named value can also appear multiple times.
 
 For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
-To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a :ref:`printf-style <FormattingNumbers>`__ format string is specified.
+To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a :ref:`printf-style <FormattingNumbers>` format string is specified.
 To display the first 3 characters of the variable name, use the string ``$varname%.3s``.
 
 The ``$dbcomment`` and ``$<T>tafile<I>`` named values are useful for complicated cases because they allow arbitrary text defined in the database comment or an external file to be used.
