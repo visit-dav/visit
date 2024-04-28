@@ -2,10 +2,10 @@
 
 Formatting numbers
 ------------------
-In various places in VisIt_'s interfaces (both the GUI and the CLI), there is often the need to control the formatting of numerical data to, for example, specify how many significant digits to or to use a fixed point format (e.g. ``123.456``) or an exponential format (e.g. ``1.23e+02``).
+In various places in VisIt_'s interfaces (both the GUI and the CLI), there is often the need to control the formatting of numerical data to specify how many significant digits or whether to use a fixed point (e.g. ``123.456``) or an exponential format (e.g. ``1.23e+02``).
 
 In many places in VisIt_'s interface, a `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification string is used to handle this.
-This involves a percent sign (``%``), followed by several other *fields* of the general form ``%[flags][width][.precision][length]type`` where items in brackets are optional.
+This involves a percent sign (``%``), followed by several other *fields* of the general form ``%[flags][width][.precision][length]type`` where fields in brackets are optional.
 
 By default, VisIt_ uses ``%g`` for most numerical data which defaults to a precision of 6 and a width determined by the actual data according to the rules below.
 
@@ -19,11 +19,11 @@ Positive and negative infinity, positive and negative zero, and nans, are format
 A precision of 0 is treated as equivalent to a precision of 1.
 The default precision is 6.
 
-Often, users are interested only in specifying ``width`` and ``precision`` as in, for example, ``%8.5g``.
+Often, users are interested in controlling only ``width`` and ``precision`` as in, for example, ``%8.5g``.
 In this example, the width of ``8``, is the *minimum* number of digits (or more generally characters because of the need for +/- sign, decimal point, exponentiation, etc.) to be printed.
 If the value to be printed requires fewer than this number of characters, the result is padded with blank spaces.
-The value is never truncated even if the result is larger.
+The value is never truncated even if the result will use more than the minimum number of characters.
 The precision of ``5`` means to print 5 digits after the decimal point.
-The type specification of ``g`` means the *general* type specification for floating point data.
+The type specification of ``g`` means the *general* type specification for floating point data as described above.
 
 The full `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification is quite flexible and general allowing a lot of control over printing of floating point, integer and even character data.
