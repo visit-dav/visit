@@ -5,8 +5,11 @@ Formatting printed numbers
 In various places in VisIt_'s interfaces (both the GUI and the CLI), there is often the need to control the formatting of printed numerical data to specify such things as the number of significant digits or whether to use a fixed point (e.g. ``123.456``) or an exponential format (e.g. ``1.23e+02``).
 
 In many places in VisIt_'s interface, a `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification string is used to handle this.
-This involves a percent sign (``%``), followed by several other *fields* of the general form ``%[flags][width][.precision][length]type`` where fields in square brackets are optional.
-Within the context of VisIt_, ``[length]`` can almost always be ignored.
+This involves a percent sign (``%``), followed by several other *fields* of the general form :: 
+
+    %[flags][width][.precision][length]type
+
+where fields in square brackets are optional and within the context of VisIt_, ``[length]`` can almost always be ignored.
 The table below provides a number of examples.
 
 +-----------------+------------------------------+-----------------------------------+
@@ -18,8 +21,8 @@ The table below provides a number of examples.
 +-----------------+------------------------------+-----------------------------------+
 | ``%e``          | ``"3.141593e+04"``           | ``e`` is exponential              |
 +-----------------+------------------------------+-----------------------------------+
-| ``%g``          | ``"31415.9"``                | ``g`` yeilds ``e`` or ``f``       |
-|                 |                              | depending on actual value         |
+| ``%g``          | ``"31415.9"``                | ``g`` yeilds ``e`` or ``f`` form  |
+|                 |                              | depending on value (see below)    |
 +-----------------+------------------------------+-----------------------------------+
 | ``%a``          | ``"0x1.eadfb4c5d390bp+14"``  | ``%a`` shows actual memory        |            
 +-----------------+------------------------------+-----------------------------------+
@@ -27,7 +30,7 @@ The table below provides a number of examples.
 +-----------------+------------------------------+-----------------------------------+
 | ``%10.1f``      | ``"   31415.9"``             | width=10, .precision=1            |
 +-----------------+------------------------------+-----------------------------------+
-| ``%10.1g``      | ``"     3e+04"``             | Here, ``g`` yields ``e`` form     |
+| ``%10.1g``      | ``"     3e+04"``             | here, ``g`` yields ``e`` form     |
 +-----------------+------------------------------+-----------------------------------+
 | ``%12.1g``      | ``"       3e+04"``           | default is right justification    |
 +-----------------+------------------------------+-----------------------------------+
@@ -37,7 +40,7 @@ The table below provides a number of examples.
 +-----------------+------------------------------+-----------------------------------+
 | ``%+12.4g``     | ``"  +3.142e+04"``           | always show a ``+`` or ``-`` sign |
 +-----------------+------------------------------+-----------------------------------+
-| ``%012.4G``     | ``"0003.142E+04"``           | leading 0's, ``E`` not ``e``      |
+| ``%012.4G``     | ``"0003.142E+04"``           | leading 0's, cap ``E`` not ``e``  |
 +-----------------+------------------------------+-----------------------------------+
 |                     value is ``"1234"`` as ``int`` type                            |
 +-----------------+------------------------------+-----------------------------------+
