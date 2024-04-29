@@ -9,7 +9,7 @@ This involves a percent sign (``%``), followed by several other *fields* of the 
 
     %[flags][width][.precision][length]type
 
-where fields in square brackets are optional and within the context of VisIt_, ``[length]`` can almost always be ignored.
+where fields in square brackets are optional and within the context of VisIt_, ``[length]`` should almost always be ignored.
 The table below provides a number of examples.
 
 +-----------------+------------------------------+-----------------------------------+
@@ -80,4 +80,4 @@ The value is never truncated even if the result will use more than the minimum n
 The precision of ``.5`` means to print 5 digits after the decimal point.
 The type specification of ``g`` is the *general* type specification for *floating point* type data as described above.
 
-The full `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification is quite flexible and general allowing a lot of control over printing of floating point, integer, hexideximal and even character data.
+The full `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification is quite flexible and general allowing a lot of control over how numerical data is printed.
