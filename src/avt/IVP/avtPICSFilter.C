@@ -16,9 +16,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 
 #include <avtPICSFilter.h>
 #include "avtSerialICAlgorithm.h"
-#include "avtParDomICAlgorithm.h"
 #include "avtPODICAlgorithm.h"
-#include "avtCommDSOnDemandICAlgorithm.h"
 #include "avtVariableCache.h"
 #include <visitstream.h>
 

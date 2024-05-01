@@ -42,13 +42,10 @@ avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
 avtIntegralCurveIC.C
 MemStream.C
-avtCommDSOnDemandICAlgorithm.C
 avtICAlgorithm.C
-avtParDomICAlgorithm.C
 avtParICAlgorithm.C
 avtPICSFilter.C
 avtPODICAlgorithm.C
-avtPOSBalanceICAlgorithm.C
 avtSerialICAlgorithm.C
 )
 
