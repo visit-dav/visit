@@ -8,6 +8,9 @@
 #   Hank Childs, Sat Jun  5 16:26:46 CDT 2010
 #   Add avtStateRecorderIntegralCurve.
 #
+#   Kathleen Biagas, Tue Apr 16, 2024
+#   Removed avtManagerWorkerICAlgorithm.
+#
 #****************************************************************************
 
 SET(AVTIVP_SOURCES
@@ -39,14 +42,10 @@ avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
 avtIntegralCurveIC.C
 MemStream.C
-avtCommDSOnDemandICAlgorithm.C
 avtICAlgorithm.C
-avtManagerWorkerICAlgorithm.C
-avtParDomICAlgorithm.C
 avtParICAlgorithm.C
 avtPICSFilter.C
 avtPODICAlgorithm.C
-avtPOSBalanceICAlgorithm.C
 avtSerialICAlgorithm.C
 )
 
