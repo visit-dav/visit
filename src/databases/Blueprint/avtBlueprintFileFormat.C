@@ -2059,8 +2059,17 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
         BP_PLUGIN_INFO("topo name: " << topo_name);
 
-        conduit::Node &n_coords = data["coordsets"][0];
-        int ndims = static_cast<int>(n_coords["values"].number_of_children());
+        const conduit::Node &n_coords = data["coordsets"][0];
+        int ndims;
+        if (n_coords.has_child("values"))
+        {
+            ndims = static_cast<int>(n_coords["values"].number_of_children());
+        }
+        else
+        {
+            // if you don't have values, you are a uniform coordset so you have dims
+            ndims = static_cast<int>(n_coords["dims"].number_of_children());
+        }
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )

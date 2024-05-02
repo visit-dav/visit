@@ -1221,39 +1221,51 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
 
     vtkDataSet *res = NULL;
 
-    if (n_coords["type"].as_string() == "uniform")
+    Node n_coords_to_use;
+    // handle special case
+    if (n_coords["type"].as_string() == "uniform" && 
+        n_topo["type"].as_string() == "unstructured")
+    {
+        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
+    }
+    else
+    {
+        n_coords_to_use.set_external(n_coords);
+    }
+
+    if (n_coords_to_use["type"].as_string() == "uniform")
     {
         AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet UniformCoordsToVTKRectilinearGrid");
-        res = UniformCoordsToVTKRectilinearGrid(n_coords);
+        res = UniformCoordsToVTKRectilinearGrid(n_coords_to_use);
     }
-    else if (n_coords["type"].as_string() == "rectilinear")
+    else if (n_coords_to_use["type"].as_string() == "rectilinear")
     {
         AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet RectilinearCoordsToVTKRectilinearGrid");
-        res = RectilinearCoordsToVTKRectilinearGrid(n_coords);
+        res = RectilinearCoordsToVTKRectilinearGrid(n_coords_to_use);
     }
-    else if (n_coords["type"].as_string() == "explicit")
+    else if (n_coords_to_use["type"].as_string() == "explicit")
     {
         if (n_topo["type"].as_string() == "structured")
         {
             AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet StructuredTopologyToVTKStructuredGrid");
-            res = StructuredTopologyToVTKStructuredGrid(n_coords, n_topo);
+            res = StructuredTopologyToVTKStructuredGrid(n_coords_to_use, n_topo);
         }
         else if (n_topo["type"].as_string() == "points")
         {
             AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid");
-            res = PointsTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+            res = PointsTopologyToVTKUnstructuredGrid(n_coords_to_use, n_topo);
         }
         else
         {
             AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
-            res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords, n_topo);
+            res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords_to_use, n_topo);
         }
     }
     else
     {
         AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
                                   "expected Coordinate type of \"uniform\", \"rectilinear\", or \"explicit\""
-                                  << " but found " << n_coords["type"].as_string());
+                                  << " but found " << n_coords_to_use["type"].as_string());
     }
 
     AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet End");
