@@ -462,8 +462,8 @@ class NotarizeAction(Action):
                 raise RuntimeError("[error submitting VisIt dmg for notarization]", cmd)
 
             jr = json.loads(rout)
-            uuid = jr.get("notarization-info", {}).get("RequestUUID")
-            print("[uuid: %s]" % uuid)
+            uuid = jr.get("id")
+            print("[id: %s]" % uuid)
 
             # Check status of notarization request
             cmd = [
@@ -480,7 +480,7 @@ class NotarizeAction(Action):
                 time.sleep(30)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 jr = json.loads(rout)
-                status = jr.get("notarization-info", {}).get("Status")
+                status = jr.get("status")
                 status = status.strip()
                 status = status.lower()
                 print("[status: %s]" % status)
