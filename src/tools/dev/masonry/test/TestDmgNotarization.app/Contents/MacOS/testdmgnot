@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+import ctypes
+import os
+
+# Get the path to the executable
+app_path = os.path.dirname(os.path.abspath(__file__))
+
+# Build the path to the libz.dylib in the Frameworks directory
+lib_path = os.path.join(app_path, '..', 'Frameworks', 'libz-1.2.13.dylib')
+
+# Load the dynamic library
+zlib = ctypes.CDLL(lib_path)
+
+# Identify the function to call
+func = zlib.zlibVersion
+func.restype = ctypes.c_char_p
+
+# Use the function from the library, e.g., zlibVersion
+print("Hello, world!")
+print("zlib version:", func())

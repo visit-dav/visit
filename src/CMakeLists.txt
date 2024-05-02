@@ -1271,7 +1271,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Add the "test" directory
 #-----------------------------------------------------------------------------
-# I'm trying to make the new tetsing work hramoniously with the old testing
+# I'm trying to make the new testing work harmoniously with the old testing
 # while it's evaluated. if the new testing were ever made permanent then
 # this code would be removed.
 if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTEST_TESTING)
@@ -1291,6 +1291,7 @@ configure_file(${VISIT_SOURCE_DIR}/tools/dev/scripts/Info.plist.in
 if(NOT WIN32)
     if (APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
         set(CPACK_GENERATOR "Bundle")
+        set(CPACK_DMG_FORMAT "ULMO")
 
         set(CPACK_PACKAGE_FILE_NAME "VisIt-${VISIT_VERSION}")
         set(CPACK_BUNDLE_NAME "VisIt")
@@ -1301,7 +1302,7 @@ if(NOT WIN32)
         set(CPACK_GENERATOR "TGZ")
 
         set(CPACK_PACKAGE_NAME "visit")
-        set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
+        set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Scalable data visualization, analysis and movie-making from laptop to LCF")
         set(CPACK_PACKAGE_VENDOR "LLNS")
         set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/resources/help/en_US/copyright.html")
 

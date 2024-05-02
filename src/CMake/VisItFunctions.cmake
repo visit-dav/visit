@@ -204,7 +204,7 @@ function(visit_install_mpich)
 
     install(DIRECTORY ${VISIT_MPICH_DIR}/bin
             DESTINATION ${VISIT_INSTALLED_VERSION}
-            FILE_PERMISSIONS ${vfp}
+            USE_SOURCE_PERMISSIONS
             DIRECTORY_PERMISSIONS ${vdp})
 
     install(DIRECTORY ${VISIT_MPICH_DIR}/lib
