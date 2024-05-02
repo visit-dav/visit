@@ -1,6 +1,6 @@
 function bv_qt_initialize
 {
-    export DO_QT="yes"
+    export DO_QT="no"
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
