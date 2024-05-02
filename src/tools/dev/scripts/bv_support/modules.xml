@@ -99,7 +99,7 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
-            <lib name="no-qt" />
+            <lib name="no-qt6" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
             <lib name="no-zlib"/>
@@ -154,7 +154,7 @@
             <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
-            <lib name="no-qt"/>
+            <lib name="no-qt6"/>
             <lib name="no-qwt"/>
             <lib name="no-python"/>
         </group>
@@ -239,7 +239,7 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
-            <lib name="no-qt" />
+            <lib name="no-qt6" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
             <lib name="no-zlib"/>
@@ -253,7 +253,7 @@
             <lib name="zlib"/>
             <lib name="uintah"/>
             <lib name="no-python"/>
-            <lib name="no-qt"/>
+            <lib name="no-qt6"/>
             <lib name="no-qwt"/>
         </group>
 
