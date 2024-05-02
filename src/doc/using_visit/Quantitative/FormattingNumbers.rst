@@ -24,7 +24,7 @@ The table below provides a number of examples.
 | ``%g``          | ``"31415.9"``                | ``g`` yeilds ``e`` or ``f`` form  |
 |                 |                              | depending on value (see below)    |
 +-----------------+------------------------------+-----------------------------------+
-| ``%a``          | ``"0x1.eadfb4c5d390bp+14"``  | ``%a`` shows actual memory        |            
+| ``%a``          | ``"0x1.eadfb4c5d390bp+14"``  | ``%a`` dumps actual memory        |            
 +-----------------+------------------------------+-----------------------------------+
 | ``%3.1g``       | ``"3e+04"``                  | width=3, .precision=1             |
 +-----------------+------------------------------+-----------------------------------+
@@ -44,7 +44,9 @@ The table below provides a number of examples.
 +-----------------+------------------------------+-----------------------------------+
 |                     value is ``"1234"`` as ``int`` type                            |
 +-----------------+------------------------------+-----------------------------------+
-| ``%d``          | ``"1234"``                   |                                   |
+| ``%d`` / ``%i`` | ``"1234"``                   |                                   |
++-----------------+------------------------------+-----------------------------------+
+| ``%u``          | ``"1234"``                   | ``u`` treats data as unsigned     |
 +-----------------+------------------------------+-----------------------------------+
 | ``%08d``        | ``"00001234"``               | width 8 with leading zeros        |
 +-----------------+------------------------------+-----------------------------------+
@@ -79,5 +81,8 @@ If the value to be printed requires fewer than this number of characters, the re
 The value is never truncated even if the result will use more than the minimum number of characters.
 The precision of ``.5`` means to print 5 digits after the decimal point.
 The type specification of ``g`` is the *general* type specification for *floating point* type data as described above.
+
+The only time the ``[length]`` field may be needed is if the user is *certain* that the data being handled internally by VisIt_ is some unusual size (e.g. ``long long`` or ``short``).
+In these circumstances, a ``[length]`` field may also be needed.
 
 The full `printf-style <https://cplusplus.com/reference/cstdio/printf>`__ formatting specification is quite flexible and general allowing a lot of control over how numerical data is printed.
