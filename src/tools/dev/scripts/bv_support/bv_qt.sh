@@ -9,8 +9,13 @@ function bv_qt_initialize
 
 function bv_qt_enable
 {
-    DO_QT="yes"
-    DO_QT6="no"
+    if [[ "$DO_QT6" == "no" ]] ; then
+        DO_QT="yes"
+        FORCE_QT="yes"
+    else
+        DO_QT="no"
+        FORCE_QT="no"
+    fi
 }
 
 function bv_qt_disable

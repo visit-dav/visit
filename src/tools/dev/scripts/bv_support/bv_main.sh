@@ -644,6 +644,9 @@ function initialize_build_visit()
             --qt510) DO_QT510="yes"; DO_QT6="no"; DO_QT="yes";;
         esac
         case $arg in
+            --qt) DO_QT6="no"; DO_QT="yes";;
+        esac
+        case $arg in
             --vtk9) DO_VTK9="yes";;
         esac
         case $arg in
