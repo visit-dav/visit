@@ -212,7 +212,7 @@ When the *submission* completes, you will see a message such as ::
           path: /path/to/VisIt.dmg
 
 That means only that the file uploaded successfully.
-The notarization will not necessarily complete right a way.
+The notarization will not necessarily complete right away.
 You can check progress on the notarization by the following command ::
 
         xcrun notarytool info --apple-id APPLE_ID --keychain-profile APP_PASSWORD --team-id TEAM_ID SUBMISSION_ID
@@ -233,7 +233,7 @@ If the notarization has completed, the output will look like ::
           name: VisIt.dmg
           status: Accepted
 
-Finally, *stapling* the notarization to the ``.dmg`` file is an easily final step ::
+Finally, *stapling* the notarization to the ``.dmg`` file is an easy final step ::
 
         xcrun stapler staple /path/to/VisIt.dmg
         Processing: /path/to/VisIt.dmg
