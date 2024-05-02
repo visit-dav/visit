@@ -100,7 +100,6 @@ if rcode != 0:
     print("notarizing zipped app failed with rcode = ", rcode)
     exit(rcode)
 jr = json.loads(rout)
-print(jr)
 uuid = jr.get("id")
 
 # 
