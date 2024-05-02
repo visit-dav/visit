@@ -1299,7 +1299,7 @@ if(NOT WIN32)
         set(CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
         set(CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
     else()
-        set(CPACK_GENERATOR "TXZ")
+        set(CPACK_GENERATOR "TGZ")
 
         set(CPACK_PACKAGE_NAME "visit")
         set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Scalable data visualization, analysis and movie-making from laptop to LCF")
