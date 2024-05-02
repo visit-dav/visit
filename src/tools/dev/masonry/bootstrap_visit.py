@@ -280,10 +280,10 @@ def steps_osx_install_sanity_checks(opts,build_type,ctx):
 
     for check_dir in [ "lib", "bin"]:
         full_test_dir = pjoin(test_base_dir,check_dir)
-        test_cmd = "python {0} {1}".format(osxcheckup_script,full_test_dir)
+        test_cmd = "{0} {1} {2}".format(sys.executable,osxcheckup_script,full_test_dir)
         saction = "osx_install_sanity_" + check_dir + "_" + build_type.lower()
         ctx.actions[saction] = shell(cmd=test_cmd,
-                                     description="install names check for " + check_dir,
+                                     description="Trying with python install names check for " + check_dir,
                                      working_dir=install_dir)
         ctx.triggers["build"].append(saction)
 

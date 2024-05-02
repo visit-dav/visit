@@ -1652,6 +1652,33 @@ class StraceDebugger(Debugger):
         return launcherargs + strace + visitargs
 
 ###############################################################################
+# Class: DtrussDebugger
+#
+# Purpose:    Launch a VisIt component under dtruss (macOS).
+#
+# Programmer: Mark C. Miller, Wed May  1 22:04:19 PDT 2024
+#
+# Modifications:
+#
+###############################################################################
+
+class DtrussDebugger(Debugger):
+    def __init__(self, launcher):
+        super(DtrussDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["dtruss"]
+
+    def CreateCommand(self, args):
+        dtruss = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            dtrus = dtruss + self.DebuggerArguments()
+        else:
+            dtruss = dtruss + ["-ef"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + dtruss + visitargs
+
+###############################################################################
 # Class: RocprofDebugger
 #
 # Purpose:    Launch a VisIt component under rocprof.
@@ -3333,6 +3360,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "valgrind",
                 "callgrind",
                 "strace",
+                "dtruss",
                 "apitrace",
                 "debug-malloc",
                 "ddt",
@@ -3387,6 +3415,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return CallgrindDebugger(self)
         elif debugger == "strace":
             return StraceDebugger(self)
+        elif debugger == "dtruss":
+            return DtrussDebugger(self)
         elif debugger == "apitrace":
             return ApitraceDebugger(self)
         elif debugger == "debug-malloc":

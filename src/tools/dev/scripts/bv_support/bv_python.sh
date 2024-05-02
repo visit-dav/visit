@@ -1044,8 +1044,19 @@ function build_numpy
         return 1
     fi
 
+    # Disable blas and lapack on macOS but only if user isn't somehow fiddling with them also.
+    # https://numpy.org/doc/1.25/user/building.html#disabling-atlas-and-other-accelerated-libraries
+    we_set_numpy_lib_vars=0
+    if [ "$OPSYS" == "Darwin" ] && [ -z "$NPY_BLAS_ORDER" ] && [ -z "$NPY_LAPACK_ORDER" ]; then
+        we_set_numpy_lib_vars=1
+        export NPY_BLAS_ORDER= NPY_LAPACK_ORDER=
+    fi
     install_py_module ${NUMPY_BUILD_DIR} "numpy"
-    if [[ $? != 0 ]] ; then
+    return_status=$?
+    if [ $we_set_numpy_lib_vars -eq 1 ]; then
+        unset NPY_BLAS_ORDER NPY_LAPACK_ORDER
+    fi
+    if [ $return_status -ne 0 ] ; then
         return 1
     fi
 
