@@ -189,6 +189,11 @@
 //    Kathleen Biagas, Wed Nov  8 10:16:09 PST 2023
 //    VTK9 targets need to be handled differently for non-dev.
 //
+//    Kathleen Biagas, Thu May 2, 2024
+//    Move CXX_STANDARD settings to apply only to GUI.
+//    Add -ZC:__cplusplus for MSVC.
+//    Add 'VISIT_PLUGIN_TARGET_OUTPUT_DIR' only for Dev builds.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -702,11 +707,6 @@ class CMakeGeneratorPlugin : public Plugin
                          const QString &viewerlibname)
     {
         bool useFortran = false;
-        if (!using_dev)
-        {
-            out << "# Needed due to Qt 6 (until VisIt proper requires it" << Endl;
-            out << "set(CMAKE_CXX_STANDARD 17)" << Endl;
-        }
 
         out << "PROJECT(" << name<< "_" << type << ")" << Endl;
         out << Endl;
@@ -908,6 +908,19 @@ class CMakeGeneratorPlugin : public Plugin
         if (!vtk8_glibs.empty())
             out << "${vtk_glibs} ";
         out << ")" << Endl;
+        if (!using_dev)
+        {
+            out << "    # Qt 6 requires CXX 17 (Visit proper currently doesn't)." << Endl;
+            out << "    # We don't get the flags for free when building against" << Endl;
+            out << "    # an install, so need to set them for the G target here." << Endl;
+            out << "    if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)" << Endl;
+            out << "        set_target_properties(G" << name << ptype << Endl;
+            out << "            PROPERTIES" << Endl;
+            out << "                CXX_STANDARD 17" << Endl;
+            out << "                COMPILE_OPTIONS \"-Zc:__cplusplus;-permissive-\")" << Endl;
+            out << "    endif()" << Endl;
+            out << Endl;
+        }
         WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
         out << Endl;
 
@@ -993,10 +1006,13 @@ class CMakeGeneratorPlugin : public Plugin
         CMakeAdd_EngineTargets(out);
 
         out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << Endl;
-        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(" << type << "s ${INSTALLTARGETS})" << Endl;
+
         if (using_dev)
+        {
+          out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(" << type << "s ${INSTALLTARGETS})" << Endl;
           out << "VISIT_PLUGIN_TARGET_FOLDER(" << type << "s " << name
               << " ${INSTALLTARGETS})" << Endl;
+        }
         out << Endl;
 #ifdef _WIN32
         if (!using_dev)
@@ -1257,10 +1273,12 @@ class CMakeGeneratorPlugin : public Plugin
             CMakeAdd_EngineTargets(out);
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << Endl;
-        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})" << Endl;
         if (using_dev)
+        {
+          out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})" << Endl;
           out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name
               << " ${INSTALLTARGETS})" << Endl;
+        }
         out << Endl;
     }
 

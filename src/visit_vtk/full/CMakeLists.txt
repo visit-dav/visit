@@ -29,12 +29,19 @@
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
 #   Added vtkCommonExecutionModel, vtkCommonMisc in support of building plugins
-#   vs install on Windows. They are direct depencencies for this library,
+#   vs install on Windows. They are direct dependencies for this library,
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
 #   Alister Maguire, Mon Dec  2 14:18:39 MST 2019
 #   Removed vtkPPMWriter. It's been replaced with vtkPNMWriter (not custom).
+#
+#   Kathleen Biagas, Thu May 2, 2024
+#   Added vtksys in support of building plugins vs install on Windows.
+#   It is a direct dependency for this library, and CMake automagically pulls
+#   it in when compiling VisIt, even if not listed. This doesn't occur when
+#   building plugins against install, since we don't use the cmake targets,
+#   only lists of libraries.
 #
 #****************************************************************************/
 
@@ -126,7 +133,7 @@ if(VTK_VERSION VERSION_EQUAL "8.1.0")
 else()
     set(vtklibs VTK::CommonExecutionModel VTK::CommonMisc
         VTK::FiltersExtraction VTK::FiltersFlowPaths VTK::FiltersSources
-        VTK::ImagingHybrid VTK::IOImage VTK::tiff)
+        VTK::ImagingHybrid VTK::IOImage VTK::tiff VTK::vtksys)
 endif()
 
 target_link_libraries(visit_vtk lightweight_visit_vtk ${vtklibs} ${OPENEXR_LIB})

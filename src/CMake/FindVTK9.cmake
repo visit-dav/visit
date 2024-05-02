@@ -17,6 +17,10 @@
 #  Removed install logic for python modules.  Now handled in
 #  lib/CMakeLists.txt with build/lib/site-packages/ directory install.
 #
+#  Kathleen Biagas, Thu May 2, 2024
+#  On Windows, ensure 'vtksys' and 'WrappingPythonCore' are handled correctly
+#  when installing the .libs.
+#  
 #*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
@@ -126,8 +130,14 @@ else(VISIT_VTK_SKIP_INSTALL)
         endif()
 
         if(WIN32)
-            # install .lib versions, too
-            set(LIBNAME   ${pathnameandprefixlib}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            if(${vtk_component} MATCHES "vtksys")
+                set(LIBNAME ${pathnameandprefixlib}${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            elseif(${vtk_component} MATCHES "WrappingPythonCore")
+                # also needs PYTHON_VERSION
+                set(LIBNAME ${pathnameandprefixlib}vtk${vtk_component}${PYTHON_VERSION}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            else()
+                set(LIBNAME ${pathnameandprefixlib}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            endif()
             if(EXISTS ${LIBNAME})
                 THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
             endif(EXISTS ${LIBNAME})
