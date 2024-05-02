@@ -1479,6 +1479,7 @@ function run_build_visit()
            info "disabling qt, qwt because --server-components-only used"
         fi
         bv_qt_disable
+        bv_qt6_disable
         bv_qwt_disable
     fi
 

@@ -1,7 +1,7 @@
  
 function bv_qt6_initialize
 {
-    export DO_QT6="no"
+    export DO_QT6="yes"
 }
 
 function bv_qt6_enable
