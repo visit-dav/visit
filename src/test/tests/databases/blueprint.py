@@ -95,7 +95,7 @@ uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 
 unstructured_points = data_path(pjoin(bp_unstructured_points_dir,"unstructured_points.cycle_000100.root"))
 
-uniform_unstructured = data_path(pjoin(bp_unstructured_points_dir,"partition.root"))
+uniform_unstructured = data_path(pjoin(bp_unstructured_uniform_dir,"partition.root"))
 
 #
 # venn test data (multi material)
@@ -799,27 +799,31 @@ DeleteAllPlots()
 ResetView()
 
 TestSection("Blueprint Uniform Coordset + Unstructured Topo, 0.9.1")
-OpenDatabase(unstructured_points)
-AddPlot("Pseudocolor", "mesh_mesh/braid", 1, 1)
-SetActivePlots(0)
-PseudocolorAtts = PseudocolorAttributes()
-PseudocolorAtts.pointSizePixels = 20
-SetPlotOptions(PseudocolorAtts)
-AddPlot("Label", "mesh_mesh/braid", 1, 1)
+OpenDatabase(uniform_unstructured)
+AddPlot("Mesh", "mesh_topo", 1, 1)
+DrawPlots()
+AddPlot("Subset", "domains", 1, 1)
 DrawPlots()
 View3DAtts = View3DAttributes()
-View3DAtts.viewNormal = (-0.64536, -0.104723, 0.756666)
-View3DAtts.focus = (10, 0, 0)
-View3DAtts.viewUp = (-0.0863273, 0.994211, 0.0639709)
+View3DAtts.viewNormal = (-0.520784, 0.423114, 0.741457)
+View3DAtts.focus = (5, 5, 5)
+View3DAtts.viewUp = (0.238073, 0.906059, -0.349827)
 View3DAtts.viewAngle = 30
-View3DAtts.parallelScale = 14.1421
-View3DAtts.nearPlane = -28.2843
-View3DAtts.farPlane = 28.2843
+View3DAtts.parallelScale = 8.66025
+View3DAtts.nearPlane = -17.3205
+View3DAtts.farPlane = 17.3205
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 0.826446
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
 View3DAtts.centerOfRotationSet = 0
-View3DAtts.centerOfRotation = (10, 0, 0)
+View3DAtts.centerOfRotation = (5, 5, 5)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
 SetView3D(View3DAtts)
-DrawPlots()
-Test("Unstructured_points_not_using_entire_coordset")
+Test("Uniform_coordset_and_unstructured_topo")
 DeleteAllPlots()
 ResetView()
 
