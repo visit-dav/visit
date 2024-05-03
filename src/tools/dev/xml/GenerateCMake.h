@@ -913,10 +913,11 @@ class CMakeGeneratorPlugin : public Plugin
             out << "    # Qt 6 requires CXX 17 (Visit proper currently doesn't)." << Endl;
             out << "    # We don't get the flags for free when building against" << Endl;
             out << "    # an install, so need to set them for the G target here." << Endl;
+            out << "    set_target_properties(G" << name << ptype << Endl;
+            out << "           PROPERTIES CXX_STANDARD 17)" << Endl;
             out << "    if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)" << Endl;
             out << "        set_target_properties(G" << name << ptype << Endl;
-            out << "            PROPERTIES" << Endl;
-            out << "                CXX_STANDARD 17" << Endl;
+            out << "            PROPERTIES " << Endl;
             out << "                COMPILE_OPTIONS \"-Zc:__cplusplus;-permissive-\")" << Endl;
             out << "    endif()" << Endl;
             out << Endl;
