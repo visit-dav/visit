@@ -1205,6 +1205,9 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to conduit blueprint data adaptor.
+// 
+//    Justin Privitera, Fri May  3 09:55:25 PDT 2024
+//    Handle special case of uniform coordset and unstructured topology.
 //
 // ****************************************************************************
 vtkDataSet *

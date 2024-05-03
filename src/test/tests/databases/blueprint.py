@@ -70,6 +70,7 @@ bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
 bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
 bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
 bp_unstructured_points_dir = "blueprint_v0.8.7_unstructured_points"
+bp_unstructured_uniform_dir = "blueprint_v0.9.1_uniform_coords_unstructured_topo"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -93,6 +94,8 @@ poly_3d_yaml_root = data_path(pjoin(bp_poly_test_dir,"polytess_3d_example_yaml.r
 uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 
 unstructured_points = data_path(pjoin(bp_unstructured_points_dir,"unstructured_points.cycle_000100.root"))
+
+uniform_unstructured = data_path(pjoin(bp_unstructured_points_dir,"partition.root"))
 
 #
 # venn test data (multi material)
@@ -771,6 +774,31 @@ DeleteAllPlots()
 ResetView()
 
 TestSection("Blueprint Unstructured Points not using the entire coordset, 0.8.7")
+OpenDatabase(unstructured_points)
+AddPlot("Pseudocolor", "mesh_mesh/braid", 1, 1)
+SetActivePlots(0)
+PseudocolorAtts = PseudocolorAttributes()
+PseudocolorAtts.pointSizePixels = 20
+SetPlotOptions(PseudocolorAtts)
+AddPlot("Label", "mesh_mesh/braid", 1, 1)
+DrawPlots()
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.64536, -0.104723, 0.756666)
+View3DAtts.focus = (10, 0, 0)
+View3DAtts.viewUp = (-0.0863273, 0.994211, 0.0639709)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 14.1421
+View3DAtts.nearPlane = -28.2843
+View3DAtts.farPlane = 28.2843
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (10, 0, 0)
+SetView3D(View3DAtts)
+DrawPlots()
+Test("Unstructured_points_not_using_entire_coordset")
+DeleteAllPlots()
+ResetView()
+
+TestSection("Blueprint Uniform Coordset + Unstructured Topo, 0.9.1")
 OpenDatabase(unstructured_points)
 AddPlot("Pseudocolor", "mesh_mesh/braid", 1, 1)
 SetActivePlots(0)
