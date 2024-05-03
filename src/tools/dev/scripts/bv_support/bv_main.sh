@@ -641,7 +641,10 @@ function initialize_build_visit()
     #
     for arg in "$@" ; do
         case $arg in
-            --qt510) DO_QT510="yes";;
+            --qt510) DO_QT510="yes"; DO_QT6="no"; DO_QT="yes";;
+        esac
+        case $arg in
+            --qt) DO_QT6="no"; DO_QT="yes";;
         esac
         case $arg in
             --vtk9) DO_VTK9="yes";;
@@ -1479,6 +1482,7 @@ function run_build_visit()
            info "disabling qt, qwt because --server-components-only used"
         fi
         bv_qt_disable
+        bv_qt6_disable
         bv_qwt_disable
     fi
 
