@@ -16,7 +16,8 @@ sphinx:
   configuration: src/doc/conf.py
   fail_on_warning: true
 
-formats: html
+formats:
+  - html
 
 python:
   install:
