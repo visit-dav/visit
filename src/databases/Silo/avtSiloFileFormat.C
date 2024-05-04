@@ -10387,7 +10387,80 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
-                    for (k = 0 ; k < (size_t)shapesize ; k++)
+                    int nblinnod = 0 ;
+#if SILO_VERSION_GE(4,11,2)
+                    // Handle quadratic elements assuming the first nodes are in Silo convention.
+                    // This is to be more easily compatible with an external face extractor that would consider only
+                    // the first linear nodes. This is not an issue for both TETs and HEXs.
+                    switch (vtk_zonetype)
+                    {
+                    case VTK_QUADRATIC_WEDGE:
+                    {
+                        nblinnod = 6 ;
+                        vtkIdType vtk_wedge[nblinnod];
+                        TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
+                        for (k = 0 ; k < nblinnod ; k++)
+                        {
+                            *nl++ = vtk_wedge[k]-origin;
+                        }
+                        break ;
+                    }
+                    case VTK_QUADRATIC_PYRAMID:
+                    {
+                        nblinnod = 5 ;
+                        vtkIdType vtk_pyramid[nblinnod];
+                        TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
+                        for (k = 0 ; k < nblinnod ; k++)
+                        {
+                            *nl++ = vtk_pyramid[k]-origin;
+                        }
+                        break ;
+                    }
+                    case VTK_QUADRATIC_TETRA:
+                    {
+                        nblinnod = 4 ;
+                        // Apply the same logic for Silo quadratic tetras : make sure linear nodes are in the Silo convention,
+                        // i.e. not the VTK one.
+                        // Practically, this means that the user may input tetras into Silo using VTK convention without issue.
+                        if (firstTet)
+                        {
+                            firstTet = false;
+                            tetsAreInverted = TetIsInverted(nodelist, ugrid);
+                            static bool haveIssuedWarning = false; (void) haveIssuedWarning;
+                            if (tetsAreInverted)
+                            {
+                                haveIssuedWarning = true;
+                                char msg[1024];
+                                snprintf(msg, sizeof(msg), "An examination of the first quad tet "
+                                         "element in this mesh indicates that the node order is "
+                                         "inverted from Silo's standard conventions. All tets are "
+                                         "being automatically re-ordered.\n"
+                                         "Further messages of this issue will be suppressed.");
+                                avtCallback::IssueWarning(msg);
+                            }
+                        }
+
+                        vtkIdType vtk_tetra[nblinnod];
+                        if (tetsAreInverted)
+                        {
+                            for (k = 0 ; k < 4 ; k++)
+                                vtk_tetra[k] = nodelist[k];
+                        }
+                        else
+                        {
+                            TranslateSiloTetrahedronToVTKTetrahedron(nodelist,
+                                                                     vtk_tetra);
+                        }
+
+                        for (k = 0 ; k < nblinnod ; k++)
+                        {
+                            *nl++ = vtk_tetra[k]-origin;
+                        }
+                        break ;
+                    }
+                    }
+#endif
+                    for (k = nblinnod ; k < (size_t)shapesize ; k++)
                         *nl++ = *(nodelist+k) - origin;
                 }
                 else if (vtk_zonetype == VTK_POLYGON)
@@ -16239,6 +16312,29 @@ SiloZoneTypeToVTKZoneType(int zonetype)
       case DB_ZONETYPE_BEAM:
         vtk_zonetype = VTK_LINE;
         break;
+#if SILO_VERSION_GE(4,11,2)
+    case DB_ZONETYPE_QUAD_BEAM:
+        vtk_zonetype = VTK_QUADRATIC_EDGE;
+        break;
+      case DB_ZONETYPE_QUAD_TRIANGLE:
+        vtk_zonetype = VTK_QUADRATIC_TRIANGLE;
+        break;
+      case DB_ZONETYPE_QUAD_QUAD:
+        vtk_zonetype = VTK_QUADRATIC_QUAD;
+        break;
+      case DB_ZONETYPE_QUAD_TET:
+        vtk_zonetype = VTK_QUADRATIC_TETRA;
+        break;
+      case DB_ZONETYPE_QUAD_PYRAMID:
+        vtk_zonetype = VTK_QUADRATIC_PYRAMID;
+        break;
+      case DB_ZONETYPE_QUAD_PRISM:
+        vtk_zonetype = VTK_QUADRATIC_WEDGE;
+        break;
+      case DB_ZONETYPE_QUAD_HEX:
+        vtk_zonetype = VTK_QUADRATIC_HEXAHEDRON;
+        break;
+#endif
     }
 
     return vtk_zonetype;
