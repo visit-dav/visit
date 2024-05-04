@@ -152,6 +152,8 @@ def fixup_items(items,lib_maps,prefix_path):
                   ]
     for item in items:
         item_base = os.path.basename(item)
+
+        print('\n\nosxfixup: Working on item "{0}"'.format(item))
        
         #evaluating symlinks causes add_rpath errors for duplication
         #not evaluating it skips frameworks..

@@ -54,16 +54,20 @@ function bv_xdmf_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
         if [[ "$DO_VTK9" == "yes" ]] ; then
-            libdir="lib"
+            xml64=""
+            xmlsep="-"
             if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
-                libdir="lib64"
+                xml64="64"
+            fi
+            if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
+                xmlsep="."
             fi
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH}/${libdir} vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
                     >> $HOSTCONF
         else
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS libvtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
                 >> $HOSTCONF
         fi
     fi
@@ -301,17 +305,22 @@ function build_xdmf
     fi
 
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        xml64=""
+        xmlsep="-"
         xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2/include
         if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
-            xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
-        else
-            xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
+            xml64="64"
         fi
+        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
+            xmlsep="."
+        fi
+        xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
     else
         xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2
         xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
     fi
 
+    set -x
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
@@ -334,6 +343,7 @@ function build_xdmf
                  -DLIBXML2_INCLUDE_PATH:PATH="${xmlinc}" \
                  -DLIBXML2_LIBRARY:FILEPATH="${xmllib}" \
                  .
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Xdmf configure failed.  Giving up"
