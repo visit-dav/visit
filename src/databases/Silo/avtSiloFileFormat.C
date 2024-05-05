@@ -16313,7 +16313,7 @@ SiloZoneTypeToVTKZoneType(int zonetype)
         vtk_zonetype = VTK_LINE;
         break;
 #if SILO_VERSION_GE(4,12,0)
-    case DB_ZONETYPE_QUAD_BEAM:
+      case DB_ZONETYPE_QUAD_BEAM:
         vtk_zonetype = VTK_QUADRATIC_EDGE;
         break;
       case DB_ZONETYPE_QUAD_TRIANGLE:
