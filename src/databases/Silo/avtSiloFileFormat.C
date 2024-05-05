@@ -10388,7 +10388,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                 {
                     *nl++ = shapesize;
                     int nblinnod = 0 ;
-#if SILO_VERSION_GE(4,12,0)
+#ifdef DB_ZONETYPE_QUAD_BEAM
                     // Handle quadratic elements assuming the first nodes are in Silo convention.
                     // This is to be more easily compatible with an external face extractor that would consider only
                     // the first linear nodes. This is not an issue for both TETs and HEXs.
@@ -16312,7 +16312,7 @@ SiloZoneTypeToVTKZoneType(int zonetype)
       case DB_ZONETYPE_BEAM:
         vtk_zonetype = VTK_LINE;
         break;
-#if SILO_VERSION_GE(4,12,0)
+#ifdef DB_ZONETYPE_QUAD_BEAM
       case DB_ZONETYPE_QUAD_BEAM:
         vtk_zonetype = VTK_QUADRATIC_EDGE;
         break;
