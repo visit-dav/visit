@@ -16,10 +16,7 @@ sphinx:
   configuration: src/doc/conf.py
   fail_on_warning: true
 
-formats:
-  - htmlzip
-  - pdf
-  - epub
+formats: all
 
 python:
   install:
