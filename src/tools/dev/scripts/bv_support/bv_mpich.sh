@@ -93,19 +93,22 @@ function build_mpich
         return 1
     fi
     
+    cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
+
     #
     # Call configure
     #
     info "Configuring MPICH . . ."
-    cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
     info "Invoking command to configure MPICH"
 
     #
-    # Turn on shared version of the libs
+    # Turning off maintainer mode avoids need for any local autotools tools.
+    # We should not ever need them because we are not developing mpich.
+    # I guess we need shared libs.
     #
-    mpich_opts="--enable-shared"
+    mpich_opts="--disable-maintainer-mode --enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
+        mpich_opts="${mpich_opts} --enable-threads=single"
     fi
 
     #
@@ -145,11 +148,22 @@ function build_mpich
     # Build MPICH
     #
     info "Building MPICH . . . (~5 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    env $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "MPICH build failed.  Giving up"
-        return 1
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            warn "MPICH build failed but maybe due to LDFLAGS.\n" \
+                 "Retrying MPICH build with LDFLAGS set."
+            env $MAKE $MAKE_OPT_FLAGS LDFLAGS="-Wl,-flat_namespace -Wl,-undefined -Wl,suppress"
+            if [[ $? != 0 ]] ; then
+                warn "MPICH build failed.  Giving up"
+                return 1
+            fi
+        else
+            warn "MPICH build failed.  Giving up"
+            return 1
+        fi
     fi
+
     #
     # Install into the VisIt third party location.
     #

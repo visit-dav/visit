@@ -337,15 +337,11 @@ function initialize_build_visit()
         #  export VISITARCH=${VISITARCH-${ARCH}}
         export SO_EXT="dylib"
         VER=$(uname -r)
-        # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will
-        # default to 10.1
 	
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
         # work See issue https://github.com/visit-dav/visit/issues/1506
-
-        # use gcc for 10.9 & earlier
 
 	VER_MAJOR=${VER%%.*}
 
@@ -354,62 +350,37 @@ function initialize_build_visit()
 	# as such one must use parenthesis (( .. )) and not square brackets.
 	# i.e. if (( ${VER_MAJOR} < 8 )) ; then
 
-	# Square brackets are for contionals only. To make it a
+	# Square brackets are for conditionals only. To make it a
 	# conditional one must use "-lt"
         # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
 	    
-        if [[ ${VER_MAJOR} -lt 8 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.3
-        elif [[ ${VER_MAJOR} == 8 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.4
-        elif [[ ${VER_MAJOR} == 9 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.5
-        elif [[ ${VER_MAJOR} == 10 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.6
-        elif [[ ${VER_MAJOR} == 11 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.7
-        elif [[ ${VER_MAJOR} == 12 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.8
-        elif [[ ${VER_MAJOR} == 13 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.9
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 14 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.10
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 15 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.11
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 16 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.12
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER_MAJOR} == 17 ]] ; then
-            export MACOSX_DEPLOYMENT_TARGET=10.13
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        if [[ ${VER_MAJOR} -lt 18 ]] ; then
+            echo "Unsupported Darwin major version, ${VER_MAJOR}."
+            exit 1
         elif [[ ${VER_MAJOR} == 18 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.14
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         elif [[ ${VER_MAJOR} == 19 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.15
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         elif [[ ${VER_MAJOR} == 20 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=11.0
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 21 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=12.0
+        elif [[ ${VER_MAJOR} == 22 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=13.0
+        elif [[ ${VER_MAJOR} == 23 ]] ; then
+            # keep 13 (ventura)
+            export MACOSX_DEPLOYMENT_TARGET=13.0 
+        elif [[ ${VER_MAJOR} == 24 ]] ; then
+            # keep 13 (ventura)
+            export MACOSX_DEPLOYMENT_TARGET=13.0
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.14
-            export C_COMPILER=${C_COMPILER:-"clang"}
-            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+            echo "Unsupported Darwin major version, ${VER_MAJOR}."
+            echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"
+            exit 1
         fi
 
-        export C_COMPILER=${C_COMPILER:-"gcc"}
-        export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+        export C_COMPILER=${C_COMPILER:-"clang"}
+        export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
@@ -634,6 +605,7 @@ function initialize_build_visit()
     export DO_QT510="no"
     export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
+    LIST_TPS="no"
 
 
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
@@ -669,7 +641,10 @@ function initialize_build_visit()
     #
     for arg in "$@" ; do
         case $arg in
-            --qt510) DO_QT510="yes";;
+            --qt510) DO_QT510="yes"; DO_QT6="no"; DO_QT="yes";;
+        esac
+        case $arg in
+            --qt) DO_QT6="no"; DO_QT="yes";;
         esac
         case $arg in
             --vtk9) DO_VTK9="yes";;
@@ -1252,6 +1227,7 @@ function run_build_visit()
             -h|--help) next_action="help";;
             --install-network) next_arg="install-network";;
             --java) DO_JAVA="yes";;
+            --list-tpls) LIST_TPLS="yes";;
             --makeflags) next_arg="makeflags";;
             --no-hostconf) DO_HOSTCONF="no";;
             --no-boost) DO_BOOST="no";;
@@ -1413,8 +1389,19 @@ function run_build_visit()
         fi
     fi
 
+    if [[ "$LIST_TPLS" == "yes" ]] ; then
+      info $LINES
+      info "build_visit Third-party Libraries:"
+      for var in $(set -o posix; set | grep _FILE=; set +o posix); do
+          var=$(echo $var | cut -d '=' -f1)
+          info $var ${!var}
+      done
+      info $LINES
+      exit 0
+    fi
+
     #enabling any dependent libraries, handles both dependers and dependees..
-    #TODO: handle them seperately
+    #TODO: handle them separately
     info "enabling any dependent libraries"
     enable_dependent_libraries
 
@@ -1495,6 +1482,7 @@ function run_build_visit()
            info "disabling qt, qwt because --server-components-only used"
         fi
         bv_qt_disable
+        bv_qt6_disable
         bv_qwt_disable
     fi
 

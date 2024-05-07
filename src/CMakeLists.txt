@@ -560,6 +560,10 @@
 #    Rename Windows visit_special_builds to visit_util_builds, add function
 #    for easier use of this uber-target.
 #
+#    Kathleen Biagas, Tue Mar 5, 2024
+#    Modified VISIT_LIBRARY_DIR to use $<CONFIG> instead of
+#    ${CMAKE_CFG_INTDIR} on Windows, since the latter is deprecated.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -730,9 +734,14 @@ if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
 endif()
 
+set(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-set(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-set(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+if(WIN32)
+    string(APPEND VISIT_LIBRARY_DIR "/$<CONFIG>")
+    string(APPEND VISIT_EXECUTABLE_DIR "/$<CONFIG>")
+endif()
+
 set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #-----------------------------------------------------------------------------
@@ -1262,7 +1271,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Add the "test" directory
 #-----------------------------------------------------------------------------
-# I'm trying to make the new tetsing work hramoniously with the old testing
+# I'm trying to make the new testing work harmoniously with the old testing
 # while it's evaluated. if the new testing were ever made permanent then
 # this code would be removed.
 if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTEST_TESTING)
@@ -1282,6 +1291,7 @@ configure_file(${VISIT_SOURCE_DIR}/tools/dev/scripts/Info.plist.in
 if(NOT WIN32)
     if (APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
         set(CPACK_GENERATOR "Bundle")
+        set(CPACK_DMG_FORMAT "ULMO")
 
         set(CPACK_PACKAGE_FILE_NAME "VisIt-${VISIT_VERSION}")
         set(CPACK_BUNDLE_NAME "VisIt")
@@ -1292,7 +1302,7 @@ if(NOT WIN32)
         set(CPACK_GENERATOR "TGZ")
 
         set(CPACK_PACKAGE_NAME "visit")
-        set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
+        set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Scalable data visualization, analysis and movie-making from laptop to LCF")
         set(CPACK_PACKAGE_VENDOR "LLNS")
         set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/resources/help/en_US/copyright.html")
 

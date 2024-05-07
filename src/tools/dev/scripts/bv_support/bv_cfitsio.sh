@@ -68,6 +68,45 @@ function bv_cfitsio_ensure
 #                         Function 8.9, build_cfitsio                         #
 # *************************************************************************** #
 
+function apply_mv_vs_cp_patch
+{
+    patch -p0 << \EOF
+--- cfitsio/Makefile.in	2024-02-20 16:26:11.776100000 -0800
++++ cfitsio_patched/Makefile.in	2024-02-20 16:34:10.879376000 -0800
+@@ -88,10 +88,10 @@
+ 
+ install:	libcfitsio.a ${CFITSIO_PREFIX} ${CFITSIO_LIB} ${CFITSIO_INCLUDE}
+ 		@if [ -f libcfitsio.a ]; then \
+-			/bin/mv libcfitsio.a ${CFITSIO_LIB}; \
++			/bin/cp libcfitsio.a ${CFITSIO_LIB}; \
+ 		fi; \
+ 		if [ -f libcfitsio${SHLIB_SUFFIX} ]; then \
+-			/bin/mv libcfitsio${SHLIB_SUFFIX} ${CFITSIO_LIB}; \
++			/bin/cp libcfitsio${SHLIB_SUFFIX} ${CFITSIO_LIB}; \
+ 		fi; \
+ 		/bin/cp fitsio.h fitsio2.h longnam.h drvrsmem.h ${CFITSIO_INCLUDE}/
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "CFITSIO Makefile patch failed."
+        return 1
+    fi
+
+    return 0;
+
+}
+
+
+function apply_cfitsio_patch
+{
+    apply_mv_vs_cp_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    return 0;
+}
+
 function build_cfitsio
 {
     #
@@ -81,9 +120,27 @@ function build_cfitsio
     fi
 
     #
+    # Apply patches
+    #
+    info "Patching cfitsio . . ."
+    apply_cfitsio_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_cfitsio == 1 ]] ; then
+            warn "Giving up on CFITSIO build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
     info "Configuring CFITSIO . . ."
     cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
@@ -138,6 +195,7 @@ function build_cfitsio
     mkdir "$VISITDIR/cfitsio"
     mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION"
     mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
+
     $MAKE install
     if [[ $? != 0 ]] ; then
         warn "CFITSIO install failed.  Giving up"

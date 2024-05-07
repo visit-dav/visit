@@ -1222,6 +1222,12 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // 
 //   Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //   Fixed warnings.
+// 
+//   Justin Privitera, Wed Feb 14 11:37:06 PST 2024
+//   Present material ids alongside material names.
+// 
+//   Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
+//   Revert previous change.
 //
 // ****************************************************************************
 void
@@ -2577,6 +2583,12 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //     Justin Privitera, Mon Feb  5 14:14:19 PST 2024
 //     Removed unnecessary material numbers logic now that we have a new 
 //     Conduit.
+// 
+//     Justin Privitera, Wed Feb 14 11:37:06 PST 2024
+//     Present material ids alongside material names.
+// 
+//     Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
+//     Revert previous change.
 //
 // ****************************************************************************
 avtMaterial *
