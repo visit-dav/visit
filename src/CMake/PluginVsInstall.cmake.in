@@ -116,6 +116,13 @@
 #   Added definitions for VTK_VERSION_HEX, needed for LIB_VERSION comparisons
 #   in source code.
 #
+#   Kathleen Biagas, Fri May 3, 2024
+#   Add correct name for QT_MOC_EXEUCTABLE on Windows.
+#   Add ADIOS2 and ADIOS2_PAR vars.
+#   Consolidated VISIT_INSTALL_XXX_PLUGINS logic into new function.
+#   Add separate RUNTIME_OUTPUT_DIRECTORY entries for each Configuration
+#   type on Windows (VISIT_INSTALL_PLUGINS).
+#
 #****************************************************************************/
 
 ##
@@ -226,7 +233,11 @@ endif()
 
 set(QT_LIBRARY_DIR           ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(QT_BIN                   ${VISIT_BINARY_DIR})
-set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
+if(WIN32)
+    set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc.exe)
+else()
+    set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
+endif()
 
 # Set up Python
 set(PYTHON_INCLUDE_PATH    ${VISIT_ROOT_INCLUDE_DIR}@python_include_relative_path@)
@@ -247,6 +258,15 @@ endif()
 set(ADIOS_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios/include)
 set(ADIOS_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(ADIOS_LIB @ADIOS_LIB@)
+
+set(ADIOS2_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios2/include)
+set(ADIOS2_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(ADIOS2_LIB @ADIOS2_LIB@)
+
+set(ADIOS2_PAR_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios2/include)
+set(ADIOS2_PAR_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(ADIOS2_PAR_LIB @ADIOS2PAR__LIB@)
+
 
 set(ADVIO_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/advio/include)
 set(ADVIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -345,31 +365,29 @@ set(VTKm_INCLUDE_DIRS  @filtered_VTKm_INCLUDE_DIRS@)
 include(${VISIT_ROOT_INCLUDE_DIR}/VisItMacros.cmake)
 
 # Installation macros
+macro(VISIT_INSTALL_PLUGINS type)
+    if(WIN32)
+        foreach(conf ${CMAKE_CONFIGURATION_TYPES})
+            string(TOUPPER ${conf} uconf)
+            set_target_properties(${ARGN} PROPERTIES
+                RUNTIME_OUTPUT_DIRECTORY_${uconf} ${VISIT_PLUGIN_DIR}/${type})
+        endforeach()
+    else()
+        set_target_properties(${ARGN} PROPERTIES
+           LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/${type})
+    endif()
+endmacro()
+
 macro(VISIT_INSTALL_DATABASE_PLUGINS)
-    foreach(target ${ARGN})
-        set_target_properties(${target} PROPERTIES
-           RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/databases"
-           LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/databases"
-        )
-    endforeach()
+    VISIT_INSTALL_PLUGINS(databases ${ARGN})
 endmacro()
 
 macro(VISIT_INSTALL_OPERATOR_PLUGINS)
-    foreach(target ${ARGN})
-        set_target_properties(${target} PROPERTIES
-           RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/operators"
-           LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/operators"
-        )
-    endforeach()
+    VISIT_INSTALL_PLUGINS(operators ${ARGN})
 endmacro()
 
 macro(VISIT_INSTALL_PLOT_PLUGINS)
-    foreach(target ${ARGN})
-        set_target_properties(${target} PROPERTIES
-           RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/plots"
-           LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/plots"
-        )
-    endforeach()
+    VISIT_INSTALL_PLUGINS(plots ${ARGN})
 endmacro()
 
 macro(VISIT_PLUGIN_TARGET_FOLDER type pname)
