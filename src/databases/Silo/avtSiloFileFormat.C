@@ -90,6 +90,16 @@
 #include <string>
 #include <vector>
 
+#ifndef DB_ZONETYPE_QUAD_BEAM
+// Define fake elts for avoiding ifdef all the time
+#define DB_ZONETYPE_QUAD_BEAM      1
+#define DB_ZONETYPE_QUAD_TRIANGLE  1
+#define DB_ZONETYPE_QUAD_QUAD      1
+#define DB_ZONETYPE_QUAD_TET       1
+#define DB_ZONETYPE_QUAD_PYRAMID   1
+#define DB_ZONETYPE_QUAD_PRISM     1
+#define DB_ZONETYPE_QUAD_HEX       1
+#endif
 
 using std::map;
 using std::set;
@@ -6556,6 +6566,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                 int edge[4][2];
                 switch (zl->shapetype[seg])
                 {
+                    case DB_ZONETYPE_QUAD_TRIANGLE:
                     case DB_ZONETYPE_TRIANGLE:
                     {
                         edge[0][0] = zl->nodelist[nlIdx+0];
@@ -6566,6 +6577,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         edge[2][1] = zl->nodelist[nlIdx+0];
                         nedges = 3;
                     }
+                    case DB_ZONETYPE_QUAD_QUAD:
                     case DB_ZONETYPE_QUAD:
                     {
                         edge[0][0] = zl->nodelist[nlIdx+0];
@@ -6673,6 +6685,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                 int face[6][4];
                 switch (zl->shapetype[seg])
                 {
+                    case DB_ZONETYPE_QUAD_TET:
                     case DB_ZONETYPE_TET:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -6693,6 +6706,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[3][3] = -1;
                         nfaces = 4;
                     }
+                    case DB_ZONETYPE_QUAD_PYRAMID:
                     case DB_ZONETYPE_PYRAMID:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -6717,6 +6731,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[4][3] = -1;
                         nfaces = 5;
                     }
+                    case DB_ZONETYPE_QUAD_PRISM:
                     case DB_ZONETYPE_PRISM:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -6741,6 +6756,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[4][3] = zl->nodelist[nlIdx+3];
                         nfaces = 5;
                     }
+                    case DB_ZONETYPE_QUAD_HEX:
                     case DB_ZONETYPE_HEX:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
