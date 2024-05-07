@@ -42,6 +42,9 @@
 #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   I replaced vtkh with vtkm.
 #
+#   Kathleen Biagas, Thu May 2, 2024
+#   Add '*.inl' to acceptable patterns when installing headers.
+#
 #****************************************************************************/
 
 # ==============================================
@@ -500,6 +503,7 @@ function(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 PATTERN "*.hxx"
                 PATTERN "*.HPP"
                 PATTERN "*.inc"
+                PATTERN "*.inl"
                 PATTERN ".svn" EXCLUDE
             )
         endif()
