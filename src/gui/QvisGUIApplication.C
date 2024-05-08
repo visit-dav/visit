@@ -3238,7 +3238,7 @@ QvisGUIApplication::CreateMainWindow()
 //   Removed support for SeedMe.
 //
 //   Kathleen Biagas, Wed May 8, 202 
-//   Added code to connect QviColorTableButton with a methco to open the
+//   Added code to connect QvisColorTableButton with a method to open the
 //   ColorTable window.
 //
 // ****************************************************************************
