@@ -36,6 +36,9 @@
 #   Clean up plugin install target on Windows, only need RUNTIME DESTINATION.
 #   MSVC_IDE and non-ide should install the same.
 #
+#   Kathleen Biagas, Mon Oct 16 14:40:58 PDT 2023
+#   Add visit_add_operator_plugin macro.
+#
 #****************************************************************************/
 
 
@@ -228,4 +231,617 @@ function(CREATE_PLUGIN_DEPENDENCIES target comp type)
     set(${cachevar} ${dependencies} CACHE INTERNAL "dependencies for ${target}")
     #message("${cachevar} = ${${cachevar}}")
 endfunction(CREATE_PLUGIN_DEPENDENCIES)
+
+
+# generation of operator plugin libraries (called from a plugin's CMakeLists.txt)
+
+function(visit_add_operator_plugin)
+    # required arguments:
+    #   NAME              Name of the operator plugin
+    # optional arguments:
+    #   ATTSNAME          Name of attributes class.  # THIS PROBABLY ISN"T NEEDED AS LOGIC TO FIGURE OUT THE NAME APPEARS TO BE WORKING
+    #   CREATEEXPR        if set, this operator creates expressions
+    #   GSRC              additional sources for the gui target
+    #   VSRC              additional sources for the viewer target
+    #   ESRC              additional sources for the engine targets
+    #   GLIBS             additional libraries for the gui target
+    #   VLIBS             additional libraries for the viewer target
+    #   SLIBS             additional libraries for the scripting target
+    #   ESERLIBS          additional libraries for the serial engine targets
+    #   EPARLIBS          additional libraries for the parallel engine targets
+
+
+    # NOTES:  not all of the target link libraries being added to the
+    # targets here are necessary for every operator.  They are being added
+    # for convenience to ease plugin developement
+    # (eg avtdbatts needed by those operators that create expressions)
+    set(OPT CREATEEXPR)
+    set(VALS NAME ATTSNAME)
+    set(MVALS GSRC VSRC ESRC GLIBS VLIBS SLIBS ESERLIBS EPARLIBS)
+    cmake_parse_arguments(op "${OPT}" "${VALS}" "${MVALS}" ${ARGN})
+
+    if(NOT DEFINED op_NAME)
+        message(FATAL_ERROR "Incomplete arguments to visit_add_operator_plugin. Required: NAME")
+    endif()
+
+    # if doing dev build ??
+    ADD_OPERATOR_CODE_GEN_TARGETS(${op_NAME})
+    # endif()
+
+    # Handle the different ways some operator's atts have been named.
+    # This was handled nicely in GenerateCMake when it was writing
+    # the full CMake code, becuase the Atts name is specified in the XML file.
+    # Could possibly have the CMake gen code add an ATTSNAME argument
+    # to this function instead of this logic ... Make it required so
+    # all plugins use it.  Could do the same for FILTERNAME since some use
+    # 'Plugin' in the name.
+    if(op_ATTSNAME)
+        set(CATTS ${op_ATTSNAME}.C)
+        set(PYATTS Py${op_ATTSNAME}.C)
+        set(JATTS ${op_ATTSNAME}.java)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${op_NAME}Attributes.C)
+        set(CATTS ${op_NAME}Attributes.C)
+        set(PYATTS Py${op_NAME}Attributes.C)
+        set(JATTS ${op_NAME}Attributes.java)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${op_NAME}OperatorAttributes.C)
+        set(CATTS ${op_NAME}OperatorAttributes.C)
+        set(PYATTS Py${op_NAME}OperatorAttributes.C)
+        set(JATTS ${op_NAME}OperatorAttributes.java)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${op_NAME}Atts.C)
+        set(CATTS ${op_NAME}Atts.C)
+        set(PYATTS Py${op_NAME}Atts.C)
+        set(JATTS ${op_NAME}Atts.java)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${op_NAME}.C)
+        set(CATTS ${op_NAME}.C)
+        set(PYATTS Py${op_NAME}.C)
+        set(JATTS ${op_NAME}.java)
+    else()
+        message(FATAL_ERROR "Cound not find name for ${op_NAME}'s Attributes class. Expecting ${op_NAME}Attributes, ${op_NAME}OperatorAttributes, ${op_NAME}Atts or ${op_NAME}")
+    endif()
+    set(COMMON_SOURCES
+        ${op_NAME}PluginInfo.C
+        ${op_NAME}CommonPluginInfo.C
+        ${CATTS})
+
+    set(LIBI_SOURCES ${op_NAME}PluginInfo.C)
+
+    set(LIBG_SOURCES
+        ${op_NAME}GUIPluginInfo.C
+        Qvis${op_NAME}Window.C
+        ${COMMON_SOURCES})
+    if(DEFINED op_GSRC)
+        list(APPEND LIBG_SOURCES ${op_GSRC})
+    endif()
+
+    set(LIBV_SOURCES
+        ${op_NAME}ViewerEnginePluginInfo.C
+        ${op_NAME}ViewerPluginInfo.C
+        ${COMMON_SOURCES})
+
+    if(DEFINED op_VSRC)
+        list(APPEND LIBV_SOURCES ${op_VSRC})
+    endif()
+
+    set(LIBE_SOURCES
+        ${op_NAME}ViewerEnginePluginInfo.C
+        ${op_NAME}EnginePluginInfo.C
+        ${COMMON_SOURCES})
+
+    # some operators don't use the standard filter name
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/avt${op_NAME}Filter.C)
+        list(APPEND LIBE_SOURCES avt${op_NAME}Filter.C)
+        list(APPEND LIBV_SOURCES avt${op_NAME}Filter.C)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/avt${op_NAME}PluginFilter.C)
+        list(APPEND LIBE_SOURCES avt${op_NAME}PluginFilter.C)
+        list(APPEND LIBV_SOURCES avt${op_NAME}PluginFilter.C)
+    else()
+        message("FATAL_ERROR Could not determine name of ${op_NAME}'s filter class. Expecting avt${op_NAME}Filter or avt${op_NAME}PluginFilter.")
+    endif()
+
+    if(DEFINED op_ESRC)
+        list(APPEND LIBE_SOURCES ${op_ESRC})
+    endif()
+
+    set(ITarget    I${op_NAME}Operator)
+    set(GTarget    G${op_NAME}Operator)
+    set(VTarget    V${op_NAME}Operator)
+    set(STarget    S${op_NAME}Operator)
+    set(ESerTarget E${op_NAME}Operator_ser)
+    set(EParTarget E${op_NAME}Operator_par)
+
+    visit_add_library(
+        NAME     ${ITarget}
+        SOURCES  ${LIBI_SOURCES}
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        DEPENDS  visitcommon)
+
+    set(INSTALLTARGETS ${ITarget})
+
+    if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+        visit_add_library(
+            NAME     ${GTarget}
+            SOURCES  ${LIBG_SOURCES}
+            INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEPENDS  visitcommon gui winutil ${QT_QTWIDGETS_LIBRARY} ${op_GLIBS})
+
+        set_target_properties(${GTarget} PROPERTIES AUTOMOC ON)
+   
+        #if(DEFINED op_CREATEEXPR)
+            target_link_libraries(${GTarget} PRIVATE avtdbatts)
+        #endif()
+
+        visit_add_library(
+            NAME     ${VTarget}
+            SOURCES  ${LIBV_SOURCES}
+            INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEFINES  VIEWER
+            DEPENDS  visitcommon
+                     viewer
+                     avtexpressions_ser
+                     ${op_VLIBS})
+
+        if(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0")
+            target_link_libraries(${VTarget} PUBLIC VTK::CommonDataModel)
+        else()
+            target_link_libraries(${VTarget} PUBLIC vtkCommonDataModel)
+        endif()
+      
+        #if(DEFINED op_CREATEEXPR)
+            target_link_libraries(${VTarget} PRIVATE avtdbatts)
+        #endif()
+
+        list(APPEND INSTALLTARGETS ${GTarget} ${VTarget})
+
+        if(VISIT_PYTHON_SCRIPTING)
+            visit_add_library(
+                NAME     ${STarget}
+                SOURCES  ${op_NAME}ScriptingPluginInfo.C
+                         ${PYATTS}
+                         ${COMMON_SOURCES}
+                INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                DEPENDS  visitcommon visitpy ${PYTHON_LIBRARY} ${op_SLIBS})
+
+            #if(DEFINED op_CREATEEXPR)
+                target_link_libraries(${STarget} PRIVATE avtdbatts)
+            #endif()
+            if(WIN32)
+                # This prevents python from #defining snprintf as _snprintf
+                target_compile_definitions(${STarget} PRIVATE HAVE_SNPRINTF)
+            endif()
+            list(APPEND INSTALLTARGETS ${STarget})
+        endif()
+
+        if(VISIT_JAVA)
+            file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/operators)
+            add_custom_target(Java${op_NAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
+                DEPENDS JavaClient
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
+    endif()
+
+    set(engine_DEPENDS visitcommon lightweight_visit_vtk)
+    if(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0")
+        list(APPEND engine_DEPENDS VTK::CommonDataModel VTK::CommonExecutionModel)
+    else()
+        list(APPEND engine_DEPENDS vtkCommonDataModel vtkCommonExecutionModel)
+    endif()
+    #if(DEFINED op_CREATEEXPR)
+        list(APPEND engine_DEPENDS avtdbatts)
+    #endif()
+    visit_add_library(
+        NAME     ${ESerTarget}
+        SOURCES  ${LIBE_SOURCES}
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        DEPENDS  ${engine_DEPENDS}
+                 avtpipeline_ser
+                 avtexpressions_ser
+                 avtfilters_ser
+                 ${op_ESERLIBS})
+
+    list(APPEND INSTALLTARGETS ${ESerTarget})
+
+    if(VISIT_PARALLEL)
+        visit_add_parallel_library(
+            NAME     ${EParTarget}
+            SOURCES  ${LIBE_SOURCES}
+            INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEPENDS  ${engine_DEPENDS}
+                     avtpipeline_par
+                     avtexpressions_par
+                     avtfilters_par
+                     ${op_EPARLIBS})
+        list(APPEND INSTALLTARGETS ${EParTarget})
+    endif()
+
+    VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})
+    # These two aren't needed for pluginVsInstall, so should have
+    # some sort of "if(not-doing-dev) test. 
+    VISIT_PLUGIN_TARGET_OUTPUT_DIR(plots ${INSTALLTARGETS})
+    VISIT_PLUGIN_TARGET_OUTPUT_DIR(operators ${INSTALLTARGETS})
+    VISIT_PLUGIN_TARGET_FOLDER(operators ${op_NAME} ${INSTALLTARGETS})
+endfunction()
+
+function(visit_add_plot_plugin)
+    # required arguments:
+    #   NAME             Name of the plot plugin
+    # optional arguments:
+    #   GSRC              additional sources for the gui target
+    #   VSRC              additional sources for the viewer target
+    #   ESRC              additional sources for the engine targets
+    #   GLIBS             additional libraries for the gui target
+    #   VLIBS             additional libraries for the viewer target
+    #   SLIBS             additional libraries for the scripting target
+    #   ESERLIBS          additional libraries for the serial engine targets
+    #   EPARLIBS          additional libraries for the parallel engine targets
+
+
+    # NOTES:  not all of the target link libraries being added to the
+    # targets here are necessary for every plot.  They are being added
+    # for convenience to ease plugin developement
+    # (eg ??? needed by those plots that ???)
+    set(VALS NAME)
+    set(MVALS GSRC VSRC ESRC GLIBS VLIBS SLIBS ESERLIBS EPARLIBS)
+    cmake_parse_arguments(plot "" "${VALS}" "${MVALS}" ${ARGN})
+
+    if(NOT DEFINED plot_NAME)
+        message(FATAL_ERROR "Incomplete arguments to visit_add_plot_plugin. Required: NAME")
+    endif()
+
+    project(${plot_NAME}_plot)
+
+    # if doing dev build ??
+    ADD_PLOT_CODE_GEN_TARGETS(${plot_NAME})
+    # endif()
+
+    # Handle the different ways some plots's atts have been named.
+    # This was handled nicely in GenerateCMake when it was writing
+    # the full CMake code, becuase the Atts name is specified in the XML file.
+    # Could possibly have the CMake gen code add an ATTSNAME argument
+    # to this function instead of this logic ... Make it required so
+    # all plugins use it.  Could do the same for FILTERNAME since some use
+    # 'Plugin' in the name.
+    set(CATTS ${plot_NAME}Attributes.C)
+    set(PYATTS Py${plot_NAME}Attributes.C)
+    set(JATTS ${plot_NAME}Attributes.java)
+    set(COMMON_SOURCES
+        ${plot_NAME}PluginInfo.C
+        ${plot_NAME}CommonPluginInfo.C
+        ${CATTS})
+
+    set(LIBI_SOURCES ${plot_NAME}PluginInfo.C)
+
+    set(LIBG_SOURCES
+        ${plot_NAME}GUIPluginInfo.C
+        Qvis${plot_NAME}PlotWindow.C
+        ${COMMON_SOURCES})
+    if(DEFINED plot_GSRC)
+        list(APPEND LIBG_SOURCES ${plot_GSRC})
+    endif()
+
+    set(LIBV_SOURCES
+        ${plot_NAME}ViewerEnginePluginInfo.C
+        ${plot_NAME}ViewerPluginInfo.C
+        avt${plot_NAME}Plot.C
+        ${COMMON_SOURCES})
+
+    if(DEFINED plot_VSRC)
+        list(APPEND LIBV_SOURCES ${plot_VSRC})
+    endif()
+
+    set(LIBE_SOURCES
+        ${plot_NAME}ViewerEnginePluginInfo.C
+        ${plot_NAME}EnginePluginInfo.C
+        avt${plot_NAME}Plot.C
+        ${COMMON_SOURCES})
+
+    if(DEFINED plot_ESRC)
+        list(APPEND LIBE_SOURCES ${plot_ESRC})
+    endif()
+
+    set(ITarget    I${plot_NAME}Plot)
+    set(GTarget    G${plot_NAME}Plot)
+    set(VTarget    V${plot_NAME}Plot)
+    set(STarget    S${plot_NAME}Plot)
+    set(ESerTarget E${plot_NAME}Plot_ser)
+    set(EParTarget E${plot_NAME}Plot_par)
+
+    visit_add_library(
+        NAME     ${ITarget}
+        SOURCES  ${LIBI_SOURCES}
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        DEPENDS  visitcommon)
+
+    set(INSTALLTARGETS ${ITarget})
+
+    if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+        visit_add_library(
+            NAME     ${GTarget}
+            SOURCES  ${LIBG_SOURCES}
+            INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEPENDS  visitcommon gui ${plot_GLIBS})
+
+        set_target_properties(${GTarget} PROPERTIES AUTOMOC ON)
+   
+        visit_add_library(
+            NAME     ${VTarget}
+            SOURCES  ${LIBV_SOURCES}
+            INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEFINES  VIEWER
+            DEPENDS  visitcommon
+                     viewer
+                     ${plot_VLIBS})
+      
+        list(APPEND INSTALLTARGETS ${GTarget} ${VTarget})
+
+        if(VISIT_PYTHON_SCRIPTING)
+            visit_add_library(
+                NAME     ${STarget}
+                SOURCES  ${plot_NAME}ScriptingPluginInfo.C
+                         ${PYATTS}
+                         ${COMMON_SOURCES}
+                INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                DEPENDS  visitcommon visitpy ${PYTHON_LIBRARY} ${plot_SLIBS})
+
+            if(WIN32)
+                # This prevents python from #defining snprintf as _snprintf
+                target_compile_definitions(${STarget} PRIVATE HAVE_SNPRINTF)
+            endif()
+            list(APPEND INSTALLTARGETS ${STarget})
+        endif()
+
+        if(VISIT_JAVA)
+            file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/operators)
+            add_custom_target(Java${plot_NAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
+                DEPENDS JavaClient
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
+    endif()
+
+    visit_add_library(
+        NAME     ${ESerTarget}
+        SOURCES  ${LIBE_SOURCES}
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        DEPENDS  visitcommon
+                 avtplotter_ser
+                 ${plot_ESERLIBS})
+
+    list(APPEND INSTALLTARGETS ${ESerTarget})
+
+    if(VISIT_PARALLEL)
+        visit_add_parallel_library(
+            NAME     ${EParTarget}
+            SOURCES  ${LIBE_SOURCES}
+            INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEPENDS  visitcommon
+                     avtplotter_par
+                     ${plot_EPARLIBS})
+        list(APPEND INSTALLTARGETS ${EParTarget})
+    endif()
+
+    VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
+    # These two aren't needed for pluginVsInstall, so should have
+    # some sort of "if(not-doing-dev) test. 
+    VISIT_PLUGIN_TARGET_OUTPUT_DIR(plots ${INSTALLTARGETS})
+    VISIT_PLUGIN_TARGET_FOLDER(plots ${plot_NAME} ${INSTALLTARGETS})
+endfunction()
+
+function(visit_add_database_plugin)
+    # required arguments:
+    #   NAME              Name of the database plugin
+    # optional arguments:
+    #   HASOPTIONS        set if database has Options
+    #   HASWRITER         set if database has Writer
+    #   INCLUDES          additional include directories for target (NON TP)
+    #   SRC               additional sources for mdserver and engine targets
+    #   MSRC              additional sources for mdserver target
+    #   ESRC              additional sources for engine targets
+    #   LIBS              additional libraries for mdserver and engine targets
+    #   MLIBS             additional libraries for mdserver target
+    #   ESERLIBS          additional libraries for serial engine targets
+    #   EPARLIBS          additional libraries for parallel engine targets
+    #   DEFINES           Compiler defines for mdserver and engine targets
+    #   TPINC             ThirdParty include paths
+    #   TPLIBS            ThirdParty libraries
+    #   TPLIBDIR          ThirdParty library paths
+    #   TPINCPAR          ThirdParty parallel include paths
+    #   TPLIBSPAR         ThirdParty parallel libraries
+    #   TPLIBDIRPAR       ThirdParty parallel library paths
+
+
+    set(OPT HASOPTIONS HASWRITER)
+    set(VALS NAME)
+    set(MVALS INCLUDES 
+              SRC MSRC ESRC
+              LIBS MLIBS ESERLIBS EPARLIBS
+              DEFINES
+              TPINC TPLIBS TPLIBDIR
+              TPINCPAR TPLIBSPAR TPLIBDIRPAR)
+    cmake_parse_arguments(db "${OPT}" "${VALS}" "${MVALS}" ${ARGN})
+
+    if(NOT DEFINED db_NAME)
+        message(FATAL_ERROR "Incomplete arguments to visit_add_database_plugin. Required: NAME")
+    endif()
+
+    project(${db_NAME}_database)
+
+    # if doing dev build ??
+    ADD_DATABASE_CODE_GEN_TARGETS(${db_NAME})
+    # endif()
+
+    # take TPLIBS, TPLIBDIR and create full-path-to library.
+    if(DEFINED db_TPLIBS AND DEFINED db_TPLIBDIR)
+        set(use_TPLIBS)
+        foreach(l ${db_TPLIBS})
+            if(TARGET ${l})
+                # use a defined target as-is
+                list(APPEND use_TPLIBS ${l})
+                continue()
+            endif() 
+            if(EXISTS ${l})
+                # this lib already has a path
+                list(APPEND use_TPLIBS ${l})
+                continue()
+            endif()
+            foreach(d ${db_TPLIBDIR})
+                if(EXISTS ${d}/${l})
+                   list(APPEND use_TPLIBS ${d}/${l})
+                endif()
+            endforeach()
+        endforeach()
+    elseif(DEFINED db_TPLIBS)
+        # no TPLIBDIR specified, use TPLIBS as-is
+        set(use_TPLIBS ${db_TPLIBS})
+    endif()
+    if(DEFINED db_TPLIBSPAR AND DEFINED db_TPLIBDIRPAR)
+        set(use_TPLIBSPAR)
+        foreach(l ${db_TPLIBSPAR})
+            if(TARGET ${l})
+                # use a defined target as-is
+                list(APPEND use_TPLIBSPAR ${l})
+                continue()
+            endif() 
+            if(EXISTS ${l})
+                # this lib already has a path
+                list(APPEND use_TPLIBSPAR ${l})
+                continue()
+            endif()
+            foreach(d ${db_TPLIBDIRPAR})
+                if(EXISTS ${d}/${l})
+                   list(APPEND use_TPLIBSPAR ${d}/${l})
+                endif()
+            endforeach()
+        endforeach()
+    elseif(DEFINED db_TPLIBSPAR)
+        # no TPLIBDIR specified, use TPLIBS as-is
+        set(use_TPLIBSPAR ${db_TPLIBSPAR})
+    endif()
+
+    set(COMMON_SOURCES
+        ${db_NAME}PluginInfo.C
+        ${db_NAME}CommonPluginInfo.C)
+
+    set(LIBI_SOURCES ${db_NAME}PluginInfo.C)
+
+    set(LIBM_SOURCES
+        ${db_NAME}MDServerPluginInfo.C
+        ${COMMON_SOURCES}
+        ${db_SRC}
+        ${db_MSRC})
+
+    set(LIBE_SOURCES
+        ${db_NAME}EnginePluginInfo.C
+        ${COMMON_SOURCES}
+        ${db_SRC}
+        ${db_ESRC})
+
+    set(m_defines MDSERVER)
+    set(e_defines ENGINE)
+    if(DEFINED db_DEFINES)
+        list(APPEND m_defines ${db_DEFINES})
+        list(APPEND e_defines ${db_DEFINES})
+    endif()
+
+    # format file may be either avtXXFileFormat or avtXXFileFormatInterface
+    # or neither.
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/avt${db_NAME}FileFormat.C)
+        list(APPEND LIBM_SOURCES avt${db_NAME}FileFormat.C)
+        list(APPEND LIBE_SOURCES avt${db_NAME}FileFormat.C)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/avt${db_NAME}FileFormatInterface.C)
+        list(APPEND LIBM_SOURCES avt${db_NAME}FileFormatInterface.C)
+        list(APPEND LIBE_SOURCES avt${db_NAME}FileFormatInterface.C)
+    endif()
+
+
+    if(db_HASOPTIONS)
+        list(APPEND LIBM_SOURCES avt${db_NAME}Options.C)
+        list(APPEND LIBE_SOURCES avt${db_NAME}Options.C)
+    endif()
+
+    if(db_HASWRITER)
+        list(APPEND LIBE_SOURCES avt${db_NAME}Writer.C)
+    endif()
+
+    set(ITarget    I${db_NAME}Database)
+    set(MTarget    M${db_NAME}Database)
+    set(ESerTarget E${db_NAME}Database_ser)
+    set(EParTarget E${db_NAME}Database_par)
+
+    visit_add_library(
+        NAME     ${ITarget}
+        SOURCES  ${LIBI_SOURCES}
+        INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS  visitcommon)
+
+    set(INSTALLTARGETS ${ITarget})
+
+    if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+   
+        visit_add_library(
+            NAME     ${MTarget}
+            SOURCES  ${LIBM_SOURCES}
+            INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${VISIT_INCLUDE_DIR}/include
+                     ${db_INCLUDES}
+                     ${db_TPINC}
+            DEFINES  ${m_defines}
+            DEPENDS  visitcommon
+                     avtdatabase_ser
+                     ${db_LIBS}
+                     ${db_MLIBS}
+                     ${use_TPLIBS})
+
+        list(APPEND INSTALLTARGETS ${MTarget})
+    endif()
+
+    visit_add_library(
+        NAME     ${ESerTarget}
+        SOURCES  ${LIBE_SOURCES}
+        INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
+                 ${VISIT_INCLUDE_DIR}/include
+                 ${db_INCLUDES}
+                 ${db_TPINC}
+        DEFINES  ${e_defines}
+        DEPENDS  visitcommon
+                 avtdatabase_ser
+                 ${db_LIBS}
+                 ${db_ESERLIBS}
+                 ${use_TPLIBS})
+
+    list(APPEND INSTALLTARGETS ${ESerTarget})
+
+    if(VISIT_PARALLEL)
+        if(use_TPLIBSPAR)
+            set(use_these_libs ${use_TPLIBSPAR})
+        else()
+            set(use_these_libs ${use_TPLIBS})
+        endif()
+        if(DEFINED db_TPINCPAR)
+            set(use_these_includes ${db_TPINCPAR})
+        else()
+            set(use_these_includes ${db_TPINC})
+        endif()
+        visit_add_parallel_library(
+            NAME     ${EParTarget}
+            SOURCES  ${LIBE_SOURCES}
+            INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${VISIT_INCLUDE_DIR}/include
+                     ${db_INCLUDES}
+                     ${use_these_includes}
+            DEFINES  ${e_defines}
+            DEPENDS  visitcommon
+                     avtdatabase_par
+                     ${db_LIBS}
+                     ${db_EPARLIBS}
+                     ${use_these})
+
+        list(APPEND INSTALLTARGETS ${EParTarget})
+    endif()
+
+
+    VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
+    # These two aren't needed for pluginVsInstall, so should have
+    # some sort of "if(not-doing-dev) test. 
+    VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})
+    VISIT_PLUGIN_TARGET_FOLDER(databases ${db_NAME} ${INSTALLTARGETS})
+endfunction()
 
