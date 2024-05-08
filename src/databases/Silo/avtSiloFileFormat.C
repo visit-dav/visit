@@ -92,13 +92,13 @@
 
 #ifndef DB_ZONETYPE_QUAD_BEAM
 // Define fake elts for avoiding ifdef all the time
-#define DB_ZONETYPE_QUAD_BEAM      1
-#define DB_ZONETYPE_QUAD_TRIANGLE  1
-#define DB_ZONETYPE_QUAD_QUAD      1
-#define DB_ZONETYPE_QUAD_TET       1
-#define DB_ZONETYPE_QUAD_PYRAMID   1
-#define DB_ZONETYPE_QUAD_PRISM     1
-#define DB_ZONETYPE_QUAD_HEX       1
+#define DB_ZONETYPE_QUAD_BEAM      -1
+#define DB_ZONETYPE_QUAD_TRIANGLE  -2
+#define DB_ZONETYPE_QUAD_QUAD      -3
+#define DB_ZONETYPE_QUAD_TET       -4
+#define DB_ZONETYPE_QUAD_PYRAMID   -5
+#define DB_ZONETYPE_QUAD_PRISM     -6
+#define DB_ZONETYPE_QUAD_HEX       -7
 #endif
 
 using std::map;
