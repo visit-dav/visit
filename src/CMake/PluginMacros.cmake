@@ -456,7 +456,6 @@ function(visit_add_operator_plugin)
     VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})
     # These two aren't needed for pluginVsInstall, so should have
     # some sort of "if(not-doing-dev) test. 
-    VISIT_PLUGIN_TARGET_OUTPUT_DIR(plots ${INSTALLTARGETS})
     VISIT_PLUGIN_TARGET_OUTPUT_DIR(operators ${INSTALLTARGETS})
     VISIT_PLUGIN_TARGET_FOLDER(operators ${op_NAME} ${INSTALLTARGETS})
 endfunction()
