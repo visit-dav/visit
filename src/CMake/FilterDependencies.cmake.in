@@ -27,6 +27,10 @@
 #    Handle VTK9 and QT 6 named targets. For Qt, use QT_MAJOR_VERSION instead
 #    of '5' or '6', and add uitools (needed for qt 6).
 #
+#    Kathleen Biagas, Thu May 2, 2024
+#    Parse "VTK::vtk" token differently (e.g. "VTK::vtksys" should not
+#    become "vtkvtksys").
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -181,7 +185,11 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                                          newtoken ${token})
                 endif()
             elseif(token MATCHES "VTK::")
-                string(REPLACE "VTK::" "vtk" atoken ${token})
+                if(token MATCHES "VTK::vtk")
+                    string(REPLACE "VTK::" "" atoken ${token})
+                else()
+                    string(REPLACE "VTK::" "vtk" atoken ${token})
+                endif()
 
                 # append VTK version to vtk lib names
                 if(atoken MATCHES "WrappingPythonCore")

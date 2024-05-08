@@ -18,6 +18,9 @@
 #    Remove replacement of debug flags. Now handled by setting of
 #    CMAKE_MSVC_RUNTIME_LIBRARY to "MultiThreadedDLL" in root CMakeLists.txt.
 #
+#    Kathleen Biagas, Thu May 2, 2024
+#    Use VISIT_PLUGIN_DIR when setting RUNTIME_OUTPUT_DIR for plugins.
+#
 #*****************************************************************************
 
 if(WIN32)
@@ -87,12 +90,10 @@ macro(VISIT_PLUGIN_TARGET_OUTPUT_DIR type)
         # prevents $<CONFIG> from being appended to the path, resulting
         # in exe/Release/plots/Release etc.
         set_target_properties(${ARGN} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY
-                "${VISIT_BINARY_DIR}/exe/$<CONFIG>/${type}")
+            RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/${type}")
     else()
         set_target_properties(${ARGN} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY
-                "${VISIT_BINARY_DIR}/plugins/${type}")
+            LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/${type}")
     endif()
 endmacro()
 
