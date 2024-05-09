@@ -27,6 +27,43 @@
 
 #include <algorithm>
 
+namespace anari_visit
+{
+    void StatusCallback(const void* userData, anari::Device device,
+                        anari::Object source, anari::DataType sourceType, anari::StatusSeverity severity,
+                        anari::StatusCode code, const char* message)
+    {
+        std::cerr << message << std::endl;
+    // if (severity == ANARI_SEVERITY_FATAL_ERROR)
+    // {
+    //     std::cout << "[ANARI::FATAL] " << message;
+    // }
+    // else if (severity == ANARI_SEVERITY_ERROR)
+    // {
+    //     std::cout << "[ANARI::ERROR] " << , DataType: %d\n", message, (int)sourceType);
+    // }
+    // else if (severity == ANARI_SEVERITY_WARNING)
+    // {
+    //     std::cout(WARNING, "[ANARI::WARN] %s, DataType: %d\n", message, (int)sourceType);
+    // }
+    // else if (severity == ANARI_SEVERITY_PERFORMANCE_WARNING)
+    // {
+    //     std::cout(WARNING, "[ANARI::PERF] %s\n", message);
+    // }
+    // else if (severity == ANARI_SEVERITY_INFO)
+    // {
+    //     std::cout(INFO, "[ANARI::INFO] %s\n", message);
+    // }
+    // else if (severity == ANARI_SEVERITY_DEBUG)
+    // {
+    //     std::cout(TRACE, "[ANARI::DEBUG] %s\n", message);
+    // }
+    // else
+    // {
+    //     std::cout(INFO, "[ANARI::STATUS] %s\n", message);
+    // }
+    }
+}
 
 // ****************************************************************************
 // Method: AnariRenderingWidget::AnariRenderingWidget
@@ -581,7 +618,7 @@ AnariRenderingWidget::UpdateRendererParams(const std::string &rendererSubtype, a
     if(anariDevice == nullptr)
     {
         auto libname =  libraryName->text().trimmed().toStdString().c_str();
-        anariLibrary = anari::loadLibrary(libname);
+        anariLibrary = anari::loadLibrary(libname, anari_visit::StatusCallback);
         unloadLibrary = true;
 
         auto libSubtype =  librarySubtypes->currentText().toStdString();
@@ -1117,7 +1154,7 @@ void
 AnariRenderingWidget::libraryChanged()
 {
     auto libname = libraryName->text().trimmed().toStdString().c_str();
-    auto anariLibrary = anari::loadLibrary(libname);
+    auto anariLibrary = anari::loadLibrary(libname, anari_visit::StatusCallback);
 
     if(anariLibrary)
     {
@@ -1253,7 +1290,7 @@ AnariRenderingWidget::librarySubtypeChanged(const QString &subtype)
     auto libSubtype = subtype.toStdString();
 
     auto libname = libraryName->text().trimmed().toStdString().c_str();
-    auto anariLibrary = anari::loadLibrary(libname);
+    auto anariLibrary = anari::loadLibrary(libname, anari_visit::StatusCallback);
 
     auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
 

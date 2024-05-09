@@ -260,7 +260,6 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
 #ifdef VISIT_ANARI
     vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_WARNING);
-
     anariRendering = false;
     anariSPP = 1;
     anariAO = 0;
