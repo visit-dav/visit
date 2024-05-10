@@ -3967,7 +3967,7 @@ return type : tuple of strings
   DrawPlots()
   mats = GetMaterials()
   for m in mats[:-1]:
-      TurnMaterialOff(m)
+      TurnMaterialsOff(m)
 
 
 GetMeshManagementAttributes
