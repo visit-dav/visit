@@ -74,7 +74,7 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
         colorTableMenuActionGroup = new QActionGroup(0);
 
         colorTableMenu = new QMenu(0);
-        colorTableMenuActionGroup->addAction(colorTableMenu->addAction("More Color Tables"));
+        colorTableMenuActionGroup->addAction(colorTableMenu->addAction("More Color Tables ..."));
         colorTableMenu->addSeparator();
         colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
         colorTableMenu->addSeparator();
@@ -565,7 +565,7 @@ QvisColorTableButton::regeneratePopupMenu()
         colorTableMenuActionGroup->removeAction(actions[i]);
     colorTableMenu->clear();
 
-    colorTableMenuActionGroup->addAction(colorTableMenu->addAction("More Color Tables"));
+    colorTableMenuActionGroup->addAction(colorTableMenu->addAction("More Color Tables ..."));
     colorTableMenu->addSeparator();
     colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
     colorTableMenu->addSeparator();
