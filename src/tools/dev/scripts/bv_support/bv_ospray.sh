@@ -292,6 +292,12 @@ function build_ospray
         fi
     fi
 
+    #
+    # Install into the VisIt third party location.
+    #
+
+    # No need to install as the cmake build does that.
+
     if [[ "$DO_GROUP" == "yes" ]]; then
         chmod -R ug+w,a+rX "$VISITDIR/ospray"
         chgrp -R ${GROUP} "$VISITDIR/ospray"
