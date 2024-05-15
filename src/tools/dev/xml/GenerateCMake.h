@@ -303,7 +303,10 @@ class CMakeGeneratorPlugin : public Plugin
                     libs9.push_back(tmp2);
                 }
                 else
+                {
+                    tmp.append(vtkversion);
                     libs9.push_back(tmp);
+                }
             }
             else if(libs[i].startsWith("VTK::"))
             {
