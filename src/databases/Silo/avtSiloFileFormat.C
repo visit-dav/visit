@@ -10403,6 +10403,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
+                    int nblinnod = 0 ;
 #ifdef DB_ZONETYPE_QUAD_BEAM
                     // Handle quadratic elements assuming the first nodes are in Silo convention.
                     // This is to be more easily compatible with an external face extractor that would consider only
@@ -10411,26 +10412,31 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     {
                     case VTK_QUADRATIC_WEDGE:
                     {
-                        vtkIdType vtk_wedge[6];
+                        nblinnod = 6;
+                        vtkIdType *vtk_wedge = new vtkIdType[nblinnod];
                         TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
-                        for (k = 0; k < 6; k++)
+                        for (k = 0; k < nblinnod; k++)
                         {
                             *nl++ = vtk_wedge[k]-origin;
                         }
+                        delete [] vtk_wedge;
                         break;
                     }
                     case VTK_QUADRATIC_PYRAMID:
                     {
-                        vtkIdType vtk_pyramid[5];
+                        nblinnod = 5;
+                        vtkIdType *vtk_pyramid = new vtkIdType[nblinnod];
                         TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
-                        for (k = 0; k < 5; k++)
+                        for (k = 0; k < nblinnod; k++)
                         {
                             *nl++ = vtk_pyramid[k]-origin;
                         }
+                        delete [] vtk_pyramid;
                         break;
                     }
                     case VTK_QUADRATIC_TETRA:
                     {
+                        nblinnod = 4 ;
                         // Apply the same logic for Silo quadratic tetras : make sure linear nodes are in the Silo convention,
                         // i.e. not the VTK one.
                         // Practically, this means that the user may input tetras into Silo using VTK convention without issue.
@@ -10452,7 +10458,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                             }
                         }
 
-                        vtkIdType vtk_tetra[4];
+                        vtkIdType *vtk_tetra = new vtkIdType[nblinnod];
                         if (tetsAreInverted)
                         {
                             for (k = 0 ; k < 4 ; k++)
@@ -10464,15 +10470,16 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                                                                      vtk_tetra);
                         }
 
-                        for (k = 0 ; k < 4 ; k++)
+                        for (k = 0 ; k < nblinnod ; k++)
                         {
                             *nl++ = vtk_tetra[k]-origin;
                         }
+                        delete [] vtk_tetra;
                         break;
                     }
                     }
 #endif
-                    for (k = 4 ; k < (size_t)shapesize ; k++)
+                    for (k = nblinnod ; k < (size_t)shapesize ; k++)
                         *nl++ = *(nodelist+k) - origin;
                 }
                 else if (vtk_zonetype == VTK_POLYGON)
