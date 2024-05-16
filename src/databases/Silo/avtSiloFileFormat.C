@@ -10413,25 +10413,23 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     case VTK_QUADRATIC_WEDGE:
                     {
                         nblinnod = 6;
-                        vtkIdType *vtk_wedge = new vtkIdType[nblinnod];
+                        vtkIdType vtk_wedge[6];
                         TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
                         for (k = 0; k < nblinnod; k++)
                         {
                             *nl++ = vtk_wedge[k]-origin;
                         }
-                        delete [] vtk_wedge;
                         break;
                     }
                     case VTK_QUADRATIC_PYRAMID:
                     {
                         nblinnod = 5;
-                        vtkIdType *vtk_pyramid = new vtkIdType[nblinnod];
+                        vtkIdType vtk_pyramid[5];
                         TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
                         for (k = 0; k < nblinnod; k++)
                         {
                             *nl++ = vtk_pyramid[k]-origin;
                         }
-                        delete [] vtk_pyramid;
                         break;
                     }
                     case VTK_QUADRATIC_TETRA:
@@ -10458,7 +10456,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                             }
                         }
 
-                        vtkIdType *vtk_tetra = new vtkIdType[nblinnod];
+                        vtkIdType vtk_tetra[4];
                         if (tetsAreInverted)
                         {
                             for (k = 0 ; k < 4 ; k++)
@@ -10474,7 +10472,6 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                         {
                             *nl++ = vtk_tetra[k]-origin;
                         }
-                        delete [] vtk_tetra;
                         break;
                     }
                     }
