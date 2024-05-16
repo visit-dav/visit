@@ -147,6 +147,8 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
 
 static int db_get_index(DBnamescheme const *ns, int natnum);
 
+int constexpr VTK_POLYHEDRON_ZONETYPE = -2;
+
 // ****************************************************************************
 //  Class: avtSiloFileFormat
 //
@@ -10256,8 +10258,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     // that is all handled here at the bottom of this function. All the
     // logic prior to that simply walks over the arb. polyhedral zones but
     // keeps track of where they occur in the zonelist so we can handle them
-    // later. Note that a setting of 'vtk_zonetype' of -2 represents the
-    // arb. polyhedral zonetype.
+    // later.
     //
     size_t   i, j, k;
     int nsdims = um->ndims; (void) nsdims;
@@ -10273,7 +10274,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     for (i = 0 ; i < (size_t)zl->nshapes ; i++)
     {
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
-        if (vtk_zonetype != -2)
+        if (vtk_zonetype != VTK_POLYHEDRON_ZONETYPE)
         {
             numCells += zl->shapecnt[i];
             if (zl->shapesize[i] > 0)
@@ -10326,7 +10327,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         int effective_vtk_zonetype = vtk_zonetype;
         int effective_shapesize = shapesize;
 
-        if (vtk_zonetype < 0 && vtk_zonetype != -2)
+        if (vtk_zonetype < 0 && vtk_zonetype != VTK_POLYHEDRON_ZONETYPE)
         {
             EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
         }
@@ -10359,7 +10360,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         // "Handle" arbitrary polyhedra by skipping over them here.
         // We deal with them later on in this func.
         //
-        if (vtk_zonetype == -2)
+        if (vtk_zonetype == VTK_POLYHEDRON_ZONETYPE)
         {
             //
             // There are shapecnt zones of arb. type in this segment
@@ -16222,7 +16223,7 @@ SiloZoneTypeToVTKZoneType(int zonetype)
         vtk_zonetype = VTK_QUAD;
         break;
       case DB_ZONETYPE_POLYHEDRON:
-        vtk_zonetype = -2;
+        vtk_zonetype = VTK_POLYHEDRON_ZONETYPE;
         break;
       case DB_ZONETYPE_TET:
         vtk_zonetype = VTK_TETRA;
