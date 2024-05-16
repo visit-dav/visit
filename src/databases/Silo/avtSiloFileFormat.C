@@ -10328,7 +10328,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         int effective_vtk_zonetype = vtk_zonetype;
         int effective_shapesize = shapesize;
 
-        if (vtk_zonetype < 0 && vtk_zonetype != VTK_POLYHEDRON)
+        if (vtk_zonetype < 0)
         {
             EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
         }
