@@ -498,7 +498,7 @@ void PMDFile::CloseFile()
 //      I added double dataset and double multiplication factor.
 //
 //      Mark C. Miller, Fri May 17 15:57:48 PDT 2024
-//      Changed smoke-checkiing logic for dataset size and numValues to use a
+//      Changed smoke-checking logic for dataset size and numValues to use a
 //      count of points in the dataset instead of storage size, which can vary
 //      based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
 //      whether any filters are used.
