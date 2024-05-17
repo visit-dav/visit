@@ -496,6 +496,12 @@ void PMDFile::CloseFile()
 // Modifications:
 //      Mathieu Lobet, Tue Dec 13 2016
 //      I added double dataset and double multiplication factor.
+//
+//      Mark C. Miller, Fri May 17 15:57:48 PDT 2024
+//      Changed smoke-checkiing logic for dataset size and numValues to use a
+//      count of points in the dataset instead of storage size, which can vary
+//      based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
+//      whether any filters are used.
 // ***************************************************************************
 int
 PMDFile::ReadScalarDataSet(void * array,
@@ -517,7 +523,7 @@ PMDFile::ReadScalarDataSet(void * array,
     hid_t   datasetId;
     hid_t   datasetType;
     hid_t   datasetSpace;
-    hsize_t datasetStorageSize;
+    hsize_t datasetNumPoints;
 
     // Open the corresponding dataset
     if ((datasetId = H5Dopen(this->fileId,path,H5P_DEFAULT))<0)
@@ -539,8 +545,8 @@ PMDFile::ReadScalarDataSet(void * array,
         datasetType = H5Dget_type(datasetId);
         // Data size
         dataSize = H5Tget_size(datasetType);
-        // Storage size
-        datasetStorageSize = H5Dget_storage_size(datasetId);
+        // Number of points in dataset
+        datasetNumPoints = H5Sget_simple_extent_npoints(datasetSpace);
         // Dimension from the data space
         ndims = H5Sget_simple_extent_ndims(datasetSpace);
 
@@ -549,7 +555,7 @@ PMDFile::ReadScalarDataSet(void * array,
         {
 
             // Correct number of values in the dataset
-            if (numValues == int(datasetStorageSize/dataSize))
+            if (numValues == int(datasetNumPoints))
             {
 
                 if (H5Dread(datasetId, datasetType, H5S_ALL, H5S_ALL,
@@ -603,13 +609,13 @@ PMDFile::ReadScalarDataSet(void * array,
                 char error[1024];
                 snprintf(error, 1024,
                          "Invalid size for the current dataset (%d %ld)",
-                         numValues,long(datasetStorageSize));
+                         numValues,long(datasetNumPoints));
 
 #ifndef TEST
                 EXCEPTION2(InvalidFilesException, (const char *) path,error);
 #endif
                 debug5 << " Invalid size for the current dataset:" << numValues
-                       << " " << long(datasetStorageSize) << endl;
+                       << " " << long(datasetNumPoints) << endl;
                 return -3;
             }
         }
@@ -624,9 +630,9 @@ PMDFile::ReadScalarDataSet(void * array,
                    << ", is not a valid class: " << dataClass << endl;
             return -2;
         }
-        //H5Dclose(datasetId);
-        //H5Tclose(datasetType);
-        //H5Sclose(datasetSpace);
+        H5Dclose(datasetId);
+        H5Tclose(datasetType);
+        H5Sclose(datasetSpace);
     }
     //cerr << " End ReadScalarDataSet" << endl;
     return 0;
