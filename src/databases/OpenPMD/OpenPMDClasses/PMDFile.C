@@ -498,7 +498,7 @@ void PMDFile::CloseFile()
 //      I added double dataset and double multiplication factor.
 //
 //      Mark C. Miller, Fri May 17 15:57:48 PDT 2024
-//      Changed smoke-checkiing logic for dataset size and numValues to use a
+//      Changed smoke-checking logic for dataset size and numValues to use a
 //      count of points in the dataset instead of storage size, which can vary
 //      based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
 //      whether any filters are used.
@@ -675,7 +675,6 @@ PMDFile::ReadFieldScalarBlock(void * array,
     hid_t   datasetId;
     hid_t   datasetType;
     hid_t   datasetSpace;
-    hsize_t datasetStorageSize;
 
     //cerr  << "PMDFile::ReadFieldScalarBlock" << endl;
 
@@ -703,8 +702,6 @@ PMDFile::ReadFieldScalarBlock(void * array,
         datasetType = H5Dget_type(datasetId);
         // Data size
         dataSize = H5Tget_size(datasetType);
-        // Storage size
-        datasetStorageSize = H5Dget_storage_size(datasetId);
         // Dimension from the data space
         ndims = H5Sget_simple_extent_ndims(datasetSpace);
 
@@ -935,7 +932,6 @@ int PMDFile::ReadParticleScalarBlock(void * array,
     hid_t   datasetId;
     hid_t   datasetType;
     hid_t   datasetSpace;
-    hsize_t datasetStorageSize;
 
     //cerr  << "PMDFile::ReadParticleScalarBlock" << endl;
 
@@ -962,8 +958,6 @@ int PMDFile::ReadParticleScalarBlock(void * array,
         datasetType = H5Dget_type(datasetId);
         // Data size
         dataSize = H5Tget_size(datasetType);
-        // Storage size
-        datasetStorageSize = H5Dget_storage_size(datasetId);
         // Dimension from the data space
         ndims  = H5Sget_simple_extent_ndims(datasetSpace);
 
