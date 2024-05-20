@@ -1,5 +1,6 @@
 # a windows 10 system
 
+set(CMAKE_CONFIGURATION_TYPES Release Debug)
 include(config-site/windows.cmake)
 
 # disable some warnings
