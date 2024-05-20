@@ -1678,7 +1678,6 @@ avtOpenPMDFileFormat::GetVar(int timestate, int domain, const char *varname)
     hid_t   datasetId;
     hid_t   datasetType;
     hid_t   datasetSpace;
-    hsize_t datasetStorageSize;
     int     ndims;
     float * array;
     float   factor;
