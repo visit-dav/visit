@@ -366,7 +366,11 @@ void PMDParticle::ScanMass(hid_t particleGroupId, char * objectName)
 // Creation:   Fri Oct 14 2016
 //
 // Modifications:
-//
+//   Mark C. Miller, Fri May 17 15:57:48 PDT 2024
+//   Changed smoke-checking logic for dataset size and numValues to use a
+//   count of points in the dataset instead of storage size, which can vary
+//   based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
+//   whether any filters are used.
 // ***************************************************************************
 void PMDParticle::ScanPositions(hid_t particleGroupId, char * objectName)
 {
@@ -380,7 +384,6 @@ void PMDParticle::ScanPositions(hid_t particleGroupId, char * objectName)
     char              datasetName[64];
     ssize_t           length;
     hsize_t           numObjects;
-    hsize_t           datasetStorageSize;
     hid_t             groupId;
     hid_t             dataSetId;
     hid_t             datasetType;
@@ -440,10 +443,8 @@ void PMDParticle::ScanPositions(hid_t particleGroupId, char * objectName)
                   scalar.dataSize = H5Tget_size(datasetType);
                   // data Class
                   scalar.dataClass = H5Tget_class(datasetType);
-                  // Storage size
-                  datasetStorageSize = H5Dget_storage_size(dataSetId);
                   // Number of elements
-                  scalar.numElements = int(datasetStorageSize/scalar.dataSize);
+                  scalar.numElements = int(H5Sget_simple_extent_npoints(dataSetId));
 
                   H5Dclose(dataSetId);
             }
@@ -496,7 +497,11 @@ void PMDParticle::ScanPositions(hid_t particleGroupId, char * objectName)
 // Creation:   Fri Oct 14 2016
 //
 // Modifications:
-//
+//    Mark C. Miller, Fri May 17 15:57:48 PDT 2024
+//    Changed smoke-checking logic for dataset size and numValues to use a
+//    count of points in the dataset instead of storage size, which can vary
+//    based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
+//    whether any filters are used.
 // ***************************************************************************
 void PMDParticle::ScanMomenta(hid_t particleGroupId, char * objectName)
 {
@@ -509,7 +514,6 @@ void PMDParticle::ScanMomenta(hid_t particleGroupId, char * objectName)
     int                 vectorDataSetId[3] = {-1,-1,-1};
     char                bufferName[64];
     char                datasetName[64];
-    hsize_t             datasetStorageSize;
     ssize_t             length;
     hid_t               groupId;
     hid_t               dataSetId;
@@ -580,10 +584,8 @@ void PMDParticle::ScanMomenta(hid_t particleGroupId, char * objectName)
                 scalar.dataSize = H5Tget_size(datasetType);
                 // data Class
                 scalar.dataClass = H5Tget_class(datasetType);
-                // Storage size
-                datasetStorageSize = H5Dget_storage_size(dataSetId);
                 // Number of elements
-                scalar.numElements = int(datasetStorageSize/scalar.dataSize);
+                scalar.numElements = int(H5Sget_simple_extent_npoints(dataSetId));
 
                 // We add this scalar object to the vector of scalar datasets
                 this->scalarDataSets.push_back(scalar);
@@ -637,7 +639,11 @@ void PMDParticle::ScanMomenta(hid_t particleGroupId, char * objectName)
 // Creation:   Fri Oct 21 2016
 //
 // Modifications:
-//
+//   Mark C. Miller, Fri May 17 15:57:48 PDT 2024
+//   Changed smoke-checking logic for dataset size and numValues to use a
+//   count of points in the dataset instead of storage size, which can vary
+//   based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
+//   whether any filters are used.
 // ***************************************************************************
 void PMDParticle::ScanGroup(hid_t particleGroupId,char * objectName)
 {
@@ -650,7 +656,6 @@ void PMDParticle::ScanGroup(hid_t particleGroupId,char * objectName)
     int                 vectorDataSetId[3] = {-1,-1,-1};
     char                datasetName[128];
     ssize_t             length;
-    hsize_t             datasetStorageSize;
     hid_t               groupId;
     hid_t               dataSetId;
     hid_t               datasetType;
@@ -716,10 +721,8 @@ void PMDParticle::ScanGroup(hid_t particleGroupId,char * objectName)
                   scalar.dataSize = H5Tget_size(datasetType);
                   // data Class
                   scalar.dataClass = H5Tget_class(datasetType);
-                  // Storage size
-                  datasetStorageSize = H5Dget_storage_size(dataSetId);
                   // Number of elements
-                  scalar.numElements = int(datasetStorageSize/scalar.dataSize);
+                  scalar.numElements = int(H5Sget_simple_extent_npoints(dataSetId));
 
                   // We add this scalar object to the vector of scalar datasets
                   this->scalarDataSets.push_back(scalar);
@@ -772,7 +775,11 @@ void PMDParticle::ScanGroup(hid_t particleGroupId,char * objectName)
 // Creation:   Fri Oct 21 2016
 //
 // Modifications:
-//
+//   Mark C. Miller, Fri May 17 15:57:48 PDT 2024
+//   Changed smoke-checking logic for dataset size and numValues to use a
+//   count of points in the dataset instead of storage size, which can vary
+//   based on the type of HDF5 storage used (e.g. contig/chunked, etc.) and
+//   whether any filters are used.
 // ***************************************************************************
 void
 PMDParticle::ScanDataSet(hid_t particleGroupId,char * objectName)
@@ -785,7 +792,6 @@ PMDParticle::ScanDataSet(hid_t particleGroupId,char * objectName)
     scalarDataSet       scalar;
     hid_t                dataSetId;
     hid_t                datasetType;
-    hsize_t             datasetStorageSize;
 
       // Openning of the dataset
       dataSetId = H5Dopen2(particleGroupId, objectName , H5P_DEFAULT);
@@ -808,10 +814,8 @@ PMDParticle::ScanDataSet(hid_t particleGroupId,char * objectName)
       scalar.dataSize = H5Tget_size(datasetType);
       // data Class
       scalar.dataClass = H5Tget_class(datasetType);
-      // Storage size
-      datasetStorageSize = H5Dget_storage_size(dataSetId);
       // Number of elements
-      scalar.numElements = int(datasetStorageSize/scalar.dataSize);
+      scalar.numElements = int(H5Sget_simple_extent_npoints(dataSetId));
 
       // We add this scalar object to the vector of scalar datasets
       this->scalarDataSets.push_back(scalar);

@@ -25,13 +25,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug where user supplied legend labels were stored in config and session files wrapped in '()' and comma separated. This prevented the values from being parsed correctly and the '()' and commas appeared as part of the labels.</li>
   <li>The location where custom plugins are written when built against installed version of VisIt was corrected.</li>
   <li>Windows build issues for custom plugins against an installed version of VisIt was fixed.</li>
+  <li>Fixed a bug in OpenPMD reader that subverted its ability to read chunked, as opposed to contiguous datasets.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
 <ul>
   <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
-  <li>Enhancement 2</li>
+  <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Window to easily find more options.</li>
 </ul>
 
 <a name="Dev_changes"></a>
