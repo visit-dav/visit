@@ -77,6 +77,7 @@
 #include <QvisAppearanceWindow.h>
 #include <QvisCinemaWizard.h>
 #include <QvisCMFEWizard.h>
+#include <QvisColorTableButton.h>
 #include <QvisColorTableWindow.h>
 #include <QvisCommandWindow.h>
 #include <QvisDatabaseCorrelationListWindow.h>
@@ -3236,6 +3237,10 @@ QvisGUIApplication::CreateMainWindow()
 //   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 //   Removed support for SeedMe.
 //
+//   Kathleen Biagas, Wed May 8, 202 
+//   Added code to connect QvisColorTableButton with a method to open the
+//   ColorTable window.
+//
 // ****************************************************************************
 
 void
@@ -3297,6 +3302,12 @@ QvisGUIApplication::SetupWindows()
      // the expression window.
      //
      QvisVariableButton::ConnectExpressionCreation(this, SLOT(newExpression()));
+
+     //
+     // Connect the colortable button to the method to open 
+     // the colortable window.
+     //
+     QvisColorTableButton::ConnectColorTableOpen(this, SLOT(openColorTableWindow()));
 
      //
      // Non crucial windows can be created later on demand. Instead of
@@ -7524,6 +7535,31 @@ QvisGUIApplication::newExpression()
         exprWin->activateWindow();
         exprWin->raise();
         exprWin->newExpression();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::openColorTableWindow
+//
+// Purpose:
+//   This is a Qt slot function that is called from colortable buttons to
+//   open the ColorTable window.
+//
+// Programmer: Kathleen Biagas
+// Creation:   May 8, 2024
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::openColorTableWindow()
+{
+    if(colorTableWin)
+    {
+        colorTableWin->show();
+        colorTableWin->activateWindow();
+        colorTableWin->raise();
     }
 }
 
