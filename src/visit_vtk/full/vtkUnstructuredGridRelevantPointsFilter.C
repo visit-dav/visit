@@ -4,8 +4,6 @@
 
 #include "vtkUnstructuredGridRelevantPointsFilter.h"
 
-#include <visit-config.h>
-
 #include <vtkCellArray.h>
 #include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>

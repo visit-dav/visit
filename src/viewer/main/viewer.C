@@ -6,7 +6,6 @@
 //                                 viewer.C                                  //
 // ************************************************************************* //
 
-#include <visit-config.h>
 #include <cstdio>
 #include <cstdlib>
 
