@@ -5,6 +5,7 @@
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -43,7 +44,6 @@
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
-            <lib name="qt6"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
@@ -58,6 +58,7 @@
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -100,6 +101,7 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
+            <lib name="no-qt6" />
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
@@ -155,6 +157,7 @@
             <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
+            <lib name="no-qt6"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
             <lib name="no-python"/>
@@ -190,6 +193,7 @@
             <lib name="cmake"/>
             <lib name="python"/>
             <lib name="vtk"/>
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -208,7 +212,6 @@
             <lib name="mpich"/>
             <lib name="osmesa"/>
             <lib name="pyqt"/>
-            <lib name="qt6"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
             <lib name="xercesc"/>
@@ -220,6 +223,7 @@
             <lib name="cmake"/>
             <lib name="python"/>
             <lib name="vtk"/>
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -241,6 +245,7 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
+            <lib name="no-qt6" />
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
@@ -255,6 +260,7 @@
             <lib name="zlib"/>
             <lib name="uintah"/>
             <lib name="no-python"/>
+            <lib name="no-qt6"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
         </group>
