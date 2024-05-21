@@ -3,7 +3,7 @@
     <Field name="host" type="string">rzvernal.llnl.gov</Field>
     <Field name="hostAliases" type="string">rzvernal#.llnl.gov rzvernal##.llnl.gov rzvernal# rzvernal##</Field>
     <Field name="hostNickname" type="string">LLNL RZ Vernal</Field>
-    <Field name="directory" type="string">/usr/workspace/brugger/visit_rzvernal/visit3.4.1/visit</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
