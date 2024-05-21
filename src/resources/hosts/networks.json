@@ -183,6 +183,9 @@
           "name": "host_llnl_rztrona.xml"
         },
         {
+          "name": "host_llnl_rzvernal.xml"
+        },
+        {
           "name": "host_llnl_rzwhippet.xml"
         },
         {
@@ -248,6 +251,9 @@
         },
         {
           "name": "host_llnl_rztrona.xml"
+        },
+        {
+          "name": "host_llnl_rzvernal.xml"
         },
         {
           "name": "host_llnl_rzwhippet.xml"
