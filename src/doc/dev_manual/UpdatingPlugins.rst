@@ -45,7 +45,7 @@ Tag                Purpose                                Supported components
  
 
 *xml2cmake* also supports the *Conditional* addition of an include directory, definition, link library or source file.
-The condition is a CMake variable that describes something related to the build: e.g. an OS-specification (*WIN32, LINUX, MACOS*), the availability of a third-party library (*HAVE_CONDUIT*) or a build option that can be toggled on/off. 
+The condition is a CMake variable that describes something related to the build: e.g. an OS-specification (*WIN32, LINUX, MACOS*), the availability of a third-party library (*HAVE_CONDUIT*) or a build option that can be toggled on/off (*VISIT_PARALLEL*). 
 Conditionals must be specified in the *.code* file with *Target* specified as *xml2cmake*, as seen in the code file for the Volume plot:
 
 .. literalinclude:: ../../plots/Volume/VolumeAttributes.code
