@@ -1161,6 +1161,9 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Replace `currentIndexChanged` signal for QComboBox with
 //   'currentTextChanged' as the former is not available in Qt 6.
 // 
+//   Eric Brugger, Tue May 21 13:35:51 PDT 2024
+//   Add flux.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1210,6 +1213,8 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
     launchMethod->addItem("sbatch/srun");
+    launchMethod->addItem("flux/batch");
+    launchMethod->addItem("flux/run");
     connect(launchMethod, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
