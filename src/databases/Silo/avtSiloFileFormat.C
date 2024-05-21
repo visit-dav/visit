@@ -10241,6 +10241,9 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 //
 //    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
 //    VTK-8, API for updating GhostLevel changed.
+// 
+//    Justin Privitera, Thu May 16 15:38:19 PDT 2024
+//    Use VTK_POLYHEDRON instead of magic number.
 //
 // ****************************************************************************
 
@@ -10256,8 +10259,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     // that is all handled here at the bottom of this function. All the
     // logic prior to that simply walks over the arb. polyhedral zones but
     // keeps track of where they occur in the zonelist so we can handle them
-    // later. Note that a setting of 'vtk_zonetype' of -2 represents the
-    // arb. polyhedral zonetype.
+    // later.
     //
     size_t   i, j, k;
     int nsdims = um->ndims; (void) nsdims;
@@ -10273,7 +10275,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     for (i = 0 ; i < (size_t)zl->nshapes ; i++)
     {
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
-        if (vtk_zonetype != -2)
+        if (vtk_zonetype != VTK_POLYHEDRON)
         {
             numCells += zl->shapecnt[i];
             if (zl->shapesize[i] > 0)
@@ -10326,7 +10328,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         int effective_vtk_zonetype = vtk_zonetype;
         int effective_shapesize = shapesize;
 
-        if (vtk_zonetype < 0 && vtk_zonetype != -2)
+        if (vtk_zonetype < 0)
         {
             EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
         }
@@ -10359,7 +10361,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         // "Handle" arbitrary polyhedra by skipping over them here.
         // We deal with them later on in this func.
         //
-        if (vtk_zonetype == -2)
+        if (vtk_zonetype == VTK_POLYHEDRON)
         {
             //
             // There are shapecnt zones of arb. type in this segment
@@ -16202,6 +16204,10 @@ SplitDirVarName(const char *dirvar, const char *curdir,
 //
 //  Programmer:  Hank Childs
 //  Creation:    August 15, 2000
+// 
+//  Modifications:
+//     Justin Privitera, Thu May 16 15:38:19 PDT 2024
+//     Use VTK_POLYHEDRON instead of magic number.
 //
 // ****************************************************************************
 
@@ -16222,7 +16228,7 @@ SiloZoneTypeToVTKZoneType(int zonetype)
         vtk_zonetype = VTK_QUAD;
         break;
       case DB_ZONETYPE_POLYHEDRON:
-        vtk_zonetype = -2;
+        vtk_zonetype = VTK_POLYHEDRON;
         break;
       case DB_ZONETYPE_TET:
         vtk_zonetype = VTK_TETRA;
