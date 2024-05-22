@@ -790,6 +790,137 @@ output streams.
         parcmd = parcmd + [tfilename]
         return parcmd
 
+###############################################################################
+# Class: JobSubmitter_flux
+#
+# Purpose:    Launch an MPI job with flux.
+#
+# Programmer: Eric Brugger
+# Date:       Wed May 15 11:11:11 PDT 2024
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_flux(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_flux, self).__init__(launcher)
+
+    def Executable(self):
+        return ["flux"]
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+
+    def HandledHardwareArguments(self):
+        return 1
+
+    def TFileLoadModules(self, tfile):
+        return
+
+    def TFileSetup(self, tfile):
+        # Don't set any Python environment variables since that
+        # messes up flux.
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        tfile.write("export HOME=%s\n" % GETENV("HOME"))
+        tfile.write("export LIBPATH=%s\n" % GETENV("LIBPATH"))
+        tfile.write("export LD_LIBRARY_PATH=%s\n" % GETENV("LD_LIBRARY_PATH"))
+        tfile.write("export VISITHOME=%s\n" % GETENV("VISITHOME"))
+        tfile.write("export VISITARCHHOME=%s\n" % GETENV("VISITARCHHOME"))
+        tfile.write("export VISITPLUGINDIR=%s\n" % GETENV("VISITPLUGINDIR"))
+
+    def Writable(self, d):
+        return self.launcher.writepermission(d)
+
+    def HandleCWDPermissions(self):
+        args = []
+        if not self.Writable(os.path.abspath(os.curdir)):
+            msg = """
+The directory you started VisIt in does not have write permission.
+Using /dev/null for the batch job standard error and standard
+output streams.
+"""
+            self.launcher.warning(msg)
+            args = args + ["--input=/dev/null", "--output=/dev/null"]
+        return args
+
+    def batch_cmd(self, args, debugger):
+        batchcmd = self.Executable() + ["batch"]
+        batchcmd = batchcmd + self.HandleCWDPermissions()
+        if self.parallel.launchargs != None:
+            batchcmd = batchcmd + self.parallel.launchargs
+        if self.parallel.nn != None:
+            batchcmd = batchcmd + ["-N", self.parallel.nn]
+        if self.parallel.np != None:
+            batchcmd = batchcmd + ["-n", self.parallel.np]
+        if self.parallel.partition != None:
+            batchcmd = batchcmd + ["-q", self.parallel.partition]
+        if self.parallel.time != None:
+            batchcmd = batchcmd + ["-t", self.parallel.time]
+
+        # Create the tfile
+        runcmd = self.Executable() + ["run"]
+        if self.parallel.np != None:
+            runcmd = runcmd + ["-n", self.parallel.np]
+        runcmd = runcmd + self.VisItExecutable() + args
+        runcmd = debugger.CreateCommand(runcmd)
+
+        tfilename = self.CreateFilename()
+        try:
+            tfile = open(tfilename, "wt")
+            tfile.write("#!/bin/sh\n")
+            self.TFileLoadModules(tfile)
+            self.TFileSetup(tfile)
+
+            if self.parallel.hw_precmd != None:
+                tfile.write(self.parallel.hw_precmd + "\n")
+            if self.parallel.sublaunchprecmd != None:
+                tfile.write(" ".join(self.parallel.sublaunchprecmd) + "\n")
+            tfile.write(" ".join(runcmd) + "\n")
+            if self.parallel.sublaunchpostcmd != None:
+                tfile.write(" ".join(self.parallel.sublaunchpostcmd) + "\n")
+            if self.parallel.hw_postcmd != None:
+                tfile.write(self.parallel.hw_postcmd + "\n")
+
+            tfile.close()
+            os.chmod(tfilename, 0o775)
+        except (OSError, IOError):
+            exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
+
+        # The parallel command is the tfile script we just made.
+        batchcmd = batchcmd + [tfilename]
+        return batchcmd
+
+    def run_cmd(self, args, debugger):
+        runcmd = self.Executable() + ["run"]
+        if self.parallel.sublaunchargs != None:
+            runcmd = runcmd + self.parallel.sublaunchargs
+        if self.parallel.nn != None:
+            runcmd = runcmd + ["-N", self.parallel.nn]
+        if self.parallel.np != None:
+            runcmd = runcmd + ["-n", self.parallel.np]
+        if self.parallel.partition != None:
+            runcmd = runcmd + ["-q", self.parallel.partition]
+        if self.parallel.time != None:
+            runcmd = runcmd + ["-t", self.parallel.time]
+        runcmd = runcmd + self.VisItExecutable() + args
+        runcmd = debugger.CreateCommand(runcmd)
+
+        return runcmd
+
+    def CreateCommand(self, args, debugger):
+        flux,sublauncher = self.LauncherAndSubLauncher()
+        # If the sub launcher isn't batch assume it is "run".
+        if sublauncher == "batch":
+            parcmd = self.batch_cmd(args, debugger)
+        else:
+            parcmd = self.run_cmd(args, debugger)
+
+        return parcmd
+
 
 ###############################################################################
 # Class: JobSubmitter_bsub
@@ -3575,6 +3706,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Satheesh Maheswaran, Tue Jan 15 14:47:54 GMT 2013
     #   Permit serial engines to use job submitter.
     #
+    #   Eric Brugger, Wed May 15 11:11:11 PDT 2024
+    #   Unset the Python environment variables if using flux to
+    #   avoid conflicts between our Python and the system Python.
+    #
     ############################################################################
 
     def Launch(self):
@@ -3630,7 +3765,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                     # Note that we pass 1 for stdinpipe so the process we
                     # make will get a new pipe. This makes msub work, for
                     # example. We also remove python path information in
-                    # the case of qsub or msub so that we don't get the
+                    # the case of msub or flux so that we don't get the
                     # system python and our python intermingled in case
                     # the job submitter is written in python (e.g. msub on
                     # Trinity).
@@ -3643,6 +3778,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                             del env["PYTHONPATH"]
                         if "LD_LIBRARY_PATH" in list(os.environ.keys()):
                             del env["LD_LIBRARY_PATH"]
+                    if self.parallelArgs.launch[:4] == "flux":
+                        if "PYTHONHOME" in list(os.environ.keys()):
+                            del env["PYTHONHOME"]
+                        if "PYTHONPATH" in list(os.environ.keys()):
+                            del env["PYTHONPATH"]
+                    
                     ret = self.call(args, stdinpipe=1, env=env)
 
                     # If the job submitter did not handle a hardware-related 
@@ -3712,6 +3853,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #    Cyrus Harrison, Wed Nov  7 10:50:15 PST 2018
     #    Added lrun as new job submitter
     #
+    #    Eric Brugger, Wed May 15 11:11:11 PDT 2024
+    #    Added flux as a new job submitter.
+    #
     ############################################################################
 
     def JobSubmitterFactory(self, launch):
@@ -3751,6 +3895,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return JobSubmitter_qsub(self)
         elif launch == "yod":
             return JobSubmitter_yod(self)
+        elif launch[:4] == "flux":
+            return JobSubmitter_flux(self)
         return None
 
 ###############################################################################
