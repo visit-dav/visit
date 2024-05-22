@@ -1,10 +1,24 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">rzhound.llnl.gov</Field>
-    <Field name="hostAliases" type="string">rzhound#.llnl.gov rzhound##.llnl.gov rzhound###.llnl.gov rzhound####.llnl.gov rzhound# rzhound## rzhound### rzhound####</Field>
     <Field name="hostNickname" type="string">LLNL RZ Hound</Field>
+    <Field name="host" type="string">rzhound.llnl.gov</Field>
+    <Field name="userName" type="string">notset</Field>
+    <Field name="hostAliases" type="string">rzhound#.llnl.gov rzhound##.llnl.gov rzhound###.llnl.gov rzhound####.llnl.gov rzhound# rzhound## rzhound### rzhound####</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
+    <Field name="shareOneBatchJob" type="bool">false</Field>
+    <Field name="sshPortSpecified" type="bool">false</Field>
+    <Field name="sshPort" type="int">22</Field>
+    <Field name="sshCommandSpecified" type="bool">false</Field>
+    <Field name="sshCommand" type="stringVector">"ssh" </Field>
+    <Field name="useGateway" type="bool">false</Field>
+    <Field name="gatewayHost" type="string"></Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Field name="manualClientHostName" type="string"></Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Field name="maximumNodesValid" type="bool">false</Field>
+    <Field name="maximumNodes" type="int">1</Field>
+    <Field name="maximumProcessorsValid" type="bool">false</Field>
+    <Field name="maximumProcessors" type="int">1</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
         <Field name="timeout" type="int">480</Field>
