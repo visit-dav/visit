@@ -269,7 +269,7 @@ function build_uintah
         info "Invoking command to configure UINTAH"
         set -x
         sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -std=c++11 -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS -std=c++11\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS -std=c++11\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
@@ -290,7 +290,7 @@ function build_uintah
         info "Invoking command to configure UINTAH"
         set -x
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -std=c++11\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS -std=c++11\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS -std=c++11\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
