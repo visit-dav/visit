@@ -15,6 +15,7 @@
 #       lassen    (LC, Linux, power9),
 #       rzwhippet (LC, Linux, x86_64, toss4),
 #       rztopaz   (LC, Linux, x86_64, toss4),
+#       rzvernal  (LC, Linux, x86_64, toss4-cray),
 #       trinity   (LANL, x86_64)
 #
 # Modifications:
@@ -52,6 +53,9 @@
 #    Changed /usr/workspace/wsa/visit/visit/... to
 #    /usr/workspace/visit/visit/... for lassen.
 #
+#    Eric Brugger,
+#    Added support for building on rzvernal.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -63,6 +67,7 @@ poodle=false
 lassen=false
 rzgenie=false
 rztopaz=false
+rzvernal=false
 trinity=false
 
 version=undefined
@@ -102,6 +107,10 @@ do
          rztopaz=true
          shift
          ;;
+      +rzvernal)
+         rzvernal=true
+         shift
+         ;;
       +trinity)
          trinity=true
          shift
@@ -130,6 +139,7 @@ then
    echo "    lassen    (LC, Linux, power9),"
    echo "    rzwhippet (LC, Linux, x86_64, toss4),"
    echo "    rztopaz   (LC, Linux, x86_64, toss4),"
+   echo "    rzvernal  (LC, Linux, x86_64, toss4-cray),"
    echo "    trinity   (LANL, Linux, x86_64)"
    exit
 fi
@@ -328,6 +338,35 @@ then
 fi
 
 #
+# Build on rzvernal.
+#
+if [ "$rzvernal" = "true" ]
+then
+   echo "Building on rzvernal"
+   ran_build_visit=true
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray
+   dest_group=visit
+   if [ -f ${build_visit_script}_log.rzvernal ]
+   then
+      mv ${build_visit_script}_log.rzvernal ${build_visit_script}_log
+   fi
+   if [ ! -d ${dest_dir} ]
+   then
+      mkdir -p ${dest_dir}
+   fi
+   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       --qt6 --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
+   mv ${build_visit_script}_log ${build_visit_script}_log.rzvernal
+   # just in case perms
+   echo "changing permissions of ${dest_dir}"
+   chmod -R ug+w,a+rX ${dest_dir}
+   chgrp -R ${dest_group} ${dest_dir}
+fi
+
+#
 # Build on trinity
 #
 if [ "$trinity" = "true" ]
@@ -374,10 +413,11 @@ then
    echo "Valid machine names:"
    echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
-   echo "    poodle (LC, Linux, x86_64, toss4),"
-   echo "    lassen (LC, Linux, power9),"
-   echo "    rzgenie (LC, Linux, x86_64, toss3),"
-   echo "    rztopaz (LC, Linux, x86_64, toss4),"
-   echo "    trinity (LANL, Linux, x86_64)"
+   echo "    poodle   (LC, Linux, x86_64, toss4),"
+   echo "    lassen   (LC, Linux, power9),"
+   echo "    rzgenie  (LC, Linux, x86_64, toss3),"
+   echo "    rztopaz  (LC, Linux, x86_64, toss4),"
+   echo "    rzvernal (LC, Linux, x86_64, toss4-cray),"
+   echo "    trinity  (LANL, Linux, x86_64)"
    exit
 fi
