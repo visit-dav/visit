@@ -93,6 +93,7 @@ function bv_qt6_ensure
     return 0
 }
 
+
 function apply_qt6_base_patch
 {
      if [[ "$OPSYS" == "Darwin" ]]; then
@@ -100,6 +101,44 @@ function apply_qt6_base_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+    fi
+    qt6_xkbcommon_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function qt6_xkbcommon_patch
+{
+    info "Patching qt 6 for xkbcommon issue"
+    patch -p0 <<EOF
+-- qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp.orig	2024-05-21 08:51:16.000000000 -0700
++++ qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp	2024-05-21 08:50:33.000000000 -0700
+@@ -236,16 +236,20 @@
+         Xkb2Qt<XKB_KEY_dead_O,                  Qt::Key_Dead_O>,
+         Xkb2Qt<XKB_KEY_dead_u,                  Qt::Key_Dead_u>,
+         Xkb2Qt<XKB_KEY_dead_U,                  Qt::Key_Dead_U>,
+         Xkb2Qt<XKB_KEY_dead_small_schwa,        Qt::Key_Dead_Small_Schwa>,
+         Xkb2Qt<XKB_KEY_dead_capital_schwa,      Qt::Key_Dead_Capital_Schwa>,
+         Xkb2Qt<XKB_KEY_dead_greek,              Qt::Key_Dead_Greek>,
++/* The following for XKB_KEY_dead keys got removed in libxkbcommon 1.6.0
++   The define check is kind of version check here. */
++#ifdef XKB_KEY_dead_lowline
+         Xkb2Qt<XKB_KEY_dead_lowline,            Qt::Key_Dead_Lowline>,
+         Xkb2Qt<XKB_KEY_dead_aboveverticalline,  Qt::Key_Dead_Aboveverticalline>,
+         Xkb2Qt<XKB_KEY_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline>,
+         Xkb2Qt<XKB_KEY_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay>,
++#endif
+ 
+         // Special keys from X.org - This include multimedia keys,
+         // wireless/bluetooth/uwb keys, special launcher keys, etc.
+         Xkb2Qt<XKB_KEY_XF86Back,                Qt::Key_Back>,
+         Xkb2Qt<XKB_KEY_XF86Forward,             Qt::Key_Forward>,
+         Xkb2Qt<XKB_KEY_XF86Stop,                Qt::Key_Stop>,
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 6 for xkbcommon issue failed"
+        return 1
     fi
 }
 
