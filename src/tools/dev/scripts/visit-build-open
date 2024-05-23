@@ -582,7 +582,7 @@ cat <<EOF > rzvernal
 set -e
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
 if test ! -d /usr/tmp/$user/rzvernal ; then
    mkdir -p /usr/tmp/$user/rzvernal
 fi
