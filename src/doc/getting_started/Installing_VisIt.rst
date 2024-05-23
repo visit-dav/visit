@@ -161,7 +161,7 @@ To install ``ffmpeg`` as part of a VisIt_ installation you would do the followin
 1) Get the ``ffmpeg`` executable for each platform of interest.
 2) Copy the ``ffmpeg`` executable for each platform to the architecture specific bin directory.
 3) Set the group and file permissions appropriately for each executable.
-4) Create a soft link from ``ffmepg`` to ``frontendlauncher`` in the bin directory.
+4) Create a soft link from ``ffmpeg`` to ``frontendlauncher`` in the bin directory.
 
 Here we go through an example where we install ``ffmpeg`` into  VisIt_ 3.3.3, which has two architectures (``linux-intel`` and ``linux-x86_64``) installed.
 The ``ffmpeg`` executables are named ``ffmpeg.intel`` and ``ffmpeg.x86_64``.
