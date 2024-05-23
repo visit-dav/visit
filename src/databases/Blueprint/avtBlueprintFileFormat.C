@@ -1990,6 +1990,10 @@ avtBlueprintFileFormat::GetTime()
 // 
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+//
+//    Justin Privitera, Fri May  3 09:55:25 PDT 2024
+//    Change how we fetch ndims so that we do not add "values" leaf to 
+//    uniform coordsets.
 // 
 // ****************************************************************************
 
@@ -2059,8 +2063,17 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
         BP_PLUGIN_INFO("topo name: " << topo_name);
 
-        conduit::Node &n_coords = data["coordsets"][0];
-        int ndims = static_cast<int>(n_coords["values"].number_of_children());
+        const conduit::Node &n_coords = data["coordsets"][0];
+        int ndims;
+        if (n_coords.has_child("values"))
+        {
+            ndims = static_cast<int>(n_coords["values"].number_of_children());
+        }
+        else
+        {
+            // if you don't have values, you are a uniform coordset so you have dims
+            ndims = static_cast<int>(n_coords["dims"].number_of_children());
+        }
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )
