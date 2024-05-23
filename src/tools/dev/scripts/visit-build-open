@@ -218,6 +218,9 @@ set -e
 #   Cyrus Harrison, Mon Mar 11 12:57:17 PDT 2024
 #   I removed rzgenie, replaced with rzwhippet. Removed cooley.
 #
+#   Eric Brugger,
+#   I added rzvernal.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -264,6 +267,7 @@ kickit=false
 poodle=false
 lassen=false
 rzwhippet=false
+rzvernal=false
 
 dist=undefined
 
@@ -291,6 +295,10 @@ do
          rzwhippet=true
          shift
          ;;
+      -rzvernal)
+         rzvernal=true
+         shift
+         ;;
       -d)
          dist=$2
          shift 2
@@ -305,7 +313,7 @@ if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rzwhippet"
+   echo "    kickit poodle lassen rzwhippet rzvernal"
    exit
 fi
 
@@ -565,11 +573,65 @@ then
    fi
 fi
 
+#
+# Build on rzvernal.
+#
+rm -f rzvernal
+cat <<EOF > rzvernal
+#!/bin/sh
+set -e
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+if test ! -d /usr/tmp/$user/rzvernal ; then
+   mkdir -p /usr/tmp/$user/rzvernal
+fi
+rm -rf /usr/tmp/$user/rzvernal/visitbuild
+mkdir /usr/tmp/$user/rzvernal/visitbuild
+mv rzvernal_$dist.tar.gz /usr/tmp/$user/rzvernal/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzvernal/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/rzvernal10.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.rzvernal
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
+rm -f resultlog
+echo "        build of visit on rzvernal"     > resultlog 2>&1
+echo "       ----------------------------"    >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.rzvernal
+mail  -s "VisIt build ($dist): rzvernal" $emailName < resultlog
+EOF
+
+if [ "$rzvernal" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on rzvernal"
+      cp rzvernal rzvernal_buildit
+      cp $dist.tar.gz rzvernal_$dist.tar.gz
+      chmod 750 rzvernal_buildit
+      ./rzvernal_buildit
+   fi
+fi
 
 #
 # Clean up.
 #
 if [ "$test" = "no" ]
 then
-   rm -f kickit poodle lassen rzwhippet
+   rm -f kickit poodle lassen rzwhippet rzvernal
 fi

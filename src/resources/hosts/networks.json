@@ -177,22 +177,16 @@
           "name": "host_llnl_rzhound.xml"
         },
         {
-          "name": "host_llnl_rztopaz.xml"
+          "name": "host_llnl_rztrona.xml"
         },
         {
-          "name": "host_llnl_rztrona.xml"
+          "name": "host_llnl_rzvernal.xml"
         },
         {
           "name": "host_llnl_rzwhippet.xml"
         },
         {
-          "name": "host_llnl_surface.xml"
-        },
-        {
           "name": "host_llnl_syrah.xml"
-        },
-        {
-          "name": "host_llnl_vulcan.xml"
         },
         {
           "name": "host_slac_red.xml"
@@ -228,32 +222,6 @@
         },
         {
           "name": "host_llnl_closed_tron.xml"
-        }
-      ]
-    },
-    {
-      "network": "llnl_rz",
-      "files": [
-        {
-          "name": "host_llnl_rzansel.xml"
-        },
-        {
-          "name": "host_llnl_rzgenie.xml"
-        },
-        {
-          "name": "host_llnl_rzhound.xml"
-        },
-        {
-          "name": "host_llnl_rztopaz.xml"
-        },
-        {
-          "name": "host_llnl_rztrona.xml"
-        },
-        {
-          "name": "host_llnl_rzwhippet.xml"
-        },
-        {
-          "name": "host_llnl_rzwiz.xml"
         }
       ]
     },
