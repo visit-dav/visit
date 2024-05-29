@@ -28,25 +28,6 @@ using  std::vector;
 //   Support VTK 9:  connectivity and offsets are now stored in separate arrays.
 //
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-#define AddLineToPolyData(ai,aj,ak, bi,bj,bk)                                 \
-{                                                                             \
-    p.SetComponent(0, x.GetComponent(ai));                                    \
-    p.SetComponent(1, y.GetComponent(aj));                                    \
-    p.SetComponent(2, z.GetComponent(ak));                                    \
-    ++p;                                                                      \
-    outPointData->CopyData(inPointData, ((ak*nY) + aj)*nX + ai, pointId++);   \
-    p.SetComponent(0, x.GetComponent(bi));                                    \
-    p.SetComponent(1, y.GetComponent(bj));                                    \
-    p.SetComponent(2, z.GetComponent(bk));                                    \
-    ++p;                                                                      \
-    outPointData->CopyData(inPointData, ((bk*nY) + bj)*nX + bi, pointId++);   \
-    *nl++ = 2;                                                                \
-    *nl++ = pointId-2;                                                        \
-    *nl++ = pointId-1;                                                        \
-    cellId++;                                                                 \
-}
-#else
 #define AddLineToPolyData(ai,aj,ak, bi,bj,bk)                                 \
 {                                                                             \
     p.SetComponent(0, x.GetComponent(ai));                                    \
@@ -65,20 +46,12 @@ using  std::vector;
     *cl++ = pointId-1;                                                        \
     cellId++;                                                                 \
 }
-#endif
 
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-template <class Accessor> inline void
-vtkRectilinearLinesNoDataFilter_AddLines(int nX, int nY, int nZ,
-    vtkIdType *nl, vtkPointData *outPointData, vtkPointData *inPointData,
-    Accessor x, Accessor y, Accessor z, Accessor p)
-#else
 template <class Accessor> inline void
 vtkRectilinearLinesNoDataFilter_AddLines(int nX, int nY, int nZ,
     vtkIdType *ol, vtkIdType* cl, vtkPointData *outPointData, vtkPointData *inPointData,
     Accessor x, Accessor y, Accessor z, Accessor p)
-#endif
 {
     //
     // And now actually create the points/lines
@@ -88,13 +61,11 @@ vtkRectilinearLinesNoDataFilter_AddLines(int nX, int nY, int nZ,
 
     p.InitTraversal();
 
-#if LIB_VERSION_GE(VTK, 9,1,0)
     // set first offset
     *ol++ = 0;
     // Each subsequent offsets will be previous + numPtsInCell, so
     // create something to hold incrementer
     vtkIdType currentOffset = 0;
-#endif
 
     // This case is mutually exclusive with the other ones below
     if ((nX==1 && nY==1) || (nX==1 && nZ==1) || (nY==1 && nZ==1))
@@ -308,11 +279,6 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     // And set up the cell arrays for creation (but not copying data)
     vtkCellArray *polys = vtkCellArray::New();
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdTypeArray *list = vtkIdTypeArray::New();
-    list->SetNumberOfValues(numOutCells*(2+1));
-    vtkIdType *nl = list->GetPointer(0);
-#else
     vtkIdTypeArray *offsets = vtkIdTypeArray::New();
     offsets->SetNumberOfValues(numOutCells+1);
     vtkIdType *ol = offsets->GetPointer(0);
@@ -320,7 +286,6 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     vtkIdTypeArray *connectivity = vtkIdTypeArray::New();
     connectivity->SetNumberOfValues(numOutCells*2);
     vtkIdType *cl = connectivity->GetPointer(0);
-#endif
 
     //
     // And now actually create the points/lines
@@ -328,11 +293,7 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     if (same && type == VTK_FLOAT)
     {
         vtkRectilinearLinesNoDataFilter_AddLines(nX, nY, nZ,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-            nl, outPointData, inPointData,
-#else
             ol, cl, outPointData, inPointData,
-#endif
             vtkDirectAccessor<float>(xc),
             vtkDirectAccessor<float>(yc),
             vtkDirectAccessor<float>(zc),
@@ -341,11 +302,7 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     else if (same && type == VTK_DOUBLE)
     {
         vtkRectilinearLinesNoDataFilter_AddLines(nX, nY, nZ,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-            nl, outPointData, inPointData,
-#else
             ol, cl, outPointData, inPointData,
-#endif
             vtkDirectAccessor<double>(xc),
             vtkDirectAccessor<double>(yc),
             vtkDirectAccessor<double>(zc),
@@ -354,11 +311,7 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     else
     {
         vtkRectilinearLinesNoDataFilter_AddLines(nX, nY, nZ,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-            nl, outPointData, inPointData,
-#else
             ol, cl, outPointData, inPointData,
-#endif
             vtkGeneralAccessor(xc),
             vtkGeneralAccessor(yc),
             vtkGeneralAccessor(zc),
@@ -371,14 +324,9 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     outPD->SetPoints(pts);
     pts->Delete();
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    polys->SetCells(numOutCells, list);
-    list->Delete();
-#else
     polys->SetData(offsets, connectivity);
     offsets->Delete();
     connectivity->Delete();
-#endif
     outCellData->Squeeze();
     outPD->SetLines(polys);
     polys->Delete();

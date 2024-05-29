@@ -4,8 +4,6 @@
 
 #include "DiscreteMIR.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <map>
 #include <time.h>
 
@@ -517,9 +515,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
     // cells.  They'll need some special handling to connect with
     // mixed cells.
     vtkIdType *conn_ptr = conn.connectivity;
-#if LIB_VERSION_GE(VTK, 9,1,0)
     vtkIdType *off_ptr = conn.offsets;
-#endif
     zonesList.reserve(nCells);
     for(int k = 0; k < dimensions[2]; ++k)
         for(int j = 0; j < dimensions[1]; ++j)
@@ -527,18 +523,11 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
             {
                 Cell cell(i, j, k);
                 int cellid = id(cell);
-#if LIB_VERSION_LE(VTK, 8,1,0)
-                int nIds = *conn_ptr;
-                const vtkIdType *ids = conn_ptr+1;
-
-                conn_ptr += nIds+1;
-#else
                 int nIds = *(off_ptr+1) -*off_ptr;
                 const vtkIdType *ids = conn_ptr;
 
                 conn_ptr += nIds;
                 ++off_ptr;
-#endif
                 if(matlist[cellid] < 0)
                     continue;
                 else
@@ -1446,14 +1435,9 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // Now insert the connectivity array.
     //
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    nlist->SetNumberOfValues(totalsize + ncells);
-#else
     nlist->SetNumberOfValues(totalsize);
-#endif
     vtkIdType *nl = nlist->GetPointer(0);
 
-#if LIB_VERSION_GE(VTK,9,1,0)
     //offsets
     vtkIdTypeArray *olist = vtkIdTypeArray::New();
     // offsets array is always ncells+1
@@ -1464,19 +1448,11 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // subsequent offsets are previous incremented by node count of current cell
     // offset will hold the increment
     vtkIdType offset = 0;
-#endif
 
     vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
     cellTypes->SetNumberOfValues(ncells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
-    cellLocations->SetNumberOfValues(ncells);
-    vtkIdType *cl = cellLocations->GetPointer(0);
-
-    int offset = 0;
-#endif
     for (int i=0; i<ncells; i++)
     {
         int c = cellList[i];
@@ -1484,34 +1460,18 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         *ct++ = zonesList[c].celltype;
 
         const int nnodes = zonesList[c].nnodes;
-#if LIB_VERSION_LE(VTK,8,1,0)
-        *nl++ = nnodes;
-#endif
         const vtkIdType *indices = &indexList[zonesList[c].startindex];
         for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
-#if LIB_VERSION_LE(VTK,8,1,0)
-        *cl++ = offset;
-        offset += nnodes+1;
-#else
         offset += nnodes;
         *ol++ = nnodes;
-#endif
     }
 
     vtkCellArray *cells = vtkCellArray::New();
-#if LIB_VERSION_LE(VTK,8,1,0)
-    cells->SetCells(ncells, nlist);    nlist->Delete();
-    nlist->Delete();
-    rv->SetCells(cellTypes, cellLocations, cells);
-    cellLocations->Delete();
-
-#else
     cells->SetData(olist, nlist);
     nlist->Delete();
     olist->Delete();
     rv->SetCells(cellTypes, cells);
-#endif
 
     cellTypes->Delete();
     cells->Delete();
@@ -1727,19 +1687,12 @@ DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
     vtkIdType *conn_ptr = conn.connectivity;
-#if LIB_VERSION_GE(VTK,9,1,0)
     vtkIdType *off_ptr = conn.offsets;
-#endif
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int        nIds = (int)*conn_ptr;
-        const vtkIdType *ids  = conn_ptr+1;
-#else
         vtkIdType        nIds = *(off_ptr+1)-*off_ptr;
         const vtkIdType *ids  = conn_ptr;
-#endif
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
@@ -1751,12 +1704,8 @@ DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
 
         for (int n=0; n<nIds; n++)
             indexList.push_back(ids[n]);
-#if LIB_VERSION_LE(VTK,8,1,0)
-        conn_ptr += nIds+1;
-#else
         conn_ptr += nIds;
         ++off_ptr;
-#endif
     }
 
     visitTimer->StopTimer(timerHandle, "MIR: Reconstructing clean mesh");

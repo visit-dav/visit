@@ -63,19 +63,29 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (opacityVariable != obj.opacityVariable)
         return true;
 
-    if (compactVariable != obj.compactVariable)
+    // Any change to the renderer type requires a reexecute.
+    if(rendererType != obj.rendererType)
         return true;
 
-    if (resampleTarget != obj.resampleTarget)
+    if (smoothData != obj.smoothData)
         return true;
 
-    if (resampleFlag != obj.resampleFlag)
+    if (scaling != obj.scaling)
+        return true;
+    if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
         return true;
 
-    if (rendererType == VolumeAttributes::RayCasting ||
-        rendererType == VolumeAttributes::RayCastingSLIVR ||
-        rendererType == VolumeAttributes::RayCastingOSPRay ||
-        rendererType == VolumeAttributes::RayCastingIntegration)
+    if(rendererType == VolumeAttributes::Serial ||
+       rendererType == VolumeAttributes::Parallel)
+    {
+        if(resampleType != obj.resampleType)
+            return true;
+        if(resampleTarget != obj.resampleTarget)
+            return true;
+        if(resampleCentering != obj.resampleCentering)
+            return true;
+    }
+    else if(rendererType == VolumeAttributes::Composite)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
         if ((sampling == Rasterization || sampling == KernelBased) && obj.sampling == Trilinear)
@@ -84,59 +94,13 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         if ((sampling == Trilinear) && (obj.sampling == KernelBased || obj.sampling == Rasterization))
             return true;
 
-        // We're in software mode. Any change to the renderer type requires
-        // a reexecute.
-        if(rendererType != obj.rendererType)
-            return true;
-
-        if (scaling != obj.scaling)
-            return true;
-        if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
-            return true;
-        if (lightingFlag != obj.lightingFlag)
+       if(lightingFlag != obj.lightingFlag)
             return true;
     }
-    else
-    {
-        // We're in hardware mode now but if we're transitioning to software
-        // then we need to reexecute. Transferring between any of the hardware
-        // modes does not require a reexecute.
-        if(obj.rendererType == VolumeAttributes::RayCasting ||
-           obj.rendererType == VolumeAttributes::RayCastingSLIVR ||
-           obj.rendererType == VolumeAttributes::RayCastingOSPRay ||
-           obj.rendererType == VolumeAttributes::RayCastingIntegration)
-        {
-            return true;
-        }
-
-        // We need to reexecute on the engine for thse changes in HW mode.
-
-        if(useColorVarMin != obj.useColorVarMin)
-            return true;
-        if(colorVarMin != obj.colorVarMin)
-            return true;
-        if(useColorVarMax != obj.useColorVarMax)
-            return true;
-        if(colorVarMax != obj.colorVarMax)
-            return true;
-        if(useOpacityVarMin != obj.useOpacityVarMin)
-            return true;
-        if(opacityVarMin != obj.opacityVarMin)
-            return true;
-        if(useOpacityVarMax != obj.useOpacityVarMax)
-            return true;
-        if(opacityVarMax != obj.opacityVarMax)
-            return true;
-        if(gradientType != obj.gradientType)
-            return true;
-        if(scaling != obj.scaling)
-            return true;
-        if(skewFactor != obj.skewFactor)
-            return true;
-    }
-
-    if (smoothData != obj.smoothData)
-        return true;
+//    else if(rendererType == VolumeAttributes::Integration ||
+//            rendererType == VolumeAttributes::SLIVR)
+//    {
+//    }
 
     return false;
 }
@@ -468,6 +432,328 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
     return !same;
 }
 
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: VolumeAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 18, 2003
+//
+// ****************************************************************************
+
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
+                                     const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("VolumeAttributes");
+    if(searchNode == 0)
+        return;
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *dn = nullptr;
+        if (searchNode->GetNode("compactVariable") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("compactVariable", "3.5.0"));
+#endif
+            searchNode->RemoveNode("compactVariable", true);
+        }
+        if (searchNode->GetNode("renderMode") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("renderMode", "3.5.0"));
+#endif
+            searchNode->RemoveNode("renderMode", true);
+        }
+        if ((dn = searchNode->GetNode("resampleFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("resampleFlag", "resampleType", "3.5.0"));
+#endif
+            int intVal = dn->AsInt();
+
+            VolumeAttributes::ResampleType val = (intVal ? OnlyIfRequired : SingleDomain);
+
+            searchNode->RemoveNode("resampleFlag", true);
+            searchNode->AddNode(new DataNode("resampleType",
+                                              ResampleType_ToString(val)));
+        }
+        if ((dn = searchNode->GetNode("osprayShadowsEnabledFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayShadowsEnabledFlag",
+                "OSPRayShadowsEnabledFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayShadowsEnabledFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayUseGridAcceleratorFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayUseGridAcceleratorFlag",
+                "OSPRayUseGridAcceleratorFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayUseGridAcceleratorFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayPreIntegrationFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayPreIntegrationFlag",
+                "OSPRayPreIntegrationFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayPreIntegrationFlag");
+        }
+        if ((dn = searchNode->GetNode("ospraySingleShadeFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("ospraySingleShadeFlag",
+                "OSPRaySingleShadeFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRaySingleShadeFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayOneSidedLightingFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayOneSidedLightingFlag",
+                "OSPRayOneSidedLightingFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayOneSidedLightingFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayAoTransparencyEnabledFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayAoTransparencyEnabledFlag",
+                "OSPRayAOTransparencyEnabledFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayAOTransparencyEnabledFlag");
+        }
+        if ((dn = searchNode->GetNode("ospraySpp")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("ospraySpp",
+                "OSPRaySPP", "3.5.0"));
+#endif
+            dn->SetKey("OSPRaySPP");
+        }
+        if ((dn = searchNode->GetNode("osprayAoSamples")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayAoSamples",
+                "OSPRayAOSamples", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayAOSamples");
+        }
+        if ((dn = searchNode->GetNode("osprayAoDistance")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayAoDistance",
+                "OSPRayAODistance", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayAODistance");
+        }
+        if ((dn = searchNode->GetNode("osprayMinContribution")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayMinContribution",
+                "OSPRayMinContribution", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayMinContribution");
+        }
+        if ((dn = searchNode->GetNode("rendererType")) != nullptr)
+        {
+            std::string type = dn->AsString();
+            if (type == "Default")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("Default",
+                    "Default", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Serial));
+            }
+            else if (type == "RayCasting")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCasting",
+                    "Composite", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Composite));
+            }
+            else if (type == "RayCastingIntegration")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCastingIntegration",
+                    "Integration", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Integration));
+            }
+            else if (type == "RayCastingSLIVR")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCastingSLIVR",
+                    "SLIVR", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::SLIVR));
+            }
+            else if (type == "RayCastingOSPRay")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCastingOSPRay",
+                    "Parallel", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Parallel));
+                searchNode->AddNode(new DataNode("OSPRayEnabledFlag", true));
+            }
+        }
+    }
+#endif
+}
+
+Target: xml2python
+Code: PyVolumeAttributes_getattr
+Prefix:
+Postfix:
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+    // rendererTypes
+    if(strcmp(name, "Default") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "Serial");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCasting") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "Composite");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCastingIntegration") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "Integration");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCastingSLIVR") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "SLIVR");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCastingOSPRay") == 0)
+    {
+        PyErr_WarnFormat(NULL, 1, "'RayCastingOSPRay is no longer a valid Volume attribute.\nIt's value is being ignored, please remove it from your script.\nTry using 'Parallel' for 'rendererType' and set 'OSPRayEnabledFlag' to '1'\n");
+        return PyInt_FromLong(0L);
+    }
+    // end Renderer types
+#endif
+
+
+
+Code: PyVolumeAttributes_setattr
+Prefix:
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt. Please remove it
+#else
+#define NAME_CHANGE_MESSAGE(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+#define DEPRECATED_MESSAGE(oldname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's value is being ignored, " \
+                    "please remove it from your script.\n", oldname);
+
+    // Try and handle legacy fields
+    if(obj == &NULL_PY_OBJ)
+    {
+        if (strcmp(name, "osprayShadowsEnabledFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayShadowsEnabledFlag");
+            obj = VolumeAttributes_SetOSPRayShadowsEnabledFlag(self, args);
+        }
+        else if (strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayUseGridAcceleratorFlag");
+            obj = VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(self, args);
+        }
+        else if (strcmp(name, "osprayPreIntegrationFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayPreIntegrationFlag");
+            obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
+        }
+        else if (strcmp(name, "ospraySingleShadeFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRaySingleShadeFlag");
+            obj = VolumeAttributes_SetOSPRaySingleShadeFlag(self, args);
+        }
+        else if (strcmp(name, "osprayOneSidedLightingFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayOneSidedLightingFlag");
+            obj = VolumeAttributes_SetOSPRayOneSidedLightingFlag(self, args);
+        }
+        else if (strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAOTransparencyEnabledFlag");
+            obj = VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(self, args);
+        }
+        else if (strcmp(name, "ospraySpp") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRaySPP");
+            obj = VolumeAttributes_SetOSPRaySPP(self, args);
+        }
+        else if (strcmp(name, "osprayAoSamples") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAOSamples");
+            obj = VolumeAttributes_SetOSPRayAOSamples(self, args);
+        }
+        else if (strcmp(name, "osprayAoDistance") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAODistance");
+            obj = VolumeAttributes_SetOSPRayAODistance(self, args);
+        }
+        else if (strcmp(name, "osprayMinContribution") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayMinContribution");
+            obj = VolumeAttributes_SetOSPRayMinContribution(self, args);
+        }
+
+        if ((strcmp(name, "resampleFlag") == 0) ||
+            (strcmp(name, "compactVariable") == 0)  ||
+            (strcmp(name, "renderMode") == 0))
+        {
+            DEPRECATED_MESSAGE(name);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+
+
+
 Target: xml2python
 Function: VolumeAttributes_SetFreeformOpacity
 Declaration: VolumeAttributes_SetFreeformOpacity
@@ -640,6 +926,7 @@ VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo()
     }
 }
 
+
 Target: xml2python
 Function: VolumeAttributes_SetMaterialProperties
 Declaration: VolumeAttributes_SetMaterialProperties
@@ -690,9 +977,3 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 Target: xml2cmake
 Condition: VISIT_SLIVR
 Definitions: -DVISIT_SLIVR
-
-Target: xml2cmake
-Condition:       VISIT_OSPRAY
-Includes:        ${OSPRAY_INCLUDE_DIR}
-VLinkLibraries:  ${OSPRAY_LIBRARIES}
-ELinkLibraries:  ${OSPRAY_LIBRARIES}

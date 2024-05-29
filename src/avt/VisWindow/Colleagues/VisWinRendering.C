@@ -45,7 +45,7 @@
 #include <vtkProperty.h>
 #endif
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
   #include <vtkOSPRayRendererNode.h>
   #include <vtkOSPRayPass.h>
   #include <vtkViewNodeFactory.h>
@@ -66,8 +66,6 @@ bool VisWinRendering::stereoEnabled = false;
 #include <vtkFloatArray.h>
 #endif
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-#else
 // For vtkBackgroundPass
 #include <vtkOpenGLQuadHelper.h>
 #include <vtkOpenGLRenderUtilities.h>
@@ -163,7 +161,6 @@ private:
 };
 
 vtkStandardNewMacro(vtkBackgroundPass);
-#endif
 
 // ****************************************************************************
 //  Method: VisWinRendering constructor
@@ -266,11 +263,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
     orderComposite(true), depthCompositeThreads(2), depthCompositeBlocking(65536),
     alphaCompositeThreads(2), alphaCompositeBlocking(65536), depthPeeling(false),
-#if LIB_VERSION_LE(VTK,8,2,0)
-    occlusionRatio(0.01), numberOfPeels(32), multiSamples(8), renderInfo(NULL),
-#else
     occlusionRatio(0.01), numberOfPeels(32), renderInfo(NULL),
-#endif
     renderInfoData(NULL), renderEvent(NULL), renderEventData(NULL),
     notifyForEachRender(false), inMotion(false),
     minRenderTime(numeric_limits<double>::max()),
@@ -304,34 +297,13 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     osprayRendering = false;
     ospraySPP = 1;
     osprayAO = 0;
     osprayShadows = false;
     osprayPass = vtkOSPRayPass::New();
     vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
-#endif
-#ifdef VISIT_OSPRAY
-    modeIsPerspective = true;
-    // Override vtkVisItDataSetMapper instead of vtkDataSetMapper.
-    // If the use of vtkVisItDataSetMapper as a general override of
-    // vtkDataSetMapper is removed this code will need to be changed.
-    factory->RegisterOverride("vtkVisItDataSetMapper",
-                              vtkVisItViewNodeFactory::pd_maker);
-    factory->RegisterOverride("vtkPointGlyphMapper",
-                              vtkVisItViewNodeFactory::pd_maker);
-    factory->RegisterOverride("vtkMultiRepMapper",
-                              vtkVisItViewNodeFactory::pd_maker);
-    factory->RegisterOverride("vtkMeshPlotMapper",
-                              vtkVisItViewNodeFactory::pd_maker);
-    factory->RegisterOverride("vtkOpenGLMeshPlotMapper",
-                              vtkVisItViewNodeFactory::pd_maker);
-    factory->RegisterOverride("vtkVisItCubeAxesActor",
-                              vtkVisItViewNodeFactory::cube_axes_act_maker);
-    factory->RegisterOverride("vtkVisItAxisActor",
-                              vtkVisItViewNodeFactory::axis_act_maker);
-#elif defined(HAVE_OSPRAY)
     viewIs3D = true;
 
     vtkOSPRayRendererNode::SetRendererType("scivis", canvas);
@@ -394,7 +366,7 @@ VisWinRendering::~VisWinRendering()
         foreground->Delete();
         foreground = nullptr;
     }
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     if (osprayPass != nullptr)
     {
         osprayPass->Delete();
@@ -636,11 +608,6 @@ VisWinRendering::EnableDepthPeeling()
 {
     vtkRenderWindow *rwin = GetRenderWindow();
 
-#if LIB_VERSION_LE(VTK,8,2,0)
-    // save window settings
-    multiSamples = rwin->GetMultiSamples();
-#endif
-
     // configure window
     rwin->SetAlphaBitPlanes(1);
     rwin->SetMultiSamples(0);
@@ -675,9 +642,6 @@ VisWinRendering::DisableDepthPeeling()
     // restore window settings
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
-#if LIB_VERSION_LE(VTK,8,2,0)
-    rwin->SetMultiSamples(multiSamples);
-#endif
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
@@ -763,9 +727,7 @@ VisWinRendering::Start2DMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(false);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -807,9 +769,7 @@ VisWinRendering::Stop2DMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(true);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -844,9 +804,7 @@ VisWinRendering::StartCurveMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(false);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -882,9 +840,7 @@ VisWinRendering::StopCurveMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(true);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -919,9 +875,7 @@ VisWinRendering::StartAxisArrayMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(false);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -957,9 +911,7 @@ VisWinRendering::StopAxisArrayMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(true);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -994,9 +946,7 @@ VisWinRendering::StartParallelAxesMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(false);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -1032,9 +982,7 @@ VisWinRendering::StopParallelAxesMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#ifdef VISIT_OSPRAY
-    SetModePerspective(true);
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -1316,17 +1264,7 @@ VisWinRendering::Realize(void)
 void
 VisWinRendering::RenderRenderWindow(void)
 {
-#ifdef VISIT_OSPRAY
-    if (GetOsprayRendering() && modeIsPerspective)
-    {
-        canvas->SetPass(osprayPass);
-    }
-    else
-    {
-        canvas->SetUseShadows(false);
-        canvas->SetPass(0);
-    }
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
         canvas->SetUseShadows(osprayShadows);
@@ -1965,23 +1903,6 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     writer->Delete();
 #endif
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    // temporarily remove canvas and background renderers
-    vtkRenderWindow *renWin = GetRenderWindow();
-    renWin->RemoveRenderer(canvas);
-    renWin->RemoveRenderer(background);
-
-    // set pixel data
-    unsigned char *pixels = input->GetImage().GetRGBBuffer();
-    int nChannels = input->GetImage().GetNumberOfColorChannels();
-    if(nChannels == 4)
-        renWin->SetRGBACharPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
-    else
-        renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
-
-    // render (foreground layer only)
-    RenderRenderWindow();
-#else
     // Get the render window.
     vtkRenderWindow *renWin = GetRenderWindow();
 
@@ -2010,7 +1931,6 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     // Clean up the image renderer.
     imagePass->Delete();
     imageRenderer->Delete();
-#endif
 
     // Capture the whole image now.
     GetCaptureRegion(r0, c0, w, h, false);
@@ -2048,11 +1968,6 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     im->Delete();
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    // add canvas and background renderers back in
-    renWin->AddRenderer(background);
-    renWin->AddRenderer(canvas);
-#endif
     return output;
 }
 
@@ -3058,29 +2973,7 @@ VisWinRendering::UpdateMouseActions(std::string action, double start_dx, double 
     }
 }
 
-#ifdef VISIT_OSPRAY
-// ****************************************************************************
-// Method: VisWinRendering::SetModePerspective
-//
-// Purpose:
-//   Stores rendering mode state information needed by OSPRay
-//
-// Arguments:
-//   enabled : Whether or not we're using a perspective rendering mode
-//
-// Programmer: Garrett Morrison
-// Creation:   Wed 2 May 2018 08:39:06 PM PDT
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetModePerspective(bool modePerspective)
-{
-    modeIsPerspective = modePerspective;
-}
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
 // ****************************************************************************
 // Method: VisWinRendering::Set3DView
 //
@@ -3105,7 +2998,7 @@ VisWinRendering::Set3DView(bool enable)
 #endif
 
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
 // ****************************************************************************
 // Method: VisWinRendering::SetOsprayRendering
 //
@@ -3133,17 +3026,6 @@ VisWinRendering::SetOsprayRendering(bool enabled)
 {
     osprayRendering = enabled;
 
-#if VISIT_OSPRAY
-    if (GetOsprayRendering() && modeIsPerspective)
-    {
-        canvas->SetPass(osprayPass);
-    }
-    else
-    {
-        SetOsprayShadows(false);
-        canvas->SetPass(0);
-    }
-#else
     if (osprayRendering && viewIs3D)
     {
         canvas->SetUseShadows(osprayShadows);
@@ -3154,7 +3036,6 @@ VisWinRendering::SetOsprayRendering(bool enabled)
         canvas->SetUseShadows(false);
         canvas->SetPass(0);
     }
-#endif
 }
 
 // ****************************************************************************
@@ -3233,11 +3114,7 @@ VisWinRendering::SetOsprayShadows(bool enabled)
 {
     osprayShadows = enabled;
 
-#ifdef VISIT_OSPRAY
-    if(osprayShadows && modeIsPerspective)
-#else
     if(osprayShadows)
-#endif
     {
         canvas->SetUseShadows(true);
     }

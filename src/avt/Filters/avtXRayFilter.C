@@ -8,7 +8,6 @@
 
 #include <avtXRayFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
 #include <stdlib.h>
 
 #ifdef PARALLEL
@@ -20,9 +19,7 @@
 #include <vtkAppendPolyData.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -1459,16 +1456,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
         unsigned char *ct = cellTypes->GetPointer(0);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
-        vtkIdType *cl = cellLocations->GetPointer(0);
-
-        vtkCellArray *cells = ugrid->GetCells();
-        vtkIdType *nl = cells->GetPointer();
-#else
         auto cells = vtk::TakeSmartPointer(ugrid->GetCells()->NewIterator());
-#endif
-
         for (i = 0 ; i < linesForThisPass ; i++)
         {
             double pt1[3];
@@ -1507,11 +1495,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 int nInter = 0;
                 double inter[100];
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-                vtkIdType *ids = &(nl[cl[iCell]+1]);
-#else
                 vtkIdType *ids = cells->GetCellAtId(iCell)->GetPointer(0);
-#endif
                 if (ct[iCell] == VTK_HEXAHEDRON)
                 {
                     avtXRayFilter_GetCellPointsMacro(8);
@@ -3490,26 +3474,14 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
         vtkPoints *points = ugrid->GetPoints();
 
         vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vtkCellArray *cells = ugrid->GetCells();
-
-        vtkIdType *nl = cells->GetPointer();
-        vtkIdType *cl = cellLocations->GetPointer(0);
-#else
         auto cells = vtk::TakeSmartPointer(ugrid->GetCells()->NewIterator());
-#endif
-
         double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
         for (size_t i = 0; i < cells_matched.size(); i++)
         {
             if (line_id[i] == strip_id)
             {
                 int iCell = cells_matched[i];
-#if LIB_VERSION_LE(VTK,8,1,0)
-                vtkIdType *ids = &(nl[cl[iCell]+1]);
-#else
                 vtkIdType *ids = cells->GetCellAtId(iCell)->GetPointer(0);
-#endif
                 avtXRayFilter_GetCellPointsMacro(8);
                 fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
                 fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);

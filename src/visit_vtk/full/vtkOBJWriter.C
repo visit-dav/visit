@@ -18,9 +18,7 @@
 #include <visit-config.h>
 
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkFloatArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
@@ -73,12 +71,7 @@ void vtkOBJWriter::WriteData()
 {
     double *p;
     vtkIdType npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *cells;
-    vtkIdType *indx;
-#else
     const vtkIdType *indx;
-#endif
 
     vtkPolyData *polydata = this->GetInput(0);
 
@@ -204,16 +197,10 @@ void vtkOBJWriter::WriteData()
     // write out polys if any
     if (polydata->GetNumberOfPolys() > 0)
     {
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        cells = polydata->GetPolys();
-        for (cells->InitTraversal(); cells->GetNextCell(npts,indx); )
-        {
-#else
         auto cells = vtk::TakeSmartPointer(polydata->GetPolys()->NewIterator());
         for (cells->GoToFirstCell(); !cells->IsDoneWithTraversal(); cells->GoToNextCell())
         {
             cells->GetCurrentCell(npts,indx);
-#endif
             fprintf(fpObj,"f ");
             for (vtkIdType i = 0; i < npts; i++)
             {

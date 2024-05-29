@@ -23,11 +23,7 @@ ${VISIT_SOURCE_DIR}/avt/Math
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkFiltersCore)
-else()
-    set(vtklibs VTK::CommonCore VTK::FiltersCore)
-endif()
+set(vtklibs VTK::CommonCore VTK::FiltersCore)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )

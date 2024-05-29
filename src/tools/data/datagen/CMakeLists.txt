@@ -208,15 +208,7 @@ endforeach()
 # Build all VTK Targets
 #-----------------------------------------------------------------------------
 foreach(VTK_TARGET degen_meshes)
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        BUILD_DATA_TARGET(${VTK_TARGET}
-            INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
-            LIB_DIRS ${VTK_LIBRARY_DIRS}
-            LIBS vtkIOLegacy)
-    else()
-        BUILD_DATA_TARGET(${VTK_TARGET}
-            LIBS VTK::IOLegacy)
-    endif()
+    BUILD_DATA_TARGET(${VTK_TARGET} LIBS VTK::IOLegacy)
 endforeach()
 
 #-----------------------------------------------------------------------------

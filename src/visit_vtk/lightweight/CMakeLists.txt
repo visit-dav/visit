@@ -69,11 +69,7 @@ ADD_LIBRARY(lightweight_visit_vtk
     ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkFiltersCore vtkIOCore vtkIOLegacy)
-else()
-    set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy VTK::vtksys)
-endif()
+set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
 
 target_link_libraries(lightweight_visit_vtk visitcommon ${vtklibs})
 

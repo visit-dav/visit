@@ -9,8 +9,6 @@
 #include <avtMiliFileFormat.h>
 #include <avtMiliOptions.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <limits>
 #include <visitstream.h>
 
@@ -827,11 +825,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             if (sandBuffer[i] > 0.5)
             {
                 vtkIdType nCellPts = 0;
-#if LIB_VERSION_LE(VTK,8,1,0)
-                vtkIdType *cellPts = NULL;
-#else
                 const vtkIdType *cellPts = nullptr;
-#endif
 
                 rv->GetCellPoints(i, nCellPts, cellPts);
 

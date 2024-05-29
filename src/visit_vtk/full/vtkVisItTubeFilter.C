@@ -14,9 +14,7 @@ PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 #include "vtkVisItTubeFilter.h"
 #include "vtkCellArray.h"
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include "vtkCellArrayIterator.h"
-#endif
 #include "vtkCellData.h"
 #include "vtkFloatArray.h"
 #include "vtkMath.h"
@@ -110,11 +108,7 @@ int vtkVisItTubeFilter::RequestData(
     double range[2], maxSpeed=0;
     vtkCellArray *newStrips;
     vtkIdType npts=0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType *pts=nullptr;
-#else
     const vtkIdType *pts=nullptr;
-#endif
     vtkIdType offset=0;
     vtkFloatArray *newTCoords=nullptr;
     int abort=0;
@@ -222,17 +216,11 @@ int vtkVisItTubeFilter::RequestData(
     //
     this->Theta = 2.0*vtkMath::Pi() / this->NumberOfSides;
     vtkPolyLine *lineNormalGenerator = vtkPolyLine::New();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    for (inCellId=0, inLines->InitTraversal();
-         inLines->GetNextCell(npts,pts) && !abort; inCellId++)
-    {
-#else
     auto iter = vtk::TakeSmartPointer(inLines->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal() && !abort; iter->GoToNextCell())
     {
         inCellId = iter->GetCurrentCellId();
         iter->GetCurrentCell(npts, pts);
-#endif
         this->UpdateProgress((double)inCellId/numLines);
         abort = this->GetAbortExecute();
 
@@ -336,11 +324,7 @@ int vtkVisItTubeFilter::RequestData(
 //
 
 int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-                                       vtkIdType npts, vtkIdType *pts,
-#else
                                        vtkIdType npts, const vtkIdType *pts,
-#endif
                                        vtkPoints *inPts, vtkPoints *newPts,
                                        vtkPointData *pd, vtkPointData *outPD,
                                        vtkFloatArray *newNormals,
@@ -583,11 +567,7 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
 //    Support VTK9, change pts arg to const.
 //
 void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-                                        vtkIdType* vtkNotUsed(pts),
-#else
                                         const vtkIdType* vtkNotUsed(pts),
-#endif
                                         vtkIdType inCellId,
                                         vtkCellData *cd, vtkCellData *outCD,
                                         vtkCellArray *newStrips)
@@ -698,11 +678,7 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
 //   Support VTK9, change pts arg to const.
 //
 void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-                                               vtkIdType npts, vtkIdType *pts,
-#else
                                                vtkIdType npts, const vtkIdType *pts,
-#endif
                                                vtkPoints *inPts,
                                                vtkDataArray *inScalars_,
                                                bool cellScalars,

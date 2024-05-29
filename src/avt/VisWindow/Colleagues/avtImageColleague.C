@@ -8,8 +8,6 @@
 
 #include <avtImageColleague.h>
 
-#include <visit-config.h> // for LIB_VERSION_GE
-
 #include <vtkActor2D.h>
 #include <vtkCoordinate.h>
 #include <vtkImageData.h>
@@ -438,7 +436,6 @@ avtImageColleague::UpdateImage(string filename)
     if (!filename.empty())
     {
         filename = FileFunctions::ExpandPath(filename);
-#if LIB_VERSION_GE(VTK, 9,2,6)
         size_t i = filename.rfind('.', filename.length());
         if(i != string::npos)
         {
@@ -446,7 +443,6 @@ avtImageColleague::UpdateImage(string filename)
             // Get a reader for extension if possible.
             r = vtkImageReader2Factory::CreateImageReader2FromExtension(ext.c_str());
         }
-#endif
         if(!r)
         {
             // Get a reader for filename if possible.

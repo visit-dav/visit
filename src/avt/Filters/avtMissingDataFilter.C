@@ -4,7 +4,6 @@
 
 #include <avtMissingDataFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
 #include <DebugStream.h>
 
 #include <vtkCellData.h>
@@ -335,13 +334,9 @@ avtMissingDataFilter::ExecuteData(avtDataRepresentation *in_dr)
                     // Do threshold and keep all cells with value == 0.
                     vtkThreshold *thres = vtkThreshold::New();
                     thres->SetInputData(input2);
-#if LIB_VERSION_LE(VTK,8,1,0)
-                    thres->ThresholdBetween(-0.5, 0.5);
-#else
                     thres->SetLowerThreshold(-0.5);
                     thres->SetUpperThreshold(0.5);
                     thres->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
-#endif
                     if(centering == AVT_ZONECENT)
                     {
                         thres->SetInputArrayToProcess(0, 0, 0, 

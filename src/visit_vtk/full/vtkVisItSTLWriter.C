@@ -14,13 +14,9 @@
 
 #include "vtkVisItSTLWriter.h"
 
-#include <visit-config.h> // for LIB_VERSION_LE/LIB_VERSION_GE
-
 #include <vtkByteSwap.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkTriangle.h>
@@ -75,11 +71,7 @@ void vtkVisItSTLWriter::WriteAsciiSTL(vtkPoints *pts, vtkCellArray *polys)
   FILE *fp;
   double n[3], v1[3], v2[3], v3[3];
   vtkIdType npts = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *indx = 0;
-#else
   const vtkIdType *indx = 0;
-#endif
 
   if ((fp = fopen(this->FileName, "w")) == NULL)
     {
@@ -95,15 +87,10 @@ void vtkVisItSTLWriter::WriteAsciiSTL(vtkPoints *pts, vtkCellArray *polys)
 //  Write out triangle polygons.  In not a triangle polygon, only first
 //  three vertices are written.
 //
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  for (polys->InitTraversal(); polys->GetNextCell(npts,indx); )
-    {
-#else
   auto iter = vtk::TakeSmartPointer(polys->NewIterator());
   for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
     iter->GetCurrentCell(npts,indx);
-#endif
     pts->GetPoint(indx[0], v1);
     pts->GetPoint(indx[1], v2);
     pts->GetPoint(indx[2], v3);
@@ -134,11 +121,7 @@ void vtkVisItSTLWriter::WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys)
   FILE *fp;
   double dn[3], v1[3], v2[3], v3[3];
   vtkIdType npts = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *indx = 0;
-#else
   const vtkIdType *indx = 0;
-#endif
   int ncells;
   unsigned short ibuff2=0;
 
@@ -160,15 +143,10 @@ void vtkVisItSTLWriter::WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys)
   //  Write out triangle polygons.  In not a triangle polygon, only first
   //  three vertices are written.
   //
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  for (polys->InitTraversal(); polys->GetNextCell(npts,indx); )
-    {
-#else
   auto iter = vtk::TakeSmartPointer(polys->NewIterator());
   for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
     iter->GetCurrentCell(npts,indx);
-#endif
     pts->GetPoint(indx[0], v1);
     pts->GetPoint(indx[1], v2);
     pts->GetPoint(indx[2], v3);

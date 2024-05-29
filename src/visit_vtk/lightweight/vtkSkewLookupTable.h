@@ -32,7 +32,6 @@
 #ifndef __vtkSkewLookupTable_h
 #define __vtkSkewLookupTable_h
 #include <visit_vtk_light_exports.h>
-#include <visit-config.h> // For LIB_VERSION_LE
 
 #include "vtkLookupTable.h"
 
@@ -56,11 +55,7 @@ public:
 
   // Description:
   // Map one value through the lookup table.
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  unsigned char *MapValue(double v) override;
-#else
   const unsigned char *MapValue(double v) override;
-#endif
 
   // Description:
   // map a set of scalars through the lookup table

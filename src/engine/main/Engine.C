@@ -2341,13 +2341,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             this->launchXServers = false;
         }
-#ifdef VISIT_OSPRAY
-        else if (strcmp(argv[i], "-ospray") == 0)
-        {
-            debug5 << "Engine found OSPRay flag" << endl;
-            avtCallback::SetOSPRayMode(true);
-        }
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             debug5 << "Engine found OSPRay flag" << endl;

@@ -81,18 +81,11 @@
 
     // Draw the polygons.
     vtkIdType npts;
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkCellArray *aPrim = input->GetPolys();
-    vtkIdType *pts;
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
-    {
-#else
     auto aPrim = vtk::TakeSmartPointer(input->GetPolys()->NewIterator());
     const vtkIdType *pts;
     for (aPrim->GoToFirstCell(); !aPrim->IsDoneWithTraversal(); aPrim->GoToNextCell(), cellNum++)
     {
         aPrim->GetCurrentCell(npts,pts);
-#endif
         if (c)
         {
             if (cellScalars)
@@ -125,16 +118,10 @@
     //     'retina' displays."
     //
     int devicePixelRatio = privateInstance->widget->devicePixelRatio();
-#if LIB_VERSION_LE(VTK,8,1,0)
-    aPrim = input->GetLines();
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
-    {
-#else
     aPrim = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     for (aPrim->GoToFirstCell(); !aPrim->IsDoneWithTraversal(); aPrim->GoToNextCell(), cellNum++)
     {
         aPrim->GetCurrentCell(npts,pts);
-#endif
         if (c && cellScalars)
         {
             rgba = c->GetPointer(4*cellNum);

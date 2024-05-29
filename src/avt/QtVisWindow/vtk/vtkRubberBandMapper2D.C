@@ -6,12 +6,9 @@
 #include <math.h>
 #include "vtkRubberBandMapper2D.h"
 
-#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h> // used by vtkRubberBandMapper2D_body.C which is #included below
-#endif
 #include <vtkCoordinate.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>

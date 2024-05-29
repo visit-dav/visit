@@ -2,8 +2,6 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <visit-config.h> // For LIB_VERISON_LE
-
 #include <vtkSphericalTransform.h>
 #include <vtkGeoProjection.h>
 #include <vtkGeoTransform.h>
@@ -13,9 +11,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 #include <DebugStream.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 
 
 // ************************************************************************* //
@@ -251,20 +247,12 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
 
       vtkIdType npts;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-      vtkCellArray *ca = pd->GetPolys();
-      vtkIdType *pts=nullptr;
-      ca->InitTraversal();
-      while (ca->GetNextCell(numPts, pts))
-      {
-#else
       const vtkIdType *pts=nullptr;
 
       auto ca = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
       for (ca->GoToFirstCell(); !ca->IsDoneWithTraversal(); ca->GoToNextCell())
       {
           ca->GetCurrentCell(numPts, pts);
-#endif
 
          // for each polygon, change for big changes in coordinates and split lines
          changeOfSigns = 0;

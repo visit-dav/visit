@@ -83,11 +83,7 @@ ${NEKTAR++_TP_INCLUDE_DIRS}
 ${ACCELERATE_FRAMEWORK_INCLUDE_DIR}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkFiltersCore)
-else()
-    set(vtklibs VTK::CommonCore VTK::FiltersCore)
-endif()
+set(vtklibs VTK::CommonCore VTK::FiltersCore)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS})

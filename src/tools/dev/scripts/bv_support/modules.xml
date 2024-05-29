@@ -22,14 +22,12 @@
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
-            <lib name="embree"/>
             <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
-            <lib name="ispc"/>
             <lib name="llvm"/>
             <lib name="mdsplus"/>
             <lib name="mesagl"/>
@@ -47,7 +45,6 @@
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
-            <lib name="tbb"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
@@ -74,14 +71,12 @@
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
-            <lib name="embree"/>
             <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
-            <lib name="ispc"/>
             <lib name="llvm"/>
             <lib name="mfem"/>
             <lib name="mili"/>
@@ -93,7 +88,6 @@
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
-            <lib name="tbb"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
         </group>
@@ -168,9 +162,6 @@
         -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
-            <lib name="embree"/>
-            <lib name="ispc"/>
-            <lib name="tbb"/>
             <lib name="ospray"/>
         </group>
 

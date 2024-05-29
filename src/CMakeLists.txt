@@ -645,7 +645,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 
-set(VTK_MINIMUM_VERSION "8.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+set(VTK_MINIMUM_VERSION "9.2.6" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 set(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 

@@ -8,14 +8,11 @@
 
 #include <avtLineSamplerInfoQuery.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkCellArray.h>
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
 
@@ -268,22 +265,11 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     {
       std::vector<float> steps;
       vtkIdType nPts; // = 1 for a vertex
-#if LIB_VERSION_LE(VTK,8,1,0)
-      vtkCellArray *vertices = ds->GetVerts();
-      vtkIdType *verts = vertices->GetPointer();
-      vtkIdType *vertPtr = verts;
-
-      for (int i=0; i<ds->GetNumberOfVerts(); i++)
-      {
-        nPts = *vertPtr;
-        vertPtr++; //Now segptr points at vtx0.
-#else
       auto verts = vtk::TakeSmartPointer(ds->GetVerts()->NewIterator());
       for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell());
       {
         const vtkIdType *vertPtr;
         verts->GetCurrentCell(nPts, vertPtr);
-#endif
         points->GetPoint(vertPtr[0], pt);
 
         if (dumpCoordinates)
@@ -298,9 +284,6 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
           float s = scalar[vertPtr[0]];
           steps.push_back(s);
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vertPtr += nPts;
-#endif
       }
 
       lsData.push_back(0.0); // No cord length as individual points
@@ -316,22 +299,11 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     if (ds->GetNumberOfLines() > 0)
     {
       vtkIdType nPts;
-#if LIB_VERSION_LE(VTK,8,1,0)
-      vtkCellArray *lines = ds->GetLines();
-      vtkIdType *segments = lines->GetPointer();
-      vtkIdType *segPtr = segments;
-
-      for (int i=0; i<ds->GetNumberOfLines(); i++)
-      {
-        nPts = *segPtr;
-        segPtr++; //Now segptr points at vtx0.
-#else
       auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
       for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell());
       {
         const vtkIdType *segPtr;
         lines->GetCurrentCell(nPts, segPtr);
-#endif
         float cordLength = 0.0;
         std::vector<float> steps;
 
@@ -373,9 +345,6 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
             lsData.push_back( (float) (nPts) );
             lsData.insert( lsData.end(), steps.begin(), steps.end() );
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        segPtr += nPts;
-#endif
       }
     }
 }

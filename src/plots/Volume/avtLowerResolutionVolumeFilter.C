@@ -7,17 +7,21 @@
 // ************************************************************************* //
 
 #include <avtLowerResolutionVolumeFilter.h>
-#include <vtkDataSet.h>
-#include <vtkPointData.h>
-#include <vtkFloatArray.h>
+
+#include <InvalidVariableException.h>
+#include <InvalidLimitsException.h>
 
 #include <StackTimer.h>
-#include <PlotInfoAttributes.h>
 
 #include <DebugStream.h>
 
-#include <VolumeFunctions.h>
-#include <VolumeRLEFunctions.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkSkew.h>
+
+#define NO_DATA_VALUE -1e+37
 
 // ****************************************************************************
 //  Method: avtLowerResolutionVolumeFilter constructor
@@ -31,8 +35,6 @@
 
 avtLowerResolutionVolumeFilter::avtLowerResolutionVolumeFilter() : avtPluginDataTreeIterator()
 {
-    hist = 0;
-    hist_size = 256;
 }
 
 // ****************************************************************************
@@ -47,10 +49,9 @@ avtLowerResolutionVolumeFilter::avtLowerResolutionVolumeFilter() : avtPluginData
 
 avtLowerResolutionVolumeFilter::~avtLowerResolutionVolumeFilter()
 {
-    if(hist != 0)
+    if(hist != nullptr)
     {
         delete [] hist;
-        hist = 0;
     }
 }
 
@@ -71,15 +72,138 @@ avtLowerResolutionVolumeFilter::~avtLowerResolutionVolumeFilter()
 void
 avtLowerResolutionVolumeFilter::SetAtts(const AttributeGroup *a)
 {
-    VolumeAttributes *v = (VolumeAttributes *)a;
-    atts = *v;
+    atts = *(const VolumeAttributes*)a;
+}
+
+// ****************************************************************************
+// Method: LogTransform
+//
+// Purpose:
+//   Computes log on one data array, storing it into another data array.
+//
+// Arguments:
+//   linear : The linear values.
+//   skew   : The computed log values.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 19 14:02:29 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLowerResolutionVolumeFilter::LogTransform(vtkDataArray *linear,
+                                             vtkDataArray *log)
+{
+    StackTimer t("VolumeLogTransform");
+    double *r = linear->GetRange();
+    float range[2];
+    range[0] = r[0];
+    range[1] = r[1];
+
+    if (atts.GetUseColorVarMin())
+    {
+        range[0] = atts.GetColorVarMin();
+    }
+    if (atts.GetUseColorVarMax())
+    {
+        range[1] = atts.GetColorVarMax();
+    }
+    if (range[0] <= 0. || range[1] <= 0.)
+    {
+        EXCEPTION1(InvalidLimitsException, true);
+    }
+    if(linear->GetDataType() == VTK_FLOAT &&
+       log->GetDataType() == VTK_FLOAT)
+    {
+        const float *src = (const float *)linear->GetVoidPointer(0);
+        const float *end = src + linear->GetNumberOfTuples();
+        float *dest = (float *)log->GetVoidPointer(0);
+        while(src < end)
+        {
+            float f = *src++;
+            if (f > 0)
+                f = log10(f);
+            else if (f > NO_DATA_VALUE)
+                f = log10(range[0]);
+            *dest++ = f;
+        }
+    }
+    else
+    {
+        for (int i = 0 ; i < linear->GetNumberOfTuples() ; i++)
+        {
+            double f = linear->GetTuple1(i);
+            if (f > 0.)
+                f = log10(f);
+            else if (f > NO_DATA_VALUE)
+                f = log10(range[0]);
+            log->SetTuple1(i, f);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: SkewTransform
+//
+// Purpose:
+//   Computes skew on one data array, storing it into another data array.
+//
+// Arguments:
+//   linear : The linear values.
+//   skew   : The computed skew values.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 19 14:02:29 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLowerResolutionVolumeFilter::SkewTransform( vtkDataArray *linear,
+                                               vtkDataArray *skew)
+{
+    StackTimer t("VolumeSkewTransform");
+    double *r = linear->GetRange();
+    float range[2];
+    range[0] = (float)r[0];
+    range[1] = (float)r[1];
+
+    if (atts.GetUseColorVarMin())
+    {
+        range[0] = atts.GetColorVarMin();
+    }
+    if (atts.GetUseColorVarMax())
+    {
+        range[1] = atts.GetColorVarMax();
+    }
+    float skewFactor = atts.GetSkewFactor();
+    if(linear->GetDataType() == VTK_FLOAT &&
+       skew->GetDataType() == VTK_FLOAT)
+    {
+        const float *src = (const float *)linear->GetVoidPointer(0);
+        const float *end = src + linear->GetNumberOfTuples();
+        float *dest = (float *)skew->GetVoidPointer(0);
+        while(src < end)
+            *dest++ = vtkSkewValue(*src++, range[0], range[1], skewFactor);
+    }
+    else
+    {
+        for (int i = 0 ; i < linear->GetNumberOfTuples() ; i++)
+        {
+            float f = linear->GetTuple1(i);
+            skew->SetTuple1(i, (float)vtkSkewValue(f, range[0], range[1], skewFactor));
+        }
+    }
 }
 
 // ****************************************************************************
 // Method: avtLowerResolutionVolumeFilter::CalculateHistograms
 //
-// Purpose: 
-//   Calculates the histogram data that we'll later put into the plot info.
+// Purpose:
+//   Calculates the histogram data used in the the plot info.
 //
 // Arguments:
 //   ds : The dataset that contains the variables of interest.
@@ -88,11 +212,6 @@ avtLowerResolutionVolumeFilter::SetAtts(const AttributeGroup *a)
 // Creation:   Fri Dec 19 14:08:43 PST 2008
 //
 // Modifications:
-//   Brad Whitlock, Tue Jan 31 12:08:09 PST 2012
-//   Call the SPH version of the gradient for non-rectilinear meshes.
-//
-//   Brad Whitlock, Wed Jun  6 14:16:06 PDT 2012
-//   Skip SPH gradient for 1D transfer functions.
 //
 // ****************************************************************************
 
@@ -100,61 +219,86 @@ void
 avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 {
     const char *mName = "avtLowerResolutionVolumeFilter::CalculateHistograms: ";
-    vtkDataArray *data = 0, *opac = 0;
-    if(VolumeGetScalars(atts, ds, data, opac))
+
+    vtkDataArray *data = ds->GetPointData()->GetScalars();
+
+    if( data == nullptr )
     {
-        debug5 << mName << "Computing histograms" << endl;
-        int nels = data->GetNumberOfTuples();
+        data = ds->GetCellData()->GetScalars();
 
-        // Get the opacity variable's extents.
-        float omin = 0.f, omax = 0.f, osize = 0.f;
-        VolumeGetOpacityExtents(atts, opac, omin, omax, osize);
-        float ghostval = omax+osize;
-
-        //
-        // In this mode, we calculate "gm" so we can do the histogram and then
-        // we throw away "gm". It's not that big a deal anymore because the
-        // gradient calculation is much faster than it used to be.
-        //
-        vtkFloatArray *gm = vtkFloatArray::New();
-        gm->SetNumberOfTuples(nels);
-        gm->SetName("gm");
-        if(ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        if( data == nullptr )
         {
-            VolumeCalculateGradient(atts, (vtkRectilinearGrid *)ds, opac, 
-                                0, // gx
-                                0, // gy
-                                0, // gz
-                                (float *)gm->GetVoidPointer(0),
-                                0, // gmn
-                                ghostval);
+            EXCEPTION1(InvalidVariableException, "");
         }
-        else
-        {
-            memset(gm->GetVoidPointer(0), 0, sizeof(float)*nels);
-        }
-
-        if(hist == 0)
-            delete [] hist;
-        hist = new float[hist_size];
-        VolumeHistograms(atts, data, gm, hist, hist_size);
-        gm->Delete();
-
-        data->Delete();
-        opac->Delete();
     }
-    else
+
+    debug5 << mName << "Computing histograms" << std::endl;
+
+    int nTuples = data->GetNumberOfTuples();
+
+    // Initialize the output array.
+    if(hist != nullptr)
+        delete [] hist;
+
+    hist = new float[hist_size];
+
+    memset(hist, 0, sizeof(float) * hist_size);
+
+    // Get the range for the data var.
+    double dataRange[2] = {0., 1.};
+    double opacityRange[2] = {0., 1.};
+
+    data->GetRange( dataRange );
+
+    if( atts.GetUseColorVarMin() )
+        dataRange[0] = atts.GetColorVarMin();
+    if( atts.GetUseColorVarMax() )
+        dataRange[1] = atts.GetColorVarMax();
+
+    debug5 << mName << "Var range: "
+           << dataRange[0] << ", " << dataRange[1] << std::endl;
+
+    // Populate histograms
+    double scale = double(hist_size - 1) / (dataRange[1] - dataRange[1]);
+
+    if(dataRange[1] <= dataRange[1])
+        scale = 0.0;
+
+    double hist_max = 0.0;
+
+    for(int index = 0; index < nTuples; ++index)
     {
-         debug5 << mName << "Could not get scalars or opacity needed to "
-                            "calculate the histogram"
-                << endl;
+        double s = data->GetTuple1(index);
+
+        if(s < NO_DATA_VALUE)
+            continue;
+        if(s < dataRange[0])
+            continue;
+        if(s > dataRange[1])
+            continue;
+
+        int scalar_index = double((s - dataRange[0]) * scale);
+
+        hist[scalar_index] += 1.0;
+
+        if(hist_max < hist[scalar_index])
+            hist_max = hist[scalar_index];
+    }
+
+    // Normalize the histogram data.
+    if(hist_max > 0.0)
+    {
+        double h_scale = 1.0 / hist_max;
+
+        for (int index = 0; index < hist_size; ++index)
+            hist[index] *= h_scale;
     }
 }
 
 // ****************************************************************************
 // Method: avtLowerResolutionVolumeFilter::ExecuteData
 //
-// Purpose: 
+// Purpose:
 //   ds
 //
 // Arguments:
@@ -162,16 +306,13 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 //
 // Returns:    The output data representation.
 //
-// Note:       This filter assumes that there will only be 1 domain. This is
-//             fine because we call it after the resample filter.
-// 
+// Note:       This filter assumes that there will only be 1 domain. Which
+//             is fine because it is called after the resample filter.
+//
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 18 14:13:43 PST 2008
 //
 // Modifications:
-//   Brad Whitlock, Mon Aug 20 16:31:01 PDT 2012
-//   Get the color variable by passing NULL into VolumeGetScalar.
-//
 //   Eric Brugger, Tue Aug 19 14:06:17 PDT 2014
 //   Modified the class to work with avtDataRepresentation.
 //
@@ -182,37 +323,47 @@ avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
     StackTimer t("avtLowerResolutionVolumeFilter::ExecuteData");
 
-    //
     // Get the VTK data set.
-    //
     vtkDataSet *ds = in_dr->GetDataVTK();
-
     vtkDataSet *rv = ds;
-    // If we're not doing linear scaling then we have to create a copy dataset
-    // whose scalars are transformed by the appropriate scaling rule.
-    if(atts.GetScaling() != VolumeAttributes::Linear)
+
+    // If preforming Log or Skew scaling create a copy of the dataset
+    // with scalars that are transformed by the appropriate scaling rule.
+    if (atts.GetScaling() == VolumeAttributes::Log ||
+	atts.GetScaling() == VolumeAttributes::Skew)
     {
-        // Get the array that we're "scaling".
-        vtkDataArray *src = VolumeGetScalar(ds, NULL);
-        if(src == 0)
+        // Get the array that is being "scaling".
+        bool cellData = false;
+
+        vtkDataArray *src = ds->GetPointData()->GetScalars();
+
+        if( src == nullptr )
         {
-            EXCEPTION0(ImproperUseException);
+            src = ds->GetCellData()->GetScalars();
+
+            if( src == nullptr )
+            {
+                EXCEPTION1(InvalidVariableException, "");
+            }
+
+            cellData = true;
         }
 
-        // Create a dataset copy and a new data array that we can store
-        // the transformed values in.
+        // Create a dataset copy and a new data array so that the
+        // transformed values can be stored in it.
         rv = ds->NewInstance();
         rv->ShallowCopy(ds);
+
         vtkDataArray *dest = src->NewInstance();
         dest->SetNumberOfTuples(src->GetNumberOfTuples());
         dest->SetName(src->GetName());
 
-        // Transform the data.
+        // Transform the scalar data.
         if (atts.GetScaling() == VolumeAttributes::Log)
         {
             TRY
             {
-                VolumeLogTransform(atts, src, dest);
+                LogTransform(src, dest);
             }
             CATCH(VisItException)
             {
@@ -223,11 +374,15 @@ avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
             ENDTRY
         }
         else if (atts.GetScaling() == VolumeAttributes::Skew)
-            VolumeSkewTransform(atts, src, dest);
+            SkewTransform(src, dest);
 
         // Add the new data to the return dataset's point data, replacing
         // the old version.
-        rv->GetPointData()->AddArray(dest);
+        if( cellData )
+            rv->GetCellData()->AddArray(dest);
+        else
+            rv->GetPointData()->AddArray(dest);
+
         dest->Delete();
     }
 
@@ -245,7 +400,7 @@ avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 // ****************************************************************************
 // Method: avtLowerResolutionVolumeFilter::PostExecute
 //
-// Purpose: 
+// Purpose:
 //   This method stores the histogram into the contract's plot info atts.
 //
 // Programmer: Brad Whitlock
@@ -265,11 +420,11 @@ avtLowerResolutionVolumeFilter::PostExecute()
     if(hist == 0)
         return;
 
-    floatVector        h1;
+    floatVector h1;
     h1.reserve(hist_size);
+
     for(int i = 0; i < hist_size; ++i)
         h1.push_back(hist[i]);
-
 
     MapNode vhist;
     vhist["histogram_size"] = hist_size;
@@ -279,7 +434,7 @@ avtLowerResolutionVolumeFilter::PostExecute()
 }
 
 // ****************************************************************************
-//  Method:  avtLowerResolutionVolumeFilter::FilterUnderstandsTransformedRectMesh
+//  Method: avtLowerResolutionVolumeFilter::FilterUnderstandsTransformedRectMesh
 //
 //  Purpose:
 //    If this filter returns true, this means that it correctly deals

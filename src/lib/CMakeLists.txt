@@ -118,50 +118,14 @@ IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
     MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
-  if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    IF (NOT WIN32)
-        FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
-        IF(NOT VTK_PYTHON_MODULE_ITEMS)
-            MESSAGE(WARNING "Failed to find VTK Python module in ${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/")
-        endif()
-        FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
-            GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
-            GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
-            MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
-                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                                    RESULT_VARIABLE VTK_MODULE_SYM_RM)
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                                    ${ITM_ABS}
-                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                                    RESULT_VARIABLE VTK_MODULE_SYM_CREATE)
-            IF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
-                MESSAGE(WARNING "Failed to create VTK Python module symlink in lib/site-packages/ for ${ITM_ABS}")
-            ENDIF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
-        ENDFOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
-    ELSE (NOT WIN32)
-        FILE(GLOB VTK_EGG_FILE "${VTK_PY_WRAPPERS_DIR}/site-packages/*egg*")
-        # because you don't need to choose your configuration up-front
-        # on windows, make this a custom target so they are copied to the
-        # correct lib/${CFG} directory
-        ADD_CUSTOM_TARGET(vtk_python_modules ALL
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk
-                    ${VISIT_LIBRARY_DIR}/site-packages/vtk
-            COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
-        )
+    add_custom_target(vtk_python_modules ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${VTK_PY_WRAPPERS_DIR}
+                ${VISIT_LIBRARY_DIR}/site-packages
+        COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules")
+    if(WIN32)
         visit_add_to_util_builds(vtk_python_modules)
-    ENDIF (NOT WIN32)
-  else()
-      add_custom_target(vtk_python_modules ALL
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                        ${VTK_PY_WRAPPERS_DIR}
-                        ${VISIT_LIBRARY_DIR}/site-packages
-                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules")
-      if(WIN32)
-          visit_add_to_util_builds(vtk_python_modules)
-      endif()
-  endif()
+    endif()
 ENDIF(VISIT_PYTHON_FILTERS)
 
 if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)

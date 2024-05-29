@@ -221,11 +221,7 @@ set_target_properties(qvtkopenglExample PROPERTIES AUTOMOC ON)
 VISIT_INSTALL_TARGETS(qvtkopenglExample)
 VISIT_EXAMPLES_ADD_FOLDER(qvtkopenglExample qvtkopenglExample)
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  set(vtklibs vtkCommonColor vtkFiltersSources vtkInteractionStyle vtkRenderingOpenGL2)
-else()
-  set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingOpenGL2)
-endif()
+set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingOpenGL2)
 
 TARGET_LINK_LIBRARIES(qvtkopenglExample
 vtkqt
@@ -249,11 +245,7 @@ set_target_properties(qtvtkExample PROPERTIES AUTOMOC ON)
 VISIT_INSTALL_TARGETS(qtvtkExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtvtkExample qtvtkExample)
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  set(vtklibs vtkCommonColor vtkFiltersSources vtkInteractionStyle)
-else()
-  set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingVolumeOpenGL2)
-endif()
+set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingVolumeOpenGL2)
 
 TARGET_LINK_LIBRARIES(qtvtkExample
 vtkqt
@@ -274,11 +266,7 @@ ADD_EXECUTABLE(qtviswinExample ${QTVISWINEXAMPLE_SOURCES})
 VISIT_INSTALL_TARGETS(qtviswinExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtviswinExample qtviswinExample)
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  set(vtkqtlib vtkGUISupportQt)
-else()
-  set(vtkqtlib VTK::GUISupportQt)
-endif()
+set(vtkqtlib VTK::GUISupportQt)
 TARGET_LINK_LIBRARIES(qtviswinExample
 visitcommon
 avtdbatts

@@ -14,7 +14,6 @@
 #define __vtkCSGCell_h
 
 #include <visit_vtk_exports.h>
-#include <visit-config.h> // For LIB_VERSION_LE
 
 #include <vtkCell.h>
 
@@ -44,20 +43,6 @@ public:
 
   int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts) override;
 
-// There is const differences in arguments between VTK8 and VTK9 for these fns
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  int CellBoundary(int subId, double pcoords[3], vtkIdList *pts) override 
-      { return 0; }
-  int EvaluatePosition(double x[3], double* closestPoint, 
-                       int& subId, double pcoords[3], 
-                       double& dist2, double *weights) override { return 0; }
-  void EvaluateLocation(int& subId, double pcoords[3], double x[3],
-                        double *weights) override {;}
-  int IntersectWithLine(double p1[3], double p2[3], double tol, double& t,
-                        double x[3], double pcoords[3], int& subId) override;
-  void Derivatives(int subId, double pcoords[3], double *values, 
-                   int dim, double *derivs) override {}
-#else
   int CellBoundary(int subId, const double pcoords[3], vtkIdList *pts) override
       { return 0; }
   int EvaluatePosition(const double x[3], double* closestPoint, 
@@ -69,7 +54,6 @@ public:
                         double& t, double x[3], double pcoords[3], int& subId) override;
   void Derivatives(int subId, const double pcoords[3], const double *values, 
                    int dim, double *derivs) override {}
-#endif
  
 
 protected:

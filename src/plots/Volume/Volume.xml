@@ -5,42 +5,55 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
     <Files components="V">
-      VolumeFunctions.C
-      VolumeRLEFunctions.C
       avtVolumeRenderer.C
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
-      avtDefaultRenderer.C
+      avtVisItVTKRenderer.C
+      avtVisItVTKRenderFilter.C
+      avtICETCompositor.C
+    </Files>
+    <Files components="E">
+      avtVolumeRenderer.C
+      avtVolumeFilter.C
+      avtLowerResolutionVolumeFilter.C
+      avtVisItVTKRenderer.C
+      avtVisItVTKRenderFilter.C
+      avtICETCompositor.C
+      avtVolumeResampleFilter.C
     </Files>
     <LIBS components="V">
-      vtkRenderingVolume
-      vtkRenderingVolumeOpenGL2
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
     </LIBS>
-    <Files components="E">
-      VolumeFunctions.C
-      VolumeRLEFunctions.C
-      avtVolumeRenderer.C
-      avtVolumeFilter.C
-      avtLowerResolutionVolumeFilter.C
-      avtDefaultRenderer.C
-    </Files>
     <LIBS components="ESer">
       avtexpressions_ser
-      vtkRenderingVolume
-      vtkRenderingVolumeOpenGL2
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
     </LIBS>
     <LIBS components="EPar">
       avtexpressions_par
-      vtkRenderingVolume
-      vtkRenderingVolumeOpenGL2
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
     </LIBS>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
-        Default
-        RayCasting
-        RayCastingIntegration
-        RayCastingSLIVR
-        RayCastingOSPRay
+        Serial
+        Parallel
+        Composite
+        Integration
+        SLIVR
+      </Enum>
+      <Enum name="ResampleType">
+        NoResampling
+        OnlyIfRequired
+        SingleDomain
+        ParallelRedistribute
+        ParallelPerRank
+      </Enum>
+      <Enum name="ResampleCentering">
+        NativeCentering
+        NodalCentering
+        ZonalCentering
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -75,41 +88,49 @@
         Higher
         Highest
       </Enum>
-      <Enum name="RenderMode">
-        DefaultRenderMode
-        RayCastRenderMode
-        GPURenderMode
-        OSPRayRenderMode
+      <Enum name="OSPRayRenderTypes">
+        SciVis
+        PathTracer
       </Enum>
-      <Field name="osprayShadowsEnabledFlag" label="osprayShadowsEnabledFlag" type="bool">
+
+      <Field name="OSPRayEnabledFlag" label="Enable OSPRay" type="bool">
         false
       </Field>
-      <Field name="osprayUseGridAcceleratorFlag" label="osprayUseGridAcceleratorFlag" type="bool">
+      <Field name="OSPRayRenderType" label="OSPRay Render Type" type="enum" subtype="OSPRayRenderTypes">
+        SciVis
+      </Field>
+      <Field name="OSPRayShadowsEnabledFlag" label="OSPRayShadowsEnabledFlag" type="bool">
         false
       </Field>
-      <Field name="osprayPreIntegrationFlag" label="osprayPreIntegrationFlag" type="bool">
+      <Field name="OSPRayUseGridAcceleratorFlag" label="OSPRayUseGridAcceleratorFlag" type="bool">
         false
       </Field>
-      <Field name="ospraySingleShadeFlag" label="ospraySingleShadeFlag" type="bool">
+      <Field name="OSPRayPreIntegrationFlag" label="OSPRayPreIntegrationFlag" type="bool">
         false
       </Field>
-      <Field name="osprayOneSidedLightingFlag" label="osprayOneSidedLightingFlag" type="bool">
+      <Field name="OSPRaySingleShadeFlag" label="OSPRaySingleShadeFlag" type="bool">
         false
       </Field>
-      <Field name="osprayAoTransparencyEnabledFlag" label="osprayAoTransparencyEnabledFlag" type="bool">
+      <Field name="OSPRayOneSidedLightingFlag" label="OSPRayOneSidedLightingFlag" type="bool">
         false
       </Field>
-      <Field name="ospraySpp" label="ospraySpp" type="int">
+      <Field name="OSPRayAOTransparencyEnabledFlag" label="OSPRayAOTransparencyEnabledFlag" type="bool">
+        false
+      </Field>
+      <Field name="OSPRaySPP" label="OSPRaySPP" type="int">
         1
       </Field>
-      <Field name="osprayAoSamples" label="osprayAoSamples" type="int">
+      <Field name="OSPRayAOSamples" label="OSPRayAOSamples" type="int">
         0
       </Field>
-      <Field name="osprayAoDistance" label="osprayAoDistance" type="double">
+      <Field name="OSPRayAODistance" label="OSPRayAODistance" type="double">
         100000.0
       </Field>
-      <Field name="osprayMinContribution" label="osprayMinContribution" type="double">
+      <Field name="OSPRayMinContribution" label="OSPRayMinContribution" type="double">
         0.001
+      </Field>
+      <Field name="OSPRayMaxContribution" label="OSPRayMaxContribution" type="double">
+        2.0
       </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -127,16 +148,16 @@
       </Field>
       <Field name="opacityControlPoints" label="opacityControlPoints" type="att" subtype="GaussianControlPointList">
       </Field>
-      <Field name="resampleFlag" label="Resample" type="bool">
-        true
+      <Field name="resampleType" label="Resample Type" type="enum" subtype="ResampleType">
+        OnlyIfRequired
       </Field>
       <Field name="resampleTarget" label="resampleTarget" type="int">
         1000000
       </Field>
-      <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
-        default
+      <Field name="resampleCentering" label="Resample Centering" type="enum" subtype="ResampleCentering">
+        NativeCentering
       </Field>
-      <Field name="compactVariable" label="compactVariable" type="variablename" vartypes="01000000000">
+      <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
         default
       </Field>
       <Field name="freeformOpacity" label="freeformOpacity" type="ucharArray" length="256" init="true">
@@ -172,7 +193,7 @@
         500
       </Field>
       <Field name="rendererType" label="Renderer Type" type="enum" subtype="Renderer">
-        Default
+        Serial
       </Field>
       <Field name="gradientType" label="Gradient Type" type="enum" subtype="GradientType">
         SobelOperator
@@ -186,7 +207,7 @@
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
       </Field>
-      <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType" enabler="rendererType:RayCasting">
+      <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType">
         Rasterization
       </Field>
       <Field name="rendererSamples" label="Render samples" type="float" enabler="sampling:Trilinear">
@@ -207,9 +228,8 @@
         0.000000
         15.000000
       </Field>
-      <Field name="renderMode" label="Render Mode" type="enum" subtype="RenderMode">
-        DefaultRenderMode
-      </Field>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="GetTransferFunction" user="true" member="true">

@@ -11,8 +11,6 @@
 
 #include <filters_exports.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
-
 #include <avtDatasetToImageFilter.h>
 #include <avtViewInfo.h>
 #include <avtOpacityMap.h>
@@ -102,11 +100,9 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     void                  SetTransferFn(avtOpacityMap *_transferFn1D) {transferFn1D = _transferFn1D; };
     void                  SetTrilinear(bool t) {trilinearInterpolation = t; };
 
-#if LIB_VERSION_GE(VTK,9,1,0)
     void                  SetActiveVarName( std::string name ) { activeVarName = name; };
     void                  SetOpacityVarName( std::string name ) { opacityVarName = name; };
     void                  SetGradientVarName( std::string name ) { gradientVarName = name; };
-#endif
 
   protected:
     avtViewInfo           viewInfo;
@@ -120,11 +116,9 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
 
     avtRayFunction       *rayfoo{nullptr};
 
-#if LIB_VERSION_GE(VTK,9,1,0)
     std::string           activeVarName{"default"};
     std::string           opacityVarName{"default"};
     std::string           gradientVarName{"default"};
-#endif
 
     avtOpacityMap        *transferFn1D{nullptr};
 

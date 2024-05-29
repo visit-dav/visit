@@ -7,11 +7,8 @@
 // ************************************************************************* //
 
 #include "vtkUnstructuredGridBoundaryFilter.h"
-#include <visit-config.h> // For LIB_VERSION_GE/LE
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -746,18 +743,6 @@ BHashEntryMemoryManager2D *BHashEntry2D::MemoryManager = NULL;
 // Function prototypes
 //
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-
-static void AddPolygon(int, vtkIdType *, int, int, BHashEntryList2D &);
-static void AddPixel(vtkIdType *, int, int, BHashEntryList2D &);
-static void AddTetrahedron(vtkIdType *, int, int, BHashEntryList &);
-static void AddWedge(vtkIdType *, int, int, BHashEntryList &);
-static void AddPyramid(vtkIdType *, int, int, BHashEntryList &);
-static void AddHexahedron(vtkIdType *, int, int, BHashEntryList &);
-static void AddVoxel(vtkIdType *, int, int, BHashEntryList &);
-
-#else
-
 static void AddPolygon(int, const vtkIdType *, int, int, BHashEntryList2D &);
 static void AddPixel(const vtkIdType *, int, int, BHashEntryList2D &);
 static void AddTetrahedron(const vtkIdType *, int, int, BHashEntryList &);
@@ -765,8 +750,6 @@ static void AddWedge(const vtkIdType *, int, int, BHashEntryList &);
 static void AddPyramid(const vtkIdType *, int, int, BHashEntryList &);
 static void AddHexahedron(const vtkIdType *, int, int, BHashEntryList &);
 static void AddVoxel(const vtkIdType *, int, int, BHashEntryList &);
-
-#endif
 
 static int  LoopOverAllCells(vtkUnstructuredGrid *, BHashEntryList &, BHashEntryList2D &, bool &);
 static void LoopOverUnhashedCells(vtkUnstructuredGrid *, vtkPolyData *,
@@ -2745,21 +2728,12 @@ void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   pixel_ids[4];
     vtkIdType   newCellId;
     vtkIdType   npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType   *pts;
-    vtkIdType    cellId;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         vtkIdType cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2833,21 +2807,12 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
 
     int         numUnhashedCells = 0;
     vtkIdType   npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType   *pts;
-    vtkIdType    cellId;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
-    {
-#else
     const vtkIdType *pts;
     auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
     for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
         vtkIdType cellId = connPtr->GetCurrentCellId();
         connPtr->GetCurrentCell(npts, pts);
-#endif
         int cellType = input->GetCellType(cellId);
         int cellVal  = cellData[cellId];
 
@@ -2914,15 +2879,9 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
 //    Support VTK9, change pts arg to const.
 //
 // ****************************************************************************
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddPolygon(int npts, vtkIdType *pts, int cellId, int cellVal,
-           BHashEntryList2D &list)
-#else
 void
 AddPolygon(int npts, const vtkIdType *pts, int cellId, int cellVal,
            BHashEntryList2D &list)
-#endif
 {
     vtkIdType nodes[2];
     for (int l=0; l<npts; l++)
@@ -2950,14 +2909,8 @@ AddPolygon(int npts, const vtkIdType *pts, int cellId, int cellVal,
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8, 1, 0)
 void
-AddPixel(vtkIdType *pts, int cellId, int cellVal, BHashEntryList2D &list)
-#else
-void
-AddPixel(const vtkIdType *pts, int cellId, int cellVal,
-           BHashEntryList2D &list)
-#endif
+AddPixel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList2D &list)
 {
     vtkIdType nodes[2];
 
@@ -2994,13 +2947,8 @@ AddPixel(const vtkIdType *pts, int cellId, int cellVal,
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddTetrahedron(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#else
 void
 AddTetrahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -3040,13 +2988,8 @@ AddTetrahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &li
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddVoxel(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#else
 void
 AddVoxel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3100,13 +3043,8 @@ AddVoxel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddHexahedron(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#else
 void
 AddHexahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3160,13 +3098,8 @@ AddHexahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &lis
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddWedge(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#else
 void
 AddWedge(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3213,13 +3146,8 @@ AddWedge(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-void
-AddPyramid(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#else
 void
 AddPyramid(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
-#endif
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];

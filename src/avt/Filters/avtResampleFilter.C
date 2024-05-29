@@ -8,8 +8,6 @@
 
 #include <float.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <avtResampleFilter.h>
 
 #include <vtkCellData.h>
@@ -407,11 +405,6 @@ avtResampleFilter::ResampleInput(void)
     avtImagePartition partition(width, height, PAR_Size(), PAR_Rank());
     communicator.SetImagePartition(&partition);
     bool doDistributedResample = false;
-#if LIB_VERSION_LE(VTK,8,1,0)
-#ifdef PARALLEL
-    doDistributedResample = atts.GetDistributedResample();
-#endif
-#else
     bool doPerRankResample = false;
 #ifdef PARALLEL
     // When running in parallel one can resample all of the data on to
@@ -426,8 +419,6 @@ avtResampleFilter::ResampleInput(void)
     {
         EXCEPTION1(VisItException, "Can not do both a distributed and local resample");
     }
-
-#endif
 #endif
 
     if (doDistributedResample)
@@ -512,11 +503,7 @@ avtResampleFilter::ResampleInput(void)
     samples->GetVolume()->GetVariables(defaultPlaceholder, vars,
                                        numArrays, ip);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    if (!doDistributedResample)
-#else
     if (!doDistributedResample && !doPerRankResample)
-#endif
     {
         //
         // Collect will perform the parallel collection.  Does nothing in
@@ -544,22 +531,11 @@ avtResampleFilter::ResampleInput(void)
         }
     }
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    bool iHaveData = false;
-    if (doDistributedResample)
-        iHaveData = true;
-    if (PAR_Rank() == 0)
-        iHaveData = true;
-    if (height_end > height)
-        iHaveData = false;
-    if (iHaveData)
-#else
     if ((PAR_Rank() == 0 ||       // Always have data on Rank 0.
          doDistributedResample || // All ranks should have data.
          (doPerRankResample &&    // Not all ranks will have data.
           avtDatasetExaminer::HasData(ds))) &&
         (height_end <= height))
-#endif
     {
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
                                         width_start, width_end, height_start,
@@ -834,16 +810,12 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
 bool avtResampleFilter::GetBounds(double bounds[6])
 {
     bool is3D = true;
-#if LIB_VERSION_GE(VTK,9,1,0)
     if (atts.GetPerRankResample())
     {
         avtDataset_p ds = GetTypedInput();
         avtDatasetExaminer::GetSpatialExtents( ds, bounds );
     }
     else if (atts.GetUseBounds())
-#else
-    if (atts.GetUseBounds())
-#endif
     {
         bounds[0] = atts.GetMinX();
         bounds[1] = atts.GetMaxX();

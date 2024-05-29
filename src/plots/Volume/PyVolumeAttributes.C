@@ -43,43 +43,65 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
     std::string str;
     char tmpStr[1000];
 
-    if(atts->GetOsprayShadowsEnabledFlag())
-        snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 1\n", prefix);
+    if(atts->GetOSPRayEnabledFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayEnabledFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayUseGridAcceleratorFlag())
-        snprintf(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 1\n", prefix);
+    const char *OSPRayRenderType_names = "SciVis, PathTracer";
+    switch (atts->GetOSPRayRenderType())
+    {
+      case VolumeAttributes::SciVis:
+          snprintf(tmpStr, 1000, "%sOSPRayRenderType = %sSciVis  # %s\n", prefix, prefix, OSPRayRenderType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::PathTracer:
+          snprintf(tmpStr, 1000, "%sOSPRayRenderType = %sPathTracer  # %s\n", prefix, prefix, OSPRayRenderType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    if(atts->GetOSPRayShadowsEnabledFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayShadowsEnabledFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayShadowsEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayPreIntegrationFlag())
-        snprintf(tmpStr, 1000, "%sosprayPreIntegrationFlag = 1\n", prefix);
+    if(atts->GetOSPRayUseGridAcceleratorFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayUseGridAcceleratorFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayPreIntegrationFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayUseGridAcceleratorFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOspraySingleShadeFlag())
-        snprintf(tmpStr, 1000, "%sospraySingleShadeFlag = 1\n", prefix);
+    if(atts->GetOSPRayPreIntegrationFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayPreIntegrationFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sospraySingleShadeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayPreIntegrationFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayOneSidedLightingFlag())
-        snprintf(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 1\n", prefix);
+    if(atts->GetOSPRaySingleShadeFlag())
+        snprintf(tmpStr, 1000, "%sOSPRaySingleShadeFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRaySingleShadeFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayAoTransparencyEnabledFlag())
-        snprintf(tmpStr, 1000, "%sosprayAoTransparencyEnabledFlag = 1\n", prefix);
+    if(atts->GetOSPRayOneSidedLightingFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayOneSidedLightingFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayAoTransparencyEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayOneSidedLightingFlag = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sospraySpp = %d\n", prefix, atts->GetOspraySpp());
+    if(atts->GetOSPRayAOTransparencyEnabledFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayAOTransparencyEnabledFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sOSPRayAOTransparencyEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayAoSamples = %d\n", prefix, atts->GetOsprayAoSamples());
+    snprintf(tmpStr, 1000, "%sOSPRaySPP = %d\n", prefix, atts->GetOSPRaySPP());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayAoDistance = %g\n", prefix, atts->GetOsprayAoDistance());
+    snprintf(tmpStr, 1000, "%sOSPRayAOSamples = %d\n", prefix, atts->GetOSPRayAOSamples());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayMinContribution = %g\n", prefix, atts->GetOsprayMinContribution());
+    snprintf(tmpStr, 1000, "%sOSPRayAODistance = %g\n", prefix, atts->GetOSPRayAODistance());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sOSPRayMinContribution = %g\n", prefix, atts->GetOSPRayMinContribution());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sOSPRayMaxContribution = %g\n", prefix, atts->GetOSPRayMaxContribution());
     str += tmpStr;
     if(atts->GetLegendFlag())
         snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -122,16 +144,55 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
         objPrefix += "opacityControlPoints.";
         str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str(), forLogging);
     }
-    if(atts->GetResampleFlag())
-        snprintf(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sresampleFlag = 0\n", prefix);
-    str += tmpStr;
+    const char *resampleType_names = "NoResampling, OnlyIfRequired, SingleDomain, ParallelRedistribute, ParallelPerRank";
+    switch (atts->GetResampleType())
+    {
+      case VolumeAttributes::NoResampling:
+          snprintf(tmpStr, 1000, "%sresampleType = %sNoResampling  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::OnlyIfRequired:
+          snprintf(tmpStr, 1000, "%sresampleType = %sOnlyIfRequired  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::SingleDomain:
+          snprintf(tmpStr, 1000, "%sresampleType = %sSingleDomain  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::ParallelRedistribute:
+          snprintf(tmpStr, 1000, "%sresampleType = %sParallelRedistribute  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::ParallelPerRank:
+          snprintf(tmpStr, 1000, "%sresampleType = %sParallelPerRank  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
     str += tmpStr;
+    const char *resampleCentering_names = "NativeCentering, NodalCentering, ZonalCentering";
+    switch (atts->GetResampleCentering())
+    {
+      case VolumeAttributes::NativeCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sNativeCentering  # %s\n", prefix, prefix, resampleCentering_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::NodalCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sNodalCentering  # %s\n", prefix, prefix, resampleCentering_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::ZonalCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sZonalCentering  # %s\n", prefix, prefix, resampleCentering_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%scompactVariable = \"%s\"\n", prefix, atts->GetCompactVariable().c_str());
     str += tmpStr;
     {   const unsigned char *freeformOpacity = atts->GetFreeformOpacity();
         snprintf(tmpStr, 1000, "%sfreeformOpacity = (", prefix);
@@ -184,27 +245,27 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
     str += tmpStr;
     snprintf(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
-    const char *rendererType_names = "Default, RayCasting, RayCastingIntegration, RayCastingSLIVR, RayCastingOSPRay";
+    const char *rendererType_names = "Serial, Parallel, Composite, Integration, SLIVR";
     switch (atts->GetRendererType())
     {
-      case VolumeAttributes::Default:
-          snprintf(tmpStr, 1000, "%srendererType = %sDefault  # %s\n", prefix, prefix, rendererType_names);
+      case VolumeAttributes::Serial:
+          snprintf(tmpStr, 1000, "%srendererType = %sSerial  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::RayCasting:
-          snprintf(tmpStr, 1000, "%srendererType = %sRayCasting  # %s\n", prefix, prefix, rendererType_names);
+      case VolumeAttributes::Parallel:
+          snprintf(tmpStr, 1000, "%srendererType = %sParallel  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::RayCastingIntegration:
-          snprintf(tmpStr, 1000, "%srendererType = %sRayCastingIntegration  # %s\n", prefix, prefix, rendererType_names);
+      case VolumeAttributes::Composite:
+          snprintf(tmpStr, 1000, "%srendererType = %sComposite  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::RayCastingSLIVR:
-          snprintf(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
+      case VolumeAttributes::Integration:
+          snprintf(tmpStr, 1000, "%srendererType = %sIntegration  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::RayCastingOSPRay:
-          snprintf(tmpStr, 1000, "%srendererType = %sRayCastingOSPRay  # %s\n", prefix, prefix, rendererType_names);
+      case VolumeAttributes::SLIVR:
+          snprintf(tmpStr, 1000, "%srendererType = %sSLIVR  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       default:
@@ -346,29 +407,6 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *renderMode_names = "DefaultRenderMode, RayCastRenderMode, GPURenderMode, OSPRayRenderMode";
-    switch (atts->GetRenderMode())
-    {
-      case VolumeAttributes::DefaultRenderMode:
-          snprintf(tmpStr, 1000, "%srenderMode = %sDefaultRenderMode  # %s\n", prefix, prefix, renderMode_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::RayCastRenderMode:
-          snprintf(tmpStr, 1000, "%srenderMode = %sRayCastRenderMode  # %s\n", prefix, prefix, renderMode_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::GPURenderMode:
-          snprintf(tmpStr, 1000, "%srenderMode = %sGPURenderMode  # %s\n", prefix, prefix, renderMode_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::OSPRayRenderMode:
-          snprintf(tmpStr, 1000, "%srenderMode = %sOSPRayRenderMode  # %s\n", prefix, prefix, renderMode_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     return str;
 }
 
@@ -382,7 +420,7 @@ VolumeAttributes_Notify(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -426,23 +464,89 @@ VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayShadowsEnabledFlag in the object.
-    obj->data->SetOsprayShadowsEnabledFlag(cval);
+    // Set the OSPRayEnabledFlag in the object.
+    obj->data->SetOSPRayEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayShadowsEnabledFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayEnabledFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayRenderType(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid OSPRayRenderType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " SciVis";
+        ss << ", PathTracer";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the OSPRayRenderType in the object.
+    obj->data->SetOSPRayRenderType(VolumeAttributes::OSPRayRenderTypes(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetOSPRayRenderType(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOSPRayRenderType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetOSPRayShadowsEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -486,23 +590,23 @@ VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayUseGridAcceleratorFlag in the object.
-    obj->data->SetOsprayUseGridAcceleratorFlag(cval);
+    // Set the OSPRayShadowsEnabledFlag in the object.
+    obj->data->SetOSPRayShadowsEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayShadowsEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayUseGridAcceleratorFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayShadowsEnabledFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -546,23 +650,23 @@ VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayPreIntegrationFlag in the object.
-    obj->data->SetOsprayPreIntegrationFlag(cval);
+    // Set the OSPRayUseGridAcceleratorFlag in the object.
+    obj->data->SetOSPRayUseGridAcceleratorFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayPreIntegrationFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayUseGridAcceleratorFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayPreIntegrationFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -606,23 +710,23 @@ VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the ospraySingleShadeFlag in the object.
-    obj->data->SetOspraySingleShadeFlag(cval);
+    // Set the OSPRayPreIntegrationFlag in the object.
+    obj->data->SetOSPRayPreIntegrationFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOspraySingleShadeFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayPreIntegrationFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOspraySingleShadeFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayPreIntegrationFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRaySingleShadeFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -666,23 +770,23 @@ VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayOneSidedLightingFlag in the object.
-    obj->data->SetOsprayOneSidedLightingFlag(cval);
+    // Set the OSPRaySingleShadeFlag in the object.
+    obj->data->SetOSPRaySingleShadeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRaySingleShadeFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayOneSidedLightingFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRaySingleShadeFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayOneSidedLightingFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -726,23 +830,83 @@ VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(PyObject *self, PyObject *ar
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayAoTransparencyEnabledFlag in the object.
-    obj->data->SetOsprayAoTransparencyEnabledFlag(cval);
+    // Set the OSPRayOneSidedLightingFlag in the object.
+    obj->data->SetOSPRayOneSidedLightingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayAoTransparencyEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayOneSidedLightingFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayAoTransparencyEnabledFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayOneSidedLightingFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOspraySpp(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the OSPRayAOTransparencyEnabledFlag in the object.
+    obj->data->SetOSPRayAOTransparencyEnabledFlag(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetOSPRayAOTransparencyEnabledFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayAOTransparencyEnabledFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetOSPRaySPP(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -786,23 +950,23 @@ VolumeAttributes_SetOspraySpp(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the ospraySpp in the object.
-    obj->data->SetOspraySpp(cval);
+    // Set the OSPRaySPP in the object.
+    obj->data->SetOSPRaySPP(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOspraySpp(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRaySPP(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOspraySpp()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOSPRaySPP()));
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayAoSamples(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayAOSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -846,23 +1010,23 @@ VolumeAttributes_SetOsprayAoSamples(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayAoSamples in the object.
-    obj->data->SetOsprayAoSamples(cval);
+    // Set the OSPRayAOSamples in the object.
+    obj->data->SetOSPRayAOSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayAoSamples(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayAOSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOsprayAoSamples()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOSPRayAOSamples()));
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayAoDistance(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayAODistance(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -906,23 +1070,23 @@ VolumeAttributes_SetOsprayAoDistance(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayAoDistance in the object.
-    obj->data->SetOsprayAoDistance(cval);
+    // Set the OSPRayAODistance in the object.
+    obj->data->SetOSPRayAODistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayAoDistance(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayAODistance(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOsprayAoDistance());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOSPRayAODistance());
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayMinContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -966,18 +1130,78 @@ VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayMinContribution in the object.
-    obj->data->SetOsprayMinContribution(cval);
+    // Set the OSPRayMinContribution in the object.
+    obj->data->SetOSPRayMinContribution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayMinContribution(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayMinContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOsprayMinContribution());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOSPRayMinContribution());
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetOSPRayMaxContribution(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the OSPRayMaxContribution in the object.
+    obj->data->SetOSPRayMaxContribution(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetOSPRayMaxContribution(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOSPRayMaxContribution());
     return retval;
 }
 
@@ -1295,7 +1519,7 @@ VolumeAttributes_GetOpacityControlPoints(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetResampleType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -1323,34 +1547,43 @@ VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
     }
 
     long val = PyLong_AsLong(args);
-    bool cval = bool(val);
+    int cval = int(val);
 
-    if (val == -1 && PyErr_Occurred())
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+
+    if (cval < 0 || cval >= 5)
     {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+        std::stringstream ss;
+        ss << "An invalid resampleType value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " NoResampling";
+        ss << ", OnlyIfRequired";
+        ss << ", SingleDomain";
+        ss << ", ParallelRedistribute";
+        ss << ", ParallelPerRank";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
     Py_XDECREF(packaged_args);
 
-    // Set the resampleFlag in the object.
-    obj->data->SetResampleFlag(cval);
+    // Set the resampleType in the object.
+    obj->data->SetResampleType(VolumeAttributes::ResampleType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetResampleFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetResampleType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetResampleFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetResampleType()));
     return retval;
 }
 
@@ -1415,6 +1648,73 @@ VolumeAttributes_GetResampleTarget(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+VolumeAttributes_SetResampleCentering(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid resampleCentering value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " NativeCentering";
+        ss << ", NodalCentering";
+        ss << ", ZonalCentering";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the resampleCentering in the object.
+    obj->data->SetResampleCentering(VolumeAttributes::ResampleCentering(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetResampleCentering(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetResampleCentering()));
+    return retval;
+}
+
+/*static*/ PyObject *
 VolumeAttributes_SetOpacityVariable(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
@@ -1460,55 +1760,6 @@ VolumeAttributes_GetOpacityVariable(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetOpacityVariable().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_SetCompactVariable(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged as first member of a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (!PyUnicode_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
-    }
-
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
-
-    if (val == 0 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the compactVariable in the object.
-    obj->data->SetCompactVariable(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_GetCompactVariable(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetCompactVariable().c_str());
     return retval;
 }
 
@@ -2259,11 +2510,11 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         ss << "An invalid rendererType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " Default";
-        ss << ", RayCasting";
-        ss << ", RayCastingIntegration";
-        ss << ", RayCastingSLIVR";
-        ss << ", RayCastingOSPRay";
+        ss << " Serial";
+        ss << ", Parallel";
+        ss << ", Composite";
+        ss << ", Integration";
+        ss << ", SLIVR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2917,98 +3168,36 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-VolumeAttributes_SetRenderMode(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-
-    if (cval < 0 || cval >= 4)
-    {
-        std::stringstream ss;
-        ss << "An invalid renderMode value was given." << std::endl;
-        ss << "Valid values are in the range [0,3]." << std::endl;
-        ss << "You can also use the following symbolic names:";
-        ss << " DefaultRenderMode";
-        ss << ", RayCastRenderMode";
-        ss << ", GPURenderMode";
-        ss << ", OSPRayRenderMode";
-        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the renderMode in the object.
-    obj->data->SetRenderMode(VolumeAttributes::RenderMode(cval));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_GetRenderMode(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderMode()));
-    return retval;
-}
-
 
 
 PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"Notify", VolumeAttributes_Notify, METH_VARARGS},
-    {"SetOsprayShadowsEnabledFlag", VolumeAttributes_SetOsprayShadowsEnabledFlag, METH_VARARGS},
-    {"GetOsprayShadowsEnabledFlag", VolumeAttributes_GetOsprayShadowsEnabledFlag, METH_VARARGS},
-    {"SetOsprayUseGridAcceleratorFlag", VolumeAttributes_SetOsprayUseGridAcceleratorFlag, METH_VARARGS},
-    {"GetOsprayUseGridAcceleratorFlag", VolumeAttributes_GetOsprayUseGridAcceleratorFlag, METH_VARARGS},
-    {"SetOsprayPreIntegrationFlag", VolumeAttributes_SetOsprayPreIntegrationFlag, METH_VARARGS},
-    {"GetOsprayPreIntegrationFlag", VolumeAttributes_GetOsprayPreIntegrationFlag, METH_VARARGS},
-    {"SetOspraySingleShadeFlag", VolumeAttributes_SetOspraySingleShadeFlag, METH_VARARGS},
-    {"GetOspraySingleShadeFlag", VolumeAttributes_GetOspraySingleShadeFlag, METH_VARARGS},
-    {"SetOsprayOneSidedLightingFlag", VolumeAttributes_SetOsprayOneSidedLightingFlag, METH_VARARGS},
-    {"GetOsprayOneSidedLightingFlag", VolumeAttributes_GetOsprayOneSidedLightingFlag, METH_VARARGS},
-    {"SetOsprayAoTransparencyEnabledFlag", VolumeAttributes_SetOsprayAoTransparencyEnabledFlag, METH_VARARGS},
-    {"GetOsprayAoTransparencyEnabledFlag", VolumeAttributes_GetOsprayAoTransparencyEnabledFlag, METH_VARARGS},
-    {"SetOspraySpp", VolumeAttributes_SetOspraySpp, METH_VARARGS},
-    {"GetOspraySpp", VolumeAttributes_GetOspraySpp, METH_VARARGS},
-    {"SetOsprayAoSamples", VolumeAttributes_SetOsprayAoSamples, METH_VARARGS},
-    {"GetOsprayAoSamples", VolumeAttributes_GetOsprayAoSamples, METH_VARARGS},
-    {"SetOsprayAoDistance", VolumeAttributes_SetOsprayAoDistance, METH_VARARGS},
-    {"GetOsprayAoDistance", VolumeAttributes_GetOsprayAoDistance, METH_VARARGS},
-    {"SetOsprayMinContribution", VolumeAttributes_SetOsprayMinContribution, METH_VARARGS},
-    {"GetOsprayMinContribution", VolumeAttributes_GetOsprayMinContribution, METH_VARARGS},
+    {"SetOSPRayEnabledFlag", VolumeAttributes_SetOSPRayEnabledFlag, METH_VARARGS},
+    {"GetOSPRayEnabledFlag", VolumeAttributes_GetOSPRayEnabledFlag, METH_VARARGS},
+    {"SetOSPRayRenderType", VolumeAttributes_SetOSPRayRenderType, METH_VARARGS},
+    {"GetOSPRayRenderType", VolumeAttributes_GetOSPRayRenderType, METH_VARARGS},
+    {"SetOSPRayShadowsEnabledFlag", VolumeAttributes_SetOSPRayShadowsEnabledFlag, METH_VARARGS},
+    {"GetOSPRayShadowsEnabledFlag", VolumeAttributes_GetOSPRayShadowsEnabledFlag, METH_VARARGS},
+    {"SetOSPRayUseGridAcceleratorFlag", VolumeAttributes_SetOSPRayUseGridAcceleratorFlag, METH_VARARGS},
+    {"GetOSPRayUseGridAcceleratorFlag", VolumeAttributes_GetOSPRayUseGridAcceleratorFlag, METH_VARARGS},
+    {"SetOSPRayPreIntegrationFlag", VolumeAttributes_SetOSPRayPreIntegrationFlag, METH_VARARGS},
+    {"GetOSPRayPreIntegrationFlag", VolumeAttributes_GetOSPRayPreIntegrationFlag, METH_VARARGS},
+    {"SetOSPRaySingleShadeFlag", VolumeAttributes_SetOSPRaySingleShadeFlag, METH_VARARGS},
+    {"GetOSPRaySingleShadeFlag", VolumeAttributes_GetOSPRaySingleShadeFlag, METH_VARARGS},
+    {"SetOSPRayOneSidedLightingFlag", VolumeAttributes_SetOSPRayOneSidedLightingFlag, METH_VARARGS},
+    {"GetOSPRayOneSidedLightingFlag", VolumeAttributes_GetOSPRayOneSidedLightingFlag, METH_VARARGS},
+    {"SetOSPRayAOTransparencyEnabledFlag", VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag, METH_VARARGS},
+    {"GetOSPRayAOTransparencyEnabledFlag", VolumeAttributes_GetOSPRayAOTransparencyEnabledFlag, METH_VARARGS},
+    {"SetOSPRaySPP", VolumeAttributes_SetOSPRaySPP, METH_VARARGS},
+    {"GetOSPRaySPP", VolumeAttributes_GetOSPRaySPP, METH_VARARGS},
+    {"SetOSPRayAOSamples", VolumeAttributes_SetOSPRayAOSamples, METH_VARARGS},
+    {"GetOSPRayAOSamples", VolumeAttributes_GetOSPRayAOSamples, METH_VARARGS},
+    {"SetOSPRayAODistance", VolumeAttributes_SetOSPRayAODistance, METH_VARARGS},
+    {"GetOSPRayAODistance", VolumeAttributes_GetOSPRayAODistance, METH_VARARGS},
+    {"SetOSPRayMinContribution", VolumeAttributes_SetOSPRayMinContribution, METH_VARARGS},
+    {"GetOSPRayMinContribution", VolumeAttributes_GetOSPRayMinContribution, METH_VARARGS},
+    {"SetOSPRayMaxContribution", VolumeAttributes_SetOSPRayMaxContribution, METH_VARARGS},
+    {"GetOSPRayMaxContribution", VolumeAttributes_GetOSPRayMaxContribution, METH_VARARGS},
     {"SetLegendFlag", VolumeAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", VolumeAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLightingFlag", VolumeAttributes_SetLightingFlag, METH_VARARGS},
@@ -3021,14 +3210,14 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetOpacityMode", VolumeAttributes_GetOpacityMode, METH_VARARGS},
     {"SetOpacityControlPoints", VolumeAttributes_SetOpacityControlPoints, METH_VARARGS},
     {"GetOpacityControlPoints", VolumeAttributes_GetOpacityControlPoints, METH_VARARGS},
-    {"SetResampleFlag", VolumeAttributes_SetResampleFlag, METH_VARARGS},
-    {"GetResampleFlag", VolumeAttributes_GetResampleFlag, METH_VARARGS},
+    {"SetResampleType", VolumeAttributes_SetResampleType, METH_VARARGS},
+    {"GetResampleType", VolumeAttributes_GetResampleType, METH_VARARGS},
     {"SetResampleTarget", VolumeAttributes_SetResampleTarget, METH_VARARGS},
     {"GetResampleTarget", VolumeAttributes_GetResampleTarget, METH_VARARGS},
+    {"SetResampleCentering", VolumeAttributes_SetResampleCentering, METH_VARARGS},
+    {"GetResampleCentering", VolumeAttributes_GetResampleCentering, METH_VARARGS},
     {"SetOpacityVariable", VolumeAttributes_SetOpacityVariable, METH_VARARGS},
     {"GetOpacityVariable", VolumeAttributes_GetOpacityVariable, METH_VARARGS},
-    {"SetCompactVariable", VolumeAttributes_SetCompactVariable, METH_VARARGS},
-    {"GetCompactVariable", VolumeAttributes_GetCompactVariable, METH_VARARGS},
     {"SetFreeformOpacity", VolumeAttributes_SetFreeformOpacity, METH_VARARGS},
     {"GetFreeformOpacity", VolumeAttributes_GetFreeformOpacity, METH_VARARGS},
     {"SetUseColorVarMin", VolumeAttributes_SetUseColorVarMin, METH_VARARGS},
@@ -3073,8 +3262,6 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetLowGradientLightingClampValue", VolumeAttributes_GetLowGradientLightingClampValue, METH_VARARGS},
     {"SetMaterialProperties", VolumeAttributes_SetMaterialProperties, METH_VARARGS},
     {"GetMaterialProperties", VolumeAttributes_GetMaterialProperties, METH_VARARGS},
-    {"SetRenderMode", VolumeAttributes_SetRenderMode, METH_VARARGS},
-    {"GetRenderMode", VolumeAttributes_GetRenderMode, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3096,26 +3283,37 @@ static PyObject *VolumeAttributes_richcompare(PyObject *self, PyObject *other, i
 PyObject *
 PyVolumeAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        return VolumeAttributes_GetOsprayShadowsEnabledFlag(self, NULL);
-    if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
-        return VolumeAttributes_GetOsprayUseGridAcceleratorFlag(self, NULL);
-    if(strcmp(name, "osprayPreIntegrationFlag") == 0)
-        return VolumeAttributes_GetOsprayPreIntegrationFlag(self, NULL);
-    if(strcmp(name, "ospraySingleShadeFlag") == 0)
-        return VolumeAttributes_GetOspraySingleShadeFlag(self, NULL);
-    if(strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        return VolumeAttributes_GetOsprayOneSidedLightingFlag(self, NULL);
-    if(strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
-        return VolumeAttributes_GetOsprayAoTransparencyEnabledFlag(self, NULL);
-    if(strcmp(name, "ospraySpp") == 0)
-        return VolumeAttributes_GetOspraySpp(self, NULL);
-    if(strcmp(name, "osprayAoSamples") == 0)
-        return VolumeAttributes_GetOsprayAoSamples(self, NULL);
-    if(strcmp(name, "osprayAoDistance") == 0)
-        return VolumeAttributes_GetOsprayAoDistance(self, NULL);
-    if(strcmp(name, "osprayMinContribution") == 0)
-        return VolumeAttributes_GetOsprayMinContribution(self, NULL);
+    if(strcmp(name, "OSPRayEnabledFlag") == 0)
+        return VolumeAttributes_GetOSPRayEnabledFlag(self, NULL);
+    if(strcmp(name, "OSPRayRenderType") == 0)
+        return VolumeAttributes_GetOSPRayRenderType(self, NULL);
+    if(strcmp(name, "SciVis") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::SciVis));
+    if(strcmp(name, "PathTracer") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::PathTracer));
+
+    if(strcmp(name, "OSPRayShadowsEnabledFlag") == 0)
+        return VolumeAttributes_GetOSPRayShadowsEnabledFlag(self, NULL);
+    if(strcmp(name, "OSPRayUseGridAcceleratorFlag") == 0)
+        return VolumeAttributes_GetOSPRayUseGridAcceleratorFlag(self, NULL);
+    if(strcmp(name, "OSPRayPreIntegrationFlag") == 0)
+        return VolumeAttributes_GetOSPRayPreIntegrationFlag(self, NULL);
+    if(strcmp(name, "OSPRaySingleShadeFlag") == 0)
+        return VolumeAttributes_GetOSPRaySingleShadeFlag(self, NULL);
+    if(strcmp(name, "OSPRayOneSidedLightingFlag") == 0)
+        return VolumeAttributes_GetOSPRayOneSidedLightingFlag(self, NULL);
+    if(strcmp(name, "OSPRayAOTransparencyEnabledFlag") == 0)
+        return VolumeAttributes_GetOSPRayAOTransparencyEnabledFlag(self, NULL);
+    if(strcmp(name, "OSPRaySPP") == 0)
+        return VolumeAttributes_GetOSPRaySPP(self, NULL);
+    if(strcmp(name, "OSPRayAOSamples") == 0)
+        return VolumeAttributes_GetOSPRayAOSamples(self, NULL);
+    if(strcmp(name, "OSPRayAODistance") == 0)
+        return VolumeAttributes_GetOSPRayAODistance(self, NULL);
+    if(strcmp(name, "OSPRayMinContribution") == 0)
+        return VolumeAttributes_GetOSPRayMinContribution(self, NULL);
+    if(strcmp(name, "OSPRayMaxContribution") == 0)
+        return VolumeAttributes_GetOSPRayMaxContribution(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return VolumeAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
@@ -3135,14 +3333,32 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "opacityControlPoints") == 0)
         return VolumeAttributes_GetOpacityControlPoints(self, NULL);
-    if(strcmp(name, "resampleFlag") == 0)
-        return VolumeAttributes_GetResampleFlag(self, NULL);
+    if(strcmp(name, "resampleType") == 0)
+        return VolumeAttributes_GetResampleType(self, NULL);
+    if(strcmp(name, "NoResampling") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NoResampling));
+    if(strcmp(name, "OnlyIfRequired") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::OnlyIfRequired));
+    if(strcmp(name, "SingleDomain") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::SingleDomain));
+    if(strcmp(name, "ParallelRedistribute") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::ParallelRedistribute));
+    if(strcmp(name, "ParallelPerRank") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::ParallelPerRank));
+
     if(strcmp(name, "resampleTarget") == 0)
         return VolumeAttributes_GetResampleTarget(self, NULL);
+    if(strcmp(name, "resampleCentering") == 0)
+        return VolumeAttributes_GetResampleCentering(self, NULL);
+    if(strcmp(name, "NativeCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NativeCentering));
+    if(strcmp(name, "NodalCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NodalCentering));
+    if(strcmp(name, "ZonalCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::ZonalCentering));
+
     if(strcmp(name, "opacityVariable") == 0)
         return VolumeAttributes_GetOpacityVariable(self, NULL);
-    if(strcmp(name, "compactVariable") == 0)
-        return VolumeAttributes_GetCompactVariable(self, NULL);
     if(strcmp(name, "freeformOpacity") == 0)
         return VolumeAttributes_GetFreeformOpacity(self, NULL);
     if(strcmp(name, "useColorVarMin") == 0)
@@ -3167,16 +3383,16 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetSamplesPerRay(self, NULL);
     if(strcmp(name, "rendererType") == 0)
         return VolumeAttributes_GetRendererType(self, NULL);
-    if(strcmp(name, "Default") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::Default));
-    if(strcmp(name, "RayCasting") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::RayCasting));
-    if(strcmp(name, "RayCastingIntegration") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::RayCastingIntegration));
-    if(strcmp(name, "RayCastingSLIVR") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::RayCastingSLIVR));
-    if(strcmp(name, "RayCastingOSPRay") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::RayCastingOSPRay));
+    if(strcmp(name, "Serial") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Serial));
+    if(strcmp(name, "Parallel") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Parallel));
+    if(strcmp(name, "Composite") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Composite));
+    if(strcmp(name, "Integration") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Integration));
+    if(strcmp(name, "SLIVR") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::SLIVR));
 
     if(strcmp(name, "gradientType") == 0)
         return VolumeAttributes_GetGradientType(self, NULL);
@@ -3239,18 +3455,46 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetLowGradientLightingClampValue(self, NULL);
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
-    if(strcmp(name, "renderMode") == 0)
-        return VolumeAttributes_GetRenderMode(self, NULL);
-    if(strcmp(name, "DefaultRenderMode") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::DefaultRenderMode));
-    if(strcmp(name, "RayCastRenderMode") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::RayCastRenderMode));
-    if(strcmp(name, "GPURenderMode") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::GPURenderMode));
-    if(strcmp(name, "OSPRayRenderMode") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::OSPRayRenderMode));
 
+#include <visit-config.h>
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+    // rendererTypes
+    if(strcmp(name, "Default") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "Serial");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCasting") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "Composite");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCastingIntegration") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "Integration");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCastingSLIVR") == 0)
+    {
+        NAME_CHANGE_MESSAGE2(name, "SLIVR");
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RayCastingOSPRay") == 0)
+    {
+        PyErr_WarnFormat(NULL, 1, "'RayCastingOSPRay is no longer a valid Volume attribute.\nIt's value is being ignored, please remove it from your script.\nTry using 'Parallel' for 'rendererType' and set 'OSPRayEnabledFlag' to '1'\n");
+        return PyInt_FromLong(0L);
+    }
+    // end Renderer types
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -3272,26 +3516,32 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
 
-    if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, args);
-    else if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
-        obj = VolumeAttributes_SetOsprayUseGridAcceleratorFlag(self, args);
-    else if(strcmp(name, "osprayPreIntegrationFlag") == 0)
-        obj = VolumeAttributes_SetOsprayPreIntegrationFlag(self, args);
-    else if(strcmp(name, "ospraySingleShadeFlag") == 0)
-        obj = VolumeAttributes_SetOspraySingleShadeFlag(self, args);
-    else if(strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        obj = VolumeAttributes_SetOsprayOneSidedLightingFlag(self, args);
-    else if(strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(self, args);
-    else if(strcmp(name, "ospraySpp") == 0)
-        obj = VolumeAttributes_SetOspraySpp(self, args);
-    else if(strcmp(name, "osprayAoSamples") == 0)
-        obj = VolumeAttributes_SetOsprayAoSamples(self, args);
-    else if(strcmp(name, "osprayAoDistance") == 0)
-        obj = VolumeAttributes_SetOsprayAoDistance(self, args);
-    else if(strcmp(name, "osprayMinContribution") == 0)
-        obj = VolumeAttributes_SetOsprayMinContribution(self, args);
+    if(strcmp(name, "OSPRayEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayEnabledFlag(self, args);
+    else if(strcmp(name, "OSPRayRenderType") == 0)
+        obj = VolumeAttributes_SetOSPRayRenderType(self, args);
+    else if(strcmp(name, "OSPRayShadowsEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayShadowsEnabledFlag(self, args);
+    else if(strcmp(name, "OSPRayUseGridAcceleratorFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(self, args);
+    else if(strcmp(name, "OSPRayPreIntegrationFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
+    else if(strcmp(name, "OSPRaySingleShadeFlag") == 0)
+        obj = VolumeAttributes_SetOSPRaySingleShadeFlag(self, args);
+    else if(strcmp(name, "OSPRayOneSidedLightingFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayOneSidedLightingFlag(self, args);
+    else if(strcmp(name, "OSPRayAOTransparencyEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(self, args);
+    else if(strcmp(name, "OSPRaySPP") == 0)
+        obj = VolumeAttributes_SetOSPRaySPP(self, args);
+    else if(strcmp(name, "OSPRayAOSamples") == 0)
+        obj = VolumeAttributes_SetOSPRayAOSamples(self, args);
+    else if(strcmp(name, "OSPRayAODistance") == 0)
+        obj = VolumeAttributes_SetOSPRayAODistance(self, args);
+    else if(strcmp(name, "OSPRayMinContribution") == 0)
+        obj = VolumeAttributes_SetOSPRayMinContribution(self, args);
+    else if(strcmp(name, "OSPRayMaxContribution") == 0)
+        obj = VolumeAttributes_SetOSPRayMaxContribution(self, args);
     else if(strcmp(name, "legendFlag") == 0)
         obj = VolumeAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
@@ -3304,14 +3554,14 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetOpacityMode(self, args);
     else if(strcmp(name, "opacityControlPoints") == 0)
         obj = VolumeAttributes_SetOpacityControlPoints(self, args);
-    else if(strcmp(name, "resampleFlag") == 0)
-        obj = VolumeAttributes_SetResampleFlag(self, args);
+    else if(strcmp(name, "resampleType") == 0)
+        obj = VolumeAttributes_SetResampleType(self, args);
     else if(strcmp(name, "resampleTarget") == 0)
         obj = VolumeAttributes_SetResampleTarget(self, args);
+    else if(strcmp(name, "resampleCentering") == 0)
+        obj = VolumeAttributes_SetResampleCentering(self, args);
     else if(strcmp(name, "opacityVariable") == 0)
         obj = VolumeAttributes_SetOpacityVariable(self, args);
-    else if(strcmp(name, "compactVariable") == 0)
-        obj = VolumeAttributes_SetCompactVariable(self, args);
     else if(strcmp(name, "freeformOpacity") == 0)
         obj = VolumeAttributes_SetFreeformOpacity(self, args);
     else if(strcmp(name, "useColorVarMin") == 0)
@@ -3356,9 +3606,84 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetLowGradientLightingClampValue(self, args);
     else if(strcmp(name, "materialProperties") == 0)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
-    else if(strcmp(name, "renderMode") == 0)
-        obj = VolumeAttributes_SetRenderMode(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt. Please remove it
+#else
+#define NAME_CHANGE_MESSAGE(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+#define DEPRECATED_MESSAGE(oldname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's value is being ignored, " \
+                    "please remove it from your script.\n", oldname);
+
+    // Try and handle legacy fields
+    if(obj == &NULL_PY_OBJ)
+    {
+        if (strcmp(name, "osprayShadowsEnabledFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayShadowsEnabledFlag");
+            obj = VolumeAttributes_SetOSPRayShadowsEnabledFlag(self, args);
+        }
+        else if (strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayUseGridAcceleratorFlag");
+            obj = VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(self, args);
+        }
+        else if (strcmp(name, "osprayPreIntegrationFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayPreIntegrationFlag");
+            obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
+        }
+        else if (strcmp(name, "ospraySingleShadeFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRaySingleShadeFlag");
+            obj = VolumeAttributes_SetOSPRaySingleShadeFlag(self, args);
+        }
+        else if (strcmp(name, "osprayOneSidedLightingFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayOneSidedLightingFlag");
+            obj = VolumeAttributes_SetOSPRayOneSidedLightingFlag(self, args);
+        }
+        else if (strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAOTransparencyEnabledFlag");
+            obj = VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(self, args);
+        }
+        else if (strcmp(name, "ospraySpp") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRaySPP");
+            obj = VolumeAttributes_SetOSPRaySPP(self, args);
+        }
+        else if (strcmp(name, "osprayAoSamples") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAOSamples");
+            obj = VolumeAttributes_SetOSPRayAOSamples(self, args);
+        }
+        else if (strcmp(name, "osprayAoDistance") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAODistance");
+            obj = VolumeAttributes_SetOSPRayAODistance(self, args);
+        }
+        else if (strcmp(name, "osprayMinContribution") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayMinContribution");
+            obj = VolumeAttributes_SetOSPRayMinContribution(self, args);
+        }
+
+        if ((strcmp(name, "resampleFlag") == 0) ||
+            (strcmp(name, "compactVariable") == 0)  ||
+            (strcmp(name, "renderMode") == 0))
+        {
+            DEPRECATED_MESSAGE(name);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

@@ -30,7 +30,7 @@ bool                          avtCallback::nowinMode = false;
 bool                          avtCallback::nowinInteractionMode = false;
 bool                          avtCallback::swRendering = false;
 bool                          avtCallback::safeMode = false;
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
 bool                          avtCallback::useOSPRay = false;
 #endif
 

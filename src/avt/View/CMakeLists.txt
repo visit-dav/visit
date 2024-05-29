@@ -24,11 +24,7 @@ ${VISIT_COMMON_INCLUDES}
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle)
-else()
-    set(vtklibs VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle)
-endif()
+set(vtklibs VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
