@@ -67,9 +67,6 @@
 #
 #****************************************************************************
 
-
-add_library(visitcommon)
-
 add_subdirectory(comm)
 add_subdirectory(Exceptions)
 add_subdirectory(expr)
@@ -80,15 +77,27 @@ add_subdirectory(proxybase)
 add_subdirectory(state)
 add_subdirectory(utility)
 
-target_include_directories(visitcommon PUBLIC ${VISIT_BINARY_DIR}/include)
+visit_append_list(
+    NAME  visitcommon_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/icons>
+          $<BUILD_INTERFACE:${ZLIB_INCLUDE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib/include>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/include>)
 
-# Specify the libraries to link against on Windows
-target_link_libraries(visitcommon PUBLIC ${ZLIB_LIBRARY})
 if(WIN32)
-    target_link_libraries(visitcommon PUBLIC ws2_32 shlwapi userenv )
+    visit_append_list(NAME visitcommon_DEPENDS ITEMS ws2_32 shlwapi)
 else()
-    target_link_libraries(visitcommon PUBLIC Threads::Threads ${DL_LIB})
+    visit_append_list(NAME visitcommon_DEPENDS ITEMS Threads::Threads ${DL_LIB})
 endif()
 
-VISIT_INSTALL_TARGETS(visitcommon)
+visit_append_list(NAME visitcommon_DEPENDS ITEMS ${ZLIB_LIBRARY})
+
+visit_add_library(
+    NAME       visitcommon
+    SOURCES    ${visitcommon_SOURCES}
+    HEADERS    ${visitcommon_HEADERS}
+    INCLUDES   ${visitcommon_INCLUDES}
+    DEPENDS_ON ${visitcommon_DEPENDS}
+    FEATURES   ${visitcommon_FEATURES})
 

@@ -235,3 +235,84 @@ function(ADD_CMAKE_GEN_TARGET gen_name
 endfunction()
 
 
+##############################################################################
+# This macro appends to a CACHE var list denoted by the NAME argument.
+# Caller is responsible for unsetting the CACHE var when no longer needed
+# to avoid polluting the CACHE.
+#
+# Designed mainly for targets whose sources live in subdirectories,
+# as a means for them to add to the parent's list of source/includes/etc
+# to prepare for a 'blt_add_library' call which requires SOURCES.
+#
+##############################################################################
+
+macro(visit_append_list)
+    cmake_parse_arguments(arg "" "NAME" "ITEMS" ${ARGN})
+    if(NOT DEFINED arg_NAME OR NOT DEFINED arg_ITEMS)
+        message(FATAL_ERROR "visit_append_list called with invalid arguments. Must supply 'NAME' (name of list) and 'ITEMS' (list of items to be added to named list.)")
+    endif()
+    set(${arg_NAME} ${${arg_NAME}} ${arg_ITEMS} CACHE STRING "" FORCE)
+endmacro()
+
+##############################################################################
+# Adds a library target. Wrapper around blt_add_library so that CACHE vars
+# possibly created by visit_append_list for forming SOURCES/INCLUDES, etc
+# can be unset.
+#
+# ARGUMENTS:
+#    NAME         library name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    REQUIRED
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL (except for header-only)
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON   [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
+#    FOLDER       [name])                    OPTIONAL
+#
+##############################################################################
+
+macro(visit_add_library)
+    set(options)
+    set(singleValueArgs NAME OUTPUT_NAME FOLDER)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
+
+    # parse the arguments
+    cmake_parse_arguments(val
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Sanity checks
+    if(NOT val_NAME)
+        message(FATAL_ERROR "visit_add_library() must be called with argument NAME <name>")
+    endif()
+
+    if (NOT val_SOURCES AND NOT val_HEADERS)
+        message(FATAL_ERROR "visit_add_library(NAME ${val_NAME} ...) called with no given sources or headers (at least one is required).")
+    endif()
+
+    blt_add_library(
+        NAME       ${val_NAME}
+        SOURCES    ${val_SOURCES}
+        HEADERS    ${val_HEADERS}
+        INCLUDES   ${val_INCLUDES}
+        DEFINES    ${val_DEFINES}
+        DEPENDS_ON ${val_DEPENDS_ON}
+        FOLDER     ${val_FOLDER})
+
+    # currently not a part of blt_add_library, and causes a CMake
+    # error if we call blt_add_library(${ARGV})
+    if (val_FEATURES)
+        target_compile_features(${val_NAME} PRIVATE ${val_FEATURES})
+    endif()
+
+    visit_install_export_targets(${val_NAME})
+
+    # vars that may have been created by calls to visit_append_list
+    unset(${val_NAME}_SOURCES CACHE)
+    unset(${val_NAME}_HEADERS CACHE)
+    unset(${val_NAME}_INCLUDES CACHE)
+    unset(${val_NAME}_DEFINES CACHE)
+    unset(${val_NAME}_DEPENDS CACHE)
+    unset(${val_NAME}_FEATURES CACHE)
+endmacro()
+
