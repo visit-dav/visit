@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VOLUMEATTRIBUTES_NMETH 88
+#define VOLUMEATTRIBUTES_NMETH 92
 void           PyVolumeAttributes_StartUp(VolumeAttributes *subj, void *data);
 void           PyVolumeAttributes_CloseDown();
 PyMethodDef *  PyVolumeAttributes_GetMethodTable(int *nMethods);

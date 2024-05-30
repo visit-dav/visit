@@ -325,8 +325,11 @@ class SplashScreen;
 //    Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
 //    Removed updateVisIt related logic.
 //
-//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
-//   Removed support for SeedMe.
+//    Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//    Removed support for SeedMe.
+//
+//    Kathleen Biagas, Wed May 8, 2024
+//    Added 'openColorTableWindow' slot.
 //
 // ****************************************************************************
 
@@ -422,6 +425,7 @@ public slots:
     void Interpret(const QString &);
     void redoPick();
     void restorePickAttributesAfterRepick();
+    void openColorTableWindow();
 
 protected slots:
     void Init(int stage);

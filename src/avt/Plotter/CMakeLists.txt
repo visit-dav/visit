@@ -135,19 +135,11 @@ include_directories(
     ${PROJECT_BINARY_DIR}/avt/Plotter/vtk/
     ${VTK_INCLUDE_DIRS})
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonExecutionModel vtkFiltersHybrid
-            vtkRenderingCore vtkRenderingFreeType vtkRenderingOpenGL2)
-    if(VISIT_OSPRAY)
-        list(APPEND vtklibs vtkRenderingOSPRay)
-    endif()
-else()
-    set(vtklibs VTK::CommonExecutionModel VTK::FiltersHybrid
+set(vtklibs VTK::CommonExecutionModel VTK::FiltersHybrid
             VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2)
-    if(TARGET VTK::RenderingRayTracing)
-         # RenderingRayTracing available if VTK 9 was built with OSPRAY support
-        list(APPEND vtklibs VTK::RenderingRayTracing)
-    endif()
+if(TARGET VTK::RenderingRayTracing)
+     # RenderingRayTracing available if VTK 9 was built with OSPRAY support
+    list(APPEND vtklibs VTK::RenderingRayTracing)
 endif()
 #********************************* SERIAL ************************************
 add_library(avtplotter_ser ${AVTPLOTTER_SOURCES})

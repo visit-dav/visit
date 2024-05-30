@@ -4,8 +4,6 @@
 
 #include "ResampledMat.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
 
@@ -142,12 +140,6 @@ ResampledMat::CountMatsAtAdjacentNodes()
     // and subsample the zone volume fractions to the nodes and the faces.
     //
     const vtkIdType *c_ptr = conn->connectivity;
-#if LIB_VERSION_LE(VTK,8,1,0)
-    for (int c=0; c<nCells; c++)
-    {
-        int        nPts = (int)*c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-#else
     const vtkIdType *o_ptr = conn->offsets;
     // offsets[i] => index for cell i into connectivity
     for (int c=0; c<nCells; c++)
@@ -155,7 +147,6 @@ ResampledMat::CountMatsAtAdjacentNodes()
         // using c+1 with o_ptr is safe, because offsets size is nCells +1
         vtkIdType       nPts = o_ptr[c+1]-o_ptr[c];
         const vtkIdType *ids = &c_ptr[o_ptr[c]];
-#endif
 
         //
         // Create a list of materials and their corresponding volume
@@ -190,9 +181,6 @@ ResampledMat::CountMatsAtAdjacentNodes()
                                                              bitForBit(matno);
             }
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        c_ptr += *c_ptr+1;
-#endif
     }
 }
 
@@ -257,12 +245,6 @@ ResampledMat::AccumulateVFsToMatArray()
     memset(nCellsAdjacentToNode, 0, nPoints);
     const vtkIdType *c_ptr = conn->connectivity;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    for (int c=0; c<nCells; c++)
-    {
-        int        nPts = (int)*c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-#else
     // offsets[i] = index for cell i into connectivity
     const vtkIdType *o_ptr = conn->offsets;
     for (int c=0; c<nCells; c++)
@@ -270,7 +252,6 @@ ResampledMat::AccumulateVFsToMatArray()
         // using c+1 with o_ptr is safe, because offsets size is nCells +1
         vtkIdType       nPts = o_ptr[c+1]-o_ptr[c];
         const vtkIdType *ids = &c_ptr[o_ptr[c]];
-#endif
 
         for (int n=0; n<nPts; n++)
         {
@@ -313,9 +294,6 @@ ResampledMat::AccumulateVFsToMatArray()
                 matArrayMatNo[index] = matno;
             }
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        c_ptr += *c_ptr+1;
-#endif
     }
 }
 
@@ -371,12 +349,6 @@ ResampledMat::CountMatsAtAdjacentCells()
     matsAtCellOneAway = new unsigned char[nBPE * nCells];
     memset(matsAtCellOneAway, 0, nBPE*nCells);
     const vtkIdType *c_ptr = conn->connectivity;
-#if LIB_VERSION_LE(VTK,8,1,0)
-    for (int c=0; c<nCells; c++)
-    {
-        int        nPts = (int)*c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-#else
     const vtkIdType *o_ptr = conn->offsets;
     // offsets[i] = index for cell i into connectivity
     for (int c=0; c<nCells; c++)
@@ -384,7 +356,6 @@ ResampledMat::CountMatsAtAdjacentCells()
         // using c+1 with o_ptr is safe, because offsets size is nCells +1
         vtkIdType       nPts = o_ptr[c+1]-o_ptr[c];
         const vtkIdType *ids = &c_ptr[o_ptr[c]];
-#endif
         unsigned char *cm = &matsAtCellOneAway[nBPE*c];
         for (int n=0; n<nPts; n++)
         {
@@ -394,9 +365,6 @@ ResampledMat::CountMatsAtAdjacentCells()
                 cm[b] |= nm[b];
             }
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        c_ptr += *c_ptr+1;
-#endif
     }
 }
 

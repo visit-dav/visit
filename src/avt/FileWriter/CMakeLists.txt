@@ -31,11 +31,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkImagingCore vtkIOPLY)
-else()
-    set(vtklibs VTK::ImagingCore VTK::IOPLY)
-endif()
+set(vtklibs VTK::ImagingCore VTK::IOPLY)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})

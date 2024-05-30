@@ -23,20 +23,27 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 3.4.2</font></b></p>
 <ul>
   <li>Fixed bug where user supplied legend labels were stored in config and session files wrapped in '()' and comma separated. This prevented the values from being parsed correctly and the '()' and commas appeared as part of the labels.</li>
-  <li>Bugs Fixed 2</li>
+  <li>Fixed a bug in the Blueprint reader causing it to handle unstructured topologies built on uniform coordinate sets incorrectly.</li>
+  <li>The location where custom plugins are written when built against installed version of VisIt was corrected.</li>
+  <li>Windows build issues for custom plugins against an installed version of VisIt was fixed.</li>
+  <li>Fixed a bug in OpenPMD reader that subverted its ability to read chunked, as opposed to contiguous datasets.</li>
+  <li>Enabled "Tunnel data connections through SSH" in the LLNL RZ host profiles where it was missing.</li>
+  <li>Removed the obsolete LLNL host profiles for RZTopaz, Surface and Vulcan.</li>
+  <li>Fixed a bug where the LLNL host profiles for Boraxo, Dane and Ruby didn't get installed in some situations.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
 <ul>
   <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
-  <li>Enhancement 2</li>
+  <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Windows to easier find more options.</li>
+  <li>A host profile has been added for running on LLNL's RZVernal system.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.4.2</font></b></p>
 <ul>
-  <li>Developer Changes 1</li>
+  <li>Updated Conduit to 0.9.2.</li>
   <li>Developer Changes 2</li>
 </ul>
 

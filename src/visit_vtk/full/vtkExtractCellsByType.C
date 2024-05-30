@@ -20,9 +20,7 @@
 #include "vtkPointData.h"
 #include "vtkCellData.h"
 #include "vtkCellArray.h"
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include "vtkPointSet.h"
 #include "vtkPolyData.h"
 #include "vtkUnstructuredGrid.h"
@@ -234,24 +232,14 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   // Verts
   outCD->CopyAllocate(inCD);
   vtkIdType npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *pts;
-#else
   const vtkIdType *pts;
-#endif
   if ( this->ExtractCellType(VTK_VERTEX) || this->ExtractCellType(VTK_POLY_VERTEX) )
   {
     vtkCellArray *verts = vtkCellArray::New();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *inVerts = input->GetVerts();
-    for ( inVerts->InitTraversal(); inVerts->GetNextCell(npts,pts); ++currentInputCellId )
-    {
-#else
     auto inVerts = vtk::TakeSmartPointer(input->GetVerts()->NewIterator());
     for ( inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell(), ++currentInputCellId )
     {
       inVerts->GetCurrentCell(npts,pts);
-#endif
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
         ptIds->Reset();
@@ -279,16 +267,10 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   if ( this->ExtractCellType(VTK_LINE) || this->ExtractCellType(VTK_POLY_LINE) )
   {
     vtkCellArray *lines = vtkCellArray::New();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *inLines = input->GetLines();
-    for ( inLines->InitTraversal(); inLines->GetNextCell(npts,pts); ++currentInputCellId )
-    {
-#else
     auto inLines = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     for ( inLines->GoToFirstCell(); !inLines->IsDoneWithTraversal(); inLines->GoToNextCell(), ++currentInputCellId )
     {
       inLines->GetCurrentCell(npts,pts);
-#endif
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
         ptIds->Reset();
@@ -317,16 +299,10 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
        this->ExtractCellType(VTK_POLYGON) )
   {
     vtkCellArray *polys = vtkCellArray::New();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *inPolys = input->GetPolys();
-    for ( inPolys->InitTraversal(); inPolys->GetNextCell(npts,pts); ++currentInputCellId )
-    {
-#else
     auto inPolys = vtk::TakeSmartPointer(input->GetPolys()->NewIterator());
     for ( inPolys->GoToFirstCell(); !inPolys->IsDoneWithTraversal(); inPolys->GoToNextCell(), ++currentInputCellId )
     {
       inPolys->GetCurrentCell(npts,pts);
-#endif
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
         ptIds->Reset();
@@ -354,18 +330,11 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   if ( this->ExtractCellType(VTK_TRIANGLE_STRIP) )
   {
     vtkCellArray *strips = vtkCellArray::New();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *inStrips = input->GetStrips();
-    // All cells are of type VTK_TRIANGLE_STRIP
-    for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); ++currentInputCellId )
-    {
-#else
     auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
     // All cells are of type VTK_TRIANGLE_STRIP
     for ( inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell(), ++currentInputCellId )
     {
       inStrips->GetCurrentCell(npts,pts);
-#endif
       ptIds->Reset();
       for (vtkIdType i=0; i<npts; ++i)
       {

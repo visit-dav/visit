@@ -28,11 +28,7 @@ link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${CONDUIT_LIBRARY_DIR} ${MFEM_LIBRA
 
 add_library(avtblueprint ${AVTBLUEPRINT_SOURCES})
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs lightweight_visit_vtk vtkCommonCore vtkFiltersCore)
-else()
-    set(vtklibs lightweight_visit_vtk VTK::CommonCore VTK::FiltersCore)
-endif()
+set(vtklibs lightweight_visit_vtk VTK::CommonCore VTK::FiltersCore)
 
 target_link_libraries(avtblueprint visitcommon ${CONDUIT_LIB} ${MFEM_LIB} ${vtklibs}) 
 

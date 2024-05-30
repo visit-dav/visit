@@ -34,12 +34,7 @@ MIRConnectivity::MIRConnectivity()
     connectivity = NULL;
     celltype = NULL;
     ncells = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    cellindex = NULL;
-#else
     offsets = NULL;
-#endif
-
 }
 
 // ****************************************************************************
@@ -57,17 +52,10 @@ MIRConnectivity::MIRConnectivity()
 
 MIRConnectivity::~MIRConnectivity()
 {
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    if (cellindex != NULL)
-    {
-        delete [] cellindex;
-    }
-#else
     if (offsets != NULL)
     {
         delete [] offsets;
     }
-#endif
     if (connectivity != NULL)
     {
         delete [] connectivity;
@@ -146,9 +134,6 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             celltype = new int[ncells];
             connectivity = new vtkIdType[9*ncells];
             vtkIdType *c = connectivity;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-            cellindex = new int[ncells];
-#else
             // offsets always nCells +1 in size
             offsets = new vtkIdType[ncells+1];
             vtkIdType *o = offsets;
@@ -158,7 +143,6 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             // the current cell, so set up a holder for that increment.
             vtkIdType currentOffset = 0;
             // The last entry in offsets will hold the size of connectivity
-#endif
             for (int k = 0 ; k < nz ; k++)
             {
                 int zOff  = k*(nx+1)*(ny+1);
@@ -169,17 +153,10 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                     int yOff1 = (j+1)*(nx+1);
                     for (int i = 0 ; i < nx ; i++)
                     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                        cellindex[cell_idx] = (c - connectivity);
-#endif
                         if (dstype == VTK_RECTILINEAR_GRID)
                         {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                            *c++ = 8;
-#else
                             currentOffset += 8;
                             *o++ = currentOffset;
-#endif
                             *c++ = zOff + yOff + i;
                             *c++ = zOff + yOff + i+1;
                             *c++ = zOff + yOff1 + i;
@@ -192,12 +169,8 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                         }
                         else
                         {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                            *c++ = 8;
-#else
                             currentOffset += 8;
                             *o++ = currentOffset;
-#endif
                             *c++ = zOff + yOff + i;
                             *c++ = zOff + yOff + i+1;
                             *c++ = zOff + yOff1 + i+1;
@@ -236,9 +209,6 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             celltype = new int[ncells];
             connectivity = new vtkIdType[5*ncells];
             vtkIdType *c = connectivity;
-#if LIB_VERSION_LE(VTK,8,1,0)
-            cellindex = new int[ncells];
-#else
             // offsets always nCells +1 in size
             offsets = new vtkIdType[ncells+1];
             vtkIdType *o = offsets;
@@ -248,24 +218,16 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             // the current cell, so set up a holder for that increment.
             vtkIdType currentOffset = 0;
             // The last entry in offsets will hold the size of connectivity
-#endif
             for (int j = 0 ; j < ny ; j++)
             {
                 int yOff  = j*(nx+1);
                 int yOff1 = (j+1)*(nx+1);
                 for (int i = 0 ; i < nx ; i++)
                 {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                    cellindex[cell_idx] = (c - connectivity);
-#endif
                     if (dstype == VTK_RECTILINEAR_GRID)
                     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                        *c++ = 4;
-#else
                         currentOffset+=4;
                         *o++ = currentOffset;
-#endif
                         *c++ = yOff + i;
                         *c++ = yOff + i+1;
                         *c++ = yOff1 + i;
@@ -274,12 +236,8 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                     }
                     else
                     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                        *c++ = 4;
-#else
                         currentOffset+=4;
                         *o++ = currentOffset;
-#endif
                         *c++ = yOff + i;
                         *c++ = yOff + i+1;
                         *c++ = yOff1 + i+1;
@@ -308,12 +266,6 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                    << " (unstructured grid)." << endl;
         }
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int buff_size = ca->GetSize();
-        connectivity = new vtkIdType[buff_size];
-        vtkIdType *ptr = ca->GetPointer();
-        memcpy(connectivity, ptr, buff_size*sizeof(vtkIdType));
-#else
         // connectivity
         vtkDataArray *conn_array = ca->GetConnectivityArray();
         vtkIdType csize = conn_array->GetNumberOfTuples();
@@ -327,7 +279,6 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
         offsets = new vtkIdType[osize];
         for (vtkIdType i = 0 ; i < off_array->GetNumberOfTuples(); ++i)
             offsets[i] = vtkIdType(off_array->GetTuple1(i));
-#endif
 
         // celltypes
         celltype = new int[ncells];
@@ -335,15 +286,6 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
         {
             celltype[i] = dstype==VTK_POLY_DATA?pd->GetCellType(i):ug->GetCellType(i);
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int c = 0;
-        cellindex = new int[ncells];
-        for (int j = 0 ; j < ncells ; j++)
-        {
-            cellindex[j] = c;
-            c += connectivity[c] + 1;
-        }
-#endif
     }
     else
     {

@@ -7,9 +7,16 @@
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
 #   Added vtkIOCore in support of building plugins vs install on Windows.
-#   It is a direct depencency for this library, and CMake automagically pulls
+#   It is a direct dependency for this library, and CMake automagically pulls
 #   it in when compiling VisIt, even if not listed, but not when building
 #   the plugins.
+#
+#   Kathleen Biagas, Thu May 2, 2024
+#   Added vtksys in support of building plugins vs install on Windows.
+#   It is a direct dependency for this library, and CMake automagically pulls
+#   it in when compiling VisIt, even if not listed. This doesn't occur when
+#   building plugins against install, since we don't use the cmake targets,
+#   only lists of libraries.
 #
 #****************************************************************************/
 
@@ -62,11 +69,7 @@ ADD_LIBRARY(lightweight_visit_vtk
     ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkFiltersCore vtkIOCore vtkIOLegacy)
-else()
-    set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
-endif()
+set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
 
 target_link_libraries(lightweight_visit_vtk visitcommon ${vtklibs})
 

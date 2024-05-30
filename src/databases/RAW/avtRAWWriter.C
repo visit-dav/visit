@@ -8,11 +8,8 @@
 
 #include <avtRAWWriter.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -204,18 +201,11 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
         fprintf(file, "Object%d\n", chunk + 1);
 
     vtkIdType nids;
-#if LIB_VERSION_LE(VTK,8,1,0)
-    pd->GetPolys()->InitTraversal();
-    vtkIdType *ids = 0;
-    while(pd->GetPolys()->GetNextCell(nids, ids))
-    {
-#else
     const vtkIdType *ids = nullptr;
     auto iter = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
         iter->GetCurrentCell(nids, ids);
-#endif
         if(nids == 3)
         {
             float *ptr = (float *)pd->GetPoints()->GetVoidPointer(0);

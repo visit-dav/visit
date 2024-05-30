@@ -8,7 +8,6 @@
 
 #include <avtTecplotWriter.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
@@ -20,9 +19,7 @@
 
 #include <vtkCell.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkDataSetWriter.h>
@@ -842,18 +839,11 @@ avtTecplotWriter::WritePolyData(vtkPolyData *pd, int chunk)
     // Search through the poly cells and see what we have.
     int ntri = 0, nquad = 0;
     vtkIdType npts;
-#if LIB_VERSION_LE(VTK,8,1,0)
-    pd->GetPolys()->InitTraversal();
-    vtkIdType *pts = 0;
-    while(pd->GetPolys()->GetNextCell(npts, pts))
-    {
-#else
     const vtkIdType *pts = nullptr;
     auto iter = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
     for(iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
         iter->GetCurrentCell(npts, pts);
-#endif
         if(npts == 3)
             ntri++;
         else if(npts == 4)
@@ -897,15 +887,9 @@ avtTecplotWriter::WritePolyData(vtkPolyData *pd, int chunk)
     WriteDataArrays(pd);
 
     // Save the polygons.
-#if LIB_VERSION_LE(VTK,8,1,0)
-    pd->GetPolys()->InitTraversal();
-    while(pd->GetPolys()->GetNextCell(npts, pts))
-    {
-#else
     for(iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
         iter->GetCurrentCell(npts, pts);
-#endif
         if(npts == 3 || npts == 4)
         {
             if(subdivide && npts == 4)

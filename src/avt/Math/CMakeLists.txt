@@ -25,11 +25,7 @@ ${VISIT_COMMON_INCLUDES}
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore)
-else()
-    set(vtklibs VTK::CommonCore)
-endif()
+set(vtklibs VTK::CommonCore)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )

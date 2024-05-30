@@ -5,8 +5,6 @@
 #ifndef MIR_CONNECTIVITY
 #define MIR_CONNECTIVITY
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkType.h>
 
 class vtkDataSet;
@@ -34,11 +32,7 @@ struct MIRConnectivity
     vtkIdType *connectivity;
     vtkIdType  ncells;
     int *celltype;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    int *cellindex;
-#else
     vtkIdType *offsets;
-#endif
     MIRConnectivity();
     ~MIRConnectivity();
     void SetUpConnectivity(vtkDataSet *);

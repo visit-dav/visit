@@ -8,13 +8,9 @@
 
 #include <avtLineGlyphFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
-
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkConeSource.h>
 #include <vtkExtractCellsByType.h>
 #include <vtkGeometryFilter.h>
@@ -646,21 +642,12 @@ avtLineGlyphFilter::AddEndPoints(vtkPolyData *input, vtkPolyData *output,
     vtkIdType     numPts;
     vtkIdType     lineIndex = 0;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkCellArray *lines  = input->GetLines();
-    vtkIdType *ptIndexs;
-    lines->InitTraversal();
-
-    while (lines->GetNextCell(numPts, ptIndexs))
-    {
-#else
     const vtkIdType *ptIndexs;
 
     auto lines = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
     {
         lines->GetCurrentCell(numPts, ptIndexs);
-#endif
         vtkPolyData *outPD;
 
         double p0[3], p1[3];

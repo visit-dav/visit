@@ -4,12 +4,8 @@
 
 #include "vtkVisItPolyDataNormals2D.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE, LIB_VERSION_GE
-
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
@@ -169,31 +165,11 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
     output->Allocate(inCL->GetNumberOfConnectivityEntries());
     outCD->CopyAllocate(inCD, nTotalCells);
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType *connPtrL = inCL->GetPointer();
-    for (vtkIdType i = 0 ; i < nLines ; i++)
-#else
     auto connPtrL = vtk::TakeSmartPointer(inCL->NewIterator());
     vtkIdType i = 0;
     for (connPtrL->GoToFirstCell(); !connPtrL->IsDoneWithTraversal(); connPtrL->GoToNextCell(), ++i)
-#endif
     {
         outCD->CopyData(inCD, nVerts+i, nVerts+i);
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        vtkIdType npts = *connPtrL++;
-        if (npts == 2)
-        {
-            output->InsertNextCell(VTK_LINE, 2, connPtrL);
-        }
-        else
-        {
-            output->InsertNextCell(VTK_POLY_LINE, npts, connPtrL);
-        }
-
-        double pt0[3], pt1[3];
-        inPts->GetPoint(connPtrL[0], pt0);
-        inPts->GetPoint(connPtrL[1], pt1);
-#else
         vtkIdType nPtIds;
         const vtkIdType *ptIds;
         connPtrL->GetCurrentCell(nPtIds, ptIds);
@@ -205,7 +181,6 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
         double pt0[3], pt1[3];
         inPts->GetPoint(ptIds[0], pt0);
         inPts->GetPoint(ptIds[1], pt1);
-#endif
         double dx = pt1[0] - pt0[0];
         double dy = pt1[1] - pt0[1];
         // this gets normalized later
@@ -213,23 +188,13 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
         normal[0] = dy;
         normal[1] = -dx;
         normal[2] = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        for (vtkIdType j = 0 ; j < npts ; j++)
-        {
-            vtkIdType p = connPtrL[j];
-#else
         for (vtkIdType j = 0 ; j < nPtIds ; j++)
         {
             vtkIdType p = ptIds[j];
-#endif
             dnormals[p*3+0] += normal[0];
             dnormals[p*3+1] += normal[1];
             dnormals[p*3+2] += normal[2];
         }
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        // Increment our connectivity pointer
-        connPtrL += npts;
-#endif
     }
 
     // Renormalize the normals; they've only been accumulated so far,
@@ -323,21 +288,12 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     }
 
     vtkCellArray *inCL  = input->GetLines();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType *connPtrL = inCL->GetPointer();
-    vtkIdType nLines = inCL->GetNumberOfCells();
-    for (vtkIdType i = 0 ; i < nLines ; i++)
-    {
-        vtkIdType nVerts = *connPtrL++;
-        vtkIdType *cell = connPtrL;
-#else
     auto  connPtrL = vtk::TakeSmartPointer(inCL->NewIterator());
     for (connPtrL->GoToFirstCell(); !connPtrL->IsDoneWithTraversal(); connPtrL->GoToNextCell())
     {
         vtkIdType nVerts;
         const vtkIdType *cell;
         connPtrL->GetCurrentCell(nVerts, cell);
-#endif
         double v0[3], v1[3];
         double normal[3] = {0, 0, 1};
         if (nVerts == 2)
@@ -358,13 +314,6 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
         newNormalPtr[1] = (float)(normal[1]);
         newNormalPtr[2] = (float)(normal[2]);
         newNormalPtr += 3;
-
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        //
-        // Step through connectivity
-        //
-        connPtrL += nVerts;
-#endif
     }
 
     // The triangle strips come after the polys.  So add normals for them.

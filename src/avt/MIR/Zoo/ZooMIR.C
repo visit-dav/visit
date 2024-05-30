@@ -4,8 +4,6 @@
 
 #include "ZooMIR.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
@@ -243,20 +241,11 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         double *tmpVols = (options.numIterations>0) ? tmpVolStorage : NULL;
 
         double maxdiff = 0;
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vtkIdType *conn_ptr = conn.connectivity;
-        for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
-        {
-            int  celltype = conn.celltype[c];
-            vtkIdType *ids = conn_ptr+1;
-            int nids       = (int)*conn_ptr;
-#else
         for (int c = 0 ; c < nCells ; c++)
         {
             int  celltype = conn.celltype[c];
             vtkIdType nids = conn.offsets[c+1] - conn.offsets[c];
             vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
-#endif
 
             double totalvolume = 0;
             if (nids > MAX_NODES_PER_ZONE)
@@ -578,15 +567,6 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     }
     rv->SetPoints(outPts);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    //
-    // Now insert the connectivity array.
-    //
-    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
-    nlist->SetNumberOfValues(totalsize + ncells);
-    vtkIdType *nl = nlist->GetPointer(0);
-
-#else
     //
     // Now insert the connectivity and offsets array.
     //
@@ -606,19 +586,11 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // the current cell, so set up a holder for that increment.
     vtkIdType offset = 0;
     // The last entry in offsets will hold the size of connectivity
-#endif
 
     vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
     cellTypes->SetNumberOfValues(ncells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
-    cellLocations->SetNumberOfValues(ncells);
-    vtkIdType *cl = cellLocations->GetPointer(0);
-
-    int offset = 0;
-#endif
     for (int i=0; i<ncells; i++)
     {
         int c = cellList[i];
@@ -626,31 +598,14 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         *ct++ = zonesList[c].celltype;
 
         const int nnodes = zonesList[c].nnodes;
-#if LIB_VERSION_LE(VTK,8,1,0)
-        *nl++ = nnodes;
-#endif
         const vtkIdType *indices = &indexList[zonesList[c].startindex];
         for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
-#if LIB_VERSION_LE(VTK,8,1,0)
-        *cl++ = offset;
-        offset += nnodes+1;
-#else
         offset += nnodes;
         *ol++ = offset;
-#endif
     }
 
     vtkCellArray *cells = vtkCellArray::New();
-#if LIB_VERSION_LE(VTK,8,1,0)
-    cells->SetCells(ncells, nlist);
-    nlist->Delete();
-
-    rv->SetCells(cellTypes, cellLocations, cells);
-    cellTypes->Delete();
-    cellLocations->Delete();
-    cells->Delete();
-#else
     cells->SetData(olist, nlist);
     nlist->Delete();
     olist->Delete();
@@ -658,7 +613,6 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     rv->SetCells(cellTypes, cells);
     cellTypes->Delete();
     cells->Delete();
-#endif
 
     //
     // Copy over all node-centered data.
@@ -880,19 +834,11 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkIdType *conn_ptr = conn.connectivity;
-#endif
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int              nIds = (int)*conn_ptr;
-        const vtkIdType *ids  = conn_ptr+1;
-#else
         // using c+1 for offsets is safe because offsets size is nCells+1
         vtkIdType nIds = conn.offsets[c+1]-conn.offsets[c];
-#endif
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
@@ -902,14 +848,9 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
         zone.startindex = indexList.size();
         zone.mix_index  = -1;
 
-#if LIB_VERSION_GE(VTK,9,1,0)
         const vtkIdType *ids  = &conn.connectivity[conn.offsets[c]];
-#endif
         for (int n=0; n<nIds; n++)
             indexList.push_back(ids[n]);
-#if LIB_VERSION_LE(VTK,8,1,0)
-        conn_ptr += nIds+1;
-#endif
     }
 
     visitTimer->StopTimer(timerHandle, "MIR: Reconstructing clean mesh");

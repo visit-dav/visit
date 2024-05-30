@@ -30,11 +30,7 @@ ${ENSIGHT_FLAGS}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_libs vtkIOEnSight )
-else()
-    set(vtk_libs VTK::IOEnSight )
-endif()
+set(vtk_libs VTK::IOEnSight )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 

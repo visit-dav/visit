@@ -11,8 +11,6 @@
 
 #include "vtkYoungsMaterialInterface.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCell.h>
 #include <vtkEmptyCell.h>
 #include <vtkPolygon.h>
@@ -499,12 +497,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
             cell.nEdges = vtkcell->GetNumberOfEdges();
             for(int i=0;i<cell.nEdges;i++)
             {
-#if LIB_VERSION_LE(VTK,9,1,0)
-                int tmp[4];
-                int * edgePoints = tmp;
-#else
                 const vtkIdType *edgePoints = nullptr;
-#endif
                 cell3D->GetEdgePoints(i,edgePoints);
                 cell.edges[i][0] = edgePoints[0];
                 DBG_ASSERT( cell.edges[i][0]>=0 && cell.edges[i][0]<cell.np );
@@ -954,12 +947,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
                             nextCell.nEdges = vtkcell->GetNumberOfEdges();
                             for(int i=0;i<nextCell.nEdges;i++)
                             {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                                int tmp[4];
-                                int * edgePoints = tmp;
-#else
                                 const vtkIdType * edgePoints = nullptr;
-#endif
                                 cell3D->GetEdgePoints(i,edgePoints);
                                 nextCell.edges[i][0] = edgePoints[0];
                                 DBG_ASSERT( nextCell.edges[i][0]>=0 && nextCell.edges[i][0]<nextCell.np );
@@ -1052,39 +1040,6 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         ugOutput->SetPoints( points );
         points->Delete();
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-        // set cell connectivity
-        vtkIdTypeArray* cellArrayData = vtkIdTypeArray::New();
-        cellArrayData->SetNumberOfValues( Mats[m].cellArrayCount );
-        vtkIdType* cellArrayDataPtr = cellArrayData->WritePointer(0,Mats[m].cellArrayCount);
-        for(vtkIdType i=0;i<Mats[m].cellArrayCount;i++) cellArrayDataPtr[i] = Mats[m].cells[i];
-
-        vtkCellArray* cellArray = vtkCellArray::New();
-        cellArray->SetCells( Mats[m].cellCount , cellArrayData );
-        cellArrayData->Delete();
-
-        // set cell types
-        vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
-        cellTypes->SetNumberOfValues( Mats[m].cellCount );
-        unsigned char* cellTypesPtr = cellTypes->WritePointer(0,Mats[m].cellCount);
-        for(vtkIdType i=0;i<Mats[m].cellCount;i++) cellTypesPtr[i] = Mats[m].cellTypes[i];
-
-        // set cell locations
-        vtkIdTypeArray* cellLocations = vtkIdTypeArray::New();
-        cellLocations->SetNumberOfValues( Mats[m].cellCount );
-        vtkIdType counter = 0;
-        for(vtkIdType i=0;i<Mats[m].cellCount;i++)
-        {
-            cellLocations->SetValue(i,counter);
-            counter += Mats[m].cells[counter] + 1;
-        }
-
-        // attach conectivity arrays to data set
-        ugOutput->SetCells( cellTypes, cellLocations, cellArray );
-        cellArray->Delete();
-        cellTypes->Delete();
-        cellLocations->Delete();
-#else
         // set cell connectivity
         //
         // Mats[m].cells is arranged in the old VTK (pre v9) way:
@@ -1132,7 +1087,6 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         ugOutput->SetCells( cellTypes, cellArray );
         cellArray->Delete();
         cellTypes->Delete();
-#endif
 
         // attach point arrays
         for(int i=0;i<nPointData-1;i++)

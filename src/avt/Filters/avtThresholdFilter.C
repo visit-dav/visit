@@ -8,8 +8,6 @@
 
 #include <avtThresholdFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
@@ -452,13 +450,9 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                     threshold->AllScalarsOff();
                 }
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-                threshold->ThresholdBetween(curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
-#else
                 threshold->SetLowerThreshold(curLowerBounds[curVarNum]);
                 threshold->SetUpperThreshold(curUpperBounds[curVarNum]);
                 threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
-#endif
 
                 if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
                 {
@@ -852,13 +846,9 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
         threshold->AllScalarsOff();
     }
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    threshold->ThresholdBetween(1, 1);
-#else
     threshold->SetLowerThreshold(1);
     threshold->SetUpperThreshold(1);
     threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
-#endif
 
     threshold->SetInputArrayToProcess(0, 0, 0, FIELD_ASSOC, keeperName);
     threshold->Update();

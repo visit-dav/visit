@@ -432,6 +432,10 @@
 #    Eric Brugger, Mon Nov 27 17:05:13 PST 2023
 #    I added a host profile for poodle.
 #
+#    Eric Brugger, Tue May 21 14:09:54 PDT 2024
+#    Change logic for installing LLNL profiles to be more robust
+#    when adding or deleting profiles.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1112,28 +1116,21 @@ elif [ "$config" = "kaust" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "llnl_open" ]; then
-   # Install both cz hosts and rz hosts. We're most likely in a client
+   # Install both cz and rz hosts. We're most likely in a client.
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open_rz" ]; then
    # We're most likely installing on an rz machine.
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl_rz/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_rz*.xml      "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open_cz" ]; then
-   # Copy the files explicitly to avoid the rz hosts. We're most likely installing on a cz machine.
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_ansel.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_borax.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_pascal.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_poodle.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_quartz.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_surface.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_syrah.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_vulcan.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
+   # Copy files that don't contain "host_llnl_rz" in the name. We're most
+   # likely installing on a cz machine.
+   for f in `ls $dir/$version+/$platformDir/resources/hosts/llnl/*.xml | grep -v host_llnl_rz`; do
+      cp $f "$dir"/$version+/.visit/hosts/
+   done
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_closed" ]; then

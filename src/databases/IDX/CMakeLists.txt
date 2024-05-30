@@ -37,11 +37,7 @@ ${VISIT_PARALLEL_RPATH}/../include
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_libs vtkIOXML )
-else()
-    set(vtk_libs VTK::IOXML )
-endif()
+set(vtk_libs VTK::IOXML )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 

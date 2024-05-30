@@ -177,9 +177,6 @@ VISIT_JAVA : BOOL : OFF
 VISIT_NOLINK_MPI_WITH_LIBRARIES : BOOL : OFF
     Do not link MPI with VisIt_'s parallel shared libraries; just with executables
 
-VISIT_OSPRAY : BOOL : OFF
-    Build VisIt_ with support for the OSPRay volume rendering library.
-
 VISIT_PARALLEL : BOOL : ON
     Build VisIt_'s parallel compute engine.
 

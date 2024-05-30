@@ -711,7 +711,7 @@ public:
     int                  GetCompactDomainsActivationMode() const;
     void                 SetCompactDomainsAutoThreshold(int val);
     int                  GetCompactDomainsAutoThreshold() const;
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     void                 SetOsprayRendering(bool enabled);
     bool                 GetOsprayRendering() const;
     void                 SetOspraySPP(int val);

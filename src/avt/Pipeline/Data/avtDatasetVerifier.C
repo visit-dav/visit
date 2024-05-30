@@ -8,11 +8,8 @@
 
 #include <avtDatasetVerifier.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE, LIB_VERSION_LE
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
@@ -387,44 +384,6 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts,
                                       vtkCellArray *arr,
                                       const char *name)
 {
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    int numEntries = arr->GetNumberOfConnectivityEntries();
-    vtkIdType *start_ptr = arr->GetPointer();
-    vtkIdType *ptr       = start_ptr;
-    int ncells = arr->GetNumberOfCells();
-    for (int i = 0 ; i < ncells ; i++)
-    {
-        int npts = *ptr;
-        if ((ptr+npts-start_ptr) > numEntries)
-        {
-            char msg[1024];
-            sprintf(msg, "In domain %d, connectivity values go beyond declared "
-                         "allocation.  Unrecoverable error.", dom);
-            avtCallback::IssueWarning(msg);
-            return;
-        }
-        ptr++;
-        for (int j = 0 ; j < npts ; j++)
-        {
-            if (*ptr < 0 || *ptr >= nTotalPts)
-            {
-                if (!issuedSafeModeWarning)
-                {
-                    char msg[1024];
-                    sprintf(msg, "In domain %d, your connectivity array (%s) "
-                                 "has a bad value. Cell %d references point %lld "
-                                 "and the maximum value is %d.  Note that "
-                                 "only the first error encountered is reported.",
-                            dom, name, i, *ptr, nTotalPts);
-                    avtCallback::IssueWarning(msg);
-                    issuedSafeModeWarning = true;
-                }
-                *ptr = 0;
-            }
-            ptr++;
-        }
-    }
-#else
     if (!arr->IsValid())
     {
         char msg[1024];
@@ -462,7 +421,6 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts,
         if(replaceCell)
             cellIter->ReplaceCurrentCell(ptIds);
     }
-#endif
 }
 
 

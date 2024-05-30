@@ -14,8 +14,6 @@
 =========================================================================*/
 #include "vtkVisItProbeFilter.h"
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkIdTypeArray.h>
@@ -170,11 +168,7 @@ int vtkVisItProbeFilter::RequestData(
       }
     else
       {
-#if LIB_VERSION_LE(VTK, 8,1,0)
-      outPD->NullPoint(ptId);
-#else
       outPD->NullData(ptId);
-#endif
       }
     }
   if (mcs>256)

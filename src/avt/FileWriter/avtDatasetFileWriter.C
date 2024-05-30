@@ -16,9 +16,7 @@
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSetWriter.h>
@@ -1168,18 +1166,11 @@ SortLineSegments(vtkPolyData *pd, std::vector< std::vector<int> > &ls)
 
     vtkIdType npts;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkCellArray *lines = pd->GetLines();
-    vtkIdType *ids;
-    for (lines->InitTraversal() ; lines->GetNextCell(npts, ids) ; )
-    {
-#else
     auto lines = vtk::TakeSmartPointer(pd->GetLines()->NewIterator());
     const vtkIdType *ids;
     for (lines->GoToFirstCell() ; !lines->IsDoneWithTraversal(); lines->GoToNextCell())
     {
         lines->GetCurrentCell(npts, ids);
-#endif
         if (npts == 2)
         {
             AddSegment(seg_list, ids[0], ids[1]);

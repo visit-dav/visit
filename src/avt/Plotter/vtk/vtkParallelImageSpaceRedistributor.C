@@ -13,9 +13,7 @@
 #include <vtkAppendPolyData.h>
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkCharArray.h>
@@ -341,23 +339,12 @@ vtkParallelImageSpaceRedistributor::RequestData(
     int TH_countdestinations = visitTimer->StartTimer();
     for (int j = 0 ; j < 4 ; j++)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int ncells = cellArrays[j]->GetNumberOfCells();
-        vtkIdType *cellPts = cellArrays[j]->GetPointer();
-        for (int i=0; i<ncells; i++)
-        {
-            vtkIdType npts = *cellPts;
-            cellPts++;
-            vtkIdType *ptsForThisCell = cellPts;
-            cellPts += npts;
-#else
         auto cellIter = vtk::TakeSmartPointer(cellArrays[j]->NewIterator());
         for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
         {
             vtkIdType npts;
             const vtkIdType *ptsForThisCell;
             cellIter->GetCurrentCell(npts, ptsForThisCell);
-#endif
             if (colors != NULL)
             {
                 bool allPointsAreFullyTransparent = true;
@@ -405,23 +392,12 @@ vtkParallelImageSpaceRedistributor::RequestData(
 
     for (int j = 0 ; j < 4 ; j++)
     {
-#if LIB_VERSION_LE(VTK,8,1,0)
-        int ncells = cellArrays[j]->GetNumberOfCells();
-        vtkIdType *cellPts = cellArrays[j]->GetPointer();
-        for (int i=0; i<ncells; i++)
-        {
-            vtkIdType npts = *cellPts;
-            cellPts++;
-            vtkIdType *ptsForThisCell = cellPts;
-            cellPts += npts;
-#else
         auto cellIter = vtk::TakeSmartPointer(cellArrays[j]->NewIterator());
         for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
         {
             vtkIdType npts;
             const vtkIdType *ptsForThisCell;
             cellIter->GetCurrentCell(npts, ptsForThisCell);
-#endif
 
             if (colors != NULL && numSkipped > 0)
             {
@@ -455,11 +431,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
             {
                 int cnt = outgoingPolyData[dest]->InsertNextCell(cellType,
                                                        npts, ptsForThisCell);
-#if LIB_VERSION_LE(VTK,8,1,0)
-                outgoingPolyData[dest]->GetCellData()->CopyData(inCD, i, cnt);
-#else
                 outgoingPolyData[dest]->GetCellData()->CopyData(inCD, cellIter->GetCurrentCellId(), cnt);
-#endif
             }
             else if (dest == -1)
             {
@@ -467,22 +439,14 @@ vtkParallelImageSpaceRedistributor::RequestData(
                 {
                     int cnt = outgoingPolyData[dests[k]]->InsertNextCell(cellType,
                                                            npts, ptsForThisCell);
-#if LIB_VERSION_LE(VTK,8,1,0)
-                    outgoingPolyData[dests[k]]->GetCellData()->CopyData(inCD, i, cnt);
-#else
                     outgoingPolyData[dests[k]]->GetCellData()->CopyData(inCD, cellIter->GetCurrentCellId(), cnt);
-#endif
                 }
                 dests.clear();
             }
             // else dest==-2 and thus no one owned it.
             else
             {
-#if LIB_VERSION_LE(VTK,8,1,0)
-                debug1 << "no owner for cell " << i << endl;
-#else
                 debug1 << "no owner for cell " << cellIter->GetCurrentCellId() << endl;
-#endif
             }
         }
     }
@@ -528,21 +492,6 @@ vtkParallelImageSpaceRedistributor::RequestData(
             cellArrays[1] = opd->GetLines();
             cellArrays[2] = opd->GetPolys();
             cellArrays[3] = opd->GetStrips();
-#if LIB_VERSION_LE(VTK,8,1,0)
-            vtkIdType curPt = 0;
-            for (int j = 0 ; j < 4 ; j++)
-            {
-                vtkIdType ncells = cellArrays[j]->GetNumberOfCells();
-                vtkIdType *cellPts = cellArrays[j]->GetPointer();
-                for (vtkIdType c=0; c<ncells; c++)
-                {
-                    vtkIdType npts = *cellPts;
-                    cellPts++;
-                    for (vtkIdType k = 0 ; k < npts ; k++)
-                    {
-                        vtkIdType oldPt = *cellPts;
-                        *cellPts = curPt;
-#else
             vtkIdType curPt = 0;
             for (int j = 0 ; j < 4 ; j++)
             {
@@ -555,7 +504,6 @@ vtkParallelImageSpaceRedistributor::RequestData(
                     for (vtkIdType k = 0 ; k < npts ; k++)
                     {
                         vtkIdType oldPt = *cellPts;
-#endif
                         newPts->SetPoint(curPt, inPts->GetPoint(oldPt));
                         outPD->CopyData(inPD, oldPt, curPt);
                         cellPts++;
@@ -848,15 +796,9 @@ vtkParallelImageSpaceRedistributor::GetDataString(int &length,
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-int
-vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
-    vtkIdType npts, vtkIdType *cellPts, vector<int> &procs)
-#else
 int
 vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
     vtkIdType npts, const vtkIdType *cellPts, vector<int> &procs)
-#endif
 {
     // dest has some special values: If it is -2, then no processor
     // contained this cell.  If it is -1, then the client should walk
@@ -939,17 +881,10 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
 //
 // ****************************************************************************
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-void
-vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
-    vtkIdType npts, vtkIdType *cellPts, vector<int> &outgoingCellCount,
-    vector<int> &outgoingPointCount)
-#else
 void
 vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
     vtkIdType npts, const vtkIdType *cellPts, vector<int> &outgoingCellCount,
     vector<int> &outgoingPointCount)
-#endif
 {
     //
     // See WhichProcessorsForCell for more notes

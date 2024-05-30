@@ -31,11 +31,7 @@ ${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_libs vtksys )
-else()
-    set(vtk_libs VTK::vtksys )
-endif()
+set(vtk_libs VTK::vtksys )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${XDMF_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
 

@@ -8,8 +8,6 @@
 
 #include <avtTransformManager.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCSGGrid.h>
@@ -2456,19 +2454,12 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
            << "% of points are spatially unique." << endl;
     debug2 << "...now reconnecting mesh using unique points." << endl;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
-    {
-        vtkIdType nCellPts=0, *cellPts=0;
-        ugrid->GetCellPoints(i, nCellPts, cellPts);
-#else
     vtkNew<vtkIdList> cell;
     for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
     {
         ugrid->GetCellPoints(i, cell);
         vtkIdType nCellPts= cell->GetNumberOfIds();
         vtkIdType *cellPts=cell->GetPointer(0);
-#endif
         for (vtkIdType j = 0; j < nCellPts; j++)
         {
             double pt[3];

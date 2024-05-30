@@ -52,8 +52,6 @@
 #include "vtkPolyDataAlgorithm.h"
 #include <visit_vtk_exports.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #define VTK_VARY_RADIUS_OFF 0
 #define VTK_VARY_RADIUS_BY_SCALAR 1
 #define VTK_VARY_RADIUS_BY_VECTOR 2
@@ -215,29 +213,18 @@ protected:
 
   // Helper methods
   int GeneratePoints(vtkIdType offset, vtkIdType inCellId,
-#if LIB_VERSION_LE(VTK, 8,1,0)
-                     vtkIdType npts, vtkIdType *pts,
-#else
                      vtkIdType npts, const vtkIdType *pts,
-#endif
                      vtkPoints *inPts, vtkPoints *newPts,
                      vtkPointData *pd, vtkPointData *outPD,
                      vtkFloatArray *newNormals,
                      vtkDataArray *inScalars, bool cellScalars,
                      double range[2], vtkDataArray *inVectors, double maxNorm,
                      vtkDataArray *inNormals);
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  void GenerateStrips(vtkIdType offset, vtkIdType npts, vtkIdType *pts,
-#else
   void GenerateStrips(vtkIdType offset, vtkIdType npts, const vtkIdType *pts,
-#endif
                       vtkIdType inCellId, vtkCellData *cd, vtkCellData *outCD,
                       vtkCellArray *newStrips);
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts, vtkIdType *pts,
-#else
-  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts, const vtkIdType *pts,
-#endif
+  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts,
+                             const vtkIdType *pts,
                              vtkPoints *inPts,
                              vtkDataArray *inScalars, bool cellScalars,
                             vtkFloatArray *newTCoords);

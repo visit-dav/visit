@@ -39,13 +39,8 @@ include_directories(
 add_library(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkGUISupportQt vtkGUISupportQtOpenGL vtkIOImage
-        vtkRenderingOpenGL2 vtkRenderingFreeType)
-else()
-    set(vtklibs VTK::CommonCore VTK::GUISupportQt VTK::IOImage
+set(vtklibs VTK::CommonCore VTK::GUISupportQt VTK::IOImage
         VTK::RenderingOpenGL2 VTK::RenderingFreeType)
-endif()
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(vtkqt)
