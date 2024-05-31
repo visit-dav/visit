@@ -7,19 +7,32 @@
 #
 #****************************************************************************
 
-SET(TESS2_SOURCES
+set(TESS2_SOURCES
     bucketalloc.C
     dict.C
     geom.C
     mesh.C
     priorityq.C
     sweep.C
-    tess.C
-)
+    tess.C)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+set(TESS2_HEADERS
+    bucketalloc.h
+    dict.h
+    geom.h
+    mesh.h
+    priorityq.h
+    sweep.h
+    tess.h
+    tess_exports.h
+    tesselator.h)
 
-ADD_LIBRARY(tess2 ${TESS2_SOURCES})
 
-VISIT_INSTALL_TARGETS(tess2)
-SET_TARGET_PROPERTIES(tess2 PROPERTIES FOLDER thirdparty_builtin/tess2)
+visit_add_library(
+    NAME     tess2
+    SOURCES  ${TESS2_SOURCES}
+    HEADERS  ${TESS2_HEADERS}
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/thirdparty_builtin/tess2>
+    FOLDER   thirdparty_builtin/tess2)
+
