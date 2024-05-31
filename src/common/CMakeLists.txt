@@ -81,8 +81,6 @@ visit_append_list(
     NAME  visitcommon_INCLUDES
     ITEMS $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/icons>
-          $<BUILD_INTERFACE:${ZLIB_INCLUDE_DIR}>
-          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib/include>
           $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/include>)
 
 if(WIN32)
@@ -91,7 +89,9 @@ else()
     visit_append_list(NAME visitcommon_DEPENDS ITEMS Threads::Threads ${DL_LIB})
 endif()
 
-visit_append_list(NAME visitcommon_DEPENDS ITEMS ${ZLIB_LIBRARY})
+visit_append_list(
+    NAME visitcommon_DEPENDS
+    ITEMS zlib)
 
 visit_add_library(
     NAME       visitcommon

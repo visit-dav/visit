@@ -26,40 +26,87 @@
 #   Kathleen Biagas, Tue May 28 09:08:56 PDT 2019
 #   Since we require zlib from build_visit, no longer need HAVE_ZLIB_H
 #
+#   Kathleen Biagas, Fri May 31, 2024
+#   Modified to create an INTERFACE target via blt_import_library.
+#   This allows zlib to be a native CMake target, and will also be accounted
+#   for in the generated export set.
+#
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file
 
-if (WIN32)
-    if(ZLIB_LIB_NAME)
-        SET_UP_THIRD_PARTY(ZLIB LIBS ${ZLIB_LIB_NAME})
-    else()
-        SET_UP_THIRD_PARTY(ZLIB LIBS zlib1)
-    endif()
-    if (ZLIB_FOUND)
-        # use full path here, instead of just lib file.
-        #set(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-        set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "full path to zlib library" FORCE)
-        message(STATUS "ZLIB_LIBRARY = ${ZLIB_LIBRARY}.")
-    else ()
-        message(WARNING "ZLIB_LIBRARY not found.  VISIT_ZLIB_DIR = ${VISIT_ZLIB_DIR}, ZLIB_LIB_NAME = ${ZLIB_LIB_NAME}.")
-    endif ()
-else (WIN32)
-    # Have we told VisIt where to look for zlib?
-    if (VISIT_ZLIB_DIR)
-        SET_UP_THIRD_PARTY(ZLIB LIBS z)
-        if (ZLIB_FOUND)
-        # use full path here, instead of just lib file.
-            set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-        endif ()
-    else ()
-      message(WARNING "VISIT_ZLIB_DIR not set.")
-    endif ()
-endif (WIN32)
+if(ZLIB_DIR)
 
-if(ZLIB_FOUND)
-    set(HAVE_LIBZ true CACHE BOOL "Have lib z")
+    find_path(_zlib_INCLUDE_DIR zlib.h
+              PATHS ${ZLIB_DIR}
+              PATH_SUFFIXES include
+              NO_DEFAULT_PATH)
+
+    find_library(_zlib_LIBRARY
+             NAMES zlib zlib1 z
+             PATHS ${ZLIB_DIR}
+             PATH_SUFFIXES lib lib64
+             NO_DEFAULT_PATH)
+
+    find_package_handle_standard_args(ZLIB DEFAULT_MSG
+        _zlib_INCLUDE_DIR
+        _zlib_LIBRARY)
+
+    if(ZLIB_FOUND)
+        get_filename_component(libz ${_zlib_LIBRARY} NAME)
+        set(_zlib_DLL)
+
+        ####
+        # until everything is updated to use the new target
+        get_filename_component(ZLIB_LIBRARY_DIR ${_zlib_LIBRARY} PATH)
+        set(ZLIB_LIBRARY ${_zlib_LIBRARY})
+        set(ZLIB_LIB ${libz})
+        set(ZLIB_INCLUDE_DIR ${_zlib_INCLUDE_DIR})
+        ####
+
+
+        blt_import_library(
+            NAME        zlib
+            INCLUDES    $<BUILD_INTERFACE:${_zlib_INCLUDE_DIR}>
+                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib/include>
+            LIBRARIES   $<BUILD_INTERFACE:${_zlib_LIBRARY}>
+            EXPORTABLE  ON)
+
+
+        # CMake doesn't prepend ${_IMPORT_PREFIX} in the generated export
+        # set for INTERFACE libs, so "${IMPORT_PREFIX}" needs to be
+        # explicitly added the the INSTALL_INTERFACE, and escaped so it
+        # doesn't get evaluated.
+        #
+        # Also, it seems if the INSTALL_INTERFACE is used in the
+        # blt_import_library,  the ${_IMPORT_PREFIX} is stripped, even
+        # if it is escaped, so it appears to be getting evaluated.
+        # That's why it is added separately here instead of being added
+        # to the LIBRARIES above.
+        target_link_libraries(zlib INTERFACE
+            $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libz}>)
+
+        # install and export
+        if(VISIT_INSTALL_THIRD_PARTY)
+            visit_install_export_targets(zlib)
+
+            # headers aren't being installed. Perhaps because it is INTERFACE lib?
+            # There is a PUBLIC_HEADER property for INTERFACE libraries
+            # that will allow the installation of the headers in a normal
+            # install(TARGETS) command (like the one being used by
+            # visit_install_export_targets).
+            # However, you cannot specifiy a directory as PUBLIC_HEADER
+            # property, but must instead list them all, so using this
+            # property would require a file(glob). Do we want to do that?
+            # I think it is easier to install the directory the way we do
+            # for TP libs in the following function:
+
+            THIRD_PARTY_INSTALL_INCLUDE(zlib ${_zlib_INCLUDE_DIR})
+        endif()
+    else()
+        message(FATAL_ERROR "VisIt requires lib z and it could not be found. Tried ZLIB_DIR: ${ZLIB_DIR}")
+    endif()
 else()
-    message(FATAL_ERROR "VisIt requires lib z and it could not be found.")
+    message(FATAL_ERROR "VisIt requires lib z and it could not be found. Please set ZLIB_DIR")
 endif()
 
