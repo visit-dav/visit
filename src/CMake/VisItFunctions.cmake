@@ -217,8 +217,8 @@ function(visit_install_mpich)
 endfunction()
 
 # need a function different than VISIT_INSTALL_TARGETS because we cannot use
-# the EXPORT unless all of the target's visit dependencies are also exported.
-# so have a separate function until all of visit's libraries have been updated
+# the EXPORT unless all of the target's VisIt dependencies are also exported.
+# so have a separate function until all of VisIt's libraries have been updated
 # to be exported properly
 function(visit_install_export_targets_relative dest_dir)
     if(VISIT_STATIC)
