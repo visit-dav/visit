@@ -75,7 +75,7 @@ if(ZLIB_DIR)
 
         # CMake doesn't prepend ${_IMPORT_PREFIX} in the generated export
         # set for INTERFACE libs, so "${IMPORT_PREFIX}" needs to be
-        # explicitly added the the INSTALL_INTERFACE, and escaped so it
+        # explicitly added to the INSTALL_INTERFACE, and escaped so it
         # doesn't get evaluated.
         #
         # Also, it seems if the INSTALL_INTERFACE is used in the
