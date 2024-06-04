@@ -154,7 +154,7 @@
 #   Update the location of where libstripack is copied from.
 #
 #   Eric Brugger, Tue Jun  4 10:30:31 PDT 2024
-#   Moved the setting of the permissions so that others may access the
+#   I moved the setting of the permissions so that others may access the
 #   test directory to another script.
 #
 
