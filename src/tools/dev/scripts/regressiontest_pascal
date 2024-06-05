@@ -153,6 +153,10 @@
 #   Eric Brugger, Wed Mar 15 13:41:38 PDT 2023
 #   Update the location of where libstripack is copied from.
 #
+#   Eric Brugger, Tue Jun  4 10:30:31 PDT 2024
+#   I moved the setting of the permissions so that others may access the
+#   test directory to another script.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -607,11 +611,6 @@ if test "$post" = "true" ; then
          #git push
          cd ../..
     fi
-
-    # Set the permissions so that others may access the test directory.
-    cd ../..
-    chgrp -R visit $workingDir
-    chmod -R g+rwX,o+rX $workingDir
 fi
 
 EOF
