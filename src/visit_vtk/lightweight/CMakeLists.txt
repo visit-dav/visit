@@ -20,57 +20,70 @@
 #
 #****************************************************************************/
 
-SET(LIGHTWEIGHT_VISIT_VTK_SOURCES
-ClipCasesHex.C  
-ClipCasesLin.C  
-ClipCasesPix.C  
-ClipCasesPyr.C  
-ClipCasesQua.C  
-ClipCasesTet.C  
-ClipCasesTri.C  
-ClipCasesWdg.C          
-ClipCasesVox.C          
-ClipCasesVtx.C          
-ClipCasesPoly5.C          
-ClipCasesPoly6.C          
-ClipCasesPoly7.C          
-ClipCasesPoly8.C          
-InitVTKLite.C     
-vtkCellIntersections.C  
-vtkDataSetFromVolume.C  
-vtkDebugStream.C        
-vtkEnumThreshold.C
-vtkMultiLineSource.C
-vtkElementLabelArray.C
-vtkPolyDataRelevantPointsFilter.C
-vtkSkewLookupTable.C
-vtkTriangulationTables.C
-vtkUnstructuredGridBoundaryFilter.C
-vtkUnstructuredGridFacelistFilter.C
-vtkVisItCellLocator.C
-vtkVisItPointDataToCellData.C
-vtkVisItPointLocator.C
-vtkVisItUtility.C
-)
+set(lightweight_SOURCES
+    ClipCasesHex.C
+    ClipCasesLin.C
+    ClipCasesPix.C
+    ClipCasesPoly5.C
+    ClipCasesPoly6.C
+    ClipCasesPoly7.C
+    ClipCasesPoly8.C
+    ClipCasesPyr.C
+    ClipCasesQua.C
+    ClipCasesTet.C
+    ClipCasesTri.C
+    ClipCasesWdg.C
+    ClipCasesVox.C
+    ClipCasesVtx.C
+    InitVTKLite.C
+    vtkCellIntersections.C
+    vtkDataSetFromVolume.C
+    vtkDebugStream.C
+    vtkElementLabelArray.C
+    vtkEnumThreshold.C
+    vtkMultiLineSource.C
+    vtkPolyDataRelevantPointsFilter.C
+    vtkSkewLookupTable.C
+    vtkTriangulationTables.C
+    vtkUnstructuredGridBoundaryFilter.C
+    vtkUnstructuredGridFacelistFilter.C
+    vtkVisItCellLocator.C
+    vtkVisItPointDataToCellData.C
+    vtkVisItPointLocator.C
+    vtkVisItUtility.C)
 
-INCLUDE_DIRECTORIES(
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/common/misc
-${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
-)
+set(lightweight_HEADERS
+    ClipCases.h
+    InitVTKlite.h
+    visit_vtk_light_exports.h
+    vtkCellIntersections.h
+    vtkDataSetFromVolume.h
+    vtkDebugStream.h
+    vtkElementLabelArray.h
+    vtkEnumThreshold.h
+    vtkMultiLineSource.h
+    vtkPolyDataRelevantPointsFilter.h
+    vtkSkew.h
+    vtkSkewLookupTable.h
+    vtkTriangulationTables.h
+    vtkUnstructuredGridBoundaryFilter.h
+    vtkUnstructuredGridFacelistFilter.h
+    vtkVisItCellLocator.h
+    vtkVisItPointDataToCellData.h
+    vtkVisItPointLocator.h
+    vtkVisItUtility.h)
 
-# Add link directories needed to use our libraries and VTK.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
-ADD_LIBRARY(lightweight_visit_vtk
-    ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
-)
+visit_add_library(
+    NAME        lightweight_visit_vtk
+    SOURCES     ${lightweight_SOURCES}
+    HEADERS     ${lightweight_HEADERS}
+    INCLUDES    $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visit_vtk/lightweight>
+    DEPENDS_ON  visitcommon
+                VTK::CommonCore
+                VTK::FiltersCore
+                VTK::IOCore
+                VTK::IOLegacy)
 
-set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
-
-target_link_libraries(lightweight_visit_vtk visitcommon ${vtklibs})
-
-VISIT_INSTALL_TARGETS(lightweight_visit_vtk)
