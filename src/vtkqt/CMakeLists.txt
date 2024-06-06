@@ -16,48 +16,50 @@
 #    Kathleen Biagas, Tue Sep 5, 2023 
 #    Remove untested, unused EGL logic.
 #
+#    Kathleen Biagas, Mon Jun 3, 2024
+#    Modified to use visit_add_library.
+#
 #****************************************************************************
 
-set(VTKQT_SOURCES
+set(vtkqt_SOURCES
     vtkQtRenderWindow.C
-    vtkQtImagePrinter.C
-)
+    vtkQtImagePrinter.C)
+
+set(vtkqt_HEADERS
+    vtkqt_exports.h
+    vtkQtRenderWindow.h
+    vtkQtImagePrinter.h)
 
 if(APPLE)
-    list(APPEND VTKQT_SOURCES osxHelper.mm)
+    list(APPEND vtkqt_SOURCES osxHelper.mm)
+    list(APPEND vtkqt_HEADERS osxHelper.h)
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${VISIT_BINARY_DIR}/include
-    ${VISIT_SOURCE_DIR}/include
-    ${VISIT_SOURCE_DIR}/vtkqt
-    ${VISIT_SOURCE_DIR}/common/utility
-    ${VTK_INCLUDE_DIRS}
-)
+set(vtkqt_DEPENDS ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
+    ${QT_QTOPENGL_LIBRARY} ${QT_QTPRINTSUPPORT_LIBRARY} ${OPENGL_LIBRARIES})
 
-add_library(vtkqt ${VTKQT_SOURCES})
-
-# Specify the libraries to link against on Windows & Mac
-set(vtklibs VTK::CommonCore VTK::GUISupportQt VTK::IOImage
+list(APPEND vtkqt_DEPENDS VTK::CommonCore VTK::GUISupportQt VTK::IOImage
         VTK::RenderingOpenGL2 VTK::RenderingFreeType)
+
+if(HAVE_OSMESA)
+    list(APPEND vtkqt_DEPENDS ${OSMESA_LIBRARIES})
+endif()
+
+
+visit_add_library(
+    NAME        vtkqt
+    SOURCES     ${vtkqt_SOURCES}
+    HEADERS     ${vtkqt_HEADERS}
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/vtkqt>
+    DEPENDS_ON  ${vtkqt_DEPENDS})
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(vtkqt)
 endif()
 
-target_link_libraries(vtkqt ${vtklibs} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
-    ${QT_QTOPENGL_LIBRARY} ${QT_QTPRINTSUPPORT_LIBRARY} ${OPENGL_LIBRARIES})
-
-if(HAVE_OSMESA)
-    target_link_libraries(vtkqt ${OSMESA_LIBRARIES})
-endif()
-
 if(APPLE)
-    set_target_properties(vtkqt PROPERTIES
-        LINK_FLAGS "-framework Cocoa"
-    )
+    set_target_properties(vtkqt PROPERTIES LINK_FLAGS "-framework Cocoa")
 endif()
-
-VISIT_INSTALL_TARGETS(vtkqt)
 
