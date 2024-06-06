@@ -167,7 +167,7 @@ QvisMeshManagementWindow::CreateWindowContents()
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
     discretizeAdaptive = new QRadioButton(tr("Adaptive"), pageCSGGroup);
     discretizationMode->addButton(discretizeAdaptive,1);
-#ifndef HAVE_BOOST
+#ifndef BOOST_FOUND
     discretizeAdaptive->setEnabled(false);
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
@@ -283,7 +283,7 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 }
                 else if (dMode == MeshManagementAttributes::Adaptive)
                 {
-#ifdef HAVE_BOOST
+#ifdef BOOST_FOUND
                     discretizationMode->button(1)->setChecked(true);
                     flatEnoughLineEdit->setEnabled(true);
 #else
@@ -494,7 +494,7 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
     else if (val == 1)
     {
-#ifdef HAVE_BOOST
+#ifdef BOOST_FOUND
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
         flatEnoughLineEdit->setEnabled(true);
 #else
