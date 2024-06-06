@@ -158,6 +158,48 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_gcc13_patch
+{
+  # patches that allows VTK9 to be built g++-13
+   patch -p0 << \EOF
+--- ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp.orig	2024-05-22 12:53:48.817462000 -0700
++++ ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp	2024-05-22 12:54:07.659499000 -0700
+@@ -33,6 +33,7 @@
+ 
+ #include <vector>
+ #include <string>
++#include <cstdint>
+ 
+ #define CPL_DLL
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+   patch -p0 << \EOF
+--- IO/Image/vtkSEPReader.h.orig	2024-05-22 13:50:27.027369000 -0700
++++ IO/Image/vtkSEPReader.h	2024-05-22 13:50:55.044422000 -0700
+@@ -27,6 +27,7 @@
+ 
+ #include <array>  // for std::array
+ #include <string> // for std::string
++#include <cstdint> // for std::uint8_t
+ 
+ namespace details
+ {
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtkSEPReader patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 function apply_vtk9_allow_onscreen_and_osmesa_patch
 {
   # patch that allows VTK9 to be built with onscreen and osmesa support.
@@ -2521,6 +2563,11 @@ function apply_vtk_patch
 {
 
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        apply_vtk9_gcc13_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
         apply_vtk9_allow_onscreen_and_osmesa_patch
         if [[ $? != 0 ]] ; then
             return 1
