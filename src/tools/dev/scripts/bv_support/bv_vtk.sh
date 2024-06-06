@@ -1094,32 +1094,47 @@ function apply_vtk9_vtkRectilinearGridReader_patch
   # patch vtkRectilinearGridReader.cxx, per this issue:
   # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
    patch -p0 << \EOF
-*** IO/Legacy/vtkRectilinearGridReader.cxx.orig	Thu Jan 27 10:55:12 2022
---- IO/Legacy/vtkRectilinearGridReader.cxx	Thu Jan 27 11:01:04 2022
-***************
-*** 95,101 ****
-          break;
-        }
-  
-!       if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
-        {
-          int dim[3];
-          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
---- 95,108 ----
-          break;
-        }
-  
-!       // Have to read field data because it may be binary.
-!       if (!strncmp(this->LowerCase(line), "field", 5))
-!       {
-!         vtkFieldData* fd = this->ReadFieldData();
-!         fd->Delete();
-!       }
-! 
-!       else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
-        {
-          int dim[3];
-          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+--- IO/Legacy/vtkRectilinearGridReader.cxx.orig	2024-06-05 14:21:59.105807000 -0700
++++ IO/Legacy/vtkRectilinearGridReader.cxx	2024-06-05 14:26:30.561802000 -0700
+@@ -95,7 +95,16 @@
+         break;
+       }
+ 
+-      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
++      // If data file is binary and FieldData is present, it
++      // must be read here, otherwise a ReadString will fail and the
++      // loop will terminate before reading dimensions.
++      if (!strncmp(this->LowerCase(line), "field", 5))
++      {
++        vtkFieldData* fd = this->ReadFieldData();
++        fd->Delete();
++      }
++
++      else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+       {
+         int dim[3];
+         if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+@@ -127,6 +136,20 @@
+ 
+         dimsRead = true;
+       }
++      // if the coordinates have been reached, should be no reason
++      // to keep reading
++      else if (strncmp(this->LowerCase(line), "x_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "y_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "z_coordinate", 12) == 0)
++      {
++        break;
++      }
+     }
+   }
+ 
 EOF
     if [[ $? != 0 ]] ; then
         warn "vtk patch for vtkRectilinearGridReader.cxx failed."
