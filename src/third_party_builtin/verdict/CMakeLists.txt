@@ -1,4 +1,4 @@
-SET(VERDICT_SOURCES
+set(VERDICT_SOURCES
     V_EdgeMetric.C
     V_GaussIntegration.C
     V_HexMetric.C
@@ -8,16 +8,21 @@ SET(VERDICT_SOURCES
     V_TetMetric.C
     V_TriMetric.C
     V_WedgeMetric.C
-    VerdictVector.C
-)
+    VerdictVector.C)
 
-INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
+set(VERDICT_HEADERS
+    V_GaussIntegration.h
+    v_vector.h
+    verdict.h
+    verdict_defines.h
+    VerdictVector.h)
 
-ADD_DEFINITIONS(-DVERDICT_EXPORTS)
+visit_add_library(
+    NAME     visit_verdict
+    SOURCES  ${VERDICT_SOURCES}
+    HEADERS  ${VERDICT_HEADERS}
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/third_party_builtin/verdict>
+    DEFINES  VERDICT_EXPORTS
+    FOLDER   thirdparty_builtin/visit_verdict)
 
-ADD_LIBRARY(visit_verdict ${VERDICT_SOURCES})
-
-VISIT_INSTALL_TARGETS(visit_verdict)
-SET_TARGET_PROPERTIES(visit_verdict PROPERTIES FOLDER thirdparty_builtin/visit_verdict)
