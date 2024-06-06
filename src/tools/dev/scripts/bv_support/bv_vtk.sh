@@ -1078,15 +1078,15 @@ function apply_vtk9_vtkRectilinearGridReader_patch
        }
 +      // if the coordinates have been reached, should be no reason
 +      // to keep reading
-+      else if (!strncmp(line, "x_coordinate", 12))
++      else if (strncmp(this->LowerCase(line), "x_coordinate", 12) == 0)
 +      {
 +        break;
 +      }
-+      else if (!strncmp(line, "y_coordinate", 12))
++      else if (strncmp(this->LowerCase(line), "y_coordinate", 12) == 0)
 +      {
 +        break;
 +      }
-+      else if (!strncmp(line, "z_coordinate", 12))
++      else if (strncmp(this->LowerCase(line), "z_coordinate", 12) == 0)
 +      {
 +        break;
 +      }
