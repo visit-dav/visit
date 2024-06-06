@@ -54,7 +54,7 @@ set(lightweight_SOURCES
 
 set(lightweight_HEADERS
     ClipCases.h
-    InitVTKlite.h
+    InitVTKLite.h
     visit_vtk_light_exports.h
     vtkCellIntersections.h
     vtkDataSetFromVolume.h
