@@ -54,7 +54,6 @@ if(ZLIB_DIR)
 
     if(ZLIB_FOUND)
         get_filename_component(libz ${_zlib_LIBRARY} NAME)
-        set(_zlib_DLL)
 
         ####
         # until everything is updated to use the new target
