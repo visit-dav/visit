@@ -1059,7 +1059,7 @@ function apply_vtk9_vtkRectilinearGridReader_patch
        }
  
 -      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
-+      // If data file is binary and there FieldData is present, it
++      // If data file is binary and FieldData is present, it
 +      // must be read here, otherwise a ReadString will fail and the
 +      // loop will terminate before reading dimensions.
 +      if (!strncmp(this->LowerCase(line), "field", 5))
