@@ -404,8 +404,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
     int TH_finddestinations = visitTimer->StartTimer();
     vector<int> dests;
 
-    vector<vtkIdType> nPoints;
-    nPoints.resize(size, 0);
+    vector<vtkIdType> nPoints(size);
     int maxCellSize = cellArrays[0]->GetMaxCellSize();
     for (int j = 1 ; j < 4 ; j++)
         maxCellSize = std::max(maxCellSize, cellArrays[j]->GetMaxCellSize());
