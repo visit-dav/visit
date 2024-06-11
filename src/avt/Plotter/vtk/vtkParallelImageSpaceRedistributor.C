@@ -385,11 +385,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
         {
             outgoingPolyData[i] = vtkPolyData::New();
             outgoingPolyData[i]->GetCellData()->CopyAllocate(inCD,outgoingCellCount[i]);
-#if LIB_VERSION_LE(VTK,8,1,0)
-            int connSize = outgoingPointCount[i]+outgoingCellCount[i]; // overhead of one for each cell
-#else
             int connSize = outgoingPointCount[i];
-#endif
             outgoingPolyData[i]->Allocate(connSize);
 
             outgoingPolyData[i]->GetPointData()->CopyAllocate(inPD,outgoingPointCount[i]);
