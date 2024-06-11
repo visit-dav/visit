@@ -160,4 +160,34 @@ pcAtts.opacity = 0.25
 SetPlotOptions(pcAtts)
 Test("transparency_13")
 
+# Test transparency with 3d multi block data
+DeleteAllPlots()
+OpenDatabase(silo_data_path("multi_curv3d.silo"))
+
+AddPlot("Pseudocolor", "d")
+pcAtts.SetOpacityType(pcAtts.Constant)
+pcAtts.opacity = 0.25
+SetPlotOptions(pcAtts)
+DrawPlots()
+v =GetView3D()
+v.viewNormal = (0.432843, 0.303466, 0.848855)
+v.focus = (0, 2.5, 15)
+v.viewUp = (-0.0787945, 0.950767, -0.299721)
+v.viewAngle = 30
+v.parallelScale = 16.0078
+v.nearPlane = -32.0156
+v.farPlane = 32.0156
+v.imagePan = (0, 0)
+v.imageZoom = 1
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0, 2.5, 15)
+v.axis3DScaleFlag = 0
+v.axis3DScales = (1, 1, 1)
+v.shear = (0, 0, 1)
+v.windowValid = 1
+SetView3D(v)
+Test("transparency_14")
+
 Exit()
