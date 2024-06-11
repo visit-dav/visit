@@ -469,7 +469,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
                         outgoingPolyData[dests[k]]->GetPoints()->SetPoint(nPoints[dests[k]], input->GetPoints()->GetPoint(ptsForThisCell[l]));
                         outgoingPolyData[dests[k]]->GetPointData()->CopyData(inPD, ptsForThisCell[l], nPoints[dests[k]]);
                         ptList[l] = nPoints[dests[k]];
-                        nPoints[dests[k]] = nPoints[dests[k]] + 1;
+                        nPoints[dests[k]] += 1;
                     }
                     int cnt = outgoingPolyData[dests[k]]->InsertNextCell(cellType,
                                                            npts, ptList);
