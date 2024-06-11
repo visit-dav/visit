@@ -169,7 +169,7 @@ pcAtts.SetOpacityType(pcAtts.Constant)
 pcAtts.opacity = 0.25
 SetPlotOptions(pcAtts)
 DrawPlots()
-v = View3DAttributes()
+v =GetView3D()
 v.viewNormal = (0.432843, 0.303466, 0.848855)
 v.focus = (0, 2.5, 15)
 v.viewUp = (-0.0787945, 0.950767, -0.299721)
