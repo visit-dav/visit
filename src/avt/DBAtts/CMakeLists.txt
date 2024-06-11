@@ -14,15 +14,19 @@
 #    Kathleen Biagas, Tue Dec 13, 2022
 #    Moved setting of sources to subdirs.
 #
+#   Kathleen Biagas, Mon Jun 3, 2024
+#   Modified to use visit_add_library.
+#
 #****************************************************************************
 
-add_library(avtdbatts)
 
 add_subdirectory(MetaData)
 add_subdirectory(SIL)
 
-target_link_libraries(avtdbatts visitcommon)
-target_include_directories(avtdbatts PUBLIC ${VISIT_COMMON_INCLUDES})
-
-VISIT_INSTALL_TARGETS(avtdbatts)
+visit_add_library(
+    NAME        avtdbatts
+    SOURCES     ${avtdbatts_SOURCES}
+    HEADERS     ${avtdbatts_HEADERS}
+    INCLUDES    ${avtdbatts_INCLUDES}
+    DEPENDS_ON  visitcommon)
 

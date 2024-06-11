@@ -43,7 +43,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#ifdef HAVE_BOOST
+#ifdef BOOST_FOUND
 #include <boost/numeric/interval.hpp>
 using boost::numeric::interval;
 #endif
@@ -205,7 +205,7 @@ bool
 vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     int boundaryId, double tol)
 {
-#ifdef HAVE_BOOST
+#ifdef BOOST_FOUND
     const double *const a = &gridBoundaries[boundaryId * NUM_QCOEFFS]; 
 
     // compute spatial box
@@ -303,7 +303,7 @@ vtkCSGGrid::Box::CanBeCut2(const double *const gridBoundaries,
 vtkCSGGrid::Box::FuncState
 vtkCSGGrid::Box::EvalBoxStateOfBoundary(const double *const a, double tol) const
 {
-#ifdef HAVE_BOOST
+#ifdef BOOST_FOUND
     interval<double> X(x0,x1);
     interval<double> Y(y0,y1);
     interval<double> Z(z0,z1);

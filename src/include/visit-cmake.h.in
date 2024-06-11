@@ -42,7 +42,7 @@
  ******************************************************************************/
 
 /* Define if you have the boost library. */
-#cmakedefine HAVE_BOOST
+#cmakedefine BOOST_FOUND
 
 /* Define if you have the Damaris library. */
 #cmakedefine HAVE_DAMARIS

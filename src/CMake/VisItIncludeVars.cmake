@@ -11,6 +11,11 @@
 #     VISIT_DATABASE_INCLUDES:  used by database plugins
 #     VISIT_OPERATOR_INCLUDES:  used by operator plugins
 #     VISIT_PLOT_INCLUDES:      used by plot plugins
+#
+#  Modifications:
+#     Removed most 'common' directories from VISIT_COMMON_INCLUDES, as they
+#     are now handled by the CMake target 'visitcommon'.
+#
 #*****************************************************************************
 
 # Set up easy to use includes for the common directory

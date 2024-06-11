@@ -4,24 +4,20 @@
 
 # Use the BOOST_DIR hint from the config-site .cmake file
 
-SET(BOOST_LIBS NO_LIBS)
+set(BOOST_LIBS NO_LIBS)
 
-IF(NEKTAR++_FOUND)
-  SET(BOOST_LIBS
-   boost_chrono
-   boost_iostreams
-   boost_thread
-   boost_date_time
-   boost_filesystem
-   boost_regex
-   boost_system
-   boost_timer
-   boost_program_options)
-ENDIF()
+if(NEKTAR++_FOUND)
+    set(BOOST_LIBS
+        boost_chrono
+        boost_iostreams
+        boost_thread
+        boost_date_time
+        boost_filesystem
+        boost_regex
+        boost_system
+        boost_timer
+        boost_program_options)
+endif()
 
 SET_UP_THIRD_PARTY(BOOST LIBS ${BOOST_LIBS} )
-
-if(BOOST_FOUND)
-    set(HAVE_BOOST true CACHE BOOL "Have boost ")
-endif()
 
