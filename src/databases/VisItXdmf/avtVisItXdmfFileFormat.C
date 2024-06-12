@@ -34,6 +34,8 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <XDMFParser.h>
 
@@ -1836,12 +1838,12 @@ avtVisItXdmfFileFormat::ParseUniformGrid(std::vector<MeshInfo*> &meshList,
             {
                 meshInfo->order = new int[nNodes];
                 char *str = NULL, *str2 = NULL;
-                int iVal = (int)strtol(order.c_str(), &str, 10);
+                int iVal = vstrtonum<int>(order.c_str());
                 meshInfo->order[0] = (iVal < 0) ? 0 :
                     ((iVal < nNodes) ? iVal : nNodes - 1);
                 for (int i = 1; i < nNodes; i++)
                 {
-                    iVal = (int)strtol(str, &str2, 10);
+                    iVal = vstrtonum<int>(str);
                     meshInfo->order[i] = (iVal < 0) ? 0 :
                         ((iVal < nNodes) ? iVal : nNodes - 1);
                     str = str2;

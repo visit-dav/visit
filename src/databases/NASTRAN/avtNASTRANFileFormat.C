@@ -26,6 +26,9 @@ using namespace NASTRANDBOptions;
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 #include <TimingsManager.h>
 
 //
@@ -43,7 +46,6 @@ using namespace NASTRANDBOptions;
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
 #endif
 
-#include <errno.h>
 #include <limits.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -222,18 +224,16 @@ static double GetVal(const char *s)
     if (i>0 && (t[i]=='-' || t[i]=='+') && strchr("0123456789",t[i-1]))
         t.insert(i, "E");
 
-    errno = 0;
-    dval = strtod(t.c_str(), &endptr);
+    dval = vstrtonum<double>(t.c_str(),10,0,NO_OSTREAM,&endptr);
 
     // Handle cases where conversion failed for one reason or another
-    if ((dval == 0 && endptr == t.c_str()) || errno)
+    if ((dval == 0 && endptr == t.c_str()))
     {
         static int nwarnings = 0;
         if (nwarnings <= 5) 
         {
             char msg[512];
-            snprintf(msg, sizeof(msg), "%s problem converting numerical value from \"%32s\"\n",
-                errno?strerror(errno):"", t.c_str());
+            snprintf(msg, sizeof(msg), "problem converting numerical value from \"%32s\"\n", t.c_str());
             if (!avtCallback::IssueWarning(msg))
             {
                 cerr << msg << endl;

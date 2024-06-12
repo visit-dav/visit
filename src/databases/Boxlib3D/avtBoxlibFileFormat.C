@@ -82,6 +82,8 @@
 #include <InvalidFilesException.h>
 #include <InvalidDBTypeException.h>
 #include <ImproperUseException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 // Map symbol names
 // Ugly hack, but fixes crash on Mac
@@ -159,6 +161,9 @@ static int    VSSearch(const vector<string> &, const string &);
 //
 //    Mark C. Miller, Tue Nov  8 21:14:00 PST 2005
 //    Refactored from constructor
+//
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 static int GetCycleFromRootPath(const std::string &rpath)
 {
@@ -176,7 +181,7 @@ static int GetCycleFromRootPath(const std::string &rpath)
     }
     if (last != NULL)
     {
-        cyc = atoi(last + strlen("plt"));
+        cyc = vstrtonum<int>(last + strlen("plt"));
         return cyc;
     }
 
@@ -324,6 +329,8 @@ AVTBOXLIBFILEFORMAT::ActivateTimestep(void)
 //    Hank Childs, Sun Mar  6 16:21:15 PST 2005
 //    Add support for GeoDyne material names.
 //
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 void
@@ -406,7 +413,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
         if (varNames[i].find("frac") == 0)
         {
             varUsedElsewhere[i] = true;
-            int val = atoi(varNames[i].c_str()+4);
+            int val = vstrtonum<int>(varNames[i].c_str()+4);
 
             if (val > nMaterials)
                 nMaterials = val;
@@ -420,7 +427,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
             if (varNames[i].find("vf_") == 0)
             {
                 varUsedElsewhere[i] = true;
-                int val = atoi(varNames[i].c_str()+3);
+                int val = vstrtonum<int>(varNames[i].c_str()+3);
 
                 if (val > nMaterials)
                     nMaterials = val;
@@ -854,7 +861,7 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
     // Read in time
     if (iDoReading)
         in >> double_tmp;
-    time = atof(double_tmp.c_str());
+    time = vstrtonum<double>(double_tmp.c_str());
     BroadcastDouble(time);
     haveReadTimeAndCycle = true;
     if (metadata != NULL)
@@ -885,12 +892,12 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
         for (i = 0; i < dimension; ++i)
         {
             in >> double_tmp;
-            probLo[i] = atof(double_tmp.c_str());
+            probLo[i] = vstrtonum<double>(double_tmp.c_str());
         }
         for (i = 0; i < dimension; ++i)
         {
             in >> double_tmp;
-            probHi[i] = atof(double_tmp.c_str());
+            probHi[i] = vstrtonum<double>(double_tmp.c_str());
         }
     }
     BroadcastDouble(probLo[0]);
@@ -926,12 +933,12 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
         for (levI = 0; levI < nLevels; levI++)
         {
             in >> double_tmp;
-            deltaX.push_back(atof(double_tmp.c_str()));
+            deltaX.push_back(vstrtonum<double>(double_tmp.c_str()));
             in >> double_tmp;
-            deltaY.push_back(atof(double_tmp.c_str()));
+            deltaY.push_back(vstrtonum<double>(double_tmp.c_str()));
 #if BL_SPACEDIM==3
             in >> double_tmp;
-            deltaZ.push_back(atof(double_tmp.c_str()));
+            deltaZ.push_back(vstrtonum<double>(double_tmp.c_str()));
 #endif
         }
     }
@@ -997,7 +1004,7 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
 
             // Read in the time (again)
             in >> double_tmp;
-            //time = atof(double_tmp.c_str());
+            //time = vstrtonum<double>(double_tmp.c_str());
 
             // Read in iLevelSteps
             in >> integer;
@@ -1006,18 +1013,18 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
             for (i = 0; i < myNPatch; ++i)
             {
                 in >> double_tmp;
-                xMin.push_back(atof(double_tmp.c_str()));
+                xMin.push_back(vstrtonum<double>(double_tmp.c_str()));
                 in >> double_tmp;
-                xMax.push_back(atof(double_tmp.c_str()));
+                xMax.push_back(vstrtonum<double>(double_tmp.c_str()));
                 in >> double_tmp;
-                yMin.push_back(atof(double_tmp.c_str()));
+                yMin.push_back(vstrtonum<double>(double_tmp.c_str()));
                 in >> double_tmp;
-                yMax.push_back(atof(double_tmp.c_str()));
+                yMax.push_back(vstrtonum<double>(double_tmp.c_str()));
 #if BL_SPACEDIM==3
                 in >> double_tmp;
-                zMin.push_back(atof(double_tmp.c_str()));
+                zMin.push_back(vstrtonum<double>(double_tmp.c_str()));
                 in >> double_tmp;
-                zMax.push_back(atof(double_tmp.c_str()));
+                zMax.push_back(vstrtonum<double>(double_tmp.c_str()));
 #endif
             }
 

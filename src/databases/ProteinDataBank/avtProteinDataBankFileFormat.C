@@ -24,6 +24,7 @@
 #include <InvalidFilesException.h>
 #include <AtomicProperties.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <DebugStream.h>
 
@@ -1274,7 +1275,7 @@ ScanInt(const char *line, int len, int start, int end, int *val)
         tmpbuff[i - first] = line[i];
     }
     tmpbuff[i - first] = '\0';
-    *val = atoi(tmpbuff);
+    *val = vstrtonum<int>(tmpbuff);
 }
 
 static inline void
@@ -1298,7 +1299,7 @@ ScanFloat(const char *line, int len, int start, int end, float *val)
     tmpbuff[i - first] = '\0';
 
     //sscanf(tmpbuff, "%f", val);
-    *val = atof(tmpbuff);
+    *val = vstrtonum<float>(tmpbuff);
 }
 
 // ****************************************************************************

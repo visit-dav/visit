@@ -33,6 +33,8 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 using     std::string;
 
@@ -73,11 +75,11 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, const DBOptionsAt
 
     // Strip off the last three int and convert them to ints.
     strncpy(tmpInt, &(tmp[48]), 4 );
-    //idum = atoi( tmpInt );
+    //idum = vstrtonum<int>( tmpInt );
     strncpy(tmpInt, &(tmp[52]), 4 );
-    nw = atoi( tmpInt );
+    nw = vstrtonum<int>( tmpInt );
     strncpy(tmpInt, &(tmp[56]), 4 );
-    nh = atoi( tmpInt );
+    nh = vstrtonum<int>( tmpInt );
 
     if( nw < 0 || nh < 0 )
     {
@@ -95,12 +97,12 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, const DBOptionsAt
         sscanf( tmp, "%s %s %s %s", id, date, run, time ) == 4 )
     {
       cycles.resize( 1 );
-      cycles[0] = atoi( time );
+      cycles[0] = vstrtonum<int>( time );
 
       std::string timeStr(time);
 
       times.resize( 1 );
-      times[0] = atof( time );
+      times[0] = vstrtonum<double>( time );
 
       if( timeStr.find("ms") != std::string::npos )
         times[0] *= 1.0e-3;
@@ -114,10 +116,10 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, const DBOptionsAt
                      id, date, run, time ) == 4 )
     {
       cycles.resize( 1 );
-      cycles[0] = (int) (atof( time ) * 1000.0);
+      cycles[0] = (int) (vstrtonum<double>( time ) * 1000.0);
 
       times.resize( 1 );
-      times[0] = atof( time );
+      times[0] = vstrtonum<double>( time );
 
       n = 7;
     }

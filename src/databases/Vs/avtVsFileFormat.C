@@ -47,6 +47,7 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
+#include <StringHelpers.h>
 #include <VsPluginInfo.h>
 
 #include <DBOptionsAttributes.h>
@@ -4436,6 +4437,8 @@ void avtVsFileFormat::ActivateTimestep()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 /*
 void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
 {
@@ -4486,7 +4489,7 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
                           << "Step is \"" << step << "\""
                           << std::endl;
 
-        timeStep = atoi(step.c_str());
+        timeStep = StringHelpers::vstrtonum<int>(step.c_str(),10,0,VsLog::debugLog());
 
         VsLog::debugLog() << CLASSFUNCLINE
                           <<"Converted to integer is \"" << timeStep << "\""

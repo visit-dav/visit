@@ -2056,6 +2056,8 @@ Engine::ProcessInput()
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 void
@@ -2079,8 +2081,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-n-gpus-per-node") == 0 && i+1 < argc)
         {
-            if(!StringHelpers::str_to_u_numeric<size_t>(argv[i+1],
-                                                        &this->nDisplays))
+            this->nDisplays = StringHelpers::vstrtonum<size_t>(argv[i+1], 10, 99999);
+            if (this->nDisplays == 99999)
             {
                 if (DebugStream::Level1())
                 {

@@ -65,11 +65,16 @@
 #include <BufferConnection.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
+using DebugStream::Level3;
+using DebugStream::Stream3;
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InvalidZoneTypeException.h>
 #include <SiloException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 #include <avtExecutionManager.h>
 
 #include <avtStructuredDomainBoundaries.h>
@@ -2780,7 +2785,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
         int rnspn = strspn(region_pnames[i], "0123456789");
         if (rnlen == rnspn) // Must be just a number
         {
-            int regno = strtol(region_pnames[i], 0, 10);
+            int regno = vstrtonum<int>(region_pnames[i],10,0,Level3()?Stream3():NO_OSTREAM);
             regionNamesButMaterialNumbers = false;
             debug3 << "        Comparing using regno=" << regno << "..." << endl;
             for (j = 0; j < (size_t)mmd->numMaterials; j++)
@@ -2789,7 +2794,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
                 // "%d (matno)" or "%d (matno) %s (matname)". Either way,
                 // strtol should convert the number part correctly.
                 errno = 0;
-                int matno = strtol(mmd->materialNames[j].c_str(), 0, 10);
+                int matno = vstrtonum<int>(mmd->materialNames[j].c_str(),10,0,Level3()?Stream3():NO_OSTREAM);
                 debug3 << "            for \"" << mmd->materialNames[j]
                        << "\" got matno=" << matno;
                 if (errno == 0 && regno == matno)
@@ -17892,5 +17897,5 @@ db_get_index(DBnamescheme const *ns, int natnum)
 
     if (!name_str[i]) return -1;
 
-    return (int) strtol(&name_str[i], 0, 10);
+    return vstrtonum<int>(&name_str[i]);
 }

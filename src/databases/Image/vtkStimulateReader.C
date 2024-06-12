@@ -13,6 +13,8 @@
 #include <vtkByteSwap.h>
 #include <vtkPointData.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <fstream>
 
@@ -239,7 +241,7 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
   char line[1024];
 
   spr_file.getline(line, 1024);
-  int ndims = atoi(line);
+  int ndims = vstrtonum<int>(line);
   if (ndims != 2)
     {
     vtkErrorMacro(<<"Unable to read SPR file, ndims =  " << ndims
@@ -248,7 +250,7 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
     }
 
   spr_file.getline(line, 1024);
-  dims[0] = atoi(line);
+  dims[0] = vstrtonum<int>(line);
   if (dims[0] < 0)
     {
     vtkErrorMacro(<<"Unable to read SPR file, dims[0] =  " << dims[0]
@@ -257,9 +259,9 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
     }
 
   spr_file.getline(line, 1024);
-  origin[0] = atof(line);
+  origin[0] = vstrtonum<float>(line);
   spr_file.getline(line, 1024);
-  step[0] = atof(line);
+  step[0] = vstrtonum<float>(line);
   if (step[0] < 0.)
     {
     vtkErrorMacro(<<"Unable to read SPR file step in X is negative");
@@ -267,7 +269,7 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
     }
 
   spr_file.getline(line, 1024);
-  dims[1] = atoi(line);
+  dims[1] = vstrtonum<int>(line);
   if (dims[1] < 0)
     {
     vtkErrorMacro(<<"Unable to read SPR file, dims[1] =  " << dims[1]
@@ -276,9 +278,9 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
     }
 
   spr_file.getline(line, 1024);
-  origin[1] = atof(line);
+  origin[1] = vstrtonum<float>(line);
   spr_file.getline(line, 1024);
-  step[1] = atof(line);
+  step[1] = vstrtonum<float>(line);
   if (step[1] < 0.)
     {
     vtkErrorMacro(<<"Unable to read SPR file step in Y is negative");

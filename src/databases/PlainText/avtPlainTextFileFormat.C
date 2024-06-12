@@ -24,6 +24,7 @@
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include "visit_gzstream.h"
 
@@ -540,7 +541,7 @@ avtPlainTextFileFormat::ReadFile()
                 }
                 else
                 {
-                    double value = atof(start);
+                    double value = vstrtonum<double>(start);
                     row.push_back(value);
                 }
                 start = end+1;
@@ -577,7 +578,7 @@ avtPlainTextFileFormat::ReadFile()
                     }
                     else
                     {
-                        double value = atof(start);
+                        double value = vstrtonum<double>(start);
                         row.push_back(value);
                     }
                 }

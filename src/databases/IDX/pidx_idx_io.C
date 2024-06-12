@@ -184,7 +184,7 @@ bool PIDXIO::openDataset(const String filename)
 
         VisitIDXIO::Field my_field;
 
-        my_field.ncomponents = variable[var]->vps;//atoi((const char*)(variable[var]->type_name)); 
+        my_field.ncomponents = variable[var]->vps;
         char typetocheck[32];
         strncpy(typetocheck, variable[var]->type_name, 32);
         if(isdigit(typetocheck[0]))

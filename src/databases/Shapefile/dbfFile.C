@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+
 #define DBF_LITTLE_ENDIAN 0
 #define DBF_BIG_ENDIAN    1
 
@@ -795,6 +798,8 @@ dbfFileReadField(dbfFile_t *fileObj, const char *fieldName, dbfReadError_t *code
 //   Brad Whitlock, Wed Apr 6 10:26:02 PDT 2005
 //   I removed common storage since it was used so little.
 //
+//   Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//   Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 void *
@@ -881,8 +886,7 @@ dbfFileReadField2(dbfFile_t *fileObj, const char *fieldName, void *data,
                     if(fread((void *)tmp, 1, fieldDescriptor->fieldLength, fileObj->fp) ==
                        fieldDescriptor->fieldLength)
                     {
-                        char *endptr = 0;
-                        *fptr = (float)strtod(tmp, &endptr);
+                        *fptr = vstrtonum<float>(tmp);
                         ++fptr;
                         /* Seek to the start of the field in the next record. */
                         if(fseek(fileObj->fp, offset, SEEK_CUR) != 0)
@@ -912,8 +916,7 @@ dbfFileReadField2(dbfFile_t *fileObj, const char *fieldName, void *data,
                     if(fread((void *)tmp, 1, fieldDescriptor->fieldLength, fileObj->fp) ==
                        fieldDescriptor->fieldLength)
                     {
-                        char *endptr = 0;
-                        *dptr = strtod(tmp, &endptr);
+                        *dptr = vstrtonum<double>(tmp);
                         ++dptr;
                         /* Seek to the start of the field in the next record. */
                         if(fseek(fileObj->fp, offset, SEEK_CUR) != 0)

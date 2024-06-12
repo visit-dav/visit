@@ -28,6 +28,8 @@
 #include <vector>
 
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <visit-hdf5.h>
 
@@ -234,7 +236,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
               EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'Step number' was not found or wrong type" );
             }
 
-            cycles.push_back( atoi(stepnumber) );
+            cycles.push_back( vstrtonum<int>(stepnumber) );
 
             debug5 << "step number: " << stepnumber << std::endl;
 

@@ -22,6 +22,8 @@
 #include <DebugStream.h>
 #include <DBOptionsAttributes.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
@@ -30,6 +32,7 @@
 #include <errno.h>
 #include <float.h>
 #include <stdlib.h>
+#include <cmath>
 
 using std::vector;
 using std::string;
@@ -293,6 +296,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
 //    Changed 'supressed' to 'suppressed'.
+//
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -402,10 +408,7 @@ avtCurve2DFileFormat::ReadFile(void)
                 if ( timePos != string::npos)
                 {
                     string tStr = headerName.substr(timePos+4);
-                    char *endstr = NULL;
-                    curveTime = strtod(tStr.c_str(), &endstr);
-                    if (strcmp(endstr, tStr.c_str()) == 0)
-                        curveTime = INVALID_TIME;
+                    curveTime = vstrtonum<double>(tStr.c_str(),10,INVALID_TIME);
                 }
                 else
                 {
@@ -413,10 +416,7 @@ avtCurve2DFileFormat::ReadFile(void)
                     if ( cyclePos != string::npos)
                     {
                         string cyStr = headerName.substr(cyclePos+5);
-                        char *endstr = NULL;
-                        curveCycle = (int)strtod(cyStr.c_str(), &endstr);
-                        if (strcmp(endstr, cyStr.c_str()) == 0)
-                            curveCycle = INVALID_CYCLE;
+                        curveCycle = vstrtonum<int>(cyStr.c_str(),10,INVALID_CYCLE);
                     }
                 }
             }
@@ -484,10 +484,7 @@ avtCurve2DFileFormat::ReadFile(void)
         if ( timePos != string::npos)
         {
             string tStr = headerName.substr(timePos+4);
-            char *endstr = NULL;
-            curveTime = strtod(tStr.c_str(), &endstr);
-            if (strcmp(endstr, tStr.c_str()) == 0)
-                curveTime = INVALID_TIME;
+            curveTime = vstrtonum<double>(tStr.c_str(),10,INVALID_TIME);
         }
         else
         {
@@ -495,10 +492,7 @@ avtCurve2DFileFormat::ReadFile(void)
             if ( cyclePos != string::npos)
             {
                 string cyStr = headerName.substr(cyclePos+5);
-                char *endstr = NULL;
-                curveCycle = (int)strtod(cyStr.c_str(), &endstr);
-                if (strcmp(endstr, cyStr.c_str()) == 0)
-                    curveCycle = INVALID_CYCLE;
+                curveCycle = vstrtonum<int>(cyStr.c_str(),10,INVALID_CYCLE);
             }
         }
     }
@@ -715,16 +709,10 @@ avtCurve2DFileFormat::GetPoint(istream &ifile, double &x, double &y, string &ln)
     }
 
     char *ystr = NULL;
-
-    errno = 0;
-    x = strtod(line, &ystr);
-    if (((x == 0.0) && (ystr == line)) || (errno == ERANGE))
+    x = vstrtonum<double>(line,10,NAN,NO_OSTREAM,&ystr);
+    if (std::isnan(x))
     {
         return INVALID_POINT;
-    }
-    if (ystr == NULL)
-    {
-        return VALID_XVALUE;
     }
     ystr = strstr(ystr, " ");
     if (ystr == NULL || ystr == line)
@@ -735,10 +723,8 @@ avtCurve2DFileFormat::GetPoint(istream &ifile, double &x, double &y, string &ln)
     // Get past the space.
     ystr++;
 
-    char *tmpstr;
-    errno = 0;
-    y = strtod(ystr, &tmpstr);
-    if (((y == 0.0) && (tmpstr == ystr)) || (errno == ERANGE))
+    y = vstrtonum<double>(ystr,10,NAN);
+    if (std::isnan(y))
     {
         return INVALID_POINT;
     }

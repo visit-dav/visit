@@ -21,6 +21,8 @@
 #include <DebugStream.h>
 #include <Expression.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 #include <DataNode.h>
 #include <FileFunctions.h>
 
@@ -1302,7 +1304,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
                 // convert this column's value to float
                 char *bufptmp = 0;
                 errno = 0;
-                float val = (float) strtod(bufp, &bufptmp);
+                float val = (float) vstrtonum<float>(bufp,10,0,NO_OSTREAM,&bufptmp);
                 if (((val == 0.0) && (bufp == bufptmp)) || (errno != 0))
                 {
                     char msg[256];
