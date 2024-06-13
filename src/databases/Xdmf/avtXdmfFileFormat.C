@@ -25,6 +25,7 @@
 #include <vtkCellType.h>
 #include <vtkFieldData.h>
 #include <vtkInformation.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
@@ -713,8 +714,13 @@ avtXdmfFileFormat::FirstRealGrid(XdmfGrid *start)
 //
 // ****************************************************************************
 
-vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *meshname)
+vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *_meshname)
 {
+    char const *meshname = _meshname;
+
+    if (curveToGridMap.find(_meshname) != curveToGridMap.end())
+        meshname = curveToGridMap[_meshname].c_str();
+
     this->SetCurrentGrid(timestate, meshname);
 
     XdmfGrid * gridToRead = currentGrid;
@@ -736,6 +742,14 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *m
             break;
         case VTK_RECTILINEAR_GRID:
             dataSet = this->ReadRectilinearGrid(gridToRead);
+#if 0
+            if (!strcmp(_meshname, meshname)) {
+                vtkDataArray *yvals = GetVar(timestate, domain, _meshname);
+                yvals->SetName(meshname);
+                vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(dataSet);
+                rgrid->GetPointData()->SetScalars(yvals);
+            }
+#endif
             break;
         case VTK_UNSTRUCTURED_GRID:
             dataSet = this->ReadUnstructuredGrid(gridToRead);
@@ -1596,12 +1610,16 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
 
         int block_origin = 0;
-        int spatial_dimension = this->GetSpatialDimensions(grid->GetGeometry()->GetGeometryType());
-        int topological_dimension = this->GetTopologicalDimensions(grid->GetTopology()->GetTopologyType());
+        int spatial_dimension = this->GetSpatialDimensions(gridToExamine->GetGeometry()->GetGeometryType());
+        int topological_dimension = this->GetTopologicalDimensions(gridToExamine->GetTopology()->GetTopologyType());
         double *extents = NULL;
 
         avtMeshType mt = AVT_UNSTRUCTURED_MESH;
-        if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYVERTEX) {
+        if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYLINE &&
+            grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY) {
+            mt = AVT_UNKNOWN_MESH; // temporary placeholder for a curve object
+        }
+        else if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYVERTEX) {
             mt = AVT_POINT_MESH;
         }
         else if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DSMESH ||
@@ -1615,7 +1633,16 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
             mt = AVT_RECTILINEAR_MESH;
         }
 
-        AddMeshToMetaData(md, grid->GetName(), mt, extents, nblocks, block_origin, spatial_dimension, topological_dimension);
+        if (mt == AVT_UNKNOWN_MESH) {
+            // This is really a faux mesh object for an associated curve object
+            mt = AVT_RECTILINEAR_MESH;
+            avtMeshMetaData *mmd = new avtMeshMetaData(grid->GetName(), 1, 0, 0, 0, 2, 1, mt);
+            mmd->hideFromGUI = true;
+            md->Add(mmd);
+        }
+        else {
+            AddMeshToMetaData(md, grid->GetName(), mt, extents, nblocks, block_origin, spatial_dimension, topological_dimension);
+        }
  
         md->SetTimes(timesteps);
 
@@ -1644,7 +1671,15 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
                 switch (attribute->GetAttributeType()) {
                     case (XDMF_ATTRIBUTE_TYPE_SCALAR): {
                         if (numComponents <= 1) {
-                            AddScalarVarToMetaData(md, attributeName.str(), grid->GetName(), center);
+                            if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYLINE &&
+                                grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY) {
+                                avtCurveMetaData *cmd = new avtCurveMetaData(attributeName.str());
+                                md->Add(cmd);
+                                curveToGridMap[attributeName.str()] = grid->GetName();
+                            }
+                            else {
+                                AddScalarVarToMetaData(md, attributeName.str(), grid->GetName(), center);
+                            }
                         }
                         else {
                             std::vector<std::string> names = this->GetComponentNames(attributeName.str(),
@@ -1742,7 +1777,18 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     vtkDoubleArray * zarray = vtkDoubleArray::New();
 
     int rgdims[3]={0,0,0};
-    if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_VXVY)
+    if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_XY)
+    {
+        rgdims[0] = scaled_dims[1];
+        rgdims[1] = 1;
+        rgdims[2] = 1;
+        rg->SetDimensions(rgdims);
+
+        xarray->SetNumberOfTuples(scaled_dims[1]);
+        yarray->SetNumberOfTuples(1);
+        zarray->SetNumberOfTuples(1);
+    }
+    else if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_VXVY)
     {
         rgdims[0] = scaled_dims[1];
         rgdims[1] = scaled_dims[2];
@@ -1806,6 +1852,13 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
             for (int cc = scaled_extents[4]; cc <= scaled_extents[5]; cc++) {
                 zarray->GetPointer(0)[cc - scaled_extents[4]] = origin[2] + (dxdydz[2] * cc * this->Stride[2]);
             }
+            break;
+        }
+        case XDMF_GEOMETRY_XY:
+        {
+            zarray->FillComponent(0, 0);
+            xmfGeometry->GetVectorX()->GetValues(update_extents[2], xarray->GetPointer(0), scaled_dims[1],
+                    this->Stride[1]);
             break;
         }
         case XDMF_GEOMETRY_VXVY:

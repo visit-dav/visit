@@ -133,8 +133,8 @@ void vtkOBJWriter::WriteData()
         fprintf (fpObj, "\nmtllib %s\n", mtlFilename.c_str());
 
         // write out a group name and material
-        fprintf (fpObj, "\ng grp%i\n", idStart);
-        fprintf (fpObj, "usemtl mtl%i\n", idStart);
+        fprintf (fpObj, "\ng grp%lli\n", idStart);
+        fprintf (fpObj, "usemtl mtl%lli\n", idStart);
 
         // now write to mtl file
         //
@@ -147,7 +147,7 @@ void vtkOBJWriter::WriteData()
         }
         fprintf(fpMtl, "\n");
 
-        fprintf(fpMtl,"newmtl mtl%i\n",idStart);
+        fprintf(fpMtl,"newmtl mtl%lli\n",idStart);
         fprintf(fpMtl,"\tKa 0.000 0.000 0.000\n");
         fprintf(fpMtl,"\tKd 0.000 0.000 0.000\n");
         fprintf(fpMtl,"\tKs 0.000 0.000 0.000\n");
