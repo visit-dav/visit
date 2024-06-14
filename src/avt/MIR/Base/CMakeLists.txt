@@ -7,18 +7,22 @@
 #
 #****************************************************************************
 
-set(BASE_SOURCES
-    MIR.C
-    MIRConnectivity.C
-    MIROptions.C)
+visit_append_list(
+    NAME  avtmir_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/MIR.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/MIRConnectivity.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/MIROptions.C)
 
-target_sources(avtmir_ser PRIVATE ${BASE_SOURCES})
-target_include_directories(avtmir_ser PUBLIC .)
+visit_append_list(
+    NAME  avtmir_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/MIR.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/MIRConnectivity.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/MIROptions.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/mir_exports.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisItArray.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtmir_par PRIVATE ${BASE_SOURCES})
-    target_include_directories(avtmir_par PUBLIC .)
-endif()
-
-unset(BASE_SOURCES)
+visit_append_list(
+    NAME  avtmir_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MIR/Base>)
 

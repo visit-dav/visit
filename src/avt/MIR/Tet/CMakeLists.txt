@@ -7,24 +7,38 @@
 #
 #****************************************************************************
 
-set(TET_SOURCES
-    Edge.C
-    Face.C
-    mat3d_tet.C
-    MaterialTetrahedron.C
-    MaterialTriangle.C
-    QuadraticHash.C
-    TetMIR.C
-    Tetrahedralizer.C
-    Triangulator.C)
+visit_append_list(
+    NAME  avtmir_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/Edge.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Face.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/mat3d_tet.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/MaterialTetrahedron.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/MaterialTriangle.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/QuadraticHash.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/TetMIR.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedralizer.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Triangulator.C)
 
-target_sources(avtmir_ser PRIVATE ${TET_SOURCES})
-target_include_directories(avtmir_ser PUBLIC .)
+visit_append_list(
+    NAME  avtmir_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/Edge.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Face.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/mat3d_tet.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/MaterialTetrahedron.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/MaterialTriangle.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/QuadraticHash.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Tet.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/TetList.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/TetMIR.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedralizer.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Tri.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Triangulator.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/TriList.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Wedge.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/WedgeList.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoneCntAndVF.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtmir_par PRIVATE ${TET_SOURCES})
-    target_include_directories(avtmir_par PUBLIC .)
-endif()
-
-unset(TET_SOURCES)
-
+visit_append_list(
+    NAME  avtmir_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MIR/Tet>)
