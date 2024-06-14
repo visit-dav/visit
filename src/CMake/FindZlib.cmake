@@ -102,6 +102,18 @@ if(ZLIB_DIR)
 
             THIRD_PARTY_INSTALL_INCLUDE(zlib ${_zlib_INCLUDE_DIR})
         endif()
+        if(WIN32)
+            # need to copy the dll to the build dir
+            cmake_path(REPLACE_EXTENSION libz dll OUTPUT_VARIABLE _zlib_DLL)
+            if(EXISTS ${_zlib_DLL})
+                cmake_path(SET _zlib_DLL ${ZLIB_LIBRARY_DIR}/${_zlib_DLL})
+            else()    
+                cmake_path(SET _zlib_DLL NORMALIZE ${ZLIB_LIBRARY_DIR}/../bin/${_zlib_DLL})
+            endif()
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                            ${_zlib_DLL}
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        endif()
     else()
         message(FATAL_ERROR "VisIt requires lib z and it could not be found. Tried ZLIB_DIR: ${ZLIB_DIR}")
     endif()
