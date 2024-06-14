@@ -26,15 +26,6 @@ set(avtmir_par_HEADERS  ${avtmir_ser_HEADERS})
 set(avtmir_par_INCLUDES ${avtmir_ser_INCLUDES})
 set(avtmir_par_DEPENDS  ${avtmir_ser_DEPENDS})
 
-#[[
-include_directories(
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-]]
-
-
 #********************************* SERIAL ************************************
 visit_add_library(
     NAME       avtmir_ser

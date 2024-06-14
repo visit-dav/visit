@@ -107,6 +107,7 @@ set(avtpipeline_par_HEADERS  ${avtpipeline_ser_HEADERS})
 set(avtpipeline_par_INCLUDES ${avtpipeline_ser_INCLUDES})
 set(avtpipeline_par_DEPENDS  ${avtpipeline_ser_DEPENDS})
 
+#********************************* SERIAL ************************************
 visit_add_library(
     NAME       avtpipeline_ser
     SOURCES    ${avtpipeline_ser_SOURCES}
@@ -114,6 +115,7 @@ visit_add_library(
     INCLUDES   ${avtpipeline_ser_INCLUDES}
     DEPENDS_ON ${avtpipeline_ser_DEPENDS})
 
+#********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
     visit_add_parallel_library(
         NAME       avtpipeline_par
@@ -122,7 +124,4 @@ if(VISIT_PARALLEL)
         INCLUDES   ${avtpipeline_par_INCLUDES}
         DEPENDS_ON ${avtpipeline_par_DEPENDS})
 endif()
-
-
-
 

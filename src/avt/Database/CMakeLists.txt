@@ -33,14 +33,6 @@ if(NOT VISIT_DBIO_ONLY)
     list(APPEND avtdatabase_par_DEPENDS avtmir_par)
 endif()
 
-#[[
-include_directories(
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-]]
-
-
 #********************************* SERIAL ************************************
 visit_add_library(
     NAME       avtdatabase_ser

@@ -342,11 +342,7 @@ macro(visit_add_parallel_library)
             # check for compile flags vs includes
             set(PAR_COMPILE_FLAGS "")
             set(PAR_INCLUDE "")
-# is this next line needed for dev builds?
-# it causes a problem for public-vs-install
-            if(NOT VISIT_INSTALLED)
-                string(REPLACE " " ";" VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CXXFLAGS})
-            endif()
+            string(REPLACE " " ";" VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CXXFLAGS})
             foreach(X ${VISIT_PARALLEL_CXXFLAGS})
                 string(SUBSTRING ${X} 0 2 is_include)
                 if(is_include STREQUAL "-I")
