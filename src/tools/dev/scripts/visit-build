@@ -334,6 +334,7 @@ set -e
 #   Removed trinity.
 # 
 # Modifications:
+#   Justin Privitera, Fri Jun 14 15:30:31 PDT 2024
 #   Combined visit-build-open and visit-build-closed into one script.
 #-----------------------------------------------------------------------
 
