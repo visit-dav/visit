@@ -53,11 +53,6 @@
 #
 #****************************************************************************/
 
-add_library(avtpipeline_ser)
-
-if(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtpipeline_par)
-endif()
 
 add_subdirectory(AbstractFilters)
 add_subdirectory(Data)
@@ -65,56 +60,69 @@ add_subdirectory(Pipeline)
 add_subdirectory(Sinks)
 add_subdirectory(Sources)
 
+visit_append_list(
+    NAME  avtpipeline_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Database/Database>
+          $<INSTALL_INTERFACE:${VISTI_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Database>
+          $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Database/Ghost>
+          $<INSTALL_INTERFACE:${VISTI_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Ghost>
+          $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow>
+          $<INSTALL_INTERFACE:${VISTI_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/VisWindow>)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${VISIT_COMMON_INCLUDES}
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/Database/Ghost
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${VTKm_INCLUDE_DIRS}
-    ${VTK_INCLUDE_DIRS}
-    ${ZLIB_INCLUDE_DIR})
+visit_append_list(
+    NAME  avtpipeline_ser_DEPENDS
+    ITEMS visitcommon
+          avtdbatts
+          visit_vtk
+          lightweight_visit_vtk
+          VTK::CommonCore
+          VTK::CommonDataModel
+          VTK::CommonMath
+          VTK::CommonTransforms
+          VTK::FiltersGeometry
+          zlib)
 
-set(vtklibs VTK::CommonCore VTK::CommonDataModel VTK::CommonMath
-            VTK::CommonTransforms VTK::FiltersGeometry)
-
-# Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 if(NOT VISIT_DBIO_ONLY)
-    set(AVTMATH avtmath)
+    visit_append_list(
+        NAME  avtpipeline_ser_DEPENDS
+        ITEMS avtmath)
 endif()
 
-#********************************* SERIAL ************************************
-target_link_libraries(avtpipeline_ser
-                      visitcommon ${AVTMATH} avtdbatts
-                      visit_vtk lightweight_visit_vtk ${vtklibs}
-                      ${ZLIB_LIBRARY})
 if(HAVE_LIBVTKM)
-    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+    visit_append_list(
+        NAME  avtpipeline_ser_DEPENDS
+        ITEMS vtkm_cont
+              vtkm_filter_contour
+              vtkm_filter_entity_extraction)
     if(VTKm_ENABLE_KOKKOS)
-        target_link_libraries(avtpipeline_ser amdhip64)
+        visit_append_list(
+            NAME  avtpipeline_ser_DEPENDS
+            ITEMS amdhip64)
     endif()
 endif()
 
-VISIT_INSTALL_TARGETS(avtpipeline_ser)
+# need duplicate lists for parallel target
+set(avtpipeline_par_SOURCES  ${avtpipeline_ser_SOURCES})
+set(avtpipeline_par_HEADERS  ${avtpipeline_ser_HEADERS})
+set(avtpipeline_par_INCLUDES ${avtpipeline_ser_INCLUDES})
+set(avtpipeline_par_DEPENDS  ${avtpipeline_ser_DEPENDS})
 
-#********************************* PARALLEL **********************************
+visit_add_library(
+    NAME       avtpipeline_ser
+    SOURCES    ${avtpipeline_ser_SOURCES}
+    HEADERS    ${avtpipeline_ser_HEADERS}
+    INCLUDES   ${avtpipeline_ser_INCLUDES}
+    DEPENDS_ON ${avtpipeline_ser_DEPENDS})
+
 if(VISIT_PARALLEL)
-    target_link_libraries(avtpipeline_par
-                          visitcommon ${AVTMATH} avtdbatts
-                          visit_vtk lightweight_visit_vtk ${vtklibs}
-                          ${ZLIB_LIBRARY})
-    if(HAVE_LIBVTKM)
-        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
-        if(VTKm_ENABLE_KOKKOS)
-            target_link_libraries(avtpipeline_par amdhip64)
-        endif()
-    endif()
-    VISIT_INSTALL_TARGETS(avtpipeline_par)
+    visit_add_parallel_library(
+        NAME       avtpipeline_par
+        SOURCES    ${avtpipeline_par_SOURCES}
+        HEADERS    ${avtpipeline_par_HEADERS}
+        INCLUDES   ${avtpipeline_par_INCLUDES}
+        DEPENDS_ON ${avtpipeline_par_DEPENDS})
 endif()
+
+
+
 
