@@ -23,7 +23,7 @@ visit_append_list(
     NAME  avtmir_ser_HEADERS
     ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/Edge.h
           ${CMAKE_CURRENT_SOURCE_DIR}/Face.h
-          ${CMAKE_CURRENT_SOURCE_DIR}/mat3d_tet.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/mat3d_tet.h
           ${CMAKE_CURRENT_SOURCE_DIR}/MaterialTetrahedron.h
           ${CMAKE_CURRENT_SOURCE_DIR}/MaterialTriangle.h
           ${CMAKE_CURRENT_SOURCE_DIR}/QuadraticHash.h
