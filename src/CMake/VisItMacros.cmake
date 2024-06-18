@@ -316,3 +316,82 @@ macro(visit_add_library)
     unset(${val_NAME}_FEATURES CACHE)
 endmacro()
 
+##############################################################################
+# Like visit_add_library, but adds parallel compile/link options.
+# Taken mostly from VISIT_ADD_PARALLEL_LIBRARY
+#
+# ARGUMENTS:
+#    NAME         target name                REQUIRED
+#    SOURCES      [source1 [source2 ...]]    REQUIRED
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON   [dep1 ...]                 OPTIONAL
+#    FOLDER       [name])                    OPTIONAL
+#
+##############################################################################
+
+macro(visit_add_parallel_library)
+
+    visit_add_library(${ARGV})
+
+    cmake_parse_arguments(vapl "" "NAME" "" ${ARGN})
+
+    if(UNIX)
+        if(VISIT_PARALLEL_CXXFLAGS)
+            # check for compile flags vs includes
+            set(PAR_COMPILE_FLAGS "")
+            set(PAR_INCLUDE "")
+            string(REPLACE " " ";" VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CXXFLAGS})
+            foreach(X ${VISIT_PARALLEL_CXXFLAGS})
+                string(SUBSTRING ${X} 0 2 is_include)
+                if(is_include STREQUAL "-I")
+                    string(SUBSTRING ${X} 2 -1 x_as_include)
+                    list(APPEND PAR_INCLUDE $<BUILD_INTERFACE:${x_as_include}>)
+                else()
+                    list(APPEND PAR_COMPILE_FLAGS "${X}")
+                endif()
+            endforeach()
+            target_include_directories(${vapl_NAME} PUBLIC ${PAR_INCLUDE})
+            target_compile_options(${vapl_NAME} PUBLIC ${PAR_COMPILE_FLAGS})
+
+        endif()
+
+        if(VISIT_PARALLEL_LINKER_FLAGS)
+            set(PAR_LINK_FLAGS "")
+            set(PAR_LINK_DIR "")
+            string(REPLACE " " ";" VISIT_PARALLEL_LINKER_FLAGS ${VISIT_PARALLEL_LINKER_FLAGS})
+            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
+                string(SUBSTRING ${X} 0 2 is_link_dir)
+                if(is_link_dir STREQUAL "-L")
+                    string(SUBSTRING ${X} 2 -1 x_as_link)
+                    list(APPEND PAR_LINK_DIR ${x_as_link})
+                else()
+                    list(APPEND PAR_LINK_FLAGS "${X}")
+                endif()
+            endforeach()
+            target_link_options(${vapl_NAME} PUBLIC ${PAR_LINK_FLAGS})
+            target_link_directories(${vapl_NAME} PUBLIC ${PAR_LINK_DIR})
+        endif()
+
+        if(VISIT_PARALLEL_RPATH)
+            set(PAR_RPATHS "")
+            foreach(X ${CMAKE_INSTALL_RPATH})
+                list(APPEND PAR_RPATHS ${X})
+            endforeach()
+            foreach(X ${VISIT_PARALLEL_RPATH})
+                list(APPEND PAR_RPATHS ${X})
+            endforeach()
+            set_property(TARGET ${vapl_NAME}
+                     APPEND PROPERTY INSTALL_RPATH ${PAR_RPATHS})
+        endif()
+    else() # not on unix
+      target_include_directories(${vapl_NAME} PUBLIC $<BUILD_INTERFACE:${VISIT_PARALLEL_INCLUDE}>)
+      target_compile_definitions(${vapl_NAME} PUBLIC ${VISIT_PARALLEL_DEFS})
+    endif()
+
+    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        target_link_libraries(${vapl_NAME} PUBLIC ${VISIT_PARALLEL_LIBS})
+    endif()
+endmacro()
+
