@@ -727,6 +727,72 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 }
 
 // ****************************************************************************
+//  Method: HeterogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Constructs a vtkCell array from a Blueprint topology
+//
+//  Arguments:
+//   n_topo:    Blueprint Topology
+//
+//  Programmer: Justin Privitera
+//  Creation:   Tue Jun 18 13:59:05 PDT 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkCellArray *
+HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo)
+{
+    vtkCellArray *ca = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    const int ncells = n_topo["elements/shapes"].dtype().number_of_elements();
+    const int totalsize = [&]()
+    {
+        int running_sum = 0;
+        int_accessor sizes = n_topo["elements/sizes"].value();
+        for (int i = 0; i < ncells; i ++)
+        {
+            // We could also go through the shape ids and map those to vtk cell type sizes
+            // but this approach is simpler
+            running_sum += sizes[i] + 1;
+        }
+    }();
+
+    int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
+    int csize = VTKCellTypeSize(ctype);
+    // int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
+    ida->SetNumberOfTuples(ncells * (csize + 1));
+
+    // Extract connectivity as int array, using 'to_int_array' if needed.
+    int_array topo_conn;
+    Node n_tmp;
+    if(n_topo["elements/connectivity"].dtype().is_int())
+    {
+        topo_conn = n_topo["elements/connectivity"].as_int_array();
+    }
+    else
+    {
+        n_topo["elements/connectivity"].to_int_array(n_tmp);
+        topo_conn = n_tmp.as_int_array();
+    }
+
+    for (int i = 0 ; i < ncells; i++)
+    {
+        ida->SetComponent((csize+1)*i, 0, csize);
+        for (int j = 0; j < csize; j++)
+        {
+            ida->SetComponent((csize+1)*i+j+1, 0,topo_conn[i*csize+j]);
+        }
+    }
+    ca->SetCells(ncells, ida);
+    ida->Delete();
+    return ca;
+}
+
+// ****************************************************************************
 //  Method: HomogeneousShapeTopologyToVTKCellArray
 //
 //  Purpose:
@@ -1175,14 +1241,29 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
         oca->Delete();
     }
-    
-    //
-    // Now, add explicit topology
-    //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
-    points->Delete();
-    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
-    ca->Delete();
+
+    // mixed topo case
+    if (n_topo.has_path("elements/shape") &&
+        n_topo["elements/shape"].as_string() == "mixed")
+    {
+        //
+        // Now, add explicit topology
+        //
+        vtkCellArray *ca = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr);
+        points->Delete();
+        ugrid->SetCells(n_topo["elements/shapes"].value(), ca);
+        ca->Delete();
+    }
+    else
+    {
+        //
+        // Now, add explicit topology
+        //
+        vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+        points->Delete();
+        ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
+        ca->Delete();
+    }
 
     return ugrid;
 }
