@@ -9,51 +9,74 @@
 #
 #****************************************************************************
 
-SET(AVTDBIN_SOURCES
-avtBinningScheme.C
-avtDataBinning.C
-avtDataBinningConstructor.C
-avtDataBinningFunctionInfo.C
-avtR2Faverage.C
-avtR2Fcount.C
-avtR2Fmaximum.C
-avtR2Fminimum.C
-avtR2Foperator.C
-avtR2Fpdf.C
-avtR2Frms.C
-avtR2Fstddev.C
-avtR2Fsum.C
-avtR2Fvariance.C
-avtUniformBinningScheme.C
-)
+set(avtdbin_SOURCES
+    avtBinningScheme.C
+    avtDataBinning.C
+    avtDataBinningConstructor.C
+    avtDataBinningFunctionInfo.C
+    avtR2Faverage.C
+    avtR2Fcount.C
+    avtR2Fmaximum.C
+    avtR2Fminimum.C
+    avtR2Foperator.C
+    avtR2Fpdf.C
+    avtR2Frms.C
+    avtR2Fstddev.C
+    avtR2Fsum.C
+    avtR2Fvariance.C
+    avtUniformBinningScheme.C)
 
+set(avtdbin_HEADERS
+    avtBinningScheme.h
+    avtDataBinning.h
+    avtDataBinningConstructor.h
+    avtDataBinningFunctionInfo.h
+    avtR2Faverage.h
+    avtR2Fcount.h
+    avtR2Fmaximum.h
+    avtR2Fminimum.h
+    avtR2Foperator.h
+    avtR2Fpdf.h
+    avtR2Frms.h
+    avtR2Fstddev.h
+    avtR2Fsum.h
+    avtR2Fvariance.h
+    avtUniformBinningScheme.h
+    dbin_exports.h)
+
+set(avtdbin_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/DataBinning>)
+
+set(avtdbin_DEPENDS
+    visitcommon
+    avtdbatts
+    avtmath)
+
+#[[
 INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VTK_INCLUDE_DIRS}
 )
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+]]
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtdbin_ser ${AVTDBIN_SOURCES})
-TARGET_LINK_LIBRARIES(avtdbin_ser visitcommon avtdbatts avtmath avtpipeline_ser)
-VISIT_INSTALL_TARGETS(avtdbin_ser)
+visit_add_library(
+    NAME       avtdbin_ser
+    SOURCES    ${avtdbin_SOURCES}
+    HEADERS    ${avtdbin_HEADERS}
+    INCLUDES   ${avtdbin_INCLUDES}
+    DEPENDS_ON ${avtdbin_DEPENDS}
+               avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtdbin_par ${AVTDBIN_SOURCES})
-    TARGET_LINK_LIBRARIES(avtdbin_par visitcommon avtdbatts avtmath avtpipeline_par)
-    VISIT_INSTALL_TARGETS(avtdbin_par)
-ENDIF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
+    visit_add_parallel_library(
+        NAME       avtdbin_par
+        SOURCES    ${avtdbin_SOURCES}
+        HEADERS    ${avtdbin_HEADERS}
+        INCLUDES   ${avtdbin_INCLUDES}
+        DEPENDS_ON ${avtdbin_DEPENDS}
+                   avtpipeline_par)
+endif()
+

@@ -7,31 +7,46 @@
 #
 #****************************************************************************
 
-set(INTERACTORS_SOURCES
-    Dolly3D.C
-    FlyThrough.C
-    Lineout2D.C
-    Navigate2D.C
-    Navigate3D.C
-    NavigateAxisArray.C
-    NavigateCurve.C
-    NullInteractor.C
-    Pick.C
-    VisitHotPointInteractor.C
-    VisitInteractor.C
-    Zoom2D.C
-    Zoom3D.C
-    ZoomAxisArray.C
-    ZoomCurve.C
-    ZoomInteractor.C)
+visit_append_list(
+    NAME  avtviswindow_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/Dolly3D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/FlyThrough.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Lineout2D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Navigate2D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Navigate3D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/NavigateAxisArray.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/NavigateCurve.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/NullInteractor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Pick.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisitHotPointInteractor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisitInteractor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Zoom2D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Zoom3D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoomAxisArray.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoomCurve.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoomInteractor.C)
 
-target_sources(avtviswindow_ser PRIVATE ${INTERACTORS_SOURCES})
-target_include_directories(avtviswindow_ser PUBLIC .)
+visit_append_list(
+    NAME  avtviswindow_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/Dolly3D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/FlyThrough.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Lineout2D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Navigate2D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Navigate3D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/NavigateAxisArray.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/NavigateCurve.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/NullInteractor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Pick.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisitHotPointInteractor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisitInteractor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Zoom2D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/Zoom3D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoomAxisArray.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoomCurve.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZoomInteractor.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtviswindow_par PRIVATE ${INTERACTORS_SOURCES})
-    target_include_directories(avtviswindow_par PUBLIC .)
-endif()
-
-unset(INTERACTORS_SOURCES)
+visit_append_list(
+    NAME  avtviswindow_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/Interactors>)
 

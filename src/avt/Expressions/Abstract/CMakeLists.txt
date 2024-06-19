@@ -7,24 +7,33 @@
 #
 #*****************************************************************************
 
-set(ABSTRACT_SOURCES
-    avtBinaryMathExpression.C
-    avtComparisonExpression.C
-    avtExpressionFilter.C
-    avtExpressionDataTreeIterator.C
-    avtMacroExpressionFilter.C
-    avtMultipleInputExpressionFilter.C
-    avtMultipleInputMathExpression.C
-    avtSingleInputExpressionFilter.C
-    avtUnaryMathExpression.C)
+visit_append_list(
+    NAME  avtexpressions_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryMathExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtComparisonExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionDataTreeIterator.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMacroExpressionFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputExpressionFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputMathExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSingleInputExpressionFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUnaryMathExpression.C)
 
-target_sources(avtexpressions_ser PRIVATE ${ABSTRACT_SOURCES})
-target_include_directories(avtexpressions_ser PUBLIC .)
+visit_append_list(
+    NAME  avtexpressions_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryMathExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtComparisonExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionDataTreeIterator.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMacroExpressionFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputExpressionFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputMathExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSingleInputExpressionFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUnaryMathExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/expression_exports.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtexpressions_par PRIVATE ${ABSTRACT_SOURCES})
-    target_include_directories(avtexpressions_par PUBLIC .)
-endif()
-
-unset(ABSTRACT_SOURCES)
+visit_append_list(
+    NAME  avtexpressions_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Expressions/Abstract>)
 

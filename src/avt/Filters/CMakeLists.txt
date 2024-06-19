@@ -66,130 +66,201 @@
 #
 #****************************************************************************/
 
-SET(AVTFILTERS_SOURCES
-avtActualExtentsFilter.C
-avtCondenseDatasetFilter.C
-avtContourFilter.C
-avtCoordSystemConvert.C
-avtCurveConstructorFilter.C
-avtCustomTransform.C
-avtDatasetOnDemandFilter.C
-avtDisplaceFilter.C
-avtFacelistFilter.C
-avtFeatureEdgesFilter.C
-avtGhostZoneAndFacelistFilter.C
-avtGhostZoneFilter.C
-avtImageCommunicator.C
-avtImageCompositer.C
-avtLinearTransformFilter.C
-avtLineGlyphFilter.C
-avtLineoutFilter.C
-avtLineScanFilter.C
-avtLineToPolylineFilter.C
-avtMassVoxelExtractor.C
-avtMeshLogFilter.C
-avtMissingDataFilter.C
-avtMultiresFilter.C
-avtNamedSelectionFilter.C
-avtPolylineCleanupFilter.C
-avtRayCompositer.C
-avtRayTracerBase.C
-avtRayTracer.C
-avtResampleFilter.C
-avtSamplePointCommunicator.C
-avtSamplePointExtractorBase.C
-avtSamplePointExtractor.C
-avtSamplePointToSurfaceFilter.C
-avtShiftCenteringFilter.C
-avtSimilarityTransformFilter.C
-avtSmoothPolyDataFilter.C
-avtStaggeringFilter.C
-avtSubsetBlockMergeFilter.C
-avtSummationFilter.C
-avtSurfaceFilter.C
-avtThresholdFilter.C
-avtTiledImageCompositor.C
-avtTimeLoopCollectorFilter.C
-avtTimeLoopFilter.C
-avtTransform.C
-avtValueImageCompositer.C
-avtVertexExtractor.C
-avtVertexNormalsFilter.C
-avtVoxelExtractor.C
-avtWarpFilter.C
-avtWholeImageCompositerNoZ.C
-avtWholeImageCompositerWithZ.C
-avtWorldSpaceToImageSpaceTransform.C
-avtXRayFilter.C
-)
+set(avtfilters_SOURCES
+    avtActualExtentsFilter.C
+    avtCondenseDatasetFilter.C
+    avtContourFilter.C
+    avtCoordSystemConvert.C
+    avtCurveConstructorFilter.C
+    avtCustomTransform.C
+    avtDatasetOnDemandFilter.C
+    avtDisplaceFilter.C
+    avtFacelistFilter.C
+    avtFeatureEdgesFilter.C
+    avtGhostZoneAndFacelistFilter.C
+    avtGhostZoneFilter.C
+    avtImageCommunicator.C
+    avtImageCompositer.C
+    avtLinearTransformFilter.C
+    avtLineGlyphFilter.C
+    avtLineoutFilter.C
+    avtLineScanFilter.C
+    avtLineToPolylineFilter.C
+    avtMassVoxelExtractor.C
+    avtMeshLogFilter.C
+    avtMissingDataFilter.C
+    avtMultiresFilter.C
+    avtNamedSelectionFilter.C
+    avtPolylineCleanupFilter.C
+    avtRayCompositer.C
+    avtRayTracerBase.C
+    avtRayTracer.C
+    avtResampleFilter.C
+    avtSamplePointCommunicator.C
+    avtSamplePointExtractorBase.C
+    avtSamplePointExtractor.C
+    avtSamplePointToSurfaceFilter.C
+    avtShiftCenteringFilter.C
+    avtSimilarityTransformFilter.C
+    avtSmoothPolyDataFilter.C
+    avtStaggeringFilter.C
+    avtSubsetBlockMergeFilter.C
+    avtSummationFilter.C
+    avtSurfaceFilter.C
+    avtThresholdFilter.C
+    avtTiledImageCompositor.C
+    avtTimeLoopCollectorFilter.C
+    avtTimeLoopFilter.C
+    avtTransform.C
+    avtValueImageCompositer.C
+    avtVertexExtractor.C
+    avtVertexNormalsFilter.C
+    avtVoxelExtractor.C
+    avtWarpFilter.C
+    avtWholeImageCompositerNoZ.C
+    avtWholeImageCompositerWithZ.C
+    avtWorldSpaceToImageSpaceTransform.C
+    avtXRayFilter.C)
 
-IF(VISIT_SLIVR)
-    LIST(APPEND AVTFILTERS_SOURCES
+set(avtfilters_HEADERS
+    avtActualExtentsFilter.h
+    avtCondenseDatasetFilter.h
+    avtContourFilter.h
+    avtCoordSystemConvert.h
+    avtCurveConstructorFilter.h
+    avtCustomTransform.h
+    avtDatasetOnDemandFilter.h
+    avtDisplaceFilter.h
+    avtFacelistFilter.h
+    avtFeatureEdgesFilter.h
+    avtGhostZoneAndFacelistFilter.h
+    avtGhostZoneFilter.h
+    avtImageCommunicator.h
+    avtImageCompositer.h
+    avtLinearTransformFilter.h
+    avtLineGlyphFilter.h
+    avtLineoutFilter.h
+    avtLineScanFilter.h
+    avtLineToPolylineFilter.h
+    avtMassVoxelExtractor.h
+    avtMeshLogFilter.h
+    avtMissingDataFilter.h
+    avtMultiresFilter.h
+    avtNamedSelectionFilter.h
+    avtPolylineCleanupFilter.h
+    avtRayCompositer.h
+    avtRayTracerBase.h
+    avtRayTracer.h
+    avtResampleFilter.h
+    avtSamplePointCommunicator.h
+    avtSamplePointExtractorBase.h
+    avtSamplePointExtractor.h
+    avtSamplePointToSurfaceFilter.h
+    avtShiftCenteringFilter.h
+    avtSimilarityTransformFilter.h
+    avtSmoothPolyDataFilter.h
+    avtStaggeringFilter.h
+    avtSubsetBlockMergeFilter.h
+    avtSummationFilter.h
+    avtSurfaceFilter.h
+    avtThresholdFilter.h
+    avtTiledImageCompositor.h
+    avtTimeLoopCollectorFilter.h
+    avtTimeLoopFilter.h
+    avtTransform.h
+    avtValueImageCompositer.h
+    avtVertexExtractor.h
+    avtVertexNormalsFilter.h
+    avtVoxelExtractor.h
+    avtWarpFilter.h
+    avtWholeImageCompositer.h
+    avtWholeImageCompositerNoZ.h
+    avtWholeImageCompositerWithZ.h
+    avtWorldSpaceToImageSpaceTransform.h
+    avtXRayFilter.h
+    filters_exports.h
+    imgMetaData.h)
+
+if(VISIT_SLIVR)
+    list(APPEND avtfilters_SOURCES
          avtSLIVRCommon.C
          avtSLIVRImageCompositor.C
          avtSLIVRRayTracer.C
          avtSLIVRSamplePointExtractor.C
          avtSLIVRVoxelExtractor.C)
-    ADD_DEFINITIONS(-DVISIT_SLIVR)
-ENDIF()
+    list(APPEND avtfilters_HEADERS
+         avtSLIVRCommon.h
+         avtSLIVRImageCompositor.h
+         avtSLIVRRayTracer.h
+         avtSLIVRSamplePointExtractor.h
+         avtSLIVRVoxelExtractor.h)
+    list(APPEND avtfilters_DEFINES VISIT_SLIVR)
+endif()
 
+list(APPEND avtfilters_DEPENDS
+    visitcommon
+    lightweight_visit_vtk
+    visit_vtk
+    avtmath
+    avtview
+    avtdbatts
+    VTK::CommonMath
+    VTK::CommonTransforms
+    VTK::FiltersGeneral
+    VTK::FiltersModeling)
+
+if(HAVE_LIBVTKM)
+    list(APPEND avtfilters_DEPENDS
+        vtkm_cont
+        vtkm_filter_contour
+        vtkm_filter_entity_extraction
+        vtkm_filter_field_conversion)
+    if(NOT WIN32)
+        list(APPEND avtfilters_DEPENDS Threads::Threads)
+    endif()
+    if(VTKm_ENABLE_KOKKOS)
+        list(APPEND avtfilters_DEPENDS amdhip64)
+    endif()
+endif()
+#[[
 INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Database/Ghost
-${VISIT_SOURCE_DIR}/avt/IVP
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
 ${VTKm_INCLUDE_DIRS}
-${VTK_INCLUDE_DIRS}
 )
+]]
 
-set(vtklibs VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+set(avtfilters_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Filters>)
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts ${vtklibs})
-if(HAVE_LIBVTKM)
-    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
-    if(NOT WIN32)
-        target_link_libraries(avtfilters_ser Threads::Threads)
-    endif()
-    if(VTKm_ENABLE_KOKKOS)
-        target_link_libraries(avtfilters_ser amdhip64)
-    endif()
-endif()
-VISIT_INSTALL_TARGETS(avtfilters_ser)
+
+visit_add_library(
+    NAME       avtfilters_ser
+    SOURCES    ${avtfilters_SOURCES}
+    HEADERS    ${avtfilters_HEADERS}
+    INCLUDES   ${avtfilters_INCLUDES}
+    DEFINES    ${avtfilters_DEFINES}
+    DEPENDS_ON ${avtfilters_DEPENDS}
+               avtpipeline_ser
+               avtdatabase_ser)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts ${vtklibs})
-    if(HAVE_LIBVTKM)
-        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
-        if(NOT WIN32)
-            target_link_libraries(avtfilters_par Threads::Threads)
-        endif()
-        if(VTKm_ENABLE_KOKKOS)
-            target_link_libraries(avtfilters_par amdhip64)
-        endif()
-    endif()
-    VISIT_INSTALL_TARGETS(avtfilters_par)
-ENDIF(VISIT_PARALLEL)
+
+if(VISIT_PARALLEL)
+
+    visit_add_parallel_library(
+        NAME       avtfilters_par
+        SOURCES    ${avtfilters_SOURCES}
+        HEADERS    ${avtfilters_HEADERS}
+        INCLUDES   ${avtfilters_INCLUDES}
+        DEFINES    ${avtfilters_DEFINES}
+        DEPENDS_ON ${avtfilters_DEPENDS}
+                   avtpipeline_par
+                   avtdatabase_par)
+endif()
+

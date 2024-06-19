@@ -7,11 +7,20 @@
 #
 #****************************************************************************
 
-target_sources(avtviswindow_ser PRIVATE VisWindowProtectionProxy.C)
-target_include_directories(avtviswindow_ser PUBLIC .)
+visit_append_list(
+    NAME  avtviswindow_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowProtectionProxy.C)
 
-if(VISIT_PARALLEL)
-    target_sources(avtviswindow_par PRIVATE VisWindowProtectionProxy.C)
-    target_include_directories(avtviswindow_par PUBLIC .)
-endif()
+visit_append_list(
+    NAME  avtviswindow_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowColleagueProxy.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowInteractorProxy.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowProtectionProxy.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowRenderProxy.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowToolProxy.h)
+
+visit_append_list(
+    NAME  avtviswindow_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/Proxies>)
 

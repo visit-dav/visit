@@ -7,32 +7,39 @@
 #
 #*****************************************************************************
 
-set(MANAGEMENT_SOURCES
-    avtConstantCreatorExpression.C
-    avtDeferExpressionBaseFilter.C
-    avtExecuteThenTimeLoopFilter.C
-    avtExpressionEvaluatorFilter.C
-    avtExprNode.C
-    avtExprNodeFactory.C
-    avtFunctionExpr_CreateCMFEFilters.C
-    avtFunctionExpr_CreateConditionalFilters.C
-    avtFunctionExpr_CreateImageProcessingFilters.C
-    avtFunctionExpr_CreateMaterialFilters.C
-    avtFunctionExpr_CreateMathFilters.C
-    avtFunctionExpr_CreateMeshFilters.C
-    avtFunctionExpr_CreateMeshQualityFilters.C
-    avtFunctionExpr_CreateTimeAndValueFilters.C
-    avtFunctionExpr_CreateVectorMatrixFilters.C
-    avtTimeExpression.C
-    ExprPipelineState.C)
+visit_append_list(
+    NAME  avtexpressions_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtConstantCreatorExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDeferExpressionBaseFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExecuteThenTimeLoopFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionEvaluatorFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExprNode.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExprNodeFactory.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateCMFEFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateConditionalFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateImageProcessingFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateMaterialFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateMathFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateMeshFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateMeshQualityFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateTimeAndValueFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateVectorMatrixFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTimeExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/ExprPipelineState.C)
 
-target_sources(avtexpressions_ser PRIVATE ${MANAGEMENT_SOURCES})
-target_include_directories(avtexpressions_ser PUBLIC .)
+visit_append_list(
+    NAME  avtexpressions_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtConstantCreatorExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDeferExpressionBaseFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExecuteThenTimeLoopFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionEvaluatorFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExprNode.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExprNodeFactory.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTimeExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ExprPipelineState.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtexpressions_par PRIVATE ${MANAGEMENT_SOURCES})
-    target_include_directories(avtexpressions_par PUBLIC .)
-endif()
-
-unset(MANAGEMENT_SOURCES)
+visit_append_list(
+    NAME  avtexpressions_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Expressions/Management>)
 

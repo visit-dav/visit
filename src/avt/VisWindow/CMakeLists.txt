@@ -23,12 +23,6 @@
 #
 #****************************************************************************
 
-add_library(avtviswindow_ser)
-
-if(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtviswindow_par)
-endif()
-
 add_subdirectory(Colleagues)
 add_subdirectory(Exceptions)
 add_subdirectory(Interactors)
@@ -36,36 +30,38 @@ add_subdirectory(Proxies)
 add_subdirectory(Tools)
 add_subdirectory(VisWindow)
 
-include_directories(
-    ${VISIT_COMMON_INCLUDES}
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-    ${VISIT_SOURCE_DIR}/avt/Plotter
-    ${VISIT_SOURCE_DIR}/avt/Plotter/vtk
-    ${VISIT_SOURCE_DIR}/avt/View
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${VTK_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR})
+set(avtviswindow_DEPENDS
+    visitcommon
+    avtview
+    avtmath
+    lightweight_visit_vtk
+    visit_vtk
+    VTK::FiltersModeling
+    VTK::ImagingCore
+    VTK::InteractionStyle
+    ${OBJC_LIBS})
 
-set(vtklibs VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle)
+set(avtviswindow_par_SOURCES  ${avtviswindow_ser_SOURCES})
+set(avtviswindow_par_HEADERS  ${avtviswindow_ser_HEADERS})
+set(avtviswindow_par_INCLUDES ${avtviswindow_ser_INCLUDES})
 
 #********************************* SERIAL ************************************
-target_link_libraries(avtviswindow_ser visitcommon avtview avtmath
-    avtplotter_ser visit_vtk lightweight_visit_vtk ${vtklibs} ${OBJC_LIBS})
-VISIT_INSTALL_TARGETS(avtviswindow_ser)
+visit_add_library(
+    NAME       avtviswindow_ser
+    SOURCES    ${avtviswindow_ser_SOURCES}
+    HEADERS    ${avtviswindow_ser_HEADERS}
+    INCLUDES   ${avtviswindow_ser_INCLUDES}
+    DEPENDS_ON ${avtviswindow_DEPENDS}
+               avtplotter_ser)
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    target_link_libraries(avtviswindow_par visitcommon avtview avtmath
-       avtplotter_par visit_vtk lightweight_visit_vtk ${vtklibs} ${OBJC_LIBS})
-    VISIT_INSTALL_TARGETS(avtviswindow_par)
+    visit_add_library(
+        NAME       avtviswindow_par
+        SOURCES    ${avtviswindow_par_SOURCES}
+        HEADERS    ${avtviswindow_par_HEADERS}
+        INCLUDES   ${avtviswindow_par_INCLUDES}
+        DEPENDS_ON ${avtviswindow_DEPENDS}
+                   avtplotter_par)
 endif()
 
