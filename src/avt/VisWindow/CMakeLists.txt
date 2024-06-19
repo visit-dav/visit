@@ -56,7 +56,7 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_library(
+    visit_add_parallel_library(
         NAME       avtviswindow_par
         SOURCES    ${avtviswindow_par_SOURCES}
         HEADERS    ${avtviswindow_par_HEADERS}
