@@ -53,13 +53,6 @@ set(avtdbin_DEPENDS
     avtdbatts
     avtmath)
 
-#[[
-INCLUDE_DIRECTORIES(
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-)
-]]
-
 #********************************* SERIAL ************************************
 visit_add_library(
     NAME       avtdbin_ser

@@ -222,16 +222,6 @@ if(HAVE_LIBVTKM)
         list(APPEND avtfilters_DEPENDS amdhip64)
     endif()
 endif()
-#[[
-INCLUDE_DIRECTORIES(
-${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
-${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/engine/main
-${VTKm_INCLUDE_DIRS}
-)
-]]
 
 set(avtfilters_INCLUDES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
