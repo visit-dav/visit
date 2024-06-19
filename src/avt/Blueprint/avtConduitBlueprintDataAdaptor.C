@@ -743,50 +743,55 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 // ****************************************************************************
 
 vtkCellArray *
-HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo)
+HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
+                                         const int ncells)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    const int ncells = n_topo["elements/shapes"].dtype().number_of_elements();
-    const int totalsize = [&]()
+    int_accessor topo_sizes = n_topo["elements/sizes"].value();
+    const int totalsize = [&]() -> int
     {
         int running_sum = 0;
-        int_accessor sizes = n_topo["elements/sizes"].value();
         for (int i = 0; i < ncells; i ++)
         {
             // We could also go through the shape ids and map those to vtk cell type sizes
             // but this approach is simpler
-            running_sum += sizes[i] + 1;
+            running_sum += topo_sizes[i] + 1;
         }
+        return running_sum;
     }();
 
-    int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
-    int csize = VTKCellTypeSize(ctype);
-    // int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
-    ida->SetNumberOfTuples(ncells * (csize + 1));
+    ida->SetNumberOfTuples(totalsize);
 
-    // Extract connectivity as int array, using 'to_int_array' if needed.
-    int_array topo_conn;
+    // Extract connectivity as int accessor, using 'to_int_accessor' if needed.
+    int_accessor topo_conn;
     Node n_tmp;
-    if(n_topo["elements/connectivity"].dtype().is_int())
+    if (n_topo["elements/connectivity"].dtype().is_int())
     {
-        topo_conn = n_topo["elements/connectivity"].as_int_array();
+        topo_conn = n_topo["elements/connectivity"].as_int_accessor();
     }
     else
     {
         n_topo["elements/connectivity"].to_int_array(n_tmp);
-        topo_conn = n_tmp.as_int_array();
+        topo_conn = n_tmp.as_int_accessor();
     }
 
-    for (int i = 0 ; i < ncells; i++)
+    int comp_index = 0;
+    int topo_conn_index = 0;
+    for (int cell_id = 0; cell_id < ncells; cell_id ++)
     {
-        ida->SetComponent((csize+1)*i, 0, csize);
-        for (int j = 0; j < csize; j++)
+        const int curr_size = topo_sizes[cell_id];
+        ida->SetComponent(comp_index, 0, curr_size);
+        comp_index ++;
+        for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
         {
-            ida->SetComponent((csize+1)*i+j+1, 0,topo_conn[i*csize+j]);
+            ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+            comp_index ++;
         }
+        topo_conn_index += curr_size;
     }
+
     ca->SetCells(ncells, ida);
     ida->Delete();
     return ca;
@@ -1246,12 +1251,31 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     if (n_topo.has_path("elements/shape") &&
         n_topo["elements/shape"].as_string() == "mixed")
     {
+        const int ncells = n_topo["elements/shapes"].dtype().number_of_elements();
+        
+        vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+        cellTypes->SetNumberOfValues(ncells);
+        unsigned char *ct = cellTypes->GetPointer(0);
+
+        vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
+        cellLocations->SetNumberOfValues(ncells);
+        vtkIdType *cl = cellLocations->GetPointer(0);
+
+        int_accessor shapes_accessor = n_topo["elements/shapes"].value();
+        int_accessor offsets_accessor = n_topo["elements/offsets"].value();
+
+        for (int i = 0; i < ncells; i ++)
+        {
+            *ct++ = shapes_accessor[i];
+            *cl++ = offsets_accessor[i];
+        }
+
         //
         // Now, add explicit topology
         //
-        vtkCellArray *ca = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr);
+        vtkCellArray *ca = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
         points->Delete();
-        ugrid->SetCells(n_topo["elements/shapes"].value(), ca);
+        ugrid->SetCells(cellTypes, cellLocations, ca);
         ca->Delete();
     }
     else
