@@ -91,8 +91,6 @@ if(VISIT_PYTHON_FILTERS)
     visit_append_list(
         NAME avtexpressions_ser_INCLUDES
         ITEMS $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
-
-#        ${VISIT_SOURCE_DIR}/visitpy/common/)
 endif()
 
 set(avtexpressions_par_SOURCES  ${avtexpressions_ser_SOURCES})
