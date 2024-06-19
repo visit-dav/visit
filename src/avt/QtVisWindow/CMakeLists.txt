@@ -25,6 +25,7 @@ visit_add_library(
     DEPENDS_ON visitcommon
                avtviswindow_ser
                vtkqt
+               winutil
                ${QT_QTCORE_LIBRARY}
                ${QT_QTGUI_LIBRARY})
 

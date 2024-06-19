@@ -24,32 +24,41 @@
 #
 #****************************************************************************
 
-SET(WINUTIL_SOURCES
-Appearance.C
-QvisColorTableButton.C
-QvisNoDefaultColorTableButton.C
-QvisColorTableWidget.C
-QvisVariableButton.C
-QvisVariableButtonHelper.C
-QvisVariablePopupMenu.C
-UnicodeHelper.C
-VariableMenuPopulator.C
-WindowMetrics.C
-)
+visit_add_library(
+    NAME       winutil
+    SOURCES    Appearance.C
+               QvisColorTableButton.C
+               QvisColorTableWidget.C
+               QvisNoDefaultColorTableButton.C
+               QvisVariableButton.C
+               QvisVariableButtonHelper.C
+               QvisVariablePopupMenu.C
+               UnicodeHelper.C
+               VariableMenuPopulator.C
+               WindowMetrics.C
+    HEADERS    Appearance.h
+               QvisColorTableButton.h
+               QvisColorTableWidget.h
+               QvisNoDefaultColorTableButton.h
+               QvisVariableButton.h
+               QvisVariableButtonHelper.h
+               QvisVariablePopupMenu.h
+               UnicodeHelper.h
+               VariableMenuPopulator.h
+               WindowMetrics.h
+               winutil_exports.h
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/winutil>
+    DEPENDS_ON visitcommon
+               avtdbatts
+               ${QT_QTCORE_LIBRARY}
+               ${QT_QTGUI_LIBRARY}
+               ${QT_QTWIDGETS_LIBRARY})
 
-
-INCLUDE_DIRECTORIES(
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/winutil
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VTK_INCLUDE_DIRS}
-)
-
-# Add link directories needed to use Qt.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
+if(LINUX)
+# Specify the libraries to link against on Windows & Mac
+    target_link_libraries(winutil PRIVATE ${QT_QTX11EXTRAS_LIBRARY} X11)
+endif()
 
 set_target_properties(winutil PROPERTIES AUTOMOC ON)
 
@@ -57,10 +66,3 @@ if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(avtqtviswindow)
 endif()
 
-# Specify the libraries to link against on Windows & Mac
-TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTWIDGETS_LIBRARY})
-if(LINUX)
-    target_link_libraries(winutil ${QT_QTX11EXTRAS_LIBRARY} X11)
-endif()
-
-VISIT_INSTALL_TARGETS(winutil)
