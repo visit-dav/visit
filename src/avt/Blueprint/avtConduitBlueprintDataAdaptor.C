@@ -1728,77 +1728,76 @@ void vtkUnstructuredToNode(Node &node,
                            vtkUnstructuredGrid *grid, 
                            const int dims)
 {
-  const int npts = grid->GetNumberOfPoints();
-  const int nzones = grid->GetNumberOfCells();
+    const int npts = grid->GetNumberOfPoints();
+    const int nzones = grid->GetNumberOfCells();
 
-  if(nzones == 0)
-  {
-    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Unstructured grids must have at least one "
-                              "zone");
-  }
-
-  bool single_shape = true;
-  int cell_type = grid->GetCell(0)->GetCellType();
-  for(int i = 1; i < nzones; ++i)
-  {
-    vtkCell *cell = grid->GetCell(i);
-    if(cell->GetCellType() != cell_type)
+    if(nzones == 0)
     {
-      single_shape = false;
-      break;
-    }
-  }
-
-  if(!single_shape)
-  {
-    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Only unstructured grids with a single cell type"
-                              " are currently supported");
-  }
-
-  const std::string shape_name = VTKCellTypeToElementShapeName(cell_type);
-  if(shape_name == "")
-  {
-    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Unsupported vtk cell type "<<cell_type);
-  }
-
-  node["shape"] = shape_name;
-
-  const int cell_points = grid->GetCell(0)->GetNumberOfPoints();
-  node["connectivity"].set(DataType::int32(cell_points * nzones));
-  conduit::int32 *conn = node["connectivity"].value();
-  // vtk connectivity is in the form npts, p0, p1,..
-  // and we need p0, p1, .. so just iterate and copy
-  if(cell_type != VTK_VOXEL)
-  {
-    for(int i = 0; i < nzones; ++i)
-    {
-      vtkCell *cell = grid->GetCell(i);
-      const int offset = i * cell_points;
-      for(int c = 0; c < cell_points; ++c)
-      {
-        conn[offset + c]  = cell->GetPointId(c);
-      }
-    }
-  }
-  else
-  {
-    // We need to reorder the voxel indices to be a hex
-    int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    for(int i = 0; i < nzones; ++i)
-    {
-      vtkCell *cell = grid->GetCell(i);
-      const int offset = i * cell_points;
-      for(int c = 0; c < cell_points; ++c)
-      {
-        int index = reorder[c];
-        conn[offset + index]  = cell->GetPointId(c);
-      }
+        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                  "Unstructured grids must have at least one "
+                                  "zone");
     }
 
-  }
+    bool single_shape = true;
+    int cell_type = grid->GetCell(0)->GetCellType();
+    for(int i = 1; i < nzones; ++i)
+    {
+        vtkCell *cell = grid->GetCell(i);
+        if(cell->GetCellType() != cell_type)
+        {
+            single_shape = false;
+            break;
+        }
+    }
+
+    if(!single_shape)
+    {
+        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                  "Only unstructured grids with a single cell type"
+                                  " are currently supported");
+    }
+
+    const std::string shape_name = VTKCellTypeToElementShapeName(cell_type);
+    if(shape_name == "")
+    {
+        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                  "Unsupported vtk cell type "<<cell_type);
+    }
+
+    node["shape"] = shape_name;
+
+    const int cell_points = grid->GetCell(0)->GetNumberOfPoints();
+    node["connectivity"].set(DataType::int32(cell_points * nzones));
+    conduit::int32 *conn = node["connectivity"].value();
+    // vtk connectivity is in the form npts, p0, p1,..
+    // and we need p0, p1, .. so just iterate and copy
+    if(cell_type != VTK_VOXEL)
+    {
+        for(int i = 0; i < nzones; ++i)
+        {
+            vtkCell *cell = grid->GetCell(i);
+            const int offset = i * cell_points;
+            for(int c = 0; c < cell_points; ++c)
+            {
+                conn[offset + c]  = cell->GetPointId(c);
+            }
+        }
+    }
+    else
+    {
+        // We need to reorder the voxel indices to be a hex
+        int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+        for(int i = 0; i < nzones; ++i)
+        {
+            vtkCell *cell = grid->GetCell(i);
+            const int offset = i * cell_points;
+            for(int c = 0; c < cell_points; ++c)
+            {
+                int index = reorder[c];
+                conn[offset + index]  = cell->GetPointId(c);
+            }
+        }
+    }
 }
 
 
