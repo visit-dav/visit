@@ -1738,17 +1738,21 @@ void vtkUnstructuredToNode(Node &node,
                                   "zone");
     }
 
-    bool single_shape = true;
-    int cell_type = grid->GetCell(0)->GetCellType();
-    for(int i = 1; i < nzones; ++i)
+    const int cell_type = grid->GetCell(0)->GetCellType();
+    const bool single_shape = [&]() -> bool
     {
-        vtkCell *cell = grid->GetCell(i);
-        if(cell->GetCellType() != cell_type)
+        bool single_shape = true;
+        for (int i = 1; i < nzones; i ++)
         {
-            single_shape = false;
-            break;
+            vtkCell *cell = grid->GetCell(i);
+            if(cell->GetCellType() != cell_type)
+            {
+                single_shape = false;
+                break;
+            }
         }
-    }
+        return single_shape;
+    }();
 
     if(!single_shape)
     {
