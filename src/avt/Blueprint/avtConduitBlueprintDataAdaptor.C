@@ -1251,7 +1251,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     if (n_topo.has_path("elements/shape") &&
         n_topo["elements/shape"].as_string() == "mixed")
     {
-        AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet Mixed Topology");
         const int ncells = n_topo["elements/shapes"].dtype().number_of_elements();
         
         vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
@@ -1813,42 +1812,20 @@ void vtkUnstructuredToNode(Node &n_elements,
         int running_sum = 0;
         for (int zoneid = 0; zoneid < nzones; zoneid ++)
         {
-            const int cell_type = grid->GetCell(zoneid)->GetCellType();
-            const int cell_points = grid->GetCell(zoneid)->GetNumberOfPoints();
+            vtkCell *cell = grid->GetCell(zoneid);
+            const int cell_type = cell->GetCellType();
+            const int cell_points = cell->GetNumberOfPoints();
             unique_shapes.insert(cell_type);
             shapes.push_back(cell_type);
             sizes.push_back(cell_points);
             offsets.push_back(running_sum);
             running_sum += cell_points;
 
-            // vtk connectivity is in the form npts, p0, p1,..
-            // and we need p0, p1, .. so just iterate and copy
-            if (cell_type != VTK_VOXEL)
+            // TODO get voxels working
+            // TODO we will want to use the above approach to avoid making too many copies
+            for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
             {
-                for(int i = 0; i < nzones; ++i)
-                {
-                    vtkCell *cell = grid->GetCell(i);
-                    const int offset = i * cell_points;
-                    for (int c = 0; c < cell_points; ++c)
-                    {
-                        connectivity.push_back(cell->GetPointId(c));
-                    }
-                }
-            }
-            else
-            {
-                // We need to reorder the voxel indices to be a hex
-                int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-                for(int i = 0; i < nzones; ++i)
-                {
-                    vtkCell *cell = grid->GetCell(i);
-                    const int offset = i * cell_points;
-                    for (int c = 0; c < cell_points; ++c)
-                    {
-                        int index = reorder[c];
-                        connectivity.push_back(cell->GetPointId(c));
-                    }
-                }
+                connectivity.push_back(cell->GetPointId(cell_pt));
             }
         }
 
