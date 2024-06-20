@@ -74,6 +74,7 @@ bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
 bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
 bp_unstructured_points_dir = "blueprint_v0.8.7_unstructured_points"
 bp_unstructured_uniform_dir = "blueprint_v0.9.1_uniform_coords_unstructured_topo"
+bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -99,6 +100,11 @@ uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 unstructured_points = data_path(pjoin(bp_unstructured_points_dir,"unstructured_points.cycle_000100.root"))
 
 uniform_unstructured = data_path(pjoin(bp_unstructured_uniform_dir,"partition.root"))
+
+mixed_topo_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_2d_hdf5.root"))
+mixed_topo_3d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_3d_hdf5.root"))
+mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.root"))
+mixed_braid_3d = data_path(pjoin(bp_mixed_topos_dir, "braid_3d_examples_hdf5.root"))
 
 #
 # venn test data (multi material)
@@ -829,5 +835,46 @@ SetView3D(View3DAtts)
 Test("Uniform_coordset_and_unstructured_topo")
 DeleteAllPlots()
 ResetView()
+
+TestSection("Blueprint Mixed Topos, 0.9.2")
+OpenDatabase(mixed_topo_2d)
+AddPlot("Mesh", "mesh_topo")
+AddPlot("Pseudocolor", "mesh_topo/ele_id")
+AddPlot("Label", "mesh_pts")
+DrawPlots()
+Test("Mixed_topo_simple_2d")
+ResetView()
+DeleteAllPlots()
+CloseDatabase(mixed_topo_2d)
+
+OpenDatabase(mixed_topo_3d)
+AddPlot("Mesh", "mesh_topo")
+AddPlot("Pseudocolor", "mesh_topo/ele_id")
+AddPlot("Label", "mesh_pts")
+DrawPlots()
+Test("Mixed_topo_simple_3d")
+ResetView()
+DeleteAllPlots()
+CloseDatabase(mixed_topo_3d)
+
+OpenDatabase(mixed_braid_2d)
+AddPlot("Mesh", "mixed_2d_mesh")
+AddPlot("Pseudocolor", "mixed_2d_mesh/braid")
+AddPlot("Label", "mixed_2d_mesh")
+DrawPlots()
+Test("Mixed_braid_2d")
+ResetView()
+DeleteAllPlots()
+CloseDatabase(mixed_braid_2d)
+
+OpenDatabase(mixed_braid_3d)
+AddPlot("Mesh", "mixed_3d_mesh")
+AddPlot("Pseudocolor", "mixed_3d_mesh/braid")
+AddPlot("Label", "mixed_3d_mesh")
+DrawPlots()
+Test("Mixed_braid_3d")
+ResetView()
+DeleteAllPlots()
+CloseDatabase(mixed_braid_3d)
 
 Exit()
