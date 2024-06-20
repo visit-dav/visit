@@ -1767,47 +1767,52 @@ void vtkUnstructuredToNode(Node &n_elements,
 
         const int cell_points = grid->GetCell(0)->GetNumberOfPoints();
         n_elements["connectivity"].set(DataType::int32(cell_points * nzones));
-        int32_array conn = n_elements["connectivity"].value();
+        int32_array connectivity = n_elements["connectivity"].value();
         // vtk connectivity is in the form npts, p0, p1,..
         // and we need p0, p1, .. so just iterate and copy
         if (first_cell_type != VTK_VOXEL)
         {
-            for(int i = 0; i < nzones; ++i)
+            for (int zoneid = 0; zoneid < nzones; zoneid ++)
             {
-                vtkCell *cell = grid->GetCell(i);
-                const int offset = i * cell_points;
-                for(int c = 0; c < cell_points; ++c)
+                vtkCell *cell = grid->GetCell(zoneid);
+                const int offset = zoneid * cell_points;
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
                 {
-                    conn[offset + c]  = cell->GetPointId(c);
+                    connectivity[offset + cell_pt] = cell->GetPointId(cell_pt);
                 }
             }
         }
         else
         {
             // We need to reorder the voxel indices to be a hex
-            int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-            for(int i = 0; i < nzones; ++i)
+            const int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+            for (int zoneid = 0; zoneid < nzones; zoneid ++)
             {
-                vtkCell *cell = grid->GetCell(i);
-                const int offset = i * cell_points;
-                for(int c = 0; c < cell_points; ++c)
+                vtkCell *cell = grid->GetCell(zoneid);
+                const int offset = zoneid * cell_points;
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
                 {
-                    int index = reorder[c];
-                    conn[offset + index]  = cell->GetPointId(c);
+                    const int index = reorder[cell_pt];
+                    connectivity[offset + index] = cell->GetPointId(cell_pt);
                 }
             }
         }
     }
     else
     {
+        // 
         // mixed topo case
+        // 
         n_elements["shape"] = "mixed";
 
         std::set<int> unique_shapes;
-        std::vector<int> shapes;
-        std::vector<int> sizes;
-        std::vector<int> offsets;
-        std::vector<int> connectivity;
+        
+        n_elements["shapes"].set(DataType::int32(nzones));
+        int32_array shapes = n_elements["shapes"].value();
+        n_elements["sizes"].set(DataType::int32(nzones));
+        int32_array sizes = n_elements["sizes"].value();
+        n_elements["offsets"].set(DataType::int32(nzones));
+        int32_array offsets = n_elements["offsets"].value();
 
         int running_sum = 0;
         for (int zoneid = 0; zoneid < nzones; zoneid ++)
@@ -1816,24 +1821,48 @@ void vtkUnstructuredToNode(Node &n_elements,
             const int cell_type = cell->GetCellType();
             const int cell_points = cell->GetNumberOfPoints();
             unique_shapes.insert(cell_type);
-            shapes.push_back(cell_type);
-            sizes.push_back(cell_points);
-            offsets.push_back(running_sum);
+            shapes[zoneid] = cell_type;
+            sizes[zoneid] = cell_points;
+            offsets[zoneid] = running_sum;
             running_sum += cell_points;
-
-            // TODO get voxels working
-            // TODO we will want to use the above approach to avoid making too many copies
-            for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
-            {
-                connectivity.push_back(cell->GetPointId(cell_pt));
-            }
         }
 
-        n_elements["shapes"].set(shapes.data(), shapes.size());
-        n_elements["sizes"].set(sizes.data(), sizes.size());
-        n_elements["offsets"].set(offsets.data(), offsets.size());
-        n_elements["connectivity"].set(connectivity.data(), connectivity.size());
+        // 
+        // populate connectivity
+        // 
+        n_elements["connectivity"].set(DataType::int32(running_sum));
+        int32_array connectivity = n_elements["connectivity"].value();
+
+        int conn_offset = 0;
+        for (int zoneid = 0; zoneid < nzones; zoneid ++)
+        {
+            vtkCell *cell = grid->GetCell(zoneid);
+            const int cell_type = cell->GetCellType();
+            const int cell_points = cell->GetNumberOfPoints();
+
+            if (cell_type != VTK_VOXEL)
+            {
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
+                {
+                    connectivity[conn_offset + cell_pt] = cell->GetPointId(cell_pt);
+                }
+            }
+            else
+            {
+                // We need to reorder the voxel indices to be a hex
+                const int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
+                {
+                    const int index = reorder[cell_pt];
+                    connectivity[conn_offset + index] = cell->GetPointId(cell_pt);
+                }
+            }
+            conn_offset += cell_points;
+        }
         
+        // 
+        // create shape map
+        // 
         for (const int& vtk_cell_type : unique_shapes)
         {
             const std::string shape_name = VTKCellTypeToElementShapeName(vtk_cell_type);
