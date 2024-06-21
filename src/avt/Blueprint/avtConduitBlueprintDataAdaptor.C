@@ -780,14 +780,6 @@ HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         topo_conn_index += curr_size;
     }
 
-    vtkIdType *ida_ptr = ida->GetPointer(0);
-    std::cout << "cells: ";
-    for (int i = 0; i < totalsize; i ++)
-    {
-        std::cout << *ida_ptr++ << ", ";
-    }
-    std::cout << std::endl;
-
     cells->SetCells(ncells, ida);
     ida->Delete();
     return cells;
@@ -1214,6 +1206,9 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 
             unsigned_int_accessor values = d2smap["values"].value();
 
+            // TODO why don't we use the original_element_ids field that conduit
+            // creates for us?
+
             oca = vtkUnsignedIntArray::New();
             oca->SetName("avtOriginalCellNumbers");
             oca->SetNumberOfComponents(2);
@@ -1228,6 +1223,85 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             coords_ptr = res.fetch_ptr(
                 "coordsets/" + n_topo["coordset"].as_string());
             topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+        }
+        // polyhedral mixed case
+        else if (n_topo["elements/shape"].as_string() == "mixed" &&
+                 n_topo.has_child("subelements"))
+        {
+            // 
+            // step 1: threshold out the polyhedral elements, placing 
+            // them in their own topology
+            // 
+            Node polyhedral_mesh;
+            polyhedral_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
+            
+            Node &polyhedral_topo = polyhedral_mesh["topologies"]["topo"];
+            polyhedral_topo["coordset"].set(n_topo["coordset"]);
+            polyhedral_topo["type"].set(n_topo["type"]); // should be unstructured
+
+            // create elements:
+            int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+            int_accessor n_sizes = n_topo["elements"]["sizes"].value();
+            int_accessor n_offsets = n_topo["elements"]["offsets"].value();
+            int_accessor n_connectivity = n_topo["elements"]["connectivity"].value();
+
+            std::vector<int> poly_conn;
+            std::vector<int> poly_sizes;
+            std::vector<int> poly_offsets;
+
+            polyhedral_topo["elements"]["shape"] = "polyhedral";
+            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+            {
+                if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                {
+                    const int curr_size = n_sizes[zoneid];
+                    const int curr_offset = n_offsets[zoneid];
+                    for (int faceid = 0; faceid < curr_size; faceid ++)
+                    {
+                        poly_conn.push_back(n_connectivity[curr_offset + faceid]);
+                    }
+                    poly_sizes.push_back(curr_size);
+                    poly_offsets.push_back(curr_offset);
+                }
+            }
+
+            polyhedral_topo["elements"]["connectivity"].set(poly_conn.data(), poly_conn.size());
+            polyhedral_topo["elements"]["sizes"].set(poly_sizes.data(), poly_sizes.size());
+            polyhedral_topo["elements"]["offsets"].set(poly_offsets.data(), poly_offsets.size());
+
+            // create subelements: just shallow copy over all the data from the mixed topo
+            // but interpret everything as polygons
+            polyhedral_topo["subelements"]["shape"] = "polygonal";
+            polyhedral_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+            polyhedral_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+            polyhedral_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+
+            // 
+            // step 2: run the polyhedral topo through generate_sides
+            // 
+            Node side_topo, side_coords, s2dmap, d2smap;
+            blueprint::mesh::topology::unstructured::generate_sides(
+                polyhedral_topo,
+                side_topo,
+                side_coords,
+                s2dmap,
+                d2smap);
+
+            unsigned_int_accessor values = d2smap["values"].value();
+
+            // 
+            // step 3: stitch the topology back together to create a 
+            // brand new mixed topology
+            // 
+
+            Node new_mixed_topo;
+
+            // 
+            // step 4: create original cell numbers array using data
+            // from generate_sides
+            // 
+
+            // TODO: the fields must follow a similar pattern
         }
     }
 
@@ -1296,36 +1370,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 }
             }
 
-            std::cout << n_topo.to_yaml() << std::endl;
-            
-
             vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
-            // TIME TO PRINT
-
-
-            face_locations_ptr = faceLocations->GetPointer(0);
-            std::cout << "face locations: ";
-            for (int i = 0; i < num_subelems; i ++)
-            {
-                std::cout << *face_locations_ptr++ << ", ";
-            }
-            std::cout << std::endl;
-
-            faces_ptr = faces->GetPointer(0);
-            std::cout << "faces: ";
-            for (int i = 0; i < num_subelems + size_of_sub_conn; i ++)
-            {
-                std::cout << *faces_ptr++ << ", ";
-            }
-            std::cout << std::endl;
-
-
-            // cellTypes
-            // cells
-            // faceLocations
-            // faces
-            // DONE PRINTING
-
             ugrid->SetCells(cellTypes, cells, faceLocations, faces);
             cells->Delete();
             faceLocations->Delete();
