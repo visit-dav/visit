@@ -727,6 +727,24 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 }
 
 // ****************************************************************************
+void
+GetIntAccessor(Node &n_tmp, Node &n_src)
+{
+    // Extract as int accessor, using 'to_int_accessor' if needed.
+    int_accessor topo_conn;
+    if (n_src.dtype().is_int())
+    {
+        topo_conn = n_src.as_int_accessor();
+    }
+    else
+    {
+        n_src.to_int_array(n_tmp);
+        topo_conn = n_tmp.as_int_accessor();
+    }
+    return topo_conn;
+}
+
+// ****************************************************************************
 //  Method: HeterogeneousShapeTopologyToVTKCellArray
 //
 //  Purpose:
@@ -749,47 +767,135 @@ HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    int_accessor topo_sizes = n_topo["elements/sizes"].value();
-    const int totalsize = [&]() -> int
-    {
-        int running_sum = 0;
-        for (int i = 0; i < ncells; i ++)
+    if (n_topo.has_child["subelements"]) // polyhedral mixed case
+    {        
+        int_accessor topo_shapes = n_topo["elements/shapes"].value();
+        int_accessor topo_sizes = n_topo["elements/sizes"].value();
+        int_accessor topo_offsets = n_topo["elements/offsets"].value();
+        int_accessor topo_conn = n_topo["elements/connectivity"].value();
+        int_accessor topo_sub_sizes = n_topo["subelements/sizes"].value();
+        int_accessor topo_sub_offsets = n_topo["subelements/offsets"].value();
+        int_accessor topo_sub_conn = n_topo["subelements/connectivity"].value();
+        const int totalsize = [&]() -> int
         {
-            // We could also go through the shape ids and map those to vtk cell type sizes
-            // but this approach is simpler
-            running_sum += topo_sizes[i] + 1;
+            int running_sum = 0;
+            for (int cell_id = 0; cell_id < ncells; cell_id ++)
+            {
+                // We can't go through the shape ids and map them to vtk cell type
+                // sizes because of the polytopal case. This approach is simpler anyhow.
+                if (topo_shapes[cell_id] == VTK_POLYHEDRON)
+                {
+                    // Normal cells look like this:
+                    // (numFace0Pts, id1, id2, id3, numFace1Pts, id1, id2, id3...). However, 
+                    // polyhedral cells look like this:
+                    // (numCellFaces, numFace0Pts, id1, id2, id3, numFace1Pts,id1, id2, id3, ...) 
+
+                    // we start with one spot to store the num faces
+                    int running_sum_for_poly_cell = 1;
+                    // iterate through the faces
+                    const int conn_start_index = topo_offsets[cell_id];
+                    for (int face_id = 0; face_id < topo_sizes[cell_id]; face_id ++)
+                    {
+                        const int subelem_index = topo_conn[conn_start_index + face_id]
+                        // enough space for all the points in this face and 1 extra spot
+                        // to store the number of points
+                        running_sum_for_poly_cell += topo_sub_sizes[subelem_index] + 1;
+                    }
+                }
+                else
+                {
+                    running_sum += topo_sizes[cell_id] + 1;
+                }
+            }
+            return running_sum;
+        }();
+
+        ida->SetNumberOfTuples(totalsize);
+
+        int comp_index = 0;
+        int topo_conn_index = 0;
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
+        {
+            const int curr_size = topo_sizes[cell_id];
+            if (topo_shapes[cell_id] == VTK_POLYHEDRON)
+            {
+                // set the first element to be the number of faces
+                ida->SetComponent(comp_index, 0, curr_size);
+                comp_index ++;
+                // next iterate through the faces
+                for (int face_id = 0; face_id < curr_size; face_id ++)
+                {
+                    const int subelem_index = topo_conn[topo_conn_index + face_id];
+                    const int subelem_size = topo_sub_sizes[subelem_index];
+                    // set the next element to be the size of this face
+                    ida->SetComponent(comp_index, 0, subelem_size);
+                    comp_index ++;
+
+                    // the starting index for this face in the subelements/connectivity array
+                    // is given by looking at the subelements/offsets element in the 
+                    // subelem_index spot.
+                    const int sub_conn_start_index = topo_sub_offsets[subelem_index];
+                    for (int node_id = 0; node_id < subelem_size; node_id ++)
+                    {
+                        // the actual node number is given by looking at the 
+                        // subelements/connectivity array in the (sub_conn_start_index + node_id)
+                        // spot.
+                        const int node_num = topo_sub_conn[sub_conn_start_index + node_id]                        
+
+                        // set these elements to be the node numbers for this face
+                        ida->SetComponent(comp_index, 0, node_num);
+                        comp_index ++;
+                    }
+                }
+                topo_conn_index += curr_size;
+            }
+            else
+            {
+                // set the first element to be the number of nodes in this shape
+                ida->SetComponent(comp_index, 0, curr_size);
+                comp_index ++;
+                for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
+                {
+                    // set the rest of the elements to be the node numbers for this shape
+                    ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+                    comp_index ++;
+                }
+                topo_conn_index += curr_size;
+            }
         }
-        return running_sum;
-    }();
-
-    ida->SetNumberOfTuples(totalsize);
-
-    // Extract connectivity as int accessor, using 'to_int_accessor' if needed.
-    int_accessor topo_conn;
-    Node n_tmp;
-    if (n_topo["elements/connectivity"].dtype().is_int())
-    {
-        topo_conn = n_topo["elements/connectivity"].as_int_accessor();
     }
-    else
+    else // regular case
     {
-        n_topo["elements/connectivity"].to_int_array(n_tmp);
-        topo_conn = n_tmp.as_int_accessor();
-    }
-
-    int comp_index = 0;
-    int topo_conn_index = 0;
-    for (int cell_id = 0; cell_id < ncells; cell_id ++)
-    {
-        const int curr_size = topo_sizes[cell_id];
-        ida->SetComponent(comp_index, 0, curr_size);
-        comp_index ++;
-        for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
+        int_accessor topo_sizes = n_topo["elements/sizes"].value();
+        int_accessor topo_conn = n_topo["elements/connectivity"].value();
+        const int totalsize = [&]() -> int
         {
-            ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+            int running_sum = 0;
+            for (int cell_id = 0; cell_id < ncells; cell_id ++)
+            {
+                // We can't go through the shape ids and map them to vtk cell type
+                // sizes because of the polytopal case. This approach is simpler anyhow.
+                running_sum += topo_sizes[cell_id] + 1;
+            }
+            return running_sum;
+        }();
+
+        ida->SetNumberOfTuples(totalsize);
+
+        int comp_index = 0;
+        int topo_conn_index = 0;
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
+        {
+            const int curr_size = topo_sizes[cell_id];
+            ida->SetComponent(comp_index, 0, curr_size);
             comp_index ++;
+            for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
+            {
+                ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+                comp_index ++;
+            }
+            topo_conn_index += curr_size;
         }
-        topo_conn_index += curr_size;
     }
 
     ca->SetCells(ncells, ida);
@@ -858,18 +964,10 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
         ida->SetNumberOfTuples(ncells * (csize + 1));
 
-        // Extract connectivity as int array, using 'to_int_array' if needed.
-        int_array topo_conn;
+        // Extract connectivity as int accessor, using 'to_int_array' if needed.
         Node n_tmp;
-        if(n_topo["elements/connectivity"].dtype().is_int())
-        {
-            topo_conn = n_topo["elements/connectivity"].as_int_array();
-        }
-        else
-        {
-            n_topo["elements/connectivity"].to_int_array(n_tmp);
-            topo_conn = n_tmp.as_int_array();
-        }
+        // TODO Cyrus why do we have to do this at all? Why not just declare an accessor?
+        int_accessor topo_conn = GetIntAccessor(n_tmp, n_topo["elements/connectivity"]);
 
         for (int i = 0 ; i < ncells; i++)
         {
@@ -1255,38 +1353,90 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         
         vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
         cellTypes->SetNumberOfValues(ncells);
-        unsigned char *ct = cellTypes->GetPointer(0);
+        unsigned char *cell_types_ptr = cellTypes->GetPointer(0);
 
         vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
         cellLocations->SetNumberOfValues(ncells);
-        vtkIdType *cl = cellLocations->GetPointer(0);
+        vtkIdType *cell_locations_ptr = cellLocations->GetPointer(0);
 
         int_accessor shapes_accessor = n_topo["elements/shapes"].value();
         int_accessor offsets_accessor = n_topo["elements/offsets"].value();
 
-        for (int i = 0; i < ncells; i ++)
+
+        if (n_topo.has_child("subelements")) // polyhedral mixed case
         {
-            *ct++ = shapes_accessor[i];
-            *cl++ = offsets_accessor[i];
+            // for polyhedral elements, we are adding more data in, so the locations change
+
+            int_accessor conn_accessor = n_topo["elements/connectivity"].value();
+            int_accessor sizes_accessor = n_topo["elements/sizes"].value();
+            int_accessor sub_sizes_accessor = n_topo["subelements/sizes"].value();
+
+            int offsets_offset = 0;
+            int offset_of_last_elem = 0;
+            for (int cell_id = 0; cell_id < ncells; cell_id ++)
+            {
+                *cell_types_ptr++ = shapes_accessor[cell_id];
+
+                if (shapes_accessor[cell_id] == VTK_POLYHEDRON)
+                {
+                    const int conn_start_index = offsets_accessor[cell_id];
+
+                    // the number of faces in this polyhedron
+                    const int num_faces = sizes_accessor[cell_id];
+
+                    // we need one spot for the number of faces, and then for 
+                    // each face, one spot for the number of nodes, and spots
+                    // for each node
+                    const int true_size_of_element = 1 + num_faces + [&]() -> int
+                    {
+                        int num_nodes = 0;
+                        for (int face_id = 0; face_id < num_faces; face_id ++)
+                        {
+                            const int subelem_index = conn_accessor[conn_start_index + face_id];
+                            num_nodes += sub_sizes_accessor[subelem_index];
+                        }
+                        return num_nodes;
+                    }();
+
+                    *cell_locations_ptr++ = offset_of_last_elem = true_size_of_element + offset_of_last_elem;
+
+                    offsets_offset 
+
+                }
+                else
+                {
+                    *cell_locations_ptr++ = offset_of_last_elem = offsets_accessor[cell_id] + offsets_offset;
+
+                }
+            }
+        }
+        else // regular case
+        {
+            for (int cell_id = 0; cell_id < ncells; cell_id ++)
+            {
+                *cell_types_ptr++ = shapes_accessor[cell_id];
+            }
         }
 
         //
         // Now, add explicit topology
         //
-        vtkCellArray *ca = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
+        vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
         points->Delete();
-        ugrid->SetCells(cellTypes, cellLocations, ca);
-        ca->Delete();
+        ugrid->SetCells(cellTypes, cellLocations, cells);
+        cellTypes->Delete();
+        cellLocations->Delete();
+        cells->Delete();
     }
     else
     {
         //
         // Now, add explicit topology
         //
-        vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+        vtkCellArray *cells = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
         points->Delete();
-        ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
-        ca->Delete();
+        ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), cells);
+        cells->Delete();
     }
 
     return ugrid;
