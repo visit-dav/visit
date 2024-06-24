@@ -1477,6 +1477,9 @@ function build_vtk
                 vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES"
                 if [[ "$DO_QT6" == "yes" ]]; then
                     vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
+                    vopts="${vopts} -DQt6CoreTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
+                    vopts="${vopts} -DQt6GuiTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
+                    vopts="${vopts} -DQt6WidgetsTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
                 else
                     vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                 fi
