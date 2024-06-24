@@ -846,20 +846,7 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
         ida->SetNumberOfTuples(ncells * (csize + 1));
 
-        // Extract connectivity as int accessor, using 'to_int_array' if needed.
-        Node n_tmp;
-        // TODO Cyrus why do we have to do this at all? Why not just declare an accessor?
-        int_accessor topo_conn;
-        if (n_topo["elements/connectivity"].dtype().is_int())
-        {
-            topo_conn = n_topo["elements/connectivity"].as_int_accessor();
-        }
-        else
-        {
-            n_topo["elements/connectivity"].to_int_array(n_tmp);
-            topo_conn = n_tmp.as_int_accessor();
-        }
-
+        int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
         for (int i = 0 ; i < ncells; i++)
         {
             ida->SetComponent((csize+1)*i, 0, csize);
