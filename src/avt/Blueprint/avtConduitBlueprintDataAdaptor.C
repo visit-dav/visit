@@ -1285,12 +1285,14 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             Node &side_coords = res["mixed_transformation/side_coords"];
             Node &s2dmap = res["mixed_transformation/s2dmap"];
             Node &d2smap = res["mixed_transformation/d2smap"];
+            Node options;
             blueprint::mesh::topology::unstructured::generate_sides(
                 polyhedral_topo,
                 side_topo,
                 side_coords,
                 s2dmap,
-                d2smap);
+                d2smap,
+                options);
 
             // 
             // step 3: stitch the topology back together to create a 
@@ -1430,6 +1432,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             topo_ptr = res.fetch_ptr("mixed_transformation/new_mixed_topo");
 
             // TODO: the fields must follow a similar pattern
+            // TODO: consider cutting out intermediate vectors to avoid copies
         }
     }
 
@@ -1462,6 +1465,8 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         {
             *cell_types_ptr++ = shapes_accessor[cell_id];
         }
+
+        // TODO does this handle polygons?
 
         vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
         ugrid->SetCells(cellTypes, cells);
