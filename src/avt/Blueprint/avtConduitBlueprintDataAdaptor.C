@@ -1193,9 +1193,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 
             unsigned_int_accessor values = d2smap["values"].value();
 
-            // TODO why don't we use the original_element_ids field that conduit
-            // creates for us?
-
             oca = vtkUnsignedIntArray::New();
             oca->SetName("avtOriginalCellNumbers");
             oca->SetNumberOfComponents(2);

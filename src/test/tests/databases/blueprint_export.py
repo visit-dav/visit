@@ -17,6 +17,7 @@
 import time
 import sys
 import os.path
+import conduit
 
 # Uncomment these functions to run the script through the regular CLI
 # def Exit():
@@ -496,8 +497,61 @@ def test_partition():
     # Test extra options
     partition_test_extra_options()
 
+def roundtrip_mixed_topo():
+    bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
+    mixed_topo_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_2d_hdf5.root"))
+    mixed_topo_2d_polygon = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_polygonal_2d_hdf5.root"))
+    mixed_topo_3d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_3d_hdf5.root"))
+    mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.root"))
+    mixed_braid_3d = data_path(pjoin(bp_mixed_topos_dir, "braid_3d_examples_hdf5.root"))
+
+    OpenDatabase(mixed_topo_2d)
+    AddPlot("Mesh", "mesh_topo")
+    AddPlot("Pseudocolor", "mesh_topo/ele_id")
+    DrawPlots()
+    ResetView()
+
+    outfilename = export_mesh_bp("mixed_topo_2d", "mesh_topo/ele_id")
+
+    save_mesh = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(save_mesh, mixed_topo_2d)
+
+    load_mesh = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(load_mesh, outfilename)
+
+    # 
+    # make changes so the diff will pass
+    # 
+
+    # grab the cycle and time which were added in
+    save_mesh[0]["state"]["cycle"] = load_mesh[0]["state"]["cycle"]
+    save_mesh[0]["state"]["time"] = load_mesh[0]["state"]["time"]
+
+    # remove the pts topo
+    save_mesh[0]["topologies"].remove_child("pts")
+
+    # remove the pts_id field
+    save_mesh[0]["fields"].remove_child("pts_id")
+
+    # change ele_id field to floats
+    save_mesh_element_ids = save_mesh[0]["fields"]["ele_id"]["values"]
+    load_mesh_element_ids = load_mesh[0]["fields"]["ele_id"]["values"]
+    for i in range(0, len(save_mesh_element_ids)):
+        TestValueEQ("Mixed_topo_simple_2d_export_field_vals", save_mesh_element_ids[i], load_mesh_element_ids[i])
+    save_mesh[0]["fields"]["ele_id"].remove_child("values")
+    load_mesh[0]["fields"]["ele_id"].remove_child("values")
+
+    info = conduit.Node()
+    diffval = load_mesh.diff(save_mesh, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ("Mixed_topo_simple_2d_export", diff_str, "")
+    
+    DeleteAllPlots()
+    CloseDatabase(mixed_topo_2d)
+
 RequiredDatabasePlugin("Blueprint")
 test_basic()
 test_partition()
 test_flatten()
+roundtrip_mixed_topo()
 Exit()
