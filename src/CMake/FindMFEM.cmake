@@ -15,6 +15,8 @@ SET_UP_THIRD_PARTY(MFEM LIBS mfem)
 
 if(MFEM_FOUND)
     # create a list of full-path libraries to be used when linking
+    list(REMOVE_DUPLICATES MFEM_LIBRARY_DIR)
+    list(REMOVE_DUPLICATES MFEM_LIB)
     foreach(libdir ${MFEM_LIBRARY_DIR})
         foreach(lib ${MFEM_LIB})
             if(EXISTS ${libdir}/${lib})
@@ -29,6 +31,12 @@ if(MFEM_FOUND)
         if(${incdir} MATCHES "mfem")
             list(APPEND mfem_inc 
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/mfem/include>)
+        elseif(${incdir} MATCHES "conduit")
+            list(APPEND mfem_inc 
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/conduit/conduit>)
+        elseif(${incdir} MATCHES "fms")
+            list(APPEND mfem_inc 
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/fms/include>)
         endif()
     endforeach()
 
@@ -51,6 +59,9 @@ if(MFEM_FOUND)
 
     # install export target
     visit_install_export_targets(mfem)
+
+    unset(mll)
+    unset(mfem_inc)
 endif()
 
 

@@ -32,7 +32,8 @@ endif()
 
 if(CONDUIT_FOUND)
     set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
-
+    list(REMOVE_DUPLICATES CONDUIT_LIBRARY_DIR)
+    list(REMOVE_DUPLICATES CONDUIT_LIB)
     # create a list of full-path libraries to be used when linking
     foreach(libdir ${CONDUIT_LIBRARY_DIR})
         foreach(lib ${CONDUIT_LIB})
@@ -51,6 +52,7 @@ if(CONDUIT_FOUND)
         LIBRARIES  ${CONDUIT_LIBRARIES}
         EXPORTABLE ON)
 
+    unset(CONDUIT_LIBRARIES)
     # Add install interface for link libraries
     foreach(lib ${CONDUIT_LIB})
         target_link_libraries(conduit INTERFACE
@@ -58,6 +60,8 @@ if(CONDUIT_FOUND)
     endforeach()
 
     if(VISIT_PARALLEL)
+        list(REMOVE_DUPLICATES CONDUIT_MPI_LIBRARY_DIR)
+        list(REMOVE_DUPLICATES CONDUIT_MPI_LIB)
         # create a list of full-path libraries to be used when linking
         foreach(libdir ${CONDUIT_MPI_LIBRARY_DIR})
             foreach(lib ${CONDUIT_MPI_LIB})
@@ -84,6 +88,7 @@ if(CONDUIT_FOUND)
             target_link_libraries(conduit_mpi INTERFACE
                 $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${lib}>)
         endforeach()
+        unset(CONDUIT_MPI_LIBRARIES)
     endif()
 
    # install the export targets
