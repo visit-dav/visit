@@ -14,7 +14,7 @@
 #-----------------------------------------------------------------------------
 
 #
-# Use the CONDUIT_DIR hint from the config-site .cmake file 
+# Use the CONDUIT_DIR hint from the config-site .cmake file
 #
 
 SET_UP_THIRD_PARTY(CONDUIT

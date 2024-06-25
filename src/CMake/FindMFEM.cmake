@@ -29,13 +29,13 @@ if(MFEM_FOUND)
     foreach(incdir ${MFEM_INCLUDE_DIR})
         list(APPEND mfem_inc $<BUILD_INTERFACE:${incdir}>)
         if(${incdir} MATCHES "mfem")
-            list(APPEND mfem_inc 
+            list(APPEND mfem_inc
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/mfem/include>)
         elseif(${incdir} MATCHES "conduit")
-            list(APPEND mfem_inc 
+            list(APPEND mfem_inc
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/conduit/conduit>)
         elseif(${incdir} MATCHES "fms")
-            list(APPEND mfem_inc 
+            list(APPEND mfem_inc
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/fms/include>)
         endif()
     endforeach()
