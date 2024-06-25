@@ -13,40 +13,24 @@
 #
 #****************************************************************************
 
-add_library(avtqtviswindow QtVisWindow.C VisWinRenderingWithWindow.C)
-
-add_subdirectory(vtk)
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${VISIT_COMMON_INCLUDES}
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-    ${VISIT_SOURCE_DIR}/avt/Plotter
-    ${VISIT_SOURCE_DIR}/avt/View
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/Exceptions
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/Interactors
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/vtkqt
-    ${VISIT_SOURCE_DIR}/winutil
-    ${VTK_INCLUDE_DIRS})
-
-target_link_libraries(avtqtviswindow visitcommon avtviswindow_ser vtkqt ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+visit_add_library(
+    NAME       avtqtviswindow
+    SOURCES    QtVisWindow.C
+               VisWinRenderingWithWindow.C
+    HEADERS    QtVisWindow.h
+               qtviswindow_exports.h
+               VisWinRenderingWithWindow.h
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/QtVisWindow>
+    DEPENDS_ON visitcommon
+               avtviswindow_ser
+               vtkqt
+               winutil
+               ${QT_QTCORE_LIBRARY}
+               ${QT_QTGUI_LIBRARY})
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(avtqtviswindow)
 endif()
 
-VISIT_INSTALL_TARGETS(avtqtviswindow)
-
+add_subdirectory(vtk)

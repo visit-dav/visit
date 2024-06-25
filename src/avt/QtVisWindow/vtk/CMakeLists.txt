@@ -9,7 +9,9 @@
 
 target_sources(avtqtviswindow PRIVATE
     vtkDashedXorGridMapper2D.C
-    vtkRubberBandMapper2D.C)
+    vtkRubberBandMapper2D.C
+    vtkDashedXorGridMapper2D.h
+    vtkRubberBandMapper2D.h)
 
 if(NOT APPLE AND X11_FOUND)
     set_source_files_properties(
@@ -17,5 +19,6 @@ if(NOT APPLE AND X11_FOUND)
         PROPERTIES COMPILE_FLAGS "-DHAVE_XLIB")
 endif()
 
-target_include_directories(avtqtviswindow PUBLIC .)
+target_include_directories(avtqtviswindow PRIVATE 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 

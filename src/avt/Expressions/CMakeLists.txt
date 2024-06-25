@@ -71,11 +71,6 @@
 #
 #*****************************************************************************
 
-add_library(avtexpressions_ser)
-if(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtexpressions_par)
-endif()
-
 add_subdirectory(Abstract)
 add_subdirectory(Conditional)
 add_subdirectory(CMFE)
@@ -87,53 +82,56 @@ add_subdirectory(Math)
 add_subdirectory(MeshQuality)
 add_subdirectory(TimeIterators)
 
-include_directories(
-    ${VISIT_COMMON_INCLUDES}
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/DataBinning
-    ${VISIT_SOURCE_DIR}/avt/Filters
-    ${VISIT_SOURCE_DIR}/avt/MIR/Base
-    ${VISIT_SOURCE_DIR}/avt/MIR/Tet
-    ${VISIT_SOURCE_DIR}/avt/MIR/Zoo
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-    ${VISIT_SOURCE_DIR}/avt/Plotter
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${VISIT_SOURCE_DIR}/vtkm
-    ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
-    ${VTK_INCLUDE_DIRS})
+visit_append_list(
+    NAME avtexpressions_ser_DEPENDS
+    ITEMS visitcommon avtdbatts)
+
 
 if(VISIT_PYTHON_FILTERS)
-    include_directories(
-        ${PYTHON_INCLUDE_PATH}
-        ${VISIT_SOURCE_DIR}/avt/PythonFilters
-        ${VISIT_SOURCE_DIR}/visitpy/common/)
+    visit_append_list(
+        NAME avtexpressions_ser_INCLUDES
+        ITEMS $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
+endif()
+
+set(avtexpressions_par_SOURCES  ${avtexpressions_ser_SOURCES})
+set(avtexpressions_par_HEADERS  ${avtexpressions_ser_HEADERS})
+set(avtexpressions_par_INCLUDES ${avtexpressions_ser_INCLUDES})
+set(avtexpressions_par_DEPENDS  ${avtexpressions_ser_DEPENDS})
+
+list(APPEND avtexpressions_ser_DEPENDS
+    avtdatabase_ser
+    avtdbin_ser
+    avtplotter_ser
+    avtfilters_ser
+    avtpipeline_ser)
+
+list(APPEND avtexpressions_par_DEPENDS
+    avtdatabase_par
+    avtdbin_par
+    avtplotter_par
+    avtfilters_par
+    avtpipeline_par)
+
+if(VISIT_PYTHON_FILTERS)
+    list(APPEND avtexpressions_ser_DEPENDS avtpythonfilters_ser)
+    list(APPEND avtexpressions_par_DEPENDS avtpythonfilters_par)
 endif()
 
 #********************************* SERIAL ************************************
-target_link_libraries(avtexpressions_ser visitcommon avtdbatts avtdatabase_ser
-    avtdbin_ser avtplotter_ser avtfilters_ser avtpipeline_ser)
-if(VISIT_PYTHON_FILTERS)
-    target_link_libraries(avtexpressions_ser avtpythonfilters_ser)
-endif()
-VISIT_INSTALL_TARGETS(avtexpressions_ser)
+visit_add_library(
+    NAME       avtexpressions_ser
+    SOURCES    ${avtexpressions_ser_SOURCES}
+    HEADERS    ${avtexpressions_ser_HEADERS}
+    INCLUDES   ${avtexpressions_ser_INCLUDES}
+    DEPENDS_ON ${avtexpressions_ser_DEPENDS})
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    target_link_libraries(avtexpressions_par visitcommon avtdbatts
-        avtdatabase_par avtdbin_par avtplotter_par avtfilters_par
-        avtpipeline_par)
-    if(VISIT_PYTHON_FILTERS)
-        target_link_libraries(avtexpressions_par avtpythonfilters_par)
-    endif()
-    VISIT_INSTALL_TARGETS(avtexpressions_par)
+    visit_add_parallel_library(
+        NAME       avtexpressions_par
+        SOURCES    ${avtexpressions_par_SOURCES}
+        HEADERS    ${avtexpressions_par_HEADERS}
+        INCLUDES   ${avtexpressions_par_INCLUDES}
+        DEPENDS_ON ${avtexpressions_par_DEPENDS})
 endif()
 

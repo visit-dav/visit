@@ -7,19 +7,22 @@
 #
 #*****************************************************************************
 
-set(IMAGEPROCESSING_SOURCES
-    avtAbelInversionExpression.C
-    avtConservativeSmoothingExpression.C
-    avtMeanFilterExpression.C
-    avtMedianFilterExpression.C)
+visit_append_list(
+    NAME  avtexpressions_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtAbelInversionExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtConservativeSmoothingExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMeanFilterExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMedianFilterExpression.C)
 
-target_sources(avtexpressions_ser PRIVATE ${IMAGEPROCESSING_SOURCES})
-target_include_directories(avtexpressions_ser PUBLIC .)
+visit_append_list(
+    NAME  avtexpressions_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtAbelInversionExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtConservativeSmoothingExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMeanFilterExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMedianFilterExpression.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtexpressions_par PRIVATE ${IMAGEPROCESSING_SOURCES})
-    target_include_directories(avtexpressions_par PUBLIC .)
-endif()
-
-unset(IMAGEPROCESSING_SOURCES)
+visit_append_list(
+    NAME  avtexpressions_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Expressions/ImageProcessing>)
 

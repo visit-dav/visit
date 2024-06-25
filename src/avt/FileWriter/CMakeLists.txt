@@ -7,43 +7,46 @@
 #
 #****************************************************************************
 
-SET(AVTWRITER_SOURCES
-avtImageFileWriter.C
-avtDatasetFileWriter.C
-avtFileWriter.C
-)
+set(avtwriter_SOURCES
+    avtDatasetFileWriter.C
+    avtFileWriter.C
+    avtImageFileWriter.C)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VTK_INCLUDE_DIRS}
-)
+set(avtwriter_HEADERS
+    avtDatasetFileWriter.h
+    avtFileWriter.h
+    avtImageFileWriter.h
+    file_writer_exports.h)
 
-set(vtklibs VTK::ImagingCore VTK::IOPLY)
+set(avtwriter_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERISON_INCLUDE}/visit/avt/FileWriter>)
 
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+set(avtwriter_DEPENDS
+    visitcommon
+    visit_vtk
+    VTK::ImagingCore
+    VTK::IOPLY)
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtwriter_ser ${AVTWRITER_SOURCES})
-TARGET_LINK_LIBRARIES(avtwriter_ser visitcommon avtplotter_ser avtpipeline_ser visit_vtk ${vtklibs})
-VISIT_INSTALL_TARGETS(avtwriter_ser)
+visit_add_library(
+    NAME       avtwriter_ser
+    SOURCES    ${avtwriter_SOURCES}
+    HEADERS    ${avtwriter_HEADERS}
+    INCLUDES   ${avtwriter_INCLUDES}
+    DEPENDS_ON ${avtwriter_DEPENDS}
+               avtplotter_ser
+               avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtwriter_par ${AVTWRITER_SOURCES})
-    TARGET_LINK_LIBRARIES(avtwriter_par visitcommon avtplotter_par avtpipeline_par visit_vtk ${vtklibs})
-    VISIT_INSTALL_TARGETS(avtwriter_par)
-ENDIF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
+    visit_add_parallel_library(
+        NAME       avtwriter_par
+        SOURCES    ${avtwriter_SOURCES}
+        HEADERS    ${avtwriter_HEADERS}
+        INCLUDES   ${avtwriter_INCLUDES}
+        DEPENDS_ON ${avtwriter_DEPENDS}
+                   avtplotter_par
+                   avtpipeline_par)
+endif()
+

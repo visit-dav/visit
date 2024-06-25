@@ -76,86 +76,137 @@
 #
 #****************************************************************************
 
-set(AVTPLOTTER_SOURCES
-    avtActor.C
-    avtBehavior.C
-    avtCurveLegend.C
-    avtCustomRenderer.C
-    avtDecorationsDrawable.C
-    avtDecorationsMapper.C
-    avtDrawable.C
-    avtExternallyRenderedImagesActor.C
-    avtGeometryDrawable.C
-    avtImageDrawable.C
-    avtImageMapper.C
-    avtLabelActor.C
-    avtLabeledCurveMapper.C
-    avtLegend.C
-    avtLevelsLegend.C
-    avtLevelsMapper.C
-    avtLevelsPointGlyphMapper.C
-    avtLightList.C
-    avtLineoutActor.C
-    avtLookupTable.C
-    avtMapper.C
-    avtMapperBase.C
-    avtMapper2D.C
-    avtPickActor.C
-    avtPlot.C
-    avtPlotMetaData.C
-    avtPointMapper.C
-    avtSoftwareShader.C
-    avtTensorGlyphMapper.C
-    avtTransparencyActor.C
-    avtUserDefinedMapper.C
-    avtVariableLegend.C
-    avtVariableMapper.C
-    avtVariablePointGlyphMapper.C
-    avtVectorGlyphMapper.C
-    avtVolumeVariableLegend.C
-    RenderOrder.C)
+add_subdirectory(vtk)
 
-include_directories(
-    ${VISIT_COMMON_INCLUDES}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/Filters
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-    ${VISIT_SOURCE_DIR}/avt/View
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${PROJECT_BINARY_DIR}/avt/Plotter/vtk/
-    ${VTK_INCLUDE_DIRS})
+visit_append_list(
+    NAME  avtplotter_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtActor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtBehavior.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveLegend.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCustomRenderer.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDecorationsDrawable.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDecorationsMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDrawable.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExternallyRenderedImagesActor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGeometryDrawable.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtImageDrawable.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtImageMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLabelActor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLabeledCurveMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLegend.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLevelsLegend.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLevelsMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLevelsPointGlyphMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLightList.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLineoutActor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLookupTable.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMapperBase.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMapper2D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickActor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPlot.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPlotMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPointMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSoftwareShader.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTensorGlyphMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTransparencyActor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUserDefinedMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVariableLegend.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVariableMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVariablePointGlyphMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVectorGlyphMapper.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVolumeVariableLegend.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/RenderOrder.C)
 
-set(vtklibs VTK::CommonExecutionModel VTK::FiltersHybrid
-            VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2)
+visit_append_list(
+    NAME  avtplotter_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtActor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtBehavior.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveLegend.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCustomRenderer.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDecorationsDrawable.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDecorationsMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDrawable.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExternallyRenderedImagesActor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGeometryDrawable.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtImageDrawable.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtImageMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLabelActor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLabeledCurveMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLegend.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLevelsLegend.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLevelsMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLevelsPointGlyphMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLightList.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLineoutActor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLookupTable.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMapperBase.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMapper2D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickActor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPlot.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPlotMetaData.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPointMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSoftwareShader.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTensorGlyphMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTransparencyActor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUserDefinedMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVariableLegend.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVariableMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVariablePointGlyphMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVectorGlyphMapper.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVolumeVariableLegend.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/LineAttributes.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/plotter_exports.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/RenderOrder.h)
+
+visit_append_list(
+    NAME  avtplotter_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Plotter>)
+
+visit_append_list(
+    NAME  avtplotter_DEPENDS
+    ITEMS visitcommon
+          avtmath
+          avtview
+          visit_vtk
+          lightweight_visit_vtk 
+          VTK::CommonExecutionModel
+          VTK::FiltersHybrid
+          VTK::RenderingCore
+          VTK::RenderingFreeType
+          VTK::RenderingOpenGL2
+          ${OPENGL_LIBRARIES})
+
 if(TARGET VTK::RenderingRayTracing)
      # RenderingRayTracing available if VTK 9 was built with OSPRAY support
-    list(APPEND vtklibs VTK::RenderingRayTracing)
+    list(APPEND avtplotter_DEPENDS VTK::RenderingRayTracing)
 endif()
+
+set(avtplotter_par_SOURCES  ${avtplotter_ser_SOURCES})
+set(avtplotter_par_HEADERS  ${avtplotter_ser_HEADERS})
+set(avtplotter_par_INCLUDES ${avtplotter_ser_INCLUDES})
+
 #********************************* SERIAL ************************************
-add_library(avtplotter_ser ${AVTPLOTTER_SOURCES})
-target_link_libraries(avtplotter_ser
-    visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk
-    lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
-VISIT_INSTALL_TARGETS(avtplotter_ser)
+visit_add_library(
+    NAME       avtplotter_ser
+    SOURCES    ${avtplotter_ser_SOURCES}
+    HEADERS    ${avtplotter_ser_HEADERS}
+    INCLUDES   ${avtplotter_ser_INCLUDES}
+    DEPENDS_ON ${avtplotter_DEPENDS}
+               avtfilters_ser
+               avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
-    target_link_libraries(avtplotter_par
-        visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk
-        lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
-    VISIT_INSTALL_TARGETS(avtplotter_par)
+    visit_add_parallel_library(
+        NAME       avtplotter_par
+        SOURCES    ${avtplotter_par_SOURCES}
+        HEADERS    ${avtplotter_par_HEADERS}
+        INCLUDES   ${avtplotter_par_INCLUDES}
+        DEPENDS_ON ${avtplotter_DEPENDS}
+                   avtfilters_par
+                   avtpipeline_par)
 endif()
-
-add_subdirectory(vtk)
 

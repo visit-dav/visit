@@ -10,43 +10,57 @@
 #
 #****************************************************************************
 
-SET(AVTPYTHON_FILTERS_SOURCES
-PythonInterpreter.C
-PyContract.C
-PyDataRequest.C
-PyDataSelection.C
-PySILRequest.C
-${VISIT_SOURCE_DIR}/visitpy/common/PySILRestrictionBase.C
-avtPythonFilterEnvironment.C
-avtPythonFilter.C
-)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data/
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline/
-${VISIT_SOURCE_DIR}/avt/DBAtts/
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData/
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL/
-${VISIT_SOURCE_DIR}/visitpy/common/
-${VTK_INCLUDE_DIRS}
-${PYTHON_INCLUDE_PATH}
-)
+set(avtpythonfilters_SOURCES
+    avtPythonFilter.C
+    avtPythonFilterEnvironment.C
+    PyContract.C
+    PyDataRequest.C
+    PyDataSelection.C
+    PySILRequest.C
+    PythonInterpreter.C
+    ${VISIT_SOURCE_DIR}/visitpy/common/PySILRestrictionBase.C)
 
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${PYTHON_DIR})
+set(avtpythonfilters_HEADERS
+    avtPythonFilter.h
+    avtPythonFilterEnvironment.h
+    PyContract.h
+    PyDataRequest.h
+    PyDataSelection.h
+    PySILRequest.h
+    python_filters_exports.h
+    PythonInterpreter.h)
 
+set(avtpythonfilters_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/PythonFilters>
+    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>
+    $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
+
+set(avtpythonfilters_DEPENDS
+    visitcommon
+    avtdbatts
+    ${PYTHON_LIBRARIES})
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtpythonfilters_ser ${AVTPYTHON_FILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtpythonfilters_ser visitcommon avtdbatts avtpipeline_ser ${PYTHON_LIBRARIES} )
-VISIT_INSTALL_TARGETS(avtpythonfilters_ser)
+visit_add_library(
+    NAME       avtpythonfilters_ser
+    SOURCES    ${avtpythonfilters_SOURCES}
+    HEADERS    ${avtpythonfilters_HEADERS}
+    INCLUDES   ${avtpythonfilters_INCLUDES}
+    DEPENDS_ON ${avtpythonfilters_DEPENDS}
+               avtpipeline_ser)
+    target_link_directories(avtpythonfilters_ser PUBLIC ${PYTHON_DIR})
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtpythonfilters_par ${AVTPYTHON_FILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtpythonfilters_par visitcommon avtdbatts avtpipeline_par ${PYTHON_LIBRARIES})
-    VISIT_INSTALL_TARGETS(avtpythonfilters_par)
-ENDIF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
+    visit_add_parallel_library(
+        NAME       avtpythonfilters_par
+        SOURCES    ${avtpythonfilters_SOURCES}
+        HEADERS    ${avtpythonfilters_HEADERS}
+        INCLUDES   ${avtpythonfilters_INCLUDES}
+        DEPENDS_ON ${avtpythonfilters_DEPENDS}
+                   avtpipeline_par)
+    target_link_directories(avtpythonfilters_par PUBLIC ${PYTHON_DIR})
+endif()
 

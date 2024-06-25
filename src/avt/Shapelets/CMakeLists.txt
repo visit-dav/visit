@@ -7,28 +7,25 @@
 #
 #****************************************************************************
 
-SET(AVTSHAPELETS_SOURCES
-avtShapeletBasis1D.C
-avtShapeletBasis2D.C
-avtShapeletBasisSet.C
-avtShapeletDecompResult.C
-avtShapeletDecompose.C
-avtShapeletReconstruct.C
-)
+visit_add_library(
+    NAME       avtshapelets
+    SOURCES    avtShapeletBasis1D.C
+               avtShapeletBasis2D.C
+               avtShapeletBasisSet.C
+               avtShapeletDecompose.C
+               avtShapeletDecompResult.C
+               avtShapeletReconstruct.C
+    HEADERS    avtShapeletBasis1D.h
+               avtShapeletBasis2D.h
+               avtShapeletBasisSet.h
+               avtShapeletDecompose.h
+               avtShapeletDecompResult.h
+               avtShapeletReconstruct.h
+               shapelets_exports.h
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Shapelets>
+    DEPENDS_ON visitcommon
+               avtmath
+               VTK::CommonCore
+               VTK::FiltersCore)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/Math
-${VTK_INCLUDE_DIRS}
-)
-
-set(vtklibs VTK::CommonCore VTK::FiltersCore)
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
-
-ADD_LIBRARY(avtshapelets ${AVTSHAPELETS_SOURCES})
-TARGET_LINK_LIBRARIES(avtshapelets visitcommon avtmath ${vtklibs})
-
-VISIT_INSTALL_TARGETS(avtshapelets)
