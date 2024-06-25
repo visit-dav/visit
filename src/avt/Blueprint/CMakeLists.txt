@@ -10,26 +10,20 @@
 #
 #****************************************************************************
 
-set(AVTBLUEPRINT_SOURCES
-    avtConduitBlueprintDataAdaptor.C
-    avtConduitBlueprintInfoWarningHandler.C
-    )
+visit_add_library(
+    NAME       avtblueprint
+    SOURCES    avtConduitBlueprintDataAdaptor.C
+               avtConduitBlueprintInfoWarningHandler.C
+    HEADERS    avtblueprint_exports.h
+               avtConduitBlueprintDataAdaptor.h
+               avtConduitBlueprintInfoWarningHandler.C
+               avtConduitBlueprintLogging.h
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Blueprint>
+    DEPENDS_ON visitcommon
+               lightweight_visit_vtk
+               VTK::CommonCore
+               VTK::FiltersCore
+               conduit
+               mfem)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${VISIT_COMMON_INCLUDES}
-                    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-                    ${VTK_INCLUDE_DIRS}
-                    ${CONDUIT_INCLUDE_DIR}
-                    ${MFEM_INCLUDE_DIR}
-                    )
-
-# Add link directories
-link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${CONDUIT_LIBRARY_DIR} ${MFEM_LIBRARY_DIR})
-
-add_library(avtblueprint ${AVTBLUEPRINT_SOURCES})
-
-set(vtklibs lightweight_visit_vtk VTK::CommonCore VTK::FiltersCore)
-
-target_link_libraries(avtblueprint visitcommon ${CONDUIT_LIB} ${MFEM_LIB} ${vtklibs}) 
-
-VISIT_INSTALL_TARGETS(avtblueprint)
