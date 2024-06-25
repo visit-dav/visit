@@ -1208,6 +1208,219 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 "coordsets/" + n_topo["coordset"].as_string());
             topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
         }
+        // polyhedral mixed case
+        else if (n_topo["elements/shape"].as_string() == "mixed" &&
+                 n_topo.has_child("subelements"))
+        {
+            // 
+            // step 1: threshold out the polyhedral elements, placing 
+            // them in their own topology
+            // 
+            Node &polyhedral_mesh = res["mixed_transformation/polyhedral_mesh"];
+            polyhedral_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
+
+            Node &polyhedral_topo = polyhedral_mesh["topologies"][n_topo.name()];
+            const std::string coordset_name = n_topo["coordset"].as_string();
+            polyhedral_topo["coordset"].set(coordset_name);
+            polyhedral_topo["type"].set(n_topo["type"]); // should be unstructured
+
+            // create elements:
+            int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+            int_accessor n_sizes = n_topo["elements"]["sizes"].value();
+            int_accessor n_offsets = n_topo["elements"]["offsets"].value();
+            int_accessor n_conn = n_topo["elements"]["connectivity"].value();
+
+            std::vector<int> poly_conn;
+            std::vector<int> poly_sizes;
+            std::vector<int> poly_offsets;
+
+            polyhedral_topo["elements"]["shape"] = "polyhedral";
+            int new_offset = 0;
+            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+            {
+                // TODO how will I handle the case of polyhedra and polygons in a single mesh?
+                if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                {
+                    const int curr_size = n_sizes[zoneid];
+                    const int curr_offset = n_offsets[zoneid];
+                    for (int faceid = 0; faceid < curr_size; faceid ++)
+                    {
+                        poly_conn.push_back(n_conn[curr_offset + faceid]);
+                    }
+                    poly_sizes.push_back(curr_size);
+                    poly_offsets.push_back(new_offset);
+                    new_offset += curr_size;
+                }
+            }
+
+            polyhedral_topo["elements"]["connectivity"].set(poly_conn.data(), poly_conn.size());
+            polyhedral_topo["elements"]["sizes"].set(poly_sizes.data(), poly_sizes.size());
+            polyhedral_topo["elements"]["offsets"].set(poly_offsets.data(), poly_offsets.size());
+
+            // create subelements: just shallow copy over all the data from the mixed topo
+            // but interpret everything as polygons
+            polyhedral_topo["subelements"]["shape"] = "polygonal";
+            polyhedral_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+            polyhedral_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+            polyhedral_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+
+            // 
+            // step 2: run the polyhedral mesh through generate_sides
+            // 
+            Node &side_mesh = res["mixed_transformation/side_mesh"];
+            Node &side_topo = side_mesh[n_topo.name()];
+            Node &side_coords = side_mesh[coordset_name];
+            Node &s2dmap = side_mesh["mixed_transformation/maps/s2dmap"];
+            Node &d2smap = side_mesh["mixed_transformation/maps/d2smap"];
+            blueprint::mesh::topology::unstructured::generate_sides(
+                polyhedral_topo,
+                side_topo,
+                side_coords,
+                s2dmap,
+                d2smap);
+
+            
+
+            // 
+            // step 3: stitch the topology back together to create a 
+            // brand new mixed topology
+            // 
+
+            Node &new_mixed_topo = res["mixed_transformation/new_mixed_topo"];
+
+            std::vector<int> new_shapes;
+            std::vector<int> new_sizes;
+            std::vector<int> new_offsets;
+            std::vector<int> new_conn;
+
+            // first we load the original shapes back in
+            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+            {
+                const int curr_shape = n_shapes[zoneid];
+                if (curr_shape != VTK_POLYHEDRON)
+                {
+                    const int curr_size = n_sizes[zoneid];
+                    const int curr_offset = n_offsets[zoneid];
+
+                    new_shapes.push_back(curr_shape);
+                    new_sizes.push_back(curr_size);
+                    new_offsets.push_back(curr_offset);
+
+                    for (int faceid = 0; faceid < curr_size; faceid ++)
+                    {
+                        new_conn.push_back(n_conn[curr_offset + faceid]);
+                    }
+                }
+            }
+
+            // now we need the new shapes
+            int_accessor sides_conn = side_topo["elements"]["connectivity"].value();
+            if (side_topo["elements/shape"].as_string() != "tet")
+            {
+                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                          "Generated elements for mixed polyhedral"
+                                          " topology must be tets.");
+            }
+
+            const int tet_step = 4; // how many points in a tet
+
+            int last_offset = 0;
+            int last_size = 0;
+            if (! new_offsets.empty())
+            {
+                last_offset = new_offsets.back();
+                last_size = new_sizes.back();
+            }
+
+            for (int zoneid = 0; zoneid < sides_conn.dtype().number_of_elements() / tet_step; zoneid ++)
+            {
+                new_shapes.push_back(VTK_TETRA);
+                new_sizes.push_back(tet_step);
+
+                last_offset += last_size;
+                new_offsets.push_back(last_offset);
+                last_size = tet_step;
+
+                new_conn.push_back(sides_conn[zoneid * tet_step]);
+                new_conn.push_back(sides_conn[zoneid * tet_step + 1]);
+                new_conn.push_back(sides_conn[zoneid * tet_step + 2]);
+                new_conn.push_back(sides_conn[zoneid * tet_step + 3]);
+            }
+
+            new_mixed_topo["coordset"].set(n_topo["coordset"]);
+            new_mixed_topo["type"].set(n_topo["type"]); // should be unstructured
+
+            new_mixed_topo["elements"]["shape"] = "mixed";
+
+            // create new shape map
+            auto shape_map_itr = n_topo["elements/shape_map"].children();
+            while (shape_map_itr.has_next())
+            {
+                const Node &shape_map_entry = shape_map_itr.next();
+                const std::string shape_name = shape_map_itr.name();
+                const int shape_value = shape_map_entry.as_int();
+
+                if (shape_name != "polyhedral")
+                {
+                    new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+                }
+            }
+            if (! new_mixed_topo["elements/shape_map"].has_child("tet"))
+            {
+                new_mixed_topo["elements/shape_map"]["tet"] = VTK_TETRA;
+            }
+
+            new_mixed_topo["elements"]["shapes"].set(new_shapes.data(), new_shapes.size());
+            new_mixed_topo["elements"]["sizes"].set(new_sizes.data(), new_sizes.size());
+            new_mixed_topo["elements"]["offsets"].set(new_offsets.data(), new_offsets.size());
+            new_mixed_topo["elements"]["connectivity"].set(new_conn.data(), new_conn.size());
+
+            // 
+            // step 4: create original cell numbers array using data
+            // from generate_sides
+            // 
+            unsigned_int_accessor values = d2smap["values"].value();
+
+            // TODO why don't we use the original_element_ids field that conduit
+            // creates for us?
+
+            oca = vtkUnsignedIntArray::New();
+            oca->SetName("avtOriginalCellNumbers");
+            oca->SetNumberOfComponents(2);
+
+            // TODO so is dtype really optional for this?
+            // iterate through original shapes first
+            int orig_cell_id = 0;
+            for (int i = 0; i < n_shapes.number_of_elements(); i ++)
+            {
+                if (n_shapes[i] != VTK_POLYHEDRON)
+                {
+                    unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
+                                              static_cast<unsigned int>(orig_cell_id)};
+                    oca->InsertNextTypedTuple(ocdata);                    
+                    orig_cell_id ++;
+                }
+            }
+
+            // the new cells we have added at the end will start with this number
+            const int cell_nums_start = orig_cell_id;
+            for (int i = 0; i < values.number_of_elements(); i ++)
+            {
+                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                          static_cast<unsigned int>(cell_nums_start + values[i])};
+                oca->InsertNextTypedTuple(ocdata);
+            }
+
+            // 
+            // step 5: update the reference to the coordset and topology to
+            // point to the new ones we created
+            // 
+            coords_ptr = res.fetch_ptr("mixed_transformation/side_mesh/" + coordset_name);
+            topo_ptr = res.fetch_ptr("mixed_transformation/new_mixed_topo");
+
+            // TODO: the fields must follow a similar pattern
+            // TODO: consider cutting out intermediate vectors to avoid copies
+        }
     }
 
     // The coords could be changed in the call above, so this must happen
