@@ -1208,12 +1208,23 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 "coordsets/" + n_topo["coordset"].as_string());
             topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
         }
-        // polyhedral mixed case
+        // polytopal mixed case
         else if (n_topo["elements/shape"].as_string() == "mixed" &&
-                 n_topo.has_child("subelements"))
+                 (n_topo.has_child("subelements") || 
+                  n_topo.has_path("elements/shape_map/polygonal")))
         {
+            // either we are making a polyhedral mesh or a polygonal mesh
+            const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+            if (mesh_is_polyhedral && n_topo.has_path("elements/shape_map/polygonal"))
+            {
+                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                          "The mixed polygonal and polyhedral mesh "
+                                          "case is currently unsupported.");
+            }
+
             // 
-            // step 1: threshold out the polyhedral elements, placing 
+            // step 1: threshold out the polytopal elements, placing 
             // them in their own topology
             // 
             Node &polytopal_mesh = res["mixed_transformation/polytopal_mesh"];
@@ -1234,22 +1245,38 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             std::vector<int> poly_sizes;
             std::vector<int> poly_offsets;
 
-            polytopal_topo["elements"]["shape"] = "polyhedral";
+            polytopal_topo["elements"]["shape"] = (mesh_is_polyhedral ? "polyhedral" : "polygonal");
             int new_offset = 0;
-            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+            auto extract_curr_element = [&](const int zoneid)
             {
-                // TODO how will I handle the case of polyhedra and polygons in a single mesh?
-                if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                const int curr_size = n_sizes[zoneid];
+                const int curr_offset = n_offsets[zoneid];
+                for (int faceid = 0; faceid < curr_size; faceid ++)
                 {
-                    const int curr_size = n_sizes[zoneid];
-                    const int curr_offset = n_offsets[zoneid];
-                    for (int faceid = 0; faceid < curr_size; faceid ++)
+                    poly_conn.push_back(n_conn[curr_offset + faceid]);
+                }
+                poly_sizes.push_back(curr_size);
+                poly_offsets.push_back(new_offset);
+                new_offset += curr_size;
+            };
+            if (mesh_is_polyhedral)
+            {
+                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                {
+                    if (n_shapes[zoneid] == VTK_POLYHEDRON)
                     {
-                        poly_conn.push_back(n_conn[curr_offset + faceid]);
+                        extract_curr_element(zoneid);
                     }
-                    poly_sizes.push_back(curr_size);
-                    poly_offsets.push_back(new_offset);
-                    new_offset += curr_size;
+                }
+            }
+            else // polygonal case
+            {
+                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                {
+                    if (n_shapes[zoneid] == VTK_POLYGON)
+                    {
+                        extract_curr_element(zoneid);
+                    }
                 }
             }
 
@@ -1257,12 +1284,15 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             polytopal_topo["elements"]["sizes"].set(poly_sizes.data(), poly_sizes.size());
             polytopal_topo["elements"]["offsets"].set(poly_offsets.data(), poly_offsets.size());
 
-            // create subelements: just shallow copy over all the data from the mixed topo
-            // but interpret everything as polygons
-            polytopal_topo["subelements"]["shape"] = "polygonal";
-            polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
-            polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
-            polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+            if (mesh_is_polyhedral)
+            {
+                // create subelements: just shallow copy over all the data from the mixed topo
+                // but interpret everything as polygons
+                polytopal_topo["subelements"]["shape"] = "polygonal";
+                polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+                polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+                polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+            }
 
             // 
             // step 2: run the polyhedral mesh through generate_sides
@@ -1279,8 +1309,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 s2dmap,
                 d2smap);
 
-            
-
             // 
             // step 3: stitch the topology back together to create a 
             // brand new mixed topology
@@ -1294,35 +1322,66 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             std::vector<int> new_conn;
 
             // first we load the original shapes back in
-            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+            auto load_orig_shape = [&](const int zoneid, const int curr_shape)
             {
-                const int curr_shape = n_shapes[zoneid];
-                if (curr_shape != VTK_POLYHEDRON)
+                const int curr_size = n_sizes[zoneid];
+                const int curr_offset = n_offsets[zoneid];
+
+                new_shapes.push_back(curr_shape);
+                new_sizes.push_back(curr_size);
+                new_offsets.push_back(curr_offset);
+
+                for (int faceid = 0; faceid < curr_size; faceid ++)
                 {
-                    const int curr_size = n_sizes[zoneid];
-                    const int curr_offset = n_offsets[zoneid];
-
-                    new_shapes.push_back(curr_shape);
-                    new_sizes.push_back(curr_size);
-                    new_offsets.push_back(curr_offset);
-
-                    for (int faceid = 0; faceid < curr_size; faceid ++)
+                    new_conn.push_back(n_conn[curr_offset + faceid]);
+                }
+            };
+            if (mesh_is_polyhedral)
+            {
+                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                {
+                    const int curr_shape = n_shapes[zoneid];
+                    if (curr_shape != VTK_POLYHEDRON)
                     {
-                        new_conn.push_back(n_conn[curr_offset + faceid]);
+                        load_orig_shape(zoneid, curr_shape);
+                    }
+                }
+            }
+            else
+            {
+                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                {
+                    const int curr_shape = n_shapes[zoneid];
+                    if (curr_shape != VTK_POLYGON)
+                    {
+                        load_orig_shape(zoneid, curr_shape);
                     }
                 }
             }
 
             // now we need the new shapes
             int_accessor sides_conn = side_topo["elements"]["connectivity"].value();
-            if (side_topo["elements/shape"].as_string() != "tet")
+            if (mesh_is_polyhedral)
             {
-                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                                          "Generated elements for mixed polyhedral"
-                                          " topology must be tets.");
+                if (side_topo["elements/shape"].as_string() != "tet")
+                {
+                    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                              "Generated elements for mixed polyhedral "
+                                              "topology must be tetrahedrons.");
+                }
+            }
+            else
+            {
+                if (side_topo["elements/shape"].as_string() != "tri")
+                {
+                    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                              "Generated elements for mixed polygonal "
+                                              "topology must be triangles.");
+                }
             }
 
             const int tet_step = 4; // how many points in a tet
+            const int tri_step = 3; // how many points in a tri
 
             int last_offset = 0;
             int last_size = 0;
@@ -1332,19 +1391,38 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 last_size = new_sizes.back();
             }
 
-            for (int zoneid = 0; zoneid < sides_conn.dtype().number_of_elements() / tet_step; zoneid ++)
+            if (mesh_is_polyhedral)
             {
-                new_shapes.push_back(VTK_TETRA);
-                new_sizes.push_back(tet_step);
+                for (int zoneid = 0; zoneid < sides_conn.dtype().number_of_elements() / tet_step; zoneid ++)
+                {
+                    new_shapes.push_back(VTK_TETRA);
+                    new_sizes.push_back(tet_step);
 
-                last_offset += last_size;
-                new_offsets.push_back(last_offset);
-                last_size = tet_step;
+                    last_offset += last_size;
+                    new_offsets.push_back(last_offset);
+                    last_size = tet_step;
 
-                new_conn.push_back(sides_conn[zoneid * tet_step]);
-                new_conn.push_back(sides_conn[zoneid * tet_step + 1]);
-                new_conn.push_back(sides_conn[zoneid * tet_step + 2]);
-                new_conn.push_back(sides_conn[zoneid * tet_step + 3]);
+                    new_conn.push_back(sides_conn[zoneid * tet_step]);
+                    new_conn.push_back(sides_conn[zoneid * tet_step + 1]);
+                    new_conn.push_back(sides_conn[zoneid * tet_step + 2]);
+                    new_conn.push_back(sides_conn[zoneid * tet_step + 3]);
+                }
+            }
+            else
+            {
+                for (int zoneid = 0; zoneid < sides_conn.dtype().number_of_elements() / tri_step; zoneid ++)
+                {
+                    new_shapes.push_back(VTK_TRIANGLE);
+                    new_sizes.push_back(tri_step);
+
+                    last_offset += last_size;
+                    new_offsets.push_back(last_offset);
+                    last_size = tri_step;
+
+                    new_conn.push_back(sides_conn[zoneid * tri_step]);
+                    new_conn.push_back(sides_conn[zoneid * tri_step + 1]);
+                    new_conn.push_back(sides_conn[zoneid * tri_step + 2]);
+                }
             }
 
             new_mixed_topo["coordset"].set(n_topo["coordset"]);
@@ -1360,14 +1438,34 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 const std::string shape_name = shape_map_itr.name();
                 const int shape_value = shape_map_entry.as_int();
 
-                if (shape_name != "polyhedral")
+                if (mesh_is_polyhedral)
                 {
-                    new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+                    if (shape_name != "polyhedral")
+                    {
+                        new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+                    }
+                }
+                else
+                {
+                    if (shape_name != "polygonal")
+                    {
+                        new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+                    }
                 }
             }
-            if (! new_mixed_topo["elements/shape_map"].has_child("tet"))
+            if (mesh_is_polyhedral)
             {
-                new_mixed_topo["elements/shape_map"]["tet"] = VTK_TETRA;
+                if (! new_mixed_topo["elements/shape_map"].has_child("tet"))
+                {
+                    new_mixed_topo["elements/shape_map"]["tet"] = VTK_TETRA;
+                }
+            }
+            else
+            {
+                if (! new_mixed_topo["elements/shape_map"].has_child("tri"))
+                {
+                    new_mixed_topo["elements/shape_map"]["tri"] = VTK_TRIANGLE;
+                }
             }
 
             new_mixed_topo["elements"]["shapes"].set(new_shapes.data(), new_shapes.size());
@@ -1379,35 +1477,47 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             // step 4: create original cell numbers array using data
             // from generate_sides
             // 
-            unsigned_int_accessor values = d2smap["values"].value();
-
-            // TODO why don't we use the original_element_ids field that conduit
-            // creates for us?
+            unsigned_int_accessor d2s_values = d2smap["values"].value();
 
             oca = vtkUnsignedIntArray::New();
             oca->SetName("avtOriginalCellNumbers");
             oca->SetNumberOfComponents(2);
 
-            // TODO so is dtype really optional for this?
             // iterate through original shapes first
             int orig_cell_id = 0;
-            for (int i = 0; i < n_shapes.number_of_elements(); i ++)
+            if (mesh_is_polyhedral)
             {
-                if (n_shapes[i] != VTK_POLYHEDRON)
+                for (int i = 0; i < n_shapes.number_of_elements(); i ++)
                 {
-                    unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
-                                              static_cast<unsigned int>(orig_cell_id)};
-                    oca->InsertNextTypedTuple(ocdata);                    
-                    orig_cell_id ++;
+                    if (n_shapes[i] != VTK_POLYHEDRON)
+                    {
+                        unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
+                                                  static_cast<unsigned int>(orig_cell_id)};
+                        oca->InsertNextTypedTuple(ocdata);                    
+                        orig_cell_id ++;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < n_shapes.number_of_elements(); i ++)
+                {
+                    if (n_shapes[i] != VTK_POLYGON)
+                    {
+                        unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
+                                                  static_cast<unsigned int>(orig_cell_id)};
+                        oca->InsertNextTypedTuple(ocdata);                    
+                        orig_cell_id ++;
+                    }
                 }
             }
 
             // the new cells we have added at the end will start with this number
             const int cell_nums_start = orig_cell_id;
-            for (int i = 0; i < values.number_of_elements(); i ++)
+            for (int i = 0; i < d2s_values.number_of_elements(); i ++)
             {
                 unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(cell_nums_start + values[i])};
+                                          static_cast<unsigned int>(cell_nums_start + d2s_values[i])};
                 oca->InsertNextTypedTuple(ocdata);
             }
 
