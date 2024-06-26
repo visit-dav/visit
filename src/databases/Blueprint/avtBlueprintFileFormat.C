@@ -2466,7 +2466,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                                 }
                             }
                             
-                            double_accessor side_field_values = n_field["values"].value();
+                            double_accessor side_field_values = side_fields[field_name]["values"].value();
                             for (int zoneid = 0; zoneid < side_field_values.dtype().number_of_elements(); zoneid ++)
                             {
                                 // grab all the new shapes
@@ -2486,7 +2486,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     // point to the new ones we created
                     // 
                     field_ptr = intermediate_data.fetch_ptr("mixed_transformation/fields/" + field_name);
-                    topo_ptr = intermediate_data.fetch_ptr("mixed_transformation/" + topo_name);
+                    // topo_ptr = intermediate_data.fetch_ptr("mixed_transformation/" + topo_name);
                 }
             }
 
