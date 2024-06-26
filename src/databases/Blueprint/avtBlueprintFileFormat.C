@@ -2347,13 +2347,13 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     // step 1: threshold out the polyhedral elements, placing 
                     // them in their own topology
                     // 
-                    Node &polyhedral_mesh = intermediate_data["mixed_transformation/polyhedral_mesh"];
-                    polyhedral_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
+                    Node &polytopal_mesh = intermediate_data["mixed_transformation/polytopal_mesh"];
+                    polytopal_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
 
-                    Node &polyhedral_topo = polyhedral_mesh["topologies"][n_topo.name()];
+                    Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
                     const std::string coordset_name = n_topo["coordset"].as_string();
-                    polyhedral_topo["coordset"].set(coordset_name);
-                    polyhedral_topo["type"].set(n_topo["type"]); // should be unstructured
+                    polytopal_topo["coordset"].set(coordset_name);
+                    polytopal_topo["type"].set(n_topo["type"]); // should be unstructured
 
                     // create elements:
                     int_accessor n_shapes = n_topo["elements"]["shapes"].value();
@@ -2365,7 +2365,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     std::vector<int> poly_sizes;
                     std::vector<int> poly_offsets;
 
-                    polyhedral_topo["elements"]["shape"] = "polyhedral";
+                    polytopal_topo["elements"]["shape"] = "polyhedral";
                     int new_offset = 0;
                     for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
                     {
@@ -2383,18 +2383,18 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                         }
                     }
 
-                    polyhedral_topo["elements"]["connectivity"].set(poly_conn.data(), poly_conn.size());
-                    polyhedral_topo["elements"]["sizes"].set(poly_sizes.data(), poly_sizes.size());
-                    polyhedral_topo["elements"]["offsets"].set(poly_offsets.data(), poly_offsets.size());
+                    polytopal_topo["elements"]["connectivity"].set(poly_conn.data(), poly_conn.size());
+                    polytopal_topo["elements"]["sizes"].set(poly_sizes.data(), poly_sizes.size());
+                    polytopal_topo["elements"]["offsets"].set(poly_offsets.data(), poly_offsets.size());
 
                     // create subelements: just shallow copy over all the data from the mixed topo
                     // but interpret everything as polygons
-                    polyhedral_topo["subelements"]["shape"] = "polygonal";
-                    polyhedral_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
-                    polyhedral_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
-                    polyhedral_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+                    polytopal_topo["subelements"]["shape"] = "polygonal";
+                    polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+                    polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+                    polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
                 
-                    Node &polyhedral_field = polyhedral_mesh["fields"][field_name];
+                    Node &polyhedral_field = polytopal_mesh["fields"][field_name];
                     const bool elem_assoc = field_ptr->fetch("association").as_string() == "element";
                     auto field_entry_itr = field_ptr->children();
                     while (field_entry_itr.has_next())
@@ -2433,7 +2433,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     Node &s2dmap = intermediate_data["mixed_transformation/maps/s2dmap"];
                     Node &d2smap = intermediate_data["mixed_transformation/maps/d2smap"];
                     blueprint::mesh::topology::unstructured::generate_sides(
-                        polyhedral_topo,
+                        polytopal_topo,
                         side_topo,
                         side_coords,
                         side_fields,
