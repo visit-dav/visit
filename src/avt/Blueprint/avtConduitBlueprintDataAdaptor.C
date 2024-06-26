@@ -1295,7 +1295,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             }
 
             // 
-            // step 2: run the polyhedral mesh through generate_sides
+            // step 2: run the polytopal mesh through generate_sides
             // 
             Node &side_mesh = res["mixed_transformation/side_mesh"];
             Node &side_topo = side_mesh[n_topo.name()];

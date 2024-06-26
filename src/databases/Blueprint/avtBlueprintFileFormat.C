@@ -2337,14 +2337,25 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     field_ptr = side_fields.fetch_ptr(field_name);
                     topo_ptr = intermediate_data.fetch_ptr("side_mesh/topologies/" + topo_name);
                 }
-                // polyhedral mixed case
+                // polytopal mixed case
                 else if (n_topo["elements/shape"].as_string() == "mixed" &&
-                         n_topo.has_child("subelements"))
+                         (n_topo.has_child("subelements") || 
+                          n_topo.has_path("elements/shape_map/polygonal")))
                 {
-                    string field_name = FileFunctions::Basename(abs_varname_str);
+                    const string field_name = FileFunctions::Basename(abs_varname_str);
+
+                    // either we are making a polyhedral mesh or a polygonal mesh
+                    const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+                    if (mesh_is_polyhedral && n_topo.has_path("elements/shape_map/polygonal"))
+                    {
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                             "The mixed polygonal and polyhedral mesh "
+                                             "case is currently unsupported.");
+                    }
 
                     // 
-                    // step 1: threshold out the polyhedral elements, placing 
+                    // step 1: threshold out the polytopal elements, placing 
                     // them in their own topology
                     // 
                     Node &polytopal_mesh = intermediate_data["mixed_transformation/polytopal_mesh"];
@@ -2365,21 +2376,38 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     std::vector<int> poly_sizes;
                     std::vector<int> poly_offsets;
 
-                    polytopal_topo["elements"]["shape"] = "polyhedral";
+                    polytopal_topo["elements"]["shape"] = (mesh_is_polyhedral ? "polyhedral" : "polygonal");
                     int new_offset = 0;
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                    auto extract_curr_element = [&](const int zoneid)
                     {
-                        if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                        const int curr_size = n_sizes[zoneid];
+                        const int curr_offset = n_offsets[zoneid];
+                        for (int faceid = 0; faceid < curr_size; faceid ++)
                         {
-                            const int curr_size = n_sizes[zoneid];
-                            const int curr_offset = n_offsets[zoneid];
-                            for (int faceid = 0; faceid < curr_size; faceid ++)
+                            poly_conn.push_back(n_conn[curr_offset + faceid]);
+                        }
+                        poly_sizes.push_back(curr_size);
+                        poly_offsets.push_back(new_offset);
+                        new_offset += curr_size;
+                    };
+                    if (mesh_is_polyhedral)
+                    {
+                        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                        {
+                            if (n_shapes[zoneid] == VTK_POLYHEDRON)
                             {
-                                poly_conn.push_back(n_conn[curr_offset + faceid]);
+                                extract_curr_element(zoneid);
                             }
-                            poly_sizes.push_back(curr_size);
-                            poly_offsets.push_back(new_offset);
-                            new_offset += curr_size;
+                        }
+                    }
+                    else // polygonal case
+                    {
+                        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                        {
+                            if (n_shapes[zoneid] == VTK_POLYGON)
+                            {
+                                extract_curr_element(zoneid);
+                            }
                         }
                     }
 
@@ -2387,14 +2415,17 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     polytopal_topo["elements"]["sizes"].set(poly_sizes.data(), poly_sizes.size());
                     polytopal_topo["elements"]["offsets"].set(poly_offsets.data(), poly_offsets.size());
 
-                    // create subelements: just shallow copy over all the data from the mixed topo
-                    // but interpret everything as polygons
-                    polytopal_topo["subelements"]["shape"] = "polygonal";
-                    polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
-                    polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
-                    polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
-                
-                    Node &polyhedral_field = polytopal_mesh["fields"][field_name];
+                    if (mesh_is_polyhedral)
+                    {
+                        // create subelements: just shallow copy over all the data from the mixed topo
+                        // but interpret everything as polygons
+                        polytopal_topo["subelements"]["shape"] = "polygonal";
+                        polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+                        polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+                        polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+                    }
+
+                    Node &polytopal_field = polytopal_mesh["fields"][field_name];
                     const bool elem_assoc = field_ptr->fetch("association").as_string() == "element";
                     auto field_entry_itr = field_ptr->children();
                     while (field_entry_itr.has_next())
@@ -2408,23 +2439,37 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                         {
                             double_accessor n_field_values = n_field["values"].value();
                             std::vector<double> new_field_values;
-                            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+
+                            if (mesh_is_polyhedral)
                             {
-                                if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
                                 {
-                                    new_field_values.push_back(n_field_values[zoneid]);
+                                    if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                                    {
+                                        new_field_values.push_back(n_field_values[zoneid]);
+                                    }
                                 }
                             }
-                            polyhedral_field["values"].set(new_field_values.data(), new_field_values.size());
+                            else
+                            {
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                                {
+                                    if (n_shapes[zoneid] == VTK_POLYGON)
+                                    {
+                                        new_field_values.push_back(n_field_values[zoneid]);
+                                    }
+                                }
+                            }
+                            polytopal_field["values"].set(new_field_values.data(), new_field_values.size());
                         }
                         else
                         {
-                            polyhedral_field[entry_name].set_external(field_entry);
+                            polytopal_field[entry_name].set_external(field_entry);
                         }
                     }
 
                     // 
-                    // step 2: run the polyhedral mesh through generate_sides
+                    // step 2: run the polytopal mesh through generate_sides
                     // 
                     Node &side_mesh = intermediate_data["mixed_transformation/side_mesh"];
                     Node &side_topo = side_mesh[n_topo.name()];
@@ -2457,12 +2502,26 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                         {
                             double_accessor n_field_values = n_field["values"].value();
                             std::vector<double> new_field_values;
-                            for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                            if (mesh_is_polyhedral)
                             {
-                                // grab all the original shapes
-                                if (n_shapes[zoneid] != VTK_POLYHEDRON)
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
                                 {
-                                    new_field_values.push_back(n_field_values[zoneid]);
+                                    // grab all the original shapes
+                                    if (n_shapes[zoneid] != VTK_POLYHEDRON)
+                                    {
+                                        new_field_values.push_back(n_field_values[zoneid]);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                                {
+                                    // grab all the original shapes
+                                    if (n_shapes[zoneid] != VTK_POLYGON)
+                                    {
+                                        new_field_values.push_back(n_field_values[zoneid]);
+                                    }
                                 }
                             }
                             
@@ -2486,6 +2545,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     // point to the new ones we created
                     // 
                     field_ptr = intermediate_data.fetch_ptr("mixed_transformation/fields/" + field_name);
+                    // TODO should we bother reconstituting the topology?
+                    // we don't currently need it but we do pass it through
+                    // I would hate to screw things up down the line
                     // topo_ptr = intermediate_data.fetch_ptr("mixed_transformation/" + topo_name);
                 }
             }
