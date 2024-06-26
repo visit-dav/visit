@@ -537,305 +537,305 @@ def test_paren_vars():
     CloseDatabase(uniform_root)
 
 
-# TestSection("2D Example JSON Mesh Files")
-# OpenDatabase(braid_2d_json_root)
-# for mesh_name in braid_2d_meshes:
-#     test(mesh_name,"blueprint_2d_json")
-# CloseDatabase(braid_2d_json_root)
+TestSection("2D Example JSON Mesh Files")
+OpenDatabase(braid_2d_json_root)
+for mesh_name in braid_2d_meshes:
+    test(mesh_name,"blueprint_2d_json")
+CloseDatabase(braid_2d_json_root)
 
-# TestSection("2D Example HDF5 Mesh Files")
-# OpenDatabase(braid_2d_hdf5_root)
-# for mesh_name in braid_2d_meshes:
-#     test(mesh_name,"blueprint_2d_hdf5")
-# CloseDatabase(braid_2d_hdf5_root)
+TestSection("2D Example HDF5 Mesh Files")
+OpenDatabase(braid_2d_hdf5_root)
+for mesh_name in braid_2d_meshes:
+    test(mesh_name,"blueprint_2d_hdf5")
+CloseDatabase(braid_2d_hdf5_root)
 
-# TestSection("2D Example Sidre HDF5 Mesh Files")
-# OpenDatabase(braid_2d_sidre_root)
-# for mesh_name in braid_2d_meshes:
-#     test(mesh_name,"blueprint_2d_sidre_hdf5")
-# CloseDatabase(braid_2d_sidre_root)
+TestSection("2D Example Sidre HDF5 Mesh Files")
+OpenDatabase(braid_2d_sidre_root)
+for mesh_name in braid_2d_meshes:
+    test(mesh_name,"blueprint_2d_sidre_hdf5")
+CloseDatabase(braid_2d_sidre_root)
 
-# TestSection("3D Example JSON Mesh Files")
-# OpenDatabase(braid_3d_json_root)
-# for mesh_name in braid_3d_meshes:
-#     test(mesh_name,"blueprint_3d_json")
-# CloseDatabase(braid_3d_json_root)
+TestSection("3D Example JSON Mesh Files")
+OpenDatabase(braid_3d_json_root)
+for mesh_name in braid_3d_meshes:
+    test(mesh_name,"blueprint_3d_json")
+CloseDatabase(braid_3d_json_root)
 
-# TestSection("3D Example HDF5 Mesh Files")
-# OpenDatabase(braid_3d_hdf5_root)
-# for mesh_name in braid_3d_meshes:
-#     test(mesh_name,"blueprint_3d_hdf5")
-# CloseDatabase(braid_3d_hdf5_root)
+TestSection("3D Example HDF5 Mesh Files")
+OpenDatabase(braid_3d_hdf5_root)
+for mesh_name in braid_3d_meshes:
+    test(mesh_name,"blueprint_3d_hdf5")
+CloseDatabase(braid_3d_hdf5_root)
 
-# TestSection("3D Example Sidre HDF5 Mesh Files")
-# OpenDatabase(braid_3d_sidre_root)
-# for mesh_name in braid_3d_meshes:
-#     test(mesh_name,"blueprint_3d_sidre_hdf5")
-# CloseDatabase(braid_3d_sidre_root)
+TestSection("3D Example Sidre HDF5 Mesh Files")
+OpenDatabase(braid_3d_sidre_root)
+for mesh_name in braid_3d_meshes:
+    test(mesh_name,"blueprint_3d_sidre_hdf5")
+CloseDatabase(braid_3d_sidre_root)
 
-# TestSection("MFEM Blueprint Example Data Tests")
-# for example in mfem_ex9_examples:
-#     for protocol in mfem_ex9_protocols:
-#         test_mfem("blueprint_mfem_" + example.dim, example.name, protocol)
+TestSection("MFEM Blueprint Example Data Tests")
+for example in mfem_ex9_examples:
+    for protocol in mfem_ex9_protocols:
+        test_mfem("blueprint_mfem_" + example.dim, example.name, protocol)
 
-# TestSection("MFEM LOR Mesh Blueprint Tests")
-# for example in mfem_ex9_examples:
-#     for protocol in mfem_ex9_protocols:
-#         test_mfem_lor_mesh("blueprint_mfem_" + example.dim, example.name, protocol)
-# for example in devilray_mfem_examples:
-#     test_mfem_lor_mesh("blueprint_mfem_" + example.dim, example.name, "", devilray = True, number = example.number)
+TestSection("MFEM LOR Mesh Blueprint Tests")
+for example in mfem_ex9_examples:
+    for protocol in mfem_ex9_protocols:
+        test_mfem_lor_mesh("blueprint_mfem_" + example.dim, example.name, protocol)
+for example in devilray_mfem_examples:
+    test_mfem_lor_mesh("blueprint_mfem_" + example.dim, example.name, "", devilray = True, number = example.number)
 
-# TestSection("MFEM LOR Field Blueprint Tests")
-# for example in devilray_mfem_examples:
-#     test_mfem_lor_field("blueprint_mfem_" + example.dim, example.name, example.number, example.pseudo_fields, example.vector_fields)
+TestSection("MFEM LOR Field Blueprint Tests")
+for example in devilray_mfem_examples:
+    test_mfem_lor_field("blueprint_mfem_" + example.dim, example.name, example.number, example.pseudo_fields, example.vector_fields)
 
-# TestSection("Blueprint Expressions")
-# OpenDatabase(braid_2d_json_root)
-# AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
-# AddPlot("Vector", "uniform_mesh/vector_expr")
-# DrawPlots()
-# set_test_view("2d")
-# Test("blueprint_expressions")
-# DeleteAllPlots()
-# ResetView()
-# CloseDatabase(braid_2d_json_root)
+TestSection("Blueprint Expressions")
+OpenDatabase(braid_2d_json_root)
+AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
+AddPlot("Vector", "uniform_mesh/vector_expr")
+DrawPlots()
+set_test_view("2d")
+Test("blueprint_expressions")
+DeleteAllPlots()
+ResetView()
+CloseDatabase(braid_2d_json_root)
 
-# test_paren_vars()
+test_paren_vars()
 
-# test_venn("venn_small_full", venn_full_root)
-# test_venn("venn_small_sparse_by_element", venn_s_by_e_root)
-# test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
+test_venn("venn_small_full", venn_full_root)
+test_venn("venn_small_sparse_by_element", venn_s_by_e_root)
+test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
 
-# test_venn("venn_small_full_yaml", venn_full_yaml_root)
-# test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
-# test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
+test_venn("venn_small_full_yaml", venn_full_yaml_root)
+test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
+test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
 
-# TestSection("Venn With Modded Material Numbers, 0.8.7")
-# OpenDatabase(venn_modded_matnos_root)
-# AddPlot("FilledBoundary", "mesh_topo_matset")
-# DrawPlots()
-# ResetView()
-# Test("Venn_with_modded_matnos")
-# DeleteAllPlots()
-# ResetView()
+TestSection("Venn With Modded Material Numbers, 0.8.7")
+OpenDatabase(venn_modded_matnos_root)
+AddPlot("FilledBoundary", "mesh_topo_matset")
+DrawPlots()
+ResetView()
+Test("Venn_with_modded_matnos")
+DeleteAllPlots()
+ResetView()
 
-# TestSection("2D Example HDF5 Mesh Files, 0.8.2")
-# OpenDatabase(braid_2d_0_8_2_hdf5_root)
-# for mesh_name in braid_2d_meshes_0_8_2:
-#     test(mesh_name,"blueprint_2d_hdf5_0_8_2")
-# CloseDatabase(braid_2d_0_8_2_hdf5_root)
+TestSection("2D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(braid_2d_0_8_2_hdf5_root)
+for mesh_name in braid_2d_meshes_0_8_2:
+    test(mesh_name,"blueprint_2d_hdf5_0_8_2")
+CloseDatabase(braid_2d_0_8_2_hdf5_root)
 
-# TestSection("2D Example YAML Mesh Files, 0.8.2")
-# OpenDatabase(braid_2d_0_8_2_yaml_root)
-# for mesh_name in braid_2d_meshes_0_8_2:
-#     test(mesh_name,"blueprint_2d_yaml_0_8_2")
-# CloseDatabase(braid_2d_0_8_2_yaml_root)
+TestSection("2D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(braid_2d_0_8_2_yaml_root)
+for mesh_name in braid_2d_meshes_0_8_2:
+    test(mesh_name,"blueprint_2d_yaml_0_8_2")
+CloseDatabase(braid_2d_0_8_2_yaml_root)
 
-# TestSection("3D Example HDF5 Mesh Files, 0.8.2")
-# OpenDatabase(braid_3d_0_8_2_hdf5_root)
-# for mesh_name in braid_3d_meshes_0_8_2:
-#     test(mesh_name,"blueprint_3d_hdf5_0_8_2")
-# CloseDatabase(braid_3d_0_8_2_hdf5_root)
+TestSection("3D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(braid_3d_0_8_2_hdf5_root)
+for mesh_name in braid_3d_meshes_0_8_2:
+    test(mesh_name,"blueprint_3d_hdf5_0_8_2")
+CloseDatabase(braid_3d_0_8_2_hdf5_root)
 
-# TestSection("3D Example YAML Mesh Files, 0.8.2")
-# OpenDatabase(braid_3d_0_8_2_yaml_root)
-# for mesh_name in braid_3d_meshes_0_8_2:
-#     test(mesh_name,"blueprint_3d_yaml_0_8_2")
-# CloseDatabase(braid_3d_0_8_2_yaml_root)
+TestSection("3D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(braid_3d_0_8_2_yaml_root)
+for mesh_name in braid_3d_meshes_0_8_2:
+    test(mesh_name,"blueprint_3d_yaml_0_8_2")
+CloseDatabase(braid_3d_0_8_2_yaml_root)
 
-# # test polygonal mesh
-# TestSection("Polygonal 2D Example HDF5 Mesh Files, 0.8.2")
-# OpenDatabase(poly_2d_hdf5_root)
-# test_poly("blueprint_poly_2d_hdf5_0_8_2")
-# CloseDatabase(poly_2d_hdf5_root)
+# test polygonal mesh
+TestSection("Polygonal 2D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(poly_2d_hdf5_root)
+test_poly("blueprint_poly_2d_hdf5_0_8_2")
+CloseDatabase(poly_2d_hdf5_root)
 
-# TestSection("Polygonal 2D Example YAML Mesh Files, 0.8.2")
-# OpenDatabase(poly_2d_yaml_root)
-# test_poly("blueprint_poly_2d_yaml_0_8_2")
-# CloseDatabase(poly_2d_yaml_root)
+TestSection("Polygonal 2D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(poly_2d_yaml_root)
+test_poly("blueprint_poly_2d_yaml_0_8_2")
+CloseDatabase(poly_2d_yaml_root)
 
-# # test 3d polygonal mesh
-# TestSection("Polygonal 3D Example HDF5 Mesh Files, 0.8.2")
-# OpenDatabase(poly_3d_hdf5_root)
-# test_poly("blueprint_poly_3d_hdf5_0_8_2")
-# CloseDatabase(poly_3d_hdf5_root)
+# test 3d polygonal mesh
+TestSection("Polygonal 3D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(poly_3d_hdf5_root)
+test_poly("blueprint_poly_3d_hdf5_0_8_2")
+CloseDatabase(poly_3d_hdf5_root)
 
-# TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
-# OpenDatabase(poly_3d_yaml_root)
-# test_poly("blueprint_poly_3d_yaml_0_8_2")
-# CloseDatabase(poly_3d_yaml_root)
-
-
-# TestSection("Blueprint with Partition Map Style Index, 0.8.4")
-# OpenDatabase(bp_part_map_root)
-# AddPlot("Subset","domains")
-# DrawPlots()
-# Test("bp_part_map_index_example")
-# DeleteAllPlots()
-# CloseDatabase(bp_part_map_root)
-# # single file test case
-# OpenDatabase(bp_part_map_single_file_root)
-# AddPlot("Pseudocolor","mesh_mesh/braid")
-# DrawPlots()
-# Test("bp_part_map_index_single_file_example")
-# DeleteAllPlots()
-# CloseDatabase(bp_part_map_single_file_root)
-# # sparse topos case
-# # single file test case
-# OpenDatabase(bp_sparse_topos_root)
-# AddPlot("Pseudocolor","mesh_topo/topo_field")
-# AddPlot("Pseudocolor","mesh_pts_topo/pts_field")
-# # change plot adds so we can see the points
-# pc_atts = PseudocolorAttributes()
-# pc_atts.pointSize = 1
-# pc_atts.pointType = pc_atts.Sphere
-# SetPlotOptions(pc_atts)
-# DrawPlots()
-# Test("bp_sparse_topos_example")
-# DeleteAllPlots()
-# CloseDatabase(bp_sparse_topos_root)
-
-# # other spiral test cases, which have both index styles
-# for i, root_file in enumerate(bp_spiral_part_map_examples):
-#     OpenDatabase(root_file)
-#     AddPlot("Subset","domains")
-#     DrawPlots()
-#     # spiral cases are labeled -1 to 8
-#     case_name = "bp_part_map_spiral_case_{0}".format(i-1)
-#     Test(case_name)
-#     DeleteAllPlots()
-#     CloseDatabase(root_file)
+TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(poly_3d_yaml_root)
+test_poly("blueprint_poly_3d_yaml_0_8_2")
+CloseDatabase(poly_3d_yaml_root)
 
 
-# TestSection("Blueprint Strided Structured, 0.8.4")
-# # 2d
-# OpenDatabase(bp_struct_strided_2d_root)
-# # ele vals
-# AddPlot("Pseudocolor", "mesh_mesh/ele_vals")
-# AddPlot("Pseudocolor", "mesh_orig_pts/orig_ele_vals")
-# pc_atts = PseudocolorAttributes()
-# pc_atts.pointSize = 0.5
-# pc_atts.pointType = pc_atts.Sphere
-# SetPlotOptions(pc_atts)
-# DrawPlots()
-# Test("bp_strided_struct_2d_ele_vals")
-# DeleteAllPlots()
-# # vert vals
-# AddPlot("Pseudocolor", "mesh_mesh/vert_vals")
-# AddPlot("Pseudocolor", "mesh_orig_pts/orig_vert_vals")
-# pc_atts = PseudocolorAttributes()
-# pc_atts.pointSize = 0.5
-# pc_atts.pointType = pc_atts.Sphere
-# SetPlotOptions(pc_atts)
-# DrawPlots()
-# Test("bp_strided_struct_2d_vert_vals")
-# DeleteAllPlots()
-# CloseDatabase(bp_struct_strided_2d_root)
+TestSection("Blueprint with Partition Map Style Index, 0.8.4")
+OpenDatabase(bp_part_map_root)
+AddPlot("Subset","domains")
+DrawPlots()
+Test("bp_part_map_index_example")
+DeleteAllPlots()
+CloseDatabase(bp_part_map_root)
+# single file test case
+OpenDatabase(bp_part_map_single_file_root)
+AddPlot("Pseudocolor","mesh_mesh/braid")
+DrawPlots()
+Test("bp_part_map_index_single_file_example")
+DeleteAllPlots()
+CloseDatabase(bp_part_map_single_file_root)
+# sparse topos case
+# single file test case
+OpenDatabase(bp_sparse_topos_root)
+AddPlot("Pseudocolor","mesh_topo/topo_field")
+AddPlot("Pseudocolor","mesh_pts_topo/pts_field")
+# change plot adds so we can see the points
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 1
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_sparse_topos_example")
+DeleteAllPlots()
+CloseDatabase(bp_sparse_topos_root)
 
-# # 2d
-# OpenDatabase(bp_struct_strided_3d_root)
-# # ele vals
-# AddPlot("Pseudocolor", "mesh_mesh/ele_vals")
-# AddPlot("Pseudocolor", "mesh_orig_pts/orig_ele_vals")
-# pc_atts = PseudocolorAttributes()
-# pc_atts.pointSize = 0.5
-# pc_atts.pointType = pc_atts.Sphere
-# SetPlotOptions(pc_atts)
-# DrawPlots()
-# Test("bp_strided_struct_3d_ele_vals")
-# DeleteAllPlots()
-# # vert vals
-# AddPlot("Pseudocolor", "mesh_mesh/vert_vals")
-# AddPlot("Pseudocolor", "mesh_orig_pts/orig_vert_vals")
-# pc_atts = PseudocolorAttributes()
-# pc_atts.pointSize = 0.5
-# pc_atts.pointType = pc_atts.Sphere
-# SetPlotOptions(pc_atts)
-# DrawPlots()
-# Test("bp_strided_struct_3d_vert_vals")
-# DeleteAllPlots()
-# CloseDatabase(bp_struct_strided_3d_root)
+# other spiral test cases, which have both index styles
+for i, root_file in enumerate(bp_spiral_part_map_examples):
+    OpenDatabase(root_file)
+    AddPlot("Subset","domains")
+    DrawPlots()
+    # spiral cases are labeled -1 to 8
+    case_name = "bp_part_map_spiral_case_{0}".format(i-1)
+    Test(case_name)
+    DeleteAllPlots()
+    CloseDatabase(root_file)
 
-# TestSection("Blueprint RZ Examples, 0.8.6")
-# for db in bp_rz_examples:
-#     tag_name = os.path.basename(os.path.split(db)[1])
-#     test_rz_example(tag_name,db)
 
-# TestSection("Blueprint 1D Curve Examples, 0.8.6")
-# for db in bp_1d_curve_examples:
-#     OpenDatabase(db)
-#     AddPlot("Curve", "mesh_topo/field_v")
-#     DrawPlots()
-#     Test("blueprint_1d_curve_vertex_assoc")
-#     DeleteAllPlots()
-#     AddPlot("Curve", "mesh_topo/field_e")
-#     DrawPlots()
-#     Test("blueprint_1d_curve_element_assoc")
-#     DeleteAllPlots()
+TestSection("Blueprint Strided Structured, 0.8.4")
+# 2d
+OpenDatabase(bp_struct_strided_2d_root)
+# ele vals
+AddPlot("Pseudocolor", "mesh_mesh/ele_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_ele_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_2d_ele_vals")
+DeleteAllPlots()
+# vert vals
+AddPlot("Pseudocolor", "mesh_mesh/vert_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_vert_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_2d_vert_vals")
+DeleteAllPlots()
+CloseDatabase(bp_struct_strided_2d_root)
 
-# TestSection("Blueprint Polytopal Mesh Missing Offsets, 0.8.7")
-# OpenDatabase(polytopal_mesh_no_offsets_root)
-# AddPlot("Mesh", "mesh_test")
-# AddPlot("Pseudocolor", "mesh_test/field")
-# DrawPlots()
-# ResetView()
-# Test("Polytopal_mesh_missing_offsets")
-# DeleteAllPlots()
-# ResetView()
+# 2d
+OpenDatabase(bp_struct_strided_3d_root)
+# ele vals
+AddPlot("Pseudocolor", "mesh_mesh/ele_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_ele_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_3d_ele_vals")
+DeleteAllPlots()
+# vert vals
+AddPlot("Pseudocolor", "mesh_mesh/vert_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_vert_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_3d_vert_vals")
+DeleteAllPlots()
+CloseDatabase(bp_struct_strided_3d_root)
 
-# TestSection("Blueprint Unstructured Points not using the entire coordset, 0.8.7")
-# OpenDatabase(unstructured_points)
-# AddPlot("Pseudocolor", "mesh_mesh/braid", 1, 1)
-# SetActivePlots(0)
-# PseudocolorAtts = PseudocolorAttributes()
-# PseudocolorAtts.pointSizePixels = 20
-# SetPlotOptions(PseudocolorAtts)
-# AddPlot("Label", "mesh_mesh/braid", 1, 1)
-# DrawPlots()
-# View3DAtts = View3DAttributes()
-# View3DAtts.viewNormal = (-0.64536, -0.104723, 0.756666)
-# View3DAtts.focus = (10, 0, 0)
-# View3DAtts.viewUp = (-0.0863273, 0.994211, 0.0639709)
-# View3DAtts.viewAngle = 30
-# View3DAtts.parallelScale = 14.1421
-# View3DAtts.nearPlane = -28.2843
-# View3DAtts.farPlane = 28.2843
-# View3DAtts.centerOfRotationSet = 0
-# View3DAtts.centerOfRotation = (10, 0, 0)
-# SetView3D(View3DAtts)
-# DrawPlots()
-# Test("Unstructured_points_not_using_entire_coordset")
-# DeleteAllPlots()
-# ResetView()
+TestSection("Blueprint RZ Examples, 0.8.6")
+for db in bp_rz_examples:
+    tag_name = os.path.basename(os.path.split(db)[1])
+    test_rz_example(tag_name,db)
 
-# TestSection("Blueprint Uniform Coordset + Unstructured Topo, 0.9.1")
-# OpenDatabase(uniform_unstructured)
-# AddPlot("Mesh", "mesh_topo", 1, 1)
-# DrawPlots()
-# AddPlot("Subset", "domains", 1, 1)
-# DrawPlots()
-# View3DAtts = View3DAttributes()
-# View3DAtts.viewNormal = (-0.520784, 0.423114, 0.741457)
-# View3DAtts.focus = (5, 5, 5)
-# View3DAtts.viewUp = (0.238073, 0.906059, -0.349827)
-# View3DAtts.viewAngle = 30
-# View3DAtts.parallelScale = 8.66025
-# View3DAtts.nearPlane = -17.3205
-# View3DAtts.farPlane = 17.3205
-# View3DAtts.imagePan = (0, 0)
-# View3DAtts.imageZoom = 0.826446
-# View3DAtts.perspective = 1
-# View3DAtts.eyeAngle = 2
-# View3DAtts.centerOfRotationSet = 0
-# View3DAtts.centerOfRotation = (5, 5, 5)
-# View3DAtts.axis3DScaleFlag = 0
-# View3DAtts.axis3DScales = (1, 1, 1)
-# View3DAtts.shear = (0, 0, 1)
-# View3DAtts.windowValid = 1
-# SetView3D(View3DAtts)
-# Test("Uniform_coordset_and_unstructured_topo")
-# DeleteAllPlots()
-# ResetView()
+TestSection("Blueprint 1D Curve Examples, 0.8.6")
+for db in bp_1d_curve_examples:
+    OpenDatabase(db)
+    AddPlot("Curve", "mesh_topo/field_v")
+    DrawPlots()
+    Test("blueprint_1d_curve_vertex_assoc")
+    DeleteAllPlots()
+    AddPlot("Curve", "mesh_topo/field_e")
+    DrawPlots()
+    Test("blueprint_1d_curve_element_assoc")
+    DeleteAllPlots()
+
+TestSection("Blueprint Polytopal Mesh Missing Offsets, 0.8.7")
+OpenDatabase(polytopal_mesh_no_offsets_root)
+AddPlot("Mesh", "mesh_test")
+AddPlot("Pseudocolor", "mesh_test/field")
+DrawPlots()
+ResetView()
+Test("Polytopal_mesh_missing_offsets")
+DeleteAllPlots()
+ResetView()
+
+TestSection("Blueprint Unstructured Points not using the entire coordset, 0.8.7")
+OpenDatabase(unstructured_points)
+AddPlot("Pseudocolor", "mesh_mesh/braid", 1, 1)
+SetActivePlots(0)
+PseudocolorAtts = PseudocolorAttributes()
+PseudocolorAtts.pointSizePixels = 20
+SetPlotOptions(PseudocolorAtts)
+AddPlot("Label", "mesh_mesh/braid", 1, 1)
+DrawPlots()
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.64536, -0.104723, 0.756666)
+View3DAtts.focus = (10, 0, 0)
+View3DAtts.viewUp = (-0.0863273, 0.994211, 0.0639709)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 14.1421
+View3DAtts.nearPlane = -28.2843
+View3DAtts.farPlane = 28.2843
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (10, 0, 0)
+SetView3D(View3DAtts)
+DrawPlots()
+Test("Unstructured_points_not_using_entire_coordset")
+DeleteAllPlots()
+ResetView()
+
+TestSection("Blueprint Uniform Coordset + Unstructured Topo, 0.9.1")
+OpenDatabase(uniform_unstructured)
+AddPlot("Mesh", "mesh_topo", 1, 1)
+DrawPlots()
+AddPlot("Subset", "domains", 1, 1)
+DrawPlots()
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.520784, 0.423114, 0.741457)
+View3DAtts.focus = (5, 5, 5)
+View3DAtts.viewUp = (0.238073, 0.906059, -0.349827)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 8.66025
+View3DAtts.nearPlane = -17.3205
+View3DAtts.farPlane = 17.3205
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 0.826446
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (5, 5, 5)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+Test("Uniform_coordset_and_unstructured_topo")
+DeleteAllPlots()
+ResetView()
 
 def mixed_test(db_name, meshplot_name, pseudocolor_plot_name, label_plot_name, test_name, view=False):
     OpenDatabase(db_name)
