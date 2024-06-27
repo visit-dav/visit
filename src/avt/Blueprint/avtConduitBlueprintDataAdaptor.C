@@ -1271,9 +1271,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                     }
                 }
 
-                std::cout << "poly_conn_size " << poly_conn_size << std::endl;
-                std::cout << "poly_num_elems " << poly_num_elems << std::endl;
-
                 polytopal_topo["elements"]["connectivity"].set(DataType::int32(poly_conn_size));
                 polytopal_topo["elements"]["sizes"].set(DataType::int32(poly_num_elems));
                 polytopal_topo["elements"]["offsets"].set(DataType::int32(poly_num_elems));
@@ -1423,7 +1420,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 
             int_accessor sides_conn = side_topo["elements"]["connectivity"].value();
             const int sides_num_elems = sides_conn.dtype().number_of_elements() / (mesh_is_polyhedral ? tet_step : tri_step);
-            std::cout << "sides_num_elems " << sides_num_elems << std::endl;
 
             // calculate the sizes of each of the data arrays
             {
@@ -1455,8 +1451,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                     }
                 }
 
-                std::cout << "new_num_elems " << new_num_elems << std::endl;
-
                 // next we look at the elements from our polytopal topology
                 new_num_elems += sides_num_elems;
                 if (mesh_is_polyhedral)
@@ -1467,8 +1461,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 {
                     new_conn_size += tri_step * sides_num_elems;
                 }
-
-                std::cout << "new_num_elems " << new_num_elems << std::endl;
 
                 new_mixed_topo["elements"]["shapes"].set(DataType::int32(new_num_elems));
                 new_mixed_topo["elements"]["sizes"].set(DataType::int32(new_num_elems));
@@ -1579,8 +1571,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                     }
                 }
             }
-
-            std::cout << res.to_yaml() << std::endl;
 
             // 
             // step 4: create original cell numbers array using data
