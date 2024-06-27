@@ -1191,16 +1191,16 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 s2dmap,
                 d2smap);
 
-            unsigned_int_accessor values = d2smap["values"].value();
+            unsigned_int_accessor d2s_values = d2smap["values"].value();
 
             oca = vtkUnsignedIntArray::New();
             oca->SetName("avtOriginalCellNumbers");
             oca->SetNumberOfComponents(2);
 
-            for (int i = 0; i < values.number_of_elements(); i ++)
+            for (int i = 0; i < d2s_values.number_of_elements(); i ++)
             {
                 unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(values[i])};
+                                          static_cast<unsigned int>(d2s_values[i])};
                 oca->InsertNextTypedTuple(ocdata);
             }
 
