@@ -1215,7 +1215,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         {
             // either we are making a polyhedral mesh or a polygonal mesh
             const bool mesh_is_polyhedral = n_topo.has_child("subelements");
-
             if (mesh_is_polyhedral && n_topo.has_path("elements/shape_map/polygonal"))
             {
                 AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
@@ -1626,8 +1625,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             // 
             coords_ptr = res.fetch_ptr("mixed_transformation/side_mesh/" + coordset_name);
             topo_ptr = res.fetch_ptr("mixed_transformation/new_mixed_topo");
-
-            // TODO: consider cutting out intermediate vectors to avoid copies - do this for fields as well
         }
     }
 
