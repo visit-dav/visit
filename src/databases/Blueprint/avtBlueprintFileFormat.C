@@ -2180,6 +2180,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    Add MFEM refinement for certain fields that are low-order but live on a
 //    mesh that has been refined. This prevents the field from having too few
 //    values for the refined mesh.
+// 
+//    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+//    Handle the polytopal mixed topology case.
 //
 // ****************************************************************************
 
@@ -2368,11 +2371,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
                     const Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
 
-                    // accessors for later
                     int_accessor n_shapes = n_topo["elements"]["shapes"].value();
-                    int_accessor n_sizes = n_topo["elements"]["sizes"].value();
-                    int_accessor n_offsets = n_topo["elements"]["offsets"].value();
-                    int_accessor n_conn = n_topo["elements"]["connectivity"].value();
 
                     // we must create the field on the polytopal mesh ourselves
                     Node &polytopal_field = polytopal_mesh["fields"][field_name];
