@@ -71,6 +71,11 @@ public:
         /// support 1D meshes
         static vtkDataSet*    Curve1DToVTK(const conduit::Node &coords,
                                            const conduit::Node &field);
+
+        /// Helpers for transforming mixed meshes
+        static int            CreatePolytopalMeshFromMixedMesh(const conduit::Node &n_coords,
+                                                               const conduit::Node &n_topo,
+                                                               conduit::Node &polytopal_mesh);
     };
 
     class AVTBLUEPRINT_API VTKToBlueprint

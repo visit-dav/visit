@@ -1130,6 +1130,120 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 }
 
 // ****************************************************************************
+int
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh(
+    const Node &n_coords,
+    const Node &n_topo,
+    Node &polytopal_mesh)
+{
+    const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+    polytopal_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
+
+    Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
+    polytopal_topo["coordset"].set(n_topo["coordset"].as_string());
+    polytopal_topo["type"].set(n_topo["type"]); // should be unstructured
+
+    // create elements:
+    polytopal_topo["elements"]["shape"] = (mesh_is_polyhedral ? "polyhedral" : "polygonal");
+
+    int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+    int_accessor n_sizes = n_topo["elements"]["sizes"].value();
+    int_accessor n_offsets = n_topo["elements"]["offsets"].value();
+    int_accessor n_conn = n_topo["elements"]["connectivity"].value();
+
+    // 
+    // calculate the sizes of the data arrays before filling them
+    // 
+    int poly_conn_size, poly_num_elems;
+    poly_conn_size = poly_num_elems = 0;
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYHEDRON)
+            {
+                poly_num_elems ++;
+                poly_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+    else // polygonal case
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYGON)
+            {
+                poly_num_elems ++;
+                poly_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+
+    polytopal_topo["elements"]["connectivity"].set(DataType::int32(poly_conn_size));
+    polytopal_topo["elements"]["sizes"].set(DataType::int32(poly_num_elems));
+    polytopal_topo["elements"]["offsets"].set(DataType::int32(poly_num_elems));
+
+    // 
+    // fill data arrays
+    // 
+
+    int32_array poly_conn = polytopal_topo["elements"]["connectivity"].value();
+    int32_array poly_sizes = polytopal_topo["elements"]["sizes"].value();
+    int32_array poly_offsets = polytopal_topo["elements"]["offsets"].value();
+
+    int poly_conn_index = 0;
+    int poly_zone_index = 0;
+    int new_offset = 0;
+    auto extract_curr_element = [&](const int zoneid)
+    {
+        const int curr_size = n_sizes[zoneid];
+        const int curr_offset = n_offsets[zoneid];
+        for (int faceid = 0; faceid < curr_size; faceid ++)
+        {
+            poly_conn[poly_conn_index] = n_conn[curr_offset + faceid];
+            poly_conn_index ++;
+        }
+        poly_sizes[poly_zone_index] = curr_size;
+        poly_offsets[poly_zone_index] = new_offset;
+        poly_zone_index ++;
+        new_offset += curr_size;
+    };
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYHEDRON)
+            {
+                extract_curr_element(zoneid);
+            }
+        }
+    }
+    else // polygonal case
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYGON)
+            {
+                extract_curr_element(zoneid);
+            }
+        }
+    }
+
+    if (mesh_is_polyhedral)
+    {
+        // create subelements: just shallow copy over all the data from the mixed topo
+        // but interpret everything as polygons
+        polytopal_topo["subelements"]["shape"] = "polygonal";
+        polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+        polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+        polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+    }
+
+    return poly_num_elems;
+}
+
+// ****************************************************************************
 //  Method: UnstructuredTopologyToVTKUnstructuredGrid
 //
 //  Purpose:
@@ -1227,116 +1341,26 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             // them in their own topology
             // 
             Node &polytopal_mesh = res["mixed_transformation/polytopal_mesh"];
-            polytopal_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
 
-            Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
-            const std::string coordset_name = n_topo["coordset"].as_string();
-            polytopal_topo["coordset"].set(coordset_name);
-            polytopal_topo["type"].set(n_topo["type"]); // should be unstructured
+            avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh(
+                n_coords, 
+                n_topo,
+                polytopal_mesh);
 
-            // create elements:
-            polytopal_topo["elements"]["shape"] = (mesh_is_polyhedral ? "polyhedral" : "polygonal");
+            const Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
 
+            // accessors for later
             int_accessor n_shapes = n_topo["elements"]["shapes"].value();
             int_accessor n_sizes = n_topo["elements"]["sizes"].value();
             int_accessor n_offsets = n_topo["elements"]["offsets"].value();
             int_accessor n_conn = n_topo["elements"]["connectivity"].value();
-
-            // calculate the sizes of the data arrays before filling them
-            {
-                // scoping this to avoid polluting the function's namespace
-                int poly_conn_size, poly_num_elems;
-                poly_conn_size = poly_num_elems = 0;
-                if (mesh_is_polyhedral)
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        if (n_shapes[zoneid] == VTK_POLYHEDRON)
-                        {
-                            poly_num_elems ++;
-                            poly_conn_size += n_sizes[zoneid];
-                        }
-                    }
-                }
-                else // polygonal case
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        if (n_shapes[zoneid] == VTK_POLYGON)
-                        {
-                            poly_num_elems ++;
-                            poly_conn_size += n_sizes[zoneid];
-                        }
-                    }
-                }
-
-                polytopal_topo["elements"]["connectivity"].set(DataType::int32(poly_conn_size));
-                polytopal_topo["elements"]["sizes"].set(DataType::int32(poly_num_elems));
-                polytopal_topo["elements"]["offsets"].set(DataType::int32(poly_num_elems));
-            }
-
-            // fill data arrays
-            {
-                // scoping this to avoid polluting the function's namespace
-                int32_array poly_conn = polytopal_topo["elements"]["connectivity"].value();
-                int32_array poly_sizes = polytopal_topo["elements"]["sizes"].value();
-                int32_array poly_offsets = polytopal_topo["elements"]["offsets"].value();
-
-                int poly_conn_index = 0;
-                int poly_zone_index = 0;
-                int new_offset = 0;
-                auto extract_curr_element = [&](const int zoneid)
-                {
-                    const int curr_size = n_sizes[zoneid];
-                    const int curr_offset = n_offsets[zoneid];
-                    for (int faceid = 0; faceid < curr_size; faceid ++)
-                    {
-                        poly_conn[poly_conn_index] = n_conn[curr_offset + faceid];
-                        poly_conn_index ++;
-                    }
-                    poly_sizes[poly_zone_index] = curr_size;
-                    poly_offsets[poly_zone_index] = new_offset;
-                    poly_zone_index ++;
-                    new_offset += curr_size;
-                };
-                if (mesh_is_polyhedral)
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        if (n_shapes[zoneid] == VTK_POLYHEDRON)
-                        {
-                            extract_curr_element(zoneid);
-                        }
-                    }
-                }
-                else // polygonal case
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        if (n_shapes[zoneid] == VTK_POLYGON)
-                        {
-                            extract_curr_element(zoneid);
-                        }
-                    }
-                }
-
-                if (mesh_is_polyhedral)
-                {
-                    // create subelements: just shallow copy over all the data from the mixed topo
-                    // but interpret everything as polygons
-                    polytopal_topo["subelements"]["shape"] = "polygonal";
-                    polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
-                    polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
-                    polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
-                }
-            }
 
             // 
             // step 2: run the polytopal mesh through generate_sides
             // 
             Node &side_mesh = res["mixed_transformation/side_mesh"];
             Node &side_topo = side_mesh[n_topo.name()];
-            Node &side_coords = side_mesh[coordset_name];
+            Node &side_coords = side_mesh[n_topo["coordset"].as_string()];
             Node &s2dmap = side_mesh["mixed_transformation/maps/s2dmap"];
             Node &d2smap = side_mesh["mixed_transformation/maps/d2smap"];
             blueprint::mesh::topology::unstructured::generate_sides(
@@ -1350,6 +1374,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             // step 3: stitch the topology back together to create a 
             // brand new mixed topology
             // 
+
             Node &new_mixed_topo = res["mixed_transformation/new_mixed_topo"];
 
             if (mesh_is_polyhedral)
@@ -1623,7 +1648,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             // step 5: update the reference to the coordset and topology to
             // point to the new ones we created
             // 
-            coords_ptr = res.fetch_ptr("mixed_transformation/side_mesh/" + coordset_name);
+            coords_ptr = res.fetch_ptr("mixed_transformation/side_mesh/" + n_topo["coordset"].as_string());
             topo_ptr = res.fetch_ptr("mixed_transformation/new_mixed_topo");
         }
     }
