@@ -76,6 +76,10 @@ public:
         static int            CreatePolytopalMeshFromMixedMesh(const conduit::Node &n_coords,
                                                                const conduit::Node &n_topo,
                                                                conduit::Node &polytopal_mesh);
+
+        static void           CreateMixedMeshFromSideAndMixedMeshes(const conduit::Node &n_topo,
+                                                                    const conduit::Node &side_topo,
+                                                                    conduit::Node &new_mixed_topo);
     };
 
     class AVTBLUEPRINT_API VTKToBlueprint

@@ -1244,6 +1244,221 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh
 }
 
 // ****************************************************************************
+void
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedMeshes(
+    const Node &n_topo,
+    const Node &side_topo,
+    Node &new_mixed_topo)
+{
+    const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+    int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+    int_accessor n_sizes = n_topo["elements"]["sizes"].value();
+    int_accessor n_offsets = n_topo["elements"]["offsets"].value();
+    int_accessor n_conn = n_topo["elements"]["connectivity"].value();
+
+    new_mixed_topo["coordset"].set(n_topo["coordset"]);
+    new_mixed_topo["type"].set(n_topo["type"]); // should be unstructured
+
+    new_mixed_topo["elements"]["shape"] = "mixed";
+
+    // 
+    // create new shape map
+    // 
+    auto shape_map_itr = n_topo["elements/shape_map"].children();
+    while (shape_map_itr.has_next())
+    {
+        const Node &shape_map_entry = shape_map_itr.next();
+        const std::string shape_name = shape_map_itr.name();
+        const int shape_value = shape_map_entry.as_int();
+
+        if (mesh_is_polyhedral)
+        {
+            if (shape_name != "polyhedral")
+            {
+                new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+            }
+        }
+        else
+        {
+            if (shape_name != "polygonal")
+            {
+                new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+            }
+        }
+    }
+    if (mesh_is_polyhedral)
+    {
+        if (! new_mixed_topo["elements/shape_map"].has_child("tet"))
+        {
+            new_mixed_topo["elements/shape_map"]["tet"] = VTK_TETRA;
+        }
+    }
+    else
+    {
+        if (! new_mixed_topo["elements/shape_map"].has_child("tri"))
+        {
+            new_mixed_topo["elements/shape_map"]["tri"] = VTK_TRIANGLE;
+        }
+    }
+
+    const int tet_step = 4; // how many points in a tet
+    const int tri_step = 3; // how many points in a tri
+
+    int_accessor sides_conn = side_topo["elements"]["connectivity"].value();
+    const int sides_num_elems = sides_conn.dtype().number_of_elements() / (mesh_is_polyhedral ? tet_step : tri_step);
+
+    // 
+    // calculate the sizes of each of the data arrays
+    // 
+    int new_num_elems, new_conn_size;
+    new_num_elems = new_conn_size = 0;
+
+    // first we look at the elements we are keeping from the original topology
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] != VTK_POLYHEDRON)
+            {
+                new_num_elems ++;
+                new_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+    else
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] != VTK_POLYGON)
+            {
+                new_num_elems ++;
+                new_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+
+    // next we look at the elements from our polytopal topology
+    new_num_elems += sides_num_elems;
+    if (mesh_is_polyhedral)
+    {
+        new_conn_size += tet_step * sides_num_elems;
+    }
+    else
+    {
+        new_conn_size += tri_step * sides_num_elems;
+    }
+
+    new_mixed_topo["elements"]["shapes"].set(DataType::int32(new_num_elems));
+    new_mixed_topo["elements"]["sizes"].set(DataType::int32(new_num_elems));
+    new_mixed_topo["elements"]["offsets"].set(DataType::int32(new_num_elems));
+    new_mixed_topo["elements"]["connectivity"].set(DataType::int32(new_conn_size));
+    
+    // 
+    // load up the new topo with old and new shapes
+    // 
+    int32_array new_shapes = new_mixed_topo["elements"]["shapes"].value();
+    int32_array new_sizes = new_mixed_topo["elements"]["sizes"].value();
+    int32_array new_offsets = new_mixed_topo["elements"]["offsets"].value();
+    int32_array new_conn = new_mixed_topo["elements"]["connectivity"].value();
+
+    // first we load the original shapes back in
+    int new_conn_index = 0;
+    int new_zone_index = 0;
+    int new_offset = 0;
+    auto load_orig_shape = [&](const int zoneid, const int curr_shape)
+    {
+        const int curr_size = n_sizes[zoneid];
+        // we need the current offset to help us index into the connectivity array correctly
+        const int curr_offset = n_offsets[zoneid];
+
+        new_shapes[new_zone_index] = curr_shape;
+        new_sizes[new_zone_index] = curr_size;
+        // but we don't want to save the current offset to the new offsets b/c it could be wrong
+        new_offsets[new_zone_index] = new_offset;
+        new_offset += curr_size;
+        new_zone_index ++;
+
+        for (int faceid = 0; faceid < curr_size; faceid ++)
+        {
+            new_conn[new_conn_index] = n_conn[curr_offset + faceid];
+            new_conn_index ++;
+        }
+    };
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            const int curr_shape = n_shapes[zoneid];
+            if (curr_shape != VTK_POLYHEDRON)
+            {
+                load_orig_shape(zoneid, curr_shape);
+            }
+        }
+    }
+    else
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            const int curr_shape = n_shapes[zoneid];
+            if (curr_shape != VTK_POLYGON)
+            {
+                load_orig_shape(zoneid, curr_shape);
+            }
+        }
+    }
+
+    // now we need the new shapes            
+    int last_offset = 0;
+    int last_size = 0;
+    if (new_zone_index > 0) // if we have added at least one element
+    {
+        last_offset = new_offsets[new_zone_index - 1];
+        last_size = new_sizes[new_zone_index - 1];
+    }
+
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < sides_num_elems; zoneid ++)
+        {
+            new_shapes[new_zone_index] = VTK_TETRA;
+            new_sizes[new_zone_index] = tet_step;
+
+            last_offset += last_size;
+            new_offsets[new_zone_index] = last_offset;
+            last_size = tet_step;
+
+            new_zone_index ++;
+
+            new_conn[new_conn_index]     = sides_conn[zoneid * tet_step];
+            new_conn[new_conn_index + 1] = sides_conn[zoneid * tet_step + 1];
+            new_conn[new_conn_index + 2] = sides_conn[zoneid * tet_step + 2];
+            new_conn[new_conn_index + 3] = sides_conn[zoneid * tet_step + 3];
+            new_conn_index += tet_step;
+        }
+    }
+    else
+    {
+        for (int zoneid = 0; zoneid < sides_num_elems; zoneid ++)
+        {
+            new_shapes[new_zone_index] = VTK_TRIANGLE;
+            new_sizes[new_zone_index] = tri_step;
+
+            last_offset += last_size;
+            new_offsets[new_zone_index] = last_offset;
+            last_size = tri_step;
+
+            new_zone_index ++;
+
+            new_conn[new_conn_index]    = sides_conn[zoneid * tri_step];
+            new_conn[new_conn_index + 1] = sides_conn[zoneid * tri_step + 1];
+            new_conn[new_conn_index + 2] = sides_conn[zoneid * tri_step + 2];
+            new_conn_index += tri_step;
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method: UnstructuredTopologyToVTKUnstructuredGrid
 //
 //  Purpose:
@@ -1347,6 +1562,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 n_topo,
                 polytopal_mesh);
 
+            // we will need the polytopal topo for later
             const Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
 
             // accessors for later
@@ -1396,205 +1612,10 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 }
             }
 
-            new_mixed_topo["coordset"].set(n_topo["coordset"]);
-            new_mixed_topo["type"].set(n_topo["type"]); // should be unstructured
-
-            new_mixed_topo["elements"]["shape"] = "mixed";
-
-            // create new shape map
-            auto shape_map_itr = n_topo["elements/shape_map"].children();
-            while (shape_map_itr.has_next())
-            {
-                const Node &shape_map_entry = shape_map_itr.next();
-                const std::string shape_name = shape_map_itr.name();
-                const int shape_value = shape_map_entry.as_int();
-
-                if (mesh_is_polyhedral)
-                {
-                    if (shape_name != "polyhedral")
-                    {
-                        new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
-                    }
-                }
-                else
-                {
-                    if (shape_name != "polygonal")
-                    {
-                        new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
-                    }
-                }
-            }
-            if (mesh_is_polyhedral)
-            {
-                if (! new_mixed_topo["elements/shape_map"].has_child("tet"))
-                {
-                    new_mixed_topo["elements/shape_map"]["tet"] = VTK_TETRA;
-                }
-            }
-            else
-            {
-                if (! new_mixed_topo["elements/shape_map"].has_child("tri"))
-                {
-                    new_mixed_topo["elements/shape_map"]["tri"] = VTK_TRIANGLE;
-                }
-            }
-
-            const int tet_step = 4; // how many points in a tet
-            const int tri_step = 3; // how many points in a tri
-
-            int_accessor sides_conn = side_topo["elements"]["connectivity"].value();
-            const int sides_num_elems = sides_conn.dtype().number_of_elements() / (mesh_is_polyhedral ? tet_step : tri_step);
-
-            // calculate the sizes of each of the data arrays
-            {
-                // scoping this to avoid polluting the function's namespace
-                int new_num_elems, new_conn_size;
-                new_num_elems = new_conn_size = 0;
-
-                // first we look at the elements we are keeping from the original topology
-                if (mesh_is_polyhedral)
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        if (n_shapes[zoneid] != VTK_POLYHEDRON)
-                        {
-                            new_num_elems ++;
-                            new_conn_size += n_sizes[zoneid];
-                        }
-                    }
-                }
-                else
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        if (n_shapes[zoneid] != VTK_POLYGON)
-                        {
-                            new_num_elems ++;
-                            new_conn_size += n_sizes[zoneid];
-                        }
-                    }
-                }
-
-                // next we look at the elements from our polytopal topology
-                new_num_elems += sides_num_elems;
-                if (mesh_is_polyhedral)
-                {
-                    new_conn_size += tet_step * sides_num_elems;
-                }
-                else
-                {
-                    new_conn_size += tri_step * sides_num_elems;
-                }
-
-                new_mixed_topo["elements"]["shapes"].set(DataType::int32(new_num_elems));
-                new_mixed_topo["elements"]["sizes"].set(DataType::int32(new_num_elems));
-                new_mixed_topo["elements"]["offsets"].set(DataType::int32(new_num_elems));
-                new_mixed_topo["elements"]["connectivity"].set(DataType::int32(new_conn_size));
-            }
-            
-            // load up the new topo with old and new shapes
-            {
-                // scoping this to avoid polluting the function's namespace
-                int32_array new_shapes = new_mixed_topo["elements"]["shapes"].value();
-                int32_array new_sizes = new_mixed_topo["elements"]["sizes"].value();
-                int32_array new_offsets = new_mixed_topo["elements"]["offsets"].value();
-                int32_array new_conn = new_mixed_topo["elements"]["connectivity"].value();
-
-                // first we load the original shapes back in
-                int new_conn_index = 0;
-                int new_zone_index = 0;
-                int new_offset = 0;
-                auto load_orig_shape = [&](const int zoneid, const int curr_shape)
-                {
-                    const int curr_size = n_sizes[zoneid];
-                    // we need the current offset to help us index into the connectivity array correctly
-                    const int curr_offset = n_offsets[zoneid];
-
-                    new_shapes[new_zone_index] = curr_shape;
-                    new_sizes[new_zone_index] = curr_size;
-                    // but we don't want to save the current offset to the new offsets b/c it could be wrong
-                    new_offsets[new_zone_index] = new_offset;
-                    new_offset += curr_size;
-                    new_zone_index ++;
-
-                    for (int faceid = 0; faceid < curr_size; faceid ++)
-                    {
-                        new_conn[new_conn_index] = n_conn[curr_offset + faceid];
-                        new_conn_index ++;
-                    }
-                };
-                if (mesh_is_polyhedral)
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        const int curr_shape = n_shapes[zoneid];
-                        if (curr_shape != VTK_POLYHEDRON)
-                        {
-                            load_orig_shape(zoneid, curr_shape);
-                        }
-                    }
-                }
-                else
-                {
-                    for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
-                    {
-                        const int curr_shape = n_shapes[zoneid];
-                        if (curr_shape != VTK_POLYGON)
-                        {
-                            load_orig_shape(zoneid, curr_shape);
-                        }
-                    }
-                }
-
-                // now we need the new shapes            
-                int last_offset = 0;
-                int last_size = 0;
-                if (new_zone_index > 0) // if we have added at least one element
-                {
-                    last_offset = new_offsets[new_zone_index - 1];
-                    last_size = new_sizes[new_zone_index - 1];
-                }
-
-                if (mesh_is_polyhedral)
-                {
-                    for (int zoneid = 0; zoneid < sides_num_elems; zoneid ++)
-                    {
-                        new_shapes[new_zone_index] = VTK_TETRA;
-                        new_sizes[new_zone_index] = tet_step;
-
-                        last_offset += last_size;
-                        new_offsets[new_zone_index] = last_offset;
-                        last_size = tet_step;
-
-                        new_zone_index ++;
-
-                        new_conn[new_conn_index]     = sides_conn[zoneid * tet_step];
-                        new_conn[new_conn_index + 1] = sides_conn[zoneid * tet_step + 1];
-                        new_conn[new_conn_index + 2] = sides_conn[zoneid * tet_step + 2];
-                        new_conn[new_conn_index + 3] = sides_conn[zoneid * tet_step + 3];
-                        new_conn_index += tet_step;
-                    }
-                }
-                else
-                {
-                    for (int zoneid = 0; zoneid < sides_num_elems; zoneid ++)
-                    {
-                        new_shapes[new_zone_index] = VTK_TRIANGLE;
-                        new_sizes[new_zone_index] = tri_step;
-
-                        last_offset += last_size;
-                        new_offsets[new_zone_index] = last_offset;
-                        last_size = tri_step;
-
-                        new_zone_index ++;
-
-                        new_conn[new_conn_index]    = sides_conn[zoneid * tri_step];
-                        new_conn[new_conn_index + 1] = sides_conn[zoneid * tri_step + 1];
-                        new_conn[new_conn_index + 2] = sides_conn[zoneid * tri_step + 2];
-                        new_conn_index += tri_step;
-                    }
-                }
-            }
+            avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedMeshes(
+                n_topo,
+                side_topo,
+                new_mixed_topo);
 
             // 
             // step 4: create original cell numbers array using data
