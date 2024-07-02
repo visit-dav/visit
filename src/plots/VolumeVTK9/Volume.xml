@@ -19,7 +19,6 @@
       avtVisItVTKRenderer.C
       avtVisItVTKRenderFilter.C
       avtICETCompositor.C
-      avtVolumeResampleFilter.C
     </Files>
     <LIBS components="V">
       VTK::RenderingVolume

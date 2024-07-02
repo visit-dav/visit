@@ -45,7 +45,6 @@ avtLowerResolutionVolumeFilter.C
 avtVisItVTKRenderer.C
 avtVisItVTKRenderFilter.C
 avtICETCompositor.C
-avtVolumeResampleFilter.C
 ${COMMON_SOURCES}
 )
 

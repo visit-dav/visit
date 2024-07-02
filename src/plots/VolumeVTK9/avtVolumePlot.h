@@ -26,7 +26,7 @@ class avtLookupTable;
 class avtShiftCenteringFilter;
 class avtUserDefinedMapper;
 class avtVolumeFilter;
-class avtVolumeResampleFilter;
+class avtResampleFilter;
 class avtLowerResolutionVolumeFilter;
 
 
@@ -87,8 +87,11 @@ class avtLowerResolutionVolumeFilter;
 //    Brad Whitlock, Tue Jan 31 12:11:11 PST 2012
 //    I added a compact tree filter.
 //
-//    Kathleen Biagas, Wed July 12, 2023 
+//    Kathleen Biagas, Wed July 12, 2023
 //    Added avtVolumeResampleFilter, removed avtResampleFilter.
+//
+//    Kathleen Biagas, Wed July 12, 2023
+//    Revert previous change.
 //
 // ****************************************************************************
 
@@ -121,7 +124,7 @@ avtVolumePlot : public avtVolumeDataPlot
 
     avtLowerResolutionVolumeFilter *lowResVolumeFilter {nullptr};
     avtVolumeFilter                *volumeFilter {nullptr};
-    avtVolumeResampleFilter        *volumeResampleFilter {nullptr};
+    avtResampleFilter              *resampleFilter {nullptr};
     avtGradientExpression          *gradientFilter {nullptr};
     avtShiftCenteringFilter        *shiftCentering {nullptr};
     avtCompactTreeFilter           *compactTree {nullptr};
@@ -139,6 +142,9 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
     void                     SetLegendOpacities();
     virtual avtContract_p    EnhanceSpecification(avtContract_p);
+
+  private:
+    int DataMustBeResampled(avtDataObject_p input);
 };
 
 #endif
