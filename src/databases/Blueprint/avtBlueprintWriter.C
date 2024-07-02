@@ -673,12 +673,8 @@ avtBlueprintWriter::CloseFile(void)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
 
-    std::cout << "omg" << std::endl;
-
     if (m_op == BP_MESH_OP_NONE)
     {
-        std::cout << "omg" << std::endl;
-
         debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
         int rank = 0;
         const int root = 0;
@@ -688,8 +684,6 @@ avtBlueprintWriter::CloseFile(void)
 #endif
         if(rank == root)
         {
-            std::cout << "omgomg" << std::endl;
-            std::cout << m_mbDirName << std::endl;
             conduit::relay::io::blueprint::save_mesh(m_chunks, m_mbDirName, "hdf5", m_options);
         }
     }
