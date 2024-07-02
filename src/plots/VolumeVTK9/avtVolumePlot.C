@@ -704,6 +704,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     const avtDataAttributes &datts = input->GetInfo().GetAttributes();
     std::string activeVariable = datts.GetVariableName();
 
+#ifdef ENGINE
     // The gradient calc for ray casting composite is needed when
     // the lighting flag is on.
     if (atts.GetRendererType() == VolumeAttributes::Composite &&
@@ -737,7 +738,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         gradientFilter->GetOutput()->SetTransientStatus(false);
         dob = gradientFilter->GetOutput();
     }
-
+#endif
 
     if (atts.GetRendererType() == VolumeAttributes::Serial ||
         atts.GetRendererType() == VolumeAttributes::Parallel)
