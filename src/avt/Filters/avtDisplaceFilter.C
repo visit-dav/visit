@@ -42,6 +42,9 @@
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Kathleen Biagas, Tue July 2, 2024
+//    Initialize outputMeshType.
+//
 // ****************************************************************************
 
 avtDisplaceFilter::avtDisplaceFilter()
@@ -49,6 +52,7 @@ avtDisplaceFilter::avtDisplaceFilter()
     OverrideOriginalSpatialExtents();
     factor   = 1.;
     variable = "default";
+    outputMeshType = AVT_UNKNOWN_MESH;
 }
 
 
@@ -134,6 +138,9 @@ avtDisplaceFilter::SetVariable(const std::string &v)
 //    Eric Brugger, Mon Jul 21 10:38:19 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Tue July 2, 2024
+//    Set outputMeshType.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -186,10 +193,11 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
     }
 
     vtkDataSet *rv = NULL;
-    if (in_ds->GetDataObjectType() == VTK_POLY_DATA 
-        || in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID 
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA
+        || in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID
         || in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
+        outputMeshType = GetInput()->GetInfo().GetAttributes().GetMeshType();
         vtkWarpVector *warp = vtkWarpVector::New();
         warp->SetInputData((vtkPointSet *)in_ds);
         warp->SetScaleFactor(factor);
@@ -201,6 +209,7 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
     }
     else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
+        outputMeshType = AVT_CURVILINEAR_MESH;
         vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
         vtkStructuredGrid *sg  = vtkStructuredGrid::New();
         int dims[3];
@@ -227,12 +236,12 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
         sg->SetPoints(pts);
         pts->Delete();
- 
+
         rv = sg;
     }
     else
     {
-        debug1 << "Unable to determine dataset type for displace operator" 
+        debug1 << "Unable to determine dataset type for displace operator"
                << endl;
         EXCEPTION0(ImproperUseException);
     }
@@ -267,7 +276,7 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
 //  Modifications:
 //
 //    Hank Childs, Fri May 18 16:19:20 PDT 2007
-//    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the 
+//    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the
 //    inheritance changed.
 //
 //    Hank Childs, Fri Sep 28 07:14:14 PDT 2007
@@ -323,7 +332,7 @@ avtDisplaceFilter::PreExecute(void)
 //  Modifications:
 //
 //    Hank Childs, Fri May 18 16:19:20 PDT 2007
-//    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the 
+//    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the
 //    inheritance changed.
 //
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
@@ -362,11 +371,14 @@ avtDisplaceFilter::PostExecute(void)
 //    Kathleen Bonnell, Mon Apr 14 09:54:06 PDT 2003
 //    Set CanUseTransform to false.
 //
-//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004
 //    Set CanUseInvTransform to false.
 //
 //    Hank Childs, Fri Jan 13 09:58:47 PST 2006
 //    Invalidate spatial meta-data.
+//
+//    Kathleen Biagas, Tue July 2, 2024
+//    Send outputMeshType to output.
 //
 // ****************************************************************************
 
@@ -379,6 +391,7 @@ avtDisplaceFilter::UpdateDataObjectInfo(void)
     //
     GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
     GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
+    GetOutput()->GetInfo().GetAttributes().SetMeshType(outputMeshType);
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }
 
@@ -394,7 +407,7 @@ avtDisplaceFilter::UpdateDataObjectInfo(void)
 //  Creation:   November 28, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Jun 19 12:28:10 PDT 2002 
+//    Kathleen Bonnell, Wed Jun 19 12:28:10 PDT 2002
 //    Don't turn off Zone numbers if they have been turned on elsewhere in
 //    the pipeline.
 //
@@ -402,7 +415,7 @@ avtDisplaceFilter::UpdateDataObjectInfo(void)
 //    Completely removed the code turning off zone numbers.  Why set a flag
 //    to false if it is already false?  False is the default setting.
 //
-//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004
 //    Turn on node numbers when required.
 //
 // ****************************************************************************

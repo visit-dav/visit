@@ -70,6 +70,8 @@ class AVTFILTERS_API avtDisplaceFilter : public avtDataTreeIterator
     virtual avtContract_p
                           ModifyContract(avtContract_p);
 
+  private:
+    avtMeshType           outputMeshType;
 };
 
 
