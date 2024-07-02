@@ -102,5 +102,7 @@ GetBlueprintWriteOptions(void)
 
     rv->SetMultiLineString("Flatten / Partition extra options", "");
 
+    rv->SetMultiLineString("Blueprint Relay I/O extra options", "");
+
     return rv;
 }

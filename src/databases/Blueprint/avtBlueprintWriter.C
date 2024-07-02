@@ -224,6 +224,11 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
                 }
             }
         }
+        else
+        {
+            // Parse JSON/YAML input into m_options
+            LoadConduitOptions(options->GetMultiLineString("Blueprint Relay I/O extra options"), m_options);
+        }
     }
 
     conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
@@ -261,11 +266,24 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 #endif
     m_stem = stemname;
     m_nblocks = nb;
-    if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
+    if(m_op == BP_MESH_OP_PARTITION)
     {
         m_genRoot = true;
         n_root_file.reset();
         CreateOutputDir();
+    }
+    if(m_op == BP_MESH_OP_NONE)
+    {
+        const int c = [&]() -> int
+        {
+            const int cycle = GetCycle();
+            return (cycle == INVALID_CYCLE ? 0 : cycle);
+        }();
+        // we want the basename without the extension to use as a sub-dir name
+        m_mbDirName = FileFunctions::Basename(m_stem);
+        std::ostringstream oss;
+        oss << m_stem << ".cycle_" << std::setfill('0') << std::setw(6) << c;
+        m_output_dir = oss.str();
     }
 }
 
@@ -285,9 +303,9 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 
 void
 avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           const vector<string> &scalars,
-                           const vector<string> &vectors,
-                           const vector<string> &materials)
+                                 const vector<string> &scalars,
+                                 const vector<string> &vectors,
+                                 const vector<string> &materials)
 {
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteHeaders().");
@@ -333,21 +351,22 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     ChunkToBpMesh(ds, chunk, ndims, mesh);
 
-    if(m_op == BP_MESH_OP_NONE)
-    {
-        // If we aren't partitioning/flattening the mesh
-        // then we can write it out like normal and clear m_chunks.
-        WriteMeshDomain(mesh, chunk);
+    // TODO do equivalent at hte end
+    // if(m_op == BP_MESH_OP_NONE)
+    // {
+    //     // If we aren't partitioning/flattening the mesh
+    //     // then we can write it out like normal and clear m_chunks.
+    //     WriteMeshDomain(mesh, chunk);
 
-        if(m_genRoot)
-        {
-            BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
-            GenRootNode(mesh, m_output_dir, ndims);
-            m_genRoot = false;
-        }
-        m_chunks.reset();
-    }
-    // Need to defer all mesh operations to CloseFile()
+    //     if(m_genRoot)
+    //     {
+    //         BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
+    //         GenRootNode(mesh, m_output_dir, ndims);
+    //         m_genRoot = false;
+    //     }
+    //     m_chunks.reset();
+    // }
+    // // Need to defer all mesh operations to CloseFile()
 }
 
 
@@ -379,8 +398,7 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 // ****************************************************************************
 static void
-BuildSelections(Node &domains,
-                                    Node &selections)
+BuildSelections(Node &domains, Node &selections)
 {
     selections.reset();
     const std::vector<Node*> n_domains =
@@ -457,11 +475,11 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
 {
     mesh.reset();
     mesh["state/domain_id"] = chunk;
-    //std::string topo_name = "topo";
+    // std::string topo_name = "topo";
 
     if (!m_meshName.empty())
     {
-       // topo_name = m_meshName;
+        // topo_name = m_meshName;
     }
 
     if (m_cycle != INVALID_CYCLE)
@@ -479,8 +497,8 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))
     {
-         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                              "VTK to Blueprint conversion failed " << verify_info.to_json());
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "VTK to Blueprint conversion failed " << verify_info.to_json());
         return;
     }
 }
@@ -501,18 +519,16 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
 void
 avtBlueprintWriter::CreateOutputDir()
 {
-    int c = GetCycle();
-    if (c != INVALID_CYCLE)
+    const int c = [&]() -> int
     {
-        c = 0;
-    }
-    char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
+        const int cycle = GetCycle();
+        return (cycle == INVALID_CYCLE ? 0 : cycle);
+    }();
     // we want the basename without the extension to use as a sub-dir name
     m_mbDirName = FileFunctions::Basename(m_stem);
     std::ostringstream oss;
-    oss << m_stem << ".cycle_" << fmt_buff;
-    m_output_dir  =  oss.str();
+    oss << m_stem << ".cycle_" << std::setfill('0') << std::setw(6) << c;
+    m_output_dir = oss.str();
 
 #ifdef WIN32
     _mkdir(m_output_dir.c_str());
@@ -548,54 +564,53 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called GenRootNode().");
 #endif
-    int c = GetCycle();
-    if (c != INVALID_CYCLE)
+    const int c = [&]() -> int
     {
-        c = 0;
-    }
-
-    char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
+        const int cycle = GetCycle();
+        return (cycle == INVALID_CYCLE ? 0 : cycle);
+    }();
 
     std::stringstream oss;
     std::string root_dir = FileFunctions::Dirname(output_dir);
-    oss << m_mbDirName << ".cycle_" << fmt_buff << ".root";
+    oss << m_mbDirName << ".cycle_" << std::setfill('0') << std::setw(6) << c << ".root";
     m_root_file = oss.str();
 
+    // TODO I think this is bugged
     m_root_file = utils::join_file_path(root_dir,
                                         m_root_file);
 
     std::string output_file_pattern;
     output_file_pattern = utils::join_file_path(output_dir,
                                                 "domain_%06d.hdf5");
-    n_root_file.reset();
-    Node &bp_idx = n_root_file["blueprint_index"];
-    blueprint::mesh::generate_index(mesh,
-                                    "",
-                                    m_nblocks,
-                                    bp_idx["mesh"]);
+    // TODO can this all be deleted?
+    // n_root_file.reset();
+    // Node &bp_idx = n_root_file["blueprint_index"];
+    // blueprint::mesh::generate_index(mesh,
+    //                                 "",
+    //                                 m_nblocks,
+    //                                 bp_idx["mesh"]);
 
-    // work around conduit bug
-    if(mesh.has_path("state/cycle"))
-    {
-      bp_idx["mesh/state/cycle"] = mesh["state/cycle"].to_int32();
-    }
+    // // work around conduit bug
+    // if(mesh.has_path("state/cycle"))
+    // {
+    //   bp_idx["mesh/state/cycle"] = mesh["state/cycle"].to_int32();
+    // }
 
-    if(mesh.has_path("state/time"))
-    {
-      bp_idx["mesh/state/time"] = mesh["state/time"].to_double();
-    }
+    // if(mesh.has_path("state/time"))
+    // {
+    //   bp_idx["mesh/state/time"] = mesh["state/time"].to_double();
+    // }
 
-    n_root_file["protocol/name"]    =  "hdf5";
-    n_root_file["protocol/version"] = "0.4.0";
+    // n_root_file["protocol/name"]    =  "hdf5";
+    // n_root_file["protocol/version"] = "0.4.0";
 
-    n_root_file["number_of_files"]  = m_nblocks;
-    // for now we will save one file per domain, so trees == files
-    n_root_file["number_of_trees"]  = m_nblocks;
-    n_root_file["file_pattern"]     = output_file_pattern;
-    n_root_file["tree_pattern"]     = "/";
+    // n_root_file["number_of_files"]  = m_nblocks;
+    // // for now we will save one file per domain, so trees == files
+    // n_root_file["number_of_trees"]  = m_nblocks;
+    // n_root_file["file_pattern"]     = output_file_pattern;
+    // n_root_file["tree_pattern"]     = "/";
 
-    //n_root_file.print();
+    // //n_root_file.print();
 }
 
 // ****************************************************************************
@@ -618,11 +633,10 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteMeshDomain().");
 #endif
-    char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",domain_id);
     std::stringstream oss;
-    oss << "domain_" << fmt_buff << "." << "hdf5";
+    oss << "domain_" << std::setfill('0') << std::setw(6) << domain_id << "." << "hdf5";
     string output_file  = conduit::utils::join_file_path(m_output_dir,oss.str());
+    // TODO does this stay? does this whole function die?
     relay::io::save(mesh, output_file);
 }
 
@@ -659,7 +673,27 @@ avtBlueprintWriter::CloseFile(void)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
 
-    if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
+    std::cout << "omg" << std::endl;
+
+    if (m_op == BP_MESH_OP_NONE)
+    {
+        std::cout << "omg" << std::endl;
+
+        debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
+        int rank = 0;
+        const int root = 0;
+#ifdef PARALLEL
+        rank = writeContext.Rank();
+        BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " relay io blueprint save_mesh.");
+#endif
+        if(rank == root)
+        {
+            std::cout << "omgomg" << std::endl;
+            std::cout << m_mbDirName << std::endl;
+            conduit::relay::io::blueprint::save_mesh(m_chunks, m_mbDirName, "hdf5", m_options);
+        }
+    }
+    else if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
         debug5 << "Flatten options:\n" << m_options.to_string() << std::endl;
         conduit::Node table;
@@ -769,7 +803,7 @@ avtBlueprintWriter::CloseFile(void)
 void
 avtBlueprintWriter::WriteRootFile()
 {
-    if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
+    if (m_op == BP_MESH_OP_PARTITION)
     {
         int root_writer = 0;
         int rank = 0;
