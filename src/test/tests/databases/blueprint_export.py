@@ -423,6 +423,8 @@ def test_basic():
     basic_test_case("multi_ucd3d.silo")
     basic_test_case("multi_rect2d.silo")
 
+    # TODO add test for relay io blueprint options
+
 def test_flatten():
     TestSection("Blueprint flatten")
 
