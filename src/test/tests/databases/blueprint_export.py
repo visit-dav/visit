@@ -415,6 +415,59 @@ def basic_test_case(case_name, varname = "d"):
     DeleteAllPlots()
     CloseDatabase(export_rfile_isos)
 
+def basic_test_case_extra_options(case_name, varname = "d"):
+    OpenDatabase(silo_data_path(case_name))
+    AddPlot("Pseudocolor",varname)
+    DrawPlots()
+    Test("basic_" + case_name + "_extra_options_input")
+
+    # Test JSON
+    e0 = ExportDBAttributes()
+    e0.db_type = "Blueprint"
+    e0.filename = case_name + "_json"
+    e0.variables = (varname,)
+    opts0 = GetExportOptions("Blueprint")
+    opts0["Blueprint Relay I/O extra options"] = """{
+    \"file_style\": \"multi_file\",
+    \"suffix\": \"none\",
+    \"mesh_name\": \"mesh1\",
+    \"number_of_files\": 2,
+    \"truncate\": \"false\"
+}"""
+    ExportDatabase(e0, opts0)
+    time.sleep(1)
+
+    # Test YAML
+    e1 = ExportDBAttributes()
+    e1.db_type = "Blueprint"
+    e1.filename = case_name + "_yaml"
+    e1.variables = (varname,)
+    opts1 = GetExportOptions("Blueprint")
+    opts1["Blueprint Relay I/O extra options"] = """file_style: \"multi_file\"
+suffix: \"none\"
+mesh_name: \"mesh1\"
+number_of_files: 2
+truncate: \"false\""""
+
+    ExportDatabase(e1, opts1)
+    time.sleep(1)
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(case_name))
+
+    OpenDatabase(case_name + "_json.root")
+    AddPlot("Pseudocolor","mesh1_topo/" + varname)
+    DrawPlots()
+    Test("BasicJSONOptions")
+    DeleteAllPlots()
+    CloseDatabase(case_name + "_json.root")
+
+    OpenDatabase(case_name + "_yaml.root")
+    AddPlot("Pseudocolor","mesh1_topo/" + varname)
+    DrawPlots()
+    Test("BasicYAMLOptions")
+    DeleteAllPlots()
+    CloseDatabase(case_name + "_yaml.root")
 
 def test_basic():
     basic_test_case("multi_rect3d.silo")
@@ -423,7 +476,8 @@ def test_basic():
     basic_test_case("multi_ucd3d.silo")
     basic_test_case("multi_rect2d.silo")
 
-    # TODO add test for relay io blueprint options
+    basic_test_case_extra_options("multi_rect3d.silo")
+
 
 def test_flatten():
     TestSection("Blueprint flatten")
