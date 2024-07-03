@@ -554,6 +554,10 @@ def test_partition():
 
 RequiredDatabasePlugin("Blueprint")
 test_basic()
+
+# TODO need tests that test the bad directory stuff I uncovered with shaun
+# will need to cover the regular, partition, and flatten cases
+
 test_partition()
 test_flatten()
 Exit()

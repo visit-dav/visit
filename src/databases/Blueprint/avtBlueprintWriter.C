@@ -272,19 +272,6 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
         n_root_file.reset();
         CreateOutputDir();
     }
-    if(m_op == BP_MESH_OP_NONE)
-    {
-        const int c = [&]() -> int
-        {
-            const int cycle = GetCycle();
-            return (cycle == INVALID_CYCLE ? 0 : cycle);
-        }();
-        // we want the basename without the extension to use as a sub-dir name
-        m_mbDirName = FileFunctions::Basename(m_stem);
-        std::ostringstream oss;
-        oss << m_stem << ".cycle_" << std::setfill('0') << std::setw(6) << c;
-        m_output_dir = oss.str();
-    }
 }
 
 
@@ -682,9 +669,10 @@ avtBlueprintWriter::CloseFile(void)
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " relay io blueprint save_mesh.");
 #endif
+        // TODO do I need this?
         if(rank == root)
         {
-            conduit::relay::io::blueprint::save_mesh(m_chunks, m_mbDirName, "hdf5", m_options);
+            conduit::relay::io::blueprint::save_mesh(m_chunks, m_stem, "hdf5", m_options);
         }
     }
     else if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
