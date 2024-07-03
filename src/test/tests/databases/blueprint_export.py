@@ -70,7 +70,7 @@ def export_mesh_bp(case_name, varname):
     e.variables = (varname,)
     ExportDatabase(e)
     time.sleep(1)
-    return export_name + ".cycle_000000.root"
+    return export_name + ".cycle_000048.root"
 
 # Export DB as csv, return the folder name
 def create_csv_output(case_name):
@@ -282,7 +282,7 @@ def partition_test_case(case_name, targets, view=None):
 
     for target in targets:
         export_name = case_name + "_partition" + str(target)
-        export_filename = export_name + ".cycle_000000.root"
+        export_filename = export_name + ".cycle_000048.root"
 
         # Plot the original dataset
         OpenDatabase(silo_data_path(case_name))
@@ -363,26 +363,26 @@ def partition_test_extra_options():
     DeleteAllPlots()
     CloseDatabase(silo_data_path(dbname))
 
-    OpenDatabase("multi_rect2d_json_target_1.cycle_000000.root")
+    OpenDatabase("multi_rect2d_json_target_1.cycle_000048.root")
     AddPlot("Subset", "domains")
     DrawPlots()
     Test("JSONOptions")
     DeleteAllPlots()
-    CloseDatabase("multi_rect2d_json_target_1.cycle_000000.root")
+    CloseDatabase("multi_rect2d_json_target_1.cycle_000048.root")
 
-    OpenDatabase("multi_rect2d_yaml_target_1.cycle_000000.root")
+    OpenDatabase("multi_rect2d_yaml_target_1.cycle_000048.root")
     AddPlot("Subset", "domains")
     DrawPlots()
     Test("YAMLOptions")
     DeleteAllPlots()
-    CloseDatabase("multi_rect2d_yaml_target_1.cycle_000000.root")
+    CloseDatabase("multi_rect2d_yaml_target_1.cycle_000048.root")
 
-    OpenDatabase("multi_rect2d_override_target_1.cycle_000000.root")
+    OpenDatabase("multi_rect2d_override_target_1.cycle_000048.root")
     AddPlot("Subset", "domains")
     DrawPlots()
     Test("OverrideOptions")
     DeleteAllPlots()
-    CloseDatabase("multi_rect2d_override_target_1.cycle_000000.root")
+    CloseDatabase("multi_rect2d_override_target_1.cycle_000048.root")
 
 def basic_test_case(case_name, varname = "d"):
     OpenDatabase(silo_data_path(case_name))

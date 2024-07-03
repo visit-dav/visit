@@ -583,34 +583,34 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
     output_file_pattern = utils::join_file_path(output_dir,
                                                 "domain_%06d.hdf5");
     // TODO can this all be deleted?
-    // n_root_file.reset();
-    // Node &bp_idx = n_root_file["blueprint_index"];
-    // blueprint::mesh::generate_index(mesh,
-    //                                 "",
-    //                                 m_nblocks,
-    //                                 bp_idx["mesh"]);
+    n_root_file.reset();
+    Node &bp_idx = n_root_file["blueprint_index"];
+    blueprint::mesh::generate_index(mesh,
+                                    "",
+                                    m_nblocks,
+                                    bp_idx["mesh"]);
 
-    // // work around conduit bug
-    // if(mesh.has_path("state/cycle"))
-    // {
-    //   bp_idx["mesh/state/cycle"] = mesh["state/cycle"].to_int32();
-    // }
+    // work around conduit bug
+    if(mesh.has_path("state/cycle"))
+    {
+      bp_idx["mesh/state/cycle"] = mesh["state/cycle"].to_int32();
+    }
 
-    // if(mesh.has_path("state/time"))
-    // {
-    //   bp_idx["mesh/state/time"] = mesh["state/time"].to_double();
-    // }
+    if(mesh.has_path("state/time"))
+    {
+      bp_idx["mesh/state/time"] = mesh["state/time"].to_double();
+    }
 
-    // n_root_file["protocol/name"]    =  "hdf5";
-    // n_root_file["protocol/version"] = "0.4.0";
+    n_root_file["protocol/name"]    =  "hdf5";
+    n_root_file["protocol/version"] = "0.4.0";
 
-    // n_root_file["number_of_files"]  = m_nblocks;
-    // // for now we will save one file per domain, so trees == files
-    // n_root_file["number_of_trees"]  = m_nblocks;
-    // n_root_file["file_pattern"]     = output_file_pattern;
-    // n_root_file["tree_pattern"]     = "/";
+    n_root_file["number_of_files"]  = m_nblocks;
+    // for now we will save one file per domain, so trees == files
+    n_root_file["number_of_trees"]  = m_nblocks;
+    n_root_file["file_pattern"]     = output_file_pattern;
+    n_root_file["tree_pattern"]     = "/";
 
-    // //n_root_file.print();
+    //n_root_file.print();
 }
 
 // ****************************************************************************
