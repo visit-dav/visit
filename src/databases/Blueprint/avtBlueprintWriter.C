@@ -47,6 +47,7 @@
 
 #ifdef PARALLEL
 #include "conduit_blueprint_mpi.hpp"
+#include "conduit_relay_mpi.hpp"
 #endif
 
 #include "avtBlueprintLogging.h"
@@ -210,17 +211,17 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
         if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5
                 || m_op == BP_MESH_OP_PARTITION)
         {
-            // Parse JSON/YAML input into m_options
-            LoadConduitOptions(options->GetMultiLineString("Flatten / Partition extra options"), m_options);
+            // Parse JSON/YAML input into m_special_options
+            LoadConduitOptions(options->GetMultiLineString("Flatten / Partition extra options"), m_special_options);
 
             if(m_op == BP_MESH_OP_PARTITION)
             {
                 // Only take the target value from the gui if one was not already set
                 //   in the JSON
                 int target_val = options->GetInt("Partition target number of domains");
-                if(!m_options.has_child("target") && target_val > 0)
+                if(!m_special_options.has_child("target") && target_val > 0)
                 {
-                    m_options["target"].set(target_val);
+                    m_special_options["target"].set(target_val);
                 }
             }
         }
@@ -656,6 +657,8 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 void
 avtBlueprintWriter::CloseFile(void)
 {
+    std::cout << "CloseFile" << std::endl;
+
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
@@ -677,7 +680,7 @@ avtBlueprintWriter::CloseFile(void)
     }
     else if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
-        debug5 << "Flatten options:\n" << m_options.to_string() << std::endl;
+        debug5 << "Flatten options:\n" << m_special_options.to_string() << std::endl;
         conduit::Node table;
         int rank = 0;
         int root = 0;
@@ -685,10 +688,10 @@ avtBlueprintWriter::CloseFile(void)
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " flattening.");
         // It's okay to pass empty nodes to this.
-        conduit::blueprint::mpi::mesh::flatten(m_chunks, m_options, table,
+        conduit::blueprint::mpi::mesh::flatten(m_chunks, m_special_options, table,
             writeContext.GetCommunicator());
 #else
-        conduit::blueprint::mesh::flatten(m_chunks, m_options, table);
+        conduit::blueprint::mesh::flatten(m_chunks, m_special_options, table);
 #endif
         // Don't need the mesh anymore.
         m_chunks.reset();
@@ -705,32 +708,35 @@ avtBlueprintWriter::CloseFile(void)
     }
     else if(m_op == BP_MESH_OP_PARTITION)
     {
-        debug5 << "Partition options:\n" << m_options.to_string() << std::endl;
+        std::cout << "BP_MESH_OP_PARTITION" << std::endl;
+
+        debug5 << "Partition options:\n" << m_special_options.to_string() << std::endl;
         int rank = 0;
+        const int root = 0;
         Node repart_mesh;
         {
             Node selections;
             // If the user has not given their own selections then
             //  filter out the ghost nodes/zones
-            if(!m_options.has_child("selections"))
+            if(!m_special_options.has_child("selections"))
             {
                 BuildSelections(m_chunks, selections);
                 if(!selections.dtype().is_empty())
                 {
                     // Make sure selections stays alive for the partition call!
-                    m_options["selections"].set_external(selections);
+                    m_special_options["selections"].set_external(selections);
                 }
             }
 
 #ifdef PARALLEL
             rank = writeContext.Rank();
             BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
-            conduit::blueprint::mpi::mesh::partition(m_chunks, m_options, repart_mesh,
+            conduit::blueprint::mpi::mesh::partition(m_chunks, m_special_options, repart_mesh,
                 writeContext.GetCommunicator());
             m_nblocks = conduit::blueprint::mpi::mesh::number_of_domains(repart_mesh,
                 writeContext.GetCommunicator());
 #else
-            conduit::blueprint::mesh::partition(m_chunks, m_options, repart_mesh);
+            conduit::blueprint::mesh::partition(m_chunks, m_special_options, repart_mesh);
             if(!repart_mesh.dtype().is_empty())
             {
                 m_nblocks = conduit::blueprint::mesh::number_of_domains(repart_mesh);
@@ -744,25 +750,45 @@ avtBlueprintWriter::CloseFile(void)
         // Don't need the original data anymore
         m_chunks.reset();
 
-        if(!repart_mesh.dtype().is_empty())
+        // TODO this conditional worries me
+        // if(!repart_mesh.dtype().is_empty())
         {
-            const std::vector<Node*> n_domains =
-                conduit::blueprint::mesh::domains(repart_mesh);
-
-            for(Node *m : n_domains)
+            Node global_repart_mesh;
+#ifdef PARALLEL
+            conduit::relay::mpi::gather_using_schema(repart_mesh,
+                                                     global_repart_mesh,
+                                                     root,
+                                                     writeContext.GetCommunicator());
+#else
+            global_repart_mesh.append().set_external(repart_mesh);
+#endif
+            if (rank == root)
             {
-                BP_PLUGIN_INFO("Rank " << rank << " domain:" << m->schema().to_json());
-                int dom_id = m->fetch("state/domain_id").to_int();
-                WriteMeshDomain(*m, dom_id);
+                global_repart_mesh.print();
 
-                if(m_genRoot)
-                {
-                    BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
-                    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-                    GenRootNode(*m, m_output_dir, ndims);
-                    m_genRoot = false;
-                }
+
+                debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
+                // TODO use relay::mpi::io
+                conduit::relay::io::blueprint::save_mesh(global_repart_mesh, m_stem, "hdf5", m_options);
             }
+
+            // const std::vector<Node*> n_domains =
+            //     conduit::blueprint::mesh::domains(repart_mesh);
+
+            // for(Node *m : n_domains)
+            // {
+            //     BP_PLUGIN_INFO("Rank " << rank << " domain:" << m->schema().to_json());
+            //     int dom_id = m->fetch("state/domain_id").to_int();
+            //     WriteMeshDomain(*m, dom_id);
+
+            //     if(m_genRoot)
+            //     {
+            //         BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
+            //         int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+            //         GenRootNode(*m, m_output_dir, ndims);
+            //         m_genRoot = false;
+            //     }
+            // }
         }
     }
 }
@@ -785,35 +811,5 @@ avtBlueprintWriter::CloseFile(void)
 void
 avtBlueprintWriter::WriteRootFile()
 {
-    if (m_op == BP_MESH_OP_PARTITION)
-    {
-        int root_writer = 0;
-        int rank = 0;
-#ifdef PARALLEL
-        // assume nothing about what rank was given a chunk;
-        rank = writeContext.Rank();
-        bool has_root_file = n_root_file.has_path("blueprint_index");
-        int i_has_root = has_root_file ? 1 : 0;
-        int *roots = new int[writeContext.Size()];
-
-        MPI_Allgather(&i_has_root, 1, MPI_INT, roots, 1, MPI_INT,
-                    writeContext.GetCommunicator());
-
-        for(int i = 0; i < writeContext.Size(); ++i)
-        {
-            if(roots[i] == 1)
-            {
-                root_writer = i;
-                break;
-            }
-        }
-
-        delete[] roots;
-#endif
-        if(rank == root_writer)
-        {
-            BP_PLUGIN_INFO("BlueprintMeshWriter: writing root "<<m_root_file);
-            relay::io::save(n_root_file, m_root_file,"hdf5");
-        }
-    }
+    // do nothing
 }

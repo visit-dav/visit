@@ -68,6 +68,7 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
 
     bpMeshOp        m_op;
     conduit::Node   m_options;
+    conduit::Node   m_special_options;
     conduit::Node   m_chunks;
 
     ExpressionList exprList;
