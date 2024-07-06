@@ -54,3 +54,9 @@ logic here to cause compilation failure if this logic seems to be failing.
 #if VISIT_VERSION_HEX(3,0,1) < VISIT_VERSION_HEX(3,0,0b)
 #error Problem with VISIT_VERSION_HEX() macro function
 #endif
+#if VISIT_VERSION_GE(99,3,2)
+#error Problem with VISIT_VERSION_GE() macro
+#endif
+#if !VISIT_VERSION_GE(3,4,1)
+#error Problem with VISIT_VERSION_GE() macro
+#endif
