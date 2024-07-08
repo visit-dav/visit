@@ -16,7 +16,21 @@
 # ----------------------------------------------------------------------------
 import time
 import sys
-import os.path
+import os
+
+if not os.path.isdir(out_path("current","databases")):
+    os.mkdir(out_path("current","databases"))
+out_base = out_path("current","databases","blueprint_export")
+if not os.path.isdir(out_base):
+    os.mkdir(out_base)
+
+outdir_set = pjoin(TestEnv.params["run_dir"], "testdir")
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
+
+export_test_save_location = pjoin(outdir_set, "export_test_save_location")
+if not os.path.isdir(export_test_save_location):
+    os.mkdir(export_test_save_location)
 
 # Uncomment these functions to run the script through the regular CLI
 # def Exit():
@@ -62,12 +76,14 @@ def test_name(case, i):
     return case + "_" + str(i) + "_"
 
 # Export DB as bp data set
-def export_mesh_bp(case_name, varname):
+def export_mesh_bp(case_name, varname, dirname = "."):
     export_name = case_name
     e = ExportDBAttributes()
     e.db_type = "Blueprint"
     e.filename = export_name
     e.variables = (varname,)
+    if dirname != ".":
+        e.dirname = dirname
     ExportDatabase(e)
     time.sleep(1)
     return export_name + ".cycle_000048.root"
@@ -384,18 +400,18 @@ def partition_test_extra_options():
     DeleteAllPlots()
     CloseDatabase("multi_rect2d_override_target_1.cycle_000048.root")
 
-def basic_test_case(case_name, varname = "d"):
+def basic_test_case(case_name, varname = "d", dirname = "."):
     OpenDatabase(silo_data_path(case_name))
     AddPlot("Pseudocolor",varname)
     DrawPlots()
-    Test("basic_" + case_name + "_input")
+    Test("basic_" + case_name + "_input" + ("_output_dir" if dirname != "." else ""))
     # export default
-    export_rfile_default = export_mesh_bp(case_name + "_default", varname)
+    export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname)
     # export post isosurface
     AddOperator("Isosurface")
     DrawPlots()
-    Test("basic_" + case_name + "_isosurface")
-    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname)
+    Test("basic_" + case_name + "_isosurface" + ("_output_dir" if dirname != "." else ""))
+    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname)
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
@@ -403,7 +419,7 @@ def basic_test_case(case_name, varname = "d"):
     # bp var names are qualified by topo
     AddPlot("Pseudocolor","mesh_topo/" + varname)
     DrawPlots()
-    Test("basic_" + case_name + "_default_exported")
+    Test("basic_" + case_name + "_default_exported" + ("_output_dir" if dirname != "." else ""))
     DeleteAllPlots()
     CloseDatabase(export_rfile_default)
 
@@ -411,7 +427,7 @@ def basic_test_case(case_name, varname = "d"):
     # bp var names are qualified by topo
     AddPlot("Pseudocolor", "mesh_topo/" + varname)
     DrawPlots()
-    Test("basic_" + case_name + "_isosurface_exported")
+    Test("basic_" + case_name + "_isosurface_exported" + ("_output_dir" if dirname != "." else ""))
     DeleteAllPlots()
     CloseDatabase(export_rfile_isos)
 
@@ -475,6 +491,12 @@ def test_basic():
     basic_test_case("multi_curv2d.silo")
     basic_test_case("multi_ucd3d.silo")
     basic_test_case("multi_rect2d.silo")
+
+    basic_test_case("multi_rect3d.silo", dirname=export_test_save_location)
+    basic_test_case("multi_curv3d.silo", dirname=export_test_save_location)
+    basic_test_case("multi_curv2d.silo", dirname=export_test_save_location)
+    basic_test_case("multi_ucd3d.silo", dirname=export_test_save_location)
+    basic_test_case("multi_rect2d.silo", dirname=export_test_save_location)
 
     basic_test_case_extra_options("multi_rect3d.silo")
 

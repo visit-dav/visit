@@ -225,7 +225,8 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
                 }
             }
         }
-        else
+        
+        if (m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
         {
             // Parse JSON/YAML input into m_options
             LoadConduitOptions(options->GetMultiLineString("Blueprint Relay I/O extra options"), m_options);
@@ -320,7 +321,7 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteChunk().");
 #endif
     Node &mesh = m_chunks.append();
-    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    const int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     ChunkToBpMesh(ds, chunk, ndims, mesh);
 }
 
@@ -373,7 +374,7 @@ BuildSelections(Node &domains, Node &selections)
 
         // Cast the ghost info to the correct type if necessary
         Node n_tmp;
-        DataArray<index_t> orig_vals;
+        index_t_array orig_vals;
         if(values.dtype().is_index_t())
         {
             orig_vals = values.value();
