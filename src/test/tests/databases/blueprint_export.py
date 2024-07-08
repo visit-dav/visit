@@ -534,31 +534,31 @@ def test_partition():
     curv3d_view.windowValid = 1
 
     # Run 3D tests
-    targets_3d = (45,)
-    # targets_3d = (1, 4, 19, 45)
+    targets_3d = (1, 4, 19, 45)
     partition_test_case("multi_rect3d.silo",
         targets_3d, rect3d_view)
-    # partition_test_case("multi_curv3d.silo",
-    #     targets_3d, curv3d_view)
-    # partition_test_case("multi_ucd3d.silo",
-    #     targets_3d, curv3d_view)
+    partition_test_case("multi_curv3d.silo",
+        targets_3d, curv3d_view)
+    partition_test_case("multi_ucd3d.silo",
+        targets_3d, curv3d_view)
 
-    # # Run 2D tests
-    # targets_2d = (1, 4, 7, 13, 19)
-    # partition_test_case("multi_curv2d.silo",
-    #     targets_2d)
-    # partition_test_case("multi_rect2d.silo",
-    #     targets_2d)
+    # Run 2D tests
+    targets_2d = (1, 4, 7, 13, 19)
+    partition_test_case("multi_curv2d.silo",
+        targets_2d)
+    partition_test_case("multi_rect2d.silo",
+        targets_2d)
 
-    # # Test extra options
-    # partition_test_extra_options()
+    # Test extra options
+    partition_test_extra_options()
 
 RequiredDatabasePlugin("Blueprint")
-# test_basic()
+test_basic()
 
 # TODO need tests that test the bad directory stuff I uncovered with shaun
 # will need to cover the regular, partition, and flatten cases
+# TODO add tests that use the options for writing out partitions
 
 test_partition()
-# test_flatten()
+test_flatten()
 Exit()
