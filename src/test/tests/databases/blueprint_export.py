@@ -89,21 +89,23 @@ def export_mesh_bp(case_name, varname, dirname="."):
     return export_name + ".cycle_000048.root"
 
 # Export DB as csv, return the folder name
-def create_csv_output(case_name):
+def create_csv_output(case_name, dirname="."):
     export_name = case_name
     e = ExportDBAttributes()
     e.db_type = "Blueprint"
     e.filename = export_name
     e.variables = ('mesh_coords', 'zc_mesh_coords')
+    if dirname != ".":
+        e.dirname = dirname
     opts = GetExportOptions("Blueprint")
     opts["Operation"] = "Flatten_CSV"
     ExportDatabase(e, opts)
     time.sleep(1)
     return export_name + ".csv"
 
-def test_csv_output(case_name):
-    vert_file = os.path.join(case_name, "vertex_data.csv")
-    elem_file = os.path.join(case_name, "element_data.csv")
+def test_csv_output(case_name, dirname="."):
+    vert_file = os.path.join(dirname, case_name, "vertex_data.csv")
+    elem_file = os.path.join(dirname, case_name, "element_data.csv")
     vert_baseline = case_name + "-" + "vertex_data.csv"
     elem_baseline = case_name + "-" + "element_data.csv"
     TestText(vert_baseline, load_text(vert_file))
@@ -117,7 +119,7 @@ def define_mesh_expressions(mesh_name):
     return ("nid", "zid", "mesh_coords", "zc_mesh_coords")
 
 # 's' for structured 'r' for rectilinear
-def flatten_multi_2d_case(case):
+def flatten_multi_2d_case(case, dirname="."):
     case_name = "multi_rect2d.silo"
     mesh_name = "mesh1"
     export_name = case_name
@@ -154,15 +156,15 @@ def flatten_multi_2d_case(case):
     DrawPlots()
 
     # Create csv file
-    export_dir = create_csv_output(export_name)
+    export_dir = create_csv_output(export_name, dirname)
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    test_csv_output(export_dir)
+    test_csv_output(export_dir, dirname)
 
-def flatten_multi_2d_unstructured_case():
+def flatten_multi_2d_unstructured_case(dirname="."):
     case_name = "ucd2d.silo"
     mesh_name = "ucdmesh2d"
     export_name = case_name
@@ -190,16 +192,16 @@ def flatten_multi_2d_unstructured_case():
     DrawPlots()
 
     # Create csv file
-    export_dir = create_csv_output(export_name)
+    export_dir = create_csv_output(export_name, dirname)
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    test_csv_output(export_dir)
+    test_csv_output(export_dir, dirname)
 
 # case = 'u' for unstructured, 'r' for rectilinear, 's' for structured
-def flatten_multi_3d_case(case):
+def flatten_multi_3d_case(case, dirname="."):
     case_name = "multi_rect3d.silo"
     mesh_name = "mesh1"
     export_name = case_name
@@ -243,15 +245,15 @@ def flatten_multi_3d_case(case):
     DrawPlots()
 
     # Create csv file
-    export_dir = create_csv_output(export_name)
+    export_dir = create_csv_output(export_name, dirname)
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    test_csv_output(export_dir)
+    test_csv_output(export_dir, dirname)
 
-def flatten_noise():
+def flatten_noise(dirname="."):
     case_name = "noise.silo"
     mesh_name = "Mesh"
     samples = (5, 4, 3)
@@ -278,13 +280,13 @@ def flatten_noise():
     DrawPlots()
 
     # Create the CSV output
-    export_dir = create_csv_output(case_name)
+    export_dir = create_csv_output(case_name, dirname)
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    test_csv_output(export_dir)
+    test_csv_output(export_dir, dirname)
 
 def partition_test_case(case_name, targets, view=None, dirname="."):
     # Write the original dataset
@@ -514,6 +516,16 @@ def test_flatten():
     flatten_multi_2d_case('r')
     flatten_multi_2d_case('s')
     flatten_multi_2d_unstructured_case()
+
+    # test setting the output directory
+    flatten_noise(dirname=export_test_save_location)
+    flatten_multi_3d_case('r', dirname=export_test_save_location)
+    flatten_multi_3d_case('s', dirname=export_test_save_location)
+    flatten_multi_3d_case('u', dirname=export_test_save_location)
+
+    flatten_multi_2d_case('r', dirname=export_test_save_location)
+    flatten_multi_2d_case('s', dirname=export_test_save_location)
+    flatten_multi_2d_unstructured_case(dirname=export_test_save_location)
 
 def test_partition():
     TestSection("Blueprint partition")
