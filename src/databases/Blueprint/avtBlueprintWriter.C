@@ -751,8 +751,7 @@ avtBlueprintWriter::CloseFile(void)
         // Don't need the original data anymore
         m_chunks.reset();
 
-        // TODO this conditional worries me
-        // if(!repart_mesh.dtype().is_empty())
+        if(!repart_mesh.dtype().is_empty())
         {
             debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
 #ifdef PARALLEL
