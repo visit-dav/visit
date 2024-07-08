@@ -272,7 +272,6 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
     if(m_op == BP_MESH_OP_PARTITION)
     {
         m_genRoot = true;
-        n_root_file.reset();
         CreateOutputDir();
     }
 }
@@ -572,35 +571,6 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
     std::string output_file_pattern;
     output_file_pattern = utils::join_file_path(output_dir,
                                                 "domain_%06d.hdf5");
-    // TODO can this all be deleted?
-    n_root_file.reset();
-    Node &bp_idx = n_root_file["blueprint_index"];
-    blueprint::mesh::generate_index(mesh,
-                                    "",
-                                    m_nblocks,
-                                    bp_idx["mesh"]);
-
-    // work around conduit bug
-    if(mesh.has_path("state/cycle"))
-    {
-      bp_idx["mesh/state/cycle"] = mesh["state/cycle"].to_int32();
-    }
-
-    if(mesh.has_path("state/time"))
-    {
-      bp_idx["mesh/state/time"] = mesh["state/time"].to_double();
-    }
-
-    n_root_file["protocol/name"]    =  "hdf5";
-    n_root_file["protocol/version"] = "0.4.0";
-
-    n_root_file["number_of_files"]  = m_nblocks;
-    // for now we will save one file per domain, so trees == files
-    n_root_file["number_of_trees"]  = m_nblocks;
-    n_root_file["file_pattern"]     = output_file_pattern;
-    n_root_file["tree_pattern"]     = "/";
-
-    //n_root_file.print();
 }
 
 // ****************************************************************************
@@ -659,8 +629,6 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 void
 avtBlueprintWriter::CloseFile(void)
 {
-    std::cout << "CloseFile" << std::endl;
-
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
@@ -699,55 +667,50 @@ avtBlueprintWriter::CloseFile(void)
 
         const std::string filename = m_op == BP_MESH_OP_FLATTEN_CSV ? m_stem + ".csv"
                                                                     : m_stem + ".hdf5";
-        if(rank == root)
+        if (rank == root)
         {
 #ifdef PARALLEL
-        BP_PLUGIN_INFO("I'm rank " << rank << " and I'm about to write " << filename << ".");
+            BP_PLUGIN_INFO("I'm rank " << rank << " and I'm about to write " << filename << ".");
 #endif
             conduit::relay::io::save(table, filename);
         }
     }
     else if(m_op == BP_MESH_OP_PARTITION)
     {
-        std::cout << "BP_MESH_OP_PARTITION" << std::endl;
-
         debug5 << "Partition options:\n" << m_special_options.to_string() << std::endl;
         int rank = 0;
         const int root = 0;
-        Node repart_mesh;
+        Node selections, repart_mesh;
+        // If the user has not given their own selections then
+        //  filter out the ghost nodes/zones
+        if(!m_special_options.has_child("selections"))
         {
-            Node selections;
-            // If the user has not given their own selections then
-            //  filter out the ghost nodes/zones
-            if(!m_special_options.has_child("selections"))
+            BuildSelections(m_chunks, selections);
+            if(!selections.dtype().is_empty())
             {
-                BuildSelections(m_chunks, selections);
-                if(!selections.dtype().is_empty())
-                {
-                    // Make sure selections stays alive for the partition call!
-                    m_special_options["selections"].set_external(selections);
-                }
+                // Make sure selections stays alive for the partition call!
+                m_special_options["selections"].set_external(selections);
             }
+        }
 
 #ifdef PARALLEL
-            rank = writeContext.Rank();
-            BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
-            conduit::blueprint::mpi::mesh::partition(m_chunks, m_special_options, repart_mesh,
-                writeContext.GetCommunicator());
-            m_nblocks = conduit::blueprint::mpi::mesh::number_of_domains(repart_mesh,
-                writeContext.GetCommunicator());
+        rank = writeContext.Rank();
+        BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
+        conduit::blueprint::mpi::mesh::partition(m_chunks, m_special_options, repart_mesh,
+            writeContext.GetCommunicator());
+        m_nblocks = conduit::blueprint::mpi::mesh::number_of_domains(repart_mesh,
+            writeContext.GetCommunicator());
 #else
-            conduit::blueprint::mesh::partition(m_chunks, m_special_options, repart_mesh);
-            if(!repart_mesh.dtype().is_empty())
-            {
-                m_nblocks = conduit::blueprint::mesh::number_of_domains(repart_mesh);
-            }
-            else
-            {
-                m_nblocks = 0;
-            }
-#endif
+        conduit::blueprint::mesh::partition(m_chunks, m_special_options, repart_mesh);
+        if(!repart_mesh.dtype().is_empty())
+        {
+            m_nblocks = conduit::blueprint::mesh::number_of_domains(repart_mesh);
         }
+        else
+        {
+            m_nblocks = 0;
+        }
+#endif
         // Don't need the original data anymore
         m_chunks.reset();
 
@@ -781,5 +744,5 @@ avtBlueprintWriter::CloseFile(void)
 void
 avtBlueprintWriter::WriteRootFile()
 {
-    // do nothing
+    // root file has already been written
 }

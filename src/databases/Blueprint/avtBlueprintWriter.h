@@ -61,7 +61,7 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     std::string     m_output_dir;
     double          m_time;
     int             m_cycle;
-    int             m_nblocks;
+    int             m_nblocks; // TODO can I delete this
     bool            m_genRoot;
     conduit::Node   n_root_file;
     std::string     m_root_file;
