@@ -404,6 +404,84 @@ def partition_test_extra_options():
     DeleteAllPlots()
     CloseDatabase("multi_rect2d_override_target_1.cycle_000048.root")
 
+def partition_test_extra_extra_options():
+    dbname = "multi_rect2d.silo"
+    TestSection("Extra extra options")
+    OpenDatabase(silo_data_path(dbname))
+    AddPlot("Subset", "domains(mesh1)")
+    DrawPlots()
+    Test("DefaultMesh_extra_extra_options")
+
+    # Test JSON
+    e0 = ExportDBAttributes()
+    e0.db_type = "Blueprint"
+    e0.filename = "multi_rect2d_json_target_1"
+    e0.variables = ("u")
+    opts0 = GetExportOptions("Blueprint")
+    opts0["Operation"] = "Partition"
+    opts0["Flatten / Partition extra options"] = '{"target": 1}'
+    opts0["Blueprint Relay I/O extra options"] = """{
+    \"file_style\": \"multi_file\",
+    \"suffix\": \"none\",
+    \"mesh_name\": \"mesh1\",
+    \"number_of_files\": 2,
+    \"truncate\": \"false\"
+}"""
+    ExportDatabase(e0, opts0)
+    time.sleep(1)
+
+    # Test YAML
+    e1 = ExportDBAttributes()
+    e1.db_type = "Blueprint"
+    e1.filename = "multi_rect2d_yaml_target_1"
+    e1.variables = ("u")
+    opts1 = GetExportOptions("Blueprint")
+    opts1["Operation"] = "Partition"
+    opts1["Flatten / Partition extra options"]  = 'target: 1'
+    opts1["Blueprint Relay I/O extra options"] = """file_style: \"multi_file\"
+suffix: \"none\"
+mesh_name: \"mesh1\"
+number_of_files: 2
+truncate: \"false\""""
+
+    ExportDatabase(e1, opts1)
+    time.sleep(1)
+
+    # Test that the JSON/YAML overrides the options field
+    e2 = ExportDBAttributes()
+    e2.db_type = "Blueprint"
+    e2.filename = "multi_rect2d_override_target_1"
+    e2.variables = ("u")
+    opts2 = GetExportOptions("Blueprint")
+    opts2["Operation"] = "Partition"
+    opts2["Partition target number of domains"] = 13
+    opts2["Flatten / Partition extra options"]  = 'target: 1'
+    ExportDatabase(e2, opts2)
+    time.sleep(1)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(dbname))
+
+    OpenDatabase("multi_rect2d_json_target_1.root")
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("JSONOptions_extra_extra_options")
+    DeleteAllPlots()
+    CloseDatabase("multi_rect2d_json_target_1.root")
+
+    OpenDatabase("multi_rect2d_yaml_target_1.root")
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("YAMLOptions_extra_extra_options")
+    DeleteAllPlots()
+    CloseDatabase("multi_rect2d_yaml_target_1.root")
+
+    OpenDatabase("multi_rect2d_override_target_1.root")
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("OverrideOptions_extra_extra_options")
+    DeleteAllPlots()
+    CloseDatabase("multi_rect2d_override_target_1.root")
+
 def basic_test_case(case_name, varname = "d", dirname = "."):
     OpenDatabase(silo_data_path(case_name))
     AddPlot("Pseudocolor",varname)
@@ -604,12 +682,11 @@ def test_partition():
 
     # Test extra options
     partition_test_extra_options()
+    partition_test_extra_extra_options()
 
 RequiredDatabasePlugin("Blueprint")
 test_basic()
 
-# TODO need tests that test the bad directory stuff I uncovered with shaun
-# will need to cover the regular, partition, and flatten cases
 # TODO add tests that use the options for writing out partitions
 
 test_partition()
