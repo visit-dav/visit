@@ -76,7 +76,7 @@ def test_name(case, i):
     return case + "_" + str(i) + "_"
 
 # Export DB as bp data set
-def export_mesh_bp(case_name, varname, dirname = "."):
+def export_mesh_bp(case_name, varname, dirname="."):
     export_name = case_name
     e = ExportDBAttributes()
     e.db_type = "Blueprint"
@@ -286,13 +286,13 @@ def flatten_noise():
     # Test text
     test_csv_output(export_dir)
 
-def partition_test_case(case_name, targets, view=None):
+def partition_test_case(case_name, targets, view=None, dirname="."):
     # Write the original dataset
     OpenDatabase(silo_data_path(case_name))
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     set_view(case_name, view)
-    Test(case_name)
+    Test(case_name + ("_output_dir" if dirname != "." else ""))
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
@@ -311,6 +311,8 @@ def partition_test_case(case_name, targets, view=None):
         e.db_type = "Blueprint"
         e.filename = export_name
         e.variables = ("u")
+        if dirname != ".":
+            e.dirname = dirname
         opts = GetExportOptions("Blueprint")
         opts["Operation"] = "Partition"
         opts["Partition target number of domains"] = target
@@ -325,13 +327,13 @@ def partition_test_case(case_name, targets, view=None):
         AddPlot("Pseudocolor", "mesh_topo/u")
         DrawPlots()
         set_view(case_name, view)
-        Test(test_name(export_name, 0))
+        Test(test_name(export_name, 0) + ("output_dir" if dirname != "." else ""))
         DeleteAllPlots()
 
         AddPlot("Subset", "domains")
         DrawPlots()
         set_view(case_name, view)
-        Test(test_name(export_name, 1))
+        Test(test_name(export_name, 1) + ("output_dir" if dirname != "." else ""))
         DeleteAllPlots()
         CloseDatabase(export_filename)
 
@@ -570,6 +572,23 @@ def test_partition():
         targets_2d)
     partition_test_case("multi_rect2d.silo",
         targets_2d)
+
+    # different directory tests:
+    # Run 3D tests
+    targets_3d = (1, 4, 19, 45)
+    partition_test_case("multi_rect3d.silo",
+        targets_3d, rect3d_view, dirname=export_test_save_location)
+    partition_test_case("multi_curv3d.silo",
+        targets_3d, curv3d_view, dirname=export_test_save_location)
+    partition_test_case("multi_ucd3d.silo",
+        targets_3d, curv3d_view, dirname=export_test_save_location)
+
+    # Run 2D tests
+    targets_2d = (1, 4, 7, 13, 19)
+    partition_test_case("multi_curv2d.silo",
+        targets_2d, dirname=export_test_save_location)
+    partition_test_case("multi_rect2d.silo",
+        targets_2d, dirname=export_test_save_location)
 
     # Test extra options
     partition_test_extra_options()
