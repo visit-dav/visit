@@ -471,68 +471,6 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
 }
 
 // ****************************************************************************
-//  Method: avtBlueprintWriter::CreateOutputDir
-//
-//  Purpose:
-//      Creates a subdirectory based off m_stem and the current cycle.
-//
-//  Programmer: Chris Laganella
-//  Creation:   Thu Nov  4 15:22:37 EDT 2021
-//  This code originated in OpenFile()
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtBlueprintWriter::CreateOutputDir()
-{
-    const int c = [&]() -> int
-    {
-        const int cycle = GetCycle();
-        return (cycle == INVALID_CYCLE ? 0 : cycle);
-    }();
-    // we want the basename without the extension to use as a sub-dir name
-    m_mbDirName = FileFunctions::Basename(m_stem);
-    std::ostringstream oss;
-    oss << m_stem << ".cycle_" << std::setfill('0') << std::setw(6) << c;
-    m_output_dir = oss.str();
-
-#ifdef WIN32
-    _mkdir(m_output_dir.c_str());
-#else
-    mkdir(m_output_dir.c_str(), 0777);
-#endif
-    BP_PLUGIN_INFO("BlueprintMeshWriter: create output dir "<<m_output_dir);
-}
-
-// ****************************************************************************
-//  Method: avtBlueprintWriter::WriteMeshDomain
-//
-//  Purpose:
-//      Writes the given blueprint mesh domain to a file based off the given
-//      domain_id.
-//
-//  Programmer: Chris Laganella
-//  Creation:   Thu Nov  4 16:00:44 EDT 2021
-//  This code orginated in WriteChunk
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
-{
-#ifdef PARALLEL
-    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteMeshDomain().");
-#endif
-    std::stringstream oss;
-    oss << "domain_" << std::setfill('0') << std::setw(6) << domain_id << "." << "hdf5";
-    string output_file  = conduit::utils::join_file_path(m_output_dir,oss.str());
-    // TODO does this stay? does this whole function die?
-    relay::io::save(mesh, output_file);
-}
-
-// ****************************************************************************
 //  Method: avtBlueprintWriter::CloseFile
 //
 //  Purpose:

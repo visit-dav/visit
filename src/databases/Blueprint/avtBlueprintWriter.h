@@ -58,11 +58,9 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     std::string     m_stem;
     std::string     m_meshName;
     std::string     m_mbDirName;
-    std::string     m_output_dir;
     double          m_time;
     int             m_cycle;
     int             m_nblocks; // TODO can I delete this
-    bool            m_genRoot;
 
     bpMeshOp        m_op;
     conduit::Node   m_options;
@@ -72,8 +70,6 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     ExpressionList exprList;
 
     void           ChunkToBpMesh(vtkDataSet *, int, int, conduit::Node &);
-    void           CreateOutputDir();
-    void           WriteMeshDomain(conduit::Node &mesh, int);
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
