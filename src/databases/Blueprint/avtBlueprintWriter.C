@@ -193,8 +193,6 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
     m_meshName(), m_chunks()
 {
-    m_nblocks = 0;
-
     m_op = BP_MESH_OP_NONE;
 
     if(options)
@@ -268,7 +266,6 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called OpenFile().");
 #endif
     m_stem = stemname;
-    m_nblocks = nb;
 }
 
 
@@ -322,15 +319,6 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteChunk().");
 #endif
-    char chunkname[1024];
-    if (m_nblocks > 1)
-        sprintf(chunkname, "%s/%s.%d", m_stem.c_str(), m_mbDirName.c_str(), chunk);
-    else
-        sprintf(chunkname, "%s", m_stem.c_str());
-
-    BP_PLUGIN_INFO("BlueprintMeshWriter: " << chunkname
-                    << " [domain " << chunk<< "]");
-
     Node &mesh = m_chunks.append();
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     ChunkToBpMesh(ds, chunk, ndims, mesh);
@@ -454,7 +442,7 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
         mesh["state/cycle"] = m_cycle;
     }
 
-    if (m_time != INVALID_TIME )
+    if (m_time != INVALID_TIME)
     {
         mesh["state/time"] = m_time;
     }
@@ -568,18 +556,8 @@ avtBlueprintWriter::CloseFile(void)
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
         conduit::blueprint::mpi::mesh::partition(m_chunks, m_special_options, repart_mesh,
             writeContext.GetCommunicator());
-        m_nblocks = conduit::blueprint::mpi::mesh::number_of_domains(repart_mesh,
-            writeContext.GetCommunicator());
 #else
         conduit::blueprint::mesh::partition(m_chunks, m_special_options, repart_mesh);
-        if(!repart_mesh.dtype().is_empty())
-        {
-            m_nblocks = conduit::blueprint::mesh::number_of_domains(repart_mesh);
-        }
-        else
-        {
-            m_nblocks = 0;
-        }
 #endif
         // Don't need the original data anymore
         m_chunks.reset();

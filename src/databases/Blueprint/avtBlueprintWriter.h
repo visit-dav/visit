@@ -57,10 +57,8 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
 
     std::string     m_stem;
     std::string     m_meshName;
-    std::string     m_mbDirName;
     double          m_time;
     int             m_cycle;
-    int             m_nblocks; // TODO can I delete this
 
     bpMeshOp        m_op;
     conduit::Node   m_options;
