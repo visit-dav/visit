@@ -269,11 +269,6 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 #endif
     m_stem = stemname;
     m_nblocks = nb;
-    if(m_op == BP_MESH_OP_PARTITION)
-    {
-        m_genRoot = true;
-        CreateOutputDir();
-    }
 }
 
 
@@ -339,23 +334,6 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     Node &mesh = m_chunks.append();
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     ChunkToBpMesh(ds, chunk, ndims, mesh);
-
-    // TODO do equivalent at hte end
-    // if(m_op == BP_MESH_OP_NONE)
-    // {
-    //     // If we aren't partitioning/flattening the mesh
-    //     // then we can write it out like normal and clear m_chunks.
-    //     WriteMeshDomain(mesh, chunk);
-
-    //     if(m_genRoot)
-    //     {
-    //         BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
-    //         GenRootNode(mesh, m_output_dir, ndims);
-    //         m_genRoot = false;
-    //     }
-    //     m_chunks.reset();
-    // }
-    // // Need to defer all mesh operations to CloseFile()
 }
 
 
@@ -525,52 +503,6 @@ avtBlueprintWriter::CreateOutputDir()
     mkdir(m_output_dir.c_str(), 0777);
 #endif
     BP_PLUGIN_INFO("BlueprintMeshWriter: create output dir "<<m_output_dir);
-}
-
-// ****************************************************************************
-//  Method: avtBlueprintWriter::GenRootNode
-//
-//  Purpose:
-//      Generates the conduit node that contains the root file info
-//
-//  Programmer: Matt Larsen
-//  Creation:   Feb 1, 2019
-//
-//  Modifications:
-//
-//  Mark C. Miller, Thu May  7 15:04:11 PDT 2020
-//  Add expressions output
-// 
-//  Justin Privitera, Wed Apr 27 22:56:31 PDT 2022
-//  Removed expressions output.
-// 
-// ****************************************************************************
-void
-avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
-                                const std::string output_dir,
-                                const int ndims)
-{
-#ifdef PARALLEL
-    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called GenRootNode().");
-#endif
-    const int c = [&]() -> int
-    {
-        const int cycle = GetCycle();
-        return (cycle == INVALID_CYCLE ? 0 : cycle);
-    }();
-
-    std::stringstream oss;
-    std::string root_dir = FileFunctions::Dirname(output_dir);
-    oss << m_mbDirName << ".cycle_" << std::setfill('0') << std::setw(6) << c << ".root";
-    m_root_file = oss.str();
-
-    // TODO I think this is bugged
-    m_root_file = utils::join_file_path(root_dir,
-                                        m_root_file);
-
-    std::string output_file_pattern;
-    output_file_pattern = utils::join_file_path(output_dir,
-                                                "domain_%06d.hdf5");
 }
 
 // ****************************************************************************

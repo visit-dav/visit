@@ -63,8 +63,6 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     int             m_cycle;
     int             m_nblocks; // TODO can I delete this
     bool            m_genRoot;
-    conduit::Node   n_root_file;
-    std::string     m_root_file;
 
     bpMeshOp        m_op;
     conduit::Node   m_options;
@@ -75,9 +73,6 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
 
     void           ChunkToBpMesh(vtkDataSet *, int, int, conduit::Node &);
     void           CreateOutputDir();
-    void           GenRootNode(conduit::Node &mesh,
-                               const std::string output_dir,
-                               const int ndims);
     void           WriteMeshDomain(conduit::Node &mesh, int);
 
     virtual void   OpenFile(const std::string &, int);
