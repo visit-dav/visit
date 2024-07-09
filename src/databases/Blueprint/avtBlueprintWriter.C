@@ -210,24 +210,25 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
                 "Invalid value passed for attribute 'Operation'.");
         }
 
-        op_val = options->GetEnum("Output type");
-        if(op_val >= 0 && op_val < 3)
-        {
-            if ((bpOutputType)op_val == JSON)
-            {
-                m_output_type = "json";
-            }
-            else if ((bpOutputType)op_val == YAML)
-            {
-                m_output_type = "yaml";
-            }
-            // HDF5 case is default
-        }
-        else
-        {
-            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                "Invalid value passed for attribute 'Output type'.");
-        }
+        // TODO add in later once https://github.com/LLNL/conduit/issues/1291 is fixed
+        // op_val = options->GetEnum("Output type");
+        // if(op_val >= 0 && op_val < 3)
+        // {
+        //     if ((bpOutputType)op_val == JSON)
+        //     {
+        //         m_output_type = "json";
+        //     }
+        //     else if ((bpOutputType)op_val == YAML)
+        //     {
+        //         m_output_type = "yaml";
+        //     }
+        //     // HDF5 case is default
+        // }
+        // else
+        // {
+        //     BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+        //         "Invalid value passed for attribute 'Output type'.");
+        // }
 
         if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5
                 || m_op == BP_MESH_OP_PARTITION)
