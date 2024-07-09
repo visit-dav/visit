@@ -32,6 +32,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where the LLNL host profiles for Boraxo, Dane and Ruby didn't get installed in some situations.</li>
   <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
   <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
+  <li>The Blueprint writer no longer writes the wrong path to root files when specifying a directory to export files to.</li>
+  <li>The Blueprint writer now correctly puts the right cycle number in file names.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -40,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
   <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Windows to easier find more options.</li>
   <li>A host profile has been added for running on LLNL's RZVernal system.</li>
+  <li>The Blueprint writer lets users specify Blueprint write options.</li>
 </ul>
 
 <a name="Dev_changes"></a>
