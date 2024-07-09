@@ -13,6 +13,10 @@
 #
 #  Chris Laganella, Mon Feb 14 14:39:48 EST 2022
 #  I added a test case for user provided JSON/YAML options
+# 
+#  Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+#  Added tests for setting the directory, fixed the cycle numbers, added tests
+#  for using the new relay.io.blueprint.save_mesh() options, 
 # ----------------------------------------------------------------------------
 import time
 import sys
@@ -688,9 +692,7 @@ def test_partition():
 
 RequiredDatabasePlugin("Blueprint")
 test_basic()
-
-# TODO add tests for json and yaml output
-
+# TODO add tests for json and yaml output when https://github.com/LLNL/conduit/issues/1291 is fixed
 test_partition()
 test_flatten()
 Exit()

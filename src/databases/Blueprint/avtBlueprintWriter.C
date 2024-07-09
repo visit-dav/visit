@@ -187,6 +187,12 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//    Added logic for changing the output type to yaml and json when
+//    https://github.com/LLNL/conduit/issues/1291 is addressed.
+//    Load special options for partitioning and flattening and regular options
+//    for relay::io::blueprint.
 //
 // ****************************************************************************
 
@@ -280,6 +286,9 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 //
 //  Chris Laganella Thu Nov  4 18:53:09 EDT 2021
 //  Updated m_nblocks to match the number of target domains if we are partitioning
+// 
+//  Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//  Simplified a great deal now that we are using relay::io::blueprint.
 // ****************************************************************************
 
 void
@@ -335,6 +344,9 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //  Chris Laganella Thu Nov  4 16:07:56 EDT 2021
 //  I moved the vtkDataSet -> blueprint mesh code into ChunkToBpMesh() and
 //  the relay::io::save code into WriteMeshDomain()
+// 
+//  Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//  Simplfied a great deal now that we use relay::io:blueprint.
 // ****************************************************************************
 void
 avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
@@ -373,6 +385,9 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//    Use index_t_array instead of DataArray<index_t>.
 //
 // ****************************************************************************
 static void
@@ -505,6 +520,10 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//    Use relay::io::blueprint to write out meshes.
+//    Lots of simplification.
 //
 // ****************************************************************************
 void
@@ -610,6 +629,9 @@ avtBlueprintWriter::CloseFile(void)
 //
 //  Chris Laganella Thu Nov  4 18:55:00 EDT 2021
 //  Writes a root file as long as we aren't flattening
+// 
+//  Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//  Removed everything from this function.
 // ****************************************************************************
 
 void

@@ -82,6 +82,9 @@ GetBlueprintReadOptions(void)
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//    Added Blueprint Relay I/O extra options.
 //
 // ****************************************************************************
 

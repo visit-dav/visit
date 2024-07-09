@@ -34,6 +34,12 @@ class DBOptionsAttributes;
 //
 //  Modifications:
 //
+//     Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//     Added bpOutputType enum.
+//     Removed m_mbDirName, m_output_dir, m_nblocks, m_genRoot, n_root_file,
+//        and m_root_file.
+//     Added m_output_type and m_special_options.
+//     Removed CreateOutputDir(), GenRootNode(), and WriteMeshDomain().
 //
 // ****************************************************************************
 
