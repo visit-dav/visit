@@ -1114,6 +1114,9 @@ configure_file(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
 configure_file(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-python-config.h @ONLY IMMEDIATE)
 
+configure_file(${VISIT_SOURCE_DIR}/include/visit-version.h.in
+               ${VISIT_BINARY_DIR}/include/visit-version.h @ONLY IMMEDIATE)
+
 
 #-----------------------------------------------------------------------------
 # Create common/misc/ConfigureInfo.C
