@@ -195,6 +195,8 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 {
     m_op = BP_MESH_OP_NONE;
 
+    m_output_type = "hdf5";
+
     if(options)
     {
         int op_val = options->GetEnum("Operation");
@@ -206,6 +208,25 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
         {
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                 "Invalid value passed for attribute 'Operation'.");
+        }
+
+        op_val = options->GetEnum("Output type");
+        if(op_val >= 0 && op_val < 3)
+        {
+            if ((bpOutputType)op_val == JSON)
+            {
+                m_output_type = "json";
+            }
+            else if ((bpOutputType)op_val == YAML)
+            {
+                m_output_type = "yaml";
+            }
+            // HDF5 case is default
+        }
+        else
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Invalid value passed for attribute 'Output type'.");
         }
 
         if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5
@@ -500,9 +521,9 @@ avtBlueprintWriter::CloseFile(void)
 #ifdef PARALLEL
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " relay io blueprint save_mesh.");
-        conduit::relay::mpi::io::blueprint::save_mesh(m_chunks, m_stem, "hdf5", m_options, writeContext.GetCommunicator());
+        conduit::relay::mpi::io::blueprint::save_mesh(m_chunks, m_stem, m_output_type, m_options, writeContext.GetCommunicator());
 #else
-        conduit::relay::io::blueprint::save_mesh(m_chunks, m_stem, "hdf5", m_options);
+        conduit::relay::io::blueprint::save_mesh(m_chunks, m_stem, m_output_type, m_options);
 #endif
         m_chunks.reset();
     }
@@ -567,9 +588,9 @@ avtBlueprintWriter::CloseFile(void)
         {
             debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
 #ifdef PARALLEL
-            conduit::relay::mpi::io::blueprint::save_mesh(repart_mesh, m_stem, "hdf5", m_options, writeContext.GetCommunicator());
+            conduit::relay::mpi::io::blueprint::save_mesh(repart_mesh, m_stem, m_output_type, m_options, writeContext.GetCommunicator());
 #else
-            conduit::relay::io::blueprint::save_mesh(repart_mesh, m_stem, "hdf5", m_options);
+            conduit::relay::io::blueprint::save_mesh(repart_mesh, m_stem, m_output_type, m_options);
 #endif
         }
     }

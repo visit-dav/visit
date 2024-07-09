@@ -98,6 +98,13 @@ GetBlueprintWriteOptions(void)
     ops.push_back("Partition");
     rv->SetEnumStrings("Operation", ops);
 
+    rv->SetEnum("Output type", 0);
+    std::vector<std::string> output_types;
+    output_types.push_back("HDF5");
+    output_types.push_back("YAML");
+    output_types.push_back("JSON");
+    rv->SetEnumStrings("Output type", output_types);
+
     rv->SetInt("Partition target number of domains", 0);
 
     rv->SetMultiLineString("Flatten / Partition extra options", "");

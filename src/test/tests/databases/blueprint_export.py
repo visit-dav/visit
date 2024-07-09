@@ -427,6 +427,7 @@ def partition_test_extra_extra_options():
     \"number_of_files\": 2,
     \"truncate\": \"false\"
 }"""
+    opts0["Output type"] = "JSON"
     ExportDatabase(e0, opts0)
     time.sleep(1)
 
@@ -443,7 +444,7 @@ suffix: \"none\"
 mesh_name: \"mesh1\"
 number_of_files: 2
 truncate: \"false\""""
-
+    opts1["Output type"] = "YAML"
     ExportDatabase(e1, opts1)
     time.sleep(1)
 
@@ -532,6 +533,7 @@ def basic_test_case_extra_options(case_name, varname = "d"):
     \"number_of_files\": 2,
     \"truncate\": \"false\"
 }"""
+    opts0["Output type"] = "JSON"
     ExportDatabase(e0, opts0)
     time.sleep(1)
 
@@ -546,7 +548,7 @@ suffix: \"none\"
 mesh_name: \"mesh1\"
 number_of_files: 2
 truncate: \"false\""""
-
+    opts1["Output type"] = "YAML"
     ExportDatabase(e1, opts1)
     time.sleep(1)
 
@@ -687,7 +689,7 @@ def test_partition():
 RequiredDatabasePlugin("Blueprint")
 test_basic()
 
-# TODO add tests that use the options for writing out partitions
+# TODO add tests for json and yaml output
 
 test_partition()
 test_flatten()

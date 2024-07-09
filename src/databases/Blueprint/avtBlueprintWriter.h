@@ -55,10 +55,17 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
       BP_MESH_OP_PARTITION
     };
 
+    enum bpOutputType {
+      HDF5,
+      YAML,
+      JSON
+    };
+
     std::string     m_stem;
     std::string     m_meshName;
     double          m_time;
     int             m_cycle;
+    std::string     m_output_type;
 
     bpMeshOp        m_op;
     conduit::Node   m_options;
