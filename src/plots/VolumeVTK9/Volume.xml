@@ -27,11 +27,13 @@
     </LIBS>
     <LIBS components="ESer">
       avtexpressions_ser
+      avtfilters_ser
       VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
     <LIBS components="EPar">
       avtexpressions_par
+      avtfilters_par
       VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
