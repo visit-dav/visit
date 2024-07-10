@@ -234,16 +234,25 @@ if os.path.exists(visitdir + "exe"):
     ver = ""
 
     # The version that we use for plugins. Since we have a development
-    # version, let's try to get the version from the VERSION file.
+    # version, let's try to get the version from various files it might
+    # be in. The files we look in here have grown as we've moved where
+    # we store VisIt version information.
     visitpluginver = ""
     VERSIONFILE = visitdir + "VERSION"
     VISIT_CONFIG_H = visitdir + "include" + os.path.sep + "visit-config.h"
+    VISIT_VERSION_H = visitdir + "include" + os.path.sep + "visit-version.h"
     if os.path.exists(VERSIONFILE):
         visitpluginver = open(VERSIONFILE).readlines()[0][:-1]
-    elif os.path.exists(VISIT_CONFIG_H):
+    if not visitpluginver and os.path.exists(VISIT_CONFIG_H):
         tok = "#define VISIT_VERSION"
         vline = [x for x in open(VISIT_CONFIG_H).readlines() if x.find(tok) == 0]
-        visitpluginver = vline[0][23:-2]
+        if vline:
+            visitpluginver = vline[0][23:-2]
+    if not visitpluginver and os.path.exists(VISIT_VERSION_H):
+        tok = "#define VISIT_VERSION"
+        vline = [x for x in open(VISIT_VERSION_H).readlines() if x.find(tok) == 0]
+        if vline:
+            visitpluginver = vline[0][23:-2]
 
     # We want to make sure we know if we are trying to launch a public
     # version from under a development version.  Keep track of this.
