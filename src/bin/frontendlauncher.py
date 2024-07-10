@@ -234,9 +234,9 @@ if os.path.exists(visitdir + "exe"):
     ver = ""
 
     # The version that we use for plugins. Since we have a development
-    # version, let's try to get the version from various files it might
-    # be in. The files we look in here have grown as we've moved where
-    # we store VisIt version information.
+    # version, let's try to get the VisIt version from various files it might
+    # be in. The file cases we try here have grown as we've moved where we
+    # store VisIt version information.
     visitpluginver = ""
     VERSIONFILE = visitdir + "VERSION"
     VISIT_CONFIG_H = visitdir + "include" + os.path.sep + "visit-config.h"
