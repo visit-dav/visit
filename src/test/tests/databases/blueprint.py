@@ -54,6 +54,9 @@
 # 
 #    Justin Privitera, Fri May  3 09:55:25 PDT 2024
 #    Added test for Blueprint Uniform Coordset + Unstructured Topo.
+# 
+#    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+#    Added tests for mixed element topologies.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -74,6 +77,7 @@ bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
 bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
 bp_unstructured_points_dir = "blueprint_v0.8.7_unstructured_points"
 bp_unstructured_uniform_dir = "blueprint_v0.9.1_uniform_coords_unstructured_topo"
+bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -99,6 +103,12 @@ uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 unstructured_points = data_path(pjoin(bp_unstructured_points_dir,"unstructured_points.cycle_000100.root"))
 
 uniform_unstructured = data_path(pjoin(bp_unstructured_uniform_dir,"partition.root"))
+
+mixed_topo_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_2d_hdf5.root"))
+mixed_topo_2d_polygon = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_polygonal_2d_hdf5.root"))
+mixed_topo_3d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_3d_hdf5.root"))
+mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.root"))
+mixed_braid_3d = data_path(pjoin(bp_mixed_topos_dir, "braid_3d_examples_hdf5.root"))
 
 #
 # venn test data (multi material)
@@ -829,5 +839,44 @@ SetView3D(View3DAtts)
 Test("Uniform_coordset_and_unstructured_topo")
 DeleteAllPlots()
 ResetView()
+
+def mixed_test(db_name, meshplot_name, pseudocolor_plot_name, label_plot_name, test_name, view=False):
+    OpenDatabase(db_name)
+    AddPlot("Mesh", meshplot_name)
+    AddPlot("Pseudocolor", pseudocolor_plot_name)
+    if len(label_plot_name) > 0:
+        AddPlot("Label", label_plot_name)
+    DrawPlots()
+    if view:
+        View3DAtts = View3DAttributes()
+        View3DAtts.viewNormal = (-0.561705, 0.419207, 0.713269)
+        View3DAtts.focus = (0, 0, 0)
+        View3DAtts.viewUp = (0.238433, 0.907571, -0.345636)
+        View3DAtts.viewAngle = 30
+        View3DAtts.parallelScale = 17.3205
+        View3DAtts.nearPlane = -34.641
+        View3DAtts.farPlane = 34.641
+        View3DAtts.imagePan = (0, 0)
+        View3DAtts.imageZoom = 0.826446
+        View3DAtts.perspective = 1
+        View3DAtts.eyeAngle = 2
+        View3DAtts.centerOfRotationSet = 0
+        View3DAtts.centerOfRotation = (0, 0, 0)
+        View3DAtts.axis3DScaleFlag = 0
+        View3DAtts.axis3DScales = (1, 1, 1)
+        View3DAtts.shear = (0, 0, 1)
+        View3DAtts.windowValid = 1
+        SetView3D(View3DAtts)
+    Test(test_name)
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase(db_name)
+
+TestSection("Blueprint Mixed Topos, 0.9.2")
+mixed_test(mixed_topo_2d, "mesh_topo", "mesh_topo/ele_id", "mesh_pts", "Mixed_topo_simple_2d")
+mixed_test(mixed_topo_2d_polygon, "mesh_topo", "mesh_topo/ele_id", "mesh_pts", "Mixed_topo_polygonal_2d")
+mixed_test(mixed_topo_3d, "mesh_topo", "mesh_topo/ele_id", "mesh_pts", "Mixed_topo_simple_3d")
+mixed_test(mixed_braid_2d, "mixed_2d_mesh", "mixed_2d_mesh/braid", "mixed_2d_mesh", "Mixed_braid_2d")
+mixed_test(mixed_braid_3d, "mixed_mesh", "mixed_mesh/braid", "", "Mixed_braid_3d", True)
 
 Exit()
