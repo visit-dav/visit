@@ -2,22 +2,17 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-set(AVTMFEM_SOURCES
-    avtMFEMDataAdaptor.C
-    )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${VISIT_COMMON_INCLUDES}
-                    ${VTK_INCLUDE_DIRS}
-                    ${MFEM_INCLUDE_DIR}
-                    )
+visit_add_library(
+    NAME       avtmfem
+    SOURCES    avtMFEMDataAdaptor.C
+    HEADERS    avtMFEMDataAdaptor.h
+               avtMFEMLogging.h
+               avtmfem_exports.h
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MFEM>
+    DEPENDS_ON visitcommon
+               VTK::CommonCore
+               VTK::FiltersCore
+               mfem)
 
-# Add link directories
-link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${MFEM_LIBRARY_DIR} )
-
-add_library(avtmfem ${AVTMFEM_SOURCES})
-
-set(vtklibs VTK::CommonCore VTK::FiltersCore)
-target_link_libraries(avtmfem visitcommon ${MFEM_LIB} ${vtklibs})
-
-VISIT_INSTALL_TARGETS(avtmfem)
