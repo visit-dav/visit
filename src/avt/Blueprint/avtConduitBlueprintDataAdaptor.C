@@ -727,11 +727,68 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 }
 
 // ****************************************************************************
+//  Method: HeterogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Constructs a vtkCell array from a Blueprint topology
+//
+//  Arguments:
+//   n_topo:    Blueprint Topology
+//
+//  Programmer: Justin Privitera
+//  Creation:   Tue Jun 18 13:59:05 PDT 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkCellArray *
+HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
+                                         const int ncells)
+{
+    vtkCellArray *cells = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    int_accessor topo_sizes = n_topo["elements/sizes"].value();
+    int_accessor topo_conn = n_topo["elements/connectivity"].value();
+    const int totalsize = [&]() -> int
+    {
+        int running_sum = 0;
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
+        {
+            // We can't go through the shape ids and map them to vtk cell type
+            // sizes because of the polytopal case. This approach is simpler anyhow.
+            running_sum += topo_sizes[cell_id] + 1;
+        }
+        return running_sum;
+    }();
+
+    ida->SetNumberOfTuples(totalsize);
+
+    int comp_index = 0;
+    int topo_conn_index = 0;
+    for (int cell_id = 0; cell_id < ncells; cell_id ++)
+    {
+        const int curr_size = topo_sizes[cell_id];
+        ida->SetComponent(comp_index, 0, curr_size);
+        comp_index ++;
+        for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
+        {
+            ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+            comp_index ++;
+        }
+        topo_conn_index += curr_size;
+    }
+
+    cells->SetCells(ncells, ida);
+    ida->Delete();
+    return cells;
+}
+
+// ****************************************************************************
 //  Method: HomogeneousShapeTopologyToVTKCellArray
 //
 //  Purpose:
-//   (outdated?) Translates the blueprint connectivity array to a VTK 
-//   connectivity array.
 //   Constructs a vtkCell array from a Blueprint topology
 //
 //  Arguments:
@@ -753,6 +810,9 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 // 
 //    Justin Privitera, Thu Jan 18 14:53:32 PST 2024
 //    Added back in logic for unstructured points.
+// 
+//    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+//    Use int_accessor to simplify logic.
 //
 // ****************************************************************************
 
@@ -787,19 +847,7 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
         ida->SetNumberOfTuples(ncells * (csize + 1));
 
-        // Extract connectivity as int array, using 'to_int_array' if needed.
-        int_array topo_conn;
-        Node n_tmp;
-        if(n_topo["elements/connectivity"].dtype().is_int())
-        {
-            topo_conn = n_topo["elements/connectivity"].as_int_array();
-        }
-        else
-        {
-            n_topo["elements/connectivity"].to_int_array(n_tmp);
-            topo_conn = n_tmp.as_int_array();
-        }
-
+        int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
         for (int i = 0 ; i < ncells; i++)
         {
             ida->SetComponent((csize+1)*i, 0, csize);
@@ -1083,6 +1131,364 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 }
 
 // ****************************************************************************
+//  Method: CreatePolytopalMeshFromMixedMesh
+//
+//  Purpose:
+//   Creates a polytopal mesh by filtering out polytopal elements from the 
+//   provided mixed mesh and turning them into a new topology.
+//
+//  Arguments:
+//   n_coords:  Blueprint Coordset
+//   n_topo:    Blueprint Topology
+//   polytopal_mesh: Blueprint topology
+//
+//  Modifications:
+//
+// ****************************************************************************
+int
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh(
+    const Node &n_coords,
+    const Node &n_topo,
+    Node &polytopal_mesh)
+{
+    const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+    polytopal_mesh["coordsets"][n_topo["coordset"].as_string()].set_external(n_coords);
+
+    Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
+    polytopal_topo["coordset"].set(n_topo["coordset"].as_string());
+    polytopal_topo["type"].set(n_topo["type"]); // should be unstructured
+
+    // create elements:
+    polytopal_topo["elements"]["shape"] = (mesh_is_polyhedral ? "polyhedral" : "polygonal");
+
+    int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+    int_accessor n_sizes = n_topo["elements"]["sizes"].value();
+    int_accessor n_offsets = n_topo["elements"]["offsets"].value();
+    int_accessor n_conn = n_topo["elements"]["connectivity"].value();
+
+    // 
+    // calculate the sizes of the data arrays before filling them
+    // 
+    int poly_conn_size, poly_num_elems;
+    poly_conn_size = poly_num_elems = 0;
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYHEDRON)
+            {
+                poly_num_elems ++;
+                poly_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+    else // polygonal case
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYGON)
+            {
+                poly_num_elems ++;
+                poly_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+
+    polytopal_topo["elements"]["connectivity"].set(DataType::int32(poly_conn_size));
+    polytopal_topo["elements"]["sizes"].set(DataType::int32(poly_num_elems));
+    polytopal_topo["elements"]["offsets"].set(DataType::int32(poly_num_elems));
+
+    // 
+    // fill data arrays
+    // 
+
+    int32_array poly_conn = polytopal_topo["elements"]["connectivity"].value();
+    int32_array poly_sizes = polytopal_topo["elements"]["sizes"].value();
+    int32_array poly_offsets = polytopal_topo["elements"]["offsets"].value();
+
+    int poly_conn_index = 0;
+    int poly_zone_index = 0;
+    int new_offset = 0;
+    auto extract_curr_element = [&](const int zoneid)
+    {
+        const int curr_size = n_sizes[zoneid];
+        const int curr_offset = n_offsets[zoneid];
+        for (int faceid = 0; faceid < curr_size; faceid ++)
+        {
+            poly_conn[poly_conn_index] = n_conn[curr_offset + faceid];
+            poly_conn_index ++;
+        }
+        poly_sizes[poly_zone_index] = curr_size;
+        poly_offsets[poly_zone_index] = new_offset;
+        poly_zone_index ++;
+        new_offset += curr_size;
+    };
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYHEDRON)
+            {
+                extract_curr_element(zoneid);
+            }
+        }
+    }
+    else // polygonal case
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] == VTK_POLYGON)
+            {
+                extract_curr_element(zoneid);
+            }
+        }
+    }
+
+    if (mesh_is_polyhedral)
+    {
+        // create subelements: just shallow copy over all the data from the mixed topo
+        // but interpret everything as polygons
+        polytopal_topo["subelements"]["shape"] = "polygonal";
+        polytopal_topo["subelements"]["connectivity"].set_external(n_topo["subelements"]["connectivity"]);
+        polytopal_topo["subelements"]["sizes"].set_external(n_topo["subelements"]["sizes"]);
+        polytopal_topo["subelements"]["offsets"].set_external(n_topo["subelements"]["offsets"]);
+    }
+
+    return poly_num_elems;
+}
+
+// ****************************************************************************
+//  Method: CreateMixedMeshFromSideAndMixedMeshes
+//
+//  Purpose:
+//   Creates a mixed mesh by taking the non-polytopal elements from a given
+//   mixed mesh and adding to them the elements generated by passing the 
+//   polytopal elements through generate_sides.
+//
+//  Arguments:
+//   n_topo:    Blueprint Topology
+//   side_topo:  Blueprint Topology
+//   new_mixed_topo: Blueprint topology
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedMeshes(
+    const Node &n_topo,
+    const Node &side_topo,
+    Node &new_mixed_topo)
+{
+    const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+    int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+    int_accessor n_sizes = n_topo["elements"]["sizes"].value();
+    int_accessor n_offsets = n_topo["elements"]["offsets"].value();
+    int_accessor n_conn = n_topo["elements"]["connectivity"].value();
+
+    new_mixed_topo["coordset"].set(n_topo["coordset"]);
+    new_mixed_topo["type"].set(n_topo["type"]); // should be unstructured
+
+    new_mixed_topo["elements"]["shape"] = "mixed";
+
+    // 
+    // create new shape map
+    // 
+    auto shape_map_itr = n_topo["elements/shape_map"].children();
+    while (shape_map_itr.has_next())
+    {
+        const Node &shape_map_entry = shape_map_itr.next();
+        const std::string shape_name = shape_map_itr.name();
+        const int shape_value = shape_map_entry.as_int();
+
+        if (mesh_is_polyhedral)
+        {
+            if (shape_name != "polyhedral")
+            {
+                new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+            }
+        }
+        else
+        {
+            if (shape_name != "polygonal")
+            {
+                new_mixed_topo["elements/shape_map"][shape_name] = shape_value;
+            }
+        }
+    }
+    if (mesh_is_polyhedral)
+    {
+        if (! new_mixed_topo["elements/shape_map"].has_child("tet"))
+        {
+            new_mixed_topo["elements/shape_map"]["tet"] = VTK_TETRA;
+        }
+    }
+    else
+    {
+        if (! new_mixed_topo["elements/shape_map"].has_child("tri"))
+        {
+            new_mixed_topo["elements/shape_map"]["tri"] = VTK_TRIANGLE;
+        }
+    }
+
+    const int tet_step = 4; // how many points in a tet
+    const int tri_step = 3; // how many points in a tri
+
+    int_accessor sides_conn = side_topo["elements"]["connectivity"].value();
+    const int sides_num_elems = sides_conn.dtype().number_of_elements() / (mesh_is_polyhedral ? tet_step : tri_step);
+
+    // 
+    // calculate the sizes of each of the data arrays
+    // 
+    int new_num_elems, new_conn_size;
+    new_num_elems = new_conn_size = 0;
+
+    // first we look at the elements we are keeping from the original topology
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] != VTK_POLYHEDRON)
+            {
+                new_num_elems ++;
+                new_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+    else
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            if (n_shapes[zoneid] != VTK_POLYGON)
+            {
+                new_num_elems ++;
+                new_conn_size += n_sizes[zoneid];
+            }
+        }
+    }
+
+    // next we look at the elements from our polytopal topology
+    new_num_elems += sides_num_elems;
+    if (mesh_is_polyhedral)
+    {
+        new_conn_size += tet_step * sides_num_elems;
+    }
+    else
+    {
+        new_conn_size += tri_step * sides_num_elems;
+    }
+
+    new_mixed_topo["elements"]["shapes"].set(DataType::int32(new_num_elems));
+    new_mixed_topo["elements"]["sizes"].set(DataType::int32(new_num_elems));
+    new_mixed_topo["elements"]["offsets"].set(DataType::int32(new_num_elems));
+    new_mixed_topo["elements"]["connectivity"].set(DataType::int32(new_conn_size));
+    
+    // 
+    // load up the new topo with old and new shapes
+    // 
+    int32_array new_shapes = new_mixed_topo["elements"]["shapes"].value();
+    int32_array new_sizes = new_mixed_topo["elements"]["sizes"].value();
+    int32_array new_offsets = new_mixed_topo["elements"]["offsets"].value();
+    int32_array new_conn = new_mixed_topo["elements"]["connectivity"].value();
+
+    // first we load the original shapes back in
+    int new_conn_index = 0;
+    int new_zone_index = 0;
+    int new_offset = 0;
+    auto load_orig_shape = [&](const int zoneid, const int curr_shape)
+    {
+        const int curr_size = n_sizes[zoneid];
+        // we need the current offset to help us index into the connectivity array correctly
+        const int curr_offset = n_offsets[zoneid];
+
+        new_shapes[new_zone_index] = curr_shape;
+        new_sizes[new_zone_index] = curr_size;
+        // but we don't want to save the current offset to the new offsets b/c it could be wrong
+        new_offsets[new_zone_index] = new_offset;
+        new_offset += curr_size;
+        new_zone_index ++;
+
+        for (int faceid = 0; faceid < curr_size; faceid ++)
+        {
+            new_conn[new_conn_index] = n_conn[curr_offset + faceid];
+            new_conn_index ++;
+        }
+    };
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            const int curr_shape = n_shapes[zoneid];
+            if (curr_shape != VTK_POLYHEDRON)
+            {
+                load_orig_shape(zoneid, curr_shape);
+            }
+        }
+    }
+    else
+    {
+        for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+        {
+            const int curr_shape = n_shapes[zoneid];
+            if (curr_shape != VTK_POLYGON)
+            {
+                load_orig_shape(zoneid, curr_shape);
+            }
+        }
+    }
+
+    // now we need the new shapes            
+    int last_offset = 0;
+    int last_size = 0;
+    if (new_zone_index > 0) // if we have added at least one element
+    {
+        last_offset = new_offsets[new_zone_index - 1];
+        last_size = new_sizes[new_zone_index - 1];
+    }
+
+    if (mesh_is_polyhedral)
+    {
+        for (int zoneid = 0; zoneid < sides_num_elems; zoneid ++)
+        {
+            new_shapes[new_zone_index] = VTK_TETRA;
+            new_sizes[new_zone_index] = tet_step;
+
+            last_offset += last_size;
+            new_offsets[new_zone_index] = last_offset;
+            last_size = tet_step;
+
+            new_zone_index ++;
+
+            new_conn[new_conn_index]     = sides_conn[zoneid * tet_step];
+            new_conn[new_conn_index + 1] = sides_conn[zoneid * tet_step + 1];
+            new_conn[new_conn_index + 2] = sides_conn[zoneid * tet_step + 2];
+            new_conn[new_conn_index + 3] = sides_conn[zoneid * tet_step + 3];
+            new_conn_index += tet_step;
+        }
+    }
+    else
+    {
+        for (int zoneid = 0; zoneid < sides_num_elems; zoneid ++)
+        {
+            new_shapes[new_zone_index] = VTK_TRIANGLE;
+            new_sizes[new_zone_index] = tri_step;
+
+            last_offset += last_size;
+            new_offsets[new_zone_index] = last_offset;
+            last_size = tri_step;
+
+            new_zone_index ++;
+
+            new_conn[new_conn_index]    = sides_conn[zoneid * tri_step];
+            new_conn[new_conn_index + 1] = sides_conn[zoneid * tri_step + 1];
+            new_conn[new_conn_index + 2] = sides_conn[zoneid * tri_step + 2];
+            new_conn_index += tri_step;
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method: UnstructuredTopologyToVTKUnstructuredGrid
 //
 //  Purpose:
@@ -1116,6 +1522,9 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+//    Handle mixed element topologies.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -1144,22 +1553,153 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 s2dmap,
                 d2smap);
 
-            unsigned_int_accessor values = d2smap["values"].value();
+            unsigned_int_accessor d2s_values = d2smap["values"].value();
 
             oca = vtkUnsignedIntArray::New();
             oca->SetName("avtOriginalCellNumbers");
             oca->SetNumberOfComponents(2);
 
-            for (int i = 0; i < values.number_of_elements(); i ++)
+            for (int i = 0; i < d2s_values.number_of_elements(); i ++)
             {
                 unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(values[i])};
+                                          static_cast<unsigned int>(d2s_values[i])};
                 oca->InsertNextTypedTuple(ocdata);
             }
 
             coords_ptr = res.fetch_ptr(
                 "coordsets/" + n_topo["coordset"].as_string());
             topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+        }
+        // polytopal mixed case
+        else if (n_topo["elements/shape"].as_string() == "mixed" &&
+                 (n_topo.has_child("subelements") || 
+                  n_topo.has_path("elements/shape_map/polygonal")))
+        {
+            // either we are making a polyhedral mesh or a polygonal mesh
+            const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+            if (mesh_is_polyhedral && n_topo.has_path("elements/shape_map/polygonal"))
+            {
+                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                          "The mixed polygonal and polyhedral mesh "
+                                          "case is currently unsupported.");
+            }
+
+            // 
+            // step 1: threshold out the polytopal elements, placing 
+            // them in their own topology
+            // 
+            Node &polytopal_mesh = res["mixed_transformation/polytopal_mesh"];
+
+            avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh(
+                n_coords, 
+                n_topo,
+                polytopal_mesh);
+
+            // we will need the polytopal topo for later
+            const Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
+
+            // 
+            // step 2: run the polytopal mesh through generate_sides
+            // 
+            Node &side_mesh = res["mixed_transformation/side_mesh"];
+            Node &side_topo = side_mesh[n_topo.name()];
+            Node &side_coords = side_mesh[n_topo["coordset"].as_string()];
+            Node &s2dmap = side_mesh["mixed_transformation/maps/s2dmap"];
+            Node &d2smap = side_mesh["mixed_transformation/maps/d2smap"];
+            blueprint::mesh::topology::unstructured::generate_sides(
+                polytopal_topo,
+                side_topo,
+                side_coords,
+                s2dmap,
+                d2smap);
+
+            // 
+            // step 3: stitch the topology back together to create a 
+            // brand new mixed topology
+            // 
+
+            Node &new_mixed_topo = res["mixed_transformation/new_mixed_topo"];
+
+            if (mesh_is_polyhedral)
+            {
+                if (side_topo["elements/shape"].as_string() != "tet")
+                {
+                    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                              "Generated elements for mixed polyhedral "
+                                              "topology must be tetrahedrons.");
+                }
+            }
+            else
+            {
+                if (side_topo["elements/shape"].as_string() != "tri")
+                {
+                    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                              "Generated elements for mixed polygonal "
+                                              "topology must be triangles.");
+                }
+            }
+
+            avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedMeshes(
+                n_topo,
+                side_topo,
+                new_mixed_topo);
+
+            // 
+            // step 4: create original cell numbers array using data
+            // from generate_sides
+            // 
+            unsigned_int_accessor d2s_values = d2smap["values"].value();
+
+            oca = vtkUnsignedIntArray::New();
+            oca->SetName("avtOriginalCellNumbers");
+            oca->SetNumberOfComponents(2);
+
+            int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+
+            // iterate through original shapes first
+            int orig_cell_id = 0;
+            if (mesh_is_polyhedral)
+            {
+                for (int i = 0; i < n_shapes.number_of_elements(); i ++)
+                {
+                    if (n_shapes[i] != VTK_POLYHEDRON)
+                    {
+                        unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
+                                                  static_cast<unsigned int>(orig_cell_id)};
+                        oca->InsertNextTypedTuple(ocdata);                    
+                        orig_cell_id ++;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < n_shapes.number_of_elements(); i ++)
+                {
+                    if (n_shapes[i] != VTK_POLYGON)
+                    {
+                        unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
+                                                  static_cast<unsigned int>(orig_cell_id)};
+                        oca->InsertNextTypedTuple(ocdata);                    
+                        orig_cell_id ++;
+                    }
+                }
+            }
+
+            // the new cells we have added at the end will start with this number
+            const int cell_nums_start = orig_cell_id;
+            for (int i = 0; i < d2s_values.number_of_elements(); i ++)
+            {
+                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                          static_cast<unsigned int>(cell_nums_start + d2s_values[i])};
+                oca->InsertNextTypedTuple(ocdata);
+            }
+
+            // 
+            // step 5: update the reference to the coordset and topology to
+            // point to the new ones we created
+            // 
+            coords_ptr = res.fetch_ptr("mixed_transformation/side_mesh/" + n_topo["coordset"].as_string());
+            topo_ptr = res.fetch_ptr("mixed_transformation/new_mixed_topo");
         }
     }
 
@@ -1175,14 +1715,40 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
         oca->Delete();
     }
-    
-    //
-    // Now, add explicit topology
-    //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
-    points->Delete();
-    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
-    ca->Delete();
+
+    // mixed topo case
+    if (topo_ptr->has_path("elements/shape") &&
+        topo_ptr->fetch("elements/shape").as_string() == "mixed")
+    {
+
+        const int ncells = topo_ptr->fetch("elements/shapes").dtype().number_of_elements();
+        
+        vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+        cellTypes->SetNumberOfValues(ncells);
+        unsigned char *cell_types_ptr = cellTypes->GetPointer(0);
+
+        int_accessor shapes_accessor = topo_ptr->fetch("elements/shapes").value();
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
+        {
+            *cell_types_ptr++ = shapes_accessor[cell_id];
+        }
+
+        vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
+        ugrid->SetCells(cellTypes, cells);
+        cells->Delete();
+        points->Delete();
+        cellTypes->Delete();
+    }
+    else
+    {
+        //
+        // Now, add explicit topology
+        //
+        vtkCellArray *cells = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+        points->Delete();
+        ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), cells);
+        cells->Delete();
+    }
 
     return ugrid;
 }
@@ -1619,81 +2185,151 @@ void vtkPointsToNode(Node &node, vtkPoints *points, const int dims)
 }
 
 // ****************************************************************************
-void vtkUnstructuredToNode(Node &node, 
+void vtkUnstructuredToNode(Node &n_elements, 
                            vtkUnstructuredGrid *grid, 
                            const int dims)
 {
-  const int npts = grid->GetNumberOfPoints();
-  const int nzones = grid->GetNumberOfCells();
+    const int npts = grid->GetNumberOfPoints();
+    const int nzones = grid->GetNumberOfCells();
 
-  if(nzones == 0)
-  {
-    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Unstructured grids must have at least one "
-                              "zone");
-  }
-
-  bool single_shape = true;
-  int cell_type = grid->GetCell(0)->GetCellType();
-  for(int i = 1; i < nzones; ++i)
-  {
-    vtkCell *cell = grid->GetCell(i);
-    if(cell->GetCellType() != cell_type)
+    if(nzones == 0)
     {
-      single_shape = false;
-      break;
-    }
-  }
-
-  if(!single_shape)
-  {
-    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Only unstructured grids with a single cell type"
-                              " are currently supported");
-  }
-
-  const std::string shape_name = VTKCellTypeToElementShapeName(cell_type);
-  if(shape_name == "")
-  {
-    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Unsupported vtk cell type "<<cell_type);
-  }
-
-  node["shape"] = shape_name;
-
-  const int cell_points = grid->GetCell(0)->GetNumberOfPoints();
-  node["connectivity"].set(DataType::int32(cell_points * nzones));
-  conduit::int32 *conn = node["connectivity"].value();
-  // vtk connectivity is in the form npts, p0, p1,..
-  // and we need p0, p1, .. so just iterate and copy
-  if(cell_type != VTK_VOXEL)
-  {
-    for(int i = 0; i < nzones; ++i)
-    {
-      vtkCell *cell = grid->GetCell(i);
-      const int offset = i * cell_points;
-      for(int c = 0; c < cell_points; ++c)
-      {
-        conn[offset + c]  = cell->GetPointId(c);
-      }
-    }
-  }
-  else
-  {
-    // We need to reorder the voxel indices to be a hex
-    int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    for(int i = 0; i < nzones; ++i)
-    {
-      vtkCell *cell = grid->GetCell(i);
-      const int offset = i * cell_points;
-      for(int c = 0; c < cell_points; ++c)
-      {
-        int index = reorder[c];
-        conn[offset + index]  = cell->GetPointId(c);
-      }
+        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                  "Unstructured grids must have at least one "
+                                  "zone");
     }
 
-  }
+    const int first_cell_type = grid->GetCell(0)->GetCellType();
+    const bool single_shape = [&]() -> bool
+    {
+        bool single_shape = true;
+        for (int i = 1; i < nzones; i ++)
+        {
+            vtkCell *cell = grid->GetCell(i);
+            if(cell->GetCellType() != first_cell_type)
+            {
+                single_shape = false;
+                break;
+            }
+        }
+        return single_shape;
+    }();
+
+    if (single_shape)
+    {
+        const std::string shape_name = VTKCellTypeToElementShapeName(first_cell_type);
+        if (shape_name == "")
+        {
+            AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                      "Unsupported vtk cell type " << first_cell_type);
+        }
+
+        n_elements["shape"] = shape_name;
+
+        const int cell_points = grid->GetCell(0)->GetNumberOfPoints();
+        n_elements["connectivity"].set(DataType::int32(cell_points * nzones));
+        int32_array connectivity = n_elements["connectivity"].value();
+        // vtk connectivity is in the form npts, p0, p1,..
+        // and we need p0, p1, .. so just iterate and copy
+        if (first_cell_type != VTK_VOXEL)
+        {
+            for (int zoneid = 0; zoneid < nzones; zoneid ++)
+            {
+                vtkCell *cell = grid->GetCell(zoneid);
+                const int offset = zoneid * cell_points;
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
+                {
+                    connectivity[offset + cell_pt] = cell->GetPointId(cell_pt);
+                }
+            }
+        }
+        else
+        {
+            // We need to reorder the voxel indices to be a hex
+            const int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+            for (int zoneid = 0; zoneid < nzones; zoneid ++)
+            {
+                vtkCell *cell = grid->GetCell(zoneid);
+                const int offset = zoneid * cell_points;
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
+                {
+                    const int index = reorder[cell_pt];
+                    connectivity[offset + index] = cell->GetPointId(cell_pt);
+                }
+            }
+        }
+    }
+    else
+    {
+        // 
+        // mixed topo case
+        // 
+        n_elements["shape"] = "mixed";
+
+        std::set<int> unique_shapes;
+        
+        n_elements["shapes"].set(DataType::int32(nzones));
+        int32_array shapes = n_elements["shapes"].value();
+        n_elements["sizes"].set(DataType::int32(nzones));
+        int32_array sizes = n_elements["sizes"].value();
+        n_elements["offsets"].set(DataType::int32(nzones));
+        int32_array offsets = n_elements["offsets"].value();
+
+        int running_sum = 0;
+        for (int zoneid = 0; zoneid < nzones; zoneid ++)
+        {
+            vtkCell *cell = grid->GetCell(zoneid);
+            const int cell_type = cell->GetCellType();
+            const int cell_points = cell->GetNumberOfPoints();
+            unique_shapes.insert(cell_type);
+            shapes[zoneid] = cell_type;
+            sizes[zoneid] = cell_points;
+            offsets[zoneid] = running_sum;
+            running_sum += cell_points;
+        }
+
+        // 
+        // populate connectivity
+        // 
+        n_elements["connectivity"].set(DataType::int32(running_sum));
+        int32_array connectivity = n_elements["connectivity"].value();
+
+        int conn_offset = 0;
+        for (int zoneid = 0; zoneid < nzones; zoneid ++)
+        {
+            vtkCell *cell = grid->GetCell(zoneid);
+            const int cell_type = cell->GetCellType();
+            const int cell_points = cell->GetNumberOfPoints();
+
+            if (cell_type != VTK_VOXEL)
+            {
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
+                {
+                    connectivity[conn_offset + cell_pt] = cell->GetPointId(cell_pt);
+                }
+            }
+            else
+            {
+                // We need to reorder the voxel indices to be a hex
+                const int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+                for (int cell_pt = 0; cell_pt < cell_points; cell_pt ++)
+                {
+                    const int index = reorder[cell_pt];
+                    connectivity[conn_offset + index] = cell->GetPointId(cell_pt);
+                }
+            }
+            conn_offset += cell_points;
+        }
+        
+        // 
+        // create shape map
+        // 
+        for (const int& vtk_cell_type : unique_shapes)
+        {
+            const std::string shape_name = VTKCellTypeToElementShapeName(vtk_cell_type);
+            n_elements["shape_map"][shape_name] = vtk_cell_type;
+        }
+    }
 }
 
 
@@ -1906,7 +2542,9 @@ void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldsToBlueprint(
 //
 //    Cyrus Harrison, Tue Dec  6 10:31:54 PST 2022
 //    Add support to convert VTK Poly Data
-
+// 
+//    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+//    Handle mixed unstructured meshes.
 // ****************************************************************************
 void
 avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(
