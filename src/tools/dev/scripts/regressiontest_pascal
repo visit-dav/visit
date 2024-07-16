@@ -297,6 +297,9 @@ fi
 
 cd $testDir/$workingDir
 
+# clean up from previous runs
+rm -rf build
+rm -f  buildlog
 
 # Clone the repository if necessary.
 if test ! -e $repoDir; then
@@ -380,9 +383,6 @@ fi
 
 cd $testDir/$workingDir
 
-# clean up from previous runs
-rm -rf build
-rm -f buildlog
 
 # Build the code
 mkdir build
