@@ -547,7 +547,7 @@ perspective_str: \"parallel\""""
     info = conduit.Node()
     diffval = xray_view.diff(xray_view_base, info)
     diff_str = info.to_yaml() if diffval else ""
-    TestValueEQ(testname + "_xray_view", diff_str, "");
+    TestValueEQ(testname + "_xray_view", diff_str, "")
 
 UNITS_OFF = 0
 UNITS_ON = 1
