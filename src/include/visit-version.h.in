@@ -1,0 +1,62 @@
+/* VisIt version as string */
+#cmakedefine VISIT_VERSION "@VISIT_VERSION@"
+
+/*
+                 Compile time VisIt version number support
+
+VISIT_VERSION is a string. It does not support == or >< comparisons
+at compile time. The macros below do. They work by carefully constructing
+a hexidecimal integer from the major, minor and patch fields of the version
+number taking care that the patch field can include a single trailing letter
+for (a)lpha, (b)eta or any valid characters in a hexidecimal digit.
+
+This hex integer is used internally to define a greater-than-or-equal macro
+for testing VisIt version numbers like so...
+
+#if VISIT_VERSION_GE(3,0,0b)
+    code for versions of VisIt the same or newer than 3.0.0b
+#endif
+
+The two-level of indirection in the macros, V_V_HEX -> _V_V_HEX -> __V_V_HEX
+is necessary to ensure the correct substitutions occur for the CPP token
+pasting involved.
+
+Finally, there are some compile-time spot checks on the resulting version number
+logic here to cause compilation failure if this logic seems to be failing.
+*/
+
+/* VisIt version as broken out integer values. */
+/* Don't use #cmakedefine because 0 values will get undef'd */
+#define VISIT_VERSION_MAJOR @VISIT_VERSION_MAJOR@
+#define VISIT_VERSION_MINOR @VISIT_VERSION_MINOR@
+#define VISIT_VERSION_PATCH @VISIT_VERSION_PATCH@
+
+#define __VISIT_VERSION_HEX(A,B,C) (((A)<<24)|((B)<<16)|(((C)<=0x9)*(((C)<<8)|0xF))|(((C)>0x9)*((((C)&0xF0)<<4)|(C)&0x0F)))
+#define _VISIT_VERSION_HEX(A,B,C) __VISIT_VERSION_HEX(A,B,(0x##C))
+#define VISIT_VERSION_HEX(A,B,C) _VISIT_VERSION_HEX(A,B,C)
+
+/* GE version macro defined in terms of the HEX version number */
+#define VISIT_VERSION_GE(A,B,C) (VISIT_VERSION_HEX(VISIT_VERSION_MAJOR,VISIT_VERSION_MINOR,VISIT_VERSION_PATCH)>=VISIT_VERSION_HEX(A,B,C))
+
+/* Spot checks for VISIT_VERSION_HEX Utility */
+#if VISIT_VERSION_HEX(2,13,3) < VISIT_VERSION_HEX(2,13,3a)
+#error Problem with VISIT_VERSION_HEX() macro function
+#endif
+#if VISIT_VERSION_HEX(3,0,0b) < VISIT_VERSION_HEX(3,0,0a)
+#error Problem with VISIT_VERSION_HEX() macro function
+#endif
+#if VISIT_VERSION_HEX(3,0,0) < VISIT_VERSION_HEX(2,13,3)
+#error Problem with VISIT_VERSION_HEX() macro function
+#endif
+#if VISIT_VERSION_HEX(3,0,0) < VISIT_VERSION_HEX(3,0,0b)
+#error Problem with VISIT_VERSION_HEX() macro function
+#endif
+#if VISIT_VERSION_HEX(3,0,1) < VISIT_VERSION_HEX(3,0,0b)
+#error Problem with VISIT_VERSION_HEX() macro function
+#endif
+#if VISIT_VERSION_GE(99,3,2)
+#error Problem with VISIT_VERSION_GE() macro
+#endif
+#if !VISIT_VERSION_GE(3,4,1)
+#error Problem with VISIT_VERSION_GE() macro
+#endif
