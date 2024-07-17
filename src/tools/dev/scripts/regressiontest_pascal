@@ -163,6 +163,7 @@
 #   when updating. Don't 'lfs pull' in test and data dir, since it is already
 #   performed at the repo root. Perform the build completely outside the repo
 #   dir. Have make.out, make.err and installlog be local to the build dir.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -466,12 +467,12 @@ echo "Starting install:\`date\`"
 # Install the package
 version=\`cat $repoDir/src/VERSION\`
 
-$repoDir/src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./installlog 2>&1
+$repoDir/src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./install_log 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
 fi
-cat ./install.log >> ../buildlog
+cat ./install_log >> ../buildlog
 
 echo "Install completed at: \`date\`"
 
