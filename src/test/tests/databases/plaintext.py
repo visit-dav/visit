@@ -117,7 +117,7 @@ def TestCSVCurves():
     CreateCurvesDataFile("curves.csv")
 
     # Curve plot {
-    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions = GetDefaultFileOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
@@ -138,7 +138,7 @@ def TestCSVCurvesNoX():
     CreateCurvesDataFileWithNoXCoordinates("curves_nox.csv")
 
     # Curve noX plot {
-    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions = GetDefaultFileOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
 
