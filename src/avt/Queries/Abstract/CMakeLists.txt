@@ -7,22 +7,29 @@
 #
 #****************************************************************************
 
-set(ABSTRACT_SOURCES
-    avtCurveComparisonQuery.C
-    avtCurveQuery.C
-    avtDataObjectQuery.C
-    avtDatasetQuery.C
-    avtGeneralQuery.C
-    avtMultipleInputQuery.C
-    avtTwoPassDatasetQuery.C)
+visit_append_list(
+    NAME  avtquery_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveComparisonQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDataObjectQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDatasetQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGeneralQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTwoPassDatasetQuery.C)
 
-target_sources(avtquery_ser PRIVATE ${ABSTRACT_SOURCES})
-target_include_directories(avtquery_ser PUBLIC .)
+visit_append_list(
+    NAME  avtquery_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveComparisonQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDataObjectQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDatasetQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGeneralQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTwoPassDatasetQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/query_exports.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtquery_par PRIVATE ${ABSTRACT_SOURCES})
-    target_include_directories(avtquery_par PUBLIC .)
-endif()
-
-unset(ABSTRACT_SOURCES)
+visit_append_list(
+    NAME  avtquery_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Queries/Abstract>)
 

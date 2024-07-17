@@ -13,90 +13,145 @@
 #
 #****************************************************************************
 
-SET(AVTIVP_SOURCES
-avtCellLocator.C
-avtCellLocatorClassic.C
-avtCellLocatorBIH.C
-avtCellLocatorRect.C
-avtCellLocatorRectFace.C
-avtCellLocatorRectEdge.C
-avtIntegralCurve.C
-avtIVPAdamsBashforth.C
-avtIVPDopri5.C
-avtIVPEuler.C
-avtIVPRK4.C
-avtIVPLeapfrog.C
-avtIVPSolver.C
-avtIVPM3DC1Field.C
-avtIVPM3DC1Integrator.C
-avtIVPNek5000Field.C
-avtIVPNek5000TimeVaryingField.C
-avtIVPFlashField.C
-avtIVPVTKField.C
-avtIVPVTKOffsetField.C
-avtIVPVTKFaceField.C
-avtIVPVTKEdgeField.C
-avtIVPVTKTimeVaryingField.C
-avtLCSIC.C
-avtPoincareIC.C
-avtStateRecorderIntegralCurve.C
-avtIntegralCurveIC.C
-MemStream.C
-avtICAlgorithm.C
-avtParICAlgorithm.C
-avtPICSFilter.C
-avtPODICAlgorithm.C
-avtSerialICAlgorithm.C
-)
+set(avtivp_SOURCES
+    avtCellLocator.C
+    avtCellLocatorBIH.C
+    avtCellLocatorClassic.C
+    avtCellLocatorRect.C
+    avtCellLocatorRectEdge.C
+    avtCellLocatorRectFace.C
+    avtICAlgorithm.C
+    avtIntegralCurve.C
+    avtIntegralCurveIC.C
+    avtIVPAdamsBashforth.C
+    avtIVPDopri5.C
+    avtIVPEuler.C
+    avtIVPFlashField.C
+    avtIVPLeapfrog.C
+    avtIVPM3DC1Field.C
+    avtIVPM3DC1Integrator.C
+    avtIVPNek5000Field.C
+    avtIVPNek5000TimeVaryingField.C
+    avtIVPRK4.C
+    avtIVPSolver.C
+    avtIVPVTKEdgeField.C
+    avtIVPVTKFaceField.C
+    avtIVPVTKField.C
+    avtIVPVTKOffsetField.C
+    avtIVPVTKTimeVaryingField.C
+    avtLCSIC.C
+    avtParICAlgorithm.C
+    avtPICSFilter.C
+    avtPODICAlgorithm.C
+    avtPoincareIC.C
+    avtSerialICAlgorithm.C
+    avtStateRecorderIntegralCurve.C
+    MemStream.C)
 
-IF( NEKTAR++_FOUND )
-    SET( AVTIVP_SOURCES ${AVTIVP_SOURCES}
+set(avtivp_HEADERS
+    avtCellLocator.h
+    avtCellLocatorBIH.h
+    avtCellLocatorClassic.h
+    avtCellLocatorRect.h
+    avtCellLocatorRectEdge.h
+    avtCellLocatorRectFace.h
+    avtICAlgorithm.h
+    avtIntegralCurve.h
+    avtIntegralCurveIC.h
+    avtIVPAdamsBashforth.h
+    avtIVPDopri5.h
+    avtIVPEuler.h
+    avtIVPField.h
+    avtIVPFlashField.h
+    avtIVPLeapfrog.h
+    avtIVPM3DC1Field.h
+    avtIVPM3DC1Integrator.h
+    avtIVPNek5000Field.h
+    avtIVPNek5000TimeVaryingField.h
+    avtIVPRK4.h
+    avtIVPSolver.h
+    avtIVPStateHelper.h
+    avtIVPTimeVaryingField.h
+    avtIVPVTKEdgeField.h
+    avtIVPVTKFaceField.h
+    avtIVPVTKField.h
+    avtIVPVTKOffsetField.h
+    avtIVPVTKTimeVaryingField.h
+    avtLCSIC.h
+    avtParICAlgorithm.h
+    avtPICSFilter.h
+    avtPODICAlgorithm.h
+    avtPoincareIC.h
+    avtSerialICAlgorithm.h
+    avtStateRecorderIntegralCurve.h
+    ivp_exports.h
+    MemStream.h)
+
+set(avtivp_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/IVP>
+    ${ACCELERATE_FRAMEWORK_INCLUDE_DIR})
+
+set(avtivp_DEPENDS
+    visitcommon
+    avtdbatts
+    avtmath
+    avtview
+    lightweight_visit_vtk
+    visit_vtk
+    VTK::CommonCore
+    VTK::FiltersCore
+    nek5000_interp)
+
+if(NEKTAR++_FOUND)
+    list(APPEND avtivp_SOURCES
         avtIVPNektar++Field.C
-        avtIVPNektar++TimeVaryingField.C )
+        avtIVPNektar++TimeVaryingField.C)
+    list(APPEND avtivp_HEADERS
+        avtIVPNektar++Field.h
+        avtIVPNektar++TimeVaryingField.h)
+    set(avtivp_DEFINES
+        NEKTAR_MEMORY_POOL_ENABLED
+        NEKTAR_USING_LAPACK
+        NEKTAR_USING_BLAS)
+    foreach(inc ${NEKTAR++_INCLUDE_DIRS})
+        list(APPEND avtivp_INCLUDES
+            $<BUILD_INTERFACE:${inc}>)
+    endforeach()
+    foreach(inc ${NEKTAR++_TP_INCLUDE_DIRS})
+        list(APPEND avtivp_INCLUDES
+            $<BUILD_INTERFACE:${inc}>)
+    endforeach()
 
-    ADD_DEFINITIONS("-DNEKTAR_MEMORY_POOL_ENABLED")
-    ADD_DEFINITIONS("-DNEKTAR_USING_LAPACK")
-    ADD_DEFINITIONS("-DNEKTAR_USING_BLAS")
-ENDIF( NEKTAR++_FOUND )
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Filters
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/third_party_builtin/nek5000/jl
-${VTK_INCLUDE_DIRS}
-${NEKTAR++_INCLUDE_DIR}
-${NEKTAR++_INCLUDE_DIRS}
-${NEKTAR++_TP_INCLUDE_DIRS}
-${ACCELERATE_FRAMEWORK_INCLUDE_DIR}
-)
-
-set(vtklibs VTK::CommonCore VTK::FiltersCore)
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS})
+    list(APPEND avtivp_DEPENDS
+        ${NEKTAR++_LIBRARIES}
+        ${NEKTAR++_TP_LIBRARIES})
+endif()
 
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtivp_ser ${AVTIVP_SOURCES})
-TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon ${vtklibs} nek5000_interp ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
-VISIT_INSTALL_TARGETS(avtivp_ser)
+visit_add_library(
+    NAME       avtivp_ser
+    SOURCES    ${avtivp_SOURCES}
+    HEADERS    ${avtivp_HEADERS}
+    DEFINES    ${avtivp_DEFINES}
+    INCLUDES   ${avtivp_INCLUDES}
+    DEPENDS_ON ${avtivp_DEPENDS}
+               avtdatabase_ser
+               avtfilters_ser
+               avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtivp_par ${AVTIVP_SOURCES})
-    TARGET_LINK_LIBRARIES(avtivp_par avtfilters_par lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts visitcommon ${vtklibs} nek5000_interp ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
-    VISIT_INSTALL_TARGETS(avtivp_par)
-ENDIF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
+    visit_add_parallel_library(
+        NAME       avtivp_par
+        SOURCES    ${avtivp_SOURCES}
+        HEADERS    ${avtivp_HEADERS}
+        DEFINES    ${avtivp_DEFINES}
+        INCLUDES   ${avtivp_INCLUDES}
+        DEPENDS_ON ${avtivp_DEPENDS}
+                   avtdatabase_par
+                   avtfilters_par
+                   avtpipeline_par)
+endif()
+

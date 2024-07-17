@@ -7,27 +7,38 @@
 #
 #****************************************************************************
 
-set(PICK_SOURCES
-    avtActualCoordsQuery.C
-    avtActualNodeCoordsQuery.C
-    avtActualZoneCoordsQuery.C
-    avtCurvePickQuery.C
-    avtLocateCellQuery.C
-    avtLocateNodeQuery.C
-    avtLocateQuery.C
-    avtNodePickQuery.C
-    avtPickByNodeQuery.C
-    avtPickByZoneQuery.C
-    avtPickQuery.C
-    avtZonePickQuery.C)
+visit_append_list(
+    NAME  avtquery_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtActualCoordsQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtActualNodeCoordsQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtActualZoneCoordsQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurvePickQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocateCellQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocateNodeQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocateQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtNodePickQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickByNodeQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickByZoneQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickQuery.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtZonePickQuery.C)
 
-target_sources(avtquery_ser PRIVATE ${PICK_SOURCES})
-target_include_directories(avtquery_ser PUBLIC .)
+visit_append_list(
+    NAME  avtquery_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtActualCoordsQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtActualNodeCoordsQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtActualZoneCoordsQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurvePickQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocateCellQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocateNodeQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocateQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtNodePickQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickByNodeQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickByZoneQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtPickQuery.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtZonePickQuery.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtquery_par PRIVATE ${PICK_SOURCES})
-    target_include_directories(avtquery_par PUBLIC .)
-endif()
-
-unset(PICK_SOURCES)
+visit_append_list(
+    NAME  avtquery_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Queries/Pick>)
 

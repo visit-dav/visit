@@ -12,8 +12,8 @@
     macro             sint/uint type
     
     (default)         int
-    USE_LONG          long
-    USE_LONG_LONG     long long
+    NEK_USE_LONG      long
+    NEK_USE_LONG_LONG long long
     
   The slong/ulong type is used in relatively few places
   for global identifiers and indices. It can be one of
@@ -28,7 +28,7 @@
   used unless explicitly asked for.
 */
 
-#if defined(USE_LONG_LONG) || defined(GLOBAL_LONG_LONG)
+#if defined(NEK_USE_LONG_LONG) || defined(GLOBAL_LONG_LONG)
 typedef long long long_long;
 #  define WHEN_LONG_LONG(x) x
 #  if !defined(LLONG_MAX)
@@ -49,11 +49,11 @@ typedef long long long_long;
 #  define WHEN_LONG_LONG(x)
 #endif
 
-#if !defined(USE_LONG) && !defined(USE_LONG_LONG)
+#if !defined(NEK_USE_LONG) && !defined(NEK_USE_LONG_LONG)
 #  define TYPE_LOCAL(i,l,ll) i
-#elif defined(USE_LONG)
+#elif defined(NEK_USE_LONG)
 #  define TYPE_LOCAL(i,l,ll) l
-#elif defined(USE_LONG_LONG)
+#elif defined(NEK_USE_LONG_LONG)
 #  define TYPE_LOCAL(i,l,ll) ll
 #endif
 

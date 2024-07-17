@@ -40,100 +40,65 @@
 #
 #****************************************************************************
 
-add_library(avtquery_ser)
-
-if(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtquery_par)
-endif()
-
 add_subdirectory(Abstract)
 add_subdirectory(Misc)
 add_subdirectory(Pick)
 add_subdirectory(Queries)
 
-include_directories(
-    ${VISIT_COMMON_INCLUDES}
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/Database/Database
-    ${VISIT_SOURCE_DIR}/avt/Expressions/Abstract
-    ${VISIT_SOURCE_DIR}/avt/Expressions/CMFE
-    ${VISIT_SOURCE_DIR}/avt/Expressions/Conditional
-    ${VISIT_SOURCE_DIR}/avt/Expressions/Derivations
-    ${VISIT_SOURCE_DIR}/avt/Expressions/General
-    ${VISIT_SOURCE_DIR}/avt/Expressions/ImageProcessing
-    ${VISIT_SOURCE_DIR}/avt/Expressions/Management
-    ${VISIT_SOURCE_DIR}/avt/Expressions/Math
-    ${VISIT_SOURCE_DIR}/avt/Expressions/MeshQuality
-    ${VISIT_SOURCE_DIR}/avt/Filters
-    ${VISIT_SOURCE_DIR}/avt/MIR/Base
-    ${VISIT_SOURCE_DIR}/avt/MIR/Tet
-    ${VISIT_SOURCE_DIR}/avt/MIR/Zoo
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-    ${VISIT_SOURCE_DIR}/avt/Shapelets
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${VTK_INCLUDE_DIRS})
-
-if(VISIT_PYTHON_FILTERS)
-    include_directories(
-        ${PYTHON_INCLUDE_PATH}
-        ${VISIT_SOURCE_DIR}/avt/PythonFilters
-        ${VISIT_SOURCE_DIR}/visitpy/common/)
-endif()
+set(avtquery_ser_DEPENDS visitcommon avtmath avtshapelets visit_vtk)
 
 if(CONDUIT_FOUND)
     # we will use conduit in queries
-    include_directories(${CONDUIT_INCLUDE_DIR})
+    list(APPEND avtquery_ser_DEPENDS conduit)
 endif()
 
-
-#********************************* SERIAL ************************************
-target_link_libraries(avtquery_ser visitcommon avtmath avtshapelets
-    avtexpressions_ser avtfilters_ser visit_vtk)
 
 if(NOT WIN32 AND NOT APPLE)
     find_library(LIBRT rt)
-    target_link_libraries(avtquery_ser ${LIBRT})
+    list(APPEND avtquery_ser_DEPENDS ${LIBRT})
 endif()
 
 if(VISIT_PYTHON_FILTERS)
-    target_link_libraries(avtquery_ser avtpythonfilters_ser)
+    visit_append_list(
+        NAME avtquery_ser_INCLUDES
+        ITEMS $<BUILD_INTERFACE:>${PYTHON_INCLUDE_PATH})
 endif()
 
-# optionally link conduit
-if(CONDUIT_FOUND)
-    target_link_directories(avtquery_ser PRIVATE ${CONDUIT_LIBRARY_DIR})
-    target_link_libraries(avtquery_ser ${CONDUIT_LIB})
-endif()
 
-VISIT_INSTALL_TARGETS(avtquery_ser)
+set(avtquery_par_SOURCES  ${avtquery_ser_SOURCES})
+set(avtquery_par_HEADERS  ${avtquery_ser_HEADERS})
+set(avtquery_par_INCLUDES ${avtquery_ser_INCLUDES})
+set(avtquery_par_DEPENDS  ${avtquery_ser_DEPENDS})
 
-#********************************* PARALLEL **********************************
+visit_add_library(
+    NAME       avtquery_ser
+    SOURCES    ${avtquery_ser_SOURCES}
+    HEADERS    ${avtquery_ser_HEADERS}
+    INCLUDES   ${avtquery_ser_INCLUDES}
+    DEPENDS_ON ${avtquery_ser_DEPENDS}
+               avtexpressions_ser
+               avtfilters_ser)
+
+
 if(VISIT_PARALLEL)
-    target_link_libraries(avtquery_par visitcommon avtmath avtshapelets
-        avtexpressions_par avtfilters_par visit_vtk)
-
-    if(NOT WIN32 AND NOT APPLE)
-        target_link_libraries(avtquery_par ${LIBRT})
-    endif()
-
-    if(VISIT_PYTHON_FILTERS)
-        target_link_libraries(avtquery_par avtpythonfilters_par)
-    endif()
-
-    # optionally link conduit
-    if(CONDUIT_FOUND)
-        target_link_directories(avtquery_par PRIVATE ${CONDUIT_LIBRARY_DIR})
-        target_link_libraries(avtquery_par ${CONDUIT_LIB} ${CONDUIT_MPI_LIB})
-    endif()
-
-    VISIT_INSTALL_TARGETS(avtquery_par)
+    visit_add_parallel_library(
+        NAME       avtquery_par
+        SOURCES    ${avtquery_par_SOURCES}
+        HEADERS    ${avtquery_par_HEADERS}
+        INCLUDES   ${avtquery_par_INCLUDES}
+        DEPENDS_ON ${avtquery_par_DEPENDS}
+                   avtexpressions_par
+                   avtfilters_par)
+        if(VISIT_PYTHON_FILTERS)
+            target_link_libraries(avtquery_par PUBLIC avtpythonfilters_par)
+        endif()
+        if(CONDUIT_FOUND)
+            target_link_libraries(avtquery_par PUBLIC conduit_mpi)
+        endif()
 endif()
+
+
+
+
+
 
