@@ -395,3 +395,93 @@ macro(visit_add_parallel_library)
     endif()
 endmacro()
 
+##############################################################################
+# Adds an executable. Only NAME argument is used here.
+# All args are passed directly to visit_patch_target.
+#
+# ARGUMENTS:
+#    NAME         target name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    OPTIONAL
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS      [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FOLDER       [name])                    OPTIONAL
+#
+##############################################################################
+
+macro(visit_add_executable)
+
+    blt_add_executable(${ARGV})
+
+    cmake_parse_arguments(vae "" "NAME" "" ${ARGN})
+    if(VISIT_EXE_LINKER_FLAGS)
+        target_link_options(${vae_NAME} PUBLIC ${VISIT_EXE_LINKER_FLAGS})
+    endif()
+
+    VISIT_INSTALL_TARGETS(${vae_NAME})
+endmacro()
+
+##############################################################################
+# Like visit_add_executable, but adds parallel compile/link options.
+# Taken mostly from VISIT_ADD_PARALLEL_EXECUTABLE
+#
+# ARGUMENTS:
+#    NAME         target name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    OPTIONAL
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS      [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FOLDER       [name])                    OPTIONAL
+#
+##############################################################################
+
+macro(visit_add_parallel_executable)
+
+    visit_add_executable(${ARGV})
+
+    cmake_parse_arguments(vape "" "NAME" "" ${ARGN})
+
+    if(UNIX)
+        if(VISIT_PARALLEL_CXXFLAGS)
+            set(PAR_COMPILE_FLAGS "")
+            foreach(X ${VISIT_PARALLEL_CXXFLAGS})
+                set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
+            endforeach()
+            set_target_properties(${vape_NAME} PROPERTIES COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
+        endif()
+
+        if(VISIT_PARALLEL_LINKER_FLAGS)
+            set(PAR_LINK_FLAGS "")
+            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
+                set(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
+            endforeach()
+            set_target_properties(${vape_NAME} PROPERTIES LINK_FLAGS ${PAR_LINK_FLAGS})
+        endif()
+
+        if(VISIT_PARALLEL_RPATH)
+            set(PAR_RPATHS "")
+            foreach(X ${CMAKE_INSTALL_RPATH})
+                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
+            endforeach()
+            foreach(X ${VISIT_PARALLEL_RPATH})
+                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
+            endforeach()
+            set_target_properties(${vape_NAME} PROPERTIES INSTALL_RPATH ${PAR_RPATHS})
+        endif()
+    else()
+          blt_patch_target(
+              NAME     ${vape_NAME}
+              INCLUDES ${VISIT_PARALLEL_INCLUDE}
+              DEFINES  ${VISIT_PARALLEL_DEFS}
+              DEPENDS  ${VISIT_PARALLE_LIBS})
+    endif()
+
+    # If we're on doing this "nolink mpi" option, we rely on the
+    # PARALLEL_TARGET_LINK_LIBRARIES function to actually link the
+    # target with MPI.
+    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        target_link_libraries(${vape_NAME} PUBLIC ${VISIT_PARALLEL_LIBS})
+    endif()
+endmacro()
