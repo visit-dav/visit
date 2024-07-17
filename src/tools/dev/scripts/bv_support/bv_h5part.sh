@@ -7,7 +7,6 @@ function bv_h5part_enable
 {
     DO_H5PART="yes"
     DO_HDF5="yes"
-    DO_SZIP="yes"
 }
 
 function bv_h5part_disable
@@ -17,7 +16,7 @@ function bv_h5part_disable
 
 function bv_h5part_depends_on
 {
-    echo "szip hdf5"
+    echo "hdf5"
 }
 
 function bv_h5part_info
@@ -520,9 +519,8 @@ function build_h5part
     cd $H5PART_BUILD_DIR || error "Can't cd to h5part build dir."
     if [[ "$DO_HDF5" == "yes" ]] ; then
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHHDF5ARG="--with-hdf5=$HDF5ROOT"
-        HDF5DYLIB="-L$HDF5ROOT/lib -L$SZIPROOT/lib -lhdf5 -lsz -lz"
+        HDF5DYLIB="-L$HDF5ROOT/lib -lhdf5 -lsz -lz"
     else
         WITHHDF5ARG="--with-hdf5"
         HDF5DYLIB=""
@@ -530,12 +528,10 @@ function build_h5part
 
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
-               "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
                $DYLD_LIBRARY_PATH
         SOARG="--enable-shared"
     else
         export LD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
-               "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
                $LD_LIBRARY_PATH
         SOARG=""
     fi

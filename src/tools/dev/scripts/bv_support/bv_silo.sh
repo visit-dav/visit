@@ -34,11 +34,6 @@ function bv_silo_depends_on
         depends_on="$depends_on hdf5"
     fi
     
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        depends_on="$depends_on szip"
-    fi
-
-
     echo $depends_on
 }
 
@@ -464,12 +459,6 @@ function build_silo
     else
         WITHHDF5ARG="--without-hdf5"
     fi
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-        WITHSZIPARG="--with-szlib=$SZIPDIR"
-    else
-        WITHSZIPARG="--without-szlib"
-    fi
     if [[ "$DO_ZLIB" == "no" ]]; then
         WITH_HZIP_AND_FPZIP="--disable-hzip --disable-fpzip"
     else
@@ -503,7 +492,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
+        $WITHHDF5ARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
     set +x

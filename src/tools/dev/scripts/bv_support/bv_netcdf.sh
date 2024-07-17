@@ -30,9 +30,6 @@ function bv_netcdf_depends_on
         local depends_on="zlib"
         if [[ "$DO_HDF5" == "yes" ]] ; then
             depends_on="hdf5"        
-            if [[ "$DO_SZIP" == "yes" ]] ; then
-                depends_on="${depends_on} szip"        
-            fi
         fi
         echo ${depends_on}
     fi
@@ -401,9 +398,6 @@ function build_netcdf
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--enable-netcdf4"
         H5ARGS="$H5ARGS --with-hdf5=$HDF5_INSTALL_DIR"
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-        fi
     fi
     ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 

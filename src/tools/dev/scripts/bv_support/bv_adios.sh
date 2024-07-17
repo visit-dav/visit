@@ -301,9 +301,8 @@ function build_adios
     # HDF5 support
     if [[ "$DO_HDF5" == "yes" ]] ; then
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITH_HDF5_ARGS="--with-hdf5=$HDF5ROOT"
-        #HDF5_DYLIB="-L$HDF5ROOT/lib -L$SZIPROOT/lib -lhdf5 -lsz -lz"
+        #HDF5_DYLIB="-L$HDF5ROOT/lib -lhdf5 -lsz -lz"
     else
         WITH_HDF5_ARGS="--without-hdf5"
         #HDF5_DYLIB=""

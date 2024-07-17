@@ -17,10 +17,6 @@ function bv_moab_depends_on
 {
     local depends_on="hdf5 zlib"
 
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        depends_on="$depends_on szip"
-    fi
-
     echo $depends_on
 }
 
@@ -137,13 +133,8 @@ function build_moab
         fi
 
         cf_hdf5_ldflags_arg=""
-        cf_szip_arg=""
         cf_zlib_arg=""
         cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH"
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            cf_szip_arg="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-            cf_hdf5_ldflags_arg="-lsz"
-        fi
         cf_zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
         cf_hdf5_ldflags_arg="$cf_hdf5_ldflags_arg -lz"
         if [[ -n "$cf_hdf5_ldflags_arg" ]]; then
@@ -156,8 +147,7 @@ function build_moab
             CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
             CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
             ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
-            ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
-            ${cf_szip_arg} ${cf_zlib_arg}"
+            ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} ${cf_zlib_arg}"
         set +x
         if [[ $? != 0 ]] ; then
             warn "$bt MOAB configure failed.  Giving up"
