@@ -159,7 +159,7 @@ def TestCSV3DPointsAndVariables():
     Create3DPointsWithVariablesDataFile("points.txt")
 
     # Points plot {
-    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions = GetDefaultFileOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
