@@ -38,122 +38,117 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
+#  Kathleen Biagas, Wed Jul 17, 2024
+#  Utilize visit_add_executable.
+#
 #****************************************************************************
 
-SET(MDSERVER_SOURCES
-ChangeDirectoryRPCExecutor.C
-CloseDatabaseRPCExecutor.C
-ConnectRPCExecutor.C
-ExpandPathRPCExecutor.C
-GetDBPluginInfoRPCExecutor.C
-GetDirectoryRPCExecutor.C
-GetFileListRPCExecutor.C
-GetMetaDataRPCExecutor.C
-GetPluginErrorsRPCExecutor.C
-GetSILRPCExecutor.C
-KeepAliveRPCExecutor.C
-LoadPluginsRPCExecutor.C
-MDServerApplication.C
-MDServerConnection.C
-QuitRPCExecutor.C
-SetMFileOpenOptionsRPCExecutor.C
-SaveSessionRPCExecutor.C
-RestoreSessionRPCExecutor.C
-main.C
-)
+set(mdserver_SOURCES
+    ChangeDirectoryRPCExecutor.C
+    CloseDatabaseRPCExecutor.C
+    ConnectRPCExecutor.C
+    ExpandPathRPCExecutor.C
+    GetDBPluginInfoRPCExecutor.C
+    GetDirectoryRPCExecutor.C
+    GetFileListRPCExecutor.C
+    GetMetaDataRPCExecutor.C
+    GetPluginErrorsRPCExecutor.C
+    GetSILRPCExecutor.C
+    KeepAliveRPCExecutor.C
+    LoadPluginsRPCExecutor.C
+    main.C
+    MDServerApplication.C
+    MDServerConnection.C
+    QuitRPCExecutor.C
+    RestoreSessionRPCExecutor.C
+    SaveSessionRPCExecutor.C
+    SetMFileOpenOptionsRPCExecutor.C)
+
+set(mdserver_HEADERS
+    ChangeDirectoryRPCExecutor.h
+    CloseDatabaseRPCExecutor.h
+    ConnectRPCExecutor.h
+    ExpandPathRPCExecutor.h
+    GetDBPluginInfoRPCExecutor.h
+    GetDirectoryRPCExecutor.h
+    GetFileListRPCExecutor.h
+    GetMetaDataRPCExecutor.h
+    GetPluginErrorsRPCExecutor.h
+    GetSILRPCExecutor.h
+    KeepAliveRPCExecutor.h
+    LoadPluginsRPCExecutor.h
+    MDServerApplication.h
+    MDServerConnection.h
+    mdsmain_exports.h
+    QuitRPCExecutor.h
+    RestoreSessionRPCExecutor.h
+    SaveSessionRPCExecutor.h
+    SetMFileOpenOptionsRPCExecutor..)
 
 # If the mdserver is static then we need some static symbol lookup functions
-IF(VISIT_STATIC)
-    SET(SIMV2_PLUGIN_DIR ${VISIT_SOURCE_DIR}/databases/SimV2)
-    SET(SIMV2_PLUGIN_SOURCES
+if(VISIT_STATIC)
+    set(SIMV2_PLUGIN_DIR ${VISIT_SOURCE_DIR}/databases/SimV2)
+    set(SIMV2_PLUGIN_SOURCES
         ${SIMV2_PLUGIN_DIR}/SimV2CommonPluginInfo.C
         ${SIMV2_PLUGIN_DIR}/SimV2MDServerPluginInfo.C
         ${SIMV2_PLUGIN_DIR}/SimV2PluginInfo.C
-        ${SIMV2_PLUGIN_DIR}/avtSimV2FileFormat.C
-     )
-    SET(MDSERVER_STATIC_SOURCES ${SIMV2_PLUGIN_SOURCES} MDServerStaticSymbolLocator.C)
-ENDIF(VISIT_STATIC)
+        ${SIMV2_PLUGIN_DIR}/avtSimV2FileFormat.C)
+    set(mdserver_STATIC_SOURCES ${SIMV2_PLUGIN_SOURCES} MDServerStaticSymbolLocator.C)
+endif()
 
-ADD_DEFINITIONS(-DMDSERVER)
-IF (NOT WIN32)
+set(mdserver_DEFINES MDSERVER)
+
+if(NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
-    ADD_DEFINITIONS(-DCOMM_EXPORTS)
-ENDIF (NOT WIN32)
+    list(APPEND mdserver_DEFINES COMM_EXPORTS)
+endif()
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VTK_INCLUDE_DIRS}
-${VISIT_SOURCE_DIR}/mdserver/rpc
-${VISIT_SOURCE_DIR}/mdserver/proxy
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Database/Formats
-${VISIT_SOURCE_DIR}/avt/Database/Ghost
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${SIMV2_PLUGIN_DIR}
-)
-
-set(vtklibs VTK::CommonCore VTK::IOCore VTK::tiff VTK::png VTK::jpeg)
-
-LINK_DIRECTORIES(
-${LIBRARY_OUTPUT_DIRECTORY}
-${ALL_THIRDPARTY_IO_LIBRARY_DIR}
-${AVT_REQUIRED_LIB_DIR}
-)
-
-ADD_EXECUTABLE(mdserver ${VISIT_APPLICATION_STYLE} ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES} ${VISIT_MDSERVER_RESOURCE_FILE})
-TARGET_LINK_LIBRARIES(mdserver
-    ${VISIT_EXE_LINKER_FLAGS}
-    ${mdserver_MDatabase}
-    ${mdserver_IDatabase}
+set(mdserver_DEPENDS
     mdserverrpc
     visitcommon
     avtdbatts
     avtdatabase_ser
     lightweight_visit_vtk
     visit_verdict
+    VTK::CommonCore
+    VTK::IOCore
+    VTK::tiff
+    VTK::png
+    VTK::jpeg
     ${vtklibs}
     ${vtktiff_LIBRARIES}
     ${vtkpng_LIBRARIES}
     ${vtkjpeg_LIBRARIES}
-    ${ZLIB_LIBRARY}
+    zlib
     Threads::Threads
-    ${DL_LIB}
-)
+    ${DL_LIB})
 
-if(CONDUIT_FOUND AND MFEM_FOUND)
-    LINK_DIRECTORIES(
-        ${MFEM_LIBRARY_DIR}
-        ${CONDUIT_LIBRARY_DIR}
-        )
-    INCLUDE_DIRECTORIES(
-        ${MFEM_INCLUDE_DIR}
-        ${CONDUIT_INCLUDE_DIR}
-        ${VISIT_SOURCE_DIR}/avt/Blueprint
-        )
-    TARGET_LINK_LIBRARIES(mdserver 
-        ${MFEM_LIB} 
-        avtblueprint
-        )
+if(TARGET avtblueprint)
+    list(APPEND mdserver_DEPENDS avtblueprint)
+endif()
+
+if(VISIT_STATIC)
+    list(APPEND mdserver_DEPENDS
+        ${mdserver_MDatabase}
+        ${mdserver_IDatabase})
+endif()
+
+visit_add_executable(
+    NAME       mdserver
+    SOURCES    ${mdserver_SOURCES}
+               ${mdserver_STATIC_SOUCES}
+               ${VISIT_MDSERVER_RESOURCE_FILE}
+    HEADERS    ${mdserver_HEADERS}
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/mdserver/main>
+    DEFINES    ${mdserver_DEFINES}
+    DEPENDS_ON ${mdserver_DEPENDS})
+
+if(VISIT_STATIC)
+   target_link_directoris(mdserver PRIVATE ${ALL_THIRDPARTY_IO_LIBRARY_DIR})
 endif()
 
 if(WIN32 AND MSVC)
     set_target_properties(mdserver PROPERTIES LINK_FLAGS "/STACK:4000000")
 endif()
 
-# If we're building statically then the mdserver can't be linked until the plugin
-# sources are built
-IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(mdserver
-        ${mdserver_MDatabase}
-        ${mdserver_IDatabase}
-    )
-ENDIF(VISIT_STATIC)
-
-VISIT_INSTALL_TARGETS(mdserver)
