@@ -58,6 +58,7 @@ if(WIN32)
   option(VISIT_WINDOWS_APPLICATION "Create Windows-style applications with no console" ON)
   if(VISIT_WINDOWS_APPLICATION)
       set(VISIT_APPLICATION_STYLE "WIN32")
+      set(CMAKE_WIN32_EXECUTABLE TRUE)
   endif()
 endif(WIN32)
 
