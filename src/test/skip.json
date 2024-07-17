@@ -56,6 +56,8 @@
                     {"category":"queries","file":"IntegralCurveInfo.py"},
                     {"category":"rendering","file":"compositing.py"},
                     {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_05","pixeldata_0_07","pixeldata_0_09","pixeldata_0_11"]},
+                    {"category":"rendering","file":"volume_rect_multiDomain.py","cases":["volume_23","volume_24"]},
+                    {"category":"rendering","file":"volume_ucd_multiDomain.py","cases":["volume_33","volume_34"]},
 
                     {"category":"session","file":"legendproperties.py","cases":["legendproperties00","legendproperties01"]},
                     {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]},
@@ -109,6 +111,8 @@
                     {"category":"rendering","file":"line3d.py","cases":["line3d07","line3d08","line3d09","line3d10","line3d11","line3d12"]},
                     {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_05","pixeldata_0_07","pixeldata_0_09","pixeldata_0_11"]},
                     {"category":"rendering","file":"ospray.py"},
+                    {"category":"rendering","file":"volume_rect_multiDomain.py","cases":["volume_23","volume_24"]},
+                    {"category":"rendering","file":"volume_ucd_multiDomain.py","cases":["volume_33","volume_34"]},
                     {"category":"session","file":"correlationsession.py","cases":["correlationsession00"]},
                     {"category":"session","file":"legendproperties.py","cases":["legendpropeties00","legendproperties01"]},
                     {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]},
