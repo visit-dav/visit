@@ -83,7 +83,7 @@ set(mdserver_HEADERS
     QuitRPCExecutor.h
     RestoreSessionRPCExecutor.h
     SaveSessionRPCExecutor.h
-    SetMFileOpenOptionsRPCExecutor..)
+    SetMFileOpenOptionsRPCExecutor.h)
 
 # If the mdserver is static then we need some static symbol lookup functions
 if(VISIT_STATIC)
