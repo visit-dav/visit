@@ -117,7 +117,9 @@ def TestCSVCurves():
     CreateCurvesDataFile("curves.csv")
 
     # Curve plot {
-    plainTextOpenOptions = GetDefaultFileOpenOptions()
+    # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
+    # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
+    plainTextOpenOptions = GetDefautlOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
@@ -138,7 +140,9 @@ def TestCSVCurvesNoX():
     CreateCurvesDataFileWithNoXCoordinates("curves_nox.csv")
 
     # Curve noX plot {
-    plainTextOpenOptions = GetDefaultFileOpenOptions()
+    # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
+    # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
+    plainTextOpenOptions = GetDefautlOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
 
@@ -159,7 +163,9 @@ def TestCSV3DPointsAndVariables():
     Create3DPointsWithVariablesDataFile("points.txt")
 
     # Points plot {
-    plainTextOpenOptions = GetDefaultFileOpenOptions()
+    # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
+    # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
+    plainTextOpenOptions = GetDefautlOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
@@ -183,7 +189,9 @@ def TestCSV2DArray():
     Create2DArrayDataFile("array.txt")
 
     # Array plot {
-    plainTextOpenOptions = GetDefaultOpenOptions()
+    # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
+    # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
+    plainTextOpenOptions = GetDefautlOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Data layout'] = '2D Array'
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
