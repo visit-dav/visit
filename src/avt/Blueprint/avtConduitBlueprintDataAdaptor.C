@@ -2732,10 +2732,6 @@ ShapeNameToGeomType(const std::string &shape_name)
 
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
-// TODO:
-// In the future: these methods will be in MFEM's ConduitDataCollection
-// we will those, instead of VisIt's own implementation.
-//---------------------------------------------------------------------------//
 mfem::Mesh *
 avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(
     const Node &n_mesh,
