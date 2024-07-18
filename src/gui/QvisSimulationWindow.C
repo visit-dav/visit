@@ -16,9 +16,11 @@
 
 #include <QvisSimulationCommandWindow.h>
 #include <QvisSimulationMessageWindow.h>
-#include <QvisStripChartMgr.h>
-#include <QvisStripChartTabWidget.h>
-#include <QvisStripChart.h>
+#ifdef HAVE_QWT
+  #include <QvisStripChartMgr.h>
+  #include <QvisStripChartTabWidget.h>
+  #include <QvisStripChart.h>
+#endif
 #include <QvisNotepadArea.h>
 #include <QvisUiLoader.h>
 #include <SimCommandSlots.h>
@@ -237,11 +239,13 @@ QvisSimulationWindow::CreateWindowContents()
         tr("Messages"), notepadAux);
     simMessages->post();
 
+#ifdef HAVE_QWT
     // Create the strip chart manager and post it to the notepad.
     int index = GetEngineListIndex(activeEngine);
     stripChartMgr =
       new QvisStripChartMgr(this, GetViewerProxy(), engines, index, notepadAux);
     stripChartMgr->post();
+#endif
 
     // Make sure we show the commands page.
     notepadAux->showPage(simCommands);
@@ -483,8 +487,9 @@ QvisSimulationWindow::CreateCustomUIWindow()
         }
 
         simCommands->setCustomButtonEnabled(false);
-
+#ifdef HAVE_QWT
         clearStripCharts();
+#endif
 
         return;
     }
@@ -1030,7 +1035,9 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           }
 
           clearMessages();
+#ifdef HAVE_QWT
           clearStripCharts();
+#endif
         }
 
         // Add the engines to the widget.
@@ -1826,6 +1833,7 @@ QvisSimulationWindow::clearMessages()
 // Modifications:
 //
 // ****************************************************************************
+#ifdef HAVE_QWT
 void
 QvisSimulationWindow::clearStripCharts()
 {
@@ -1838,6 +1846,7 @@ QvisSimulationWindow::clearStripCharts()
         stripChartMgr->setCurveTitle(i, j, "" );
     }
 }
+#endif
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::MakeKey
@@ -2254,7 +2263,9 @@ QvisSimulationWindow::selectEngine(int index)
 {
     // Clear the message and strip charts.
     clearMessages();
+#ifdef HAVE_QWT
     clearStripCharts();
+#endif
 
     // Get the new active engine.
     activeEngine = MakeKey(engines->GetEngineName()[index],
@@ -2627,6 +2638,7 @@ QvisSimulationWindow::executeStopCommand(const QString &value)
 //    command string.
 //
 // ****************************************************************************
+#ifdef HAVE_QWT
 void
 QvisSimulationWindow::setStripChartVar(const QString &value)
 {
@@ -2641,3 +2653,4 @@ QvisSimulationWindow::setStripChartVar(const QString &value)
     QString args(QString("triggered();%1;QMenu;Simulations;%2").arg(cmd).arg(value));
     GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
+#endif

@@ -181,9 +181,6 @@ QvisSimulationMessageWindow.C
 QvisSimulationWindow.C
 QvisSourceManagerWidget.C
 QvisSpectrumBar.C
-QvisStripChart.C
-QvisStripChartMgr.C
-QvisStripChartTabWidget.C
 QvisSubsetPanelItem.C
 QvisSubsetPanelWidget.C
 QvisSubsetWindow.C
@@ -208,6 +205,13 @@ WidgetDataNode.C
 mini3D.C
 )
 
+if(QWT_FOUND)
+    list(APPEND GUILIB_SOURCES
+        QvisStripChart.C
+        QvisStripChartMgr.C
+        QvisStripChartTabWidget.C
+endif()
+
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -225,9 +229,7 @@ ${VISIT_SOURCE_DIR}/viewer/proxy
 ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/third_party_builtin
-${QWT_INCLUDE_DIR}
 )
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 SET(GUI_QT_LIBS
 ${QT_QTUITOOLS_LIBRARY}
@@ -252,6 +254,9 @@ ENDIF(VISIT_STATIC)
 
 #***************************** The gui library *******************************
 ADD_LIBRARY(gui ${GUILIB_SOURCES})
+if(QWT_FOUND)
+    target_compile_definitions(gui PUBLIC HAVE_QWT)
+endif()
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(gui)
@@ -261,8 +266,11 @@ set_target_properties(gui PROPERTIES AUTOMOC ON)
 
 IF (WIN32)
     SET_TARGET_PROPERTIES(gui PROPERTIES OUTPUT_NAME guilib)
-    SET_TARGET_PROPERTIES(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
+    if(QWT_FOUND)
+        SET_TARGET_PROPERTIES(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
+    endif()
 ENDIF (WIN32)
+
 TARGET_LINK_LIBRARIES(gui 
 viewerrpc
 viewerproxy
@@ -272,8 +280,12 @@ mdserverproxy
 avtdbatts
 winutil
 ${GUI_QT_LIBS}
-${QWT_LIBRARY}
 )
+
+if(QWT_FOUND)
+    target_include_directories(gui ${QWT_INCLUDE_DIR})
+    target_link_libraries(gui ${QWT_LIBRARY})
+endif()
 
 IF(APPLE)
     SET_TARGET_PROPERTIES(gui 

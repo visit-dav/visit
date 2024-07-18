@@ -11,11 +11,10 @@
 #   Kathleen Biagas, Thu Feb  8 08:30:19 PST 2018
 #   Set QWT_LIBRARY to full path, for use in target_link_libraries.
 #
+#   Kathleen Biagas, Wed July 17, 2024
+#   Allow QWT to be optional.
+#
 #*****************************************************************************
-
-if(NOT EXISTS ${VISIT_QWT_DIR})
-    message(FATAL_ERROR "Qwt installation directory is not specified or does not exist")
-endif()
 
 if(APPLE)
     if(VISIT_STATIC)
@@ -29,9 +28,10 @@ else()
     SET_UP_THIRD_PARTY(QWT LIBS qwt)
 endif()
 
-if(NOT QWT_FOUND)
-    message(FATAL_ERROR "Qwt installation could not be used.")
+if(QWT_FOUND)
+    set(QWT_LIBRARY ${QWT_LIBRARY_DIR}/${QWT_LIB} CACHE FILEPATH "full path to qwt library" FORCE)
+else()
+    message(STATUS "Qwt installation could not be used.")
 endif()
 
-SET(QWT_LIBRARY ${QWT_LIBRARY_DIR}/${QWT_LIB} CACHE FILEPATH "full path to qwt library" FORCE)
 
