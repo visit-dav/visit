@@ -89,7 +89,9 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
     uiValues = NULL;
     CustomUIWindow = NULL;
     uiLoader = new QvisUiLoader;
+#ifdef HAVE_QWT
     stripChartMgr = 0;
+#endif
     simMessages = 0;
 }
 
@@ -123,7 +125,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
     if (uiValues)
         uiValues->Detach(this);
 
+#ifdef HAVE_QWT
     delete stripChartMgr;
+#endif
 }
 
 // ****************************************************************************
@@ -1244,6 +1248,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
             clearMessages();
           }
 
+#ifdef HAVE_QWT
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR_ALL")
           {
             stripChartMgr->clearAll();
@@ -1317,6 +1322,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
             stripChartMgr->addDataPoints(chart, curve, npts, x, y);
           }
+#endif
           else if(CustomUIWindow != 0)
           {
             UpdateUIComponent(CustomUIWindow,
@@ -2365,7 +2371,9 @@ QvisSimulationWindow::closeEngine()
                              QMessageBox::Ok | QMessageBox::Cancel) ==
         QMessageBox::Ok)
     {
+#ifdef HAVE_QWT
         stripChartMgr->clearAll();
+#endif
 
         // Close the engine.
         GetViewerMethods()->CloseComputeEngine(host, sim);
@@ -2492,8 +2500,10 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
                                QMessageBox::Ok | QMessageBox::Cancel) ==
           QMessageBox::Cancel)
         return;
+#ifdef HAVE_QWT
       else
         stripChartMgr->clearAll();
+#endif
     }
 
     QString cmd(btncmd);

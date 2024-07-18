@@ -41,6 +41,10 @@
 #   Kathleen Biagas, Tue May 5, 2023
 #   Disable qt6 forcing of defines for UNICODE.
 #
+#   Kathleen Biagas, Thu Jul 18, 2024
+#   QWT is now optional, so make StripChart classes dependent upon
+#   it being found.
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -209,7 +213,7 @@ if(QWT_FOUND)
     list(APPEND GUILIB_SOURCES
         QvisStripChart.C
         QvisStripChartMgr.C
-        QvisStripChartTabWidget.C
+        QvisStripChartTabWidget.C)
 endif()
 
 IF (NOT WIN32)
@@ -254,9 +258,6 @@ ENDIF(VISIT_STATIC)
 
 #***************************** The gui library *******************************
 ADD_LIBRARY(gui ${GUILIB_SOURCES})
-if(QWT_FOUND)
-    target_compile_definitions(gui PUBLIC HAVE_QWT)
-endif()
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(gui)
@@ -283,7 +284,8 @@ ${GUI_QT_LIBS}
 )
 
 if(QWT_FOUND)
-    target_include_directories(gui ${QWT_INCLUDE_DIR})
+    target_compile_definitions(gui PUBLIC HAVE_QWT)
+    target_include_directories(gui PUBLIC ${QWT_INCLUDE_DIR})
     target_link_libraries(gui ${QWT_LIBRARY})
 endif()
 
