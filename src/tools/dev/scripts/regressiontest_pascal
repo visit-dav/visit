@@ -157,6 +157,13 @@
 #   I moved the setting of the permissions so that others may access the
 #   test directory to another script.
 #
+#   Kathleen Biagas, Tue July 16, 2024 
+#   Added repoDir and buildDir vars to aid in changing directories between
+#   them.  Call `git submodule init` when cloning, and 'git submodule update`
+#   when updating. Don't 'lfs pull' in test and data dir, since it is already
+#   performed at the repo root. Perform the build completely outside the repo
+#   dir. Have make.out, make.err and installlog be local to the build dir.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -262,6 +269,9 @@ else
     cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 fi
 
+repoDir=$testDir/$workingDir/visit
+buildDir=$testDir/$workingDir/build
+
 #
 # Create the script to checkout the source code.
 #
@@ -288,18 +298,21 @@ fi
 
 cd $testDir/$workingDir
 
-rm -f buildlog installlog
+# clean up from previous runs
+rm -rf build
+rm -f  buildlog
 
 # Clone the repository if necessary.
-if test ! -e $testDir/$workingDir/visit; then
-    git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
+if test ! -e $repoDir; then
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> ./buildlog 2>&1
+
+    # Enter the repo and perform commands only needed on a fresh clone
+    cd visit
+    git submodule init >> ../buildlog 2>&1
 fi
 
 # Enter the repository.
-cd visit
-
-# Install git lfs.
-git lfs install --force --skip-smudge >> ../buildlog2>&1
+cd $repoDir
 
 # Update the repository.
 hostname >> ../buildlog 2>&1
@@ -308,11 +321,20 @@ echo "rm -f .git/index.lock" >> ../buildlog 2>&1
 rm -f .git/index.lock >> ../buildlog 2>&1
 echo "git checkout develop" >> ../buildlog 2>&1
 git checkout develop >> ../buildlog 2>&1
+
+# ensure submodule is up to date
+echo "git submodule update" >> ../buildlog 2>&1
+git submodule update >> ../buildlog 2>&1
+
 echo "git pull" >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
+
 echo "git lfs pull" >> ../buildlog 2>&1
 git lfs pull >> ../buildlog 2>&1
+
 echo "Repository updated" >> ../buildlog 2>&1
+
+cd $testDir/$workingDir
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
@@ -360,10 +382,10 @@ else
     modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
 fi
 
-cd $testDir/$workingDir/visit
+cd $testDir/$workingDir
+
 
 # Build the code
-rm -rf build
 mkdir build
 cd build
 export PATH=\$PATH:/usr/bin/X11
@@ -383,11 +405,11 @@ else
 fi
 
 if test "$serial" = "true" ; then
-    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/poodle18.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" $repoDir/src/config-site/poodle18.cmake
 fi
 if test "$branch" = "trunk" ; then
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=../src/config-site/poodle18.cmake \
+        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/poodle18.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -395,22 +417,22 @@ if test "$branch" = "trunk" ; then
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-        ../src >> ../../buildlog 2>&1
+        $repoDir/src >> ../buildlog 2>&1
 else
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=../src/config-site/poodle18.cmake \
+        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/poodle18.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-        ../src >> ../../buildlog 2>&1
+        $repoDir/src >> ../buildlog 2>&1
 fi
-rm -f ../make.out ../make.err
-make -k -j 36 1>../make.out 2>../make.err
-make -k manuals 1>../make.out 2>../make.err
-make -k -j 36 package 1>../make.out 2>../make.err
+
+make -k -j 36 1>./make.out 2>./make.err
+make -k manuals 1>./make.out 2>./make.err
+make -k -j 36 package 1>./make.out 2>./make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
@@ -418,27 +440,21 @@ fi
 if test "$debug" = "true" ; then
     echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
 fi
-cat ../make.out >> ../../buildlog
-cat ../make.err >> ../../buildlog
+cat ./make.out >> ../buildlog
+cat ./make.err >> ../buildlog
 
 echo "Source build completed at: \`date\`"
 
 # Copy stripack lib for ffp plugin tests
 cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
 
-# Update the test baselines
-cd ../test
-git lfs pull >> ../../../buildlog 2>&1
-
 # Build the test data
-cd ../data
-git lfs pull >> ../../../buildlog 2>&1
-cd ../build
 cd testdata
-make -j 8 data >> ../../../buildlog 2>&1
+make -j 8 data >> ../../buildlog 2>&1
 if test "$debug" = "true" ; then
     echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
 fi
+cd ../
 
 echo "Data build completed at: \`date\`"
 
@@ -449,14 +465,14 @@ fi
 echo "Starting install:\`date\`"
 
 # Install the package
-cd ../
-version=\`cat $testDir/$workingDir/visit/src/VERSION\`
+version=\`cat $repoDir/src/VERSION\`
 
-../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
+$repoDir/src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./install_log 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
 fi
+cat ./install_log >> ../buildlog
 
 echo "Install completed at: \`date\`"
 
@@ -467,8 +483,7 @@ fi
 echo "Starting tests:\`date\`"
 
 # Run the tests, consolidating the results in one directory
-cd ../src/test
-rm -rf 2022-??-??-??:?? output *.pyc
+cd $testDir/$workingDir/build/test
 mkdir \$dateTag output
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
@@ -482,10 +497,10 @@ for m in \$modes; do
 
 
     # Run the test
-    ../../build/test/run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
-    mv \$resDir/html \$dateTag/\$theMode
+    ./run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../buildlog 2>&1
 
     # Move the results to the consolidation directory
+    mv \$resDir/html \$dateTag/\$theMode
     if test "$debug" = "true" ; then
         echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
     fi
@@ -514,22 +529,22 @@ fi
 
 dateTag=\$1
 
+cd $buildDir/test
+
+# if we don't have a test results directory, exit with failure now
+if test ! -d "\$dateTag"; then
+    echo "\$dateTag doesn't exist."
+    $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
+    exit
+fi
+
+# Determine if the test suite passed or failed.
 if test "$serial" = "true" ; then
     modes="$testHost,$branch,serial"
 else
     modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
 fi
 
-cd $testDir/$workingDir/visit/src/test
-
-# if we don't have a test results directory, exit with failure now
-if test ! -d "\$dateTag"; then
-    echo "\$dateTag doesn't exist."
-    src/tools/dev/scripts/visit-notify-test-failure -host $testHost
-    exit
-fi
-
-# Determine if the test suite passed or failed.
 hasFailed=""
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
@@ -547,7 +562,7 @@ done
 if test "$post" = "true" ; then
     # If the test suite passed then update the revision number indicating the
     # last pass.
-    cd ../..
+    cd $repoDir
     if test "\$hasFailed" = ""; then
         gitHead=\`git log -1 | grep "^commit" | cut -d' ' -f2\`
         git checkout src/tools/dev/scripts/lastpass_$testHost
@@ -560,37 +575,36 @@ if test "$post" = "true" ; then
     fi
 
     # Copy the results to the dashboard checkout on quartz. 
-    cd src/test
-    python3 ../tools/dev/scripts/visit-copy-test-results.py
-    cd ../..
+    cd $buildDir/test
+    python3 $repoDir/src/tools/dev/scripts/visit-copy-test-results.py
 
     # Update the main index.html.
-    src/tools/dev/scripts/visit-update-test-website
+    $repoDir/src/tools/dev/scripts/visit-update-test-website
 
     # Check the results into github.
-    cd src/test
+    cd $buildDir/test
     newResults=\`ls -d *22:00\`
+    # should the dashboard have group perms?
     cd /usr/WS1/visit/dashboard/dashboard
     git add \$newResults baselines index.html
     git commit -m "Add new results to the dashboard."
     git pull
     git push
-    cd $testDir/$workingDir/visit
     
     # Move the new results to old_results.
-    cd src/test
-    mv \$newResults ../../../old_results
-    cd ../..
+    cd $buildDir/test
+    mv \$newResults ../../old_results
 
     # Send out an e-mail notifying the users of the test suite status.
     if test "\$hasFailed" = ""; then
-        src/tools/dev/scripts/visit-notify-test-failure -pass -host $testHost
+        $repoDir/src/tools/dev/scripts/visit-notify-test-failure -pass -host $testHost
     else
-        src/tools/dev/scripts/visit-notify-test-failure -host $testHost
+        $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
     fi
 
     # If its the first day of the month, purge test results from 3 months ago.
     if test "\$(date +%d)" = "01" ; then
+         cd $testDir/$workingDir/old_results
          month=\`date +%m\`
          deleteMonth=\$(((month -1 + 12 - 3) % 12 + 1))
          year=\`date +%Y\`
@@ -598,18 +612,23 @@ if test "$post" = "true" ; then
          d1=\$( printf '%04d' \$deleteYear )
          d2=\$( printf '%02d' \$deleteMonth )
          dirs="\${d1}_\${d2}*"
-         cd src/test
          echo "\$dirs"
+
+         # leaving commented out till it can be vetted
+         # Remove the local copies
+         # rm -f \$dirs
+
          #
          # Leaving this commented out for the moment.
          #
+         #cd /usr/WS1/visit/dashboard/dashboard
+         #
          #git del \$dirs
-         #src/tools/dev/scripts/visit-update-test-website
+         #$repoDir/src/tools/dev/scripts/visit-update-test-website
          #git add index.html
          #git commit -m "Deleting old results."
          #git pull
          #git push
-         cd ../..
     fi
 fi
 
