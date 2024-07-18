@@ -1723,44 +1723,33 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     if (topo_ptr->has_path("elements/shape") &&
         topo_ptr->fetch("elements/shape").as_string() == "mixed")
     {
-
         const int ncells = topo_ptr->fetch("elements/shapes").dtype().number_of_elements();
         
         vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
         cellTypes->SetNumberOfValues(ncells);
         unsigned char *cell_types_ptr = cellTypes->GetPointer(0);
 
-        const int_accessor shapes_accessor = n_topo.fetch("elements/shapes").value();
-        if(n_topo.has_path("elements/shape_map"))
-        {
-            // Make a map of shape map value to VTK cell type.
-            std::map<int, int> sm2vtk;
-            const conduit::Node &n_shape_map = n_topo.fetch_existing("elements/shape_map");
-            for(index_t i = 0; i < n_shape_map.number_of_children(); i++)
-            {
-                const int cellValue = n_shape_map[i].to_int();
-                sm2vtk[cellValue] = ElementShapeNameToVTKCellType(n_shape_map[i].name());
-            }
+        const int_accessor shapes_accessor = topo_ptr->fetch("elements/shapes").value();
 
-            for (int cell_id = 0; cell_id < ncells; cell_id ++)
-            {
-                const int shape_value = shapes_accessor[cell_id];
-                const auto it = sm2vtk.find(shape_value);
-                if(it == sm2vtk.end())
-                {
-                    AVT_CONDUIT_BP_WARNING("Shape value " << shape_value << " is not in shape_map.");
-                }
-                // Store the VTK cell type in the cell types.
-                *cell_types_ptr++ = static_cast<unsigned char>(it->second);
-            }
-        }
-        else
+        // Make a map of shape map value to VTK cell type.
+        std::map<int, int> sm2vtk;
+        const conduit::Node &n_shape_map = topo_ptr->fetch_existing("elements/shape_map");
+        for(index_t i = 0; i < n_shape_map.number_of_children(); i++)
         {
-            // There is no shape_map - assume valid VTK cell type values.
-            for (int cell_id = 0; cell_id < ncells; cell_id ++)
+            const int cellValue = n_shape_map[i].to_int();
+            sm2vtk[cellValue] = ElementShapeNameToVTKCellType(n_shape_map[i].name());
+        }
+
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
+        {
+            const int shape_value = shapes_accessor[cell_id];
+            const auto it = sm2vtk.find(shape_value);
+            if(it == sm2vtk.end())
             {
-                *cell_types_ptr++ = shapes_accessor[cell_id];
+                AVT_CONDUIT_BP_WARNING("Shape value " << shape_value << " is not in shape_map.");
             }
+            // Store the VTK cell type in the cell types.
+            *cell_types_ptr++ = static_cast<unsigned char>(it->second);
         }
 
         vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
@@ -1823,7 +1812,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
     if (n_coords["type"].as_string() == "uniform" && 
         n_topo["type"].as_string() == "unstructured")
     {
-        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
+//        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
     }
     else
     {
