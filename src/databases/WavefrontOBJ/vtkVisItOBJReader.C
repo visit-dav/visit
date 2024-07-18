@@ -14,8 +14,6 @@
 =========================================================================*/
 #include "vtkVisItOBJReader.h"
 
-#include <visit-config.h> // For LIB_VERSION_GE
-
 #include <InvalidFilesException.h>
 #include <FileFunctions.h>
 
@@ -464,11 +462,7 @@ int vtkVisItOBJReader::RequestData(
       tcoord_polys->InitTraversal();
       normal_polys->InitTraversal();
       vtkIdType n_pts=-1, n_tcoord_pts=-1, n_normal_pts=-1;
-#if LIB_VERSION_LE(VTK,8,1,0)
-      vtkIdType *pts=nullptr, *tcoord_pts=nullptr, *normal_pts=nullptr;
-#else
       const vtkIdType *pts=nullptr, *tcoord_pts=nullptr, *normal_pts=nullptr;
-#endif
       for (int i=0;i<polys->GetNumberOfCells();i++)
         {
         polys->GetNextCell(n_pts,pts);
@@ -487,10 +481,8 @@ int vtkVisItOBJReader::RequestData(
           }
         else
           {
-#if LIB_VERSION_GE(VTK,9,1,0)
           vtkNew<vtkIdList> newCellPts;
           newCellPts->SetNumberOfIds(n_pts);
-#endif
           // copy the corresponding points, tcoords and normals across
           for (vtkIdType j=0;j<n_pts;j++)
             {
@@ -506,18 +498,10 @@ int vtkVisItOBJReader::RequestData(
               }
             // copy the vertex into the new structure and update
             // the vertex index in the polys structure (pts is a pointer into it)
-#if LIB_VERSION_LE(VTK,8,1,0)
-            pts[j] = new_points->InsertNextPoint(points->GetPoint(pts[j]));
-#else
             newCellPts->SetId(j, new_points->InsertNextPoint(points->GetPoint(pts[j])));
-#endif
             }
           // copy this poly (pointing at the new points) into the new polys list
-#if LIB_VERSION_LE(VTK,8,1,0)
-          new_polys->InsertNextCell(n_pts,pts);
-#else
           new_polys->InsertNextCell(newCellPts);
-#endif
           new_groupIds->InsertNextValue(groupIds->GetValue(i));
           }
         }

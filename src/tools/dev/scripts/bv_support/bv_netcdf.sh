@@ -51,7 +51,6 @@ function bv_netcdf_info
     export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
     export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.1"}
     export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-4.1.1"}
-    export NETCDF_MD5_CHECKSUM="79c5ff14c80d5e18dd8f1fceeae1c8e1"
     export NETCDF_SHA256_CHECKSUM="7933d69d378c57f038375bae4dd78c52442a06e2647fce4b75c13a225e342fb0"
 }
 
@@ -267,6 +266,39 @@ EOF
     return 1
 }
 
+function apply_netcdf_strlcat_patch
+{
+    info "Patching netcdf for strlcat"
+    local retval=0
+    pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
+    patch -p0 << \EOF
+*** ncgen3/genlib.h.orig	2023-04-14 11:00:05.000000000 -0700
+--- ncgen3/genlib.h	2023-04-07 17:04:37.000000000 -0700
+*************** extern void nc_fill ( nc_type  type, siz
+*** 81,89 ****
+--- 81,91 ----
+  extern void clearout(void);
+  
+  /* In case we are missing strlcat */
++ #if 0
+  #ifndef HAVE_STRLCAT
+  extern size_t strlcat(char *dst, const char *src, size_t siz);
+  #endif
++ #endif
+  
+  #ifdef __cplusplus
+  }
+EOF
+    retval=$?
+    popd 1>/dev/null 2>&1
+
+    if [[ $retval != 0 ]] ; then
+      warn "netcdf patch for strlcat failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_netcdf_patch
 {
     apply_netcdf_patch_for_exodusii
@@ -288,6 +320,13 @@ function apply_netcdf_patch
                 info "Applying macOS 10.13 and up patch . . ."
                 apply_netcdf_411_macOS_patch
             fi
+        fi
+    fi
+    
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        apply_netcdf_strlcat_patch
+        if [[ $? != 0 ]] ; then
+           return 1
         fi
     fi
 
@@ -368,17 +407,31 @@ function build_netcdf
     fi
     ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    env ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                FC="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
-                --disable-dap \
+                FC="" FCFLAGS="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS \
+                --disable-dap --disable-fortran \
                 --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
     set +x
+
 
     if [[ $? != 0 ]] ; then
         warn "NetCDF configure failed.  Giving up"
         return 1
+    fi
+
+    if [[ -n "$(uname -rs | grep 'Darwin 21')" ]] ; then
+        # there is an include file on newer macOS #include <version> which case-clashes
+        # with any file living in a dir that is -I included on the compilation line
+        mv -f VERSION VERSION.orig
+
+        # Apparently, netCDF is often compiled with undefined refs to methods that should not
+        # be used in the current configuration. However, sometimes it won't set the flags needed
+        # so the linker will ignore those. Here, we just override libtool with what it would have
+        # had specified if it had configured correctly.
+        sed -I "" -E -e 's@^allow_undefined_flag="?([^"]*)"?$@allow_undefined_flag="\1 \\${wl}-flat_namespace \\${wl}-undefined \\${wl}suppress"@' libtool
     fi
 
     #

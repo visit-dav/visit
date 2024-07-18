@@ -125,10 +125,14 @@
 #    images.
 #    Use the python dictionary returned by the query to tell if the query was
 #    successful or not.
+# 
+#    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
+#    Use numpy.int64 to cast to wide types for diff.
 # ----------------------------------------------------------------------------
 
 import os
 import conduit
+import numpy
 
 if not os.path.isdir(out_path("current","queries")):
     os.mkdir(out_path("current","queries"))
@@ -504,7 +508,7 @@ def teardown_bp_test(lite = False):
 # So the diff fails unless we take the int32 type and 
 # cast it to int64.
 def cast_to_wide_int_type_conduit(node, leafname):
-    val = int(node[leafname])
+    val = numpy.int64(node[leafname])
     node.remove_child(leafname)
     node[leafname] = val
 
@@ -543,7 +547,7 @@ perspective_str: \"parallel\""""
     info = conduit.Node()
     diffval = xray_view.diff(xray_view_base, info)
     diff_str = info.to_yaml() if diffval else ""
-    TestValueEQ(testname + "_xray_view", diff_str, "");
+    TestValueEQ(testname + "_xray_view", diff_str, "")
 
 UNITS_OFF = 0
 UNITS_ON = 1

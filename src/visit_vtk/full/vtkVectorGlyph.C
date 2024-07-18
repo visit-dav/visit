@@ -4,14 +4,10 @@
 
 #include "vtkVectorGlyph.h"
 
-#include <visit-config.h> // for LIB_VERSION_LE
-
 #include <math.h>
 
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
@@ -266,17 +262,11 @@ vtkVectorGlyph::RequestData(
         //set polys.
         vtkIdType n;
         vtkCellArray *spolys = spherePolyData->GetPolys();
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        vtkIdType *p = nullptr;
-        for (spolys->InitTraversal(); spolys->GetNextCell(n, p); )
-        {
-#else
         auto iter = vtk::TakeSmartPointer(spolys->NewIterator());
         const vtkIdType *p = nullptr;
         for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
         {
             iter->GetCurrentCell(n, p);
-#endif
             polys->InsertNextCell(n, p);
         }
         sphere->Delete();

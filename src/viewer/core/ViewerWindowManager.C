@@ -3591,7 +3591,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
                 ratts->GetColorTexturingFlag());
         }
 
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
         if (windows[index]->GetOsprayRendering() != ratts->GetOsprayRendering())
             windows[index]->SetOsprayRendering(ratts->GetOsprayRendering());
         if (windows[index]->GetOspraySPP() != ratts->GetOspraySPP())
@@ -4514,8 +4514,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
     if (windowLayout == -5 && count < 2)
     {
         static int origlo = layout;
+        static int tmplo = layout==2?1:2;
         if (count == 0)
-            SetWindowLayout(2);
+            SetWindowLayout(tmplo);
         else if (count == 1)
             SetWindowLayout(origlo);
         count++;
@@ -5242,7 +5243,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetOcclusionRatio(win->GetOcclusionRatio());
         GetViewerState()->GetRenderingAttributes()->SetNumberOfPeels(win->GetNumberOfPeels());
         GetViewerState()->GetRenderingAttributes()->SetColorTexturingFlag(win->GetColorTexturingFlag());
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
 //NOTE: win->GetOsprayRendering is returning 0 here which means that ospray is immediately getting turned off after the config setup turns it on
         GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(win->GetOsprayRendering());
         GetViewerState()->GetRenderingAttributes()->SetOspraySPP(win->GetOspraySPP());

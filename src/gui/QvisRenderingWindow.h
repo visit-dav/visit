@@ -227,12 +227,8 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
-#ifdef VISIT_OSPRAY
-    QCheckBox         *osprayRenderingToggle;
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     QGroupBox         *osprayGroup;
-#endif
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     QLabel            *ospraySPPLabel;
     QSpinBox          *ospraySPP;
     QLabel            *osprayAOLabel;

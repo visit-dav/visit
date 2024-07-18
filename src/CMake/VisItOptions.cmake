@@ -10,7 +10,6 @@
 
 option(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 option(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
-option(VISIT_OSPRAY   "Build VisIt with support for the OSPRay volume rendering library." OFF)
 option(VISIT_STATIC   "Build VisIt statically." OFF)
 if(VISIT_STATIC)
     add_definitions(-DVISIT_STATIC)

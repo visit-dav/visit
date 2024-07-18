@@ -6,8 +6,6 @@
 //                            avtXdmfFileFormat.C                            //
 // ************************************************************************* //
 
-#include <visit-config.h> // for LIB_VERSION_LE
-
 #include <avtXdmfFileFormat.h>
 
 #include <vtkCharArray.h>
@@ -608,29 +606,15 @@ void avtXdmfFileFormat::GetDims(int exts[6], int dims[3])
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications
+//    Mark C. Miller, Fri Mar  8 22:57:05 PST 2024
+//    Replace space-backslash-escaping logic with expression systems escape
+//    bracketing. Did space-escaping ever work?
 // ****************************************************************************
 
 std::string avtXdmfFileFormat::GetFormattedExpressionName(std::string & attributeName)
 {
-    std::stringstream formatted;
-
-    // Deal with whitespace
-    std::stringstream stream(attributeName);
-    std::istream_iterator<std::string> it(stream);
-    std::istream_iterator<std::string> end;
-    std::vector<std::string> tokens(it, end);
-
-    std::vector<std::string>::const_iterator iter = tokens.begin();
-    if (iter != tokens.end()) {
-        formatted << *iter;
-        iter++;
-    }
-
-    for (; iter != tokens.end(); ++iter) {
-        formatted << "\\ " << *iter;
-    }
-
-    return formatted.str();
+    return "<" + attributeName + ">";
 }
 
 // ****************************************************************************
@@ -1978,10 +1962,6 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         /* Create Cell Array */
         vtkCellArray* cells = vtkCellArray::New();
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-        /* Get the pointer. Make it Big enough ... too big for now */
-        vtkIdType* cells_ptr = cells->WritePointer(numCells, conn_length);
-#else
         vtkIdType offset = 0;
         vtkNew<vtkIdTypeArray> offsets;
         offsets->SetNumberOfTuples(numCells+1);
@@ -1989,7 +1969,6 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         vtkIdType connIndex = 0;
         vtkNew<vtkIdTypeArray> conn;
         conn->SetNumberOfTuples(static_cast<vtkIdType>(conn_length)); 
-#endif
         /* xmfConnections : N p1 p2 ... pN */
         /* i.e. Triangles : 3 0 1 2    3 3 4 5   3 6 7 8 */
         vtkIdType index = 0;
@@ -2018,29 +1997,16 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
             }
 
             cell_types[cc] = vtk_cell_typeI;
-#if LIB_VERSION_LE(VTK,8,1,0)
-            *cells_ptr++ = numPointsPerCell;
-            for (vtkIdType i = 0; i < numPointsPerCell; i++)
-            {
-                *cells_ptr++ = xmfConnections[index++];
-            }
-#else
             offsets->SetValue(cc, offset);
             offset += numPointsPerCell;
             for (vtkIdType i = 0; i < numPointsPerCell; i++)
             {
                 conn->SetValue(connIndex++, xmfConnections[index++]);
             }
-#endif
         }
-#if LIB_VERSION_LE(VTK,8,1,0)
-        // Resize the Array to the Proper Size
-        cells->GetData()->Resize(index - sub);
-#else
         offsets->SetValue(numCells,offset); // final offset value
         conn->Resize(connIndex);
         cells->SetData(offsets,conn);
-#endif
         data->SetCells(cell_types, cells);
         cells->Delete();
         delete[] cell_types;
@@ -2088,20 +2054,6 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         vtkCellArray * cells = vtkCellArray::New();
 
         XdmfInt32 arrayOffset = 0;
-#if LIB_VERSION_LE(VTK,8,1,0)
-        /* Get the pointer */
-        vtkIdType * cells_ptr = cells->WritePointer(numCells, numCells * (1 + nodesPerElement));
-
-        for(vtkIdType i=0; i<numCells; ++i)
-        {
-            *cells_ptr++ = nodesPerElement;
-            topology->GetConnectivity()->GetValues(arrayOffset,
-                                                   cells_ptr,
-                                                   nodesPerElement);
-            cells_ptr += nodesPerElement;
-            arrayOffset += nodesPerElement;
-        }
-#else
         vtkNew<vtkIdTypeArray> conn;
         conn->SetNumberOfTuples(nodesPerElement*numCells);
         vtkIdType *conn_ptr = conn->WritePointer(0,nodesPerElement*numCells);
@@ -2121,7 +2073,6 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         offsets->SetValue(numCells,offset); // final offset value
 
         cells->SetData(offsets,conn); 
-#endif
         data->SetCells(vtkCellType, cells);
         cells->Delete();
         delete newGrid;

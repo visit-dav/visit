@@ -63,7 +63,6 @@ function bv_hdf5_info
     export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
     # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
     export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
-    export HDF5_MD5_CHECKSUM="a482686e733514a51cde12d6fe5c5d95"
     export HDF5_SHA256_CHECKSUM="1dbefeeef7f591897c632b2b090db96bb8d35ad035beaa36bc39cb2bc67e0639"
 }
 
@@ -568,6 +567,13 @@ function build_hdf5
         cf_zlib="--with-zlib=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
     fi
 
+    cf_extra_flags=""
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        if [[ "$(uname -m)" == "arm64" ]]; then
+            cf_extra_flags="-Wno-error=implicit-function-declaration"
+        fi
+    fi
+
     # Disable Fortran on Darwin since it causes HDF5 builds to fail.
     if [[ "$OPSYS" == "Darwin" ]]; then
         cf_fortranargs=""
@@ -625,10 +631,11 @@ function build_hdf5
 
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
+        C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
         info "Invoking command to configure $bt HDF5"
         set -x
         sh -c "../configure CC=\"$cf_c_compiler\" \
-            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $cf_extra_flags\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
             ${cf_build_parallel} ${extra_ac_flags} $build_mode"

@@ -7,9 +7,7 @@
 #include <visit-config.h>
 
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkEdgeTable.h>
@@ -111,11 +109,7 @@ int vtkUniqueFeatureEdges::RequestData(
   double cosAngle = 0;
   vtkIdType lineIds[2];
   vtkIdType npts;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *pts;
-#else
   const vtkIdType *pts;
-#endif
   vtkCellArray *inPolys, *newPolys;
   vtkDataArray *polyNormals = NULL;
   vtkIdType numPts, numCells, numPolys, numStrips, nei;
@@ -179,16 +173,10 @@ int vtkUniqueFeatureEdges::RequestData(
       {
       newPolys->Allocate(newPolys->EstimateSize(numStrips,5));
       }
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkCellArray *inStrips = input->GetStrips();
-    for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); )
-      {
-#else
     auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
     for (inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell())
       {
       inStrips->GetCurrentCell(npts,pts);
-#endif
       vtkTriangleStrip::DecomposeStrip(npts, pts, newPolys);
       }
     Mesh->SetPolys(newPolys);
@@ -231,14 +219,6 @@ int vtkUniqueFeatureEdges::RequestData(
     polyNormals->SetNumberOfComponents(3);
     polyNormals->Allocate(newPolys->GetNumberOfCells());
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-	vtkIdType cellId = 0;
-    for (newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts); cellId++)
-      {
-      vtkPolygon::ComputeNormal(inPts,npts,pts,n);
-      polyNormals->InsertTuple(cellId,n);
-      }
-#else
     auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
     for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal(); npIter->GoToNextCell())
       {
@@ -246,7 +226,6 @@ int vtkUniqueFeatureEdges::RequestData(
       vtkPolygon::ComputeNormal(inPts,npts,pts,n);
       polyNormals->InsertTuple(npIter->GetCurrentCellId(),n);
       }
-#endif
 
     cosAngle = cos( vtkMath::RadiansFromDegrees( this->FeatureAngle ) );
     }
@@ -258,18 +237,11 @@ int vtkUniqueFeatureEdges::RequestData(
   vtkIdType progressInterval=numCells/20+1;
 
   numBEdges = numNonManifoldEdges = numFedges = numManifoldEdges = 0;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType cellId;
-  for (cellId=0, newPolys->InitTraversal();
-       newPolys->GetNextCell(npts,pts) && !abort; cellId++)
-    {
-#else
   auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
   for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal() && !abort; npIter->GoToNextCell())
     {
     npIter->GetCurrentCell(npts,pts);
     vtkIdType cellId = npIter->GetCurrentCellId();
-#endif
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
       this->UpdateProgress ((double)cellId / numCells);

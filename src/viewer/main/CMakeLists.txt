@@ -190,11 +190,7 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0)")
-    set(vtkqtlib vtkGUISupportQt)
-else()
-    set(vtkqtlib VTK::GUISupportQt)
-endif()
+set(vtkqtlib VTK::GUISupportQt)
 
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
@@ -249,7 +245,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC")
     
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)

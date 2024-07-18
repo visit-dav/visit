@@ -1,13 +1,16 @@
-
+ 
 function bv_qt6_initialize
 {
-    export DO_QT6="no"
+    export DO_QT6="yes"
 }
 
 function bv_qt6_enable
 { 
-    DO_QT6="yes"
-    DO_QT="no"
+    if [[ "$DO_QT" == "no" ]] ; then
+        DO_QT6="yes"
+    else
+        DO_QT6="no"
+    fi
 }
 
 function bv_qt6_disable
@@ -90,6 +93,7 @@ function bv_qt6_ensure
     return 0
 }
 
+
 function apply_qt6_base_patch
 {
      if [[ "$OPSYS" == "Darwin" ]]; then
@@ -97,6 +101,44 @@ function apply_qt6_base_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+    fi
+    qt6_xkbcommon_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function qt6_xkbcommon_patch
+{
+    info "Patching qt 6 for xkbcommon issue"
+    patch -p0 <<EOF
+-- qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp.orig	2024-05-21 08:51:16.000000000 -0700
++++ qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp	2024-05-21 08:50:33.000000000 -0700
+@@ -236,16 +236,20 @@
+         Xkb2Qt<XKB_KEY_dead_O,                  Qt::Key_Dead_O>,
+         Xkb2Qt<XKB_KEY_dead_u,                  Qt::Key_Dead_u>,
+         Xkb2Qt<XKB_KEY_dead_U,                  Qt::Key_Dead_U>,
+         Xkb2Qt<XKB_KEY_dead_small_schwa,        Qt::Key_Dead_Small_Schwa>,
+         Xkb2Qt<XKB_KEY_dead_capital_schwa,      Qt::Key_Dead_Capital_Schwa>,
+         Xkb2Qt<XKB_KEY_dead_greek,              Qt::Key_Dead_Greek>,
++/* The following for XKB_KEY_dead keys got removed in libxkbcommon 1.6.0
++   The define check is kind of version check here. */
++#ifdef XKB_KEY_dead_lowline
+         Xkb2Qt<XKB_KEY_dead_lowline,            Qt::Key_Dead_Lowline>,
+         Xkb2Qt<XKB_KEY_dead_aboveverticalline,  Qt::Key_Dead_Aboveverticalline>,
+         Xkb2Qt<XKB_KEY_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline>,
+         Xkb2Qt<XKB_KEY_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay>,
++#endif
+ 
+         // Special keys from X.org - This include multimedia keys,
+         // wireless/bluetooth/uwb keys, special launcher keys, etc.
+         Xkb2Qt<XKB_KEY_XF86Back,                Qt::Key_Back>,
+         Xkb2Qt<XKB_KEY_XF86Forward,             Qt::Key_Forward>,
+         Xkb2Qt<XKB_KEY_XF86Stop,                Qt::Key_Stop>,
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 6 for xkbcommon issue failed"
+        return 1
     fi
 }
 
@@ -323,7 +365,7 @@ function build_qt6_base
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_opengl_LIBRARY:STRING="
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
-        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_GL_PREFERENCE:STRING=LEGACY"
+        qt_cmake_flags="${qt_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
     fi
     info "Configuring Qt6 base: . . . "
     set -x
@@ -343,7 +385,7 @@ function build_qt6_base
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building Qt6 base . . . "
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
 
     if [[ $? != 0 ]] ; then
         warn "Qt6 base build failed.  Giving up"
@@ -351,7 +393,7 @@ function build_qt6_base
     fi
 
     info "Installing Qt6  base . . . "
-    $MAKE install
+    ${CMAKE_COMMAND} --install .
 
     # Qt screws up permissions in some cases.  Try to fix that.
     chmod -R a+rX ${VISITDIR}/qt/${QT6_VERSION}
@@ -397,25 +439,16 @@ function build_qt6_tools
     fi
 
     cd ${QT6_TOOLS_BUILD_DIR}
-    copts="-DQt6_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
-    copts="${copts} -DCMAKE_INSTALL_PREFIX:PATH=${QT6_INSTALL_DIR}"
-    copts="${copts} -DCMAKE_CXX_STANDARD:STRING=17"
-    copts="${copts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
-    info "qt6 tools options: $copts"
-    info "cmake_install ${CMAKE_INSTALL}"
-    info "cmake_command ${CMAKE_COMMAND}"
-    qt6_path="${CMAKE_INSTALL}:$PATH"
-    info "qt6 tools path: $qt6_path"
    
     info "Configuring Qt6 tools . . . "
-    env PATH="${qt6_path}" CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${CMAKE_COMMAND} ${copts} ../${QT6_TOOLS_SOURCE_DIR}
+    env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
+        ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_TOOLS_SOURCE_DIR}
 
     info "Building Qt6 tools . . . "
-    $MAKE $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
 
     info "Installing Qt6 tools . . . "
-    $MAKE install 
+    ${CMAKE_COMMAND} --install .
 
     return 0;
 }
@@ -450,21 +483,16 @@ function build_qt6_svg
     fi
 
     cd ${QT6_SVG_BUILD_DIR}
-    copts="-DQt6_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
-    copts="${copts} -DCMAKE_INSTALL_PREFIX:PATH=${QT6_INSTALL_DIR}"
-    copts="${copts} -DCMAKE_CXX_STANDARD:STRING=17"
-    copts="${copts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
-    qt6_path="${CMAKE_INSTALL}:$PATH"
-   
+
     info "Configuring Qt6 svg . . . "
-    env PATH="${qt6_path}" CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${CMAKE_COMMAND} ${copts} ../${QT6_SVG_SOURCE_DIR}
+    env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
+        ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_SVG_SOURCE_DIR}
 
     info "Building Qt6 svg . . . "
-    $MAKE $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
 
     info "Installing Qt6 svg . . . "
-    $MAKE install 
+    ${CMAKE_COMMAND} --install .
 
     return 0;
 }
@@ -522,7 +550,7 @@ function bv_qt6_build
 
 
             # tools submodule
-            if test -f QT6_INSTALL_DIR/modules/Tools.json ; then
+            if test -f ${QT6_INSTALL_DIR}/modules/Tools.json ; then
                 info "Qt 6 submodule tools already exists"
             else
                 info "Building QT6 tools (~4 minutes)"
@@ -530,7 +558,7 @@ function bv_qt6_build
             fi
 
             # svg submodule
-            if test -f QT6_INSTALL_DIR/modules/Svg.json ; then
+            if test -f ${QT6_INSTALL_DIR}/modules/Svg.json ; then
                 info "Qt 6 submodule svg already exists"
             else
                 info "Building QT6 svg (~2 minutes)"

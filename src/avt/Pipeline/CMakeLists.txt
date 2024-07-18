@@ -81,13 +81,8 @@ include_directories(
     ${VTK_INCLUDE_DIRS}
     ${ZLIB_INCLUDE_DIR})
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkCommonDataModel vtkCommonMath
-                vtkCommonTransforms vtkFiltersGeometry)
-else()
-    set(vtklibs VTK::CommonCore VTK::CommonDataModel VTK::CommonMath
-                VTK::CommonTransforms VTK::FiltersGeometry)
-endif()
+set(vtklibs VTK::CommonCore VTK::CommonDataModel VTK::CommonMath
+            VTK::CommonTransforms VTK::FiltersGeometry)
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 if(NOT VISIT_DBIO_ONLY)

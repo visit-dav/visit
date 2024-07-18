@@ -8,8 +8,6 @@
 
 #include <vtkStimulateReader.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkImageData.h>
 #include <vtkObjectFactory.h>
 #include <vtkByteSwap.h>
@@ -71,16 +69,7 @@ int vtkStimulateReader::RequestInformation(
 int vtkStimulateReader::OpenFile(void)
 {
   // Close file from any previous image
-#if LIB_VERSION_LE(VTK,8,1,0)
-  if (this->File)
-    {
-    this->File->close();
-    delete this->File;
-    this->File = NULL;
-    }
-#else
   this->CloseFile();
-#endif
 
   char spr_name[1024];
   char sdt_name[1024];

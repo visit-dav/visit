@@ -18,7 +18,7 @@
 # To create your own modular file, see the docs at
 # //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.4.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.4.1"}
 
 ####
 # Trunk:
@@ -38,9 +38,9 @@ export TAGGED_BUILD="no"
 ###
 # Tagged Release:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="no"
-#export TAGGED_BUILD="yes"
+# export TRUNK_BUILD="no"
+# export RC_BUILD="no"
+# export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
@@ -445,7 +445,7 @@ function bv_write_unified_file
     cat $bv_PREFIX/bv_main.sh >> $OUTPUT_bv_FILE
     cat $bv_PREFIX/helper_funcs.sh >> $OUTPUT_bv_FILE
     cat ${bv_PREFIX}/bv_xml_parser.sh >> $OUTPUT_bv_FILE
-    cat ${bv_PREFIX}/bv_visit.sh | sed "s/VISIT_MD5_CHECKSUM=\"\"/VISIT_MD5_CHECKSUM=\"$md5sum\"/" | sed "s/VISIT_SHA256_CHECKSUM=\"\"/VISIT_SHA256_CHECKSUM=\"$sha256sum\"/" >> $OUTPUT_bv_FILE
+    cat ${bv_PREFIX}/bv_visit.sh | sed "s/VISIT_SHA256_CHECKSUM=\"\"/VISIT_SHA256_CHECKSUM=\"$sha256sum\"/" >> $OUTPUT_bv_FILE
 
     for (( i = 0; i < ${#xmlp_alllibs[*]}; ++i ))
     do

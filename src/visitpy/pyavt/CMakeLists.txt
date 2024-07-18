@@ -10,6 +10,13 @@
 #  Cyrus Harrison, Wed Apr 11 14:21:57 PDT 2012
 #  Use new cmake commands for distutils setup.
 #
+#  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
+#  Use new cmake commands for pip setup.
+#
+#  Kathleen Biagas, Tue Mar 5, 2024
+#  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
+#  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
+#
 #****************************************************************************
 
 # deps for pyavt
@@ -20,10 +27,11 @@ SET(pyavt_sources py_src/__init__.py
                   py_src/templates/simple_expression.py
                   py_src/templates/simple_query.py)
 
-PYTHON_ADD_DISTUTILS_SETUP(pyavt_py_setup
-                           site-packages
-                           setup.py
-                           ${pyavt_sources})
+PYTHON_ADD_PIP_SETUP(NAME pyavt_py_setup
+                     DEST_DIR site-packages
+                     PY_MODULE_DIR pyavt
+                     PY_SETUP_FILE setup.py
+                     PY_SOURCES ${pyavt_sources})
 
 
 

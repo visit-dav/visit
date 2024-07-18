@@ -171,4 +171,35 @@ SetSaveWindowAttributes(SaveWindowAtts)
 SaveWindow()
 Test("unv_06", SaveWindowAtts)
 
+DeleteAllPlots()
+CloseDatabase(pjoin(datapath, "small_sur.unv"))
+
+OpenDatabase(pjoin(datapath, "poly.msh"))
+
+AddPlot("Mesh", "mesh", 1, 1)
+MeshAtts = MeshAttributes()
+MeshAtts.legendFlag = 1
+MeshAtts.lineWidth = 3
+MeshAtts.meshColor = (0, 0, 255, 255)
+MeshAtts.meshColorSource = MeshAtts.MeshCustom  # Foreground, MeshCustom, MeshRandom
+SetPlotOptions(MeshAtts)
+
+AddPlot("Mesh", "freemesh", 1, 1)
+MeshAtts = MeshAttributes()
+MeshAtts.legendFlag = 1
+MeshAtts.lineWidth = 2
+MeshAtts.meshColor = (255, 0, 0, 255)
+MeshAtts.meshColorSource = MeshAtts.MeshCustom  # Foreground, MeshCustom, MeshRandom
+SetPlotOptions(MeshAtts)
+
+AddPlot("Vector", "free_normals", 1, 1)
+AddPlot("Vector", "normals2d", 1, 1)
+
+DrawPlots()
+ResetView()
+SaveWindowAtts = SaveWindowAttributes()
+SaveWindowAtts.width = 1024
+SaveWindowAtts.height = 1024
+Test("unv_07", SaveWindowAtts)
+
 Exit()

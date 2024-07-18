@@ -24,7 +24,6 @@ function bv_advio_info
     export ADVIO_VERSION=${ADVIO_VERSION:-"1.2"}
     export ADVIO_COMPATIBILITY_VERSION=${ADVIO_COMPATIBILITY_VERSION:-"1.2"}
     export ADVIO_BUILD_DIR=${ADVIO_BUILD_DIR:-AdvIO-1.2}
-    export ADVIO_MD5_CHECKSUM="db6def939a2d5dd4d3d6203ba5d3ec7e"
     export ADVIO_SHA256_CHECKSUM="cd89d8a7f1fe94c1bd2d04888028d8b2b98a37853c4a8d5b2b7417b83ea1e803"
 }
 
@@ -67,42 +66,162 @@ function bv_advio_ensure
     fi
 }
 
-function apply_advio_12_mavericks_patch
+function apply_advio_12_darwin_patch
 {
     patch -p0 << \EOF
-diff -c AdvIO-1.2/Base/AdvTypes.h.orig AdvIO-1.2/Base/AdvTypes.h
-*** AdvIO-1.2/Base/AdvTypes.h.orig      2014-11-19 17:29:43.000000000 -0800
---- AdvIO-1.2/Base/AdvTypes.h   2014-11-19 17:30:32.000000000 -0800
-***************
-*** 30,53 ****
-  #error  c++ support is disabled. Please recompile AdvIO!!
-  #endif
-  
-- #if SIZEOF_BOOL != 0
-- 
-- /* use C++-builtin boolean (do nothing) */
-- 
-- #elif USE_STL
-- 
-- /* use stl's boolean */
-- #include <stl.h>
-- 
-- #else
-- 
-- /* use own boolean */
-- typedef int bool;
-- const bool false = 0;
-- const bool true = !false;
-- 
-- #endif
-- 
-  #else
-  /*---------- C ----------*/
-  
---- 30,35 ----
-
+--- AdvIO-1.2/configure	2006-02-14 05:19:56.000000000 -0800
++++ AdvIO-1.2/configure.new	2024-02-09 16:28:49.000000000 -0800
+@@ -1897,11 +1897,12 @@
+ #line 1898 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(short));
++  fprintf(f, "%d\n", (int)sizeof(short));
+   exit(0);
+ }
+ EOF
+@@ -1936,11 +1937,12 @@
+ #line 1937 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(int));
++  fprintf(f, "%d\n", (int)sizeof(int));
+   exit(0);
+ }
+ EOF
+@@ -1975,11 +1977,12 @@
+ #line 1976 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(long));
++  fprintf(f, "%d\n", (int)sizeof(long));
+   exit(0);
+ }
+ EOF
+@@ -2014,11 +2017,12 @@
+ #line 2015 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(long long));
++  fprintf(f, "%d\n", (int)sizeof(long long));
+   exit(0);
+ }
+ EOF
+@@ -2053,11 +2057,12 @@
+ #line 2054 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(float));
++  fprintf(f, "%d\n", (int)sizeof(float));
+   exit(0);
+ }
+ EOF
+@@ -2092,11 +2097,12 @@
+ #line 2093 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(double));
++  fprintf(f, "%d\n", (int)sizeof(double));
+   exit(0);
+ }
+ EOF
+@@ -2131,11 +2137,12 @@
+ #line 2132 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(long double));
++  fprintf(f, "%d\n", (int)sizeof(long double));
+   exit(0);
+ }
+ EOF
+@@ -2170,11 +2177,12 @@
+ #line 2171 "configure"
+ #include "confdefs.h"
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(size_t));
++  fprintf(f, "%d\n", (int)sizeof(size_t));
+   exit(0);
+ }
+ EOF
+@@ -2309,15 +2317,13 @@
+   cat > conftest.$ac_ext <<EOF
+ #line 2311 "configure"
+ #include "confdefs.h"
+-#ifdef __cplusplus
+-extern "C" void exit(int);
+-#endif
+ #include <stdio.h>
++#include <stdlib.h>
+-main()
++int main()
+ {
+   FILE *f=fopen("conftestval", "w");
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(bool));
++  fprintf(f, "%d\n", (int)sizeof(bool));
+   exit(0);
+ }
+ EOF
+@@ -3969,7 +3975,7 @@
+ #============================================================
+ 
+ 
+-subdirs="${subdirs} Base FileIO IDL DocIO doc"
++subdirs="${subdirs} Base FileIO DocIO doc"
+ #if test "${adv_cv_lib_micogtk}" = "yes"; then
+ #  subdirs="${subdirs} Frame"
+ #  subdirs="${subdirs} Compo"
 EOF
     if [[ $? != 0 ]] ; then
+        echo "Failed applying Darwin patch"
         return 1
     fi
 
@@ -112,10 +231,7 @@ EOF
 function apply_advio_12_patch
 {
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        if [[ `sw_vers -productVersion` == 10.9.[0-9]* || `sw_vers -productVersion` == 10.1*.[0-9]* ]] ; then
-            info "Applying OS X patch . . ."
-            apply_advio_12_mavericks_patch
-        fi
+        apply_advio_12_darwin_patch
     fi
 
     return $?
@@ -140,7 +256,7 @@ function apply_advio_patch
 # Added patch for OS X 10.9 Mavericks.                                        #
 #                                                                             #
 # Kevin Griffin, Mon Aug 8 17:34:52 PDT 2016                                  #
-# Updated patch for OS X 10.1*.                                                 #
+# Updated patch for OS X 10.1*.                                               #
 # *************************************************************************** #
 
 function build_advio
@@ -194,6 +310,7 @@ function build_advio
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         ADVIO_DEBUG="--enable-debug"
     fi
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \

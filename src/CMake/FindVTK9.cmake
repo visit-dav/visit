@@ -13,6 +13,14 @@
 #  Test for lib vs lib64.
 #  Use QT_MAJOR_VERSION instead of '5' or '6'.
 #
+#  Kathleen Biagas, Wed Feb 28, 2024
+#  Removed install logic for python modules.  Now handled in
+#  lib/CMakeLists.txt with build/lib/site-packages/ directory install.
+#
+#  Kathleen Biagas, Thu May 2, 2024
+#  On Windows, ensure 'vtksys' and 'WrappingPythonCore' are handled correctly
+#  when installing the .libs.
+#  
 #*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
@@ -109,21 +117,31 @@ else(VISIT_VTK_SKIP_INSTALL)
         SET(pathnameandprefixlib "${VTK_PREFIX_PATH}/lib/")
     endif(NOT WIN32)
     macro(SETUP_INSTALL vtk_component)
+        set(sepchar "-")
+        if(APPLE)
+            set(sepchar ".")
+        endif(APPLE)
         if(${vtk_component} MATCHES "vtksys")
-          set(LIBNAME   ${pathnameandprefix}${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+          set(LIBNAME   ${pathnameandprefix}${vtk_component}${sepchar}${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
         elseif(${vtk_component} MATCHES "WrappingPythonCore")
           # also needs PYTHON_VERSION
-          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_VERSION}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_VERSION}${sepchar}${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
         else()
-            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${sepchar}${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
         endif()
         if(EXISTS ${LIBNAME})
             THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
         endif()
 
         if(WIN32)
-            # install .lib versions, too
-            set(LIBNAME   ${pathnameandprefixlib}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            if(${vtk_component} MATCHES "vtksys")
+                set(LIBNAME ${pathnameandprefixlib}${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            elseif(${vtk_component} MATCHES "WrappingPythonCore")
+                # also needs PYTHON_VERSION
+                set(LIBNAME ${pathnameandprefixlib}vtk${vtk_component}${PYTHON_VERSION}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            else()
+                set(LIBNAME ${pathnameandprefixlib}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            endif()
             if(EXISTS ${LIBNAME})
                 THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
             endif(EXISTS ${LIBNAME})
@@ -160,23 +178,6 @@ if(EXISTS ${VTK_PY_WRAPPERS_DIR}/vtkmodules)
 
     if(VISIT_VTK_SKIP_INSTALL)
         message(STATUS "Skipping installation of VTK Python bindings")
-    else()
-        install(FILES ${VTK_PY_WRAPPERS_DIR}/vtk.py
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-                PERMISSIONS OWNER_READ OWNER_WRITE
-                            GROUP_READ GROUP_WRITE
-                            WORLD_READ
-            )
-
-        install(DIRECTORY ${VTK_PY_WRAPPERS_DIR}/vtkmodules
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-                FILE_PERMISSIONS OWNER_WRITE OWNER_READ
-                                 GROUP_WRITE GROUP_READ
-                                             WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                                      GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                                  WORLD_READ WORLD_EXECUTE
-            )
     endif()
 
     set(VTK_PYTHON_WRAPPERS_FOUND TRUE)

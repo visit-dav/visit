@@ -5,10 +5,10 @@
 #include <QvisColorTableButton.h>
 #include <QAction>
 #include <QActionGroup>
-#include <QApplication>
 #include <QMenu>
 #include <QPainter>
 #include <QPixmap>
+#include <QTimer>
 
 #include <ColorTableAttributes.h>
 #include <ColorControlPointList.h>
@@ -27,6 +27,9 @@ QvisColorTableButton::ColorTableButtonVector QvisColorTableButton::buttons;
 QStringList  QvisColorTableButton::colorTableNames;
 bool        QvisColorTableButton::popupHasEntries = false;
 ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
+
+QObject *QvisColorTableButton::colorTableOpenCreator=0;
+const char *QvisColorTableButton::colorTableOpenSlot=0;
 
 // ****************************************************************************
 // Method: QvisColorTableButton::QvisColorTableButton
@@ -54,6 +57,9 @@ ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
 //   is attached. Connect QMenu's 'aboutToShow' instead of QPushButton's
 //   'pressed' signal.
 //
+//   Kathleen Biagas, Wed May 8, 2024
+//   Add 'More Color Tables' option which will open the ColorTableWindow.
+//
 // ****************************************************************************
 
 QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
@@ -68,6 +74,8 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
         colorTableMenuActionGroup = new QActionGroup(0);
 
         colorTableMenu = new QMenu(0);
+        colorTableMenuActionGroup->addAction(colorTableMenu->addAction("More Color Tables ..."));
+        colorTableMenu->addSeparator();
         colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
         colorTableMenu->addSeparator();
     }
@@ -359,6 +367,10 @@ QvisColorTableButton::popupPressed()
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed grouping.
 //
+//   Kathleen Biagas, Wed May 8, 2024
+//   index 0 is now the 'More Color Tables' option, which calls the
+//   OpenColorTable slot.
+//
 // ****************************************************************************
 
 void
@@ -368,6 +380,11 @@ QvisColorTableButton::colorTableSelected(QAction *action)
 
     if(index == 0)
     {
+         if(colorTableOpenCreator != 0 && colorTableOpenSlot)
+             QTimer::singleShot(0, colorTableOpenCreator, colorTableOpenSlot);
+    }
+    else if(index == 1)
+    {
         QString def("Default");
         emit selectedColorTable(true, def);
         setText(def);
@@ -376,7 +393,7 @@ QvisColorTableButton::colorTableSelected(QAction *action)
     }
     else
     {
-        QString ctName = colorTableNames.at(index-1);
+        QString ctName = colorTableNames.at(index-2);
 
         emit selectedColorTable(false, ctName);
         setText(ctName);
@@ -534,6 +551,9 @@ QvisColorTableButton::getColorTableIndex(const QString &ctName)
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories/grouping.
 //
+//   Kathleen Biagas, Wed May 8, 2024
+//   Add 'More Color Tables' option which will open the ColorTableWindow.
+//
 // ****************************************************************************
 
 void
@@ -545,6 +565,8 @@ QvisColorTableButton::regeneratePopupMenu()
         colorTableMenuActionGroup->removeAction(actions[i]);
     colorTableMenu->clear();
 
+    colorTableMenuActionGroup->addAction(colorTableMenu->addAction("More Color Tables ..."));
+    colorTableMenu->addSeparator();
     colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
     colorTableMenu->addSeparator();
     // Add an item for each color table.
@@ -638,3 +660,31 @@ QvisColorTableButton::setColorTableAttributes(ColorTableAttributes *cAtts)
 {
     colorTableAtts = cAtts;
 }
+
+
+// ****************************************************************************
+// Method: QvisColorTableButton::ConnectColorTableOpen
+//
+// Purpose: 
+//   Sets the object and slot function that will be called when the user
+//   clicks on the option to open the color table window.
+//
+// Arguments:
+//   receiver : The object that will handle the event.
+//   slot     : The slot function that will be called.
+//
+// Programmer: Kathleen Biagas
+// Creation:   May 8, 2024
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableButton::ConnectColorTableOpen(QObject *receiver,
+    const char *slot)
+{
+    colorTableOpenCreator = receiver;
+    colorTableOpenSlot = slot;
+}
+

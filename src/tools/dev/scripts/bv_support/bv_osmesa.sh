@@ -15,9 +15,7 @@ function bv_osmesa_disable
 
 function bv_osmesa_depends_on
 {
-    depends_on="llvm"
-
-    echo ${depends_on}
+    echo "llvm"
 }
 
 function bv_osmesa_info
@@ -26,7 +24,6 @@ function bv_osmesa_info
     export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.xz"}
     export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
-    export OSMESA_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
     export OSMESA_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
 
@@ -265,6 +262,37 @@ EOF
         return 1
     fi
 
+    #
+    # Patch to address VTK texture buffer error.
+    # Taken from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/9750
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpipe/lp_screen.c
+*** src/gallium/drivers/llvmpipe/lp_screen.c.orig        Fri Dec 15 14:33:53 PST 2023
+--- src/gallium/drivers/llvmpipe/lp_screen.c     Fri Dec 15 14:33:53 PST 2023
+***************
+*** 236,242 ****
+     case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
+        return 1;
+     case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
+!       return 65536;
+     case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
+        return 1;
+     case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
+--- 236,242 ----
+     case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
+        return 1;
+     case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
+!       return 134217728;
+     case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
+        return 1;
+     case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "OSMesa patch 6 failed."
+        return 1
+    fi
+
     return 0;
 }
 
@@ -317,12 +345,29 @@ function build_osmesa
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         OSMESA_DEBUG_BUILD="--enable-debug"
     fi
+    if [[ "$(uname -m)" == "x86_64" ]] ; then
+        OSMESA_GALLIUM_DRIVERS="swrast,swr"
+    else
+        OSMESA_GALLIUM_DRIVERS="swrast"
+    fi
 
     info "Configuring OSMesa . . ."
+    # add -fcommon if gcc >=10 to work around changes in compiler behavior
+    # see: https://wiki.gentoo.org/wiki/Project:Toolchain/Gcc_10_porting_notes/fno_common
+    # otherwise we would need to patch mesa to fix build problems
+
+    osmesa_c_opt_flags=""
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
+        if [[ ${VERSION} -ge 10 ]] ; then
+            osmesa_c_opt_flags="-fcommon"
+        fi
+    fi
+
     set -x
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${osmesa_c_opt_flags}" \
         CC=${C_COMPILER} \
         ./autogen.sh \
         --prefix=${VISITDIR}/osmesa/${OSMESA_VERSION}/${VISITARCH} \
@@ -338,7 +383,8 @@ function build_osmesa
         --disable-vdpau \
         --disable-va \
         --with-platforms= \
-        --with-gallium-drivers=swrast,swr \
+        --enable-llvm \
+        --with-gallium-drivers=${OSMESA_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC $OSMESA_DEBUG_BUILD \
         --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}

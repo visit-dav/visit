@@ -1,0 +1,886 @@
+#!/bin/sh
+set -e
+#-----------------------------------------------------------------------
+#
+# VISIT-BUILD - Build the visit distributions on either the open or 
+#               closed network.
+#
+# Author: Eric Brugger
+# Date:   October 27, 2000
+#
+# Usage:
+#    visit-build -d <distribution>
+# 
+# Notes:
+#    This script used to be two scripts, visit-build-open and 
+#    visit-build-closed. They have been combined into one.
+#
+# Modifications originally from visit-build-open:
+#   Brad Whitlock, Fri Dec 15 09:51:55 PDT 2006
+#   Added --enable-visitmodule for some platforms.
+#
+#   Hank Childs, Mon Oct 15 09:04:12 PDT 2007
+#   Add some print statements for usability.  Also make sure that 
+#   /usr/bin/X11 is in the path for yana and prism.  If you are a ksh
+#   user, your environment will not get sourced and xmkmf will not be
+#   found, leading configure to not find the right X libraries, which 
+#   will lead to a compile error.
+#
+#   Hank Childs, Wed Oct 17 14:28:48 PDT 2007
+#   Add support for ksh users on sunspot.  (Default environment
+#   inherited by "sh" is not enough to do a compile.)
+#
+#   Hank Childs, Wed Oct 17 16:25:14 PDT 2007
+#   Add a subject line to the status e-mails.  Also workaround problem
+#   with quad mailing out.
+#
+#   Hank Childs, Mon Oct 22 09:25:47 PDT 2007
+#   More ksh sunspot fixes.
+#
+#   Hank Childs, Sat Feb  9 14:18:54 PST 2008
+#   Change clearcase_bin to svn_bin.
+#
+#   Brad Whitlock, Fri Oct 10 15:25:27 PST 2008
+#   Added --enable-slivr to some of the Linux targets.
+#
+#   Brad Whitlock, Tue Dec  2 13:49:50 PST 2008
+#   Add --prefix for Linux targets so we can use -rpath for the engine
+#   wrapper library. I commented out sunspot since Qt4 does not build
+#   there.
+#
+#   Brad Whitlock, Fri May 14 10:23:41 PDT 2010
+#   I removed double builds and made the the packages always include
+#   the 3rd party libs since the size difference isn't worth the
+#   extra build time IMHO.
+#
+#   Cyrus Harrison, Thu Oct 14 09:59:13 PDT 2010
+#   Added cyrush@llnl.gov to the email list & fixed problem with
+#   creating proper config-site.cmake on alastor.
+#
+#   Eric Brugger, Fri Nov  5 15:21:42 PDT 2010
+#   I replaced yana with aztec.
+#
+#   Eric Brugger, Fri Nov  5 16:06:28 PDT 2010
+#   I removed up.
+#
+#   Cyrus Harrison, Tue Jan 11 11:42:58 PST 2011
+#   Pass types on command line for cmake vars:
+#      CMAKE_BUILD_TYPE & VISIT_THIRD_PARTY_INSTALL
+#
+#   Eric Brugger, Mon May 16 14:51:39 PDT 2011
+#   I added glory and redsky.
+#
+#   Eric Brugger, Fri Jun 10 13:24:20 PDT 2011
+#   I added -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON to the cmake command
+#   for ellipse.
+#
+#   Eric Brugger, Fri Aug  5 09:48:13 PDT 2011
+#   I added kickit.
+#
+#   Eric Brugger, Tue Sep  6 13:58:32 PDT 2011
+#   I added rzzeus.
+#
+#   Eric Brugger, Mon Jan 23 11:59:40 PST 2012
+#   I added sidious.
+#
+#   Eric Brugger, Wed Feb 29 12:15:34 PST 2012
+#   I added ubuntu1104_64.
+#
+#   Eric Brugger, Thu Mar  1 07:57:45 PST 2012
+#   I modified the builds on hoth and sidious to use the serial config
+#   site files.
+#
+#   Eric Brugger, Wed May  2 08:45:05 PDT 2012
+#   I removed ellipse and xchem.  I modified hoth since it is now an x86_64
+#   rhel6 system instead of an x86 rhel3 system.  I updated the e-mail
+#   addresses.
+#
+#   Eric Brugger, Wed Jun 13 08:38:15 PDT 2012
+#   I added atlas and rzthriller.
+#
+#   Eric Brugger, Thu Jun 21 16:17:04 PDT 2012
+#   I modified many of the builds to use cmake 2.8.8.
+#
+#   Eric Brugger, Wed Jun 27 11:40:14 PDT 2012
+#   I deleted alastor.
+#
+#   Eric Brugger, Mon Jul 30 10:13:05 PDT 2012
+#   I replaced atlas with prism.
+#
+#   Eric Brugger, Wed Sep 26 17:09:04 PDT 2012
+#   I deleted prism.
+#
+#   Eric Brugger, Wed Nov 14 09:15:07 PST 2012
+#   I deleted hoth.
+#
+#   Eric Brugger, Wed Nov 14 14:22:16 PST 2012
+#   I made the sidious build off by default. I modified the kickit build
+#   since it is now a linux-x86_64 system instead of a linux-intel system.
+#
+#   Eric Brugger, Wed Nov 14 15:53:56 PST 2012
+#   I modified the carver build to point to the new cmake.
+#
+#   Eric Brugger, Wed Nov 28 08:38:09 PST 2012
+#   I modified the ubuntu1104_64 build to point to the new cmake.
+#
+#   Brad Whitlock, Fri May 31 10:21:17 PDT 2013
+#   Replace "carver" with "carver". Add build for rzuseq.
+#
+#   Eric Brugger, Tue Oct 22 11:05:47 PDT 2013
+#   I removed rzthriller. I modified many of the builds to use cmake
+#   2.8.10.2.
+#
+#   Eric Brugger, Fri Aug 29 09:51:18 PDT 2014
+#   I modified the cmake execute line to build the paraDIS reader to
+#   several of the LLNL builds.
+#
+#   Eric Brugger, Wed Dec 10 13:26:12 PST 2014
+#   I added ubuntu1404_64.
+#
+#   Eric Brugger, Thu Feb 19 09:05:16 PST 2015
+#   I removed redsky. I modified many of the builds to use cmake 3.0.2.
+#
+#   Kathleen Biagas, Thu May  7 09:33:43 PDT 2015
+#   Added build for vulcan (copied from rzuseq).
+#
+#   Eric Brugger, Fri Sep 25 09:04:35 PDT 2015
+#   I removed sidious.
+#
+#   Eric Brugger, Tue Nov 22 16:07:04 PST 2016
+#   I added quartz.
+#
+#   Eric Brugger, Mon Jan  9 13:46:38 PST 2017
+#   I replaced aztec with surface.
+#
+#   Eric Brugger, Tue Feb  7 08:58:27 PST 2017
+#   I added rztrona.
+#
+#   Eric Brugger, Wed Jun 21 10:11:10 PDT 2017
+#   I replaced surface with cab.
+#
+#   Eric Brugger, Fri Sep 22 11:32:57 PDT 2017
+#   I replaced rzzeus with rzalastor.
+#
+#   Eric Brugger, Tue Apr  3 08:50:33 PDT 2018
+#   I deleted ubuntu1104_64 and added ifyou (Fedora Core 27).
+#
+#   Eric Brugger, Wed Oct 17 16:55:41 PDT 2018
+#   I deleted cab.
+#
+#   Eric Brugger, Fri Nov 30 09:56:06 PST 2018
+#   I added lassen.
+#
+#   Eric Brugger, Fri Dec 14 11:50:07 PST 2018
+#   I updated quartz for 3.0.0b.
+#
+#   Eric Brugger, Mon Feb 25 12:30:13 PST 2019
+#   I updated rztrona for 3.0.0b and removed rzalastor.
+#
+#   Eric Brugger, Mon Mar  4 08:19:03 PST 2019
+#   I added cooley.
+#
+#   Eric Brugger, Tue Mar  5 11:19:39 PST 2019
+#   I added rzansel. I removed carver and glory.
+#
+#   Eric Brugger, Wed May  1 09:36:56 PDT 2019
+#   I updated the 3.0.0b cmake paths to 3.0.0.
+#
+#   Eric Brugger, Thu Sep 26 17:35:20 PDT 2019
+#   I removed ifyou and ubuntu1404_64.
+#
+#   Eric Brugger, Fri Dec 13 14:04:47 PST 2019
+#   I updated the 3.0.0 cmake paths to 3.1.0 and added a "make manuals"
+#   step to build the sphinx manuals.
+#
+#   Eric Brugger, Mon Jan 13 15:28:16 PST 2020
+#   I removed rzuseq, vulcan.
+#
+#   Eric Brugger, Tue Feb 11 08:23:59 PST 2020
+#   I modified the kickit builds to do one build against the system
+#   OpenGL and the second against MesaGL.
+#
+#   Eric Brugger, Tue Jun 14 11:48:15 PDT 2022
+#   I updated the 3.2.0 cmake paths to 3.3.0.
+#
+#   Eric Brugger, Fri Feb 17 15:25:36 PST 2023
+#   I added poodle.
+#
+#   Eric Brugger, Tue May  2 14:55:44 PDT 2023
+#   I updated the path to cmake for building on rztrona.
+#
+#   Eric Brugger, Tue May  9 11:45:29 PDT 2023
+#   I updated the quartz build for toss4 and updated the cmake version
+#   to 3.24.3 on poodle.
+#
+#   Eric Brugger, Tue Jul 18 16:20:21 PDT 2023
+#   I added rzgenie.
+#
+#   Eric Brugger, Mon Oct 16 14:58:42 PDT 2023
+#   I removed quartz, rztrona and rzansel. I removed the "-none" option
+#   since all the machines are now off by default. Turning on a machine
+#   is now done with -<machine_name> instead of +<machine_name>.
+#
+#   Cyrus Harrison, Mon Mar 11 12:57:17 PDT 2024
+#   I removed rzgenie, replaced with rzwhippet. Removed cooley.
+#
+#   Eric Brugger,
+#   I added rzvernal.
+# 
+# Modifications from visit-build-closed:
+#   Hank Childs, Mon Oct 15 09:04:12 PDT 2007
+#   Add some print statements for usability.
+#
+#   Hank Childs, Thu Oct 18 15:40:05 PDT 2007
+#   Add ksh support for sunset.
+#
+#   Hank Childs, Mon Oct 22 09:25:47 PDT 2007
+#   More ksh support for sunset.
+#
+#   Hank Childs, Sat Feb  9 14:18:54 PST 2008
+#   Change clearcase_bin to svn_bin.
+#
+#   Eric Brugger, Mon Apr  7 13:51:23 PDT 2008
+#   Removed sc build.
+#
+#   Brad Whitlock, Tue Dec  2 13:49:50 PST 2008
+#   Add --prefix for Linux targets so we can use -rpath for the engine
+#   wrapper library. I commented out sunset since Qt4 does not build
+#   there.
+#
+#   Eric Brugger, Fri Nov  5 15:39:05 PDT 2010
+#   Replaced hopi with inca and removed pruple.
+#
+#   Eric Brugger, Wed Jan  5 09:39:22 PST 2011
+#   Added terminator.
+#
+#   Cyrus Harrison, Tue Jan 11 11:42:58 PST 2011
+#   Pass types on command line for cmake vars:
+#      CMAKE_BUILD_TYPE & VISIT_THIRD_PARTY_INSTALL
+#
+#   Eric Brugger, Fri Mar 25 10:20:22 PDT 2011
+#   Added cielo.
+#
+#   Eric Brugger, Tue Jun 21 15:06:05 PDT 2011
+#   I removed the code to swap out the xt-mpt module with the xt-mpich2
+#   module on cielo since the xt-mpich2 module was now the default.
+#
+#   Eric Brugger, Wed Jun 27 11:36:45 PDT 2012
+#   Deleted terminator.
+#
+#   Eric Brugger, Mon Jul 30 10:27:10 PDT 2012
+#   Added gremlin.
+#
+#   Eric Brugger, Wed Mar 20 11:48:51 PDT 2013
+#   Deleted gremlin. Replaced termite with hitit.
+#
+#   Eric Brugger, Thu Jun 20 10:36:14 PDT 2013
+#   I modified the hitit build since it is now an x86_64 system instead
+#   of an i686 system.
+#
+#   Eric Brugger, Tue Jul  9 11:23:43 PDT 2013
+#   I changed the gateway node to login to cielo.
+#
+#   Eric Brugger, Tue Oct 22 11:06:24 PDT 2013
+#   I modified many of the builds to use cmake 2.8.10.2.
+#
+#   Eric Brugger, Fri Aug 29 09:52:43 PDT 2014
+#   I modified the cmake execute line to build the paraDIS reader to
+#   several of the LLNL builds.
+# 
+#   Eric Brugger, Thu Feb 19 09:12:51 PST 2015
+#   I modified many of the builds to use cmake 3.0.2.
+#
+#   Eric Brugger, Mon Sep 19 14:13:23 PDT 2016
+#   Deleted cielo. Added trinity.
+#
+#   Eric Brugger, Mon Nov 21 11:47:57 PST 2016
+#   Added jade.
+#
+#   Eric Brugger, Mon Jan  9 13:33:33 PST 2017
+#   I replaced inca with zin.
+#
+#   Eric Brugger, Tue Jan 17 17:09:23 PST 2017
+#   I replaced hitit with winnipeg.
+#
+#   Eric  Brugger, Mon Oct  9 09:33:38 PDT 2017
+#   I updated the builds for visit 2.13.0.
+#
+#   Eric Brugger, Mon Nov 19 15:45:52 PST 2018
+#   Added shark.
+#
+#   Eric Brugger, Tue Mar 12 14:28:02 PDT 2019
+#   I updated jade for 3.0.0b. I added sierra.
+#
+#   Eric Brugger, Wed May  1 09:40:15 PDT 2019
+#   I updated the 3.0.0b cmake paths to 3.0.0.
+#
+#   Eric Brugger, Fri Dec 13 14:06:34 PST 2019
+#   I updated the 3.0.0 cmake paths to 3.1.0 and added a "make manuals"
+#   step to build the sphinx manuals. I also removed zin and shark.
+#
+#   Eric Brugger, Tue Feb 25 08:22:01 PST 2020
+#   Updated the compiler version in the cmake path for winnipeg and
+#   trinity.
+#
+#   Eric Brugger, Tue Jun 14 11:49:17 PDT 2022
+#   I updated the 3.2.0 cmake paths to 3.3.0. I removed winnipeg.
+#
+#   Eric Brugger, Thu Jul 27 16:51:41 PDT 2023
+#   I added magma.
+# 
+#   Justin Privitera, Thu Mar 14 10:58:55 PDT 2024
+#   Removed jade. Bye bye toss3.
+#   Updated magma and sierra.
+#   Removed trinity.
+# 
+# Modifications:
+#   Justin Privitera, Fri Jun 14 15:30:31 PDT 2024
+#   Combined visit-build-open and visit-build-closed into one script.
+#-----------------------------------------------------------------------
+
+test=no
+
+user=`whoami`
+result_dir=/usr/workspace/visit/visit/_release_builds/
+
+
+#
+# Set the user e-mail address.
+#
+emailName=brugger1@llnl.gov
+case $user in
+   biagas2)
+      emailName=biagas2@llnl.gov
+      ;; 
+   kbonnell)
+      emailName=biagas2@llnl.gov
+      ;; 
+   brugger1)
+      emailName=brugger1@llnl.gov
+      ;;
+   brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   harrison37)
+      emailName=cyrush@llnl.gov
+      ;;
+   cyrush)
+      emailName=cyrush@llnl.gov
+      ;;
+   justin)
+      emailName=privitera1@llnl.gov
+      ;;
+   mcmiller)
+      emailName=miller86@llnl.gov
+      ;;
+   miller)
+      emailName=miller86@llnl.gov
+      ;;
+esac
+
+#
+# Parse the execute line, providing default values for error checking.
+#
+kickit=false
+poodle=false
+lassen=false
+rzwhippet=false
+rzvernal=false
+magma=false
+sierra=false
+
+dist=undefined
+
+#
+# The loop is executed once for each symbol on the execute line.  This means
+# that $1 may be blank for later executions of the loop if any "shift 2"
+# commands are executed.  The variable abc is not used in the loop.  
+#
+for abc
+do
+   case $1 in
+      -none)
+         kickit=false
+         poodle=false
+         lassen=false
+         rzwhippet=false
+         rzvernal=false
+         magma=false
+         sierra=false
+         shift
+         ;;
+      -kickit)
+         kickit=true
+         shift
+         ;;
+      -poodle)
+         poodle=true
+         shift
+         ;;
+      -lassen)
+         lassen=true
+         shift
+         ;;
+      -rzwhippet)
+         rzwhippet=true
+         shift
+         ;;
+      -rzvernal)
+         rzvernal=true
+         shift
+         ;;
+      -magma)
+         magma=true
+         shift
+         ;;
+      -sierra)
+         sierra=true
+         shift
+         ;;
+      -d)
+         dist=$2
+         shift 2
+         ;;
+   esac
+done
+
+#
+# Check that the distribution name was provided.
+#
+if [ "$dist" = "undefined" ]
+then
+   echo "Usage: [-<machine name>] -d <distribution>"
+   echo "Valid machine names:"
+   echo "    kickit poodle lassen rzwhippet rzvernal"
+   echo "    magma (LC, x86_64)"
+   echo "    sierra (LC, ppc)"
+   exit
+fi
+
+#
+# Check that the distribution exists.
+#
+distfile=$dist.tar.gz
+if [ ! -f $distfile ]
+then
+   echo "Distribution file doesn't exist."
+   exit
+fi
+
+#
+# make sure landing place for results exist
+#
+if test ! -d $result_dir ; then
+   mkdir -p $result_dir
+fi
+
+#
+# Build on kickit.
+#
+rm -f kickit
+cat <<EOF > kickit
+#!/bin/sh
+set -e
+export PATH=/usr/gapps/gcc/gcc-9.1/bin:\$PATH
+export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64
+if test ! -e /home/$user/kickit ; then
+   mkdir /home/$user/kickit
+fi
+rm -rf /home/$user/kickit/visitbuild
+mkdir /home/$user/kickit/visitbuild
+mv kickit_$dist.tar.gz /home/$user/kickit/visitbuild/$dist.tar.gz
+cd /home/$user/kickit/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+mkdir ../build
+cd ../build
+/usr/gapps/visit/thirdparty_shared/3.4.0/opengl/cmake/3.24.3/linux-x86_64_gcc-9.1/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
+make -j 4 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on kickit"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -rf $dist
+gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
+cd $dist/src
+mkdir ../build
+cd ../build
+/usr/gapps/visit/thirdparty_shared/3.4.0/mesagl/cmake/3.24.3/linux-x86_64_gcc-9.1/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE="config-site/kickit.mesagl.cmake" >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
+make -j 4 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
+cd ../..
+echo ""                                       >> resultlog 2>&1
+echo "        build of visit on kickit"       >> resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ "$kickit" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on kickit"
+      cp kickit ~/kickit_buildit
+      cp $dist.tar.gz ~/kickit_$dist.tar.gz
+      echo "cd;chmod 750 kickit_buildit;./kickit_buildit" | bash &
+   fi
+fi
+
+#
+# Build on poodle
+#
+rm -f poodle
+cat <<EOF > poodle
+#!/bin/sh
+set -e
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+if test ! -d /usr/tmp/$user/poodle ; then
+   mkdir -p /usr/tmp/$user/poodle
+fi
+rm -rf /usr/tmp/$user/poodle/visitbuild
+mkdir /usr/tmp/$user/poodle/visitbuild
+cp poodle_$dist.tar.gz /usr/tmp/$user/poodle/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/poodle/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/poodle18.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.poodle
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
+rm -f resultlog
+echo "        build of visit on poodle"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ "$poodle" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on poodle"
+      cp poodle poodle_buildit
+      cp $dist.tar.gz poodle_$dist.tar.gz
+      chmod 750 poodle_buildit
+      ./poodle_buildit
+   fi
+fi
+
+#
+# Build on lassen.
+#
+rm -f lassen
+cat <<EOF > lassen
+#!/bin/sh
+set -e
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
+if test ! -d /usr/tmp/$user/lassen ; then
+   mkdir -p /usr/tmp/$user/lassen
+fi
+rm -rf /usr/tmp/$user/lassen/visitbuild
+mkdir /usr/tmp/$user/lassen/visitbuild
+mv lassen_$dist.tar.gz /usr/tmp/$user/lassen/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/lassen/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/lassen708.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+# skip manuals, old openssl on lassen undermines us
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+# cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.lassen
+cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
+rm -f resultlog
+echo "        build of visit on lassen"       > resultlog 2>&1
+echo "       -------------------------- "     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.lassen
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.lassen
+mail  -s "VisIt build ($dist): lassen" $emailName < resultlog
+EOF
+
+if [ "$lassen" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on lassen"
+      cp lassen lassen_buildit
+      cp $dist.tar.gz lassen_$dist.tar.gz
+      chmod 750 lassen_buildit
+      ./lassen_buildit
+   fi
+fi
+
+#
+# Build on rzwhippet.
+#
+rm -f rzwhippet
+cat <<EOF > rzwhippet
+#!/bin/sh
+set -e
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+if test ! -d /usr/tmp/$user/rzwhippet ; then
+   mkdir -p /usr/tmp/$user/rzwhippet
+fi
+rm -rf /usr/tmp/$user/rzwhippet/visitbuild
+mkdir /usr/tmp/$user/rzwhippet/visitbuild
+mv rzwhippet_$dist.tar.gz /usr/tmp/$user/rzwhippet/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzwhippet/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/rzwhippet17.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.rzwhippet
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
+rm -f resultlog
+echo "        build of visit on rzwhippet"    > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.rzwhippet
+mail  -s "VisIt build ($dist): rzwhippet" $emailName < resultlog
+EOF
+
+if [ "$rzwhippet" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on rzwhippet"
+      cp rzwhippet rzwhippet_buildit
+      cp $dist.tar.gz rzwhippet_$dist.tar.gz
+      chmod 750 rzwhippet_buildit
+      ./rzwhippet_buildit
+   fi
+fi
+
+#
+# Build on rzvernal.
+#
+rm -f rzvernal
+cat <<EOF > rzvernal
+#!/bin/sh
+set -e
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+if test ! -d /usr/tmp/$user/rzvernal ; then
+   mkdir -p /usr/tmp/$user/rzvernal
+fi
+rm -rf /usr/tmp/$user/rzvernal/visitbuild
+mkdir /usr/tmp/$user/rzvernal/visitbuild
+mv rzvernal_$dist.tar.gz /usr/tmp/$user/rzvernal/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzvernal/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/rzvernal10.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.rzvernal
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
+rm -f resultlog
+echo "        build of visit on rzvernal"     > resultlog 2>&1
+echo "       ----------------------------"    >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.rzvernal
+mail  -s "VisIt build ($dist): rzvernal" $emailName < resultlog
+EOF
+
+if [ "$rzvernal" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on rzvernal"
+      cp rzvernal rzvernal_buildit
+      cp $dist.tar.gz rzvernal_$dist.tar.gz
+      chmod 750 rzvernal_buildit
+      ./rzvernal_buildit
+   fi
+fi
+
+#
+# Build on magma
+#
+rm -f magma
+cat <<EOF > magma
+#!/bin/sh
+set -e
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+if test ! -d /usr/tmp/$user/magma ; then
+   mkdir -p /usr/tmp/$user/magma
+fi
+rm -rf /usr/tmp/$user/magma/visitbuild
+mkdir /usr/tmp/$user/magma/visitbuild
+cp magma_$dist.tar.gz /usr/tmp/$user/magma/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/magma/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/magma190.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.magma
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
+rm -f resultlog
+echo "        build of visit on magma"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.magma
+EOF
+
+if [ "$magma" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on magma"
+      cp magma magma_buildit
+      cp $dist.tar.gz magma_$dist.tar.gz
+      chmod 750 magma_buildit
+      ./magma_buildit
+   fi
+fi
+
+#
+# Build on sierra
+#
+rm -f sierra
+cat <<EOF > sierra
+#!/bin/sh
+set -e
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
+if test ! -d /usr/tmp/$user/sierra ; then
+   mkdir -p /usr/tmp/$user/sierra
+fi
+rm -rf /usr/tmp/$user/sierra/visitbuild
+mkdir /usr/tmp/$user/sierra/visitbuild
+cp sierra_$dist.tar.gz /usr/tmp/$user/sierra/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/sierra/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/sierra4358.cmake\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+# skip manuals, old openssl on lassen undermines us
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> buildlog 2>&1
+# cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+cp buildlog $result_dir/buildlog.sierra
+cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
+rm -f resultlog
+echo "        build of visit on sierra"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+cp resultlog $result_dir/resultlog.sierra
+EOF
+
+if [ "$sierra" = "true" ]
+then
+   if [ "$test" = "no" ]
+   then
+      echo "Building on sierra"
+      cp sierra sierra_buildit
+      cp $dist.tar.gz sierra_$dist.tar.gz
+      chmod 750 sierra_buildit
+      ./sierra_buildit
+   fi
+fi
+
+#
+# Clean up.
+#
+if [ "$test" = "no" ]
+then
+   rm -f kickit poodle lassen rzwhippet rzvernal magma sierra
+fi

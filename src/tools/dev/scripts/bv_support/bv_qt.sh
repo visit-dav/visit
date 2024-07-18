@@ -1,6 +1,6 @@
 function bv_qt_initialize
 {
-    export DO_QT="yes"
+    export DO_QT="no"
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
@@ -13,8 +13,8 @@ function bv_qt_enable
         DO_QT="yes"
         FORCE_QT="yes"
     else
-       DO_QT="no"
-       FORCE_QT="no"
+        DO_QT="no"
+        FORCE_QT="no"
     fi
 }
 
@@ -118,7 +118,6 @@ function bv_qt_info
         export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
         export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
         export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
-        export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
         export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
     else
         export QT_VERSION=${QT_VERSION:-"5.14.2"}
@@ -127,7 +126,6 @@ function bv_qt_info
         export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
         export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
         export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
-        export QT_MD5_CHECKSUM="b3d2b6d00e6ca8a8ede6d1c9bdc74daf"
         export QT_SHA256_CHECKSUM="c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"
     fi
 }
@@ -295,6 +293,10 @@ function apply_qt_patch
             cd ..
         fi
     elif [[ ${QT_VERSION} == 5.14.2 ]] ; then
+        apply_qt_5142_xkbcommon_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
         apply_qt_5142_numeric_limits_patch
         if [[ $? != 0 ]] ; then
             return 1
@@ -501,6 +503,34 @@ EOF
     fi
 
     return 0;
+}
+
+function apply_qt_5142_xkbcommon_patch
+{
+    info "Patching qt 5.14.2 for libxkbcommon-1.6.0 issue"
+    patch -p0 <<EOF
+--- qtbase/src/platformsupport/input/xkbcommon/qxkbcommon.cpp.orig	2024-05-21 12:54:00.432442000 -0700
++++ qtbase/src/platformsupport/input/xkbcommon/qxkbcommon.cpp	2024-05-21 12:55:35.162440000 -0700
+@@ -271,10 +271,14 @@
+         Xkb2Qt<XKB_KEY_dead_small_schwa,        Qt::Key_Dead_Small_Schwa>,
+         Xkb2Qt<XKB_KEY_dead_capital_schwa,      Qt::Key_Dead_Capital_Schwa>,
+         Xkb2Qt<XKB_KEY_dead_greek,              Qt::Key_Dead_Greek>,
++/* The following for XKB_KEY_dead keys got removed in libxkbcommon 1.6.0
++   The define check is kind of version check here. */
++#ifdef XKB_KEY_dead_lowline
+         Xkb2Qt<XKB_KEY_dead_lowline,            Qt::Key_Dead_Lowline>,
+         Xkb2Qt<XKB_KEY_dead_aboveverticalline,  Qt::Key_Dead_Aboveverticalline>,
+         Xkb2Qt<XKB_KEY_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline>,
+         Xkb2Qt<XKB_KEY_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay>,
++#endif
+ 
+         // Special keys from X.org - This include multimedia keys,
+         // wireless/bluetooth/uwb keys, special launcher keys, etc.
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 xkbcommon patch failed."
+        return 1
+    fi
 }
 
 function apply_qt_5142_numeric_limits_patch

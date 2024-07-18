@@ -25,7 +25,6 @@ function bv_mesagl_info
     export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.xz"}
     export MESAGL_URL=${MESAGL_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
-    export MESAGL_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
     export MESAGL_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
 
@@ -259,6 +258,37 @@ diff -c src/gallium/drivers/llvmpipe/lp_scene.h.orig src/gallium/drivers/llvmpip
 EOF
     if [[ $? != 0 ]] ; then
         warn "MesaGL patch 5 failed."
+        return 1
+    fi
+
+    #
+    # Patch to address VTK texture buffer error.
+    # Taken from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/9750
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpipe/lp_screen.c
+*** src/gallium/drivers/llvmpipe/lp_screen.c.orig        Fri Dec 15 14:33:53 PST 2023
+--- src/gallium/drivers/llvmpipe/lp_screen.c     Fri Dec 15 14:33:53 PST 2023
+***************
+*** 236,242 ****
+     case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
+        return 1;
+     case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
+!       return 65536;
+     case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
+        return 1;
+     case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
+--- 236,242 ----
+     case PIPE_CAP_TEXTURE_BUFFER_OBJECTS:
+        return 1;
+     case PIPE_CAP_MAX_TEXTURE_BUFFER_SIZE:
+!       return 134217728;
+     case PIPE_CAP_TEXTURE_BUFFER_OFFSET_ALIGNMENT:
+        return 1;
+     case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 6 failed."
         return 1
     fi
 

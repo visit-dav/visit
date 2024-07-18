@@ -12,16 +12,13 @@
 // LLNL
 #include <AtomicProperties.h> // common/utility
 #include <avtColorTables.h>
-#include <visit-config.h> // For LIB_VERSION_GE
 // a VisIt class
 #include <vtkPointMapper.h>
 
 
 #include <vtkActor.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkFloatArray.h>
@@ -839,15 +836,6 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
     scaleFactors->Allocate(numverts);
     }
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-  vtkIdType *vertptr = input->GetVerts()->GetPointer();
-  for (int ix=0; ix<numverts; ix++, vertptr += (1+*vertptr))
-    {
-    if (*vertptr != 1)
-      continue;
-
-    int atom = *(vertptr+1);
-#else
   auto verts = vtk::TakeSmartPointer(input->GetVerts()->NewIterator());
   for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell())
     {
@@ -856,7 +844,6 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
       continue;
 
     vtkIdType atom = ids->GetId(0);
-#endif
 
     int element_number = 0;
     if (element)
@@ -1057,24 +1044,6 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
 
   // We only want to draw a bond-half if its adjacent atom is a "real" atom.
   vector<bool> hasVertex(numpoints,false);
-#if LIB_VERSION_LE(VTK,8,1,0)
-  vtkCellArray *lines = input->GetLines();
-  vtkIdType *vertptr = input->GetVerts()->GetPointer();
-  for (int i=0; i<input->GetNumberOfVerts(); i++, vertptr += (1+*vertptr))
-    {
-    int atom = *(vertptr+1);
-    hasVertex[atom] = true;
-    }
-  vtkIdType *segments = lines->GetPointer();
-  vtkIdType *segptr = segments;
-  int lineIndex = 0;
-  for (int i=0; i<input->GetNumberOfLines(); i++)
-    {
-    if (*segptr == 2)
-      {
-      int v0 = *(segptr+1);
-      int v1 = *(segptr+2);
-#else
   auto verts = vtk::TakeSmartPointer(input->GetVerts()->NewIterator());
   for(verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell())
     {
@@ -1091,7 +1060,6 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
       {
       vtkIdType v0 = lineIds->GetId(0);
       vtkIdType v1 = lineIds->GetId(1);
-#endif
 
       double pt_0[3];
       double pt_1[3];
@@ -1171,20 +1139,12 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
           {
           ncells = this->Helper->CreateCylinderBetweenTwoPoints(pt_a, pt_b,
                                  radius, this->CylinderQuality, cylPoints,
-#if LIB_VERSION_LE(VTK,8,1,0)
-                                 cylPolys.GetPointer(), cylNorms.GetPointer());
-#else
                                  cylPolys, cylNorms);
-#endif
           if (!hasVertex[otherAtom])
             {
             ncells += this->Helper->CreateCylinderCap(pt_a, pt_b, half, radius,
                                 this->CylinderQuality, cylPoints,
-#if LIB_VERSION_LE(VTK,8,1,0)
-                                cylPolys.GetPointer(), cylNorms.GetPointer());
-#else
                                 cylPolys, cylNorms);
-#endif
             }
           // TODO: modify this next test if we allow drawing
           //       atoms with a primary cell-centered variable
@@ -1192,11 +1152,7 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
             {
             ncells += this->Helper->CreateCylinderCap(pt_0, pt_1, 1-half,
                                 radius, this->CylinderQuality, cylPoints,
-#if LIB_VERSION_LE(VTK,8,1,0)
-                                cylPolys.GetPointer(), cylNorms.GetPointer());
-#else
                                 cylPolys, cylNorms);
-#endif
             }
           } // 3D
         } // do the cylinder
@@ -1271,9 +1227,6 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
           } // color by atom
         } // for half
       }
-#if LIB_VERSION_LE(VTK,8,1,0)
-      segptr += (*segptr) + 1;
-#endif
     }
   this->BondLinesPolyData->SetPoints(linePoints);
   this->BondLinesPolyData->SetLines(lineLines.GetPointer());

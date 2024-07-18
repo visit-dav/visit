@@ -728,7 +728,7 @@ public:
     int GetCompressionActivationMode() const;
     int SetCompressionActivationMode(int);
     bool GetIsCompressingScalableImage() const;
-#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     void SetOsprayRendering(bool);
     bool GetOsprayRendering() const;
     void SetOspraySPP(int);

@@ -49,7 +49,6 @@ function bv_silo_info
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
     export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
-    export SILO_MD5_CHECKSUM="9ceac777a2f2469ac8cef40f4fab49c8"
     export SILO_SHA256_CHECKSUM="3af87e5f0608a69849c00eb7c73b11f8422fa36903dd14610584506e7f68e638"
 }
 
@@ -520,9 +519,13 @@ function build_silo
     info "Building Silo . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "Silo build failed.  Giving up"
-        return 1
+        $MAKE $MAKE_OPT_FLAGS LIBS=-lstdc++
+        if [[ $? != 0 ]] ; then
+            warn "Silo build failed.  Giving up"
+            return 1
+        fi
     fi
+
     #
     # Install into the VisIt third party location.
     #

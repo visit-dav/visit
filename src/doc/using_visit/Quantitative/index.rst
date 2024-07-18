@@ -20,3 +20,4 @@ to compute highly sophisticated quantitative, as opposed to visual, results.
     Lineout
     LineSampler
     Data Level Comparisons Wizard <DataLevelComparisonsWizard>
+    FormattingNumbers

@@ -1,10 +1,10 @@
 #!/bin/sh
 #
 # You should do this in both the src and data directories. You might also
-# just do a find over all file names when you are finished for "2000 - 2022"
+# just do a find over all file names when you are finished for "2000 - 2023"
 # to check if you missed any files.
 #
-find -type f -name "*.txt" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.html" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "LICENSE" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.in" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.txt" -exec sed -i "s/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.html" -exec sed -i "s/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "LICENSE" -exec sed -i "s/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.in" -exec sed -i "s/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC/" {} \; -print

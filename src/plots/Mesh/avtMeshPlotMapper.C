@@ -132,6 +132,9 @@ avtMeshPlotMapper::CreateActorMapperPairs(vtkDataSet **children)
 //    Kathleen Biagas, Wed Apr  3 16:11:45 PDT 2019
 //    Added pointSize.
 //
+//    Kathleen Biagas, Thu Dec 15, 2023
+//    Ensure opacity is set for all actors. 
+//
 // ****************************************************************************
 
 void
@@ -144,6 +147,7 @@ avtMeshPlotMapper::CustomizeMappers()
 
         mappers[i]->SetScalarVisibility(false);
         vtkProperty *prop = actors[i]->GetProperty();
+        prop->SetOpacity(opacity);
 
         if (mappers[i]->IsA("vtkPointGlyphMapper"))
         {
@@ -183,7 +187,6 @@ avtMeshPlotMapper::CustomizeMappers()
             prop->SetDiffuse(0.);
             prop->SetColor(linesColor);
             prop->SetLineWidth(lineWidth);
-            prop->SetOpacity(opacity);
             prop->SetPointSize(pointSize);
         }
         else if (labels[i].compare(0, 11, string("mesh_polys_")) == 0)

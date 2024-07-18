@@ -650,9 +650,7 @@ def TestCommandRecording():
 InitAnnotationsLegendOn()
 volume_colors()
 TestVolumeGaussianControlPoints()
-# This test hangs in parallel.
-if TestEnv.params["serial"]:
-    TestVolumeAspect()
+TestVolumeAspect()
 TestVolumeOpacity()
 TestCommandRecording()
 InitAnnotations()

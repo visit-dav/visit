@@ -5,9 +5,7 @@
 #include "vtkConnectedTubeFilter.h"
 #include <visit-config.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK, 9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkFloatArray.h>
@@ -192,21 +190,6 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
         numneighbors[i] = 0;
     }
 
-#if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType *cells = lines->GetPointer();
-    int numCells = lines->GetNumberOfCells();
-    for (int i=0; i<numCells; i++)
-    {
-        // We assume all cells are two-point lines (i.e. not polylines)
-        if (cells[i*3] != 2)
-        {
-            return false;
-        }
-        // Get the begin and end index for this segment
-        vtkIdType a = cells[i*3 + 1];
-        vtkIdType b = cells[i*3 + 2];
-#else
-
     auto iter = vtk::TakeSmartPointer(lines->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
@@ -222,7 +205,6 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
         // Get the begin and end index for this segment
         const vtkIdType a = currCell[0];
         const vtkIdType b = currCell[1];
-#endif
 
         // If we have two neighbors already, this is a T intersection
         if (numneighbors[a] >= 2 || numneighbors[b] >= 2)
@@ -235,13 +217,8 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
         connectivity[numneighbors[b]][b] = a;
         numneighbors[a]++;
         numneighbors[b]++;
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        cellindex[a] = i;
-        cellindex[b] = i;
-#else
         cellindex[a] = iter->GetCurrentCellId();
         cellindex[b] = iter->GetCurrentCellId();
-#endif
     }
     return true;
 }

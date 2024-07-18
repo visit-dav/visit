@@ -8,13 +8,9 @@
 
 #include <avtLineGlyphFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_GE
-
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkConeSource.h>
 #include <vtkExtractCellsByType.h>
 #include <vtkGeometryFilter.h>
@@ -594,6 +590,10 @@ avtLineGlyphFilter::AddRibbons(vtkPolyData *input,
 //    Kathleen Biagas, Thu Aug 11 2022
 //    Support VTK9: use vtkCellArrayIterator.
 //
+//    Kathleen Biagas, Thu Dec 14, 2023
+//    Don't increment lineIndex in the for loop statement (VTK 9), as it is
+//    incremented at the bottom of the loop.
+//
 // ****************************************************************************
 
 void
@@ -610,11 +610,11 @@ avtLineGlyphFilter::AddEndPoints(vtkPolyData *input, vtkPolyData *output,
     const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     string activeVar = datts.GetVariableName();
 
-    double ratio           = lineGlyphAtts.GetEndPointRatio();
-    bool varyRadius        = lineGlyphAtts.GetEndPointRadiusVarEnabled();
-    std::string radiusVar  = lineGlyphAtts.GetEndPointRadiusVar();
-    double  radiusFactor   = lineGlyphAtts.GetEndPointRadiusVarRatio();
-    int resolution         = lineGlyphAtts.GetEndPointResolution();
+    double ratio          = lineGlyphAtts.GetEndPointRatio();
+    bool   varyRadius     = lineGlyphAtts.GetEndPointRadiusVarEnabled();
+    string radiusVar      = lineGlyphAtts.GetEndPointRadiusVar();
+    double radiusFactor   = lineGlyphAtts.GetEndPointRadiusVarRatio();
+    int    resolution     = lineGlyphAtts.GetEndPointResolution();
 
     vtkDataArray *radiusArray = NULL;
     double range[2] = {0,1}, scale = 1;
@@ -642,21 +642,12 @@ avtLineGlyphFilter::AddEndPoints(vtkPolyData *input, vtkPolyData *output,
     vtkIdType     numPts;
     vtkIdType     lineIndex = 0;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkCellArray *lines  = input->GetLines();
-    vtkIdType *ptIndexs;
-    lines->InitTraversal();
-
-    while (lines->GetNextCell(numPts, ptIndexs))
-    {
-#else
     const vtkIdType *ptIndexs;
 
     auto lines = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
-    for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell(), ++lineIndex)
+    for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
     {
         lines->GetCurrentCell(numPts, ptIndexs);
-#endif
         vtkPolyData *outPD;
 
         double p0[3], p1[3];
@@ -782,7 +773,6 @@ avtLineGlyphFilter::AddEndPoints(vtkPolyData *input, vtkPolyData *output,
                     {
                         outputCellData->SetActiveScalars(activeVar.c_str());
                     }
-
                     for (int k = 0; k < ncells; ++k)
                         scalars->InsertTuple(k, array->GetTuple(lineIndex));
 

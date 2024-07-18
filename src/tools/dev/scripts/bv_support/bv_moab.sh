@@ -30,7 +30,6 @@ function bv_moab_info
     export MOAB_FILE=${MOAB_FILE:-"moab-${MOAB_VERSION}.tar.gz"}
     export MOAB_URL=${MOAB_URL:-"https://web.cels.anl.gov/projects/sigma/downloads/moab"}
     export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-5.5.0"}
-    export MOAB_MD5_CHECKSUM="c8043113d6e8ac584fb27fc9bda93dc6"
     export MOAB_SHA256_CHECKSUM="58969f8a1b209ec9036c08c53a6b7078b368eb3bf99d0368a4de5a2f2a8db678"
 }
 

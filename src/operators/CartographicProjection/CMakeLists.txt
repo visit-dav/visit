@@ -80,11 +80,7 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 
 ADD_LIBRARY(ECartographicProjectionOperator_ser ${LIBE_SOURCES})
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_elibsSer vtkGeovisCore )
-else()
-    set(vtk_elibsSer VTK::GeovisCore )
-endif()
+set(vtk_elibsSer VTK::GeovisCore )
 
 TARGET_LINK_LIBRARIES(ECartographicProjectionOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser ${vtk_elibsSer} )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ECartographicProjectionOperator_ser)
@@ -92,11 +88,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} ECartographicProjectionOperator_ser)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ECartographicProjectionOperator_par ${LIBE_SOURCES})
 
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        set(vtk_elibsPar vtkGeovisCore )
-    else()
-        set(vtk_elibsPar VTK::GeovisCore )
-    endif()
+    set(vtk_elibsPar VTK::GeovisCore )
 
     TARGET_LINK_LIBRARIES(ECartographicProjectionOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par ${vtk_elibsPar} )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ECartographicProjectionOperator_par)

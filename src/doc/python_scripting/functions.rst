@@ -3967,7 +3967,7 @@ return type : tuple of strings
   DrawPlots()
   mats = GetMaterials()
   for m in mats[:-1]:
-      TurnMaterialOff(m)
+      TurnMaterialsOff(m)
 
 
 GetMeshManagementAttributes
@@ -4269,11 +4269,14 @@ return type : dictionary
 **Description:**
 
     The GetPlotInformation function returns information about the active plot.
-    For example, a Curve plot will return the xy pairs that comprise the
-    curve.  The tuple is arranged <x1, y1, x2, y2, ..., xn, yn>.
+    For example, a Curve plot will return the xy pairs that comprise the curve.
+    The tuple is arranged <x1, y1, x2, y2, ..., xn, yn>.
+
+    For time queries that create multiple curves, e.g. Time Pick with multiple variables, the dictionary contains a 'Curves' object, and each curve is referenced by it's associated variable name.
+    This was introduced in VisIt 3.4.1.
 
 
-**Example:**
+**Single Curve Example:**
 
 ::
 
@@ -4286,6 +4289,21 @@ return type : dictionary
   info = GetPlotInformation()
   lineout = info["Curve"]
   print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
+
+**Multiple Curve Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/usr/gapps/visit/data/wave.visit")
+  AddPlot("Pseudocolor", "pressure")
+  DrawPlots()
+  PickByNode(domain=0,element=10,do_time=1,vars=("pressure", "v"))
+  SetActiveWindow(2)
+  info = GetPlotInformation()
+  pressure = info["Curves"]["pressure"]
+  print("The first pressure point is: [%g, %g] " % pressure[0], pressure[1])
+
 
 
 GetPlotList
@@ -10367,13 +10385,13 @@ SetQueryFloatFormat
 
 
 format_string : string
-    A string object that provides a printf style floating point format.
+    A string object that provides a :ref:`printf-style <FormattingNumbers>` floating point format.
 
 
 **Description:**
 
-    The SetQueryFloatFormat method sets a printf style format string that
-    isused by VisIt's querys to produce textual output.
+    The SetQueryFloatFormat method sets a :ref:`printf-style <FormattingNumbers>` format string that
+    is used by VisIt's querys to produce textual output.
 
 
 **Example:**

@@ -5,6 +5,7 @@
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -15,20 +16,18 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
-            <lib name="blosc"/>
+            <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
-            <lib name="embree"/>
             <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
-            <lib name="ispc"/>
             <lib name="llvm"/>
             <lib name="mdsplus"/>
             <lib name="mesagl"/>
@@ -43,11 +42,9 @@
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
-            <lib name="qt6"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
-            <lib name="tbb"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
@@ -58,6 +55,7 @@
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -67,20 +65,18 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
-            <lib name="blosc"/>
+            <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
-            <lib name="embree"/>
             <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
-            <lib name="ispc"/>
             <lib name="llvm"/>
             <lib name="mfem"/>
             <lib name="mili"/>
@@ -92,7 +88,6 @@
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
-            <lib name="tbb"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
         </group>
@@ -100,6 +95,7 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
+            <lib name="no-qt6" />
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
@@ -155,6 +151,7 @@
             <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
+            <lib name="no-qt6"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
             <lib name="no-python"/>
@@ -165,9 +162,6 @@
         -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
-            <lib name="embree"/>
-            <lib name="ispc"/>
-            <lib name="tbb"/>
             <lib name="ospray"/>
         </group>
 
@@ -190,6 +184,7 @@
             <lib name="cmake"/>
             <lib name="python"/>
             <lib name="vtk"/>
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -208,7 +203,6 @@
             <lib name="mpich"/>
             <lib name="osmesa"/>
             <lib name="pyqt"/>
-            <lib name="qt6"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
             <lib name="xercesc"/>
@@ -220,6 +214,7 @@
             <lib name="cmake"/>
             <lib name="python"/>
             <lib name="vtk"/>
+            <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="qwt"/>
             <lib name="zlib"/>
@@ -241,6 +236,7 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
+            <lib name="no-qt6" />
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
@@ -255,6 +251,7 @@
             <lib name="zlib"/>
             <lib name="uintah"/>
             <lib name="no-python"/>
+            <lib name="no-qt6"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
         </group>

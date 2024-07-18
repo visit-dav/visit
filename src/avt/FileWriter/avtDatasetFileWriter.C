@@ -16,9 +16,7 @@
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
-#if LIB_VERSION_GE(VTK,9,1,0)
 #include <vtkCellArrayIterator.h>
-#endif
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSetWriter.h>
@@ -383,6 +381,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    the colors associated with these two texture coordinates, producing a color
 //    that may not be in the table. To work-around this behavior, we *pad* the color
 //    texture duplicating the minimum and maximum color pixels on each end.
+// 
+//    Justin Privitera, Mon Feb 12 15:20:31 PST 2024
+//    I moved the extents calculation to the beginning to get around the bugged
+//    vtkCellDataToPointData.
 //
 // ****************************************************************************
 
@@ -398,6 +400,12 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
 
     // Make sure that we have polydata.
     vtkGeometryFilter *geom = vtkGeometryFilter::New();
+
+    // Compute the range here since VTK cannot be trusted to get the extents
+    // right after transforming from cell data to point data.
+    // See https://github.com/visit-dav/visit/issues/19028
+    double range[2];
+    activeDS->GetScalarRange(range);
 
     //
     // The OBJ file is going to expect the dataset as having node-centered
@@ -434,8 +442,6 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         //
         // Get some information for normalizing the variable.
         //
-        double range[2];
-        activeDS->GetScalarRange(range);
         double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
 
         //
@@ -1160,18 +1166,11 @@ SortLineSegments(vtkPolyData *pd, std::vector< std::vector<int> > &ls)
 
     vtkIdType npts;
 
-#if LIB_VERSION_LE(VTK,8,1,0)
-    vtkCellArray *lines = pd->GetLines();
-    vtkIdType *ids;
-    for (lines->InitTraversal() ; lines->GetNextCell(npts, ids) ; )
-    {
-#else
     auto lines = vtk::TakeSmartPointer(pd->GetLines()->NewIterator());
     const vtkIdType *ids;
     for (lines->GoToFirstCell() ; !lines->IsDoneWithTraversal(); lines->GoToNextCell())
     {
         lines->GetCurrentCell(npts, ids);
-#endif
         if (npts == 2)
         {
             AddSegment(seg_list, ids[0], ids[1]);

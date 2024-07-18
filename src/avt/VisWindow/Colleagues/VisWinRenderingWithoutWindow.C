@@ -145,20 +145,7 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
-#ifdef VISIT_OSPRAY
-    if (GetOsprayRendering() && modeIsPerspective)
-    {
-        if (canvas->GetPass() == NULL)
-        {
-            canvas->SetPass(osprayPass);
-        }
-    }
-    else
-    {
-        canvas->SetUseShadows(false);
-        canvas->SetPass(0);
-    }
-#elif defined(HAVE_OSPRAY)
+#if defined(HAVE_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
         if (canvas->GetPass() == NULL)

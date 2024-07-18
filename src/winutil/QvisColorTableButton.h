@@ -45,6 +45,10 @@ class ColorTableAttributes;
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed category from addColorTable() and removed mappedColorTableNames.
 //
+//   Kathleen Biagas, Wed May 8, 2024
+//   Added static method for connecting to the gui's openColorTableWindows,
+//   with necessary Create/Slot members.
+//
 // ****************************************************************************
 
 class WINUTIL_API QvisColorTableButton : public QPushButton
@@ -67,6 +71,8 @@ public:
     static void addColorTable(const QString &ctName);
     static void updateColorTableButtons();
     static void setColorTableAttributes(ColorTableAttributes *cAtts);
+
+    static void ConnectColorTableOpen(QObject *, const char*);
 signals:
     void selectedColorTable(bool useDefault, const QString &ctName);
 private slots:
@@ -88,6 +94,9 @@ private:
 
     static QStringList             colorTableNames;
     static ColorTableAttributes   *colorTableAtts;
+
+    static QObject                *colorTableOpenCreator;
+    static const char             *colorTableOpenSlot;
 };
 
 #endif

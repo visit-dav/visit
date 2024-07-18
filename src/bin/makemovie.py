@@ -9,13 +9,13 @@ import signal
 import socket
 import subprocess
 import sys
+import shutil
 
 if (sys.version_info > (3, 0)):
     import _thread
 else:
     import thread as _thread
 
-import distutils.spawn
 
 import xml
 import xml.sax
@@ -35,19 +35,15 @@ from visit_utils import encoding
 #   Hank Childs, Thu Apr  1 09:33:16 PST 2004
 #   Simplified a bit (previous implementation was not portable).
 #
+#   Cyrus Harrison, Fri Feb 16 13:43:25 PST 2024
+#   Remove use of distutils
+#
 ###############################################################################
 
 def CommandInPath(command):
     retval = 0
-    if(sys.platform != "win32"):
-        # Look for the command using the which command
-        cmd = "which %s > /dev/null" % command
-        rv = os.system(cmd)
-        if (rv == 0):
-            retval = 1
-    else:
-        if distutils.spawn.find_executable(command) != None:
-            retval = 1
+    if shutil.which(command) != None:
+        retval = 1
     return retval
 
 ###############################################################################

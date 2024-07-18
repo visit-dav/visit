@@ -10,8 +10,6 @@
 
 #include <avtDirectDatabaseQOTFilter.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <avtDataObjectQuery.h>
 #include <avtQueryFactory.h>
 
@@ -583,13 +581,8 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     for (int i = 0, ts = 0; i < numCells; ++i, ts += stride)
     {
         vtkIdType numCellPts;
-#if LIB_VERSION_LE(VTK,8,1,0)
-        vtkIdType *cellPts = NULL;
-        inCells->GetCell(i, numCellPts, cellPts);
-#else
         const vtkIdType *cellPts = NULL;
         inCells->GetCellAtId(i, numCellPts, cellPts);
-#endif
 
         //
         // Invalid states are denoted by cells with NaN positions.

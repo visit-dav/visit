@@ -253,11 +253,7 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
     if( cellPtr )
     {
         vtkIdList* tmp = vtkIdList::New();
-#if VTK_VERSION_NUMBER < 90000000000ULL
-        dataSet->GetCellPoints( cellid, tmp ); // VTK 8
-#else
-        cellPtr->GetCellAtId(cellid, tmp);  // VTK 9
-#endif
+        cellPtr->GetCellAtId(cellid, tmp);
         npts = tmp->GetNumberOfIds();
 
         for( vtkIdType i=0; i<npts; ++i )

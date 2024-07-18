@@ -20,7 +20,12 @@
 #   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
 #   Updated adios2 to 2.7.1 and added all the libraries it creates to the
 #   installation as well as additional logic for parallel building.
+# 
+#   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
+#   adios2 libs have changed so I removed many of the old ones.
 #
+#   Mark C. Miller, Tue Mar 19 12:20:18 PDT 2024
+#   Adjust parallel to include both serial and parallel libs.
 #****************************************************************************/
 
 # Use the ADIOS_DIR hint from the config-site .cmake file
@@ -28,22 +33,23 @@
 if(NOT WIN32)
     SET_UP_THIRD_PARTY(ADIOS2 LIBS
         adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-        adios2_taustubs adios2_cmenet adios2_cmzplenet adios2_cmepoll
-        adios2_core adios2_cmmulticast adios2_enet adios2_cmselect
-        adios2_cxx11 adios2_cmsockets adios2_cmudp)
+        adios2_perfstubs adios2_cxx11 adios2_core adios2_enet)
 else()
     SET_UP_THIRD_PARTY(ADIOS2 LIBS
-        adios2_c adios2_cxx11 adios2_core adios2_taustubs)
+        adios2_c adios2_cxx11 adios2_core adios2_atl
+        adios2_dill adios2_ffs )
 endif()
 
 if(VISIT_PARALLEL)
     if(NOT WIN32)
         SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+            adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
+            adios2_perfstubs adios2_cxx11 adios2_core adios2_enet
             adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
     else()
         SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
             adios2_c adios2_cxx11 adios2_core
+            adios2_atl adios2_dill adios2_ffs 
             adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
     endif()
 endif()
-

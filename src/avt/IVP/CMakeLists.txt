@@ -8,6 +8,9 @@
 #   Hank Childs, Sat Jun  5 16:26:46 CDT 2010
 #   Add avtStateRecorderIntegralCurve.
 #
+#   Kathleen Biagas, Tue Apr 16, 2024
+#   Removed avtManagerWorkerICAlgorithm.
+#
 #****************************************************************************
 
 SET(AVTIVP_SOURCES
@@ -39,14 +42,10 @@ avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
 avtIntegralCurveIC.C
 MemStream.C
-avtCommDSOnDemandICAlgorithm.C
 avtICAlgorithm.C
-avtManagerWorkerICAlgorithm.C
-avtParDomICAlgorithm.C
 avtParICAlgorithm.C
 avtPICSFilter.C
 avtPODICAlgorithm.C
-avtPOSBalanceICAlgorithm.C
 avtSerialICAlgorithm.C
 )
 
@@ -84,11 +83,7 @@ ${NEKTAR++_TP_INCLUDE_DIRS}
 ${ACCELERATE_FRAMEWORK_INCLUDE_DIR}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkFiltersCore)
-else()
-    set(vtklibs VTK::CommonCore VTK::FiltersCore)
-endif()
+set(vtklibs VTK::CommonCore VTK::FiltersCore)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS})

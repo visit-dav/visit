@@ -53,6 +53,21 @@ def getVersion():
     return version[:-1].strip()
 
 # -----------------------------------------------------------------------------
+#   Method: getInstallDir
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Fri May 3, 2024
+#
+#   Helper which ascertains the Install path based on OS. 
+#
+# -----------------------------------------------------------------------------
+def getInstallDir():
+    if not platform.system() == "Windows":
+        return visit_bin_path("..", "_install")
+    else:
+        return abs_path(visit_bin_path(),"..", ".." ,"VisIt"+getVersion())
+
+# -----------------------------------------------------------------------------
 #   Method: regencmake
 #
 #   Programmer: Kathleen Biagas
@@ -60,16 +75,31 @@ def getVersion():
 #
 #   Helper which runs xml2cmake for the given plugin.
 #
+#   Modifications:
+#     Kathleen Biagas, Fri May 3, 2024
+#     Handle Windows.
+#
 # -----------------------------------------------------------------------------
 def regencmake(plugin, pluginResults):
     print("regenerating cmake for ", plugin)
     pluginArg = plugin + '.xml'
-    xml2cmake = visit_bin_path("..", "_install", "bin", "xml2cmake")
     status = 1
     fname = "%s_xml2cmake_res.txt" %plugin
     f = open(fname, "w")
     try:
-        subprocess.check_call([xml2cmake, "-clobber", "-public", pluginArg ],stdout=f,stderr=f)
+        if not platform.system() == "Windows":
+            xml2cmake = abs_path(getInstallDir(), "bin", "xml2cmake")
+            subprocess.check_call([xml2cmake, "-clobber", "-public", pluginArg ],stdout=f,stderr=f)
+        else:
+            myvisitExe = abs_path(getInstallDir(), "visit.exe")
+            # copy current environ
+            myenv = os.environ.copy()
+            # remove env vars that affect running of xml2cmake properly from
+            # within the Install dir (the vars make it run from the build dir)
+            myenv.pop("VISITHOME", None)
+            myenv.pop("VISITPLUGINDIR", None)
+            subprocess.check_call([myvisitExe, "-xml2cmake", "-clobber", "-public", pluginArg],stdout=f,stderr=f,env=myenv)
+
     except subprocess.CalledProcessError as err:
         pluginResults[plugin] = 'xml2cmake failed'
         status = 0
@@ -88,6 +118,10 @@ def regencmake(plugin, pluginResults):
 #   Date:       Thu Nov 8, 2018
 #
 #   Helper which runs cmake and make for the given plugin.
+#
+#   Modifications:
+#     Kathleen Biagas, Fri May 3, 2024
+#     Use 'cmake --build' so that the build will work on any platform.
 #
 # -----------------------------------------------------------------------------
 def build(plugin, pluginResults):
@@ -120,14 +154,14 @@ def build(plugin, pluginResults):
 
     if status == 1:
         try:
-            print("running make for ", plugin)
-            subprocess.check_call(["gmake", "-j", "8"],stdout=f,stderr=f)
+            print("Running cmake --build for ", plugin)
+            subprocess.check_call([cmakecmd, "--build", ".", "--config", "Release","-j", "8"], stdout=f,stderr=f)
             pluginResults[plugin] = 'success'
         except subprocess.CalledProcessError as err:
-            pluginResults[plugin] = 'make failed'
+            pluginResults[plugin] = 'cmake --build failed'
             status = 0
         except OSError as e:
-            pluginResults[plugin] = 'make executable could not be found'
+            pluginResults[plugin] = 'cmake executable could not be found'
             status = 0
     f.close()
     if not status:
@@ -153,6 +187,9 @@ def build(plugin, pluginResults):
 #     Changed the skipList argument to a pluginList argument providing the
 #     list of plugins to build instead of to skip.
 #
+#     Kathleen Biagas, Fri May 3, 2024
+#     Use 'xcopy' on Windows.
+#
 # -----------------------------------------------------------------------------
 def buildPlugin(pluginType, pluginList):
     print("buildPlugin: ", pluginType)
@@ -163,8 +200,13 @@ def buildPlugin(pluginType, pluginList):
 
     os.mkdir(plugindir)
 
-    for plugin in pluginList:
-        subprocess.call(["cp", "-R", visit_src_path(pluginType,plugin), plugindir])
+    if not platform.system() == "Windows":
+        for plugin in pluginList:
+            subprocess.call(["cp", "-R", visit_src_path(pluginType,plugin), plugindir])
+    else:
+        for plugin in pluginList:
+            dest=abs_path(plugindir, plugin)
+            subprocess.call(["xcopy", visit_src_path(pluginType,plugin), dest, "/E", "/Y", "/Q", "/I"])
 
     os.chdir(plugindir)
     plugins = glob.glob("*")
@@ -174,7 +216,7 @@ def buildPlugin(pluginType, pluginList):
     except Exception:
         pass 
         
-    #print plugins
+    #print(plugins)
     pluginResults={}
     for pl in plugins:
         if os.path.isdir(pl):
@@ -208,14 +250,21 @@ def buildPlugin(pluginType, pluginList):
 #     Changed the skipList argument to a pluginList argument providing the
 #     list of plugins to build instead of to skip.
 #
+#     Kathleen Biagas, Fri May 3, 2024
+#     Add support for Windows.
+#
 # -----------------------------------------------------------------------------
 
 def do_plugin_type(pluginType, pluginList):
-    installDir = visit_bin_path("..", "_install")
-    version = getVersion()
-    if not os.path.isdir(abs_path(installDir, version)):
-        TestText("%sVsInstall"%pluginType, "No installed package.")
-        Exit(-1)
+    installDir = getInstallDir()
+    if not platform.system() == "Windows":
+        if not os.path.isdir(abs_path(installDir, getVersion())):
+            TestText("%sVsInstall"%pluginType, "No installed package.")
+            Exit(-1)
+    else:
+        if not os.path.isdir(installDir):
+            TestText("%sVsInstall"%pluginType, "No installed package.")
+            Exit(-1)
 
     results = {}
     results = buildPlugin(pluginType, pluginList)

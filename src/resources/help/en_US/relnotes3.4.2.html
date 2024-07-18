@@ -1,0 +1,58 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <title>VisIt 3.4.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 3.4.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 3.4.2</font></b></p>
+<ul>
+  <li>Fixed bug where user supplied legend labels were stored in config and session files wrapped in '()' and comma separated. This prevented the values from being parsed correctly and the '()' and commas appeared as part of the labels.</li>
+  <li>Fixed a bug in the Blueprint reader causing it to handle unstructured topologies built on uniform coordinate sets incorrectly.</li>
+  <li>The location where custom plugins are written when built against installed version of VisIt was corrected.</li>
+  <li>Windows build issues for custom plugins against an installed version of VisIt was fixed.</li>
+  <li>Fixed a bug in OpenPMD reader that subverted its ability to read chunked, as opposed to contiguous datasets.</li>
+  <li>Enabled "Tunnel data connections through SSH" in the LLNL RZ host profiles where it was missing.</li>
+  <li>Removed the obsolete LLNL host profiles for RZTopaz, Surface and Vulcan.</li>
+  <li>Fixed a bug where the LLNL host profiles for Boraxo, Dane and Ruby didn't get installed in some situations.</li>
+  <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
+  <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
+  <li>Fixed bug with Volume plot when SILRestriction applied, and when Composite rendering caused problem when a different RendererType used directly afterwards.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
+<ul>
+  <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
+  <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Windows to easier find more options.</li>
+  <li>A host profile has been added for running on LLNL's RZVernal system.</li>
+  <li>The Blueprint reader and writer now supports mixed element topologies.</li>
+  <li>The <code>VISIT_VERSION_GE()</code> macro useful in detecting the VisIt version being used at compile time has been made public in its own header file, <code>visit-version.h</code>, which is found in <code>VISIT_INSTALL/include/visit/include</code>.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 3.4.2</font></b></p>
+<ul>
+  <li>Updated Conduit to 0.9.2.</li>
+  <li>Docker containers were added for RockyLinux (RHEL compatible).
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.4.1.html>3.4.1</a>.</p>
+</body>
+</html>

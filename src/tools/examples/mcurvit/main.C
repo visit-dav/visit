@@ -3,14 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QApplication>
+#include <QSurfaceFormat>
 #include <QDir>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-#if LIB_VERSION_LE(VTK, 8,1,0)
-#include <QVTKOpenGLWidget.h>
-#else
 #include <QVTKOpenGLNativeWidget.h>
-#endif
 
 #include <visitstream.h>
 #include <VisItViewer.h>
@@ -124,11 +120,7 @@ MCVMain(int argc, char *argv[])
         // Setting the default QSurfaceFormat required with QVTKOpenGLwidget.
         // This causes Qt to create an OpenGL 3.2 context.
         //
-#if LIB_VERSION_LE(VTK, 8,1,0)
-        auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
-#else
         auto surfaceFormat = QVTKOpenGLNativeWidget::defaultFormat();
-#endif
         surfaceFormat.setSamples(0);
         surfaceFormat.setAlphaBufferSize(0);
         QSurfaceFormat::setDefaultFormat(surfaceFormat);

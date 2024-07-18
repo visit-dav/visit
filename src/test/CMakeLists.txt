@@ -7,6 +7,10 @@
 #   Kathleen Biagas, Wed Dec 18, 2019
 #   Added run_visit_test_suite.bat.in configure file for windows.
 #
+#   Kathleen Biagas, Tue Mar 5, 2024
+#   For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
+#   simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
+#
 #****************************************************************************
 
 IF(WIN32)
@@ -66,10 +70,11 @@ else()
                           py_src/visit_test_reports.py
                           py_src/visit_test_suite.py)
 
-
-    PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
-                               site-packages
-                               ${pytesting_sources})
+    PYTHON_ADD_PIP_SETUP(NAME visit_testing_py_setup
+                         DEST_DIR site-packages
+                         PY_MODULE_DIR visit_testing
+                         PY_SETUP_FILE setup.py
+                         PY_SOURCES ${pytesting_sources})
 
     if(BUILD_CTEST_TESTING)
         add_subdirectory(tests)

@@ -27,7 +27,6 @@ function bv_mpich_info
     export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
     export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
     export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
-    export MPICH_MD5_CHECKSUM="9ed4cabd3fb86525427454381b25f6af"
     export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
 }
 
@@ -94,19 +93,22 @@ function build_mpich
         return 1
     fi
     
+    cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
+
     #
     # Call configure
     #
     info "Configuring MPICH . . ."
-    cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
     info "Invoking command to configure MPICH"
 
     #
-    # Turn on shared version of the libs
+    # Turning off maintainer mode avoids need for any local autotools tools.
+    # We should not ever need them because we are not developing mpich.
+    # I guess we need shared libs.
     #
-    mpich_opts="--enable-shared"
+    mpich_opts="--disable-maintainer-mode --enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
+        mpich_opts="${mpich_opts} --enable-threads=single"
     fi
 
     #
@@ -146,11 +148,22 @@ function build_mpich
     # Build MPICH
     #
     info "Building MPICH . . . (~5 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    env $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "MPICH build failed.  Giving up"
-        return 1
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            warn "MPICH build failed but maybe due to LDFLAGS.\n" \
+                 "Retrying MPICH build with LDFLAGS set."
+            env $MAKE $MAKE_OPT_FLAGS LDFLAGS="-Wl,-flat_namespace -Wl,-undefined -Wl,suppress"
+            if [[ $? != 0 ]] ; then
+                warn "MPICH build failed.  Giving up"
+                return 1
+            fi
+        else
+            warn "MPICH build failed.  Giving up"
+            return 1
+        fi
     fi
+
     #
     # Install into the VisIt third party location.
     #

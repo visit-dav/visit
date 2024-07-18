@@ -61,21 +61,6 @@ def load_opts(opts_json):
         opts["cert"] = ""
     return opts
 
-def visit_svn_path(path,svn_opts,branch=None,tag=None):
-    if svn_opts["mode"] == "anon":
-        res = "http://portal.nersc.gov/svn/visit/"
-    else:
-        nersc_uname = svn_opts["nersc_uname"]
-        res = "svn+ssh://%s@cori.nersc.gov/project/projectdirs/visit/svn/visit/"
-        res = res % nersc_uname
-    if not branch is None:
-        res = res + "branches/" + branch + "/" + path
-    elif not tag is None:
-        res = res + "tags/" + tag + "/" + path
-    else:
-        res = res + "trunk/" + path
-    return res
-
 def visit_git_path(git_opts):
     if git_opts["mode"] == "ssh":
         res = "ssh://git@github.com/visit-dav/visit.git"
@@ -295,10 +280,10 @@ def steps_osx_install_sanity_checks(opts,build_type,ctx):
 
     for check_dir in [ "lib", "bin"]:
         full_test_dir = pjoin(test_base_dir,check_dir)
-        test_cmd = "python {0} {1}".format(osxcheckup_script,full_test_dir)
+        test_cmd = "{0} {1} {2}".format(sys.executable,osxcheckup_script,full_test_dir)
         saction = "osx_install_sanity_" + check_dir + "_" + build_type.lower()
         ctx.actions[saction] = shell(cmd=test_cmd,
-                                     description="install names check for " + check_dir,
+                                     description="Trying with python install names check for " + check_dir,
                                      working_dir=install_dir)
         ctx.triggers["build"].append(saction)
 

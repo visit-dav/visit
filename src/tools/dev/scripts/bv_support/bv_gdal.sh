@@ -25,7 +25,6 @@ function bv_gdal_info
     export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"2.2"}
     export GDAL_URL=${GDAL_URL:-"http://download.osgeo.org/gdal/${GDAL_VERSION}"}
     export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-2.2.4"}
-    export GDAL_MD5_CHECKSUM="798c66cc8df26f204f6248358fe4fceb"
     export GDAL_SHA256_CHECKSUM="b9d5a723787f3006a82cb276db171c721187b048b866c0e20e6df464d671a1a4"
 }
 
@@ -150,7 +149,11 @@ function build_gdal
             EXTRA_FLAGS="F77=\"\" --enable-static --without-ld-shared  --without-libtool --without-expat"
         fi
     else
-        EXTRA_FLAGS="--enable-static --disable-shared --with-hide-internal-symbols"
+        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+            EXTRA_FLAGS="--enable-shared --disable-static --with-hide-internal-symbols"
+        else
+            EXTRA_FLAGS="--enable-static --disable-shared --with-hide-internal-symbols"
+        fi
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -165,6 +168,8 @@ function build_gdal
             apply_gdal_linux_x86_64_patch
         fi
     fi
+    
+    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \

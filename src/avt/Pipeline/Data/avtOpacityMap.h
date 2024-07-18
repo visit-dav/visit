@@ -11,7 +11,6 @@
 
 #include <pipeline_exports.h>
 #include <visitstream.h>
-#include <visit-config.h> // For LIB_VERSION_GE
 
 struct RGBA
 {
@@ -73,19 +72,9 @@ class PIPELINE_API avtOpacityMap
     void operator = (const avtOpacityMap &obj);
 
     const RGBA                  *GetTable(void) { return table; };
-#if LIB_VERSION_LE(VTK,8,1,0)
-    const RGBAF                 *GetTableFloat(void) { return transferFn1D; };
-    void                         SetTableFloat(unsigned char *arr, int te,
-                                               double attenuation, float over);
-    void                         SetTable(unsigned char *arr, int te,
-                                          double attenuation, float over);
-    void                         SetTableFloatNOC(unsigned char *arr, int te,
-                                                  double attenuation);
-#else
     const RGBAF                 *GetTransferFunc(void) { return transferFn1D; };
     void                         SetTableComposite(unsigned char *arr, int te,
                                                double attenuation, float over);
-#endif
 
     void                         SetTable(unsigned char *, int, double = 1.);
     void                         SetTable(RGBA *, int, double = 1.);
