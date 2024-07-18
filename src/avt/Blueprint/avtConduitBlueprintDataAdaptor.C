@@ -1812,7 +1812,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
     if (n_coords["type"].as_string() == "uniform" && 
         n_topo["type"].as_string() == "unstructured")
     {
-//        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
+        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
     }
     else
     {
