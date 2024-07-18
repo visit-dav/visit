@@ -1352,7 +1352,11 @@ if(VISIT_INSTALL_THIRD_PARTY)
 endif()
 
 
-# Create a visit-dist target.
+# Create a visit-dist target, and checksums for the resultant file.
+#
+# Caution:
+# This only tars up src as-is, so use at own discretion if there
+# are modifications or temporary files in your checkout
 
 set(dist_name visit${VISIT_VERSION})
 
