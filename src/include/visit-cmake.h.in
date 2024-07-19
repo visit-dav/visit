@@ -71,6 +71,9 @@
 /* Define if you have Conduit. */
 #cmakedefine HAVE_CONDUIT
 
+/* Define if you have Qwt. */
+#cmakedefine HAVE_QWT 
+
 
 /*******************************************************************************
  * Header file checks

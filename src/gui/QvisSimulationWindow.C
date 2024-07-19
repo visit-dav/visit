@@ -16,9 +16,11 @@
 
 #include <QvisSimulationCommandWindow.h>
 #include <QvisSimulationMessageWindow.h>
-#include <QvisStripChartMgr.h>
-#include <QvisStripChartTabWidget.h>
-#include <QvisStripChart.h>
+#ifdef HAVE_QWT
+  #include <QvisStripChartMgr.h>
+  #include <QvisStripChartTabWidget.h>
+  #include <QvisStripChart.h>
+#endif
 #include <QvisNotepadArea.h>
 #include <QvisUiLoader.h>
 #include <SimCommandSlots.h>
@@ -87,7 +89,9 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
     uiValues = NULL;
     CustomUIWindow = NULL;
     uiLoader = new QvisUiLoader;
+#ifdef HAVE_QWT
     stripChartMgr = 0;
+#endif
     simMessages = 0;
 }
 
@@ -121,7 +125,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
     if (uiValues)
         uiValues->Detach(this);
 
+#ifdef HAVE_QWT
     delete stripChartMgr;
+#endif
 }
 
 // ****************************************************************************
@@ -237,11 +243,13 @@ QvisSimulationWindow::CreateWindowContents()
         tr("Messages"), notepadAux);
     simMessages->post();
 
+#ifdef HAVE_QWT
     // Create the strip chart manager and post it to the notepad.
     int index = GetEngineListIndex(activeEngine);
     stripChartMgr =
       new QvisStripChartMgr(this, GetViewerProxy(), engines, index, notepadAux);
     stripChartMgr->post();
+#endif
 
     // Make sure we show the commands page.
     notepadAux->showPage(simCommands);
@@ -483,8 +491,9 @@ QvisSimulationWindow::CreateCustomUIWindow()
         }
 
         simCommands->setCustomButtonEnabled(false);
-
+#ifdef HAVE_QWT
         clearStripCharts();
+#endif
 
         return;
     }
@@ -1030,7 +1039,9 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           }
 
           clearMessages();
+#ifdef HAVE_QWT
           clearStripCharts();
+#endif
         }
 
         // Add the engines to the widget.
@@ -1237,6 +1248,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
             clearMessages();
           }
 
+#ifdef HAVE_QWT
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR_ALL")
           {
             stripChartMgr->clearAll();
@@ -1310,6 +1322,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
             stripChartMgr->addDataPoints(chart, curve, npts, x, y);
           }
+#endif
           else if(CustomUIWindow != 0)
           {
             UpdateUIComponent(CustomUIWindow,
@@ -1826,6 +1839,7 @@ QvisSimulationWindow::clearMessages()
 // Modifications:
 //
 // ****************************************************************************
+#ifdef HAVE_QWT
 void
 QvisSimulationWindow::clearStripCharts()
 {
@@ -1838,6 +1852,7 @@ QvisSimulationWindow::clearStripCharts()
         stripChartMgr->setCurveTitle(i, j, "" );
     }
 }
+#endif
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::MakeKey
@@ -2254,7 +2269,9 @@ QvisSimulationWindow::selectEngine(int index)
 {
     // Clear the message and strip charts.
     clearMessages();
+#ifdef HAVE_QWT
     clearStripCharts();
+#endif
 
     // Get the new active engine.
     activeEngine = MakeKey(engines->GetEngineName()[index],
@@ -2354,7 +2371,9 @@ QvisSimulationWindow::closeEngine()
                              QMessageBox::Ok | QMessageBox::Cancel) ==
         QMessageBox::Ok)
     {
+#ifdef HAVE_QWT
         stripChartMgr->clearAll();
+#endif
 
         // Close the engine.
         GetViewerMethods()->CloseComputeEngine(host, sim);
@@ -2481,8 +2500,10 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
                                QMessageBox::Ok | QMessageBox::Cancel) ==
           QMessageBox::Cancel)
         return;
+#ifdef HAVE_QWT
       else
         stripChartMgr->clearAll();
+#endif
     }
 
     QString cmd(btncmd);
@@ -2627,6 +2648,7 @@ QvisSimulationWindow::executeStopCommand(const QString &value)
 //    command string.
 //
 // ****************************************************************************
+#ifdef HAVE_QWT
 void
 QvisSimulationWindow::setStripChartVar(const QString &value)
 {
@@ -2641,3 +2663,4 @@ QvisSimulationWindow::setStripChartVar(const QString &value)
     QString args(QString("triggered();%1;QMenu;Simulations;%2").arg(cmd).arg(value));
     GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
+#endif
