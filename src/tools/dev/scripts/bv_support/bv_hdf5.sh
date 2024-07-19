@@ -133,7 +133,6 @@ function bv_hdf5_ensure
 
 function build_hdf5
 {
-    set -x
     #
     # Prepare build dir
     #
