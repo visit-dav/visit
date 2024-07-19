@@ -1,41 +1,39 @@
 function bv_qwt_initialize
 {
-    export DO_QWT="yes"
-    export FORCE_QWT="no"
+    export DO_QWT="no"
     export USE_SYSTEM_QWT="no"
+    export USE_ALT_QWT="no"
+    add_extra_commandline_args "qwt" "system-qwt" 0 "Use Qwt found on system"
     add_extra_commandline_args "qwt" "alt-qwt-dir" 1 "Use alternative directory for Qwt"
 }
 
 function bv_qwt_enable
 {
     DO_QWT="yes"
-    FORCE_QWT="yes"
 }
 
 function bv_qwt_disable
 {
     DO_QWT="no"
-    FORCE_QWT="no"
 }
 
-function bv_qwt_force
+function bv_qwt_system_qwt
 {
-    if [[ "$FORCE_QWT" == "yes" ]]; then
-        return 0;
-    fi
-    return 1;
+    bv_qwt_enable
+    echo "using system qwt"
+    USE_SYSTEM_QWT="yes"
 }
 
 function bv_qwt_alt_qwt_dir
 {
     bv_qwt_enable
-    USE_SYSTEM_QWT="yes"
+    USE_ALT_QWT="yes"
     QWT_INSTALL_DIR="$1"
 }
 
 function bv_qwt_depends_on
 {
-    if [[ "$USE_SYSTEM_QWT" == "yes" ]]; then
+    if [[ "$USE_SYSTEM_QWT" == "yes" || "$USE_ALT_QWT" == "yes" ]]; then
         echo ""
     else
         if [[ "$DO_QT6" == "no" ]]; then
@@ -48,7 +46,7 @@ function bv_qwt_depends_on
 
 function bv_qwt_initialize_vars
 {
-    if [[ "$USE_SYSTEM_QWT" == "no" ]]; then
+    if [[ "$USE_SYSTEM_QWT" == "no" && "$USE_ALT_QWT" == "no" ]]; then
         QWT_INSTALL_DIR="${VISITDIR}/qwt/${QWT_VERSION}/${VISITARCH}"
     fi
 }
@@ -80,23 +78,30 @@ function bv_qwt_print
 
 function bv_qwt_print_usage
 {
-    printf "%-20s %s [%s]\n" "--qwt" "Build with Qwt" "$DO_QWT"  
+    printf "%-20s %s [%s]\n" "--qwt" "Build with Qwt" "$DO_QWT"
+    printf "%-20s %s [%s]\n" "--system-qwt" "Use system Qwt" "$USE_SYSTEM_QWT"
     printf "%-20s %s [%s]\n" "--alt-qwt-dir" "Use Qwt from an alternative directory"
 }
 
 function bv_qwt_host_profile
 {
+    if [[ "$DO_QWT" != "yes" ]]; then
+        return
+    fi
+
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
-            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 echo >> $HOSTCONF
                 echo "##" >> $HOSTCONF
                 echo "## QWT" >> $HOSTCONF
                 echo "##" >> $HOSTCONF
-                echo "SETUP_APP_VERSION(QWT $QWT_VERSION)" >> $HOSTCONF
                 if [[ "$USE_SYSTEM_QWT" == "yes" ]]; then
-                    echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR $SYSTEM_QWT_DIR)" >> $HOSTCONF
+                    echo "option(VISIT_USE_SYSTEM_QWT \"Use system version of Qwt\" ON)" >> $HOSTCONF
+                elif [[ "$USE_ALT_QWT" == "yes" ]]; then
+                    echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR $QWT_INSTALL_DIR)" >> $HOSTCONF
                 else
+                    echo "SETUP_APP_VERSION(QWT $QWT_VERSION)" >> $HOSTCONF
                     echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR \${VISITHOME}/qwt/\${QWT_VERSION}/\${VISITARCH})" >> $HOSTCONF
                 fi
             fi
@@ -105,7 +110,11 @@ function bv_qwt_host_profile
 }
 
 function bv_qwt_ensure
-{    
+{
+    if [[ "$USE_SYSTEM_QWT" == "yes" || "$USE_ALT_QWT" == "yes" ]]; then
+        return
+    fi
+
     if [[ "$DO_QWT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         ensure_built_or_ready "qwt" $QWT_VERSION $QWT_BUILD_DIR $QWT_FILE
         if [[ $? != 0 ]] ; then
@@ -270,13 +279,12 @@ function build_qwt
     # we need or patch to work for any successive configure to build qwt
     # the easiest and most robust way to tackle this is to always delete
     # the source dir if it exists
-    
+
     if [[ -d ${QWT_BUILD_DIR} ]] ; then
         info "Removing old Qwt build dir ${QWT_BUILD_DIR} . . ."
         rm -rf ${QWT_BUILD_DIR}
     fi
 
-    
     #
     # Prepare build dir
     #
@@ -320,7 +328,7 @@ function build_qwt
         warn "Qwt project build failed.  Giving up"
         return 1
     fi
-    
+
     info "Building Qwt . . . (~2 minutes)"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -347,7 +355,7 @@ function build_qwt
             info "Creating dynamic libraries for Qwt . . ."
 
             fulllibname="${QWT_INSTALL_DIR}/lib/qwt.framework/Versions/6/qwt"
-	
+
             install_name_tool -id $fulllibname $fulllibname
 
             if [[ $? != 0 ]] ; then
@@ -376,7 +384,7 @@ function bv_qwt_is_enabled
         return 0
     fi
     if [[ $DO_QWT == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -392,7 +400,12 @@ function bv_qwt_is_installed
 
 function bv_qwt_build
 {
+    if [[ "$USE_SYSTEM_QWT" == "yes" || "$USE_ALT_QWT" == "yes" ]]; then
+        return
+    fi
+
     cd "$START_DIR"
+
     if [[ "$DO_QWT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         check_if_installed "qwt" $QWT_VERSION
         if [[ $? == 0 ]] ; then
