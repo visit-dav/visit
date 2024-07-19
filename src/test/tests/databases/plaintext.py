@@ -117,6 +117,8 @@ def TestCSVCurves():
     CreateCurvesDataFile("curves.csv")
 
     # Curve plot {
+    # GetDefaultOpenOptions() is a wrapper internal to our tests to the CLI method GetDefaultFileOpenOptions().
+    # It ensures we always start from a pristine default state for open options.
     plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
@@ -138,6 +140,8 @@ def TestCSVCurvesNoX():
     CreateCurvesDataFileWithNoXCoordinates("curves_nox.csv")
 
     # Curve noX plot {
+    # GetDefaultOpenOptions() is a wrapper internal to our tests to the CLI method GetDefaultFileOpenOptions().
+    # It ensures we always start from a pristine default state for open options.
     plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
@@ -159,6 +163,8 @@ def TestCSV3DPointsAndVariables():
     Create3DPointsWithVariablesDataFile("points.txt")
 
     # Points plot {
+    # GetDefaultOpenOptions() is a wrapper internal to our tests to the CLI method GetDefaultFileOpenOptions().
+    # It ensures we always start from a pristine default state for open options.
     plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
@@ -183,6 +189,8 @@ def TestCSV2DArray():
     Create2DArrayDataFile("array.txt")
 
     # Array plot {
+    # GetDefaultOpenOptions() is a wrapper internal to our tests to the CLI method GetDefaultFileOpenOptions().
+    # It ensures we always start from a pristine default state for open options.
     plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Data layout'] = '2D Array'
