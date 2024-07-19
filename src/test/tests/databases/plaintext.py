@@ -119,7 +119,7 @@ def TestCSVCurves():
     # Curve plot {
     # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
     # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
-    plainTextOpenOptions = GetDefautlOpenOptions()
+    plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
@@ -142,7 +142,7 @@ def TestCSVCurvesNoX():
     # Curve noX plot {
     # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
     # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
-    plainTextOpenOptions = GetDefautlOpenOptions()
+    plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
 
@@ -165,7 +165,7 @@ def TestCSV3DPointsAndVariables():
     # Points plot {
     # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
     # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
-    plainTextOpenOptions = GetDefautlOpenOptions()
+    plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
@@ -191,7 +191,7 @@ def TestCSV2DArray():
     # Array plot {
     # GetDefaultOpenOptions is a wrapper to the CLI method GetDefaultFileOpenOptions.
     # GetDefaultOpenOptions function deepcopy to ensure we always start from a prestine default state for open options.
-    plainTextOpenOptions = GetDefautlOpenOptions()
+    plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Data layout'] = '2D Array'
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
