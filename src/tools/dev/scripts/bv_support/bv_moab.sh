@@ -15,7 +15,11 @@ function bv_moab_disable
 
 function bv_moab_depends_on
 {
-    local depends_on="hdf5 zlib"
+    local depends_on="hdf5"
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="$depends_on zlib"
+    fi 
 
     echo $depends_on
 }
@@ -54,14 +58,6 @@ function bv_moab_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
             >> $HOSTCONF
-        if [[ -n "$PAR_COMPILER" ]]; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR \${VISITHOME}/moab_mpi/$MOAB_VERSION/\${VISITARCH})" \
-                >> $HOSTCONF
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi \${VISIT_HDF5_MPI_LIBDEP} TYPE STRING)" \
-                >> $HOSTCONF
-        fi
     fi
 }
 
@@ -92,105 +88,116 @@ function build_moab
         return 1
     fi
 
-    cd $MOAB_BUILD_DIR || error "Can't cd to moab build dir."
-    rm -f src/moab/MOABConfig.h # work around a potential issue in MOAB tarball
+    # -DCMAKE_SHARED_LINKER_FLAGS:STRING=\"-Wl,--no-undefined\" \
+    cmk_opts="\
+        -DENABLE_TESTING:BOOL=OFF \
+        -DENABLE_BLASLAPACK:BOOL=OFF \
+        -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/moab/$MOAB_VERSION/$VISITARCH"
 
-    par_build_types="serial"
-    if [[ -n "$PAR_COMPILER_CXX" ]]; then
-        par_build_types="$par_build_types parallel"
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cmk_opts="${cmk_opts} -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo"
+    else
+        cmk_opts="${cmk_opts} -DCMAKE_BUILD_TYPE:STRING=Release"
     fi
 
-    for bt in $par_build_types; do 
+    if [[ "$FC_COMPILER" == "yes" ]] ; then
+        cmk_opts="${cmk_opts} \
+            -DENABLE_FORTRAN:BOOL=ON \
+            -DCMAKE_Fortran_COMPILER:STRING=\"${FC_COMPILER}\""
+    else
+        cmk_opts="${cmk_opts} -DENABLE_FORTRAN:BOOL=OFF"
+    fi
 
-        mkdir build_$bt
-        pushd build_$bt
+    if [[ "DO_STATIC_BUILD" == "yes" ]]; then
+        cmk_opts="${cmk_opts} -DBUILD_SHARED_LIBS=OFF"
+    else
+        cmk_opts="${cmk_opts} -DBUILD_SHARED_LIBS=ON"
+    fi
 
-        cf_mpi_arg=""
-        cf_par_suffix=""
-        if [[ "$bt" == "serial" ]]; then
-            cf_c_compiler="$C_COMPILER"
-            cf_cxx_compiler="$CXX_COMPILER"
-        elif [[ "$bt" == "parallel" ]]; then
-            # these commands ruin the untar'd source code for normal builds
-            sed -i.orig -e 's/libhdf5/libhdf5_mpi/g' ../configure
-            sed -i.orig -e 's/libMOAB/libMOAB_mpi/g' ../configure
-            sed -i.orig -e 's/=hdf5/=hdf5_mpi/' ../configure
-            sed -i.orig -e 's/^LIBS = @LIBS@/LIBS = @HDF5_LIBS@ @LIBS@/' ../tools/Makefile.in
-            find .. -name Makefile.in -exec sed -e 's/libMOAB/libMOAB_mpi/g' -i.orig {} \;
-            cf_mpi_arg="--with-mpi"
-            cf_par_suffix="_mpi"
-            cf_c_compiler="$PAR_COMPILER"
-            cf_cxx_compiler="$PAR_COMPILER_CXX"
-        fi
+    if [[ "$DO_ZLIB" == "yes" ]]; then
+        cmk_opts="${cmk_opts} \
+            -DENABLE_ZLIB=ON \
+            -DZLIB_ROOT=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+    else
+        cmk_opts="${cmk_opts} -DENABLE_ZLIB=OFF"
+    fi
 
-        cf_prefix_arg="--prefix=$VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH"
-        cf_common_args="--with-pic --disable-fortran --disable-imesh --disable-cgns"
+    if [[ "$DO_NETCDF" == "yes" ]]; then
+        cmk_opts="${cmk_opts} \
+            -DENABLE_NETCDF=ON \
+            -DNETCDF_ROOT=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+    else
+        cmk_opts="${cmk_opts} -DENABLE_NETCDF=OFF"
+    fi
 
-        if [[ "DO_STATIC_BUILD" == "yes" ]]; then
-            cf_static_args="--enable-static --disable-shared"
-        else
-            cf_static_args="--disable-static --enable-shared"
-        fi
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        cmk_opts="${cmk_opts} \
+            -DENABLE_HDF5=ON \
+            -DHDF5_ROOT=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+    else
+        cmk_opts="${cmk_opts} -DENABLE_HDF5=OFF"
+    fi
 
-        cf_hdf5_ldflags_arg=""
-        cf_zlib_arg=""
-        cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH"
-        cf_zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
-        cf_hdf5_ldflags_arg="$cf_hdf5_ldflags_arg -lz"
-        if [[ -n "$cf_hdf5_ldflags_arg" ]]; then
-            cf_hdf5_ldflags_arg="--with-hdf5-ldflags=\"$cf_hdf5_ldflags_arg\""
-        fi
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        cmk_opts="${cmk_opts} \
+            -DENABLE_MPI:BOOL=ON \
+            -DMPI_C_COMPILER:PATH=\"${PAR_COMPILER}\" \
+            -DMPI_CXX_COMPILER:PATH=\"${PAR_COMPILER_CXX}\""
+    fi
 
-        info "Configuring $bt moab . . ."
-        set -x
-        sh -c "../configure \
-            CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-            CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-            ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
-            ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} ${cf_zlib_arg}"
-        set +x
-        if [[ $? != 0 ]] ; then
-            warn "$bt MOAB configure failed.  Giving up"
-            return 1
-        fi
+    # work around a potential issue in MOAB tarball by removing this file
+    rm -f ${MOAB_SRC_DIR}/src/moab/MOABConfig.h
 
-        #
-        # Build moab
-        #
+    # Make a build directory for an out-of-source build.. Change the
+    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
+    MOAB_SRC_DIR=${MOAB_BUILD_DIR}
+    MOAB_BUILD_DIR="${MOAB_SRC_DIR}-build"
+    if [[ ! -d $MOAB_BUILD_DIR ]] ; then
+        echo "Making build directory $MOAB_BUILD_DIR"
+        mkdir $MOAB_BUILD_DIR
+    fi
 
-        info "Building $bt moab . . . (~2 minutes)"
-        $MAKE $MAKE_OPT_FLAGS
-        if [[ $? != 0 ]] ; then
-            warn "$bt moab build failed.  Giving up"
-            return 1
-        fi
+    pushd $MOAB_BUILD_DIR > /dev/null || error "Can't cd to MOAB build dir."
 
-        #
-        # Install into the VisIt third party location.
-        #
-        info "Installing $bt moab"
-        $MAKE install
+    info "CMaking MOAB. . . (~5 minutes)"
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    echo "\"${CMAKE_BIN}\"" ${cmk_opts} ../${MOAB_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh
+    if [[ $? != 0 ]] ; then
+        warn "CMaking MOAB failed. Giving up"
+        return 1
+    fi
 
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/moab${cf_par_suffix}"
-            chgrp -R ${GROUP} "$VISITDIR/moab${cf_par_suffix}"
-        fi
+    #
+    # Build MOAB
+    #
+    info "Building MOAB. . . (~5 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "MOAB build failed. Giving up"
+        return 1
+    fi
 
-        #
-        # Change name of installed lib to libXXX_mpi.whatever
-        #
-        if [[ "$bt" == "parallel" ]]; then
-            pushd $VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH/lib
-            if [[ "$OPSYS" == "Darwin" ]]; then
-                install_name_tool -id $VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH/lib/libMOAB_mpi.dylib libMOAB_mpi.dylib
-            fi
-            popd
-        fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing MOAB"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "MOAB install failed. Giving up"
+        return 1
+    fi
 
-        popd
-    done
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/moab"
+        chgrp -R ${GROUP} "$VISITDIR/moab"
+    fi
 
-    cd "$START_DIR"
+    popd > /dev/null 
     info "Done with moab"
     return 0
 }
