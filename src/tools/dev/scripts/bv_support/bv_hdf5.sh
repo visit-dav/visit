@@ -45,9 +45,6 @@ function bv_hdf5_initialize_vars
 {
     if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
         HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
-        if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes" ]]; then
-            HDF5_MPI_INSTALL_DIR="${VISITDIR}/hdf5_mpi/$HDF5_VERSION/${VISITARCH}"
-        fi
     fi
 }
 
@@ -91,12 +88,6 @@ function bv_hdf5_host_profile
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF 
-
-            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
-                echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_DIR \${VISITHOME}/hdf5_mpi/$HDF5_VERSION/\${VISITARCH})" \
-                    >> $HOSTCONF 
-            fi
 
             ZLIB_LIBDEP=""
             if [[ "$DO_ZLIB" == "yes" ]] ; then
@@ -148,7 +139,6 @@ function build_hdf5
     #-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON
     cmk_opts=" \
         -DBUILD_TESTING:BOOL=OFF \
-        -DHDF5_BUILD_HL_LIB:BOOL=OFF \
         -DHDF5_BUILD_CPP_LIB:BOOL=OFF \
         -DHDF5_BUILD_JAVA:BOOL=OFF \
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
@@ -177,6 +167,12 @@ function build_hdf5
            -DBUILD_SHARED_LIBS:BOOL=ON \
            -DONLY_SHARED_LIBS:BOOL=ON"
     fi
+
+    if [[ "$DO_MOAB" == "yes" ]]; then
+        cmk_opts="${cmk_opts} -DHDF5_BUILD_HL_LIB:BOOL=ON"
+    else
+        cmk_opts="${cmk_opts} -DHDF5_BUILD_HL_LIB:BOOL=OFF"
+    fi   
 
     if [[ "$DO_ZLIB" == "yes" ]]; then
         info "Configuring HDF5 with ZLib support."
@@ -259,7 +255,7 @@ function build_hdf5
         chmod -R ug+w,a+rX "$VISITDIR/hdf5"
         chgrp -R ${GROUP} "$VISITDIR/hdf5"
     fi
-    cd "$START_DIR"
+    popd > /dev/null
     info "Done with HDF5"
     return 0
 }
