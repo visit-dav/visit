@@ -92,20 +92,14 @@ function build_moab
     cmk_opts="\
         -DENABLE_TESTING:BOOL=OFF \
         -DENABLE_BLASLAPACK:BOOL=OFF \
+        -DENABLE_FORTRAN:BOOL=OFF \
+        -DENABLE_NETCDF=OFF \
         -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/moab/$MOAB_VERSION/$VISITARCH"
 
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         cmk_opts="${cmk_opts} -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo"
     else
         cmk_opts="${cmk_opts} -DCMAKE_BUILD_TYPE:STRING=Release"
-    fi
-
-    if [[ "$FC_COMPILER" == "yes" ]] ; then
-        cmk_opts="${cmk_opts} \
-            -DENABLE_FORTRAN:BOOL=ON \
-            -DCMAKE_Fortran_COMPILER:STRING=\"${FC_COMPILER}\""
-    else
-        cmk_opts="${cmk_opts} -DENABLE_FORTRAN:BOOL=OFF"
     fi
 
     if [[ "DO_STATIC_BUILD" == "yes" ]]; then
@@ -120,14 +114,6 @@ function build_moab
             -DZLIB_ROOT=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
     else
         cmk_opts="${cmk_opts} -DENABLE_ZLIB=OFF"
-    fi
-
-    if [[ "$DO_NETCDF" == "yes" ]]; then
-        cmk_opts="${cmk_opts} \
-            -DENABLE_NETCDF=ON \
-            -DNETCDF_ROOT=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
-    else
-        cmk_opts="${cmk_opts} -DENABLE_NETCDF=OFF"
     fi
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
