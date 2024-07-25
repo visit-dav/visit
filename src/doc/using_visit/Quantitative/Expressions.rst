@@ -2257,6 +2257,12 @@ In cases where an expression involves the *output* of an operator, or the operat
 The :ref:`DeferExpression operator` is designed for this purpose.
 It will cause expressions in its list to be evaluated at the time of it's own execution in the pipeline.
 
-
 Automatic expressions
 ~~~~~~~~~~~~~~~~~~~~~
+
+For databases with small numbers of variables, VisIt_ will create several convenient expressions automatically.
+For example, for every *vector* variable, it will create vector magnitude expressions.
+However, for databases with a large number of variables (say more than 1000), this process of *speculative* expression generation can become onerous and a performance issue.
+So, it is disabled for databases for large numbers of variables.
+If users encounter a situation where speculative expression generation was skipped and they really, really want it and are willing to suffer through whatever the associated performance cost may be, they can exit VisIt_ and set an environment variable, ``VISIT_FORCE_SPECULATIVE_EXPRESSION_GENERATION`` and re-launch VisIt_ with that variable set to a non-zero integer value.
+If a user is running client/server, this environment variable will need to be set on both client and server.
