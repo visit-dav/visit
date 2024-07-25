@@ -2257,7 +2257,6 @@ In cases where an expression involves the *output* of an operator, or the operat
 The :ref:`DeferExpression operator` is designed for this purpose.
 It will cause expressions in its list to be evaluated at the time of it's own execution in the pipeline.
 
-
 Automatic expressions
 ~~~~~~~~~~~~~~~~~~~~~
 
