@@ -149,141 +149,129 @@ function build_adios2
         return 1
     fi
 
-    #### begin parallel
-
-    par_build_types="ser"
-    if [[ "$parallel" == "yes" ]]; then
-        par_build_types="$par_build_types par"
-    fi
-
     ADIOS2_SRC_DIR=$ADIOS2_BUILD_DIR
 
-    for bt in $par_build_types; do
+    # Configure.
+    cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
+    info "Configuring ADIOS2 (~1 minute)"
 
-        # Configure.
-        cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
-        info "Configuring ADIOS2-$bt (~1 minute)"
+    # Make a build directory for an out-of-source build.. Change the
+    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
+    ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-build"
 
-        # Make a build directory for an out-of-source build.. Change the
-        # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
-        ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-$bt-build"
+    if [[ ! -d $ADIOS2_BUILD_DIR ]] ; then
+        echo "Making build directory $ADIOS2_BUILD_DIR"
+        mkdir $ADIOS2_BUILD_DIR
+    fi
 
-        if [[ ! -d $ADIOS2_BUILD_DIR ]] ; then
-            echo "Making build directory $ADIOS2_BUILD_DIR"
-            mkdir $ADIOS2_BUILD_DIR
+    cd $ADIOS2_BUILD_DIR || error "Can't cd to $ADIOS2_BUILD_DIR"
+
+    #
+    # Remove the CMakeCache.txt files ... existing files sometimes prevent
+    # fields from getting overwritten properly.
+    #
+    rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
+
+    adios2_build_mode="${VISIT_BUILD_MODE}"
+    adios2_install_path="${VISITDIR}/adios2/${ADIOS2_VERSION}/${VISITARCH}"
+
+    cfg_opts=""
+    cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:STRING=OFF"
+    cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:STRING=OFF"
+    cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:STRING=OFF"
+
+    # Disable PNG and FFI dependence on macOS
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
+        cfg_opts="${cfg_opts} -DCMAKE_DISABLE_FIND_PACKAGE_LibFFI=TRUE"
+    fi
+
+    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+        cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    else
+        cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
+    fi
+    cfg_opts="${cfg_opts} -DCMAKE_BUILD_TYPE:STRING=${adios2_build_mode}"
+    cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
+    cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
+    cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
+    cfg_opts="${cfg_opts} -DADIOS2_USE_SST:STRING=ON"
+    cfg_opts="${cfg_opts} -DADIOS2_USE_Sodium:STRING=OFF"
+
+    # Use Blosc2
+    if [[ "$DO_BLOSC2" == "yes" ]] ; then
+        BLOSC2_INSTALL_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
+        BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
+        # note: lib dir can be `lib``, or `lib64` depending on the platform
+        if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
+            BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.${SO_EXT}"
         fi
 
-        cd $ADIOS2_BUILD_DIR || error "Can't cd to $ADIOS2_BUILD_DIR"
-
-        #
-        # Remove the CMakeCache.txt files ... existing files sometimes prevent
-        # fields from getting overwritten properly.
-        #
-        rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
-
-        adios2_build_mode="${VISIT_BUILD_MODE}"
-        adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
-
-        cfg_opts=""
-        cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:STRING=OFF"
-        cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:STRING=OFF"
-        cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:STRING=OFF"
-
-        # Disable PNG and FFI dependence on macOS
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
-            cfg_opts="${cfg_opts} -DCMAKE_DISABLE_FIND_PACKAGE_LibFFI=TRUE"
+        if [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
+            BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
         fi
 
-        if test "x${DO_STATIC_BUILD}" = "xyes" ; then
-            cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
-        else
-            cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
-        fi
-        cfg_opts="${cfg_opts} -DCMAKE_BUILD_TYPE:STRING=${adios2_build_mode}"
-        cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
-        cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
-        cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
-        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:STRING=ON"
-        cfg_opts="${cfg_opts} -DADIOS2_USE_Sodium:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:STRING=ON"
+        cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
+        cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
+        cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
+    fi
 
-        # Use Blosc2
-        if [[ "$DO_BLOSC2" == "yes" ]] ; then
-            BLOSC2_INSTALL_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
-            BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
-            # note: lib dir can be `lib``, or `lib64` depending on the platform
-            if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.${SO_EXT}"
-            fi
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:STRING=ON"
+        cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${PAR_COMPILER}"
+        cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+    else
+        cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:STRING=OFF"
+        cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    fi
 
-            if [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
-            fi
+    # Use HDF5?
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
+        cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
+    fi
 
-            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:STRING=ON"
-            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
-        fi
+    # call configure.
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
 
-        if [[ "$bt" == "ser" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:STRING=OFF"
-            cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
-            cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-        elif [[ "$bt" == "par" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:STRING=ON"
-            cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${PAR_COMPILER}"
-            cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
-        fi
+    echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh
 
-        # Use HDF5?
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
-            cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
-        fi
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS2 configure failed.  Giving up"
+        return 1
+    fi
 
-        # call configure.
-        CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-        if test -e bv_run_cmake.sh ; then
-            rm -f bv_run_cmake.sh
-        fi
+    #
+    # Build ADIOS2
+    #
+    info "Building ADIOS2 . . . (~5 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS2 build failed.  Giving up"
+        return 1
+    fi
 
-        echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
-        cat bv_run_cmake.sh
-        issue_command bash bv_run_cmake.sh
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing ADIOS2"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS2 install failed.  Giving up"
+        return 1
+    fi
 
-        if [[ $? != 0 ]] ; then
-            warn "ADIOS2 configure failed.  Giving up"
-            return 1
-        fi
-
-        #
-        # Build ADIOS2
-        #
-        info "Building ADIOS2-$bt . . . (~5 minutes)"
-        $MAKE $MAKE_OPT_FLAGS
-        if [[ $? != 0 ]] ; then
-            warn "ADIOS2 build failed.  Giving up"
-            return 1
-        fi
-
-        #
-        # Install into the VisIt third party location.
-        #
-        info "Installing ADIOS2-$bt"
-        $MAKE install
-        if [[ $? != 0 ]] ; then
-            warn "ADIOS2 install failed.  Giving up"
-            return 1
-        fi
-
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/adios2"
-            chgrp -R ${GROUP} "$VISITDIR/adios2"
-        fi
-
-        cd "$START_DIR"
-    done
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/adios2"
+        chgrp -R ${GROUP} "$VISITDIR/adios2"
+    fi
 
     cd "$START_DIR"
     info "Done with ADIOS2"
