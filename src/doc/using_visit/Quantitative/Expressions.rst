@@ -325,7 +325,7 @@ Logical AND Operator (``&``) : ``exprL & exprR``
 
 .. _Modulo_Expression_Operator:
 
-Modulo Operator (``%``) : ``exprL / exprR``
+Modulo Operator (``%``) : ``exprL % exprR``
     Creates a new expression which is everywhere the first argument, ``exprL``, modulo (e.g. remainder after dividing) the second argument, ``exprR``.
     Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>__` function.
     Attempts to divide by zero are detected and an exception is thrown.
