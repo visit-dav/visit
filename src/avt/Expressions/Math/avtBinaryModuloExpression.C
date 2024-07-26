@@ -3,58 +3,52 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtBinaryDivideExpression.C                         //
+//                       avtBinaryModuloExpression.C                         //
 // ************************************************************************* //
 
-#include <avtBinaryDivideExpression.h>
+#include <avtBinaryModuloExpression.h>
+
+#ifdef WIN32
+#include <math.h>
+#else
+#include <cmath>
+#endif
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 #include <ExpressionException.h>
 
-
 // ****************************************************************************
-//  Method: avtBinaryDivideExpression constructor
+//  Method: avtBinaryModuloExpression constructor
 //
-//  Purpose:
-//      Defines the constructor.  Note: this should not be inlined in the
-//      header because it causes problems for certain compilers.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
-//
+//  Mark C. Miller, Fri Jul 26 00:06:58 PDT 2024
+//  Copied from avtBinaryDivideExpression by Hank Childs
 // ****************************************************************************
 
-avtBinaryDivideExpression::avtBinaryDivideExpression()
+avtBinaryModuloExpression::avtBinaryModuloExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtBinaryDivideExpression destructor
+//  Method: avtBinaryModuloExpression destructor
 //
-//  Purpose:
-//      Defines the destructor.  Note: this should not be inlined in the header
-//      because it causes problems for certain compilers.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
-//
+//  Mark C. Miller, Fri Jul 26 00:07:09 PDT 2024
 // ****************************************************************************
 
-avtBinaryDivideExpression::~avtBinaryDivideExpression()
+avtBinaryModuloExpression::~avtBinaryModuloExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtBinaryDivideExpression::DoOperation
+//  Method: avtBinaryModuloExpression::DoOperation
 //
 //  Purpose:
-//      Divides the contents of the first array by the second array and puts
+//      Modulos the contents of the first array by the second array and puts
 //      the output in a third array.
 //
 //  Arguments:
@@ -65,27 +59,11 @@ avtBinaryDivideExpression::~avtBinaryDivideExpression()
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
 //
-//  Programmer: Sean Ahern          <Header added by Hank Childs>
-//  Creation:   November 18, 2002   <Header creation date>
-//
-//  Modifications:
-//
-//    Hank Childs, Mon Nov 18 07:35:07 PST 2002
-//    Added support for vectors and arbitrary data types.
-//
-//    Hank Childs, Thu Aug 14 11:18:07 PDT 2003
-//    Add support for vector and scalar types mixing.
-//
-//    Hank Childs, Fri Oct  7 10:43:28 PDT 2005
-//    Add support for dividing by zero.
-//
-//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
-//    Add support for singleton constants.
-//
+// Mark C. Miller, Fri Jul 26 00:07:43 PDT 2024
 // ****************************************************************************
 
 void
-avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
+avtBinaryModuloExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                    vtkDataArray *out, int ncomponents,
                                    int ntuples)
 {
@@ -108,10 +86,10 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             else if (val2 == 0. && val1 != 0.)
             {
                 EXCEPTION2(ExpressionException, outputVariableName, 
-                           "FPE: Divide by zero");
+                           "FPE: Divide by zero in mod operator");
             }
             else
-                out->SetTuple1(i, val1 / val2);
+                out->SetTuple1(i, fmod(val1,val2));
         }
     }
     else if (in1ncomps > 1 && in2ncomps == 1)
@@ -124,12 +102,12 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             if (val2 == 0)
             {
                 EXCEPTION2(ExpressionException, outputVariableName, 
-                           "FPE: Divide by zero");
+                           "FPE: Divide by zero in mod operator");
             }
             for (int j = 0 ; j < in1ncomps ; j++)
             {
                 double val1 = in1->GetComponent(tup1, j);
-                out->SetComponent(i, j, val1/val2);
+                out->SetComponent(i, j, fmod(val1,val2));
             }
         }
     }
@@ -146,9 +124,9 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                 if (val2 == 0)
                 {
                     EXCEPTION2(ExpressionException, outputVariableName, 
-                               "FPE: divide by zero");
+                               "FPE: Divide by zero in mod operator");
                 }
-                out->SetComponent(i, j, val1/val2);
+                out->SetComponent(i, j, fmod(val1,val2));
             }
         }
     }
@@ -158,5 +136,3 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                    "Division of vectors in undefined.");
     }
 }
-
-
