@@ -1526,6 +1526,9 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedM
 //    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
 //    Handle mixed element topologies.
 //
+//    Brad Whitlock, Wed Jul 17 17:59:16 PDT 2024
+//    Add shape_map support in the mixed non-PH topology case.
+//
 // ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(int domain,
@@ -1706,8 +1709,8 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     // The coords could be changed in the call above, so this must happen
     // after the conditionals
     vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr,*topo_ptr);
-
     ugrid->SetPoints(points);
+    points->Delete();
 
     if (oca != NULL)
     {
@@ -1720,23 +1723,38 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     if (topo_ptr->has_path("elements/shape") &&
         topo_ptr->fetch("elements/shape").as_string() == "mixed")
     {
-
         const int ncells = topo_ptr->fetch("elements/shapes").dtype().number_of_elements();
         
         vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
         cellTypes->SetNumberOfValues(ncells);
         unsigned char *cell_types_ptr = cellTypes->GetPointer(0);
 
-        int_accessor shapes_accessor = topo_ptr->fetch("elements/shapes").value();
+        const int_accessor shapes_accessor = topo_ptr->fetch("elements/shapes").value();
+
+        // Make a map of shape map value to VTK cell type.
+        std::map<int, int> sm2vtk;
+        const conduit::Node &n_shape_map = topo_ptr->fetch_existing("elements/shape_map");
+        for(index_t i = 0; i < n_shape_map.number_of_children(); i++)
+        {
+            const int cellValue = n_shape_map[i].to_int();
+            sm2vtk[cellValue] = ElementShapeNameToVTKCellType(n_shape_map[i].name());
+        }
+
         for (int cell_id = 0; cell_id < ncells; cell_id ++)
         {
-            *cell_types_ptr++ = shapes_accessor[cell_id];
+            const int shape_value = shapes_accessor[cell_id];
+            const auto it = sm2vtk.find(shape_value);
+            if(it == sm2vtk.end())
+            {
+                AVT_CONDUIT_BP_WARNING("Shape value " << shape_value << " is not in shape_map.");
+            }
+            // Store the VTK cell type in the cell types.
+            *cell_types_ptr++ = static_cast<unsigned char>(it->second);
         }
 
         vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
         ugrid->SetCells(cellTypes, cells);
         cells->Delete();
-        points->Delete();
         cellTypes->Delete();
     }
     else
@@ -1745,7 +1763,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         // Now, add explicit topology
         //
         vtkCellArray *cells = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
-        points->Delete();
         ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), cells);
         cells->Delete();
     }
