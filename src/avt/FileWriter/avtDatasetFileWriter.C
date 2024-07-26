@@ -401,9 +401,6 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     // Make sure that we have polydata.
     vtkGeometryFilter *geom = vtkGeometryFilter::New();
 
-    // Compute the range here since VTK cannot be trusted to get the extents
-    // right after transforming from cell data to point data.
-    // See https://github.com/visit-dav/visit/issues/19028
     double range[2];
     activeDS->GetScalarRange(range);
 
