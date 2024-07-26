@@ -8,7 +8,11 @@
 
 #include <avtBinaryModuloExpression.h>
 
+#ifdef WIN32
+#include <math.h>
+#else
 #include <cmath>
+#endif
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
