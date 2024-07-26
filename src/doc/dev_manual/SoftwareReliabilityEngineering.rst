@@ -1,7 +1,7 @@
-.. _site_reliability_engineering:
+.. _software_reliability_engineering:
 
-Site Reliability Engineering (SRE)
-==================================
+Software Reliability Engineering (SRE)
+======================================
 
 In the VisIt_ project, members of the development team are frequently called
 upon to respond to a variety of inquiries often originating directly from users.

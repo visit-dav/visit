@@ -33,6 +33,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
   <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
   <li>Fixed bug with Volume plot when SILRestriction applied, and when Composite rendering caused problem when a different RendererType used directly afterwards.</li>
+  <li>Fixed a bug in zonetype-label expression where unknown zone types would render a weird symbol, <code>&quot;?</code>.</li>
+  <li>Disabled warning message regarding skipping of speculative expression generation for databases with many variables. For more information, read our documentation about <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html#automatic-expressions">automatic expressions</a>.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -49,7 +51,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.4.2</font></b></p>
 <ul>
   <li>Updated Conduit to 0.9.2.</li>
-  <li>Docker containers were added for RockyLinux (RHEL compatible).
+  <li>Docker containers were added for RockyLinux (RHEL compatible).</li>
+  <li>Qwt is now optional. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--qwt</code> to the build_visit command line to build qwt. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

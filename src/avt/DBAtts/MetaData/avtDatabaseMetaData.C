@@ -7547,7 +7547,10 @@ avtDatabaseMetaData::GetSEGWarningString() const
 void
 avtDatabaseMetaData::IssueSEGWarningMessage() const
 {
+#if 0
+    // Disabled this warning message July 24, 2024
     IssueWarning(GetSEGWarningString());
+#endif
 }
 
 // ****************************************************************************
