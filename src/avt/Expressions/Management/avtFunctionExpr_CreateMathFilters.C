@@ -18,7 +18,7 @@
 #include <avtBinaryDivideExpression.h>
 #include <avtExpExpression.h>
 #include <avtFloorExpression.h>
-#include <avtModuloExpression.h>
+#include <avtBinaryModuloExpression.h>
 #include <avtNaturalLogExpression.h>
 #include <avtRadianToDegreeExpression.h>
 #include <avtRandomExpression.h>
@@ -100,7 +100,7 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
     else if (functionName == "log10withmin") 
         f = new avtBase10LogWithMinExpression();
     else if (functionName == "mod" || functionName == "modulo")
-        f = new avtModuloExpression();
+        f = new avtBinaryModuloExpression();
     else if (functionName == "rad2deg")
         f = new avtRadianToDegreeExpression();
     else if ((functionName == "random") || (functionName == "rand"))
