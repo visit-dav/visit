@@ -327,7 +327,7 @@ Logical AND Operator (``&``) : ``exprL & exprR``
 
 Modulo Operator (``%``) : ``exprL % exprR``
     Creates a new expression which is everywhere the first argument, ``exprL``, modulo (e.g. remainder after dividing) the second argument, ``exprR``.
-    Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>__` function.
+    Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>`__ function.
     Attempts to divide by zero are detected and an exception is thrown.
 
 .. _Associative_Expression_Operator:
@@ -391,7 +391,7 @@ Min Function (``min()``) : ``min(expr0, exrp1 [, ...])``
 
 Modulo Function (``mod()``) : ``mod(expr0,exrp1)``
     Creates a new expression which is everywhere the first argument, ``expr0``, modulo (e.g. remainder after dividing) the second argument, ``expr1``.
-    Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>__` function.
+    Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>`__ function.
     Attempts to divide by zero are detected and an exception is thrown.
 
 .. _Random_Expression_Function:
