@@ -8,11 +8,12 @@
 
 #include <avtBinaryModuloExpression.h>
 
+#include <cmath>
+
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 #include <ExpressionException.h>
-
 
 // ****************************************************************************
 //  Method: avtBinaryModuloExpression constructor
@@ -81,10 +82,10 @@ avtBinaryModuloExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             else if (val2 == 0. && val1 != 0.)
             {
                 EXCEPTION2(ExpressionException, outputVariableName, 
-                           "You can't divide by zero");
+                           "FPE: Divide by zero in mod operator");
             }
             else
-                out->SetTuple1(i, val1 / val2);
+                out->SetTuple1(i, fmod(val1,val2));
         }
     }
     else if (in1ncomps > 1 && in2ncomps == 1)
@@ -97,12 +98,12 @@ avtBinaryModuloExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             if (val2 == 0)
             {
                 EXCEPTION2(ExpressionException, outputVariableName, 
-                           "You can't divide by zero");
+                           "FPE: Divide by zero in mod operator");
             }
             for (int j = 0 ; j < in1ncomps ; j++)
             {
                 double val1 = in1->GetComponent(tup1, j);
-                out->SetComponent(i, j, val1/val2);
+                out->SetComponent(i, j, fmod(val1,val2));
             }
         }
     }
@@ -119,9 +120,9 @@ avtBinaryModuloExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                 if (val2 == 0)
                 {
                     EXCEPTION2(ExpressionException, outputVariableName, 
-                               "You can't divide by zero");
+                               "FPE: Divide by zero in mod operator");
                 }
-                out->SetComponent(i, j, val1/val2);
+                out->SetComponent(i, j, fmod(val1,val2));
             }
         }
     }
