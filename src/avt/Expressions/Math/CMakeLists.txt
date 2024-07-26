@@ -18,6 +18,7 @@ set(MATH_SOURCES
     avtBinaryAddExpression.C
     avtBinaryAndExpression.C
     avtBinaryDivideExpression.C
+    avtBinaryModuloExpression.C
     avtBinaryMultiplyExpression.C
     avtBinaryPowerExpression.C
     avtBinarySubtractExpression.C
@@ -34,7 +35,6 @@ set(MATH_SOURCES
     avtFloorExpression.C
     avtIdentityExpression.C
     avtInverseExpression.C
-    avtModuloExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C
