@@ -27,14 +27,11 @@
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
 using std::vector;
-
-
-#define STDMIN(A, B) (((A)<(B)) ? (A) : (B))
-#define STDMAX(A, B) (((A)>(B)) ? (A) : (B))
 
 
 // ****************************************************************************

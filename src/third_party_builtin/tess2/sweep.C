@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <setjmp.h>        /* longjmp */
+#include <algorithm>
 
 #include "mesh.h"
 #include "geom.h"
@@ -79,9 +80,6 @@ extern void DebugEvent( TESStesselator *tess );
 *   its associated vertex.  (This says that these edges exist only
 *   when it is necessary.)
 */
-
-#define MAX(x,y)    ((x) >= (y) ? (x) : (y))
-#define MIN(x,y)    ((x) <= (y) ? (x) : (y))
 
 /* When we merge two edges into one, we need to compute the combined
 * winding of the new edge.
@@ -582,8 +580,8 @@ static int CheckForIntersect( TESStesselator *tess, ActiveRegion *regUp )
 
     if( orgUp == orgLo ) return FALSE;    /* right endpoints are the same */
 
-    tMinUp = MIN( orgUp->t, dstUp->t );
-    tMaxLo = MAX( orgLo->t, dstLo->t );
+    tMinUp = std::min( orgUp->t, dstUp->t );
+    tMaxLo = std::max( orgLo->t, dstLo->t );
     if( tMinUp > tMaxLo ) return FALSE;    /* t ranges do not overlap */
 
     if( VertLeq( orgUp, orgLo )) {
@@ -597,10 +595,10 @@ static int CheckForIntersect( TESStesselator *tess, ActiveRegion *regUp )
 
     tesedgeIntersect( dstUp, orgUp, dstLo, orgLo, &isect );
     /* The following properties are guaranteed: */
-    if(!( MIN( orgUp->t, dstUp->t ) <= isect.t )) return FALSE;
-    if(!( isect.t <= MAX( orgLo->t, dstLo->t ))) return FALSE;
-    if(!( MIN( dstLo->s, dstUp->s ) <= isect.s )) return FALSE;
-    if(!( isect.s <= MAX( orgLo->s, orgUp->s ))) return FALSE;
+    if(!( std::min( orgUp->t, dstUp->t ) <= isect.t )) return FALSE;
+    if(!( isect.t <= std::max( orgLo->t, dstLo->t ))) return FALSE;
+    if(!( std::min( dstLo->s, dstUp->s ) <= isect.s )) return FALSE;
+    if(!( isect.s <= std::max( orgLo->s, orgUp->s ))) return FALSE;
 
     if( VertLeq( &isect, tess->event )) {
         /* The intersection point lies slightly to the left of the sweep line,
@@ -1201,7 +1199,7 @@ static int InitPriorityQ( TESStesselator *tess )
         vertexCount++;
     }
     /* Make sure there is enough space for sentinels. */
-    vertexCount += MAX( 8, tess->alloc.extraVertices );
+    vertexCount += std::max( 8, tess->alloc.extraVertices );
 
     pq = tess->pq = pqNewPriorityQ( &tess->alloc, vertexCount, (int (*)(PQkey, PQkey)) tesvertLeq );
     if (pq == NULL) return 0;

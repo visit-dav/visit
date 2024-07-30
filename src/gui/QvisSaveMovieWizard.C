@@ -3928,9 +3928,6 @@ QvisSaveMovieWizard::page4_viewportActivated(const QString &name)
         page4_UpdateViews(PAGE4_LIST | PAGE4_PROPERTIES);
 }
 
-#define MIN_VAL(A,B) (((A) < (B)) ? (A) : (B))
-#define MAX_VAL(A,B) (((A) > (B)) ? (A) : (B))
-
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page4_lowerLeftChanged
 //
@@ -3959,14 +3956,14 @@ QvisSaveMovieWizard::page4_lowerLeftChanged(double x, double y)
         upper_right[0], upper_right[1]))
     {
         lower_left[0] = x;
-        float tmp = MIN_VAL(lower_left[0], upper_right[0]);
-        lower_left[0] = MIN_VAL(tmp, lower_left[0]);
-        upper_right[0] = MAX_VAL(tmp, upper_right[0]);
+        float tmp = std::min(lower_left[0], upper_right[0]);
+        lower_left[0] = std::min(tmp, lower_left[0]);
+        upper_right[0] = std::max(tmp, upper_right[0]);
 
         lower_left[1] = y;
-        tmp = MIN_VAL(lower_left[1], upper_right[1]);
-        lower_left[1] = MIN_VAL(tmp, lower_left[1]);
-        upper_right[1] = MAX_VAL(tmp, upper_right[1]);
+        tmp = std::min(lower_left[1], upper_right[1]);
+        lower_left[1] = std::min(tmp, lower_left[1]);
+        upper_right[1] = std::max(tmp, upper_right[1]);
 
         // Store the modified coordinates back into the viewport.
         if(templateSpec->ViewportSetCoordinates(
@@ -4006,14 +4003,14 @@ QvisSaveMovieWizard::page4_upperRightChanged(double x, double y)
         upper_right[0], upper_right[1]))
     {
         upper_right[0] = x;
-        float tmp = MAX_VAL(lower_left[0], upper_right[0]);
-        lower_left[0] = MIN_VAL(tmp, lower_left[0]);
-        upper_right[0] = MAX_VAL(tmp, upper_right[0]);
+        float tmp = std::max(lower_left[0], upper_right[0]);
+        lower_left[0] = std::min(tmp, lower_left[0]);
+        upper_right[0] = std::max(tmp, upper_right[0]);
 
         upper_right[1] = y;
-        tmp = MIN_VAL(lower_left[1], upper_right[1]);
-        lower_left[1] = MIN_VAL(tmp, lower_left[1]);
-        upper_right[1] = MAX_VAL(tmp, upper_right[1]);
+        tmp = std::min(lower_left[1], upper_right[1]);
+        lower_left[1] = std::min(tmp, lower_left[1]);
+        upper_right[1] = std::max(tmp, upper_right[1]);
 
         // Store the modified coordinates back into the viewport.
         if(templateSpec->ViewportSetCoordinates(
@@ -4024,9 +4021,6 @@ QvisSaveMovieWizard::page4_upperRightChanged(double x, double y)
         }
     }
 }
-
-#undef MIN_VAL
-#undef MAX_VAL
 
 void
 QvisSaveMovieWizard::page4_compositingModeChanged(int value)
