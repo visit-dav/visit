@@ -678,7 +678,7 @@ QvisVisItUpdate::determineLatestDownload(bool error)
                 maxVersion = it.key();
                 for(int i = 0; i < it.value().size(); ++i)
                 {
-#ifdef WIN32
+#ifdef _WIN32
                     if(it.value()[i].contains(".exe") &&
                        !it.value()[i].contains("visitdev"))
 #else
@@ -714,7 +714,7 @@ QvisVisItUpdate::determineLatestDownload(bool error)
 
             latestVersion = maxUsableVersion;
             downloads.clear();
-#ifndef WIN32
+#ifndef _WIN32
             int slash = installationFile.lastIndexOf("/");
             if(slash != -1)
             {

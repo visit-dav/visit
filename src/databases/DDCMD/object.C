@@ -14,7 +14,7 @@
 #include "error.h"
 #include <algorithm>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strtok_r(s,sep,lasts) (*(lasts)=strtok((s),(sep)))
 #define strcasecmp stricmp
 #endif

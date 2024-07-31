@@ -1692,7 +1692,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                        "use the name \"visit\" as the base for the files "
                        "to be saved."));
             }
-#ifdef WIN32
+#ifdef _WIN32
             else
             {
                 // need to check if our filename contains a path:

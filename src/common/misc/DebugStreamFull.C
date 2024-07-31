@@ -553,7 +553,7 @@ DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
 {
     char filename[256];
 
-#ifdef WIN32
+#ifdef _WIN32
     // On windows, we always use pids, so won't need to rename, and thus
     // don't need to prepend a letter.
     sprintf(filename, "%s.%d.thr", progname, level);
@@ -633,7 +633,7 @@ DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
 {
     char filename[256];
 
-#ifdef WIN32
+#ifdef _WIN32
     // On windows, we always use pids, so won't need to rename, and thus
     // don't need to prepend a letter.
     sprintf(filename, "%s.%d", progname, level);

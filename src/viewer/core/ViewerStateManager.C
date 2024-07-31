@@ -987,7 +987,7 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
             }
             // Ensure we save a fully host-qualified name.
             FileFunctions::SplitHostDatabase(source, tmpHost, tmpDB);
-#ifdef WIN32
+#ifdef _WIN32
             if (tmpDB.substr(0,2) == "\\\\")
                 sourceToDB[std::string(tmp)] = tmpDB;
             else
@@ -1332,7 +1332,7 @@ CleanHostProfileCallback(void *,
         (base.substr(base.length()-4) != ".xml" &&
          base.substr(base.length()-4) != ".XML"))
         return;
-#ifdef WIN32
+#ifdef _WIN32
     _unlink(file.c_str());
 #else
     unlink(file.c_str());

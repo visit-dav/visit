@@ -767,7 +767,7 @@ RemoteProcess::SingleThreadedAcceptSocket()
 //
 // ****************************************************************************
 
-#if defined(WIN32)
+#if defined(_WIN32)
 DWORD WINAPI threaded_accept_callback(LPVOID data)
 #else
 static void *threaded_accept_callback(void *data)
@@ -874,7 +874,7 @@ RemoteProcess::MultiThreadedAcceptSocket()
 
     debug5 << mName << "Creating new accept thread" << endl;
     bool validThread = true;
-#if defined(WIN32)
+#if defined(_WIN32)
     // Create the thread Windows style.
     DWORD  Id;
     HANDLE tid;
@@ -946,7 +946,7 @@ RemoteProcess::MultiThreadedAcceptSocket()
                 noDescriptor = (cb.desc == -1);
                 noProcessError = (cb.Errno == 0 && childDied[GetProcessId()] == false);
                 MUTEX_UNLOCK(cb.mutex);
-#ifdef WIN32
+#ifdef _WIN32
                 Sleep(1);
 #elif defined(__linux__)
                 sched_yield();
@@ -961,7 +961,7 @@ RemoteProcess::MultiThreadedAcceptSocket()
             if(cb.alive)
             {
                 debug5 << mName << "Terminating the accept thread." << endl;
-#if defined(WIN32)
+#if defined(_WIN32)
                 TerminateThread(tid, 0);
                 CloseHandle(tid);
 #else

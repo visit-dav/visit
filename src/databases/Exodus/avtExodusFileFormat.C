@@ -231,7 +231,7 @@ static void fill_tmp_suffixes(int n, ...)
     va_end(ap);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 

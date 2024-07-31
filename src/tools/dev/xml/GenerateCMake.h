@@ -1256,7 +1256,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         QString guilibname("gui");
         QString viewerlibname("viewer");
-#ifdef WIN32
+#ifdef _WIN32
         if (! using_dev)
         {
             // when calling from an installed version, cmake doesn't know that

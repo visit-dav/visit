@@ -1,5 +1,5 @@
 Initialization: userDirForSessionFiles
-#ifdef WIN32
+#ifdef _WIN32
     userDirForSessionFiles = true;
 #else
     userDirForSessionFiles = false;

@@ -10,7 +10,7 @@
 #define VISIT_SYSCALL_H
 
 #include <cerrno>
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/select.h>

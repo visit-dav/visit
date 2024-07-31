@@ -33,7 +33,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>
 #endif
 
