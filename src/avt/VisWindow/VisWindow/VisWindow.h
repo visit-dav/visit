@@ -762,6 +762,8 @@ public:
     bool                GetUsdOutputMDLColors() const;
     void                SetUsdOutputDisplayColors(const bool);
     bool                GetUsdOutputDisplayColors() const;
+    void                SetUsingUsdDevice(const bool);
+    bool                GetUsingUsdDevice() const;
 #endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);

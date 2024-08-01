@@ -254,6 +254,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetUsdOutputMDL();
     bool                ProxiedGetUsdOutputMDLColors();
     bool                ProxiedGetUsdOutputDisplayColors();
+    bool                ProxiedGetUsingUsdDevice();
 #endif
 };
 

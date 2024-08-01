@@ -143,6 +143,7 @@ public:
     void SetUsdOutputMDL(bool usdOutputMDL_);
     void SetUsdOutputMDLColors(bool usdOutputMDLColors_);
     void SetUsdOutputDisplayColors(bool usdOutputDisplayColors_);
+    void SetUsingUsdDevice(bool usingUsdDevice_);
 
     // Property getting methods
     bool                 GetAntialiasing() const;
@@ -208,6 +209,7 @@ public:
     bool                 GetUsdOutputMDL() const;
     bool                 GetUsdOutputMDLColors() const;
     bool                 GetUsdOutputDisplayColors() const;
+    bool                 GetUsingUsdDevice() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -297,6 +299,7 @@ public:
         ID_usdOutputMDL,
         ID_usdOutputMDLColors,
         ID_usdOutputDisplayColors,
+        ID_usingUsdDevice,
         ID__LAST
     };
 
@@ -356,11 +359,12 @@ private:
     bool           usdOutputMDL;
     bool           usdOutputMDLColors;
     bool           usdOutputDisplayColors;
+    bool           usingUsdDevice;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibiibiibbiisssbffifssbbbbbbb"
+#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibiibiibbiisssbffifssbbbbbbbb"
 
 #endif

@@ -200,6 +200,7 @@ void RenderingAttributes::Init()
     usdOutputMDL = true;
     usdOutputMDLColors = true;
     usdOutputDisplayColors = true;
+    usingUsdDevice = false;
 
     RenderingAttributes::SelectAll();
 }
@@ -282,6 +283,7 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     usdOutputMDL = obj.usdOutputMDL;
     usdOutputMDLColors = obj.usdOutputMDLColors;
     usdOutputDisplayColors = obj.usdOutputDisplayColors;
+    usingUsdDevice = obj.usingUsdDevice;
 
     RenderingAttributes::SelectAll();
 }
@@ -505,7 +507,8 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (usdOutputPreviewSurface == obj.usdOutputPreviewSurface) &&
             (usdOutputMDL == obj.usdOutputMDL) &&
             (usdOutputMDLColors == obj.usdOutputMDLColors) &&
-            (usdOutputDisplayColors == obj.usdOutputDisplayColors));
+            (usdOutputDisplayColors == obj.usdOutputDisplayColors) &&
+            (usingUsdDevice == obj.usingUsdDevice));
 }
 
 // ****************************************************************************
@@ -704,6 +707,7 @@ RenderingAttributes::SelectAll()
     Select(ID_usdOutputMDL,                 (void *)&usdOutputMDL);
     Select(ID_usdOutputMDLColors,           (void *)&usdOutputMDLColors);
     Select(ID_usdOutputDisplayColors,       (void *)&usdOutputDisplayColors);
+    Select(ID_usingUsdDevice,               (void *)&usingUsdDevice);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1068,6 +1072,12 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("usdOutputDisplayColors", usdOutputDisplayColors));
     }
 
+    if(completeSave || !FieldsEqual(ID_usingUsdDevice, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usingUsdDevice", usingUsdDevice));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1284,6 +1294,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
         SetUsdOutputMDLColors(node->AsBool());
     if((node = searchNode->GetNode("usdOutputDisplayColors")) != 0)
         SetUsdOutputDisplayColors(node->AsBool());
+    if((node = searchNode->GetNode("usingUsdDevice")) != 0)
+        SetUsingUsdDevice(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1679,6 +1691,13 @@ RenderingAttributes::SetUsdOutputDisplayColors(bool usdOutputDisplayColors_)
     Select(ID_usdOutputDisplayColors, (void *)&usdOutputDisplayColors);
 }
 
+void
+RenderingAttributes::SetUsingUsdDevice(bool usingUsdDevice_)
+{
+    usingUsdDevice = usingUsdDevice_;
+    Select(ID_usingUsdDevice, (void *)&usingUsdDevice);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2061,6 +2080,12 @@ RenderingAttributes::GetUsdOutputDisplayColors() const
     return usdOutputDisplayColors;
 }
 
+bool
+RenderingAttributes::GetUsingUsdDevice() const
+{
+    return usingUsdDevice;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2192,6 +2217,7 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_usdOutputMDL:                 return "usdOutputMDL";
     case ID_usdOutputMDLColors:           return "usdOutputMDLColors";
     case ID_usdOutputDisplayColors:       return "usdOutputDisplayColors";
+    case ID_usingUsdDevice:               return "usingUsdDevice";
     default:  return "invalid index";
     }
 }
@@ -2271,6 +2297,7 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_usdOutputMDL:                 return FieldType_bool;
     case ID_usdOutputMDLColors:           return FieldType_bool;
     case ID_usdOutputDisplayColors:       return FieldType_bool;
+    case ID_usingUsdDevice:               return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2350,6 +2377,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_usdOutputMDL:                 return "bool";
     case ID_usdOutputMDLColors:           return "bool";
     case ID_usdOutputDisplayColors:       return "bool";
+    case ID_usingUsdDevice:               return "bool";
     default:  return "invalid index";
     }
 }
@@ -2659,6 +2687,11 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_usdOutputDisplayColors:
         {  // new scope
         retval = (usdOutputDisplayColors == obj.usdOutputDisplayColors);
+        }
+        break;
+    case ID_usingUsdDevice:
+        {  // new scope
+        retval = (usingUsdDevice == obj.usingUsdDevice);
         }
         break;
     default: retval = false;

@@ -1594,4 +1594,22 @@ VisWindowProtectionProxy::ProxiedGetUsdOutputDisplayColors()
 {
     return viswin->GetUsdOutputDisplayColors();
 }
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetUsingUsdDevice
+//
+// Purpose:     Get the using USD device flag.
+//
+// Returns:     true if using the USD device, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetUsingUsdDevice()
+{
+    return viswin->GetUsingUsdDevice();
+}
 #endif

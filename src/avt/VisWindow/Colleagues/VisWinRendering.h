@@ -454,6 +454,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                    GetUsdOutputMDLColors() const { return usdOutputMDLColors; }
     void                    SetUsdOutputDisplayColors(const bool);
     bool                    GetUsdOutputDisplayColors() const { return usdOutputDisplayColors; }
+    void                    SetUsingUsdDevice(const bool);
+    bool                    GetUsingUsdDevice() const { return usingUsdDevice; }
     vtkAnariPass            *CreateAnariPass();
 #endif
 
@@ -532,6 +534,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                        usdOutputMDL;
     bool                        usdOutputMDLColors;
     bool                        usdOutputDisplayColors;
+    bool                        usingUsdDevice;
     vtkAnariPass                *anariPass;
     bool                        anariPassValid;
 #endif

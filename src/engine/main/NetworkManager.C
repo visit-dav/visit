@@ -6805,6 +6805,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.window->SetUsdOutputMDL(renderAtts.GetUsdOutputMDL());
     renderState.window->SetUsdOutputMDLColors(renderAtts.GetUsdOutputMDLColors());
     renderState.window->SetUsdOutputDisplayColors(renderAtts.GetUsdOutputDisplayColors());
+    renderState.window->SetUsingUsdDevice(renderAtts.GetUsingUsdDevice());
 #endif
 
     // Apply any rendering-related changes to the annotation attributes.

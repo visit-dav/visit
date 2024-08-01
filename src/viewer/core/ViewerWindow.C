@@ -9345,6 +9345,38 @@ ViewerWindow::GetUsdOutputDisplayColors() const
 {
     return visWindow->GetUsdOutputDisplayColors();
 }
+
+// ****************************************************************************
+// Method: ViewerWindow::SetUsingUsdDevice
+//
+// @see VisWindow::SetUsingUsdDevice
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetUsingUsdDevice(const bool val)
+{
+    visWindow->SetUsingUsdDevice(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetUsingUsdDevice
+//
+// @see VisWindow::GetUsingUsdDevice
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetUsingUsdDevice() const
+{
+    return visWindow->GetUsingUsdDevice();
+}
 #endif
 
 // ****************************************************************************

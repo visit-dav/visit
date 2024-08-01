@@ -34,34 +34,34 @@ namespace anari_visit
                         anari::StatusCode code, const char* message)
     {
         std::cerr << message << std::endl;
-    // if (severity == ANARI_SEVERITY_FATAL_ERROR)
-    // {
-    //     std::cout << "[ANARI::FATAL] " << message;
-    // }
-    // else if (severity == ANARI_SEVERITY_ERROR)
-    // {
-    //     std::cout << "[ANARI::ERROR] " << , DataType: %d\n", message, (int)sourceType);
-    // }
-    // else if (severity == ANARI_SEVERITY_WARNING)
-    // {
-    //     std::cout(WARNING, "[ANARI::WARN] %s, DataType: %d\n", message, (int)sourceType);
-    // }
-    // else if (severity == ANARI_SEVERITY_PERFORMANCE_WARNING)
-    // {
-    //     std::cout(WARNING, "[ANARI::PERF] %s\n", message);
-    // }
-    // else if (severity == ANARI_SEVERITY_INFO)
-    // {
-    //     std::cout(INFO, "[ANARI::INFO] %s\n", message);
-    // }
-    // else if (severity == ANARI_SEVERITY_DEBUG)
-    // {
-    //     std::cout(TRACE, "[ANARI::DEBUG] %s\n", message);
-    // }
-    // else
-    // {
-    //     std::cout(INFO, "[ANARI::STATUS] %s\n", message);
-    // }
+        // if (severity == ANARI_SEVERITY_FATAL_ERROR)
+        // {
+        //     std::cout << "[ANARI::FATAL] " << message;
+        // }
+        // else if (severity == ANARI_SEVERITY_ERROR)
+        // {
+        //     std::cout << "[ANARI::ERROR] " << %s, DataType: %d\n", message, (int)sourceType);
+        // }
+        // else if (severity == ANARI_SEVERITY_WARNING)
+        // {
+        //     std::cout(WARNING, "[ANARI::WARN] %s, DataType: %d\n", message, (int)sourceType);
+        // }
+        // else if (severity == ANARI_SEVERITY_PERFORMANCE_WARNING)
+        // {
+        //     std::cout(WARNING, "[ANARI::PERF] %s\n", message);
+        // }
+        // else if (severity == ANARI_SEVERITY_INFO)
+        // {
+        //     std::cout(INFO, "[ANARI::INFO] %s\n", message);
+        // }
+        // else if (severity == ANARI_SEVERITY_DEBUG)
+        // {
+        //     std::cout(TRACE, "[ANARI::DEBUG] %s\n", message);
+        // }
+        // else
+        // {
+        //     std::cout(INFO, "[ANARI::STATUS] %s\n", message);
+        // }
     }
 }
 
@@ -129,14 +129,14 @@ AnariRenderingWidget::AnariRenderingWidget(QvisRenderingWindow *qrw,
     backendStackedLayout = new QStackedLayout();
 
     // Create and add the back-end specific widgets
-    rows = 0;
-    backendStackedLayout->addWidget(CreateBackendWidget(rows));
-    totalRows += rows;
+    int rows1 = 0;
+    backendStackedLayout->addWidget(CreateBackendWidget(rows1));
 
     // Create USD back-end widgets
-    rows = 0;
-    backendStackedLayout->addWidget(CreateUSDWidget(rows));
-    totalRows += rows;
+    int rows2 = 0;
+    backendStackedLayout->addWidget(CreateUSDWidget(rows2));
+
+    totalRows += std::max(rows1, rows2);
 
     renderingGroupVBoxLayout->addLayout(backendStackedLayout);
     mainLayout->addWidget(renderingGroup);
@@ -1153,6 +1153,7 @@ AnariRenderingWidget::renderingToggled(bool val)
 void
 AnariRenderingWidget::libraryChanged()
 {
+    renderingAttributes->SetUsingUsdDevice(false);
     auto libname = libraryName->text().trimmed().toStdString().c_str();
     auto anariLibrary = anari::loadLibrary(libname, anari_visit::StatusCallback);
 
@@ -1209,7 +1210,7 @@ AnariRenderingWidget::libraryChanged()
         anari::release(anariDevice, anariDevice);
         anariUnloadLibrary(anariLibrary);
 
-        auto backendType = GetBackendType(libname);
+        auto backendType = GetBackendType(libraryName->text().trimmed().toStdString());
 
         if(backendType != BackendType::USD)
         {
@@ -1218,6 +1219,7 @@ AnariRenderingWidget::libraryChanged()
         }
         else
         {
+            renderingAttributes->SetUsingUsdDevice(true);
             emit currentBackendChanged(1);
         }
 
@@ -1265,6 +1267,8 @@ AnariRenderingWidget::libraryChanged()
 
         rendererParams.reset(new std::vector<std::string>());
         UpdateUI();
+        emit currentBackendChanged(0);
+        renderingWindow->SetUpdateApply(false);
     }
 }
 

@@ -278,6 +278,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     usdOutputMDL = true;
     usdOutputMDLColors = true;
     usdOutputDisplayColors = true;
+    usingUsdDevice = false;
 
     anariPass = CreateAnariPass();
     anariPassValid = true;
@@ -3654,6 +3655,30 @@ VisWinRendering::SetUsdDir(const std::string dir)
     {
         usdOutputDisplayColors = val;
         vtkAnariRendererNode::SetUsdOutputDisplayColors(val, canvas);
+    }
+ }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetUsingUsdDevice
+//
+// Purpose:
+//   Sets the using USD device flag
+//
+// Arguments:
+//   val    true if the USD back-end is being used, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+ void
+ VisWinRendering::SetUsingUsdDevice(const bool val)
+ {
+    if(val != usingUsdDevice)
+    {
+        usingUsdDevice = val;
+        vtkAnariRendererNode::SetUsingUsdDevice(val, canvas);
     }
  }
 

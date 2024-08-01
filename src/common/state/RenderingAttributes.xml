@@ -185,6 +185,9 @@
     <Field name="usdOutputDisplayColors" label="USD Output Display Colors" type="bool">
       true
     </Field>
+    <Field name="usingUsdDevice" label="Using USD Device" type="bool">
+      false
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">

@@ -23,7 +23,7 @@ class QLineEdit;
 class QCheckBox;
 class QStackedLayout;
 
-namespace anari
+namespace anari_visit
 {
     enum class BackendType
     {
@@ -48,8 +48,8 @@ namespace anari
     };
 }
 
-using BackendType = anari::BackendType;
-using USDParameter = anari::USDParameter;
+using BackendType = anari_visit::BackendType;
+using USDParameter = anari_visit::USDParameter;
 
 class GUI_API AnariRenderingWidget : public QWidget
 {

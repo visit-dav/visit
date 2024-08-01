@@ -779,6 +779,8 @@ public:
     bool                GetUsdOutputMDLColors() const;
     void                SetUsdOutputDisplayColors(const bool val);
     bool                GetUsdOutputDisplayColors() const;
+    void                SetUsingUsdDevice(const bool val);
+    bool                GetUsingUsdDevice() const;
 #endif
 
     void Lineout(const bool);

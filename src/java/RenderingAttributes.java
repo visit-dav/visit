@@ -22,7 +22,7 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
-    private static int RenderingAttributes_numAdditionalAtts = 55;
+    private static int RenderingAttributes_numAdditionalAtts = 56;
 
     // Enum values
     public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
@@ -113,6 +113,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         usdOutputMDL = true;
         usdOutputMDLColors = true;
         usdOutputDisplayColors = true;
+        usingUsdDevice = false;
     }
 
     public RenderingAttributes(int nMoreFields)
@@ -180,6 +181,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         usdOutputMDL = true;
         usdOutputMDLColors = true;
         usdOutputDisplayColors = true;
+        usingUsdDevice = false;
     }
 
     public RenderingAttributes(RenderingAttributes obj)
@@ -251,6 +253,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         usdOutputMDL = obj.usdOutputMDL;
         usdOutputMDLColors = obj.usdOutputMDLColors;
         usdOutputDisplayColors = obj.usdOutputDisplayColors;
+        usingUsdDevice = obj.usingUsdDevice;
 
         SelectAll();
     }
@@ -334,7 +337,8 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
                 (usdOutputPreviewSurface == obj.usdOutputPreviewSurface) &&
                 (usdOutputMDL == obj.usdOutputMDL) &&
                 (usdOutputMDLColors == obj.usdOutputMDLColors) &&
-                (usdOutputDisplayColors == obj.usdOutputDisplayColors));
+                (usdOutputDisplayColors == obj.usdOutputDisplayColors) &&
+                (usingUsdDevice == obj.usingUsdDevice));
     }
 
     // Property setting methods
@@ -688,6 +692,12 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         Select(54);
     }
 
+    public void SetUsingUsdDevice(boolean usingUsdDevice_)
+    {
+        usingUsdDevice = usingUsdDevice_;
+        Select(55);
+    }
+
     // Property getting methods
     public boolean        GetAntialiasing() { return antialiasing; }
     public boolean        GetOrderComposite() { return orderComposite; }
@@ -744,6 +754,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public boolean        GetUsdOutputMDL() { return usdOutputMDL; }
     public boolean        GetUsdOutputMDLColors() { return usdOutputMDLColors; }
     public boolean        GetUsdOutputDisplayColors() { return usdOutputDisplayColors; }
+    public boolean        GetUsingUsdDevice() { return usingUsdDevice; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -858,6 +869,8 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             buf.WriteBool(usdOutputMDLColors);
         if(WriteSelect(54, buf))
             buf.WriteBool(usdOutputDisplayColors);
+        if(WriteSelect(55, buf))
+            buf.WriteBool(usingUsdDevice);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1030,6 +1043,9 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         case 54:
             SetUsdOutputDisplayColors(buf.ReadBool());
             break;
+        case 55:
+            SetUsingUsdDevice(buf.ReadBool());
+            break;
         }
     }
 
@@ -1128,6 +1144,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         str = str + boolToString("usdOutputMDL", usdOutputMDL, indent) + "\n";
         str = str + boolToString("usdOutputMDLColors", usdOutputMDLColors, indent) + "\n";
         str = str + boolToString("usdOutputDisplayColors", usdOutputDisplayColors, indent) + "\n";
+        str = str + boolToString("usingUsdDevice", usingUsdDevice, indent) + "\n";
         return str;
     }
 
@@ -1188,5 +1205,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     private boolean        usdOutputMDL;
     private boolean        usdOutputMDLColors;
     private boolean        usdOutputDisplayColors;
+    private boolean        usingUsdDevice;
 }
 

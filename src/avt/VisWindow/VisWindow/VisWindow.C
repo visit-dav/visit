@@ -7787,6 +7787,46 @@ VisWindow::GetUsdOutputDisplayColors() const
     return rendering->GetUsdOutputDisplayColors();
 }
 
+// ****************************************************************************
+// Method: VisWindow::SetUsingUsdDevice
+//
+// Purpose:
+//   Sets the using USD device flag for the USD back-end.
+//
+// Arguments:
+//   val    true if using the USD back-end, otherwise false
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+void
+VisWindow::SetUsingUsdDevice(const bool val)
+{
+    if(val != GetUsingUsdDevice())
+    {
+        rendering->SetUsingUsdDevice(val);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetUsingUsdDevice
+//
+// Purpose:
+//   Gets the using USD device flag for the USD back-end.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
+//
+// ****************************************************************************
+
+bool
+VisWindow::GetUsingUsdDevice() const
+{
+    return rendering->GetUsingUsdDevice();
+}
+
 #endif
 
 // ****************************************************************************

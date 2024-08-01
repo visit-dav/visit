@@ -171,7 +171,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                UpdatePlotList(std::vector<avtActor_p> &l)
                                   { ProxiedUpdatePlotList(l); }
 
-    double               ComputeVectorTextScaleFactor(const double *p, const double*v = NULL)
+    double              ComputeVectorTextScaleFactor(const double *p, const double*v = NULL)
                                   { return ProxiedComputeVectorTextScaleFactor(p, v); }
 
     bool                GetAmbientOn()
@@ -213,10 +213,10 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     bool                GetSpecularFlag()
                                   { return ProxiedGetSpecularFlag(); }
 
-    double               GetSpecularCoeff()
+    double              GetSpecularCoeff()
                                   { return ProxiedGetSpecularCoeff(); }
 
-    double               GetSpecularPower()
+    double              GetSpecularPower()
                                   { return ProxiedGetSpecularPower(); }
 
     const ColorAttribute &GetSpecularColor()
@@ -284,6 +284,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     bool        GetUsdOutputMDL()               { return ProxiedGetUsdOutputMDL(); }
     bool        GetUsdOutputMDLColors()         { return ProxiedGetUsdOutputMDLColors(); }
     bool        GetUsdOutputDisplayColors()     { return ProxiedGetUsdOutputDisplayColors(); }
+    bool        GetUsingUsdDevice()         { return ProxiedGetUsingUsdDevice(); }
 #endif
 };
 

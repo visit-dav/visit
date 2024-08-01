@@ -336,6 +336,11 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         snprintf(tmpStr, 1000, "%susdOutputDisplayColors = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetUsingUsdDevice())
+        snprintf(tmpStr, 1000, "%susingUsdDevice = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%susingUsdDevice = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -3684,6 +3689,66 @@ RenderingAttributes_GetUsdOutputDisplayColors(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+RenderingAttributes_SetUsingUsdDevice(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the usingUsdDevice in the object.
+    obj->data->SetUsingUsdDevice(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetUsingUsdDevice(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUsingUsdDevice()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
@@ -3798,6 +3863,8 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetUsdOutputMDLColors", RenderingAttributes_GetUsdOutputMDLColors, METH_VARARGS},
     {"SetUsdOutputDisplayColors", RenderingAttributes_SetUsdOutputDisplayColors, METH_VARARGS},
     {"GetUsdOutputDisplayColors", RenderingAttributes_GetUsdOutputDisplayColors, METH_VARARGS},
+    {"SetUsingUsdDevice", RenderingAttributes_SetUsingUsdDevice, METH_VARARGS},
+    {"GetUsingUsdDevice", RenderingAttributes_GetUsingUsdDevice, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3966,6 +4033,8 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
         return RenderingAttributes_GetUsdOutputMDLColors(self, NULL);
     if(strcmp(name, "usdOutputDisplayColors") == 0)
         return RenderingAttributes_GetUsdOutputDisplayColors(self, NULL);
+    if(strcmp(name, "usingUsdDevice") == 0)
+        return RenderingAttributes_GetUsingUsdDevice(self, NULL);
 
 
     // Add a __dict__ answer so that dir() works
@@ -4098,6 +4167,8 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RenderingAttributes_SetUsdOutputMDLColors(self, args);
     else if(strcmp(name, "usdOutputDisplayColors") == 0)
         obj = RenderingAttributes_SetUsdOutputDisplayColors(self, args);
+    else if(strcmp(name, "usingUsdDevice") == 0)
+        obj = RenderingAttributes_SetUsingUsdDevice(self, args);
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

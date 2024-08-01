@@ -3648,6 +3648,8 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         windows[index]->SetUsdOutputMDLColors(ratts->GetUsdOutputMDLColors());
     if (windows[index]->GetUsdOutputDisplayColors() != ratts->GetUsdOutputDisplayColors())
         windows[index]->SetUsdOutputDisplayColors(ratts->GetUsdOutputDisplayColors());
+    if (windows[index]->GetUsingUsdDevice() != ratts->GetUsingUsdDevice())
+        windows[index]->SetUsingUsdDevice(ratts->GetUsingUsdDevice());
 #endif
 
         // If the updatesEnabled flag was true before we temporarily disabled
@@ -5322,6 +5324,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetUsdOutputMDL(win->GetUsdOutputMDL());
         GetViewerState()->GetRenderingAttributes()->SetUsdOutputMDLColors(win->GetUsdOutputMDLColors());
         GetViewerState()->GetRenderingAttributes()->SetUsdOutputDisplayColors(win->GetUsdOutputDisplayColors());
+        GetViewerState()->GetRenderingAttributes()->SetUsingUsdDevice(win->GetUsingUsdDevice());
 #endif
 
         // Tell the client about the new rendering information.
