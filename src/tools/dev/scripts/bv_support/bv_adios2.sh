@@ -134,7 +134,7 @@ function build_adios2
     else
         build_cmake
         if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
+            warn "Unable to build cmake. Giving up"
             return 1
         fi
     fi
@@ -233,18 +233,19 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
     fi
 
-    # call configure.
+    # Create CMake shell script
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
 
+    # Run CMake via shell script
     echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh
 
     if [[ $? != 0 ]] ; then
-        warn "ADIOS2 configure failed.  Giving up"
+        warn "CMakeing ADIOS2 failed. Giving up"
         return 1
     fi
 
@@ -254,7 +255,7 @@ function build_adios2
     info "Building ADIOS2 . . . (~5 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "ADIOS2 build failed.  Giving up"
+        warn "ADIOS2 build failed. Giving up"
         return 1
     fi
 
@@ -264,7 +265,7 @@ function build_adios2
     info "Installing ADIOS2"
     $MAKE install
     if [[ $? != 0 ]] ; then
-        warn "ADIOS2 install failed.  Giving up"
+        warn "ADIOS2 install failed. Giving up"
         return 1
     fi
 
