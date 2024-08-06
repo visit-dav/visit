@@ -15,6 +15,7 @@
 #include "avtResolutionSelection.h"
 
 #include "avtMaterial.h"
+#include "avtSpecies.h"
 #include "avtMixedVariable.h"
 #include "avtVariableCache.h"
 #include "DBOptionsAttributes.h"
@@ -154,6 +155,7 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_selected_lod(0),
       m_mesh_and_topo_info(),
       m_matset_info(),
+      m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
       m_new_refine(true)
@@ -1347,6 +1349,112 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
 
 
 // ****************************************************************************
+// helper method used to add species meta data for a blueprint mesh.
+//
+// Justin Privitera, Wed Mar 13 16:18:30 PDT 2024
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
+                                                    string const &mesh_name,
+                                                    const Node &n_mesh_info)
+{
+    if (!n_mesh_info.has_child("specsets"))
+    {
+        BP_PLUGIN_INFO("Input data file has no specsets.");
+        return;
+    }
+    BP_PLUGIN_INFO("adding species for " <<  mesh_name);
+
+    NodeConstIterator specsets_itr = n_mesh_info["specsets"].children();
+
+    while (specsets_itr.has_next())
+    {
+        const Node &n_specset = specsets_itr.next();
+        const string specset_name = specsets_itr.name();
+
+        if (!n_specset.has_child("matset_values"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " missing `matset_values`,"
+                           << " skipping specset" );
+            return;
+        }
+
+        // we also need the associated matset
+        if (!n_specset.has_child("matset"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " missing `matset`,"
+                           << " skipping specset" );
+            return;
+        }
+
+        const std::string topo_name = ?;
+
+        const std::string matset_name = n_specset["matset"].as_string();
+        const string mesh_topo_name = mesh_name + "_" + topo_name;
+
+        const string mesh_specset_name = mesh_topo_name + "_" + matset_name + "_" + specset_name;
+
+        BP_PLUGIN_INFO("adding species set "
+                        <<  mesh_topo_name << " " <<  mesh_specset_name);
+
+        const int nmat = n_specset["matset_values"].number_of_children();
+
+        std::vector<int> numSpecies;
+        std::vector<std::vector<std::string>> speciesNames;
+
+        auto matset_vals_itr = n_specset["matset_values"].children();
+        while (matset_vals_itr.has_next())
+        {
+            const Node &matset_val = matset_vals_itr.next();
+            numSpecies.push_back(matset_val.number_of_children());
+
+            auto specie_itr = matset_val.children();
+            while (specie_itr.has_next())
+            {
+                specie_itr.next();
+                const std::string specname = specie_itr.name();
+                speciesNames.push_back(specname);
+            }
+        }
+
+        m_specset_info[mesh_specset_name]["full_mesh_name"] = mesh_topo_name;
+        m_specset_info[mesh_specset_name]["mesh_name"] = mesh_name;
+        m_specset_info[mesh_specset_name]["topo_name"] = topo_name;
+        m_specset_info[mesh_specset_name]["matset_name"] = matset_name;
+        m_specset_info[mesh_specset_name]["specset_name"] = specset_name;
+
+        m_specset_info[mesh_specset_name]["nmat"] = nmat;
+        m_specset_info[mesh_specset_name]["nmatspec"].set(numSpecies.data(), numSpecies.size());
+
+
+        BP_PLUGIN_INFO("Specset Info for "
+                       << mesh_specset_name
+                       << " : " << m_specset_info[mesh_specset_name].to_yaml())
+
+        avtSpeciesMetaData *smd = new avtSpeciesMetaData(
+            mesh_specset_name, // The name of the species
+            mesh_topo_name,    // The name of the mesh the species is defined on.
+            matset_name,       // The name of the material the species is defined on.
+            nmat,              // The number of materials in the matset.
+            numSpecies,        // The number of species for each material.
+            speciesNames);     // The name of each species for each material.
+        md->Add(smd);
+    }
+}
+
+
+// ****************************************************************************
 // helper method used to add expression meta data for a blueprint mesh.
 //
 // Mark C. Miller, Wed May  6 12:26:33 PDT 2020
@@ -1758,6 +1866,8 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
     m_mesh_and_topo_info.reset();
     // clear full matset to info map
     m_matset_info.reset();
+    // clear full specset to info map
+    m_specset_info.reset();
 
     try
     {
@@ -1831,6 +1941,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
 
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
             AddBlueprintMaterialsMetadata(metadata, itr.name(), n);
+            AddBlueprintSpeciesMetadata(metadata, itr.name(), n);
         }
 
         // Process all expressions *after* all fields. This
