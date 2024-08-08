@@ -768,14 +768,13 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     BP_PLUGIN_INFO("ReadBlueprintMatsetVolFracs: " << abs_matsetname
                    << " [domain " << domain << "]");
 
-    string abs_matsetname_str(abs_matsetname);
     // replace colons, etc
-    abs_matsetname_str = sanitize_var_name(abs_matsetname_str);
+    const std::string abs_matsetname_str = sanitize_var_name(abs_matsetname);
 
     // we need to know what mesh name this matset is associated with
     const Node &mset_info = m_matset_info[abs_matsetname_str];
     
-    string abs_meshname = mset_info["full_mesh_name"].as_string();
+    const string abs_meshname = mset_info["full_mesh_name"].as_string();
 
     BP_PLUGIN_INFO("matset " << abs_matsetname << " is defined on mesh " << abs_meshname);
 
@@ -912,6 +911,99 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 
         // provide material_map
         out["matnames"] = n_mat_names;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadBlueprintSpecset
+//
+//  Purpose:
+//      TODO Reads specset info for the given domain into the `out` conduit Node.
+//
+//
+//  Programmer: TODO
+//  Creation:   TODO
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
+                                            const string &specset_name,
+                                            Node &out)
+{
+    BP_PLUGIN_INFO("ReadBlueprintSpecsetMassFracs: " << specset_name
+                   << " [domain " << domain << "]");
+
+    // replace colons, etc
+    const std::string specset_name_str = sanitize_var_name(specset_name);
+
+    // we need to know what mesh name this specset is associated with
+    const Node &specset_info = m_specset_info[specset_name_str];
+    const std::string abs_meshname = specset_info["full_mesh_name"].as_string();
+    const std::string matset_name = specset_info["matset_name"].as_string();
+    const std::string specset_name = specset_info["specset_name"].as_string();
+    // const Node &mset_info = m_matset_info[matset_name];
+
+    // const std::string abs_meshname = mset_info["full_mesh_name"].as_string();
+    BP_PLUGIN_INFO("specset " << specset_name << " is defined on mesh " << abs_meshname);
+
+    const std::string mesh_name = specset_info["mesh_name"].as_string();
+    const std::string topo_name = specset_info["topo_name"].as_string();
+    const Node &n_spec_names = specset_info["species"];
+
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
+    BP_PLUGIN_INFO("matset name: " << matset_name);
+    BP_PLUGIN_INFO("specset name: " << specset_name);
+    BP_PLUGIN_INFO("specnames: " << n_spec_names.to_yaml());
+
+    if (!m_root_node["blueprint_index"].has_child(mesh_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "mesh " << mesh_name << " not found in blueprint index");
+    }
+
+    if (!m_root_node["blueprint_index"][mesh_name]["matsets"].has_child(matset_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "matset " << matset_name << " not found in blueprint index");
+    }
+
+    if (!m_root_node["blueprint_index"][mesh_name]["specsets"].has_child(specset_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "specset " << specset_name << " not found in blueprint index");
+    }
+
+    // TODO left off here
+    // am I really going to need the bp cache? I guess we'll find out in another function
+
+    const Node &bp_index_specset = m_root_node["blueprint_index"][mesh_name]["specsets"][specset_name_str];
+    BP_PLUGIN_INFO(bp_index_specset.to_yaml());
+
+    string data_path = bp_index_specset["path"].as_string();
+
+    try
+    {
+        m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
+                                         data_path,
+                                         out);
+
+        BP_PLUGIN_INFO("done loading conduit data for " 
+                        << specset_name << " [domain "<< domain << "]" );
+    }
+    catch(InvalidVariableException const&)
+    {
+        BP_PLUGIN_WARNING("failed to load conduit data for "
+                           << specset_name << " [domain "<< domain << "]"
+                           << " -- skipping field for this domain");
+        // if something went wrong, reset the output node to
+        // signal the read failed, and return.
+        out.reset();
     }
 }
 
@@ -1458,6 +1550,7 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
 
         m_specset_info[mesh_specset_name]["nmat"] = nmat;
         m_specset_info[mesh_specset_name]["nmatspec"].set(num_species);
+        m_specset_info[mesh_specset_name]["species"].set(n_specset["species"]);
 
 
         BP_PLUGIN_INFO("Specset Info for "
@@ -2904,6 +2997,12 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
     {
         rv = static_cast<void *>(GetMaterial(domain, var));
         df = avtMaterial::Destruct;
+    }
+
+    if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = static_cast<void *>(GetSpecies(domain, var));
+        df = avtSpecies::Destruct;
     }
 
     return rv;
