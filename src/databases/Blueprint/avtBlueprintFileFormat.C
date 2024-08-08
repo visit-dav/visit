@@ -1278,10 +1278,10 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             return;
         }
 
-        std::string topo_name = n_mset["topology"].as_string();
-        string mesh_topo_name = mesh_name + "_" + topo_name;
+        const std::string topo_name = n_mset["topology"].as_string();
+        const string mesh_topo_name = mesh_name + "_" + topo_name;
 
-        string mesh_matset_name = mesh_topo_name + "_" + mset_name;
+        const string mesh_matset_name = mesh_topo_name + "_" + mset_name;
 
         BP_PLUGIN_INFO("adding material set "
                         <<  mesh_topo_name << " " <<  mesh_matset_name);
@@ -1375,18 +1375,6 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         const Node &n_specset = specsets_itr.next();
         const string specset_name = specsets_itr.name();
 
-        if (!n_specset.has_child("matset_values"))
-        {
-            BP_PLUGIN_INFO("mesh: "
-                           << mesh_name
-                           << " specset index: "
-                           << specset_name
-                           << " missing `matset_values`,"
-                           << " skipping specset" );
-            return;
-        }
-
-        // we also need the associated matset
         if (!n_specset.has_child("matset"))
         {
             BP_PLUGIN_INFO("mesh: "
@@ -1398,34 +1386,68 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
             return;
         }
 
-        const std::string topo_name = ?;
+        if (!n_specset.has_child("species"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " missing `species`,"
+                           << " skipping specset" );
+            return;
+        }
 
         const std::string matset_name = n_specset["matset"].as_string();
-        const string mesh_topo_name = mesh_name + "_" + topo_name;
 
+        if (! n_mesh_info.has_path("matsets/" + matset_name))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " associated matset missing,"
+                           << " skipping specset" );
+            return;
+        }
+
+        if (! n_mesh_info.has_path("matsets/" + matset_name + "/topology"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " associated matset missing `topology`,"
+                           << " skipping specset" );
+            return;
+        }
+
+        const std::string topo_name = n_mesh_info["matsets"][matset_name]["topology"].as_string();
+        const string mesh_topo_name = mesh_name + "_" + topo_name;
+        const string mesh_matset_name = mesh_topo_name + "_" + matset_name;
         const string mesh_specset_name = mesh_topo_name + "_" + matset_name + "_" + specset_name;
 
         BP_PLUGIN_INFO("adding species set "
                         <<  mesh_topo_name << " " <<  mesh_specset_name);
 
-        const int nmat = n_specset["matset_values"].number_of_children();
+        const int nmat = n_specset["species"].number_of_children();
 
-        std::vector<int> numSpecies;
-        std::vector<std::vector<std::string>> speciesNames;
+        std::vector<int> num_species;
+        std::vector<std::vector<std::string>> species_names;
 
-        auto matset_vals_itr = n_specset["matset_values"].children();
-        while (matset_vals_itr.has_next())
+        auto mat_itr = n_specset["species"].children();
+        while (mat_itr.has_next())
         {
-            const Node &matset_val = matset_vals_itr.next();
-            numSpecies.push_back(matset_val.number_of_children());
+            const Node &mat_val = mat_itr.next();
+            num_species.push_back(mat_val.number_of_children());
 
-            auto specie_itr = matset_val.children();
+            std::vector<std::string> spec_names_for_mat;
+            auto specie_itr = mat_val.children();
             while (specie_itr.has_next())
             {
-                specie_itr.next();
-                const std::string specname = specie_itr.name();
-                speciesNames.push_back(specname);
+                const std::string specname = specie_itr.next().name();
+                spec_names_for_mat.push_back(specname);
             }
+            species_names.push_back(spec_names_for_mat);
         }
 
         m_specset_info[mesh_specset_name]["full_mesh_name"] = mesh_topo_name;
@@ -1435,7 +1457,7 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         m_specset_info[mesh_specset_name]["specset_name"] = specset_name;
 
         m_specset_info[mesh_specset_name]["nmat"] = nmat;
-        m_specset_info[mesh_specset_name]["nmatspec"].set(numSpecies.data(), numSpecies.size());
+        m_specset_info[mesh_specset_name]["nmatspec"].set(num_species);
 
 
         BP_PLUGIN_INFO("Specset Info for "
@@ -1445,10 +1467,10 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         avtSpeciesMetaData *smd = new avtSpeciesMetaData(
             mesh_specset_name, // The name of the species
             mesh_topo_name,    // The name of the mesh the species is defined on.
-            matset_name,       // The name of the material the species is defined on.
+            mesh_matset_name,  // The name of the material the species is defined on.
             nmat,              // The number of materials in the matset.
-            numSpecies,        // The number of species for each material.
-            speciesNames);     // The name of each species for each material.
+            num_species,        // The number of species for each material.
+            species_names);     // The name of each species for each material.
         md->Add(smd);
     }
 }
