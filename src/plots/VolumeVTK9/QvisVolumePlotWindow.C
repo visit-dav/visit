@@ -28,6 +28,10 @@
 #undef max
 #endif
 
+#ifdef VISIT_ANARI
+    #include <AnariVolumePlotWidget.h>
+#endif
+
 #include <QvisOpacitySlider.h>
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>
@@ -991,6 +995,12 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
     //ospray group
     CreateOSPRayGroups(parent, pLayout);
 
+    // ANARI Group
+    #ifdef VISIT_ANARI
+        this->anariVolumePlotWidget = new AnariVolumePlotWidget(this, volumeAtts);
+        pLayout->addWidget(this->anariVolumePlotWidget);
+    #endif
+
     //raycasting group
     {
         raycastingGroup = new QGroupBox(parent);
@@ -1083,12 +1093,20 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
 
     osprayGroup->setVisible(true);
     osprayGroup->setEnabled(true);
+
+#ifdef VISIT_ANARI
+    anariVolumePlotWidget->setVisible(true);
+    anariVolumePlotWidget->setEnabled(true);
+#endif
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
 {
     //hide all groups
     osprayGroup->setVisible(false);
+#ifdef VISIT_ANARI
+    anariVolumePlotWidget->setVisible(false);
+#endif
     resampleGroup->setVisible(false);
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
@@ -1185,6 +1203,10 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         resampleGroup->setEnabled(true);
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
+    #ifdef VISIT_ANARI
+        anariVolumePlotWidget->setVisible(true);
+        anariVolumePlotWidget->setEnabled(true);
+    #endif
 
         // raycastingGroup->setVisible(true);
         EnableSamplingMethods(false);
@@ -2224,6 +2246,38 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             osprayMaxContribution->setValue(volumeAtts->GetOSPRayMaxContribution());
             osprayMaxContribution->blockSignals(false);
             break;
+#ifdef VISIT_ANARI
+        case VolumeAttributes::ID_anariRendering:
+            anariVolumePlotWidget->setEnabled(volumeAtts->GetAnariRendering());
+            break;
+        case VolumeAttributes::ID_anariSPP:
+            anariVolumePlotWidget->UpdateSamplesPerPixel(volumeAtts->GetAnariSPP());
+            break;
+        case VolumeAttributes::ID_anariAO:
+            anariVolumePlotWidget->UpdateAOSamples(volumeAtts->GetAnariAO());
+            break;
+        case VolumeAttributes::ID_anariLibrary:
+            anariVolumePlotWidget->UpdateLibraryName(volumeAtts->GetAnariLibrary());
+            break;
+        case VolumeAttributes::ID_anariLibrarySubtype:
+            anariVolumePlotWidget->UpdateLibrarySubtypes(volumeAtts->GetAnariLibrarySubtype());
+            break;
+        case VolumeAttributes::ID_anariRendererSubtype:
+            anariVolumePlotWidget->UpdateRendererSubtypes(volumeAtts->GetAnariRendererSubtype());
+            break;
+        case VolumeAttributes::ID_anariLightFalloff:
+            anariVolumePlotWidget->UpdateLightFalloff(volumeAtts->GetAnariLightFalloff());
+            break;
+        case VolumeAttributes::ID_anariAmbientIntensity:
+            anariVolumePlotWidget->UpdateAmbientIntensity(volumeAtts->GetAnariAmbientIntensity());
+            break;
+        case VolumeAttributes::ID_anariMaxDepth:
+            anariVolumePlotWidget->UpdateMaxDepth(volumeAtts->GetAnariMaxDepth());
+            break;
+        case VolumeAttributes::ID_anariRValue:
+            anariVolumePlotWidget->UpdateRValue(volumeAtts->GetAnariRValue());
+            break;
+#endif
         }
     }
 

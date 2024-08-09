@@ -125,6 +125,9 @@ public:
     void SelectOpacityVariable();
     void SelectFreeformOpacity();
     void SelectMaterialProperties();
+    void SelectAnariLibrary();
+    void SelectAnariLibrarySubtype();
+    void SelectAnariRendererSubtype();
 
     // Property setting methods
     void SetOSPRayEnabledFlag(bool OSPRayEnabledFlag_);
@@ -172,6 +175,16 @@ public:
     void SetLowGradientLightingClampFlag(bool lowGradientLightingClampFlag_);
     void SetLowGradientLightingClampValue(double lowGradientLightingClampValue_);
     void SetMaterialProperties(const double *materialProperties_);
+    void SetAnariRendering(bool anariRendering_);
+    void SetAnariSPP(int anariSPP_);
+    void SetAnariAO(int anariAO_);
+    void SetAnariLibrary(const std::string &anariLibrary_);
+    void SetAnariLibrarySubtype(const std::string &anariLibrarySubtype_);
+    void SetAnariRendererSubtype(const std::string &anariRendererSubtype_);
+    void SetAnariLightFalloff(float anariLightFalloff_);
+    void SetAnariAmbientIntensity(float anariAmbientIntensity_);
+    void SetAnariMaxDepth(int anariMaxDepth_);
+    void SetAnariRValue(float anariRValue_);
 
     // Property getting methods
     bool                           GetOSPRayEnabledFlag() const;
@@ -224,6 +237,19 @@ public:
     double                         GetLowGradientLightingClampValue() const;
     const double                   *GetMaterialProperties() const;
           double                   *GetMaterialProperties();
+    bool                           GetAnariRendering() const;
+    int                            GetAnariSPP() const;
+    int                            GetAnariAO() const;
+    const std::string              &GetAnariLibrary() const;
+          std::string              &GetAnariLibrary();
+    const std::string              &GetAnariLibrarySubtype() const;
+          std::string              &GetAnariLibrarySubtype();
+    const std::string              &GetAnariRendererSubtype() const;
+          std::string              &GetAnariRendererSubtype();
+    float                          GetAnariLightFalloff() const;
+    float                          GetAnariAmbientIntensity() const;
+    int                            GetAnariMaxDepth() const;
+    float                          GetAnariRValue() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -347,6 +373,16 @@ public:
         ID_lowGradientLightingClampFlag,
         ID_lowGradientLightingClampValue,
         ID_materialProperties,
+        ID_anariRendering,
+        ID_anariSPP,
+        ID_anariAO,
+        ID_anariLibrary,
+        ID_anariLibrarySubtype,
+        ID_anariRendererSubtype,
+        ID_anariLightFalloff,
+        ID_anariAmbientIntensity,
+        ID_anariMaxDepth,
+        ID_anariRValue,
         ID__LAST
     };
 
@@ -396,11 +432,21 @@ private:
     bool                     lowGradientLightingClampFlag;
     double                   lowGradientLightingClampValue;
     double                   materialProperties[4];
+    bool                     anariRendering;
+    int                      anariSPP;
+    int                      anariAO;
+    std::string              anariLibrary;
+    std::string              anariLibrarySubtype;
+    std::string              anariRendererSubtype;
+    float                    anariLightFalloff;
+    float                    anariAmbientIntensity;
+    int                      anariMaxDepth;
+    float                    anariRValue;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdDbiisssffif"
 
 #endif

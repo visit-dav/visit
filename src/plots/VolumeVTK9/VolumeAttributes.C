@@ -449,6 +449,16 @@ void VolumeAttributes::Init()
     materialProperties[1] = 0.75;
     materialProperties[2] = 0;
     materialProperties[3] = 15;
+    anariRendering = false;
+    anariSPP = 1;
+    anariAO = 0;
+    anariLibrary = "default";
+    anariLibrarySubtype = "default";
+    anariRendererSubtype = "default";
+    anariLightFalloff = 1;
+    anariAmbientIntensity = 1;
+    anariMaxDepth = 0;
+    anariRValue = 1;
 
     VolumeAttributes::SelectAll();
 }
@@ -520,6 +530,16 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     for(int i = 0; i < 4; ++i)
         materialProperties[i] = obj.materialProperties[i];
 
+    anariRendering = obj.anariRendering;
+    anariSPP = obj.anariSPP;
+    anariAO = obj.anariAO;
+    anariLibrary = obj.anariLibrary;
+    anariLibrarySubtype = obj.anariLibrarySubtype;
+    anariRendererSubtype = obj.anariRendererSubtype;
+    anariLightFalloff = obj.anariLightFalloff;
+    anariAmbientIntensity = obj.anariAmbientIntensity;
+    anariMaxDepth = obj.anariMaxDepth;
+    anariRValue = obj.anariRValue;
 
     VolumeAttributes::SelectAll();
 }
@@ -733,7 +753,17 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
             (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
             (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
-            materialProperties_equal);
+            materialProperties_equal &&
+            (anariRendering == obj.anariRendering) &&
+            (anariSPP == obj.anariSPP) &&
+            (anariAO == obj.anariAO) &&
+            (anariLibrary == obj.anariLibrary) &&
+            (anariLibrarySubtype == obj.anariLibrarySubtype) &&
+            (anariRendererSubtype == obj.anariRendererSubtype) &&
+            (anariLightFalloff == obj.anariLightFalloff) &&
+            (anariAmbientIntensity == obj.anariAmbientIntensity) &&
+            (anariMaxDepth == obj.anariMaxDepth) &&
+            (anariRValue == obj.anariRValue));
 }
 
 // ****************************************************************************
@@ -922,6 +952,16 @@ VolumeAttributes::SelectAll()
     Select(ID_lowGradientLightingClampFlag,    (void *)&lowGradientLightingClampFlag);
     Select(ID_lowGradientLightingClampValue,   (void *)&lowGradientLightingClampValue);
     Select(ID_materialProperties,              (void *)materialProperties, 4);
+    Select(ID_anariRendering,                  (void *)&anariRendering);
+    Select(ID_anariSPP,                        (void *)&anariSPP);
+    Select(ID_anariAO,                         (void *)&anariAO);
+    Select(ID_anariLibrary,                    (void *)&anariLibrary);
+    Select(ID_anariLibrarySubtype,             (void *)&anariLibrarySubtype);
+    Select(ID_anariRendererSubtype,            (void *)&anariRendererSubtype);
+    Select(ID_anariLightFalloff,               (void *)&anariLightFalloff);
+    Select(ID_anariAmbientIntensity,           (void *)&anariAmbientIntensity);
+    Select(ID_anariMaxDepth,                   (void *)&anariMaxDepth);
+    Select(ID_anariRValue,                     (void *)&anariRValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1236,6 +1276,66 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("materialProperties", materialProperties, 4));
     }
 
+    if(completeSave || !FieldsEqual(ID_anariRendering, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariRendering", anariRendering));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariSPP, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariSPP", anariSPP));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariAO, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariAO", anariAO));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariLibrary, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariLibrary", anariLibrary));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariLibrarySubtype, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariLibrarySubtype", anariLibrarySubtype));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariRendererSubtype, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariRendererSubtype", anariRendererSubtype));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariLightFalloff, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariLightFalloff", anariLightFalloff));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariAmbientIntensity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariAmbientIntensity", anariAmbientIntensity));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariMaxDepth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariMaxDepth", anariMaxDepth));
+    }
+
+    if(completeSave || !FieldsEqual(ID_anariRValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("anariRValue", anariRValue));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1502,6 +1602,26 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetLowGradientLightingClampValue(node->AsDouble());
     if((node = searchNode->GetNode("materialProperties")) != 0)
         SetMaterialProperties(node->AsDoubleArray());
+    if((node = searchNode->GetNode("anariRendering")) != 0)
+        SetAnariRendering(node->AsBool());
+    if((node = searchNode->GetNode("anariSPP")) != 0)
+        SetAnariSPP(node->AsInt());
+    if((node = searchNode->GetNode("anariAO")) != 0)
+        SetAnariAO(node->AsInt());
+    if((node = searchNode->GetNode("anariLibrary")) != 0)
+        SetAnariLibrary(node->AsString());
+    if((node = searchNode->GetNode("anariLibrarySubtype")) != 0)
+        SetAnariLibrarySubtype(node->AsString());
+    if((node = searchNode->GetNode("anariRendererSubtype")) != 0)
+        SetAnariRendererSubtype(node->AsString());
+    if((node = searchNode->GetNode("anariLightFalloff")) != 0)
+        SetAnariLightFalloff(node->AsFloat());
+    if((node = searchNode->GetNode("anariAmbientIntensity")) != 0)
+        SetAnariAmbientIntensity(node->AsFloat());
+    if((node = searchNode->GetNode("anariMaxDepth")) != 0)
+        SetAnariMaxDepth(node->AsInt());
+    if((node = searchNode->GetNode("anariRValue")) != 0)
+        SetAnariRValue(node->AsFloat());
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -1830,6 +1950,76 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
     Select(ID_materialProperties, (void *)materialProperties, 4);
 }
 
+void
+VolumeAttributes::SetAnariRendering(bool anariRendering_)
+{
+    anariRendering = anariRendering_;
+    Select(ID_anariRendering, (void *)&anariRendering);
+}
+
+void
+VolumeAttributes::SetAnariSPP(int anariSPP_)
+{
+    anariSPP = anariSPP_;
+    Select(ID_anariSPP, (void *)&anariSPP);
+}
+
+void
+VolumeAttributes::SetAnariAO(int anariAO_)
+{
+    anariAO = anariAO_;
+    Select(ID_anariAO, (void *)&anariAO);
+}
+
+void
+VolumeAttributes::SetAnariLibrary(const std::string &anariLibrary_)
+{
+    anariLibrary = anariLibrary_;
+    Select(ID_anariLibrary, (void *)&anariLibrary);
+}
+
+void
+VolumeAttributes::SetAnariLibrarySubtype(const std::string &anariLibrarySubtype_)
+{
+    anariLibrarySubtype = anariLibrarySubtype_;
+    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
+}
+
+void
+VolumeAttributes::SetAnariRendererSubtype(const std::string &anariRendererSubtype_)
+{
+    anariRendererSubtype = anariRendererSubtype_;
+    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
+}
+
+void
+VolumeAttributes::SetAnariLightFalloff(float anariLightFalloff_)
+{
+    anariLightFalloff = anariLightFalloff_;
+    Select(ID_anariLightFalloff, (void *)&anariLightFalloff);
+}
+
+void
+VolumeAttributes::SetAnariAmbientIntensity(float anariAmbientIntensity_)
+{
+    anariAmbientIntensity = anariAmbientIntensity_;
+    Select(ID_anariAmbientIntensity, (void *)&anariAmbientIntensity);
+}
+
+void
+VolumeAttributes::SetAnariMaxDepth(int anariMaxDepth_)
+{
+    anariMaxDepth = anariMaxDepth_;
+    Select(ID_anariMaxDepth, (void *)&anariMaxDepth);
+}
+
+void
+VolumeAttributes::SetAnariRValue(float anariRValue_)
+{
+    anariRValue = anariRValue_;
+    Select(ID_anariRValue, (void *)&anariRValue);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2134,6 +2324,84 @@ VolumeAttributes::GetMaterialProperties()
     return materialProperties;
 }
 
+bool
+VolumeAttributes::GetAnariRendering() const
+{
+    return anariRendering;
+}
+
+int
+VolumeAttributes::GetAnariSPP() const
+{
+    return anariSPP;
+}
+
+int
+VolumeAttributes::GetAnariAO() const
+{
+    return anariAO;
+}
+
+const std::string &
+VolumeAttributes::GetAnariLibrary() const
+{
+    return anariLibrary;
+}
+
+std::string &
+VolumeAttributes::GetAnariLibrary()
+{
+    return anariLibrary;
+}
+
+const std::string &
+VolumeAttributes::GetAnariLibrarySubtype() const
+{
+    return anariLibrarySubtype;
+}
+
+std::string &
+VolumeAttributes::GetAnariLibrarySubtype()
+{
+    return anariLibrarySubtype;
+}
+
+const std::string &
+VolumeAttributes::GetAnariRendererSubtype() const
+{
+    return anariRendererSubtype;
+}
+
+std::string &
+VolumeAttributes::GetAnariRendererSubtype()
+{
+    return anariRendererSubtype;
+}
+
+float
+VolumeAttributes::GetAnariLightFalloff() const
+{
+    return anariLightFalloff;
+}
+
+float
+VolumeAttributes::GetAnariAmbientIntensity() const
+{
+    return anariAmbientIntensity;
+}
+
+int
+VolumeAttributes::GetAnariMaxDepth() const
+{
+    return anariMaxDepth;
+}
+
+float
+VolumeAttributes::GetAnariRValue() const
+{
+    return anariRValue;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2166,6 +2434,24 @@ void
 VolumeAttributes::SelectMaterialProperties()
 {
     Select(ID_materialProperties, (void *)materialProperties, 4);
+}
+
+void
+VolumeAttributes::SelectAnariLibrary()
+{
+    Select(ID_anariLibrary, (void *)&anariLibrary);
+}
+
+void
+VolumeAttributes::SelectAnariLibrarySubtype()
+{
+    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
+}
+
+void
+VolumeAttributes::SelectAnariRendererSubtype()
+{
+    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2237,6 +2523,16 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_lowGradientLightingClampFlag:    return "lowGradientLightingClampFlag";
     case ID_lowGradientLightingClampValue:   return "lowGradientLightingClampValue";
     case ID_materialProperties:              return "materialProperties";
+    case ID_anariRendering:                  return "anariRendering";
+    case ID_anariSPP:                        return "anariSPP";
+    case ID_anariAO:                         return "anariAO";
+    case ID_anariLibrary:                    return "anariLibrary";
+    case ID_anariLibrarySubtype:             return "anariLibrarySubtype";
+    case ID_anariRendererSubtype:            return "anariRendererSubtype";
+    case ID_anariLightFalloff:               return "anariLightFalloff";
+    case ID_anariAmbientIntensity:           return "anariAmbientIntensity";
+    case ID_anariMaxDepth:                   return "anariMaxDepth";
+    case ID_anariRValue:                     return "anariRValue";
     default:  return "invalid index";
     }
 }
@@ -2306,6 +2602,16 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_lowGradientLightingClampFlag:    return FieldType_bool;
     case ID_lowGradientLightingClampValue:   return FieldType_double;
     case ID_materialProperties:              return FieldType_doubleArray;
+    case ID_anariRendering:                  return FieldType_bool;
+    case ID_anariSPP:                        return FieldType_int;
+    case ID_anariAO:                         return FieldType_int;
+    case ID_anariLibrary:                    return FieldType_string;
+    case ID_anariLibrarySubtype:             return FieldType_string;
+    case ID_anariRendererSubtype:            return FieldType_string;
+    case ID_anariLightFalloff:               return FieldType_float;
+    case ID_anariAmbientIntensity:           return FieldType_float;
+    case ID_anariMaxDepth:                   return FieldType_int;
+    case ID_anariRValue:                     return FieldType_float;
     default:  return FieldType_unknown;
     }
 }
@@ -2375,6 +2681,16 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_lowGradientLightingClampFlag:    return "bool";
     case ID_lowGradientLightingClampValue:   return "double";
     case ID_materialProperties:              return "doubleArray";
+    case ID_anariRendering:                  return "bool";
+    case ID_anariSPP:                        return "int";
+    case ID_anariAO:                         return "int";
+    case ID_anariLibrary:                    return "string";
+    case ID_anariLibrarySubtype:             return "string";
+    case ID_anariRendererSubtype:            return "string";
+    case ID_anariLightFalloff:               return "float";
+    case ID_anariAmbientIntensity:           return "float";
+    case ID_anariMaxDepth:                   return "int";
+    case ID_anariRValue:                     return "float";
     default:  return "invalid index";
     }
 }
@@ -2636,6 +2952,56 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = materialProperties_equal;
         }
         break;
+    case ID_anariRendering:
+        {  // new scope
+        retval = (anariRendering == obj.anariRendering);
+        }
+        break;
+    case ID_anariSPP:
+        {  // new scope
+        retval = (anariSPP == obj.anariSPP);
+        }
+        break;
+    case ID_anariAO:
+        {  // new scope
+        retval = (anariAO == obj.anariAO);
+        }
+        break;
+    case ID_anariLibrary:
+        {  // new scope
+        retval = (anariLibrary == obj.anariLibrary);
+        }
+        break;
+    case ID_anariLibrarySubtype:
+        {  // new scope
+        retval = (anariLibrarySubtype == obj.anariLibrarySubtype);
+        }
+        break;
+    case ID_anariRendererSubtype:
+        {  // new scope
+        retval = (anariRendererSubtype == obj.anariRendererSubtype);
+        }
+        break;
+    case ID_anariLightFalloff:
+        {  // new scope
+        retval = (anariLightFalloff == obj.anariLightFalloff);
+        }
+        break;
+    case ID_anariAmbientIntensity:
+        {  // new scope
+        retval = (anariAmbientIntensity == obj.anariAmbientIntensity);
+        }
+        break;
+    case ID_anariMaxDepth:
+        {  // new scope
+        retval = (anariMaxDepth == obj.anariMaxDepth);
+        }
+        break;
+    case ID_anariRValue:
+        {  // new scope
+        retval = (anariRValue == obj.anariRValue);
+        }
+        break;
     default: retval = false;
     }
 
@@ -2690,7 +3056,7 @@ VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
         if (searchNode->GetNode("renderMode") != nullptr)
         {
 #ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("renderNode", "3.5.0"));
+            avtCallback::IssueWarning(DeprecationMessage("renderMode", "3.5.0"));
 #endif
             searchNode->RemoveNode("renderMode", true);
         }

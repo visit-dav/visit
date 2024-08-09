@@ -49,6 +49,10 @@ avtVolumeResampleFilter.C
 ${COMMON_SOURCES}
 )
 
+if(VISIT_ANARI)
+    list(APPEND LIBG_SOURCES anari/AnariVolumePlotWidget.C)
+    add_definitions(-DHAVE_ANARI)
+endif(VISIT_ANARI)
 
 IF(ICET_FOUND)
     # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
@@ -73,6 +77,7 @@ ENDIF(VISIT_PYTHON_SCRIPTING)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/anari
 ${VISIT_PLOT_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
 ${VISIT_INCLUDE_DIR}/avt/Expressions/General
@@ -92,6 +97,9 @@ set(vol_autoinits VTK::RenderingVolumeOpenGL2)
 if(TARGET VTK::RenderingRayTracing)
     list(APPEND vol_autoinits VTK::RenderingRayTracing)
 endif()
+# if(TARGET VTK::RenderingAnari)
+#    list(APPEND vol_autoinits VTK::RenderingAnari)
+# endif()
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(GVolumePlot ${LIBG_SOURCES})
@@ -132,7 +140,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser VTK::RenderingVolumeOpenGL2)
+TARGET_LINK_LIBRARIES(EVolumePlot_ser
+    visitcommon
+    avtplotter_ser
+    avtpipeline_ser
+    avtexpressions_ser
+    VTK::RenderingVolumeOpenGL2
+    $<$<BOOL:${VISIT_ANARI}>:anari::anari>)
 if(TARGET  VTK::RenderingRayTracing)
     target_link_libraries(EVolumePlot_ser VTK::RenderingRayTracing)
 endif()
@@ -145,7 +159,13 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par VTK::RenderingVolumeOpenGL2)
+    TARGET_LINK_LIBRARIES(EVolumePlot_par
+        visitcommon
+        avtplotter_par
+        avtpipeline_par
+        avtexpressions_par
+        VTK::RenderingVolumeOpenGL2
+        $<$<BOOL:${VISIT_ANARI}>:anari::anari>)
     if(TARGET  VTK::RenderingRayTracing)
         target_link_libraries(EVolumePlot_par VTK::RenderingRayTracing)
     endif()
@@ -163,4 +183,3 @@ unset(vol_autoinits)
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_OUTPUT_DIR(plots ${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_FOLDER(plots Volume ${INSTALLTARGETS})
-

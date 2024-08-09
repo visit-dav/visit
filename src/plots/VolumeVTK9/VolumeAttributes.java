@@ -27,7 +27,7 @@ import llnl.visit.GaussianControlPointList;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int VolumeAttributes_numAdditionalAtts = 45;
+    private static int VolumeAttributes_numAdditionalAtts = 55;
 
     // Enum values
     public final static int RENDERER_SERIAL = 0;
@@ -36,11 +36,11 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_INTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
 
-    public final static int RESAMPLETYPE_ONLYIFREQUIRED = 0;
-    public final static int RESAMPLETYPE_SINGLEDOMAIN = 1;
-    public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 2;
-    public final static int RESAMPLETYPE_PARALLELPERRANK = 3;
-    public final static int RESAMPLETYPE_NORESAMPLING = 4;
+    public final static int RESAMPLETYPE_NORESAMPLING = 0;
+    public final static int RESAMPLETYPE_ONLYIFREQUIRED = 1;
+    public final static int RESAMPLETYPE_SINGLEDOMAIN = 2;
+    public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 3;
+    public final static int RESAMPLETYPE_PARALLELPERRANK = 4;
 
     public final static int RESAMPLECENTERING_NATIVECENTERING = 0;
     public final static int RESAMPLECENTERING_NODALCENTERING = 1;
@@ -132,6 +132,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
+        anariRendering = false;
+        anariSPP = 1;
+        anariAO = 0;
+        anariLibrary = new String("default");
+        anariLibrarySubtype = new String("default");
+        anariRendererSubtype = new String("default");
+        anariLightFalloff = 1f;
+        anariAmbientIntensity = 1f;
+        anariMaxDepth = 0;
+        anariRValue = 1f;
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -189,6 +199,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
+        anariRendering = false;
+        anariSPP = 1;
+        anariAO = 0;
+        anariLibrary = new String("default");
+        anariLibrarySubtype = new String("default");
+        anariRendererSubtype = new String("default");
+        anariLightFalloff = 1f;
+        anariAmbientIntensity = 1f;
+        anariMaxDepth = 0;
+        anariRValue = 1f;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -248,6 +268,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < obj.materialProperties.length; ++i)
             materialProperties[i] = obj.materialProperties[i];
 
+        anariRendering = obj.anariRendering;
+        anariSPP = obj.anariSPP;
+        anariAO = obj.anariAO;
+        anariLibrary = new String(obj.anariLibrary);
+        anariLibrarySubtype = new String(obj.anariLibrarySubtype);
+        anariRendererSubtype = new String(obj.anariRendererSubtype);
+        anariLightFalloff = obj.anariLightFalloff;
+        anariAmbientIntensity = obj.anariAmbientIntensity;
+        anariMaxDepth = obj.anariMaxDepth;
+        anariRValue = obj.anariRValue;
 
         SelectAll();
     }
@@ -321,7 +351,17 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
                 (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
                 (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
-                materialProperties_equal);
+                materialProperties_equal &&
+                (anariRendering == obj.anariRendering) &&
+                (anariSPP == obj.anariSPP) &&
+                (anariAO == obj.anariAO) &&
+                (anariLibrary.equals(obj.anariLibrary)) &&
+                (anariLibrarySubtype.equals(obj.anariLibrarySubtype)) &&
+                (anariRendererSubtype.equals(obj.anariRendererSubtype)) &&
+                (anariLightFalloff == obj.anariLightFalloff) &&
+                (anariAmbientIntensity == obj.anariAmbientIntensity) &&
+                (anariMaxDepth == obj.anariMaxDepth) &&
+                (anariRValue == obj.anariRValue));
     }
 
     public String GetName() { return "Volume"; }
@@ -611,6 +651,66 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(44);
     }
 
+    public void SetAnariRendering(boolean anariRendering_)
+    {
+        anariRendering = anariRendering_;
+        Select(45);
+    }
+
+    public void SetAnariSPP(int anariSPP_)
+    {
+        anariSPP = anariSPP_;
+        Select(46);
+    }
+
+    public void SetAnariAO(int anariAO_)
+    {
+        anariAO = anariAO_;
+        Select(47);
+    }
+
+    public void SetAnariLibrary(String anariLibrary_)
+    {
+        anariLibrary = anariLibrary_;
+        Select(48);
+    }
+
+    public void SetAnariLibrarySubtype(String anariLibrarySubtype_)
+    {
+        anariLibrarySubtype = anariLibrarySubtype_;
+        Select(49);
+    }
+
+    public void SetAnariRendererSubtype(String anariRendererSubtype_)
+    {
+        anariRendererSubtype = anariRendererSubtype_;
+        Select(50);
+    }
+
+    public void SetAnariLightFalloff(float anariLightFalloff_)
+    {
+        anariLightFalloff = anariLightFalloff_;
+        Select(51);
+    }
+
+    public void SetAnariAmbientIntensity(float anariAmbientIntensity_)
+    {
+        anariAmbientIntensity = anariAmbientIntensity_;
+        Select(52);
+    }
+
+    public void SetAnariMaxDepth(int anariMaxDepth_)
+    {
+        anariMaxDepth = anariMaxDepth_;
+        Select(53);
+    }
+
+    public void SetAnariRValue(float anariRValue_)
+    {
+        anariRValue = anariRValue_;
+        Select(54);
+    }
+
     // Property getting methods
     public boolean                  GetOSPRayEnabledFlag() { return OSPRayEnabledFlag; }
     public int                      GetOSPRayRenderType() { return OSPRayRenderType; }
@@ -657,6 +757,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public boolean                  GetLowGradientLightingClampFlag() { return lowGradientLightingClampFlag; }
     public double                   GetLowGradientLightingClampValue() { return lowGradientLightingClampValue; }
     public double[]                 GetMaterialProperties() { return materialProperties; }
+    public boolean                  GetAnariRendering() { return anariRendering; }
+    public int                      GetAnariSPP() { return anariSPP; }
+    public int                      GetAnariAO() { return anariAO; }
+    public String                   GetAnariLibrary() { return anariLibrary; }
+    public String                   GetAnariLibrarySubtype() { return anariLibrarySubtype; }
+    public String                   GetAnariRendererSubtype() { return anariRendererSubtype; }
+    public float                    GetAnariLightFalloff() { return anariLightFalloff; }
+    public float                    GetAnariAmbientIntensity() { return anariAmbientIntensity; }
+    public int                      GetAnariMaxDepth() { return anariMaxDepth; }
+    public float                    GetAnariRValue() { return anariRValue; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -751,6 +861,26 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(lowGradientLightingClampValue);
         if(WriteSelect(44, buf))
             buf.WriteDoubleArray(materialProperties);
+        if(WriteSelect(45, buf))
+            buf.WriteBool(anariRendering);
+        if(WriteSelect(46, buf))
+            buf.WriteInt(anariSPP);
+        if(WriteSelect(47, buf))
+            buf.WriteInt(anariAO);
+        if(WriteSelect(48, buf))
+            buf.WriteString(anariLibrary);
+        if(WriteSelect(49, buf))
+            buf.WriteString(anariLibrarySubtype);
+        if(WriteSelect(50, buf))
+            buf.WriteString(anariRendererSubtype);
+        if(WriteSelect(51, buf))
+            buf.WriteFloat(anariLightFalloff);
+        if(WriteSelect(52, buf))
+            buf.WriteFloat(anariAmbientIntensity);
+        if(WriteSelect(53, buf))
+            buf.WriteInt(anariMaxDepth);
+        if(WriteSelect(54, buf))
+            buf.WriteFloat(anariRValue);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -894,6 +1024,36 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         case 44:
             SetMaterialProperties(buf.ReadDoubleArray());
             break;
+        case 45:
+            SetAnariRendering(buf.ReadBool());
+            break;
+        case 46:
+            SetAnariSPP(buf.ReadInt());
+            break;
+        case 47:
+            SetAnariAO(buf.ReadInt());
+            break;
+        case 48:
+            SetAnariLibrary(buf.ReadString());
+            break;
+        case 49:
+            SetAnariLibrarySubtype(buf.ReadString());
+            break;
+        case 50:
+            SetAnariRendererSubtype(buf.ReadString());
+            break;
+        case 51:
+            SetAnariLightFalloff(buf.ReadFloat());
+            break;
+        case 52:
+            SetAnariAmbientIntensity(buf.ReadFloat());
+            break;
+        case 53:
+            SetAnariMaxDepth(buf.ReadInt());
+            break;
+        case 54:
+            SetAnariRValue(buf.ReadFloat());
+            break;
         }
     }
 
@@ -932,6 +1092,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + indent + "opacityControlPoints = {\n" + opacityControlPoints.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "resampleType = ";
+        if(resampleType == RESAMPLETYPE_NORESAMPLING)
+            str = str + "RESAMPLETYPE_NORESAMPLING";
         if(resampleType == RESAMPLETYPE_ONLYIFREQUIRED)
             str = str + "RESAMPLETYPE_ONLYIFREQUIRED";
         if(resampleType == RESAMPLETYPE_SINGLEDOMAIN)
@@ -940,8 +1102,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RESAMPLETYPE_PARALLELREDISTRIBUTE";
         if(resampleType == RESAMPLETYPE_PARALLELPERRANK)
             str = str + "RESAMPLETYPE_PARALLELPERRANK";
-        if(resampleType == RESAMPLETYPE_NORESAMPLING)
-            str = str + "RESAMPLETYPE_NORESAMPLING";
         str = str + "\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
         str = str + indent + "resampleCentering = ";
@@ -1027,6 +1187,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lowGradientLightingClampFlag", lowGradientLightingClampFlag, indent) + "\n";
         str = str + doubleToString("lowGradientLightingClampValue", lowGradientLightingClampValue, indent) + "\n";
         str = str + doubleArrayToString("materialProperties", materialProperties, indent) + "\n";
+        str = str + boolToString("anariRendering", anariRendering, indent) + "\n";
+        str = str + intToString("anariSPP", anariSPP, indent) + "\n";
+        str = str + intToString("anariAO", anariAO, indent) + "\n";
+        str = str + stringToString("anariLibrary", anariLibrary, indent) + "\n";
+        str = str + stringToString("anariLibrarySubtype", anariLibrarySubtype, indent) + "\n";
+        str = str + stringToString("anariRendererSubtype", anariRendererSubtype, indent) + "\n";
+        str = str + floatToString("anariLightFalloff", anariLightFalloff, indent) + "\n";
+        str = str + floatToString("anariAmbientIntensity", anariAmbientIntensity, indent) + "\n";
+        str = str + intToString("anariMaxDepth", anariMaxDepth, indent) + "\n";
+        str = str + floatToString("anariRValue", anariRValue, indent) + "\n";
         return str;
     }
 
@@ -1077,5 +1247,15 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private boolean                  lowGradientLightingClampFlag;
     private double                   lowGradientLightingClampValue;
     private double[]                 materialProperties;
+    private boolean                  anariRendering;
+    private int                      anariSPP;
+    private int                      anariAO;
+    private String                   anariLibrary;
+    private String                   anariLibrarySubtype;
+    private String                   anariRendererSubtype;
+    private float                    anariLightFalloff;
+    private float                    anariAmbientIntensity;
+    private int                      anariMaxDepth;
+    private float                    anariRValue;
 }
 

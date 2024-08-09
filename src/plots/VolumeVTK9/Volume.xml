@@ -4,6 +4,16 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
+    <LIBS components="ESer">
+      avtexpressions_ser
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
+    <LIBS components="EPar">
+      avtexpressions_par
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -12,6 +22,10 @@
       avtVisItVTKRenderFilter.C
       avtICETCompositor.C
     </Files>
+    <LIBS components="V">
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
     <Files components="E">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -21,10 +35,6 @@
       avtICETCompositor.C
       avtVolumeResampleFilter.C
     </Files>
-    <LIBS components="V">
-      VTK::RenderingVolume
-      VTK::RenderingVolumeOpenGL2
-    </LIBS>
     <LIBS components="ESer">
       avtexpressions_ser
       VTK::RenderingVolume
@@ -92,7 +102,6 @@
         SciVis
         PathTracer
       </Enum>
-
       <Field name="OSPRayEnabledFlag" label="Enable OSPRay" type="bool">
         false
       </Field>
@@ -124,13 +133,13 @@
         0
       </Field>
       <Field name="OSPRayAODistance" label="OSPRayAODistance" type="double">
-        100000.0
+        100000.000000
       </Field>
       <Field name="OSPRayMinContribution" label="OSPRayMinContribution" type="double">
-        0.001
+        0.001000
       </Field>
       <Field name="OSPRayMaxContribution" label="OSPRayMaxContribution" type="double">
-        2.0
+        2.000000
       </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -227,6 +236,36 @@
         0.750000
         0.000000
         15.000000
+      </Field>
+      <Field name="anariRendering" label="ANARI Rendering" type="bool">
+        false
+      </Field>
+      <Field name="anariSPP" label="ANARI Samples Per Pixel" type="int">
+        1
+      </Field>
+      <Field name="anariAO" label="ANARI Ambient Occlusion Samples" type="int">
+        0
+      </Field>
+      <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
+        default
+      </Field>
+      <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
+        default
+      </Field>
+      <Field name="anariRendererSubtype" label="ANARI Renderer Subtype" type="string">
+        default
+      </Field>
+      <Field name="anariLightFalloff" label="ANARI Light Falloff" type="float">
+        1.000000
+      </Field>
+      <Field name="anariAmbientIntensity" label="ANARI Ambient Intensity" type="float">
+        1.000000
+      </Field>
+      <Field name="anariMaxDepth" label="ANARI Max Depth" type="int">
+        0
+      </Field>
+      <Field name="anariRValue" label="ANARI R Value" type="float">
+        1.000000
       </Field>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>

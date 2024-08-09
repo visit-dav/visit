@@ -59,6 +59,9 @@ protected:
     bool                       m_OSPRayEnabled{false};
     int                        m_OSPRayRenderType{0};
 
+    // For ANARI state changes.
+    bool                       m_AnariEnabled{false};
+
     // For generating the image.
     int                        m_nComponents{0};
     int                        m_cellData{0};

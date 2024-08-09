@@ -41,6 +41,11 @@
     #include <vtkOSPRayRendererNode.h>
 #endif
 
+#ifdef VISIT_ANARI
+    #include <vtkAnariVolumeMapper.h>
+    #include <vtkAnariRendererNode.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -606,9 +611,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #endif
     }
 
-    // Create a new volume mapper if needed.
-    if( m_volumeMapper == nullptr ||
-        m_OSPRayEnabled != m_atts.GetOSPRayEnabledFlag())
+    if(m_OSPRayEnabled != m_atts.GetOSPRayEnabledFlag())
     {
         m_OSPRayEnabled = m_atts.GetOSPRayEnabledFlag();
 
@@ -620,20 +623,46 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         if( m_atts.GetOSPRayEnabledFlag() )
         {
             m_volumeMapper = vtkOSPRayVolumeMapper::New();
-
-            LOCAL_DEBUG << "OSPRay Volume Mapper "
-                        << std::endl;
+            LOCAL_DEBUG << "OSPRay Volume Mapper " << std::endl;
         }
-        else
 #endif
-        {
-            m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
-            LOCAL_DEBUG << "GPU Volume Ray Cast Mapper "
-                        << std::endl;
-        }
-
-        m_volumeMapper->SetBlendModeToComposite();
     }
+
+    if( m_AnariEnabled != m_atts.GetAnariRendering() )
+    {
+        m_AnariEnabled = m_atts.GetAnariRendering();
+
+        if (m_volumeMapper != nullptr)
+            m_volumeMapper->Delete();
+
+        // Create the volume mapper.
+#ifdef VISIT_ANARI
+        if( m_atts.GetAnariRendering() )
+        {
+            auto anariVolumeMapper = vtkAnariVolumeMapper::New();
+            anariVolumeMapper->SetLibraryName(m_atts.GetAnariLibraryName());
+            anariVolumeMapper->SetLibrarySubtype(m_atts.GetAnariLibrarySubtype());
+            anariVolumeMapper->SetRendererSubtype(m_atts.GetAnariRendererSubtype());
+            anariVolumeMapper->SetSamplesPerPixel(m_atts.GetAnariSPP());
+            anariVolumeMapper->SetAmbientSamples(m_atts.GetAnariAO());
+            anariVolumeMapper->SetLightFalloff(m_atts.GetAnariLightFalloff());
+            anariVolumeMapper->SetAmbientIntensity(m_atts.GetAnariAmbientIntensity());
+            anariVolumeMapper->SetMaxDepth(m_atts.GetAnariMaxDepth());
+            anariVolumeMapper->SetRValue(m_atts.GetAnariRValue());
+
+            m_volumeMapper = anariVolumeMapper;
+            LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
+        }
+#endif
+    }
+
+    if( m_volumeMapper == nullptr )
+    {
+        m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
+        LOCAL_DEBUG << "GPU Volume Ray Cast Mapper " << std::endl;
+    }
+
+    m_volumeMapper->SetBlendModeToComposite();
 
     if( m_cellData )
         m_volumeMapper->SetScalarModeToUseCellData();
@@ -777,6 +806,33 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         vtkOSPRayRendererNode::SetAmbientSamples (m_atts.GetOSPRayAOSamples(),       renderer);
         vtkOSPRayRendererNode::SetMinContribution(m_atts.GetOSPRayMinContribution(), renderer);
         vtkOSPRayRendererNode::SetMaxContribution(m_atts.GetOSPRayMaxContribution(), renderer);
+    }
+#endif
+
+#ifdef VISIT_ANARI
+    if( m_atts.GetAnariRendering() )
+    {
+        LOCAL_DEBUG << "ANARI Rendering " << std::endl;
+        auto anariVolumeMapper = vtkAnariVolumeMapper::SafeDownCast(m_volumeMapper);
+        anariVolumeMapper->SetLibraryName(m_atts.GetAnariLibraryName());
+        anariVolumeMapper->SetLibrarySubtype(m_atts.GetAnariLibrarySubtype());
+        anariVolumeMapper->SetRendererSubtype(m_atts.GetAnariRendererSubtype());
+        anariVolumeMapper->SetSamplesPerPixel(m_atts.GetAnariSPP());
+        anariVolumeMapper->SetAmbientSamples(m_atts.GetAnariAO());
+        anariVolumeMapper->SetLightFalloff(m_atts.GetAnariLightFalloff());
+        anariVolumeMapper->SetAmbientIntensity(m_atts.GetAnariAmbientIntensity());
+        anariVolumeMapper->SetMaxDepth(m_atts.GetAnariMaxDepth());
+        anariVolumeMapper->SetRValue(m_atts.GetAnariRValue());
+
+        // vtkAnariRendererNode::SetLibraryName(m_atts.GetAnariLibrary().c_str(), renderer);
+        // vtkAnariRendererNode::SetDeviceSubtype(m_atts.GetAnariLibrarySubtype().c_str(), renderer);
+        // vtkAnariRendererNode::SetRendererSubtype(m_atts.GetAnariRendererSubtype().c_str(), renderer);
+        // vtkAnariRendererNode::SetSamplesPerPixel(m_atts.GetAnariSPP(), renderer);
+        // vtkAnariRendererNode::SetAmbientSamples(m_atts.GetAnariAO(), renderer);
+        // vtkAnariRendererNode::SetLightFalloff(m_atts.GetAnariLightFalloff(), renderer);
+        // vtkAnariRendererNode::SetAmbientIntensity(m_atts.GetAnariAmbientIntensity(), renderer);
+        // vtkAnariRendererNode::SetMaxDepth(m_atts.GetAnariMaxDepth(), renderer);
+        // vtkAnariRendererNode::SetROptionValue(m_atts.GetAnariRValue(), renderer);
     }
 #endif
 }

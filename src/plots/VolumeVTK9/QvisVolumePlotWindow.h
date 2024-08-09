@@ -28,6 +28,8 @@ class QvisOpacitySlider;
 class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
+class AnariVolumePlotWidget;
+
 typedef int WidgetID;
 
 // ****************************************************************************
@@ -135,6 +137,7 @@ public:
     virtual void CreateWindowContents();
 
     virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
+    void SetApply(bool ignore = false) { Apply(ignore); }
 public slots:
     virtual void apply();
     virtual void makeDefault();
@@ -357,6 +360,10 @@ private:
     QWidget                 *osprayMaxContributionWidget;
     QLabel                  *osprayMaxContributionLabel;
     QDoubleSpinBox          *osprayMaxContribution;
+
+#ifdef HAVE_ANARI
+    AnariVolumePlotWidget   *anariVolumePlotWidget;
+#endif
 
     //Sampling group
     QGroupBox               *resampleGroup;
