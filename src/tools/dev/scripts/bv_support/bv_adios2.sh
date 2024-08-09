@@ -151,9 +151,9 @@ function build_adios2
 
     ADIOS2_SRC_DIR=$ADIOS2_BUILD_DIR
 
-    # Configure.
+    # CMake
     cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
-    info "Configuring ADIOS2 (~1 minute)"
+    info "CMakeing ADIOS2 (~1 minute)"
 
     # Make a build directory for an out-of-source build.. Change the
     # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
