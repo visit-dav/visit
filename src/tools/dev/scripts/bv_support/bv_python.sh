@@ -1258,13 +1258,9 @@ function build_sphinx
     fi
 
     # patch
-    SED_CMD="sed -i "
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        SED_CMD="sed -i '' " # the intention of this sed command is foiled by shell variable expansion
-    fi
     pushd $SPHINX_BUILD_DIR > /dev/null
-    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
-    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
+    sed -i.orig "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
+    sed -i.orig "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
     popd > /dev/null
 
     install_py_module ${PACKAGING_BUILD_DIR} "packaging"
@@ -1371,8 +1367,7 @@ function build_sphinx
             # 1s means do substitution only on line 1
             # @ choosen as sep char for s sed cmd to not collide w/slashes
             # ! needs to be escaped with a backslash
-            # don't use ${SED_CMD}
-            sed -i '' -e "1s@^#\!.*\$@#\!${VISIT_PYTHON_DIR}/bin/python3@" $f
+            sed -i.orig -e "1s@^#\!.*\$@#\!${VISIT_PYTHON_DIR}/bin/python3@" $f
         done
     fi
 

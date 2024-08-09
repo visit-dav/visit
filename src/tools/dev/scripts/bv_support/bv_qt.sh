@@ -289,7 +289,7 @@ function apply_qt_patch
         if [[ $? != 0 ]] ; then
             info "Patching qt 5.10.1 for python to python2"
             cd qtdeclarative
-            find . -type f -exec sed -i "s/python/python2/g" {} \;
+            find . -type f -exec sed -i.orig "s/python/python2/g" {} \;
             cd ..
         fi
     elif [[ ${QT_VERSION} == 5.14.2 ]] ; then
@@ -322,8 +322,8 @@ function apply_qt_patch
             # /usr/lib.
             #
             if [[ ! -d /usr/lib64 ]] ; then
-                sed -i "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-g++-64/qmake.conf
-                sed -i "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-icc-64/qmake.conf
+                sed -i.orig "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-g++-64/qmake.conf
+                sed -i.orig "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-icc-64/qmake.conf
             fi
         fi
         if [[ "$OPSYS" == "Darwin" ]]; then
@@ -437,7 +437,7 @@ EOF
 function apply_qt_5101_blueos_patch
 {
     info "Patching qt 5.10.1 for Blueos"
-    sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
+    sed -i.orig "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 blueos patch failed."
         return 1
@@ -881,8 +881,8 @@ function build_qt
     # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
     #
     if ! command -v python > /dev/null 2>&1 ; then
-        sed -i "s/python/python3/" ./qtdeclarative/src/3rdparty/masm/masm.pri
-        sed -i "s/python -c/python3 -c/" ./qtdeclarative/qtdeclarative.pro
+        sed -i.orig "s/python/python3/" ./qtdeclarative/src/3rdparty/masm/masm.pri
+        sed -i.orig "s/python -c/python3 -c/" ./qtdeclarative/qtdeclarative.pro
     fi
 
     #
@@ -1039,7 +1039,7 @@ function build_qt
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         if [[ ${QT_VERSION} == 5.10.1 ]] ; then
             if [[ "$OPSYS" == "Linux" ]]; then
-                sed -i 's/-o Makefile/-o Makefile -after "QMAKE_LIBS_OPENGL+=-lLLVM"/' Makefile
+                sed -i.orig 's/-o Makefile/-o Makefile -after "QMAKE_LIBS_OPENGL+=-lLLVM"/' Makefile
             fi
         fi
     fi

@@ -339,7 +339,7 @@ function build_visit
     rm -f CMakeCache.txt
 
     if [[ "${CREATE_RPM}" == "yes" ]]; then
-        sed -i "s/SET(CPACK_GENERATOR \"TGZ\")/#SET(CPACK_GENERATOR \"TGZ\")/" CMakeLists.txt
+        sed -i.orig "s/SET(CPACK_GENERATOR \"TGZ\")/#SET(CPACK_GENERATOR \"TGZ\")/" CMakeLists.txt
         FEATURES="${FEATURES} -DCPACK_BINARY_RPM:BOOL=ON -DCPACK_GENERATOR:STRING=\"RPM;TGZ\""
         FEATURES="${FEATURES} -DCPACK_RPM_SPEC_MORE_DEFINE:STRING=\"%global_python_bytecompile_errors_terminate_build 0\""
     fi

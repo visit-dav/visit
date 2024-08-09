@@ -214,9 +214,9 @@ EOF
     ## that explains the magic is at:
     ## https://stackoverflow.com/questions/27787536/how-to-pass-a-variable-containing-slashes-to-sed/27787551
     ##
-    sed -i -e "s/\${VISITDIR}/${VISITDIR//\//\\/}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
-    sed -i -e "s/\${MESAGL_VERSION}/${MESAGL_VERSION}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
-    sed -i -e "s/\${VISITARCH}/${VISITARCH}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i.orig -e "s/\${VISITDIR}/${VISITDIR//\//\\/}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i.orig -e "s/\${MESAGL_VERSION}/${MESAGL_VERSION}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i.orig -e "s/\${VISITARCH}/${VISITARCH}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
 
     return 0
 }

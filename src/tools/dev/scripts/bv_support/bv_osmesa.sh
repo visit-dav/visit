@@ -333,7 +333,7 @@ function build_osmesa
     # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
     #
     if ! command -v python > /dev/null 2>&1 ; then
-        sed -i "s/python2.7/python3 python2.7/" configure.ac
+        sed -i.orig "s/python2.7/python3 python2.7/" configure.ac
     fi
 
     #
