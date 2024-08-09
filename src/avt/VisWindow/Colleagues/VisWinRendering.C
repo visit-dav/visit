@@ -67,9 +67,9 @@ bool VisWinRendering::stereoEnabled = false;
 #endif
 
 //
-// vtkBackgroundPass is no longer used. It used to be used in
+// vtkBackgroundPass is no longer used. It was previously used in
 // PostProcessScreenCapture to copy the composited image to the image
-// before rendering the foreground annotations. I'm leaving here in
+// before rendering the foreground annotations. I'm leaving it here in
 // case we ever need it again and as an example of a render pass and
 // using an OpenGL shader in VTK.
 //
