@@ -91,10 +91,15 @@ function build_moab
     # -DCMAKE_SHARED_LINKER_FLAGS:STRING=\"-Wl,--no-undefined\" \
     cmk_opts="\
         -DENABLE_TESTING:BOOL=OFF \
-        -DENABLE_BLASLAPACK:BOOL=OFF \
         -DENABLE_FORTRAN:BOOL=OFF \
         -DENABLE_NETCDF=OFF \
         -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/moab/$MOAB_VERSION/$VISITARCH"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        cmk_opts="${cmk_opts} -DENABLE_BLASLAPACK:BOOL=OFF"
+    else
+        cmk_opts="${cmk_opts} -DENABLE_BLASLAPACK:BOOL=ON"
+    fi
 
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         cmk_opts="${cmk_opts} -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo"
@@ -127,17 +132,22 @@ function build_moab
     if [[ "$PAR_COMPILER" != "" ]] ; then
         cmk_opts="${cmk_opts} \
             -DENABLE_MPI:BOOL=ON \
-            -DMPI_C_COMPILER:PATH=\"${PAR_COMPILER}\" \
-            -DMPI_CXX_COMPILER:PATH=\"${PAR_COMPILER_CXX}\""
+            -DCMAKE_C_COMPILER:PATH=\"${PAR_COMPILER}\" \
+            -DCMAKE_CXX_COMPILER:PATH=\"${PAR_COMPILER_CXX}\""
     fi
 
     # work around a potential issue in MOAB tarball by removing this file
+    MOAB_SRC_DIR=${MOAB_BUILD_DIR}
+    MOAB_BUILD_DIR="${MOAB_SRC_DIR}-build"
     rm -f ${MOAB_SRC_DIR}/src/moab/MOABConfig.h
+
+    # Fix a problem with MPI_LIBRARY variable not being defined for CMakeLists.txt
+    # files in sub-dirs by ensuring it gets cached.
+    sed -i.orig '322a\    set(MPI_LIBRARY ${MPI_LIBRARY} CACHE STRING "MPI library path")' ${MOAB_SRC_DIR}/CMakeLists.txt
+    sed -i.orig '322a\    set(MPI_LIBRARIES ${MPI_LIBRARY} CACHE STRING "MPI library path alternate variable")' ${MOAB_SRC_DIR}/CMakeLists.txt
 
     # Make a build directory for an out-of-source build.. Change the
     # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
-    MOAB_SRC_DIR=${MOAB_BUILD_DIR}
-    MOAB_BUILD_DIR="${MOAB_SRC_DIR}-build"
     if [[ ! -d $MOAB_BUILD_DIR ]] ; then
         echo "Making build directory $MOAB_BUILD_DIR"
         mkdir $MOAB_BUILD_DIR
