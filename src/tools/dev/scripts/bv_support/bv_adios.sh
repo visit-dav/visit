@@ -294,18 +294,26 @@ function build_adios
         WITH_MPI_ARGS="MPICC=\"$VISIT_MPI_COMPILER\" MPICXX=\"$VISIT_MPI_COMPILER_CXX\" LDFLAGS=\"-lpthread $PAR_LINKER_FLAGS\""
         WITH_MPI_INC="$PAR_INCLUDE"
 
+        # HDF5 support
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+            WITH_HDF5_ARGS="--without-hdf5 --with-phdf5=$HDF5ROOT"
+            #HDF5_DYLIB="-L$HDF5ROOT/lib -lhdf5 -lsz -lz"
+        else
+            WITH_HDF5_ARGS="--without-hdf5 --without-phdf5"
+            #HDF5_DYLIB=""
+        fi
     else
         WITH_MPI_ARGS="--without-mpi"
-    fi
-
-    # HDF5 support
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        WITH_HDF5_ARGS="--with-hdf5=$HDF5ROOT"
-        #HDF5_DYLIB="-L$HDF5ROOT/lib -lhdf5 -lsz -lz"
-    else
-        WITH_HDF5_ARGS="--without-hdf5"
-        #HDF5_DYLIB=""
+        # HDF5 support
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+            WITH_HDF5_ARGS="--without-phdf5 --with-hdf5=$HDF5ROOT"
+            #HDF5_DYLIB="-L$HDF5ROOT/lib -lhdf5 -lsz -lz"
+        else
+            WITH_HDF5_ARGS="--without-phdf5 --without-hdf5"
+            #HDF5_DYLIB=""
+        fi
     fi
 
     # blosc support
@@ -321,7 +329,7 @@ function build_adios
            CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
            $WITH_MPI_ARGS $WITH_HDF5_ARGS $WITH_BLOSC_ARGS \
            --disable-fortran \
-           --without-netcdf --without-nc4par --without-phdf5 --without-mxml \
+           --without-netcdf --without-nc4par --without-mxml \
            --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""
 
     set +x
