@@ -1494,6 +1494,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
 //    Added logic to support adding of block decomposition as a variable.
+// 
+//    Mark C. Miller, Fri Aug  9 20:56:16 PDT 2024
+//    Improve logic to populate db comment with driver and version info.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1633,18 +1636,64 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 }
             }
 
+            char drvrinfo_str[16];
+            switch (DBGetDriverType(dbfile))
+            {
+                case DB_HDF5: strcpy(drvrinfo_str, "HDF5"); break;
+                case DB_PDB:  strcpy(drvrinfo_str, "PDB Lite"); break;
+                case DB_PDBP: strcpy(drvrinfo_str, "PDB Proper"); break;
+                default:      strcpy(drvrinfo_str, "Unknown driver"); break;
+            }
+
+            char *siloinfo_str = 0;
+            if (DBInqVarExists(dbfile, "_silolibinfo"))
+            {
+                int linfo = DBGetVarLength(dbfile, "_silolibinfo");
+                if (linfo > 0)
+                {
+                    siloinfo_str = new char[linfo+1];
+                    DBReadVar(dbfile, "_silolibinfo", siloinfo_str);
+                }
+            }
+
+            char *hdf5info_str = 0;
+            if (DBInqVarExists(dbfile, "_hdf5libinfo"))
+            {
+                int linfo = DBGetVarLength(dbfile, "_hdf5libinfo");
+                if (linfo > 0)
+                {
+                    hdf5info_str = new char[linfo+1];
+                    DBReadVar(dbfile, "_hdf5libinfo", hdf5info_str);
+                }
+            }
+
+            char *fileinfo_str = 0;
             if (DBInqVarExists(dbfile, "_fileinfo"))
             {
                 int lfileinfo = DBGetVarLength(dbfile, "_fileinfo");
                 if (lfileinfo > 0)
                 {
-                    char *fileinfo_str = new char[lfileinfo+1];
+                    fileinfo_str = new char[lfileinfo+1];
                     DBReadVar(dbfile, "_fileinfo", fileinfo_str);
-                    md->SetDatabaseComment(fileinfo_str);
-                    delete [] fileinfo_str;
                 }
             }
 
+            // Enough chars for main comment plus driver heading and string
+            // and hdf5 and silo heading and version strings.
+            char dbcmt[128+7+10+25+25];
+            snprintf(dbcmt, sizeof(dbcmt), "%.128s%sdriver:%s%s%s%s%s",
+                fileinfo_str?fileinfo_str:"",
+                fileinfo_str?", ":"",
+                drvrinfo_str,
+                hdf5info_str?", hdf5-version:":"",
+                hdf5info_str?hdf5info_str:"",
+                siloinfo_str?", silo-version:":"",
+                siloinfo_str?siloinfo_str:"");
+            md->SetDatabaseComment(dbcmt);
+
+            if (fileinfo_str) delete [] fileinfo_str;
+            if (hdf5info_str) delete [] hdf5info_str;
+            if (siloinfo_str) delete [] siloinfo_str;
 
             // See if we should add the block decomp as a scalar var
             if (codeNameGuess == "BlockStructured" &&
