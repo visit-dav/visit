@@ -152,7 +152,7 @@
                     {"category":"queries","file":"xrayimage.py","cases":["NonSquare_Pixels_Ray_trace_setup_1","NonSquare_Pixels_Ray_trace_setup_2","NonSquare_Pixels_Ray_trace_setup_3","NonSquare_Pixels_Ray_trace_setup_4","NonSquare_Pixels_Ray_trace_setup_5","NonSquare_Pixels_Ray_trace_setup_6","NonSquare_Pixels_Ray_trace_setup_8"]},
                     {"category":"rendering","file":"compositing.py","cases":["compositing_01"]},
                     {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_00","pixeldata_0_01","pixeldata_0_02","pixeldata_0_03","pixeldata_0_04","pixeldata_0_06"]},
-                    {"category":"rendering","file":"transparency.py"},
+                    {"category":"rendering","file":"transparency.py", "cases":["transparency_01","transparency_02","transparency_03","transparency_04","transparency_05","transparency_06","transparency_07","transparency_09","transparency_11"]},
                     {"category":"session","file":"rect3d-contour.py","cases":["rect3d-contour00"]},
                     {"category":"session","file":"simplekeyframe.py"},
                     {"platform":"win","category":"hybrid","file":"field_operators.py","cases":["field_op_04"]},
