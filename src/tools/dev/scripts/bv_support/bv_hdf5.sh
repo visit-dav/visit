@@ -97,11 +97,6 @@ function bv_hdf5_host_profile
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
-            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
-                echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
-                        >> $HOSTCONF
-            fi
         fi
     fi
 }
