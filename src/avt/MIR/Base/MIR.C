@@ -27,7 +27,6 @@
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
-#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
