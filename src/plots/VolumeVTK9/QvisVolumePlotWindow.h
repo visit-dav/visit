@@ -361,7 +361,7 @@ private:
     QLabel                  *osprayMaxContributionLabel;
     QDoubleSpinBox          *osprayMaxContribution;
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_ANARI
     AnariVolumePlotWidget   *anariVolumePlotWidget;
 #endif
 

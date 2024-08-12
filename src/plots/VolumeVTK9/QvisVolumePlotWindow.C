@@ -2248,7 +2248,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             break;
 #ifdef VISIT_ANARI
         case VolumeAttributes::ID_anariRendering:
-            anariVolumePlotWidget->setEnabled(volumeAtts->GetAnariRendering());
+            anariVolumePlotWidget->SetChecked(volumeAtts->GetAnariRendering());
             break;
         case VolumeAttributes::ID_anariSPP:
             anariVolumePlotWidget->UpdateSamplesPerPixel(volumeAtts->GetAnariSPP());
