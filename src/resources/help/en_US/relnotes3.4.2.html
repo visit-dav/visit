@@ -33,6 +33,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
   <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
   <li>Fixed bug with Volume plot when SILRestriction applied, and when Composite rendering caused problem when a different RendererType used directly afterwards.</li>
+  <li>The Blueprint writer no longer writes the wrong path to root files when specifying a directory to export files to.</li>
+  <li>The Blueprint writer now correctly puts the right cycle number in file names.</li>
   <li>Fixed a bug in zonetype-label expression where unknown zone types would render a weird symbol, <code>&quot;?</code>.</li>
   <li>Disabled warning message regarding skipping of speculative expression generation for databases with many variables. For more information, read our documentation about <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html#automatic-expressions">automatic expressions</a>.</li>
   <li>Fixed a bug where saving an image with transparent geometry would hang when using scalable rendering.</li>
@@ -46,6 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A host profile has been added for running on LLNL's RZVernal system.</li>
   <li>The Blueprint reader and writer now supports mixed element topologies.</li>
   <li>The <code>VISIT_VERSION_GE()</code> macro useful in detecting the VisIt version being used at compile time has been made public in its own header file, <code>visit-version.h</code>, which is found in <code>VISIT_INSTALL/include/visit/include</code>.</li>
+  <li>The Blueprint writer lets users specify Blueprint write options.</li>
   <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
 </ul>
 
