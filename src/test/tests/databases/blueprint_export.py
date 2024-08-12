@@ -11,16 +11,20 @@
 #
 #  Modifications:
 #
-#  Chris Laganella, Mon Feb 14 14:39:48 EST 2022
-#  I added a test case for user provided JSON/YAML options
+#    Chris Laganella, Mon Feb 14 14:39:48 EST 2022
+#    I added a test case for user provided JSON/YAML options
 # 
-#  Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
-#  Added tests for setting the directory, fixed the cycle numbers, added tests
-#  for using the new relay.io.blueprint.save_mesh() options, 
+#    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+#    Added tests to round-trip mixed element topologies.
+# 
+#    Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+#    Added tests for setting the directory, fixed the cycle numbers, added tests
+#    for using the new relay.io.blueprint.save_mesh() options, 
 # ----------------------------------------------------------------------------
 import time
 import sys
 import os
+import conduit
 
 if not os.path.isdir(out_path("current","databases")):
     os.mkdir(out_path("current","databases"))
@@ -80,12 +84,15 @@ def test_name(case, i):
     return case + "_" + str(i) + "_"
 
 # Export DB as bp data set
-def export_mesh_bp(case_name, varname, dirname="."):
+def export_mesh_bp(case_name, varname, varname2 = "", dirname="."):
     export_name = case_name
     e = ExportDBAttributes()
     e.db_type = "Blueprint"
     e.filename = export_name
-    e.variables = (varname,)
+    if len(varname2) > 0:
+        e.variables = (varname, varname2)
+    else:
+        e.variables = (varname,)
     if dirname != ".":
         e.dirname = dirname
     ExportDatabase(e)
@@ -493,12 +500,12 @@ def basic_test_case(case_name, varname = "d", dirname = "."):
     DrawPlots()
     Test("basic_" + case_name + "_input" + ("_output_dir" if dirname != "." else ""))
     # export default
-    export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname)
+    export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname=dirname)
     # export post isosurface
     AddOperator("Isosurface")
     DrawPlots()
     Test("basic_" + case_name + "_isosurface" + ("_output_dir" if dirname != "." else ""))
-    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname)
+    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname=dirname)
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
@@ -690,9 +697,121 @@ def test_partition():
     partition_test_extra_options()
     partition_test_extra_extra_options()
 
+def roundtrip_simple_mixed_topo(mixed_topo, export_name, test_name):
+    OpenDatabase(mixed_topo)
+    AddPlot("Mesh", "mesh_topo")
+    AddPlot("Pseudocolor", "mesh_topo/ele_id")
+    DrawPlots()
+    ResetView()
+
+    outfilename = export_mesh_bp(export_name, "mesh_topo/ele_id")
+
+    save_mesh = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(save_mesh, mixed_topo)
+
+    load_mesh = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(load_mesh, outfilename)
+
+    # 
+    # make changes so the diff will pass
+    # 
+
+    # grab the cycle and time which were added in
+    save_mesh[0]["state"]["cycle"] = load_mesh[0]["state"]["cycle"]
+    save_mesh[0]["state"]["time"] = load_mesh[0]["state"]["time"]
+
+    # remove the pts topo
+    save_mesh[0]["topologies"].remove_child("pts")
+
+    # remove the pts_id field
+    save_mesh[0]["fields"].remove_child("pts_id")
+
+    # check ele_id field
+    save_mesh_element_ids = save_mesh[0]["fields"]["ele_id"]["values"]
+    load_mesh_element_ids = load_mesh[0]["fields"]["ele_id"]["values"]
+    for i in range(0, len(save_mesh_element_ids)):
+        TestValueEQ("Mixed_topo_simple_2d_export_field_vals", save_mesh_element_ids[i], load_mesh_element_ids[i])
+    save_mesh[0]["fields"]["ele_id"].remove_child("values")
+    load_mesh[0]["fields"]["ele_id"].remove_child("values")
+
+    info = conduit.Node()
+    diffval = load_mesh.diff(save_mesh, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(test_name, diff_str, "")
+    
+    DeleteAllPlots()
+    CloseDatabase(mixed_topo)
+
+def roundtrip_braid_mixed(mixed_topo, export_name, test_name):
+    OpenDatabase(mixed_topo)
+    AddPlot("Mesh", "mixed_2d_mesh")
+    AddPlot("Pseudocolor", "mixed_2d_mesh/braid")
+    DrawPlots()
+    ResetView()
+
+    outfilename = export_mesh_bp(export_name, "mixed_2d_mesh/braid", varname2="mixed_2d_mesh/vel")
+
+    opts = conduit.Node()
+    opts["mesh_name"] = "mixed_2d"
+    save_mesh = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(save_mesh, mixed_topo, opts)
+
+    load_mesh = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(load_mesh, outfilename)
+
+    # 
+    # make changes so the diff will pass
+    # 
+
+    # grab the domain_id which was added in
+    save_mesh[0]["state"]["domain_id"] = load_mesh[0]["state"]["domain_id"]
+    save_mesh[0]["state"].remove_child("cycle")
+    save_mesh[0]["state"]["cycle"] = load_mesh[0]["state"]["cycle"]
+
+    # rename topo
+    save_mesh[0]["topologies"].rename_child("mesh", "topo")
+
+    # rename fields
+    save_mesh[0]["fields"].rename_child("braid", "mixed_2d_mesh_braid")
+    save_mesh[0]["fields"].rename_child("vel", "mixed_2d_mesh_vel")
+
+    save_mesh[0]["fields"]["mixed_2d_mesh_braid"].remove_child("topology")
+    save_mesh[0]["fields"]["mixed_2d_mesh_braid"]["topology"] = "topo"
+    save_mesh[0]["fields"]["mixed_2d_mesh_vel"].remove_child("topology")
+    save_mesh[0]["fields"]["mixed_2d_mesh_vel"]["topology"] = "topo"
+
+    save_mesh[0]["fields"]["mixed_2d_mesh_vel"]["values"].rename_child("u", "c0")
+    save_mesh[0]["fields"]["mixed_2d_mesh_vel"]["values"].rename_child("v", "c1")
+    save_mesh[0]["fields"]["mixed_2d_mesh_vel"]["values"]["c2"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    info = conduit.Node()
+    diffval = load_mesh.diff(save_mesh, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(test_name, diff_str, "")
+    
+    DeleteAllPlots()
+    CloseDatabase(mixed_topo)
+
+
 RequiredDatabasePlugin("Blueprint")
 test_basic()
 # TODO add tests for json and yaml output when https://github.com/LLNL/conduit/issues/1291 is fixed
 test_partition()
 test_flatten()
+
+bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
+mixed_topo_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_2d_hdf5.root"))
+# we can't do the polygonal one because we are using generate_sides to get rid of the polygons,
+# so round trip will fail.
+# mixed_topo_2d_polygon = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_polygonal_2d_hdf5.root"))
+mixed_topo_3d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_3d_hdf5.root"))
+mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.root"))
+# we can't do the polyhedral one because we are using generate_sides to get rid of the polyhedra,
+# so round trip will fail.
+# mixed_braid_3d = data_path(pjoin(bp_mixed_topos_dir, "braid_3d_examples_hdf5.root"))
+
+roundtrip_simple_mixed_topo(mixed_topo_2d, "mixed_topo_2d", "Mixed_topo_simple_2d_export")
+roundtrip_simple_mixed_topo(mixed_topo_3d, "mixed_topo_3d", "Mixed_topo_simple_3d_export")
+roundtrip_braid_mixed(mixed_braid_2d, "mixed_braid_2d", "Mixed_topo_braid_2d_export")
+
 Exit()

@@ -35,6 +35,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug with Volume plot when SILRestriction applied, and when Composite rendering caused problem when a different RendererType used directly afterwards.</li>
   <li>The Blueprint writer no longer writes the wrong path to root files when specifying a directory to export files to.</li>
   <li>The Blueprint writer now correctly puts the right cycle number in file names.</li>
+  <li>Fixed a bug in zonetype-label expression where unknown zone types would render a weird symbol, <code>&quot;?</code>.</li>
+  <li>Disabled warning message regarding skipping of speculative expression generation for databases with many variables. For more information, read our documentation about <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html#automatic-expressions">automatic expressions</a>.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -43,15 +45,19 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
   <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Windows to easier find more options.</li>
   <li>A host profile has been added for running on LLNL's RZVernal system.</li>
+  <li>The Blueprint reader and writer now supports mixed element topologies.</li>
   <li>The <code>VISIT_VERSION_GE()</code> macro useful in detecting the VisIt version being used at compile time has been made public in its own header file, <code>visit-version.h</code>, which is found in <code>VISIT_INSTALL/include/visit/include</code>.</li>
   <li>The Blueprint writer lets users specify Blueprint write options.</li>
+  <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.4.2</font></b></p>
 <ul>
   <li>Updated Conduit to 0.9.2.</li>
-  <li>Developer Changes 2</li>
+  <li>Docker containers were added for RockyLinux (RHEL compatible).</li>
+  <li>Qwt is now optional. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--qwt</code> to the build_visit command line to build qwt. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
+  <li>Added ICE-T support for Windows builds.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
