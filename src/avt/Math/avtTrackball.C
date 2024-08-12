@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "avtTrackball.h"
+#include <algorithm>
 
 //
 // Use a Witch of Agnesi for a trackball.
@@ -187,16 +188,10 @@ avtTrackball::PerformRotation(const avtVector &s1, const avtVector &s2)
         rot_axis = constrainAxis;
     }
 
-#define TRACKBALL_MIN(A,B) (((A)<(B)) ? (A) : (B))
-#define TRACKBALL_MAX(A,B) (((A)>(B)) ? (A) : (B))
-
     // Figure how much to rotate around that axis.
     double d = (p2 - p1).norm();
-    d = TRACKBALL_MAX(0.,TRACKBALL_MIN(1.,d));
+    d = std::max(0.,std::min(1.,d));
     double phi = 2.0 * asin(d / (2.0 * AGNESI_RADIUS));
-
-#undef TRACKBALL_MIN
-#undef TRACKBALL_MAX
 
     // Create the quaternion and the rotation matrix
     q = avtQuaternion(rot_axis, phi * scale);

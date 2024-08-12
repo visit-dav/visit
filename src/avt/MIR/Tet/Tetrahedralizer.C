@@ -7,11 +7,9 @@
 #include <vtkCell.h>
 #include <VisItException.h>
 
+#include <algorithm>
 #include <vector>
 using std::vector;
-
-#define MIN(A,B)  (((A) < (B)) ? (A) : (B))
-#define SWAP(A,B) { int swtmp; swtmp=A; A=B; B=swtmp; }
 
 // ****************************************************************************
 //  Constructor: Tetrahedralizer::Tetrahedralizer
@@ -129,12 +127,12 @@ Tetrahedralizer::GetLowTetNodesForVox(int nnodes,const vtkIdType *nodes, vtkIdTy
     bool invert = ((flipx + flipy + flipz) % 2) == 0;
 
     // which diagonals will the tets cross...
-    int diagx0 = MIN(nodes[map[1]],nodes[map[6]]);
-    int diagx1 = MIN(nodes[map[2]],nodes[map[5]]);
-    int diagy0 = MIN(nodes[map[1]],nodes[map[3]]);
-    int diagy1 = MIN(nodes[map[2]],nodes[map[0]]);
-    int diagz0 = MIN(nodes[map[6]],nodes[map[3]]);
-    int diagz1 = MIN(nodes[map[5]],nodes[map[0]]);
+    int diagx0 = std::min(nodes[map[1]],nodes[map[6]]);
+    int diagx1 = std::min(nodes[map[2]],nodes[map[5]]);
+    int diagy0 = std::min(nodes[map[1]],nodes[map[3]]);
+    int diagy1 = std::min(nodes[map[2]],nodes[map[0]]);
+    int diagz0 = std::min(nodes[map[6]],nodes[map[3]]);
+    int diagz1 = std::min(nodes[map[5]],nodes[map[0]]);
 
     int diagx = (diagx0 < diagx1) ? 0 : 1;
     int diagy = (diagy0 < diagy1) ? 0 : 1;
@@ -231,12 +229,12 @@ Tetrahedralizer::GetLowTetNodesForHex(int nnodes,const vtkIdType *nodes, vtkIdTy
     bool invert = ((flipx + flipy + flipz) % 2) == 0;
 
     // which diagonals will the tets cross...
-    int diagx0 = MIN(nodes[map[1]],nodes[map[6]]);
-    int diagx1 = MIN(nodes[map[2]],nodes[map[5]]);
-    int diagy0 = MIN(nodes[map[1]],nodes[map[3]]);
-    int diagy1 = MIN(nodes[map[2]],nodes[map[0]]);
-    int diagz0 = MIN(nodes[map[6]],nodes[map[3]]);
-    int diagz1 = MIN(nodes[map[2]],nodes[map[7]]);
+    int diagx0 = std::min(nodes[map[1]],nodes[map[6]]);
+    int diagx1 = std::min(nodes[map[2]],nodes[map[5]]);
+    int diagy0 = std::min(nodes[map[1]],nodes[map[3]]);
+    int diagy1 = std::min(nodes[map[2]],nodes[map[0]]);
+    int diagz0 = std::min(nodes[map[6]],nodes[map[3]]);
+    int diagz1 = std::min(nodes[map[2]],nodes[map[7]]);
 
     int diagx = (diagx0 < diagx1) ? 0 : 1;
     int diagy = (diagy0 < diagy1) ? 0 : 1;
@@ -328,8 +326,8 @@ Tetrahedralizer::GetLowTetNodesForWdg(int nnodes,const vtkIdType *nodes, vtkIdTy
     bool invert = (flip % 2) == 0;
 
     // which diagonals will the tets cross...
-    int diag0  = MIN(nodes[map[2]],nodes[map[4]]);
-    int diag1  = MIN(nodes[map[1]],nodes[map[5]]);
+    int diag0  = std::min(nodes[map[2]],nodes[map[4]]);
+    int diag1  = std::min(nodes[map[1]],nodes[map[5]]);
 
     int diag   = (diag0 < diag1) ? 0 : 1;
 

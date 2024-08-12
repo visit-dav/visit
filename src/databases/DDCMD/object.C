@@ -5,8 +5,6 @@
 #endif
 
 #define MAXKEYWORDS 4096
-#define MAX(A, B) ((A) > (B) ? (A) : (B))
-#define MIN(A, B) ((A) < (B) ? (A) : (B))
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,6 +12,7 @@
 #include <ctype.h>
 #include "object.h"
 #include "error.h"
+#include <algorithm>
 
 #ifdef WIN32
 #define strtok_r(s,sep,lasts) (*(lasts)=strtok((s),(sep)))
@@ -79,7 +78,7 @@ int object_get(OBJECT*object, char *name, void *ptr, int type, int length, char 
     FIELD f;
     f = object_parse(object, name, type, dvalue);
     if (f.n == 0 || length <= 0) return 0;
-    l = MIN(f.n, length);
+    l = std::min(f.n, length);
     memmove(ptr, f.v, l*f.element_size);
     return f.n;
 }
