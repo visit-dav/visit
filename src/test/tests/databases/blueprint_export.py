@@ -97,7 +97,7 @@ def export_mesh_bp(case_name, varname, varname2 = "", dirname="."):
         e.dirname = dirname
     ExportDatabase(e)
     time.sleep(1)
-    return export_name + ".cycle_000048.root"
+    return export_name
 
 # Export DB as csv, return the folder name
 def create_csv_output(case_name, dirname="."):
@@ -500,12 +500,12 @@ def basic_test_case(case_name, varname = "d", dirname = "."):
     DrawPlots()
     Test("basic_" + case_name + "_input" + ("_output_dir" if dirname != "." else ""))
     # export default
-    export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname=dirname)
+    export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname=dirname) + ".cycle_000048.root"
     # export post isosurface
     AddOperator("Isosurface")
     DrawPlots()
     Test("basic_" + case_name + "_isosurface" + ("_output_dir" if dirname != "." else ""))
-    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname=dirname)
+    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname=dirname) + ".cycle_000048.root"
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
 
@@ -704,7 +704,7 @@ def roundtrip_simple_mixed_topo(mixed_topo, export_name, test_name):
     DrawPlots()
     ResetView()
 
-    outfilename = export_mesh_bp(export_name, "mesh_topo/ele_id")
+    outfilename = export_mesh_bp(export_name, "mesh_topo/ele_id") + ".cycle_000000.root"
 
     save_mesh = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(save_mesh, mixed_topo)
@@ -749,7 +749,7 @@ def roundtrip_braid_mixed(mixed_topo, export_name, test_name):
     DrawPlots()
     ResetView()
 
-    outfilename = export_mesh_bp(export_name, "mixed_2d_mesh/braid", varname2="mixed_2d_mesh/vel")
+    outfilename = export_mesh_bp(export_name, "mixed_2d_mesh/braid", varname2="mixed_2d_mesh/vel") + ".cycle_000100.root"
 
     opts = conduit.Node()
     opts["mesh_name"] = "mixed_2d"
