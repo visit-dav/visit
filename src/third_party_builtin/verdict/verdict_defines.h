@@ -32,9 +32,6 @@
 enum VerdictBoolean { VERDICT_FALSE = 0, VERDICT_TRUE = 1} ;
 
 
-#define VERDICT_MIN(a,b)  ( (a) < (b) ? (a) : (b) )
-#define VERDICT_MAX(a,b)  ( (a) > (b) ? (a) : (b) )
-
 inline double  determinant(double a,
     double b,
     double c,
