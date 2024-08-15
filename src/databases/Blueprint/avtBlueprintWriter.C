@@ -541,7 +541,11 @@ avtBlueprintWriter::CloseFile(void)
 #ifdef PARALLEL
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " relay io blueprint save_mesh.");
-        conduit::relay::mpi::io::blueprint::save_mesh(m_chunks, m_stem, m_output_type, m_options, writeContext.GetCommunicator());
+        conduit::relay::mpi::io::blueprint::save_mesh(m_chunks, 
+                                                      m_stem,
+                                                      m_output_type,
+                                                      m_options,
+                                                      writeContext.GetCommunicator());
 #else
         conduit::relay::io::blueprint::save_mesh(m_chunks, m_stem, m_output_type, m_options);
 #endif
@@ -604,15 +608,16 @@ avtBlueprintWriter::CloseFile(void)
         // Don't need the original data anymore
         m_chunks.reset();
 
-        if(!repart_mesh.dtype().is_empty())
-        {
-            debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
+        debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
 #ifdef PARALLEL
-            conduit::relay::mpi::io::blueprint::save_mesh(repart_mesh, m_stem, m_output_type, m_options, writeContext.GetCommunicator());
+        conduit::relay::mpi::io::blueprint::save_mesh(repart_mesh, 
+                                                      m_stem,
+                                                      m_output_type,
+                                                      m_options,
+                                                      writeContext.GetCommunicator());
 #else
-            conduit::relay::io::blueprint::save_mesh(repart_mesh, m_stem, m_output_type, m_options);
+        conduit::relay::io::blueprint::save_mesh(repart_mesh, m_stem, m_output_type, m_options);
 #endif
-        }
     }
 }
 

@@ -24,7 +24,7 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_DIR ${CONDUIT_DIR})
     SET_UP_THIRD_PARTY(CONDUIT_MPI
         INCDIR include/conduit
-        LIBS conduit_relay_mpi conduit_blueprint_mpi)
+        LIBS conduit_relay_mpi conduit_relay_mpi_io conduit_blueprint_mpi)
 endif()
 
 if(CONDUIT_FOUND)
