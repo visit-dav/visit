@@ -943,6 +943,7 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
     const Node &specset_info = m_specset_info[specset_name_str];
     const std::string abs_meshname = specset_info["full_mesh_name"].as_string();
     const std::string matset_name = specset_info["matset_name"].as_string();
+    const std::string bp_specset_name = specset_info["specset_name"].as_string();
 
     BP_PLUGIN_INFO("specset " << specset_name << " is defined on mesh " << abs_meshname);
 
@@ -953,7 +954,7 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
     BP_PLUGIN_INFO("matset name: " << matset_name);
-    BP_PLUGIN_INFO("specset name: " << specset_name);
+    BP_PLUGIN_INFO("specset name: " << bp_specset_name);
     BP_PLUGIN_INFO("specnames: " << n_spec_names.to_yaml());
 
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
@@ -968,13 +969,13 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
                              "matset " << matset_name << " not found in blueprint index");
     }
 
-    if (!m_root_node["blueprint_index"][mesh_name]["specsets"].has_child(specset_name))
+    if (!m_root_node["blueprint_index"][mesh_name]["specsets"].has_child(bp_specset_name))
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "specset " << specset_name << " not found in blueprint index");
+                             "specset " << bp_specset_name << " not found in blueprint index");
     }
 
-    const Node &bp_index_specset = m_root_node["blueprint_index"][mesh_name]["specsets"][specset_name];
+    const Node &bp_index_specset = m_root_node["blueprint_index"][mesh_name]["specsets"][bp_specset_name];
     BP_PLUGIN_INFO(bp_index_specset.to_yaml());
 
     const string data_path = bp_index_specset["path"].as_string();
@@ -1538,6 +1539,7 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         m_specset_info[mesh_specset_name]["full_mesh_name"] = mesh_topo_name;
         m_specset_info[mesh_specset_name]["mesh_name"] = mesh_name;
         m_specset_info[mesh_specset_name]["topo_name"] = topo_name;
+        m_specset_info[mesh_specset_name]["full_material_name"] = mesh_matset_name;
         m_specset_info[mesh_specset_name]["matset_name"] = matset_name;
         m_specset_info[mesh_specset_name]["specset_name"] = specset_name;
 
@@ -3049,6 +3051,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                         << domain << " "
                         << mat_name);
 
+        std::cout << "mat_name " << mat_name << std::endl;
+
         Node n_matset;
         ReadBlueprintMatset(domain,
                             mat_name,
@@ -3176,6 +3180,8 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                         << domain << " "
                         << spec_name);
 
+        std::cout << "spec_name " << spec_name << std::endl;
+
         Node n_specset;
         ReadBlueprintSpecset(domain,
                              spec_name,
@@ -3187,7 +3193,8 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                  "specset " << spec_name << " is missing associated matset.");
         }
 
-        const std::string matset_name = n_specset["matset"].as_string();
+        const std::string matset_name = m_specset_info[spec_name]["full_material_name"].as_string();
+        std::cout << "matset_name for species " << matset_name << std::endl;
 
         Node n_matset;
         ReadBlueprintMatset(domain,
@@ -3199,8 +3206,24 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                                    n_matset,
                                                    n_silo_specset);
 
+        std::cout << n_silo_specset.to_yaml() << std::endl;
+
+        if (!n_silo_specset.has_child("speclist"))
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "intermediate silo representation of species set " << 
+                                 spec_name << " is missing speclist.");
+        }
+
         // first we need number of zones
         const int nzones = n_silo_specset["speclist"].dtype().number_of_elements();
+
+        if (!m_specset_info.has_path(std::string(spec_name) + "/topo_name"))
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "Species set information is missing topology for species set " << 
+                                 spec_name);
+        }
 
         const std::string topo_name = m_specset_info[spec_name]["topo_name"].as_string();
 
