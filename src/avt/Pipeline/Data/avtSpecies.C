@@ -43,11 +43,14 @@ avtSpecies::avtSpecies(int nm, const int *ns,
                        const int *sl, int ml, const int *msl,
                        int nsmf, const float *smf)
 {
+    std::cout << "\tavtSpecies" << std::endl;
     vector<int>              numspecs;
     vector<vector<string> >  specnames;
     specnames.resize(nm);
     for (int m = 0; m < nm; m++)
     {
+        std::cout << "for material " << m << std::endl;
+        std::cout << "num specs is " << ns[m] << std::endl;
         numspecs.push_back(ns[m]);
         for (int s = 0 ; s < ns[m] ; s++)
         {
@@ -68,6 +71,7 @@ avtSpecies::avtSpecies(int nm, const int *ns,
         nz *= dims[i];
     }
 
+    std::cout << "\tcall Initialize" << std::endl;
     Initialize(numspecs, specnames, nz, sl, ml, msl, nsmf, smf);
 }
 
@@ -177,6 +181,8 @@ avtSpecies::Initialize(const vector<int> ns,
                        const int *sl, int ml, const int *msl,
                        int nsmf, const float *smf)
 {
+    std::cout << "\tInitialize" << std::endl;
+
     int   i;
 
     nSpecies  = ns;

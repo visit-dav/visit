@@ -3201,12 +3201,21 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                             matset_name,
                             n_matset);
 
+        Node n_silo_matset;
+        conduit::blueprint::mesh::matset::to_silo(n_matset,
+                                                  n_silo_matset);
+
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,
                                                    n_matset,
                                                    n_silo_specset);
 
+        std::cout << n_matset.to_yaml() << std::endl;
+        std::cout << n_specset.to_yaml() << std::endl;
+        std::cout << n_silo_matset.to_yaml() << std::endl;
         std::cout << n_silo_specset.to_yaml() << std::endl;
+
+        std::cout << "am i instane" << std::endl;
 
         if (!n_silo_specset.has_child("speclist"))
         {
@@ -3215,6 +3224,7 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                  spec_name << " is missing speclist.");
         }
 
+        std::cout << "get xonesz" << std::endl;
         // first we need number of zones
         const int nzones = n_silo_specset["speclist"].dtype().number_of_elements();
 
@@ -3225,9 +3235,10 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                  spec_name);
         }
 
-        const std::string topo_name = m_specset_info[spec_name]["topo_name"].as_string();
+        // if you look at avtSpecies I'm pretty sure the dims matter
 
         // TODO is this stuff relevant here
+        // const std::string topo_name = m_specset_info[spec_name]["topo_name"].as_string();
         // // calculate dims
         // int dims[] = {0,0,0};
         // int ndims = 1;
@@ -3255,15 +3266,35 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         const int    nspecies_mf = n_silo_specset["nspecies_mf"].value();
         const float* species_mf  = n_silo_specset["species_mf"].value();
 
-        avtSpecies *spec = new avtSpecies(nmat, // number of materials
-                                          nmatspec, // number of species associated with each material
-                                          1, // number of dimensions in the speclist array
-                                          &nzones, // array of length ndims that defines the shape of the speclist array
-                                          speclist, // indices into species_mf and mix_spec
-                                          mixlen, // length of mix_spec array
-                                          mix_spec, // array of length mixlen containing indices into the species_mf array
+        std::cout << n_silo_specset["nmatspec"].dtype().name() << std::endl;
+        // int64
+
+        int five = 5;
+        Node bungus;
+        bungus["oofus"] = five;
+
+        std::cout << bungus["oofus"].dtype().name() << std::endl;
+        // int32
+
+        // TODO left off here
+        // what am I supposed to do about this
+        // visit expects a 32 bit int on this machine
+        // conduit created index_t's
+        // do I make an int vector and go from there?
+
+        std::cout << "about to create avtspecieis" << std::endl;
+
+        avtSpecies *spec = new avtSpecies(nmat,        // number of materials
+                                          nmatspec,    // number of species associated with each material
+                                          1,           // number of dimensions in the speclist array
+                                          &nzones,     // array of length ndims that defines the shape of the speclist array
+                                          speclist,    // indices into species_mf and mix_spec
+                                          mixlen,      // length of mix_spec array
+                                          mix_spec,    // array of length mixlen containing indices into the species_mf array
                                           nspecies_mf, // length of the species_mf array
                                           species_mf); // mass fractions of the matspecies in an array of length nspecies_mf
+        
+        std::cout << "return spec" << std::endl;
         return spec;
     }
     catch (conduit::Error &e)
@@ -3274,6 +3305,8 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                     << e.message();
         BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
     }
+
+    std::cout << "what  the fyck" << std::endl;
 }
 
 // ****************************************************************************
