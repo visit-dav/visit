@@ -1711,9 +1711,9 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 fileinfo_str?fileinfo_str:"",
                 fileinfo_str?", ":"",
                 drvrinfo_str,
-                hdf5info_str?", hdf5-version:":"",
+                hdf5info_str?", ":"",
                 hdf5info_str?hdf5info_str:"",
-                siloinfo_str?", silo-version:":"",
+                siloinfo_str?", silo-":"",
                 siloinfo_str?siloinfo_str:"");
             md->SetDatabaseComment(dbcmt);
 
