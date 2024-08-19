@@ -3051,8 +3051,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                         << domain << " "
                         << mat_name);
 
-        std::cout << "mat_name " << mat_name << std::endl;
-
         Node n_matset;
         ReadBlueprintMatset(domain,
                             mat_name,
@@ -3121,8 +3119,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         }
 
         const std::string domain_name = std::to_string(domain);
-
-        // TODO are these dims calculated right? see GetSpecies for inspiration
 
         avtMaterial *mat = new avtMaterial(nmats,               // The number of materials
                                            matnos.data(),       // material numbers
@@ -3207,11 +3203,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                                    n_matset,
                                                    n_silo_specset);
 
-        std::cout << n_matset.to_yaml() << std::endl;
-        std::cout << n_specset.to_yaml() << std::endl;
-        std::cout << n_silo_matset.to_yaml() << std::endl;
-        std::cout << n_silo_specset.to_yaml() << std::endl;
-
         if (!n_silo_specset.has_child("speclist"))
         {
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -3228,29 +3219,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                  "Species set information is missing topology for species set " << 
                                  spec_name);
         }
-
-        // if you look at avtSpecies I'm pretty sure the dims matter
-
-        // TODO is this stuff relevant here
-        // const std::string topo_name = m_specset_info[spec_name]["topo_name"].as_string();
-        // // calculate dims
-        // int dims[] = {0,0,0};
-        // int ndims = 1;
-        // const std::string mesh_type = n_mesh_info[topo_name]["type"].as_string();
-        // if (mesh_type == "structured" || mesh_type == "rectilinear" || mesh_type == "uniform")
-        // {
-        //     ndims = n_mesh_info[topo_name]["ndims"].as_int();
-        //     dims[0] = n_mesh_info[topo_name]["elements"]["i"].as_int();
-        //     dims[1] = n_mesh_info[topo_name]["elements"]["j"].as_int();
-        //     if (ndims == 3)
-        //     {
-        //         dims[2] = n_mesh_info[topo_name]["elements"]["k"].as_int();
-        //     }
-        // }
-        // else
-        // {
-        //     dims[0] = nzones;
-        // }
 
         Node n_tmp;
         n_silo_specset["nmatspec"].to_int_array(n_tmp["nmatspec"]);
