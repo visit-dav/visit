@@ -6091,7 +6091,7 @@ inline void GetWord(char *&s, char *word, bool allowSlash)
 }
 
 
-void
+static void
 AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 {
     char *dv_tmp = new char[strlen(defvars)+1];
@@ -16138,7 +16138,7 @@ ExceptionGenerator(char *msg)
 //
 // ****************************************************************************
 
-char *
+static char *
 GenerateName(const char *dirname, const char *varname, const char *topdirname)
 {
     if (varname[0] == '/')
@@ -16256,7 +16256,7 @@ GenerateName(const char *dirname, const char *varname, const char *topdirname)
 //
 // ****************************************************************************
 
-string
+static string
 PrepareDirName(const char *dirvar, const char *curdir)
 {
     int len = strlen(dirvar);
@@ -16308,7 +16308,7 @@ PrepareDirName(const char *dirvar, const char *curdir)
 //    Fixed memory problem when strlen dirvar is zero
 // ****************************************************************************
 
-void
+static void
 SplitDirVarName(const char *dirvar, const char *curdir,
                 string &dir, string &var)
 {
@@ -16375,7 +16375,7 @@ SplitDirVarName(const char *dirvar, const char *curdir,
 //
 // ****************************************************************************
 
-int
+static int
 SiloZoneTypeToVTKZoneType(int zonetype)
 {
     int  vtk_zonetype = -1;
@@ -16465,7 +16465,7 @@ SiloZoneTypeToVTKZoneType(int zonetype)
 //
 // ****************************************************************************
 
-void
+static void
 TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
 {
     //
@@ -16503,7 +16503,7 @@ TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
 //
 // ****************************************************************************
 
-void
+static void
 TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5])
 {
     //
@@ -16536,7 +16536,7 @@ TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5]
 //
 // ****************************************************************************
 
-void
+static void
 TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
                                          vtkIdType vtkTetrahedron[4])
 {
