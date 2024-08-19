@@ -38,6 +38,9 @@
 #
 #    Kathleen Biagas, Tue Aug 24, 2021
 #    Added a test for PVD files.
+# 
+#    Justin Privitera, Mon Aug 19 16:42:10 PDT 2024
+#    Added a test for export file version.
 #
 # ----------------------------------------------------------------------------
 
