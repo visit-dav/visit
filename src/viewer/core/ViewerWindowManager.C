@@ -4973,6 +4973,10 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Jeremy Meredith, Mon Feb  4 13:33:29 EST 2008
 //    Added remaining support for axis array window modality.
 //
+//    Kathleen Biagas, Thu Aug 15, 2024
+//    Ensure perspective (if changed) is set in WindowInformation by adding
+//    WINDOWINFO_WINDOWFLAGS to the flags sent to UpdateWindowInformation.
+//
 // ****************************************************************************
 
 void
@@ -4988,6 +4992,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
     if(index == activeWindow || windows[index]->GetViewIsLocked())
     {
         bool haveNotified = false;
+        int flags = WINDOWINFO_WINMODEONLY;
 
         //
         // Set the curve attributes from the window's view.
@@ -5014,6 +5019,14 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         //
         if(update3d)
         {
+            // ensure that if perspective has changed, the perspective flag
+            // in WindowInformation will be updated as well.  This ensures the
+            // toggle button on the toolbar will reflect the current state and
+            // that the setting will get save/restored correctly in configs.
+            if(GetViewerState()->GetWindowInformation()->GetPerspective() !=
+                view3d.perspective)
+                flags |= WINDOWINFO_WINDOWFLAGS;
+
             view3d.SetToView3DAttributes(GetViewerState()->GetView3DAttributes());
             GetViewerState()->GetView3DAttributes()->Notify();
             haveNotified = true;
@@ -5030,7 +5043,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         }
 
         if(haveNotified)
-            UpdateWindowInformation(WINDOWINFO_WINMODEONLY, index);
+            UpdateWindowInformation(flags, index);
     }
 
     //
