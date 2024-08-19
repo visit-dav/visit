@@ -63,13 +63,13 @@
 #include <BadDomainException.h>
 #include <BadIndexException.h>
 #include <BufferConnection.h>
+#include <DatabaseException.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InvalidZoneTypeException.h>
-#include <SiloException.h>
 #include <avtExecutionManager.h>
 
 #include <avtStructuredDomainBoundaries.h>
@@ -156,6 +156,19 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
     int repr_block_idx, int empty_cnt, int const *empty_list);
 
 static int db_get_index(DBnamescheme const *ns, int natnum);
+
+class SiloException : public DatabaseException
+{
+  public: SiloException(const char *)
+          {
+              char str[1024];
+              sprintf(str, "A Silo error occurred.\nThe error is \"%s.\"", filename);
+              msg = str;
+              DBSetDataReadMask2(DBAll); // precaution against exception out from a
+                                         // block where mask was other than DBAll
+          };
+    virtual ~SiloException() VISIT_THROW_NOTHING {;};
+};
 
 // ****************************************************************************
 //  Class: avtSiloFileFormat
