@@ -19,8 +19,7 @@ target_sources(visitcommon PRIVATE
     InvalidZoneTypeException.C
     NonCompliantException.C
     NonCompliantFileException.C
-    PointerNotInCacheException.C
-    SiloException.C)
+    PointerNotInCacheException.C)
 
 target_include_directories(visitcommon PUBLIC .)
 

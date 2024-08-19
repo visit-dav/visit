@@ -4,7 +4,7 @@
 #include <DebugStream.h>
 #include <VisItInit.h>
 #include <ImproperUseException.h>
-#include <SiloException.h>
+#include <NonCompliantException.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -69,7 +69,7 @@ public:
         // Try/catch with argument, provide different catch statements.
         TRY
         {
-            EXCEPTION1(SiloException, "Invalid file");
+            EXCEPTION1(NonCompliantException, "Invalid file");
         }
         CATCH2(DatabaseException, e)
         {
@@ -89,7 +89,7 @@ public:
         {
             TRY
             {
-                EXCEPTION1(SiloException, "Invalid file");
+                EXCEPTION1(NonCompliantException, "Invalid file");
             }
             CATCHALL
             {
