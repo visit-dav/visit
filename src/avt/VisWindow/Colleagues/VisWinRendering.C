@@ -1630,10 +1630,17 @@ VisWinRendering::ScreenRender(avtImageType imgT,
             unsigned char *rgbbuf = input->GetImage().GetRGBBuffer();
             int nchan = input->GetImage().GetNumberOfColorChannels();
 
+#if LIB_VERSION_LE(VTK,8,1,0)
+            if (nchan == 3)
+                renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 1);
+            else
+                renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 1);
+#else
             if (nchan == 3)
                 renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 0);
             else
                 renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 0);
+#endif
 
             glDepthMask(GL_TRUE);
         }
