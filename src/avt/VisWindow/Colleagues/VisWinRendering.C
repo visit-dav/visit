@@ -1504,6 +1504,11 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    that's why these things are conditionally compiled. They'll need to
 //    be changed to render passes for VTK 8.
 //
+//    Eric Brugger, Fri Aug  9 13:45:49 PDT 2024
+//    Change the calls to SetPixelData and SetRGBACharPixelData to write
+//    to the back buffer instead of the front buffer. The behavior changed
+//    with VTK9.
+//
 // ****************************************************************************
 
 void
@@ -1625,10 +1630,17 @@ VisWinRendering::ScreenRender(avtImageType imgT,
             unsigned char *rgbbuf = input->GetImage().GetRGBBuffer();
             int nchan = input->GetImage().GetNumberOfColorChannels();
 
+#if LIB_VERSION_LE(VTK,8,1,0)
             if (nchan == 3)
                 renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 1);
             else
                 renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 1);
+#else
+            if (nchan == 3)
+                renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 0);
+            else
+                renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 0);
+#endif
 
             glDepthMask(GL_TRUE);
         }
