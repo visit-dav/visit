@@ -1156,11 +1156,24 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     multispecCache.Clear();
 
     //
-    // We're just interested in metadata for now, so tell Silo not
-    // to read the extra data arrays, except for material names and
-    // numbers and colors.
+    // It is easy to conclude the right thing for PopulateDatabaseMetadata
+    // is to call DBSetDataReadMask2(DBNone) to avoid any bulk-data reads
+    // during bootstrap for opening a file. However, that would then prevent
+    // us from getting information about material names, numbers and colors
+    // used in parts of the GUI as well as multiblock object names which are
+    // needed for various purposes including accessing the first non-empty
+    // block to get additional metadata about the object as well as matching
+    // multiblock objects to their associated multiblock mesh.
     //
-    DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
+    // Note: A secondary issue is that anything that causes an exception out
+    // of ReadDir
+    //
+    DBSetDataReadMask2(
+       DBMBNamesAndTypes // to get names/types from all multi-block objects
+       | DBMatMatnames   // to get material names from mat objects
+       | DBMatMatnos     // to get material numbers from mat objects
+       | DBMatMatcolors  // to get material colors from mat objects
+    );
 
     //
     // Do a recursive search through the subdirectories.
