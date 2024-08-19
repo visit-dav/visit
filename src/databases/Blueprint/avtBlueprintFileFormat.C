@@ -3180,8 +3180,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                         << domain << " "
                         << spec_name);
 
-        std::cout << "spec_name " << spec_name << std::endl;
-
         Node n_specset;
         ReadBlueprintSpecset(domain,
                              spec_name,
@@ -3194,7 +3192,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         }
 
         const std::string matset_name = m_specset_info[spec_name]["full_material_name"].as_string();
-        std::cout << "matset_name for species " << matset_name << std::endl;
 
         Node n_matset;
         ReadBlueprintMatset(domain,
@@ -3215,8 +3212,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         std::cout << n_silo_matset.to_yaml() << std::endl;
         std::cout << n_silo_specset.to_yaml() << std::endl;
 
-        std::cout << "am i instane" << std::endl;
-
         if (!n_silo_specset.has_child("speclist"))
         {
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -3224,7 +3219,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                  spec_name << " is missing speclist.");
         }
 
-        std::cout << "get xonesz" << std::endl;
         // first we need number of zones
         const int nzones = n_silo_specset["speclist"].dtype().number_of_elements();
 
@@ -3258,31 +3252,19 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         //     dims[0] = nzones;
         // }
 
+        Node n_tmp;
+        n_silo_specset["nmatspec"].to_int_array(n_tmp["nmatspec"]);
+        n_silo_specset["speclist"].to_int_array(n_tmp["speclist"]);
+        n_silo_specset["mix_spec"].to_int_array(n_tmp["mix_spec"]);
+        n_silo_specset["species_mf"].to_float_array(n_tmp["species_mf"]);
+
         const int    nmat        = n_silo_specset["nmat"].as_int();
-        const int*   nmatspec    = n_silo_specset["nmatspec"].value();
-        const int*   speclist    = n_silo_specset["speclist"].value();
+        const int*   nmatspec    = n_tmp["nmatspec"].as_int_ptr();
+        const int*   speclist    = n_tmp["speclist"].as_int_ptr();
         const int    mixlen      = n_silo_specset["mixlen"].as_int();
-        const int*   mix_spec    = n_silo_specset["mix_spec"].value();
+        const int*   mix_spec    = n_tmp["mix_spec"].as_int_ptr();
         const int    nspecies_mf = n_silo_specset["nspecies_mf"].value();
-        const float* species_mf  = n_silo_specset["species_mf"].value();
-
-        std::cout << n_silo_specset["nmatspec"].dtype().name() << std::endl;
-        // int64
-
-        int five = 5;
-        Node bungus;
-        bungus["oofus"] = five;
-
-        std::cout << bungus["oofus"].dtype().name() << std::endl;
-        // int32
-
-        // TODO left off here
-        // what am I supposed to do about this
-        // visit expects a 32 bit int on this machine
-        // conduit created index_t's
-        // do I make an int vector and go from there?
-
-        std::cout << "about to create avtspecieis" << std::endl;
+        const float* species_mf  = n_tmp["species_mf"].as_float_ptr();
 
         avtSpecies *spec = new avtSpecies(nmat,        // number of materials
                                           nmatspec,    // number of species associated with each material
@@ -3294,7 +3276,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                                           nspecies_mf, // length of the species_mf array
                                           species_mf); // mass fractions of the matspecies in an array of length nspecies_mf
         
-        std::cout << "return spec" << std::endl;
         return spec;
     }
     catch (conduit::Error &e)
@@ -3305,8 +3286,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                     << e.message();
         BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
     }
-
-    std::cout << "what  the fyck" << std::endl;
 }
 
 // ****************************************************************************
