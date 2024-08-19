@@ -2,7 +2,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef WIN32
+#ifdef _WIN32
 #  include <winsock2.h>
 #else
 #  include <netdb.h>
@@ -52,7 +52,7 @@ int GettingSignaled(void)
   setsignal(SIGTERM, handler);
   setsignal(SIGABRT, handler);
 
-#ifndef WIN32
+#ifndef _WIN32
   setsignal(SIGCHLD, handler);
   setsignal(SIGHUP, SIG_IGN);
   setsignal(SIGPIPE, handler);
@@ -80,7 +80,7 @@ int GettingSignaled(void)
   /*fclose(stderr);*/
   i=30;
   while (i--){
-#ifndef WIN32
+#ifndef _WIN32
     int err = usleep (999999);
     if (err) {
       fprintf(stderr, "child sleep err %d\n", err);

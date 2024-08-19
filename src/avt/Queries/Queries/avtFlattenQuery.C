@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -218,7 +218,7 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         }
     }
 
-#ifndef WIN32
+#ifndef _WIN32
     if(params.HasEntry("useSharedMemory"))
     {
         const MapNode *useShm = params.GetEntry("useSharedMemory");
@@ -821,7 +821,7 @@ avtFlattenQuery::BuildOutputInfo(const intVector &varNComps, const intVector &va
 void
 avtFlattenQuery::WriteSharedMemory() const
 {
-#ifndef WIN32
+#ifndef _WIN32
     int fd = shm_open(pimpl->sharedMemoryName.c_str(),
                         O_CREAT | O_RDWR | O_EXCL,
                         S_IREAD | S_IWRITE);

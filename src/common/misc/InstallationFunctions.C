@@ -80,7 +80,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
     const char *configFileName;
     int  filenameLength;
 
-#ifdef WIN32
+#ifdef _WIN32
     // If the filename is enclosed in quotes, do no prepend the home directory.
     if (filename != NULL && (filename[0] == '\'' || filename[0] == '\"'))
     {

@@ -1,7 +1,7 @@
 #include "stringutil.h"
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
-#elif defined(WIN32)
+#elif defined(_WIN32)
 #  include <direct.h>
 #  define WINDOWS_LEAN_AND_MEAN
 #  include <windows.h>

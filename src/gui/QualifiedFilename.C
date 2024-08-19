@@ -372,7 +372,7 @@ QualifiedFilename::SetFromString(const std::string &str)
 std::string
 QualifiedFilename::FullName() const
 {
-#ifdef WIN32
+#ifdef _WIN32
     if (path.substr(0,2) == "\\\\")
     {
         std::string temp(path);

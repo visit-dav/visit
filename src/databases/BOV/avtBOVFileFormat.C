@@ -926,7 +926,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     char filename[1024];
     sprintf(filename, file_pattern.c_str(), dom);
     char qual_filename[1024];
-#ifdef WIN32
+#ifdef _WIN32
     if (PathIsRelative(filename))
 #else
     if (filename[0] != '/')

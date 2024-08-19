@@ -1,7 +1,7 @@
 #include "fileutils.h"
 #include <stdlib.h>
 #include <string.h>
-#ifndef WIN32
+#ifndef _WIN32
 #include <dirent.h>
 #endif
 #include <sys/stat.h>
@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 /* return 0 on success, perr, or -1 (internal failure) value on failure */
-#ifndef WIN32
+#ifndef _WIN32
 int mkdir_recursive(const char *targetdir){
   char parentdir[1024]; 
   char *lastslash = NULL;
