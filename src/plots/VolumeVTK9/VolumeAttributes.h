@@ -128,6 +128,7 @@ public:
     void SelectAnariLibrary();
     void SelectAnariLibrarySubtype();
     void SelectAnariRendererSubtype();
+    void SelectUsdDir();
 
     // Property setting methods
     void SetOSPRayEnabledFlag(bool OSPRayEnabledFlag_);
@@ -185,6 +186,14 @@ public:
     void SetAnariAmbientIntensity(float anariAmbientIntensity_);
     void SetAnariMaxDepth(int anariMaxDepth_);
     void SetAnariRValue(float anariRValue_);
+    void SetUsdDir(const std::string &usdDir_);
+    void SetUsdAtCommit(bool usdAtCommit_);
+    void SetUsdOutputBinary(bool usdOutputBinary_);
+    void SetUsdOutputMaterial(bool usdOutputMaterial_);
+    void SetUsdOutputPreviewSurface(bool usdOutputPreviewSurface_);
+    void SetUsdOutputMDL(bool usdOutputMDL_);
+    void SetUsdOutputMDLColors(bool usdOutputMDLColors_);
+    void SetUsdOutputDisplayColors(bool usdOutputDisplayColors_);
 
     // Property getting methods
     bool                           GetOSPRayEnabledFlag() const;
@@ -250,6 +259,15 @@ public:
     float                          GetAnariAmbientIntensity() const;
     int                            GetAnariMaxDepth() const;
     float                          GetAnariRValue() const;
+    const std::string              &GetUsdDir() const;
+          std::string              &GetUsdDir();
+    bool                           GetUsdAtCommit() const;
+    bool                           GetUsdOutputBinary() const;
+    bool                           GetUsdOutputMaterial() const;
+    bool                           GetUsdOutputPreviewSurface() const;
+    bool                           GetUsdOutputMDL() const;
+    bool                           GetUsdOutputMDLColors() const;
+    bool                           GetUsdOutputDisplayColors() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -383,6 +401,14 @@ public:
         ID_anariAmbientIntensity,
         ID_anariMaxDepth,
         ID_anariRValue,
+        ID_usdDir,
+        ID_usdAtCommit,
+        ID_usdOutputBinary,
+        ID_usdOutputMaterial,
+        ID_usdOutputPreviewSurface,
+        ID_usdOutputMDL,
+        ID_usdOutputMDLColors,
+        ID_usdOutputDisplayColors,
         ID__LAST
     };
 
@@ -442,11 +468,19 @@ private:
     float                    anariAmbientIntensity;
     int                      anariMaxDepth;
     float                    anariRValue;
+    std::string              usdDir;
+    bool                     usdAtCommit;
+    bool                     usdOutputBinary;
+    bool                     usdOutputMaterial;
+    bool                     usdOutputPreviewSurface;
+    bool                     usdOutputMDL;
+    bool                     usdOutputMDLColors;
+    bool                     usdOutputDisplayColors;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdDbiisssffif"
+#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdDbiisssffifsbbbbbbb"
 
 #endif

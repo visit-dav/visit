@@ -819,6 +819,15 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         anariVolumeMapper->SetAmbientIntensity(m_atts.GetAnariAmbientIntensity());
         anariVolumeMapper->SetMaxDepth(m_atts.GetAnariMaxDepth());
         anariVolumeMapper->SetRValue(m_atts.GetAnariRValue());
+        // USD
+        anariVolumeMapper->SetUsdDirectory(m_atts.GetUsdDir());
+        anariVolumeMapper->SetUsdAtCommit(m_atts.GetUsdAtCommit());
+        anariVolumeMapper->SetUsdOutputBinary(m_atts.GetUsdOutputBinary());
+        anariVolumeMapper->SetUsdOutputMaterial(m_atts.GetUsdOutputMaterial());
+        anariVolumeMapper->SetUsdOutputPreview(m_atts.GetUsdOutputPreviewSurface());
+        anariVolumeMapper->SetUsdOutputMDL(m_atts.GetUsdOutputMDL());
+        anariVolumeMapper->SetUsdOutputMDLColors(m_atts.GetUsdOutputMDLColors());
+        anariVolumeMapper->SetUsdOutputDisplayColors(m_atts.GetUsdOutputDisplayColors());
     }
 #endif
 }

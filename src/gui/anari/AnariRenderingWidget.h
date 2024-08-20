@@ -147,7 +147,6 @@ private:
 
     // USD widget UI components
     std::unique_ptr<QString>    outputDir;
-
     QLineEdit   *dirLineEdit;
     QCheckBox   *commitCheckBox;
     QCheckBox   *binaryCheckBox;

@@ -247,7 +247,7 @@
         0
       </Field>
       <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
-        default
+        environment
       </Field>
       <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
         default
@@ -266,6 +266,29 @@
       </Field>
       <Field name="anariRValue" label="ANARI R Value" type="float">
         1.000000
+      </Field>
+      <Field name="usdDir" label="USD Output Directory" type="string">
+      </Field>
+      <Field name="usdAtCommit" label="USD At Commit" type="bool">
+        false
+      </Field>
+      <Field name="usdOutputBinary" label="USD Output Binary" type="bool">
+        true
+      </Field>
+      <Field name="usdOutputMaterial" label="USD Output Material" type="bool">
+        true
+      </Field>
+      <Field name="usdOutputPreviewSurface" label="USD Output Preview Surface" type="bool">
+        true
+      </Field>
+      <Field name="usdOutputMDL" label="USD Output MDL" type="bool">
+        true
+      </Field>
+      <Field name="usdOutputMDLColors" label="USD Output MDL Colors" type="bool">
+        true
+      </Field>
+      <Field name="usdOutputDisplayColors" label="USD Output Display Colors" type="bool">
+        true
       </Field>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>

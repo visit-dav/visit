@@ -2277,6 +2277,30 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_anariRValue:
             anariVolumePlotWidget->UpdateRValue(volumeAtts->GetAnariRValue());
             break;
+        case VolumeAttributes::ID_usdDir:
+            anariVolumePlotWidget->UpdateUSDOutputLocation(volumeAtts->GetUsdDir());
+            break;
+        case VolumeAttributes::ID_usdAtCommit:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::COMMIT, volumeAtts->GetUsdAtCommit());
+            break;
+        case VolumeAttributes::ID_usdOutputBinary:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::BINARY, volumeAtts->GetUsdOutputBinary());
+            break;
+        case VolumeAttributes::ID_usdOutputMaterial:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::MATERIAL, volumeAtts->GetUsdOutputMaterial());
+            break;
+        case VolumeAttributes::ID_usdOutputPreviewSurface:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::PREVIEW, volumeAtts->GetUsdOutputPreviewSurface());
+            break;
+        case VolumeAttributes::ID_usdOutputMDL:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::MDL, volumeAtts->GetUsdOutputMDL());
+            break;
+        case VolumeAttributes::ID_usdOutputMDLColors:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::MDLCOLORS, volumeAtts->GetUsdOutputMDLColors());
+            break;
+        case VolumeAttributes::ID_usdOutputDisplayColors:
+            anariVolumePlotWidget->UpdateUSDParameter(USDParameter::DISPLAY, volumeAtts->GetUsdOutputDisplayColors());
+            break;
 #endif
         }
     }

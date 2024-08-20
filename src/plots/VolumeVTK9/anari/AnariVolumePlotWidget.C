@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QGridLayout>
 #include <QVBoxLayout>
+#include <QStackedLayout>
 #include <QString>
 #include <QSpinBox>
 #include <QLabel>
@@ -101,7 +102,8 @@ AnariVolumePlotWidget::AnariVolumePlotWidget(QvisVolumePlotWindow *qrw,
     lightFalloff(nullptr),
     ambientIntensity(nullptr),
     maxDepth(nullptr),
-    rValue(nullptr)
+    rValue(nullptr),
+    outputDir()
 {
     // row, col, rowspan, colspan
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -121,12 +123,23 @@ AnariVolumePlotWidget::AnariVolumePlotWidget(QvisVolumePlotWindow *qrw,
     renderingGroupVBoxLayout->addWidget(CreateGeneralWidget(rowCnt));
     totalRows += rowCnt;
 
-    // Create and add the back-end specific widgets
-    rowCnt = 0;
-    renderingGroupVBoxLayout->addWidget(CreateBackendWidget(rowCnt));
-    totalRows += rowCnt;
+    backendStackedLayout = new QStackedLayout();
 
+    // Create and add the back-end specific widgets
+    int rowCnt1 = 0;
+    backendStackedLayout->addWidget(CreateBackendWidget(rowCnt1));
+    // renderingGroupVBoxLayout->addWidget(CreateBackendWidget(rowCnt));
+
+    // Create USD back-end specific widgets
+    int rowCnt2 = 0;
+    backendStackedLayout->addWidget(CreateUSDWidget(rowCnt2));
+
+    totalRows += std::max(rowCnt1, rowCnt2);
+    renderingGroupVBoxLayout->addLayout(backendStackedLayout);
     mainLayout->addWidget(renderingGroup);
+
+    connect(this, &AnariVolumePlotWidget::currentBackendChanged,
+            backendStackedLayout, &QStackedLayout::setCurrentIndex);
 }
 
 // ****************************************************************************
@@ -320,6 +333,122 @@ AnariVolumePlotWidget::CreateBackendWidget(int &rows)
     gridLayout->addWidget(rValue, rows++, 3, 1, 1);
 
     UpdateUI();
+    return widget;
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::CreateUSDWidget
+//
+// Purpose:
+//   Creates the UI components used by ANARI back-ends.
+//
+// Arguments:
+//   rows keeps track of the total rows of UI components
+//
+//
+// Programmer: Kevin Griffin
+// Creation:
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QWidget *
+AnariVolumePlotWidget::CreateUSDWidget(int &rows)
+{
+    QWidget *widget = new QWidget(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(widget);
+
+    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout->setSpacing(10);
+    gridLayout->setContentsMargins(10,10,10,10);
+
+    gridLayout->setColumnStretch(1, 3);
+
+    // row, col, rowspan, colspan
+    // Row 1
+    QLabel *locationLabel = new QLabel("Directory");
+    locationLabel->setToolTip(tr("Output location for saving the USD files"));
+
+    // Output location for the USD files
+    // outputDir.reset(new QString(QDir::homePath()));
+    outputDir.reset(new QString(volumeAttributes->GetUsdDir().c_str()));
+    dirLineEdit = new QLineEdit(*outputDir);
+    connect(dirLineEdit, &QLineEdit::editingFinished, this, &AnariVolumePlotWidget::outputLocationChanged);
+    // outputLocationChanged();
+
+    QPushButton *dirSelectButton = new QPushButton("Select");
+    connect(dirSelectButton, &QPushButton::pressed, this, &AnariVolumePlotWidget::selectButtonPressed);
+
+    commitCheckBox = new QCheckBox(tr("commit"));
+    commitCheckBox->setToolTip(tr("Write USD at ANARI commit call"));
+    commitCheckBox->setChecked(volumeAttributes->GetUsdAtCommit());
+
+    connect(commitCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::commitToggled);
+
+    gridLayout->addWidget(locationLabel, 0, 0, 1, 1);
+    gridLayout->addWidget(dirLineEdit, 0, 1, 1, 2);
+    gridLayout->addWidget(dirSelectButton, 0, 3, 1, 1);
+    gridLayout->addWidget(commitCheckBox, 0, 4, 1, 1);
+
+    mainLayout->addLayout(gridLayout);
+
+    // Row 2
+    rows++;
+    QGroupBox *outputGroup = new QGroupBox(tr("Output"));
+
+    QGridLayout *gridLayout2 = new QGridLayout(outputGroup);
+    gridLayout2->setSpacing(10);
+    gridLayout2->setContentsMargins(10,10,10,10);
+
+    binaryCheckBox = new QCheckBox(tr("Binary"));
+    binaryCheckBox->setToolTip(tr("Binary or text output"));
+    binaryCheckBox->setChecked(volumeAttributes->GetUsdOutputBinary());
+
+    connect(binaryCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::binaryToggled);
+    gridLayout2->addWidget(binaryCheckBox, 0, 0, 1, 1);
+
+    materialCheckBox = new QCheckBox(tr("Material"));
+    materialCheckBox->setToolTip(tr("Include material objects in the output"));
+    materialCheckBox->setChecked(volumeAttributes->GetUsdOutputMaterial());
+
+    connect(materialCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::materialToggled);
+    gridLayout2->addWidget(materialCheckBox, 0, 1, 1, 1);
+
+    previewCheckBox = new QCheckBox(tr("Preview Surface"));
+    previewCheckBox->setToolTip(tr("Include preview surface shader prims in the output for material objects"));
+    previewCheckBox->setChecked(volumeAttributes->GetUsdOutputPreviewSurface());
+
+    connect(previewCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::previewSurfaceToggled);
+    gridLayout2->addWidget(previewCheckBox, 0, 2, 1, 1);
+
+    // Row 3
+    rows++;
+
+    mdlCheckBox = new QCheckBox(tr("MDL"));
+    mdlCheckBox->setToolTip(tr("Include MDL shader prims in the output for material objects"));
+    mdlCheckBox->setChecked(volumeAttributes->GetUsdOutputMDL());
+
+    connect(mdlCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::mdlToggled);
+    gridLayout2->addWidget(mdlCheckBox, 1, 0, 1, 1);
+
+    mdlColorCheckBox = new QCheckBox(tr("MDL Colors"));
+    mdlColorCheckBox->setToolTip(tr("Include MDL colors in the output for material objects"));
+    mdlColorCheckBox->setChecked(volumeAttributes->GetUsdOutputMDLColors());
+
+    connect(mdlColorCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::mdlColorsToggled);
+    gridLayout2->addWidget(mdlColorCheckBox, 1, 1, 1, 1);
+
+    displayColorCheckBox = new QCheckBox(tr("Display Colors"));
+    displayColorCheckBox->setToolTip(tr("Include display colors in the output"));
+    displayColorCheckBox->setChecked(volumeAttributes->GetUsdOutputDisplayColors());
+
+    connect(displayColorCheckBox, &QCheckBox::toggled, this, &AnariVolumePlotWidget::displayColorsToggled);
+    gridLayout2->addWidget(displayColorCheckBox, 1, 2, 1, 1);
+
+    rows++;
+    mainLayout->addWidget(outputGroup);
+
     return widget;
 }
 
@@ -552,7 +681,7 @@ void
 AnariVolumePlotWidget::UpdateLibraryName(const std::string libname)
 {
     libraryName->blockSignals(true);
-    libraryName->setText(QString::fromStdString(libname));
+    libraryName->setText(QString::fromStdString(libname).trimmed());
     libraryName->blockSignals(false);
 }
 
@@ -760,6 +889,106 @@ AnariVolumePlotWidget::UpdateRValue(const float val)
     rValue->blockSignals(false);
 }
 
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::UpdateUSDOutputLocation
+//
+// Purpose:
+//   Updates the USD output location path.
+//
+// Arguments:
+//   path output location for saving the USD files
+//
+//
+// Programmer: Kevin Griffin
+// Creation:
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::UpdateUSDOutputLocation(const std::string path)
+{
+    QString directoryQStr = QString::fromStdString(path);
+
+    if(!directoryQStr.isEmpty())
+    {
+        QDir directory(directoryQStr);
+
+        if(directory.exists())
+        {
+            dirLineEdit->blockSignals(true);
+            dirLineEdit->setText(directoryQStr);
+            dirLineEdit->blockSignals(false);
+        }
+        else
+        {
+            debug5 << "AnariVolumePlotWidget::UpdateUSDOutputLocation: " << path << " does not exist" << std::endl;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::UpdateUSDParameter
+//
+// Purpose:
+//   Sets the checked state of the USD Ooutput parameter check boxes.
+//
+// Arguments:
+//   param  the USD output parameter to update
+//   bool   if true then param is selected
+//
+// Programmer: Kevin Griffin
+// Creation:
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::UpdateUSDParameter(const USDParameter param, const bool val)
+{
+    switch(param)
+    {
+        case USDParameter::COMMIT:
+            commitCheckBox->blockSignals(true);
+            commitCheckBox->setChecked(val);
+            commitCheckBox->blockSignals(false);
+            break;
+        case USDParameter::BINARY:
+            binaryCheckBox->blockSignals(true);
+            binaryCheckBox->setChecked(val);
+            binaryCheckBox->blockSignals(false);
+            break;
+        case USDParameter::MATERIAL:
+            materialCheckBox->blockSignals(true);
+            materialCheckBox->setChecked(val);
+            materialCheckBox->blockSignals(false);
+            break;
+        case USDParameter::PREVIEW:
+            previewCheckBox->blockSignals(true);
+            previewCheckBox->setChecked(val);
+            previewCheckBox->blockSignals(false);
+            break;
+        case USDParameter::MDL:
+            mdlCheckBox->blockSignals(true);
+            mdlCheckBox->setChecked(val);
+            mdlCheckBox->blockSignals(false);
+            break;
+        case USDParameter::MDLCOLORS:
+            mdlColorCheckBox->blockSignals(true);
+            mdlColorCheckBox->setChecked(val);
+            mdlColorCheckBox->blockSignals(false);
+            break;
+        case USDParameter::DISPLAY:
+            displayColorCheckBox->blockSignals(true);
+            displayColorCheckBox->setChecked(val);
+            displayColorCheckBox->blockSignals(false);
+            break;
+    }
+}
+
+
 // SLOTS
 //----------------------------------------------------------------------------
 
@@ -858,7 +1087,18 @@ AnariVolumePlotWidget::libraryChanged()
         anari::release(anariDevice, anariDevice);
         anariUnloadLibrary(anariLibrary);
 
-        UpdateUI();
+        auto backendType = GetBackendType(libraryName->text().trimmed().toStdString());
+
+        if(backendType == BackendType::USD)
+        {
+            emit currentBackendChanged(1);
+        }
+        else
+        {
+            emit currentBackendChanged(0);
+            UpdateUI();
+        }
+
         renderingWindow->SetApply();
     }
     else
@@ -895,6 +1135,7 @@ AnariVolumePlotWidget::libraryChanged()
         // Clear/Disable all options
         rendererParams.reset(new std::vector<std::string>());
         UpdateUI();
+        emit currentBackendChanged(0);
         renderingWindow->SetApply();
     }
 }
@@ -1153,4 +1394,232 @@ AnariVolumePlotWidget::rValueChanged()
     {
         debug5 << "Failed to convert R value input text (" << text.toStdString() << ") to a float" << std::endl;
     }
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::outputLocationChanged
+//
+// Purpose:
+//      Triggered when the USD output directory changes
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::outputLocationChanged()
+{
+    QDir directory(dirLineEdit->text());
+    *outputDir = directory.absolutePath();
+
+    if(directory.exists())
+    {
+        volumeAttributes->SetUsdDir(outputDir->toStdString());
+        renderingWindow->SetApply();
+    }
+    else
+    {
+        QString message = tr("%1 doesn't exist").arg(*outputDir);
+        QMessageBox::critical(this, tr("USD Output Directory"), message);
+    }
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::selectButtonPressed
+//
+// Purpose:
+//      Triggered when the USD output directory select button is pressed.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::selectButtonPressed()
+{
+    auto dir = QFileDialog::getExistingDirectory(this,
+                                                 tr("Open Directory"),
+                                                 *outputDir,
+                                                 QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if(!dir.isEmpty())
+    {
+        dirLineEdit->setText(dir);
+        outputLocationChanged();
+    }
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::commitToggled
+//
+// Purpose:
+//      Triggered when USD commit is toggled.
+//
+// Arguments:
+//      val when true writing to USD will happen immediately at the anariCommit
+//          call, otherwise it will happen at anariRenderFrame.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::commitToggled(bool val)
+{
+    volumeAttributes->SetUsdAtCommit(val);
+    renderingWindow->SetApply();
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::binaryToggled
+//
+// Purpose:
+//      Triggered when output type is toggled (binary or text).
+//
+// Arguments:
+//      val if true USD output is binary, otherwise text
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::binaryToggled(bool val)
+{
+    volumeAttributes->SetUsdOutputBinary(val);
+    renderingWindow->SetApply();
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::materialToggled
+//
+// Purpose:
+//      Triggered when material checkbox is toggled to determine if material
+//      objects are included in the USD output.
+//
+// Arguments:
+//      val if true material objects are included in the USD output
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::materialToggled(bool val)
+{
+    volumeAttributes->SetUsdOutputMaterial(val);
+    renderingWindow->SetApply();
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::previewSurfaceToggled
+//
+// Purpose:
+//      Triggered when preview surface checkbox is toggled to determine if
+//      preview surface shader prims are included in the output for material
+//      objects.
+//
+// Arguments:
+//      val if true preview surface shader prims are included in output for
+//          material objects
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::previewSurfaceToggled(bool val)
+{
+    volumeAttributes->SetUsdOutputPreviewSurface(val);
+    renderingWindow->SetApply();
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::mdlToggled
+//
+// Purpose:
+//      Triggered when the mdl checkbox is toggled to determine if mdl shader
+//      prims are included in the output for material objects.
+//
+// Arguments:
+//      val if true mdl shader prims are included in output for material objects
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::mdlToggled(bool val)
+{
+    volumeAttributes->SetUsdOutputMDL(val);
+    renderingWindow->SetApply();
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::mdlColorsToggled
+//
+// Purpose:
+//      Triggered when the mdl colors checkbox is toggled to determine if mdl
+//      colors are included in the output for material objects.
+//
+// Arguments:
+//      val if true mdl colors are included in output for material objects
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::mdlColorsToggled(bool val)
+{
+    volumeAttributes->SetUsdOutputMDLColors(val);
+    renderingWindow->SetApply();
+}
+
+// ****************************************************************************
+// Method: AnariVolumePlotWidget::displayColorsToggled
+//
+// Purpose:
+//      Triggered when the display colors checkbox is toggled to determine if
+//      display colors are included in the output.
+//
+// Arguments:
+//      val if true include display colors in the output
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumePlotWidget::displayColorsToggled(bool val)
+{
+    volumeAttributes->SetUsdOutputDisplayColors(val);
+    renderingWindow->SetApply();
 }

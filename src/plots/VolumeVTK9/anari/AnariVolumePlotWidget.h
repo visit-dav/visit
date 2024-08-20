@@ -21,6 +21,7 @@ class QSpinBox;
 class QPushButton;
 class QLineEdit;
 class QCheckBox;
+class QStackedLayout;
 
 namespace anari_visit
 {
@@ -34,9 +35,21 @@ namespace anari_visit
         OSPRAY,
         RADEONPRORENDER
     };
+
+    enum class USDParameter
+    {
+        COMMIT,
+        BINARY,
+        MATERIAL,
+        PREVIEW,
+        MDL,
+        MDLCOLORS,
+        DISPLAY
+    };
 }
 
 using BackendType = anari_visit::BackendType;
+using USDParameter = anari_visit::USDParameter;
 
 class GUI_API AnariVolumePlotWidget : public QWidget
 {
@@ -63,6 +76,13 @@ public:
     void UpdateMaxDepth(const int);
     void UpdateRValue(const float);
 
+    // USD Back-end
+    void UpdateUSDOutputLocation(const std::string);
+    void UpdateUSDParameter(const USDParameter, const bool);
+
+signals:
+    void currentBackendChanged(int);
+
 private slots:
     void renderingToggled(bool);
     void libraryChanged();
@@ -77,9 +97,21 @@ private slots:
     void maxDepthChanged(int);
     void rValueChanged();
 
+    // USD
+    void outputLocationChanged();
+    void selectButtonPressed();
+    void commitToggled(bool);
+    void binaryToggled(bool);
+    void materialToggled(bool);
+    void previewSurfaceToggled(bool);
+    void mdlToggled(bool);
+    void mdlColorsToggled(bool);
+    void displayColorsToggled(bool);
+
 private:
     QWidget *CreateGeneralWidget(int &);
     QWidget *CreateBackendWidget(int &);
+    QWidget *CreateUSDWidget(int &);
 
     BackendType GetBackendType(const std::string &) const;
 
@@ -88,6 +120,7 @@ private:
 
     QvisVolumePlotWindow *renderingWindow;
     VolumeAttributes *volumeAttributes;
+    QStackedLayout *backendStackedLayout;
 
     std::unique_ptr<std::vector<std::string>> rendererParams;
     int totalRows;
@@ -105,6 +138,17 @@ private:
     QLineEdit   *ambientIntensity;
     QSpinBox    *maxDepth;
     QLineEdit   *rValue;
+
+    // USD widget UI components
+    std::unique_ptr<QString>    outputDir;
+    QLineEdit   *dirLineEdit{ nullptr};
+    QCheckBox   *commitCheckBox{ nullptr };
+    QCheckBox   *binaryCheckBox{ nullptr };
+    QCheckBox   *materialCheckBox{ nullptr };
+    QCheckBox   *previewCheckBox{ nullptr };
+    QCheckBox   *mdlCheckBox{ nullptr };
+    QCheckBox   *mdlColorCheckBox{ nullptr };
+    QCheckBox   *displayColorCheckBox{ nullptr };
 };
 
 #endif

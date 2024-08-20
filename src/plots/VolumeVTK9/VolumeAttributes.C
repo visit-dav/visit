@@ -452,13 +452,20 @@ void VolumeAttributes::Init()
     anariRendering = false;
     anariSPP = 1;
     anariAO = 0;
-    anariLibrary = "default";
+    anariLibrary = "environment";
     anariLibrarySubtype = "default";
     anariRendererSubtype = "default";
     anariLightFalloff = 1;
     anariAmbientIntensity = 1;
     anariMaxDepth = 0;
     anariRValue = 1;
+    usdAtCommit = false;
+    usdOutputBinary = true;
+    usdOutputMaterial = true;
+    usdOutputPreviewSurface = true;
+    usdOutputMDL = true;
+    usdOutputMDLColors = true;
+    usdOutputDisplayColors = true;
 
     VolumeAttributes::SelectAll();
 }
@@ -540,6 +547,14 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     anariAmbientIntensity = obj.anariAmbientIntensity;
     anariMaxDepth = obj.anariMaxDepth;
     anariRValue = obj.anariRValue;
+    usdDir = obj.usdDir;
+    usdAtCommit = obj.usdAtCommit;
+    usdOutputBinary = obj.usdOutputBinary;
+    usdOutputMaterial = obj.usdOutputMaterial;
+    usdOutputPreviewSurface = obj.usdOutputPreviewSurface;
+    usdOutputMDL = obj.usdOutputMDL;
+    usdOutputMDLColors = obj.usdOutputMDLColors;
+    usdOutputDisplayColors = obj.usdOutputDisplayColors;
 
     VolumeAttributes::SelectAll();
 }
@@ -763,7 +778,15 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (anariLightFalloff == obj.anariLightFalloff) &&
             (anariAmbientIntensity == obj.anariAmbientIntensity) &&
             (anariMaxDepth == obj.anariMaxDepth) &&
-            (anariRValue == obj.anariRValue));
+            (anariRValue == obj.anariRValue) &&
+            (usdDir == obj.usdDir) &&
+            (usdAtCommit == obj.usdAtCommit) &&
+            (usdOutputBinary == obj.usdOutputBinary) &&
+            (usdOutputMaterial == obj.usdOutputMaterial) &&
+            (usdOutputPreviewSurface == obj.usdOutputPreviewSurface) &&
+            (usdOutputMDL == obj.usdOutputMDL) &&
+            (usdOutputMDLColors == obj.usdOutputMDLColors) &&
+            (usdOutputDisplayColors == obj.usdOutputDisplayColors));
 }
 
 // ****************************************************************************
@@ -962,6 +985,14 @@ VolumeAttributes::SelectAll()
     Select(ID_anariAmbientIntensity,           (void *)&anariAmbientIntensity);
     Select(ID_anariMaxDepth,                   (void *)&anariMaxDepth);
     Select(ID_anariRValue,                     (void *)&anariRValue);
+    Select(ID_usdDir,                          (void *)&usdDir);
+    Select(ID_usdAtCommit,                     (void *)&usdAtCommit);
+    Select(ID_usdOutputBinary,                 (void *)&usdOutputBinary);
+    Select(ID_usdOutputMaterial,               (void *)&usdOutputMaterial);
+    Select(ID_usdOutputPreviewSurface,         (void *)&usdOutputPreviewSurface);
+    Select(ID_usdOutputMDL,                    (void *)&usdOutputMDL);
+    Select(ID_usdOutputMDLColors,              (void *)&usdOutputMDLColors);
+    Select(ID_usdOutputDisplayColors,          (void *)&usdOutputDisplayColors);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1336,6 +1367,54 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("anariRValue", anariRValue));
     }
 
+    if(completeSave || !FieldsEqual(ID_usdDir, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdDir", usdDir));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdAtCommit, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdAtCommit", usdAtCommit));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdOutputBinary, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdOutputBinary", usdOutputBinary));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdOutputMaterial, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdOutputMaterial", usdOutputMaterial));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdOutputPreviewSurface, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdOutputPreviewSurface", usdOutputPreviewSurface));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdOutputMDL, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdOutputMDL", usdOutputMDL));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdOutputMDLColors, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdOutputMDLColors", usdOutputMDLColors));
+    }
+
+    if(completeSave || !FieldsEqual(ID_usdOutputDisplayColors, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("usdOutputDisplayColors", usdOutputDisplayColors));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1622,6 +1701,22 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetAnariMaxDepth(node->AsInt());
     if((node = searchNode->GetNode("anariRValue")) != 0)
         SetAnariRValue(node->AsFloat());
+    if((node = searchNode->GetNode("usdDir")) != 0)
+        SetUsdDir(node->AsString());
+    if((node = searchNode->GetNode("usdAtCommit")) != 0)
+        SetUsdAtCommit(node->AsBool());
+    if((node = searchNode->GetNode("usdOutputBinary")) != 0)
+        SetUsdOutputBinary(node->AsBool());
+    if((node = searchNode->GetNode("usdOutputMaterial")) != 0)
+        SetUsdOutputMaterial(node->AsBool());
+    if((node = searchNode->GetNode("usdOutputPreviewSurface")) != 0)
+        SetUsdOutputPreviewSurface(node->AsBool());
+    if((node = searchNode->GetNode("usdOutputMDL")) != 0)
+        SetUsdOutputMDL(node->AsBool());
+    if((node = searchNode->GetNode("usdOutputMDLColors")) != 0)
+        SetUsdOutputMDLColors(node->AsBool());
+    if((node = searchNode->GetNode("usdOutputDisplayColors")) != 0)
+        SetUsdOutputDisplayColors(node->AsBool());
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -2020,6 +2115,62 @@ VolumeAttributes::SetAnariRValue(float anariRValue_)
     Select(ID_anariRValue, (void *)&anariRValue);
 }
 
+void
+VolumeAttributes::SetUsdDir(const std::string &usdDir_)
+{
+    usdDir = usdDir_;
+    Select(ID_usdDir, (void *)&usdDir);
+}
+
+void
+VolumeAttributes::SetUsdAtCommit(bool usdAtCommit_)
+{
+    usdAtCommit = usdAtCommit_;
+    Select(ID_usdAtCommit, (void *)&usdAtCommit);
+}
+
+void
+VolumeAttributes::SetUsdOutputBinary(bool usdOutputBinary_)
+{
+    usdOutputBinary = usdOutputBinary_;
+    Select(ID_usdOutputBinary, (void *)&usdOutputBinary);
+}
+
+void
+VolumeAttributes::SetUsdOutputMaterial(bool usdOutputMaterial_)
+{
+    usdOutputMaterial = usdOutputMaterial_;
+    Select(ID_usdOutputMaterial, (void *)&usdOutputMaterial);
+}
+
+void
+VolumeAttributes::SetUsdOutputPreviewSurface(bool usdOutputPreviewSurface_)
+{
+    usdOutputPreviewSurface = usdOutputPreviewSurface_;
+    Select(ID_usdOutputPreviewSurface, (void *)&usdOutputPreviewSurface);
+}
+
+void
+VolumeAttributes::SetUsdOutputMDL(bool usdOutputMDL_)
+{
+    usdOutputMDL = usdOutputMDL_;
+    Select(ID_usdOutputMDL, (void *)&usdOutputMDL);
+}
+
+void
+VolumeAttributes::SetUsdOutputMDLColors(bool usdOutputMDLColors_)
+{
+    usdOutputMDLColors = usdOutputMDLColors_;
+    Select(ID_usdOutputMDLColors, (void *)&usdOutputMDLColors);
+}
+
+void
+VolumeAttributes::SetUsdOutputDisplayColors(bool usdOutputDisplayColors_)
+{
+    usdOutputDisplayColors = usdOutputDisplayColors_;
+    Select(ID_usdOutputDisplayColors, (void *)&usdOutputDisplayColors);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2402,6 +2553,60 @@ VolumeAttributes::GetAnariRValue() const
     return anariRValue;
 }
 
+const std::string &
+VolumeAttributes::GetUsdDir() const
+{
+    return usdDir;
+}
+
+std::string &
+VolumeAttributes::GetUsdDir()
+{
+    return usdDir;
+}
+
+bool
+VolumeAttributes::GetUsdAtCommit() const
+{
+    return usdAtCommit;
+}
+
+bool
+VolumeAttributes::GetUsdOutputBinary() const
+{
+    return usdOutputBinary;
+}
+
+bool
+VolumeAttributes::GetUsdOutputMaterial() const
+{
+    return usdOutputMaterial;
+}
+
+bool
+VolumeAttributes::GetUsdOutputPreviewSurface() const
+{
+    return usdOutputPreviewSurface;
+}
+
+bool
+VolumeAttributes::GetUsdOutputMDL() const
+{
+    return usdOutputMDL;
+}
+
+bool
+VolumeAttributes::GetUsdOutputMDLColors() const
+{
+    return usdOutputMDLColors;
+}
+
+bool
+VolumeAttributes::GetUsdOutputDisplayColors() const
+{
+    return usdOutputDisplayColors;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2452,6 +2657,12 @@ void
 VolumeAttributes::SelectAnariRendererSubtype()
 {
     Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
+}
+
+void
+VolumeAttributes::SelectUsdDir()
+{
+    Select(ID_usdDir, (void *)&usdDir);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2533,6 +2744,14 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_anariAmbientIntensity:           return "anariAmbientIntensity";
     case ID_anariMaxDepth:                   return "anariMaxDepth";
     case ID_anariRValue:                     return "anariRValue";
+    case ID_usdDir:                          return "usdDir";
+    case ID_usdAtCommit:                     return "usdAtCommit";
+    case ID_usdOutputBinary:                 return "usdOutputBinary";
+    case ID_usdOutputMaterial:               return "usdOutputMaterial";
+    case ID_usdOutputPreviewSurface:         return "usdOutputPreviewSurface";
+    case ID_usdOutputMDL:                    return "usdOutputMDL";
+    case ID_usdOutputMDLColors:              return "usdOutputMDLColors";
+    case ID_usdOutputDisplayColors:          return "usdOutputDisplayColors";
     default:  return "invalid index";
     }
 }
@@ -2612,6 +2831,14 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_anariAmbientIntensity:           return FieldType_float;
     case ID_anariMaxDepth:                   return FieldType_int;
     case ID_anariRValue:                     return FieldType_float;
+    case ID_usdDir:                          return FieldType_string;
+    case ID_usdAtCommit:                     return FieldType_bool;
+    case ID_usdOutputBinary:                 return FieldType_bool;
+    case ID_usdOutputMaterial:               return FieldType_bool;
+    case ID_usdOutputPreviewSurface:         return FieldType_bool;
+    case ID_usdOutputMDL:                    return FieldType_bool;
+    case ID_usdOutputMDLColors:              return FieldType_bool;
+    case ID_usdOutputDisplayColors:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2691,6 +2918,14 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_anariAmbientIntensity:           return "float";
     case ID_anariMaxDepth:                   return "int";
     case ID_anariRValue:                     return "float";
+    case ID_usdDir:                          return "string";
+    case ID_usdAtCommit:                     return "bool";
+    case ID_usdOutputBinary:                 return "bool";
+    case ID_usdOutputMaterial:               return "bool";
+    case ID_usdOutputPreviewSurface:         return "bool";
+    case ID_usdOutputMDL:                    return "bool";
+    case ID_usdOutputMDLColors:              return "bool";
+    case ID_usdOutputDisplayColors:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -3000,6 +3235,46 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_anariRValue:
         {  // new scope
         retval = (anariRValue == obj.anariRValue);
+        }
+        break;
+    case ID_usdDir:
+        {  // new scope
+        retval = (usdDir == obj.usdDir);
+        }
+        break;
+    case ID_usdAtCommit:
+        {  // new scope
+        retval = (usdAtCommit == obj.usdAtCommit);
+        }
+        break;
+    case ID_usdOutputBinary:
+        {  // new scope
+        retval = (usdOutputBinary == obj.usdOutputBinary);
+        }
+        break;
+    case ID_usdOutputMaterial:
+        {  // new scope
+        retval = (usdOutputMaterial == obj.usdOutputMaterial);
+        }
+        break;
+    case ID_usdOutputPreviewSurface:
+        {  // new scope
+        retval = (usdOutputPreviewSurface == obj.usdOutputPreviewSurface);
+        }
+        break;
+    case ID_usdOutputMDL:
+        {  // new scope
+        retval = (usdOutputMDL == obj.usdOutputMDL);
+        }
+        break;
+    case ID_usdOutputMDLColors:
+        {  // new scope
+        retval = (usdOutputMDLColors == obj.usdOutputMDLColors);
+        }
+        break;
+    case ID_usdOutputDisplayColors:
+        {  // new scope
+        retval = (usdOutputDisplayColors == obj.usdOutputDisplayColors);
         }
         break;
     default: retval = false;
