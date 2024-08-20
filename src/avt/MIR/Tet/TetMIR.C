@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
+#include <algorithm>
 
 #include <string>
 using std::string;
@@ -40,10 +41,6 @@ using std::vector;
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
-
-
-#define STDMIN(A, B) (((A)<(B)) ? (A) : (B))
-#define STDMAX(A, B) (((A)>(B)) ? (A) : (B))
 
 
 #include "VisItArray.h"
@@ -2557,10 +2554,10 @@ TetMIR::MergeTets(TetList &tetlist, WedgeList &wedgelist,
                const Tet &tet1, const Tet &tet2,
                int forcedMat)
 {
-    float tet1max = STDMAX(STDMAX(tet1.node[0].vf,tet1.node[1].vf),STDMAX(tet1.node[2].vf,tet1.node[3].vf));
-    float tet1min = STDMIN(STDMIN(tet1.node[0].vf,tet1.node[1].vf),STDMIN(tet1.node[2].vf,tet1.node[3].vf));
-    float tet2max = STDMAX(STDMAX(tet2.node[0].vf,tet2.node[1].vf),STDMAX(tet2.node[2].vf,tet2.node[3].vf));
-    float tet2min = STDMIN(STDMIN(tet2.node[0].vf,tet2.node[1].vf),STDMIN(tet2.node[2].vf,tet2.node[3].vf));
+    float tet1max = std::max(std::max(tet1.node[0].vf,tet1.node[1].vf),std::max(tet1.node[2].vf,tet1.node[3].vf));
+    float tet1min = std::min(std::min(tet1.node[0].vf,tet1.node[1].vf),std::min(tet1.node[2].vf,tet1.node[3].vf));
+    float tet2max = std::max(std::max(tet2.node[0].vf,tet2.node[1].vf),std::max(tet2.node[2].vf,tet2.node[3].vf));
+    float tet2min = std::min(std::min(tet2.node[0].vf,tet2.node[1].vf),std::min(tet2.node[2].vf,tet2.node[3].vf));
 
     if (tet1min >= tet2max)
     {
@@ -2618,10 +2615,10 @@ TetMIR::MergeTris(TriList &trilist, int c, int npts, const vtkIdType *c_ptr,
                const MaterialTriangle &mattri, const Tri &tri1,const Tri &tri2,
                int forcedMat)
 {
-    float tri1max = STDMAX(STDMAX(tri1.node[0].vf,tri1.node[1].vf),tri1.node[2].vf);
-    float tri1min = STDMIN(STDMIN(tri1.node[0].vf,tri1.node[1].vf),tri1.node[2].vf);
-    float tri2max = STDMAX(STDMAX(tri2.node[0].vf,tri2.node[1].vf),tri2.node[2].vf);
-    float tri2min = STDMIN(STDMIN(tri2.node[0].vf,tri2.node[1].vf),tri2.node[2].vf);
+    float tri1max = std::max(std::max(tri1.node[0].vf,tri1.node[1].vf),tri1.node[2].vf);
+    float tri1min = std::min(std::min(tri1.node[0].vf,tri1.node[1].vf),tri1.node[2].vf);
+    float tri2max = std::max(std::max(tri2.node[0].vf,tri2.node[1].vf),tri2.node[2].vf);
+    float tri2min = std::min(std::min(tri2.node[0].vf,tri2.node[1].vf),tri2.node[2].vf);
 
     if (tri1min >= tri2max)
     {

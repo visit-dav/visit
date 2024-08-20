@@ -30,6 +30,7 @@
 #include "VerdictVector.h"
 #include <memory.h>
 #include <stddef.h>
+#include <algorithm>
 
 // the average area of a tri
 VERDICT_REAL verdict_tri_size = 0;
@@ -110,8 +111,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_aspect( int /*num_nodes*/, VERDICT_REAL coordinate
  
   double aspect = (VERDICT_REAL)(srms / (two_times_root_of_3 * (areaX2)));
   if( aspect > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( aspect, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( aspect, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( aspect, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( aspect, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -137,8 +138,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_area( int /*num_nodes*/, VERDICT_REAL coordinates[
   // return the magnitude of the vector divided by two
   double area = 0.5 * tmp.length();
   if( area > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( area, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( area, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( area, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( area, -VERDICT_DBL_MAX );
   
 }
 
@@ -205,8 +206,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_minimum_angle( int /*num_nodes*/, VERDICT_REAL coo
     min_angle = sides[0].interior_angle(sides[3]);
 
   if( min_angle > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_angle, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_angle, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_angle, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_angle, -VERDICT_DBL_MAX );
   
 }
 
@@ -275,8 +276,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_maximum_angle( int /*num_nodes*/, VERDICT_REAL coo
     max_angle = sides[0].interior_angle(sides[3]);
 
   if( max_angle > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( max_angle, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( max_angle, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( max_angle, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( max_angle, -VERDICT_DBL_MAX );
   
 }
 
@@ -306,7 +307,7 @@ C_FUNC_DEF VERDICT_REAL v_tri_condition( int /*num_nodes*/, VERDICT_REAL coordin
     return (VERDICT_REAL)VERDICT_DBL_MAX;
 
   double condition = (VERDICT_REAL)( ((v1%v1) + (v2%v2) - (v1%v2)) / (areax2*rt3) );
-  return (VERDICT_REAL)VERDICT_MIN( condition, VERDICT_DBL_MAX );
+  return (VERDICT_REAL)std::min( condition, VERDICT_DBL_MAX );
 }
 
 /*!
@@ -337,8 +338,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_scaled_jacobian( int /*num_nodes*/, VERDICT_REAL c
   jacobian = cross.length();
 
   double max_edge_length_product = 0.0;
-  max_edge_length_product = VERDICT_MAX( edge[0].length()*edge[1].length(),
-                            VERDICT_MAX( edge[1].length()*edge[2].length(), 
+  max_edge_length_product = std::max( edge[0].length()*edge[1].length(),
+                            std::max( edge[1].length()*edge[2].length(), 
                                          edge[0].length()*edge[2].length() ) ); 
 
   if( max_edge_length_product < VERDICT_DBL_MIN )
@@ -364,8 +365,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_scaled_jacobian( int /*num_nodes*/, VERDICT_REAL c
   }
 
   if( jacobian > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( jacobian, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( jacobian, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( jacobian, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( jacobian, -VERDICT_DBL_MAX );
 
 }
 
@@ -386,8 +387,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_shape( int num_nodes, VERDICT_REAL coordinates[][3
     shape = (1 / condition);
 
   if( shape > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( shape, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( shape, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( shape, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( shape, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -424,11 +425,11 @@ C_FUNC_DEF VERDICT_REAL v_tri_relative_size_squared( int /*num_nodes*/, VERDICT_
     
   double size = pow( deta/detw, 2 );
   
-  double rel_size = VERDICT_MIN(size, 1.0/size );  
+  double rel_size = std::min(size, 1.0/size );  
 
   if( rel_size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( rel_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( rel_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( rel_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( rel_size, -VERDICT_DBL_MAX );
   
 }
 
@@ -447,8 +448,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_shape_and_size( int num_nodes, VERDICT_REAL coordi
   double shape_and_size = size * shape;
 
   if( shape_and_size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( shape_and_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( shape_and_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( shape_and_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( shape_and_size, -VERDICT_DBL_MAX );
 
 }
 
@@ -643,8 +644,8 @@ C_FUNC_DEF VERDICT_REAL v_tri_distortion( int num_nodes, VERDICT_REAL coordinate
       distortion *=1.;
    
   if( distortion > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( distortion, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( distortion, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( distortion, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( distortion, -VERDICT_DBL_MAX );
 }
 
 
@@ -878,7 +879,7 @@ C_FUNC_DEF void v_tri_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       // square the size
       size *= size;
       // value ranges between 0 to 1
-      metric_vals->relative_size_squared = (VERDICT_REAL)VERDICT_MIN(size, 1.0/size );
+      metric_vals->relative_size_squared = (VERDICT_REAL)std::min(size, 1.0/size );
     }
   }
 
@@ -895,54 +896,54 @@ C_FUNC_DEF void v_tri_quality( int num_nodes, VERDICT_REAL coordinates[][3],
 
   //take care of any over-flow problems
   if( metric_vals->aspect > 0 )
-    metric_vals->aspect = (VERDICT_REAL) VERDICT_MIN( metric_vals->aspect, VERDICT_DBL_MAX );\
+    metric_vals->aspect = (VERDICT_REAL) std::min( metric_vals->aspect, VERDICT_DBL_MAX );\
   else
-    metric_vals->aspect = (VERDICT_REAL) VERDICT_MAX( metric_vals->aspect, -VERDICT_DBL_MAX );
+    metric_vals->aspect = (VERDICT_REAL) std::max( metric_vals->aspect, -VERDICT_DBL_MAX );
 
   if( metric_vals->area > 0 )
-    metric_vals->area = (VERDICT_REAL) VERDICT_MIN( metric_vals->area, VERDICT_DBL_MAX );
+    metric_vals->area = (VERDICT_REAL) std::min( metric_vals->area, VERDICT_DBL_MAX );
   else
-    metric_vals->area = (VERDICT_REAL) VERDICT_MAX( metric_vals->area, -VERDICT_DBL_MAX );
+    metric_vals->area = (VERDICT_REAL) std::max( metric_vals->area, -VERDICT_DBL_MAX );
 
   if( metric_vals->minimum_angle > 0 )
-    metric_vals->minimum_angle = (VERDICT_REAL) VERDICT_MIN( metric_vals->minimum_angle, VERDICT_DBL_MAX );
+    metric_vals->minimum_angle = (VERDICT_REAL) std::min( metric_vals->minimum_angle, VERDICT_DBL_MAX );
   else
-    metric_vals->minimum_angle = (VERDICT_REAL) VERDICT_MAX( metric_vals->minimum_angle, -VERDICT_DBL_MAX );
+    metric_vals->minimum_angle = (VERDICT_REAL) std::max( metric_vals->minimum_angle, -VERDICT_DBL_MAX );
 
   if( metric_vals->maximum_angle > 0 )
-    metric_vals->maximum_angle = (VERDICT_REAL) VERDICT_MIN( metric_vals->maximum_angle, VERDICT_DBL_MAX );
+    metric_vals->maximum_angle = (VERDICT_REAL) std::min( metric_vals->maximum_angle, VERDICT_DBL_MAX );
   else
-    metric_vals->maximum_angle = (VERDICT_REAL) VERDICT_MAX( metric_vals->maximum_angle , -VERDICT_DBL_MAX );
+    metric_vals->maximum_angle = (VERDICT_REAL) std::max( metric_vals->maximum_angle , -VERDICT_DBL_MAX );
 
   if( metric_vals->condition > 0 )
-    metric_vals->condition = (VERDICT_REAL) VERDICT_MIN( metric_vals->condition, VERDICT_DBL_MAX );
+    metric_vals->condition = (VERDICT_REAL) std::min( metric_vals->condition, VERDICT_DBL_MAX );
   else
-    metric_vals->condition = (VERDICT_REAL) VERDICT_MAX( metric_vals->condition, -VERDICT_DBL_MAX );
+    metric_vals->condition = (VERDICT_REAL) std::max( metric_vals->condition, -VERDICT_DBL_MAX );
 
   if( metric_vals->shape > 0 )
-    metric_vals->shape = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape, VERDICT_DBL_MAX );
+    metric_vals->shape = (VERDICT_REAL) std::min( metric_vals->shape, VERDICT_DBL_MAX );
   else
-    metric_vals->shape = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape, -VERDICT_DBL_MAX );
+    metric_vals->shape = (VERDICT_REAL) std::max( metric_vals->shape, -VERDICT_DBL_MAX );
 
   if( metric_vals->scaled_jacobian > 0 )
-    metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
+    metric_vals->scaled_jacobian = (VERDICT_REAL) std::min( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
   else
-    metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
+    metric_vals->scaled_jacobian = (VERDICT_REAL) std::max( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
 
   if( metric_vals->relative_size_squared > 0 )
-    metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MIN( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
+    metric_vals->relative_size_squared = (VERDICT_REAL) std::min( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
   else
-    metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MAX( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
+    metric_vals->relative_size_squared = (VERDICT_REAL) std::max( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
 
   if( metric_vals->shape_and_size > 0 )
-    metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape_and_size, VERDICT_DBL_MAX );
+    metric_vals->shape_and_size = (VERDICT_REAL) std::min( metric_vals->shape_and_size, VERDICT_DBL_MAX );
   else
-    metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
+    metric_vals->shape_and_size = (VERDICT_REAL) std::max( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
 
   if( metric_vals->distortion > 0 )
-    metric_vals->distortion = (VERDICT_REAL) VERDICT_MIN( metric_vals->distortion, VERDICT_DBL_MAX );
+    metric_vals->distortion = (VERDICT_REAL) std::min( metric_vals->distortion, VERDICT_DBL_MAX );
   else
-    metric_vals->distortion = (VERDICT_REAL) VERDICT_MAX( metric_vals->distortion, -VERDICT_DBL_MAX );
+    metric_vals->distortion = (VERDICT_REAL) std::max( metric_vals->distortion, -VERDICT_DBL_MAX );
 }
 
 

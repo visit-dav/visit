@@ -27,6 +27,8 @@
 #include <ImproperUseException.h>
 #include <InvalidCellTypeException.h>
 
+#include <algorithm>
+
 // ****************************************************************************
 //  Method: avtExtrudeFilter constructor
 //
@@ -1340,15 +1342,12 @@ avtExtrudeFilter::ExtrudeExtents(double *dbounds) const
     offset.normalize();
     offset *= atts.GetLength();
 
-#define eMIN(A,B) (((A)<(B)) ? (A) : (B))
-#define eMAX(A,B) (((A)>(B)) ? (A) : (B))
-
-    dbounds[0] = eMIN(dbounds[0], dbounds[0] + offset.x * minScalar);
-    dbounds[1] = eMAX(dbounds[1], dbounds[1] + offset.x * maxScalar);
-    dbounds[2] = eMIN(dbounds[2], dbounds[2] + offset.y * minScalar);
-    dbounds[3] = eMAX(dbounds[3], dbounds[3] + offset.y * maxScalar);
-    dbounds[4] = eMIN(dbounds[4], dbounds[4] + offset.z * minScalar);
-    dbounds[5] = eMAX(dbounds[5], dbounds[5] + offset.z * maxScalar);
+    dbounds[0] = std::min(dbounds[0], dbounds[0] + offset.x * minScalar);
+    dbounds[1] = std::max(dbounds[1], dbounds[1] + offset.x * maxScalar);
+    dbounds[2] = std::min(dbounds[2], dbounds[2] + offset.y * minScalar);
+    dbounds[3] = std::max(dbounds[3], dbounds[3] + offset.y * maxScalar);
+    dbounds[4] = std::min(dbounds[4], dbounds[4] + offset.z * minScalar);
+    dbounds[5] = std::max(dbounds[5], dbounds[5] + offset.z * maxScalar);
 }
 
 // ****************************************************************************
