@@ -194,9 +194,10 @@ v.windowValid = 1
 SetView3D(v)
 Test("transparency_14")
 
-# Test both opaque and transparent plots with 3d multi block data
 DeleteAllPlots()
-OpenDatabase("localhost:/usr/gapps/visit/data/multi_ucd3d.silo", 0)
+
+# Test both opaque and transparent plots with 3d multi block data
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Subset", "mesh1", 1, 1)
 s = SubsetAttributes()
