@@ -149,8 +149,8 @@ function apply_vtk9_gcc13_patch
 {
   # patches that allows VTK9 to be built g++-13
    patch -p0 << \EOF
---- ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp.orig   2024-05-22 12:53:48.817462000 -0700
-+++ ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp    2024-05-22 12:54:07.659499000 -0700
+--- ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp.orig	2024-05-22 12:53:48.817462000 -0700
++++ ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp	2024-05-22 12:54:07.659499000 -0700
 @@ -33,6 +33,7 @@
  
  #include <vector>
@@ -167,8 +167,8 @@ EOF
     fi
 
    patch -p0 << \EOF
---- IO/Image/vtkSEPReader.h.orig    2024-05-22 13:50:27.027369000 -0700
-+++ IO/Image/vtkSEPReader.h 2024-05-22 13:50:55.044422000 -0700
+--- IO/Image/vtkSEPReader.h.orig	2024-05-22 13:50:27.027369000 -0700
++++ IO/Image/vtkSEPReader.h	2024-05-22 13:50:55.044422000 -0700
 @@ -27,6 +27,7 @@
  
  #include <array>  // for std::array
@@ -191,8 +191,8 @@ function apply_vtk9_allow_onscreen_and_osmesa_patch
 {
   # patch that allows VTK9 to be built with onscreen and osmesa support.
    patch -p0 << \EOF
---- CMake/vtkOpenGLOptions.cmake.orig   2023-10-26 15:53:06.351818000 -0700
-+++ CMake/vtkOpenGLOptions.cmake    2023-10-26 16:09:34.984852000 -0700
+--- CMake/vtkOpenGLOptions.cmake.orig	2023-10-26 15:53:06.351818000 -0700
++++ CMake/vtkOpenGLOptions.cmake	2023-10-26 16:09:34.984852000 -0700
 @@ -112,15 +112,6 @@
      "Please set to `OFF` any of these two.")
  endif ()
@@ -212,8 +212,8 @@ function apply_vtk9_allow_onscreen_and_osmesa_patch
 EOF
 
    patch -p0 << \EOF
---- Utilities/OpenGL/CMakeLists.txt.orig    2023-10-26 15:56:37.290225000 -0700
-+++ Utilities/OpenGL/CMakeLists.txt 2023-10-26 16:12:18.817101000 -0700
+--- Utilities/OpenGL/CMakeLists.txt.orig	2023-10-26 15:56:37.290225000 -0700
++++ Utilities/OpenGL/CMakeLists.txt	2023-10-26 16:12:18.817101000 -0700
 @@ -45,7 +45,7 @@
    list(APPEND opengl_targets OpenGL::EGL)
  endif ()
@@ -226,8 +226,8 @@ EOF
 EOF
 
    patch -p0 << \EOF
---- Rendering/OpenGL2/CMakeLists.txt.orig   2023-10-26 15:57:15.850399000 -0700
-+++ Rendering/OpenGL2/CMakeLists.txt    2023-10-26 15:57:31.520455000 -0700
+--- Rendering/OpenGL2/CMakeLists.txt.orig	2023-10-26 15:57:15.850399000 -0700
++++ Rendering/OpenGL2/CMakeLists.txt	2023-10-26 15:57:31.520455000 -0700
 @@ -350,8 +350,11 @@
      PUBLIC SDL2::SDL2)
  endif ()
@@ -247,31 +247,6 @@ EOF
       return 1
     fi
     return 0;
-}
-
-function apply_vtk9_vtkdatawriter_patch2
-{
-  # patch vtkDataWriter always write legacy file versions
-   patch -p0 << \EOF
---- IO/Legacy/vtkDataWriter.cxx.orig    2024-08-07 14:40:17.383506000 -0700
-+++ IO/Legacy/vtkDataWriter.cxx   2024-08-08 13:52:18.147942000 -0700
-@@ -82,7 +82,7 @@
-   this->Header = new char[257];
-   strcpy(this->Header, "vtk output");
-   this->FileType = VTK_ASCII;
--  this->FileVersion = VTK_LEGACY_READER_VERSION_5_1;
-+  this->FileVersion = VTK_LEGACY_READER_VERSION_4_2;
- 
-   this->ScalarsName = nullptr;
-   this->VectorsName = nullptr;
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkDataWriter.cxx failed."
-      return 1
-    fi
-    return 0;
-
 }
 
 function apply_vtk9_vtkdatawriter_patch
@@ -1106,8 +1081,8 @@ function apply_vtk9_vtkRectilinearGridReader_patch
   # patch vtkRectilinearGridReader.cxx, per this issue:
   # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
    patch -p0 << \EOF
---- IO/Legacy/vtkRectilinearGridReader.cxx.orig 2024-06-05 14:21:59.105807000 -0700
-+++ IO/Legacy/vtkRectilinearGridReader.cxx  2024-06-05 14:26:30.561802000 -0700
+--- IO/Legacy/vtkRectilinearGridReader.cxx.orig	2024-06-05 14:21:59.105807000 -0700
++++ IO/Legacy/vtkRectilinearGridReader.cxx	2024-06-05 14:26:30.561802000 -0700
 @@ -95,7 +95,16 @@
          break;
        }
@@ -1160,8 +1135,8 @@ function apply_vtk9_vtkCutter_patch
   # all cell and point data to float/double arrays. See VTK issue:
   # https://gitlab.kitware.com/vtk/vtk/-/issues/18450
    patch -p0 << \EOF
-*** Filters/Core/vtkCutter.cxx.orig Mon Jan 31 09:05:34 2022
---- Filters/Core/vtkCutter.cxx  Mon Jan 31 11:09:02 2022
+*** Filters/Core/vtkCutter.cxx.orig	Mon Jan 31 09:05:34 2022
+--- Filters/Core/vtkCutter.cxx	Mon Jan 31 11:09:02 2022
 ***************
 *** 381,386 ****
 --- 381,389 ----
@@ -1197,8 +1172,8 @@ function apply_vtk9_vtkgeotransform_patch
   # can  be removed when version changed to >= 9.3
 
    patch -p0 << \EOF
---- Geovis/Core/vtkGeoTransform.cxx.orig    2024-01-10 10:22:40.143031000 -0800
-+++ Geovis/Core/vtkGeoTransform.cxx 2024-01-10 10:22:49.698983000 -0800
+--- Geovis/Core/vtkGeoTransform.cxx.orig	2024-01-10 10:22:40.143031000 -0800
++++ Geovis/Core/vtkGeoTransform.cxx	2024-01-10 10:22:49.698983000 -0800
 @@ -212,7 +212,7 @@
  #if PROJ_VERSION_MAJOR >= 5
        c.lp.lam = coord[0];
@@ -1284,11 +1259,6 @@ function apply_vtk_patch
     fi
 
     apply_vtk9_vtkdatawriter_patch
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    apply_vtk9_vtkdatawriter_patch2
     if [[ $? != 0 ]] ; then
        return 1
     fi
