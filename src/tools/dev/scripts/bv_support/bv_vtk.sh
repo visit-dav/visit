@@ -264,6 +264,7 @@ function apply_vtk9_vtkdatawriter_patch2
  
    this->ScalarsName = nullptr;
    this->VectorsName = nullptr;
+
 EOF
 
     if [[ $? != 0 ]] ; then
