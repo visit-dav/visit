@@ -262,6 +262,32 @@ EOF
     return 0;
 }
 
+function apply_vtk9_vtkdatawriter_patch2
+{
+  # patch vtkDataWriter always write legacy file versions
+   patch -p0 << \EOF
+--- IO/Legacy/vtkDataWriter.cxx.orig    2024-08-07 14:40:17.383506000 -0700
++++ IO/Legacy/vtkDataWriter.cxx   2024-08-08 13:52:18.147942000 -0700
+@@ -82,7 +82,7 @@
+   this->Header = new char[257];
+   strcpy(this->Header, "vtk output");
+   this->FileType = VTK_ASCII;
+-  this->FileVersion = VTK_LEGACY_READER_VERSION_5_1;
++  this->FileVersion = VTK_LEGACY_READER_VERSION_4_2;
+ 
+   this->ScalarsName = nullptr;
+   this->VectorsName = nullptr;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkDataWriter.cxx failed."
+      return 1
+    fi
+    return 0;
+
+}
+
 function apply_vtk9_vtkdatawriter_patch
 {
   # patch vtkDataWriter to fix a bug when writing a vtkBitArray
@@ -2604,6 +2630,11 @@ function apply_vtk_patch
         fi
 
         apply_vtk9_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
+        apply_vtk9_vtkdatawriter_patch2
         if [[ $? != 0 ]] ; then
            return 1
         fi
