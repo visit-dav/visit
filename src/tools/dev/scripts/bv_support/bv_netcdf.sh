@@ -296,6 +296,89 @@ EOF
     return 0;
 }
 
+function apply_netcdf_hdf5_1144_patch {
+    info "Patching netcdf for hdf5 1.14.4-3"
+    pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
+    patch -p0 << \EOF
+--- libsrc4/nc4file.c.orig	2010-04-07 07:28:56.000000000 -0700
++++ libsrc4/nc4file.c	2024-08-09 14:44:45.589184000 -0700
+@@ -266,12 +266,6 @@
+ 	 if (H5Pset_fapl_mpio(fapl_id, comm, info) < 0)
+ 	    BAIL(NC_EPARINIT);
+       }
+-      else /* MPI/POSIX */
+-      {
+-	 LOG((4, "creating parallel file with MPI/posix"));
+-	 if (H5Pset_fapl_mpiposix(fapl_id, comm, 0) < 0)
+-	    BAIL(NC_EPARINIT);
+-      }
+    }
+ #endif /* USE_PARALLEL */
+    
+@@ -1733,10 +1727,10 @@
+    H5_index_t idx_field = H5_INDEX_CRT_ORDER;
+    ssize_t size;
+ 
+-   if (H5Oget_info_by_idx(hdf_grpid, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 
++   if (H5Oget_info_by_idx1(hdf_grpid, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 
+ 			  i, &obj_info, H5P_DEFAULT) < 0) 
+    {
+-      if (H5Oget_info_by_idx(hdf_grpid, ".", H5_INDEX_NAME, H5_ITER_INC, 
++      if (H5Oget_info_by_idx1(hdf_grpid, ".", H5_INDEX_NAME, H5_ITER_INC, 
+ 			     i, &obj_info, H5P_DEFAULT) < 0) 
+ 	 return NC_EHDFERR;
+       if (!h5->no_write)
+@@ -1949,12 +1943,6 @@
+ 	 if (H5Pset_fapl_mpio(fapl_id, comm, info) < 0)
+ 	    BAIL(NC_EPARINIT);
+       }
+-      else /* MPI/POSIX */
+-      {
+-	 LOG((4, "opening parallel file with MPI/posix"));
+-	 if (H5Pset_fapl_mpiposix(fapl_id, comm, 0) < 0)
+-	    BAIL(NC_EPARINIT);
+-      }
+    }
+ #endif /* USE_PARALLEL */
+    
+EOF
+    retval1=$?
+    patch -p0 << \EOF
+--- libsrc4/nc4hdf.c.orig	2010-02-18 10:04:47.000000000 -0800
++++ libsrc4/nc4hdf.c	2024-08-09 14:43:44.869811000 -0700
+@@ -2008,7 +2008,7 @@
+       return NC_EVARMETA;
+    for (i = 0; i < num_obj; i++)
+    {
+-      if (H5Oget_info_by_idx(grpid, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, i, &obj_info, H5P_DEFAULT) < 0) 
++      if (H5Oget_info_by_idx1(grpid, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, i, &obj_info, H5P_DEFAULT) < 0) 
+          return NC_EHDFERR;
+       obj_class = obj_info.type;
+       if ((size = H5Lget_name_by_idx(grpid, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, i, NULL, 0, H5P_DEFAULT)) < 0) 
+EOF
+    retval2=$?
+    patch -p0 << \EOF
+--- libsrc4/nc4internal.h.orig	2010-01-19 09:45:45.000000000 -0800
++++ libsrc4/nc4internal.h	2024-08-09 14:05:37.055078000 -0700
+@@ -377,7 +377,7 @@
+ int nc4_find_dim(NC_GRP_INFO_T *grp, int dimid, NC_DIM_INFO_T **dim, NC_GRP_INFO_T **dim_grp);
+ int nc4_find_dim_len(NC_GRP_INFO_T *grp, int dimid, size_t **len);
+ int nc4_find_type(NC_HDF5_FILE_INFO_T *h5, int typeid, NC_TYPE_INFO_T **type);
+-NC_TYPE_INFO_T *nc4_rec_find_nc_type(NC_GRP_INFO_T *start_grp, hid_t target_nc_typeid);
++NC_TYPE_INFO_T *nc4_rec_find_nc_type(NC_GRP_INFO_T *start_grp, nc_type target_nc_typeid);
+ NC_TYPE_INFO_T *nc4_rec_find_hdf_type(NC_GRP_INFO_T *start_grp, hid_t target_hdf_typeid);
+ NC_TYPE_INFO_T *nc4_rec_find_named_type(NC_GRP_INFO_T *start_grp, char *name);
+ NC_TYPE_INFO_T *nc4_rec_find_equal_type(NC_GRP_INFO_T *start_grp, int ncid1, NC_TYPE_INFO_T *type);
+EOF
+    retval3=$?
+    popd 1>/dev/null 2>&1
+    if [[ $retval1 -eq 0 && $retval2 -eq 0 && $retval3 -eq 0 ]]; then
+        return 0
+    fi
+    warn "netcdf patch for hdf5 1.14.4-3 failed."
+    return 1
+}
+
 function apply_netcdf_patch
 {
     apply_netcdf_patch_for_exodusii
@@ -326,6 +409,8 @@ function apply_netcdf_patch
            return 1
         fi
     fi
+
+    apply_netcdf_hdf5_1144_patch
 
     return $?
 }
