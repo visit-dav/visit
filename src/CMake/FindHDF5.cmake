@@ -13,6 +13,9 @@
 #   Kathleen Biagas, Thu Jan 9 18:47:21 PDT 2014
 #   Add patch from John Cary for hdf5 without 'dll' suffix on name.
 #
+#   Kathleen Biagas, Wed July 31, 2024
+#   Add hdf5_hl to search on Linux.
+#
 #****************************************************************************/
 
 # Use the HDF5_DIR hint from the config-site .cmake file
@@ -39,8 +42,8 @@ IF(WIN32)
     endif()
   endif()
 ELSE()
-  SET_UP_THIRD_PARTY(HDF5 LIBS hdf5)
+  SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
   IF(VISIT_PARALLEL)
-      SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi)
+      SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
   ENDIF(VISIT_PARALLEL)
 ENDIF()
