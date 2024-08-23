@@ -123,9 +123,9 @@ EOF
 
 }
 
-function apply_xdmf_osx_patch
+function apply_xdmf_patch2
 {
-    info "Patching Xdmf 2.1.1 for Xcode 9 and up . . ."
+    info "Patching Xdmf 2.1.1 for null ptr fix . . ."
     patch -p0 << \EOF
 diff -c Xdmf/libsrc/XdmfDsmComm.cxx.orig Xdmf/libsrc/XdmfDsmComm.cxx
 *** Xdmf/libsrc/XdmfDsmComm.cxx.orig    Thu Aug 23 22:05:42 2018
@@ -166,57 +166,7 @@ diff -c Xdmf/libsrc/XdmfDsmComm.cxx.orig Xdmf/libsrc/XdmfDsmComm.cxx
       }
 EOF
     if [[ $? != 0 ]] ; then
-        warn "Xdmf 2.1.1 Xcode 9 patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
-function apply_xdmf_gcc_11_2_patch
-{
-    info "Patching Xdmf 2.1.1 for gcc 11.2 . . ."
-    patch -p0 << \EOF
-diff -c Xdmf/libsrc/XdmfDsmComm.cxx.orig Xdmf/libsrc/XdmfDsmComm.cxx
-*** Xdmf/libsrc/XdmfDsmComm.cxx.orig    Fri May 20 12:34:02 2022
---- Xdmf/libsrc/XdmfDsmComm.cxx         Fri May 20 12:34:50 2022
-***************
-*** 50,56 ****
-          XdmfErrorMessage("Cannot Receive Message of Length = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
-!     if(Msg->Data <= 0 ){
-          XdmfErrorMessage("Cannot Receive Message into Data Buffer = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
---- 50,56 ----
-          XdmfErrorMessage("Cannot Receive Message of Length = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
-!     if(Msg->Data == (void*)0 ){
-          XdmfErrorMessage("Cannot Receive Message into Data Buffer = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
-***************
-*** 64,70 ****
-          XdmfErrorMessage("Cannot Send Message of Length = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
-!     if(Msg->Data <= 0 ){
-          XdmfErrorMessage("Cannot Send Message from Data Buffer = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
---- 64,70 ----
-          XdmfErrorMessage("Cannot Send Message of Length = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
-!     if(Msg->Data == (void*)0 ){
-          XdmfErrorMessage("Cannot Send Message from Data Buffer = " << Msg->Length);
-          return(XDMF_FAIL);
-      }
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Xdmf 2.1.1 gcc 11.2 failed."
+        warn "Xdmf 2.1.1 null ptr patch failed."
         return 1
     fi
 
@@ -231,27 +181,9 @@ function apply_xdmf_patch
             return 1
         fi
 
-        if [[ "$OPSYS" == "Darwin" ]] ; then
-                XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
-                # this will catch Xcode 10 +, we don't have to worry about
-                # XCode 1, it shouldn't be in the wild and even if it was
-                # zero hope that current bv stack will build using
-                if [[ "$XCODE_VERSION" == "Xcode 9"* ||
-                      "$XCODE_VERSION" == "Xcode 1"* ]] ; then
-                    apply_xdmf_osx_patch
-                    if [[ $? != 0 ]] ; then
-                        return 1
-                    fi
-                fi
-        fi
-
-        if [[ "$OPSYS" == "Linux" ]]; then
-            if [[ "$C_COMPILER" == "gcc" ]]; then
-                apply_xdmf_gcc_11_2_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
+        apply_xdmf_patch2
+        if [[ $? != 0 ]] ; then
+            return 1
         fi
     fi
 

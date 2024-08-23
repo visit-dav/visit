@@ -250,11 +250,9 @@ function apply_qt_patch
                 return 1
             fi
 
-            if [[ "$C_COMPILER" == "gcc" ]]; then
-                apply_qt_5101_gcc_9_2_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
+            apply_qt_5101_qrandom_patch
+            if [[ $? != 0 ]] ; then
+                return 1
             fi
         fi
 
@@ -466,7 +464,7 @@ EOF
     return 0;
 }
 
-function apply_qt_5101_gcc_9_2_patch
+function apply_qt_5101_qrandom_patch
 {
     info "Patching qt 5.10.1 for gcc 9.2"
     patch -p0 <<EOF
