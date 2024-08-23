@@ -11,26 +11,16 @@ function bv_qt_enable
 {
     if [[ "$DO_QT6" == "no" ]] ; then
         DO_QT="yes"
-        FORCE_QT="yes"
     else
         DO_QT="no"
-        FORCE_QT="no"
     fi
 }
 
 function bv_qt_disable
 {
     DO_QT="no"
-    FORCE_QT="no"
 }
 
-function bv_qt_force
-{
-    if [[ "$FORCE_QT" == "yes" ]]; then
-        return 0;
-    fi
-    return 1;
-}
 
 function qt_set_vars_helper
 {

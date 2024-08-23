@@ -53,17 +53,14 @@ function bv_blosc2_depends_on
 function build_blosc2
 {
     #
-    # Blosc2 uses CMake  -- make sure we have it built.
+    # Blosc2 uses CMake  -- make sure we have it.
     #
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
         info "Blosc2: CMake found"
     else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
+        warn "Unable to find cmake, cannot build Blosc2. Giving up."
+        return 1
     fi
 
     #

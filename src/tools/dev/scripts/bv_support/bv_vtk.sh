@@ -2,7 +2,6 @@ function bv_vtk_initialize
 {
     info "bv_vtk_initialize"
     export DO_VTK="yes"
-    export FORCE_VTK="no"
     export USE_SYSTEM_VTK="no"
     add_extra_commandline_args "vtk" "system-vtk" 0 "Using system VTK (exp)"
     add_extra_commandline_args "vtk" "alt-vtk-dir" 1 "Use alternate VTK (exp)"
@@ -12,13 +11,11 @@ function bv_vtk_enable
 {
     info "bv_vtk_enable"
     DO_VTK="yes"
-    FORCE_VTK="yes"
 }
 
 function bv_vtk_disable
 {
     DO_VTK="no"
-    FORCE_VTK="no"
 }
 
 function bv_vtk_system_vtk
@@ -72,14 +69,6 @@ function bv_vtk_depends_on
     fi
 
     echo ${depends_on}
-}
-
-function bv_vtk_force
-{
-    if [[ "$FORCE_VTK" == "yes" ]]; then
-        return 0;
-    fi
-    return 1;
 }
 
 function bv_vtk_info

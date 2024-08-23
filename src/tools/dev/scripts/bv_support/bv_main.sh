@@ -1149,8 +1149,7 @@ function run_build_visit()
             if [[ $? == 0 ]] ; then
                 #echo "enabling $resolve_arg"
                 initializeFunc="bv_${resolve_arg}_enable"
-                #argument is being explicitly set by the user so add a "force" flag
-                $initializeFunc force
+                $initializeFunc
                 continue
             elif [[ ${#resolve_arg} -gt 3 ]] ; then #in case it is --no-
                 resolve_arg_no_opt=${resolve_arg:3}

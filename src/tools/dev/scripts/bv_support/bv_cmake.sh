@@ -1,7 +1,6 @@
 function bv_cmake_initialize
 {
     export DO_CMAKE="yes"
-    export FORCE_CMAKE="no"
     export USE_SYSTEM_CMAKE="no"
     add_extra_commandline_args "cmake" "system-cmake" 0 "Use cmake found on system"
     add_extra_commandline_args "cmake" "alt-cmake-dir" 1 "Use cmake found in alternative directory"
@@ -11,26 +10,16 @@ function bv_cmake_initialize
 function bv_cmake_enable
 {
     DO_CMAKE="yes"
-    FORCE_CMAKE="yes"
 }
 
 function bv_cmake_disable
 {
     DO_CMAKE="no"
-    FORCE_CMAKE="no"
 }
 
 function bv_cmake_depends_on
 {
     echo ""
-}
-
-function bv_cmake_force
-{
-    if [[ "$FORCE_CMAKE" == "yes" ]]; then
-        return 0;
-    fi
-    return 1;
 }
 
 function cmake_set_vars_helper

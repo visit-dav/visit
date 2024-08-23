@@ -439,11 +439,8 @@ function build_nektarpp
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
         info "Nektar++: CMake found"
     else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
+        warn "Unable to find cmake, cannot build Nektar++. Giving up."
+        return 1
     fi
 
     #

@@ -120,18 +120,14 @@ function apply_pidx_patch
 function build_pidx
 {
     #
-    # CMake is the build system for PIDX.  Call another script that will build
-    # that program.
+    # CMake is the build system for PIDX.
     #
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
         info "pidx: CMake found"
     else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
+        warn "Unable to find cmake, cannot build pidx. Giving up."
+        return 1
     fi
 
     #

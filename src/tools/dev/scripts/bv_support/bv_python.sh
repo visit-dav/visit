@@ -91,7 +91,6 @@ function fix_py_permissions
 function bv_python_initialize
 {
     export DO_PYTHON="yes"
-    export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
     export BUILD_MPI4PY="no"
     export BUILD_SPHINX="yes"
@@ -105,22 +104,13 @@ function bv_python_initialize
 function bv_python_enable
 {
     DO_PYTHON="yes"
-    FORCE_PYTHON="yes"
 }
 
 function bv_python_disable
 {
     DO_PYTHON="no"
-    FORCE_PYTHON="no"
 }
 
-function bv_python_force
-{
-    if [[ "$FORCE_PYTHON" == "yes" ]]; then
-        return 0;
-    fi
-    return 1;
-}
 
 function python_set_vars_helper
 {

@@ -1,6 +1,5 @@
 function bv_adios_initialize
 {
-    export FORCE_ADIOS="no"
     export DO_ADIOS="no"
     export USE_SYSTEM_ADIOS="no"
     add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
@@ -9,10 +8,6 @@ function bv_adios_initialize
 
 function bv_adios_enable
 {
-    if [[ "$1" == "force" ]]; then
-        FORCE_ADIOS="yes"
-    fi
-
     DO_ADIOS="yes"
 }
 
@@ -58,7 +53,7 @@ function bv_adios_depends_on
 
 function bv_adios_initialize_vars
 {
-    if [[ "$FORCE_ADIOS" == "no" && "$parallel" == "no" ]]; then
+    if [[ "$parallel" == "no" ]]; then
         bv_adios_disable
         warn "Adios requested by default but the parallel flag has not been set. Adios will not be built."
         return
