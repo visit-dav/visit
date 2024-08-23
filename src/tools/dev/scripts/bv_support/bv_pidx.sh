@@ -50,7 +50,6 @@ function bv_pidx_info
     export PIDX_FILE=${PIDX_FILE:-"PIDX-${PIDX_VERSION}.tar.gz"}
     export PIDX_COMPATIBILITY_VERSION=${PIDX_COMPATIBILITY_VERSION:-"1.8"}
     export PIDX_BUILD_DIR=${PIDX_BUILD_DIR:-"PIDX-${PIDX_VERSION}"}
-    export PIDX_URL=${PIDX_URL:-"https://github.com/sci-visus/PIDX/releases/download/v${PIDX_VERSION}"}
     export PIDX_SHA256_CHECKSUM="e6c91546821134f87b80ab1d3ed6aa0930c4507d84ad1f19ec51a7ae10152888"
 }
 

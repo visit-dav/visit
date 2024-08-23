@@ -48,14 +48,12 @@ function bv_ispc_info
     export ISPC_VERSION=${ISPC_VERSION:-"1.9.2"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-osx.tar.gz"}
-        export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/osx/"}
         # these are binary builds, not source tarballs so the mdf5s and shas differ 
         # between platforms 
         export ISPC_SHA256_CHECKSUM="aa307b97bea67d71aff046e3f69c0412cc950eda668a225e6b909dba752ef281"
         export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-osx
     else
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-linux.tar.gz"}
-        export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/linux/"}
         # these are binary builds, not source tarballs so the mdf5s and shas differ 
         # between platforms 
         export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"

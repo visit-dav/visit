@@ -31,7 +31,6 @@ function bv_qt6_info
 {
     export QT6_VERSION=${QT6_VERSION:-"6.4.2"}
     export QT6_SHORT_VERSION=${QT6_SHORT_VERSION:-"6.4"}
-    export QT6_URL=${QT6_URL:-"https://download.qt.io/archive/qt/${QT6_SHORT_VERSION}/${QT6_VERSION}/submodules"}
     export QT6_BASE_FILE=${QT6_BASE_FILE:-"qtbase-everywhere-src-${QT6_VERSION}.tar.xz"}
     export QT6_BASE_SOURCE_DIR=${QT6_BASE_SOURCE_DIR:-"qtbase-everywhere-src-${QT6_VERSION}"}
     export QT6_BASE_SHA256_CHECKSUM="a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"

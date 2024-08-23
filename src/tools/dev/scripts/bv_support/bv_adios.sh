@@ -69,7 +69,6 @@ function bv_adios_info
     export ADIOS_VERSION=${ADIOS_VERSION:-"1.13.1"}
     export ADIOS_FILE=${ADIOS_FILE:-"adios-${ADIOS_VERSION}.tar.gz"}
     export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"${ADIOS_VERSION}"}
-    export ADIOS_URL=${ADIOS_URL:-"http://users.nccs.gov/~pnorbert"}
     export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-${ADIOS_VERSION}"}
     export ADIOS_SHA256_CHECKSUM="684096cd7e5a7f6b8859601d4daeb1dfaa416dfc2d9d529158a62df6c5bcd7a0"
 }

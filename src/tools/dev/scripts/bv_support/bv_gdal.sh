@@ -23,7 +23,6 @@ function bv_gdal_info
     export GDAL_FILE=${GDAL_FILE:-"gdal-2.2.4.tar.gz"}
     export GDAL_VERSION=${GDAL_VERSION:-"2.2.4"}
     export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"2.2"}
-    export GDAL_URL=${GDAL_URL:-"http://download.osgeo.org/gdal/${GDAL_VERSION}"}
     export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-2.2.4"}
     export GDAL_SHA256_CHECKSUM="b9d5a723787f3006a82cb276db171c721187b048b866c0e20e6df464d671a1a4"
 }

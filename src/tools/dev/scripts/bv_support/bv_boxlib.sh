@@ -23,7 +23,6 @@ function bv_boxlib_info
     export BOXLIB_VERSION=${BOXLIB_VERSION:-"1.3.5"}
     export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
     export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"1.3.5"}
-    export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/Software/tarfiles/"}
     export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
     export BOXLIB_SHA256_CHECKSUM="2dd2496d27dc84d9171be06b44e3968fa481867d936174e7d49a547da5f6f755"
 }

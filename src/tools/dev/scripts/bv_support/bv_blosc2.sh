@@ -23,10 +23,6 @@ function bv_blosc2_info
     # note this is c-blosc2, NOT c-blosc
     export BLOSC2_VERSION=${BLOSC2_VERSION:-"2.11.3"}
     export BLOSC2_FILE=${BLOSC2_FILE:-"c-blosc2-${BLOSC2_VERSION}.tar.gz"}
-    # the URL is commented out because the filename is different in the blosc2 release
-    # there, the filename is v2.11.3.tar.gz.
-    # export BLOSC2_URL=${BLOSC2_URL:-"https://github.com/Blosc/c-blosc2/releases/tag"}
-    # to use that download you'd need to rename the file once downloaded.
     export BLOSC2_BUILD_DIR=${BLOSC2_BUILD_DIR:-"c-blosc2-${BLOSC2_VERSION}"}
     export BLOSC2_SHA256_CHECKSUM="7273ec3ab42adc247425ab34b0601db86a6e2a6aa1a97a11e29df02e078f5037"
 }

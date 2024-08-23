@@ -22,7 +22,6 @@ function bv_osmesa_info
 {
     export OSMESA_VERSION=${OSMESA_VERSION:-"17.3.9"}
     export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.xz"}
-    export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
     export OSMESA_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }

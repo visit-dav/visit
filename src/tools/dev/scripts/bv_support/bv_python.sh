@@ -241,7 +241,6 @@ function bv_python_info
     info "bv_python_info"
 
     # python 3.9
-    export PYTHON_URL="https://www.python.org/ftp/python/3.9.18"
     export PYTHON_FILE_SUFFIX="tgz"
     export PYTHON_VERSION="3.9.18"
     export PYTHON_COMPATIBILITY_VERSION="3.9"
@@ -249,183 +248,147 @@ function bv_python_info
     export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
     export PYTHON_SHA256_CHECKSUM="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354"
 
-    export SETUPTOOLS_URL=""
     export SETUPTOOLS_FILE="setuptools-68.0.0.tar.gz"
     export SETUPTOOLS_BUILD_DIR="setuptools-68.0.0"
     export SETUPTOOLS_SHA256_CHECKSUM=""
 
-    export PILLOW_URL=${PILLOW_URL:-"https://github.com/python-pillow/Pillow/archive/refs/tags/"}
     export PILLOW_FILE="Pillow-10.0.0.tar.gz"
     export PILLOW_BUILD_DIR="Pillow-10.0.0"
     export PILLOW_SHA256_CHECKSUM=""
 
-    export REQUESTS_URL=""
     export REQUESTS_FILE="requests-2.31.0.tar.gz"
     export REQUESTS_BUILD_DIR="requests-2.31.0"
     export REQUESTS_SHA256_CHECKSUM=""
 
-    export CYTHON_URL=""
     export CYTHON_FILE="Cython-3.0.0.tar.gz"
     export CYTHON_BUILD_DIR="Cython-3.0.0"
     export CYTHON_SHA256_CHECKSUM=""
 
-    export NUMPY_URL="https://github.com/numpy/numpy/releases/download/v1.25.1/"
     export NUMPY_FILE="numpy-1.25.1.tar.gz"
     export NUMPY_BUILD_DIR="numpy-1.25.1"
     export NUMPY_SHA256_CHECKSUM=""
 
-    export MPI4PY_URL="https://pypi.python.org/pypi/mpi4py"
     export MPI4PY_FILE="mpi4py-3.1.4.tar.gz"
     export MPI4PY_BUILD_DIR="mpi4py-3.1.4"
     export MPI4PY_SHA256_CHECKSUM=""
 
-    export PACKAGING_URL=""
     export PACKAGING_FILE="packaging-23.1.tar.gz"
     export PACKAGING_BUILD_DIR="packaging-23.1"
     export PACKAGING_SHA256_CHECKSUM=""
 
-    export IMAGESIZE_URL=""
     export IMAGESIZE_FILE="imagesize-1.4.1.tar.gz"
     export IMAGESIZE_BUILD_DIR="imagesize-1.4.1"
     export IMAGESIZE_SHA256_CHECKSUM=""
 
-    export ALABASTER_URL=""
     export ALABASTER_FILE="alabaster-0.7.13.tar.gz"
     export ALABASTER_BUILD_DIR="alabaster-0.7.13"
     export ALABASTER_SHA256_CHECKSUM=""
 
-    export BABEL_URL=""
     export BABEL_FILE="Babel-2.12.1.tar.gz"
     export BABEL_BUILD_DIR="Babel-2.12.1"
     export BABEL_SHA256_CHECKSUM=""
 
-    export SNOWBALLSTEMMER_URL=""
     export SNOWBALLSTEMMER_FILE="snowballstemmer-2.2.0.tar.gz"
     export SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-2.2.0"
     export SNOWBALLSTEMMER_SHA256_CHECKSUM=""
 
-    export DOCUTILS_URL=""
     export DOCUTILS_FILE="docutils-0.18.1.tar.gz"
     export DOCUTILS_BUILD_DIR="docutils-0.18.1"
     export DOCUTILS_SHA256_CHECKSUM=""
 
-    export PYGMENTS_URL=""
     export PYGMENTS_FILE="Pygments-2.15.1.tar.gz"
     export PYGMENTS_BUILD_DIR="Pygments-2.15.1"
     export PYGMENTS_SHA256_CHECKSUM=""
 
-    export JINJA2_URL=""
     export JINJA2_FILE="Jinja2-3.1.2.tar.gz"
     export JINJA2_BUILD_DIR="Jinja2-3.1.2"
     export JINJA2_SHA256_CHECKSUM=""
 
-    export SPHINXCONTRIB_QTHELP_URL=""
     export SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib-qthelp-1.0.3.tar.gz"
     export SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib-qthelp-1.0.3"
     export SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM=""
 
-    export SPHINXCONTRIB_SERIALIZINGHTML_URL=""
     export SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib-serializinghtml-1.1.5.tar.gz"
     export SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib-serializinghtml-1.1.5"
     export SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM=""
 
-    export SPHINXCONTRIB_HTMLHELP_URL=""
     export SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib-htmlhelp-2.0.1.tar.gz"
     export SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib-htmlhelp-2.0.1"
     export SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM=""
 
-    export SPHINXCONTRIB_JSMATH_URL=""
     export SPHINXCONTRIB_JSMATH_FILE="sphinxcontrib-jsmath-1.0.1.tar.gz"
     export SPHINXCONTRIB_JSMATH_BUILD_DIR="sphinxcontrib-jsmath-1.0.1"
     export SPHINXCONTRIB_JSMATH_SHA256_CHECKSUM="a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8"
 
-    export SPHINXCONTRIB_DEVHELP_URL=""
     export SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib-devhelp-1.0.2.tar.gz"
     export SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib-devhelp-1.0.2"
     export SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM=""
 
-    export SPHINXCONTRIB_APPLEHELP_URL=""
     export SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib-applehelp-1.0.4.tar.gz"
     export SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib-applehelp-1.0.4"
     export SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM=""
 
-    export URLLIB3_URL=""
     export URLLIB3_FILE="urllib3-2.0.3.tar.gz"
     export URLLIB3_BUILD_DIR="urllib3-2.0.3"
     export URLLIB3_SHA256_CHECKSUM=""
 
-    export IDNA_URL=""
     export IDNA_FILE="idna-3.4.tar.gz"
     export IDNA_BUILD_DIR="idna-3.4"
     export IDNA_SHA256_CHECKSUM=""
  
-    export CHARSET_NORMALIZER_URL=""
     export CHARSET_NORMALIZER_FILE="charset-normalizer-3.2.0.tar.gz"
     export CHARSET_NORMALIZER_BUILD_DIR="charset-normalizer-3.2.0"
     export CHARSET_NORMALIZER_SHA256_CHECKSUM=""
 
-    export CERTIFI_URL=""
     export CERTIFI_FILE="certifi-2023.5.7.tar.gz"
     export CERTIFI_BUILD_DIR="certifi-2023.5.7"
     export CERTIFI_SHA256_CHECKSUM=""
 
-    export FLITCORE_URL=""
     export FLITCORE_FILE="flit_core-3.9.0.tar.gz"
     export FLITCORE_BUILD_DIR="flit_core-3.9.0"
     export FLITCORE_SHA256_CHECKSUM=""
 
-    export TOML_URL=""
     export TOML_FILE="toml-0.10.2.tar.gz"
     export TOML_BUILD_DIR="toml-0.10.2"
     export TOML_SHA256_CHECKSUM=""
 
     # and yes, this is a different one from toml!
-    export TOMLI_URL=""
     export TOMLI_FILE="tomli-2.0.1.tar.gz"
     export TOMLI_BUILD_DIR="tomli-2.0.1"
     export TOMLI_SHA256_CHECKSUM=""
 
-    export PATHSPEC_URL=""
     export PATHSPEC_FILE="pathspec-0.11.2.tar.gz"
     export PATHSPEC_BUILD_DIR="pathspec-0.11.2"
     export PATHSPEC_SHA256_CHECKSUM=""
 
-    export WHEEL_URL=""
     export WHEEL_FILE="wheel-0.41.1.tar.gz"
     export WHEEL_BUILD_DIR="wheel-0.41.1"
     export WHEEL_SHA256_CHECKSUM=""
 
-    export CALVER_URL=""
     export CALVER_FILE="calver-2022.6.26.tar.gz"
     export CALVER_BUILD_DIR="calver-2022.6.26"
     export CALVER_SHA256_CHECKSUM=""
 
-    export TROVECLASSIFIERS_URL=""
     export TROVECLASSIFIERS_FILE="trove-classifiers-2023.8.7.tar.gz"
     export TROVECLASSIFIERS_BUILD_DIR="trove-classifiers-2023.8.7"
     export TROVECLASSIFIERS_SHA256_CHECKSUM=""
 
-    export EDITABLES_URL=""
     export EDITABLES_FILE="editables-0.5.tar.gz"
     export EDITABLES_BUILD_DIR="editables-0.5"
     export EDITABLES_SHA256_CHECKSUM=""
 
-    export PLUGGY_URL=""
     export PLUGGY_FILE="pluggy-1.2.0.tar.gz"
     export PLUGGY_BUILD_DIR="pluggy-1.2.0"
     export PLUGGY_SHA256_CHECKSUM=""
 
-    export HATCHLING_URL=""
     export HATCHLING_FILE="hatchling-1.18.0.tar.gz"
     export HATCHLING_BUILD_DIR="hatchling-1.18.0"
     export HATCHLING_SHA256_CHECKSUM=""
 
-    export MARKUPSAFE_URL=""
     export MARKUPSAFE_FILE="MarkupSafe-2.1.3.tar.gz"
     export MARKUPSAFE_BUILD_DIR="MarkupSafe-2.1.3"
     export MARKUPSAFE_SHA256_CHECKSUM=""
 
-    export ZIPP_URL=""
     export ZIPP_FILE="zipp-3.16.2.tar.gz"
     export ZIPP_BUILD_DIR="zipp-3.16.2"
     export ZIPP_SHA256_CHECKSUM=""
@@ -435,23 +398,19 @@ function bv_python_info
     export IMPORTLIB_METADATA_BUILD_DIR="importlib_metadata-6.8.0"
     export IMPORTLIB_METADATA_SHA256_CHECKSUM=""
 
-    export SPHINX_URL=""
     export SPHINX_FILE="Sphinx-7.0.1.tar.gz"
     export SPHINX_BUILD_DIR="Sphinx-7.0.1"
     export SPHINX_SHA256_CHECKSUM=""
 
-    export SPHINX_RTD_THEME_URL=""
     export SPHINX_RTD_THEME_FILE="sphinx_rtd_theme-1.2.2.tar.gz"
     export SPHINX_RTD_THEME_BUILD_DIR="sphinx_rtd_theme-1.2.2"
     export SPHINX_RTD_THEME_SHA256_CHECKSUM=""
 
     # needed by sphinx_rtd_theme
-    export SPHINXCONTRIB_JQUERY_URL=""
     export SPHINXCONTRIB_JQUERY_FILE="sphinxcontrib-jquery-4.1.tar.gz"
     export SPHINXCONTRIB_JQUERY_BUILD_DIR="sphinxcontrib-jquery-4.1"
     export SPHINXCONTRIB_JQUERY_SHA256_CHECKSUM=""
 
-    export SPHINX_TABS_URL=""
     export SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
     export SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
     export SPHINX_TABS_SHA256_CHECKSUM=""
