@@ -158,6 +158,36 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_vtkopenglpolydatamapper_patch
+{
+  # patch that allows extra large extents datasets to be rendered correctly
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/vtkOpenGLPolyDataMapper.cxx.orig    2024-08-23 08:45:54.157974000 -0700
++++ Rendering/OpenGL2/vtkOpenGLPolyDataMapper.cxx 2024-08-23 08:57:58.918823000 -0700
+@@ -2241,9 +2241,12 @@
+     }
+     else // not lines, so surface
+     {
++      // The partial derivatives are scaled by the inverse of fwidth
++      // to avoid overflow or underflow in the following computations.
+       vtkShaderProgram::Substitute(FSSource, "//VTK::UniformFlow::Impl",
+-        "vec3 fdx = dFdx(vertexVC.xyz);\n"
+-        "  vec3 fdy = dFdy(vertexVC.xyz);\n"
++        "float scale = 1.0/length(fwidth(vertexVC.xyz));\n"
++        "  vec3 fdx = dFdx(vertexVC.xyz)*scale;\n"
++        "  vec3 fdy = dFdy(vertexVC.xyz)*scale;\n"
+         "  //VTK::UniformFlow::Impl\n" // For further replacements
+       );
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+}
+
 function apply_vtk9_gcc13_patch
 {
   # patches that allows VTK9 to be built g++-13
@@ -2645,6 +2675,11 @@ function apply_vtk_patch
         fi
 
         apply_vtk9_vtkgeotransform_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk9_vtkopenglpolydatamapper_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
