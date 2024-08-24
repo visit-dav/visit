@@ -1154,9 +1154,9 @@ endif()
 # quotes to unite the strings or CMake will create a list.
 #-----------------------------------------------------------------------------
 set(CMAKE_VERBOSE_MAKEFILE ${VISIT_VERBOSE_MAKEFILE})
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VISIT_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIT_CXX_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VISIT_C_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIT_CXX_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}" CACHE STRING "" FORCE)
 
 #-----------------------------------------------------------------------------
 # Top-level subdirectories
