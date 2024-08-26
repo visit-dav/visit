@@ -230,6 +230,9 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Cyrus Harrison, Wed Mar 27 09:45:27 PDT 2024
 #   Cleanup and added toss4 logic needed to run on CTS-2 with srun.
 #
+#   Cyrus Harrison, Mon Aug 26 09:00:34 PDT 2024
+#   Remove extra CTS-2 srun logic now that lc env is fixed.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -289,12 +292,6 @@ class LLNLLauncher(MainLauncher):
         if sys_type == "toss_4_x86_64" or sys_type == "toss_4_x86_64_ib":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-gcc-10.3.1/lib"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
-            #######################
-            # srun env setting fix
-            #######################
-            # w/o these direct srun to debug queues will hang for task counts > 36 per node
-            SETENV("MV2_ENABLE_TOPO_AWARE_COLLECTIVES", 0)
-            SETENV("MV2_USE_SHMEM_COLL", 0)
 
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
