@@ -1,1 +1,1 @@
-rztrona5.cmake
+rzwhippet10.cmake
