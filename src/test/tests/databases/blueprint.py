@@ -114,6 +114,7 @@ mixed_topo_3d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_simple_3d_hdf5.r
 mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.root"))
 mixed_braid_3d = data_path(pjoin(bp_mixed_topos_dir, "braid_3d_examples_hdf5.root"))
 mixed_tet_quad_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_tri_quad_2d_hdf5.root"))
+mixed_offsets_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_topo_with_offsets.root"))
 
 #
 # venn test data (multi material)
@@ -897,6 +898,8 @@ def test_blueprint_0_9_2():
     mixed_test(mixed_braid_2d, "mixed_2d_mesh", "mixed_2d_mesh/braid", "mixed_2d_mesh", "Mixed_braid_2d")
     mixed_test(mixed_braid_3d, "mixed_mesh", "mixed_mesh/braid", "", "Mixed_braid_3d", True)
     mixed_test(mixed_tet_quad_2d, "mesh_mesh", "mesh_mesh/braid", "", "Mixed_tet_quad_2d")
+    DefineScalarExpression("nodeids", "nodeid(mesh_mesh)")
+    mixed_test(mixed_offsets_2d, "mesh_mesh", "nodeids", "", "Mixed_offsets_2d")
 
 def main():
     test_blueprint_json_hdf5()
