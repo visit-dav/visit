@@ -810,6 +810,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
 
+        // TODO why is this loop duplicated?
         for (int i = 0; i < nNodes; ++i)
         {
             ghostNodePtr[i] = 0;
@@ -3224,7 +3225,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
     {
         return NULL;
     }
@@ -3234,7 +3235,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         ReadMesh(dom);
     }
 
-    if (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") == 0)
+    if (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
         //
         // Retrieve the node/zone labels.
