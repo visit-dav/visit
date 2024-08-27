@@ -37,6 +37,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Blueprint writer now correctly puts the right cycle number in file names.</li>
   <li>Fixed a bug in zonetype-label expression where unknown zone types would render a weird symbol, <code>&quot;?</code>.</li>
   <li>Disabled warning message regarding skipping of speculative expression generation for databases with many variables. For more information, read our documentation about <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html#automatic-expressions">automatic expressions</a>.</li>
+  <li>Forced VTK file exports to use VTK data file format 4.2 instead of the new, not backwards compatible 5.1.</li>
   <li>Fixed a bug where the opaque geometry in an image containing both opaque and transparent geometry wouldn't be rendered poperly when rendered using scalable rendering.</li>
   <li>Fixed a bug where saving an image with transparent geometry would hang when using scalable rendering.</li>
   <li>Fixed a bug where perspective mode set to `off` in config files would not be restored correctly.</li>
@@ -53,6 +54,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Blueprint writer lets users specify Blueprint write options.</li>
   <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
   <li>Host profiles for KAUST have been updated.</li>
+  <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
+  <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -62,6 +65,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Docker containers were added for RockyLinux (RHEL compatible).</li>
   <li>Qwt is now optional. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--qwt</code> to the build_visit command line to build qwt. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
   <li>Added ICE-T support for Windows builds.</li>
+  <li>Fixed bug where printing the build_visit log file location prepended extra paths.</li>
+  <li>Fixed glitch that prevented VISIT_CXX_FLAGS defined in config-site file from being applied.</li>
+  <li>Removed the config site files for rztopaz and quartz since those machines have been retired.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
