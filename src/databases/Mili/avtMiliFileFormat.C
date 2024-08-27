@@ -3209,6 +3209,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Creation:   April 9, 2019
 //
 //  Modifications
+//    Justin Privitera, Tue Aug 27 11:40:54 PDT 2024
+//    Took quotes off of AUXILIARY_DATA_IDENTIFIERS.
 //
 // ****************************************************************************
 
