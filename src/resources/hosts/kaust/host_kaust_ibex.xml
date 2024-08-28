@@ -4,7 +4,7 @@
     <Field name="host" type="string">ilogin.ibex.kaust.edu.sa</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">login#g</Field>
-    <Field name="directory" type="string">/sw/vis/ibex-visit</Field>
+    <Field name="directory" type="string">/sw/vis2/ibex-visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
