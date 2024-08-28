@@ -636,6 +636,9 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 //
 //    Alister Maguire, Fri Mar  6 10:55:34 PST 2020
 //    Adding ghost zones to aid the pick operator.
+// 
+//    Justin Privitera, Wed Aug 28 14:57:42 PDT 2024
+//    Remove duplicated loop for ghost nodes.
 //
 // ****************************************************************************
 
@@ -809,14 +812,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         ghostZones->SetNumberOfTuples(nCells);
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
-
-        // TODO why is this loop duplicated?
-        for (int i = 0; i < nNodes; ++i)
-        {
-            ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
-                NODE_NOT_APPLICABLE_TO_PROBLEM);
-        }
 
         for (int i = 0; i < nCells; ++i)
         {
