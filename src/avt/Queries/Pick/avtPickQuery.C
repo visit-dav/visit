@@ -2061,7 +2061,7 @@ avtPickQuery::GetElementIdByLabel(const std::string &elementLabel,
     avtDataObject_p dataObject = this->GetInput();
     VoidRefList result;
     void * args = NULL;
-    const char * type ="AUXILIARY_DATA_IDENTIFIERS";
+    const char * type = AUXILIARY_DATA_IDENTIFIERS;
     TRY
     {
         dataObject->GetOriginatingSource()->GetVariableAuxiliaryData(type, args, contract_p, result);
