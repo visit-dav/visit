@@ -2853,7 +2853,7 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
     void *retval = 0;
     if (numBlocks == 0)
         return NULL;
-    if (strcmp(type, "AUXILIARY_DATA_SPATIAL_EXTENTS") == 0)
+    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
     {
         debug5 << "DATA_SPATIAL_EXTENTS" << endl;
         avtIntervalTree *itree = new avtIntervalTree(numBlocks, 3);
@@ -2875,7 +2875,7 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
 
         retval = (void *)itree;
     }
-    else if (strcmp(type, "AUXILIARY_DATA_DATA_EXTENTS") == 0 )
+    else if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0 )
     {
         debug5 << "DATA_DATA called" << endl;
         // Read the number of domains for the mesh.
