@@ -2841,6 +2841,10 @@ avtBATLFileFormat::BuildDomainNesting()
 //    Paul D. Stewart, July 16, 2012
 //    allow reading of DATA_DATA extents to fail silently for files without
 //    DATA_DATA extents.
+// 
+//    Justin Privitera, Fri Aug 30 12:01:44 PDT 2024
+//    Removed quotes from AUXILIARY_DATA_SPATIAL_EXTENTS and 
+//    AUXILIARY_DATA_DATA_EXTENTS.
 // ****************************************************************************
 void *
 avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
