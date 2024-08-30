@@ -2036,6 +2036,10 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
 //
 //  Programmer: Matt Larsen
 //  Creation:   May 4, 2017
+// 
+//  Modifications:
+//    Justin Privitera, Fri Aug 30 11:44:59 PDT 2024
+//    Removed quotes from AUXILIARY_DATA_IDENTIFIERS.
 //
 // ****************************************************************************
 bool
