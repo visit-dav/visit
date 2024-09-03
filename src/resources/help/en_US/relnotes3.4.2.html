@@ -41,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where the opaque geometry in an image containing both opaque and transparent geometry wouldn't be rendered poperly when rendered using scalable rendering.</li>
   <li>Fixed a bug where saving an image with transparent geometry would hang when using scalable rendering.</li>
   <li>Fixed a bug where perspective mode set to `off` in config files would not be restored correctly.</li>
+  <li>Fixed an issue in the Mili plugin where requesting OriginalZoneLabels and OriginalNodeLabels did not work as intended.</li>
   <li>Fixed a bug in the Blueprint reader so it will use <i>elements/offsets</i>  for unstructured topologies, when present.</li>
   <li>Fixed a bug with transparent rendering where the transparent portions of the image were rendered with a white cast when in scalable rendering mode and all the geometry was on the first processor.</li>
 </ul>
@@ -55,6 +56,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The <code>VISIT_VERSION_GE()</code> macro useful in detecting the VisIt version being used at compile time has been made public in its own header file, <code>visit-version.h</code>, which is found in <code>VISIT_INSTALL/include/visit/include</code>.</li>
   <li>The Blueprint writer lets users specify Blueprint write options.</li>
   <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
+  <li>Host profiles for KAUST have been updated.</li>
   <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
   <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
 </ul>
