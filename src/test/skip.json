@@ -114,7 +114,6 @@
                     {"category":"queries","file":"avg_value.py","cases":["avg_value_02"]},
                     {"category":"queries","file":"pick.py","cases":["Pick2D","Pick3DTo2D","PickAMR","PickBox","PickIndexSelect","PickSamrai_01","PickSamrai_05"]},
                     {"category":"rendering","file":"bigdata.py","cases":["bigdata_01"]},
-                    {"category":"rendering","file":"volume_rect_multiDomain.py","cases":["volume_20"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_06"]},
                     {"category":"databases","file":"boxlib.py","cases":["boxlib_01","boxlib_03"]},
                     {"category":"operators","file":"lcs_ic_2.py"},
