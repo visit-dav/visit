@@ -239,4 +239,76 @@ SetView3D(v)
 
 Test("transparency_15")
 
+DeleteAllPlots()
+
+# Test with 3d multi block data
+OpenDatabase("/usr/gapps/visit/data/multi_rect3d.silo")
+
+DefineScalarExpression("x", "coord(mesh1)[0]")
+DefineScalarExpression("y", "coord(mesh1)[1]")
+DefineScalarExpression("z", "coord(mesh1)[2]")
+DefineScalarExpression("radial", "sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)+(z-0.5)*(z-0.5))")
+DefineScalarExpression("const", "nodal_constant(<mesh1>, 2.0)")
+
+AddPlot("Pseudocolor", "const")
+pc = PseudocolorAttributes()
+pc.lightingFlag = 0
+pc.opacityType = pc.Constant
+pc.opacity = 0.4
+SetPlotOptions(pc)
+
+AddOperator("Isovolume", 1)
+isovol = IsovolumeAttributes()
+isovol.lbound = 0
+isovol.ubound = 0.4
+isovol.variable = "radial"
+SetOperatorOptions(isovol, 0, 1)
+
+AddOperator("Slice", 1)
+slice = SliceAttributes()
+slice.originType = slice.Intercept
+slice.originIntercept = 0.7
+slice.axisType = slice.XAxis
+slice.project2d = 0
+SetOperatorOptions(slice, 1, 0)
+DrawPlots()
+
+AddPlot("Pseudocolor", "const", 1, 1)
+pc.opacity = 0.7
+SetPlotOptions(pc)
+slice.originIntercept = 0.5
+SetOperatorOptions(slice, 1, 0)
+DrawPlots()
+
+AddPlot("Pseudocolor", "const", 1, 1)
+pc.opacityType = pc.FullyOpaque
+SetPlotOptions(pc)
+slice.originIntercept = 0.3
+SetOperatorOptions(slice, 1, 0)
+DrawPlots()
+
+v = View3DAttributes()
+v.viewNormal = (0.786444, 0.436457, 0.437048)
+v.focus = (0.5, 0.5, 0.5)
+v.viewUp = (-0.599183, 0.367316, 0.711378)
+v.viewAngle = 30
+v.parallelScale = 0.866025
+v.nearPlane = -1.73205
+v.farPlane = 1.73205
+v.imagePan = (0, 0)
+v.imageZoom = 1
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0.5, 0.5, 0.5)
+v.axis3DScaleFlag = 0
+v.axis3DScales = (1, 1, 1)
+v.shear = (0, 0, 1)
+v.windowValid = 1
+SetView3D(v)
+
+Test("transparency_16")
+
+DeleteAllPlots()
+
 Exit()
