@@ -574,6 +574,7 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+rm -f $result_dir/buildlog.poodle
 cp buildlog $result_dir/buildlog.poodle
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
 rm -f resultlog
@@ -627,6 +628,7 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+rm -f $result_dir/buildlog.lassen
 cp buildlog $result_dir/buildlog.lassen
 cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
 rm -f resultlog
@@ -683,6 +685,7 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+rm -f $result_dir/buildlog.rzwhippet
 cp buildlog $result_dir/buildlog.rzwhippet
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
 rm -f resultlog
@@ -738,6 +741,7 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+rm -f $result_dir/buildlog.rzvernal
 cp buildlog $result_dir/buildlog.rzvernal
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
 rm -f resultlog
@@ -794,6 +798,7 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+rm -f $result_dir/buildlog.magma
 cp buildlog $result_dir/buildlog.magma
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
 rm -f resultlog
@@ -848,6 +853,7 @@ echo "CONFIG_SITE=\${CONFIG_SITE}"
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> buildlog 2>&1
 # cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
+rm -f $result_dir/buildlog.sierra
 cp buildlog $result_dir/buildlog.sierra
 cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
 rm -f resultlog
