@@ -518,9 +518,9 @@ export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24
 EOF
 elif [ "$rzwhippet" = "true" ] || [ "$magma" = "true" ]; then
 cat <<EOF >> machine_specific_build_script
-XLOCALEDIR=/usr/lib/X11/locale"
-PATH=/usr/bin/X11:\$PATH"
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH"
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 EOF
 elif [ "$rzvernal" = "true" ]; then
 cat <<EOF >> machine_specific_build_script
