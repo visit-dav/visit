@@ -66,7 +66,7 @@
                     {"category":"queries","file":"avg_value.py","cases":["avg_value_02"]},
                     {"category":"queries","file":"pick.py","cases":["Pick2D","Pick3DTo2D","PickAMR","PickBox","PickIndexSelect","PickSamrai_01","PickSamrai_05"]},
                     {"category":"rendering","file":"bigdata.py","cases":["bigdata_01"]},
-                    {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_05","pixeldata_0_07","pixeldata_0_08","pixeldata_0_09","pixeldata_0_10","pixeldata_0_11"]},
+                    {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_04","pixeldata_0_05","pixeldata_0_06","pixeldata_0_07","pixeldata_0_08","pixeldata_0_09","pixeldata_0_10","pixeldata_0_11"]},
                     {"platform":"win", "category":"databases","file":"ffp.py","cases":["ffp_03"]},
                     {"platform":"win","category":"hybrid","file":"field_operators.py","cases":["field_op_04"]},
                     {"platform":"win","category":"plots","file": "contour.py","cases":["contour_lineStyle01"]},
