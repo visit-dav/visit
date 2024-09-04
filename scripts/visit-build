@@ -390,6 +390,8 @@ magma=false
 sierra=false
 
 dist=undefined
+machine_name="unknown"
+config_site="unknown"
 
 #
 # The loop is executed once for each symbol on the execute line.  This means
@@ -411,30 +413,43 @@ do
          ;;
       -kickit)
          kickit=true
+         machine_name="kickit"
          shift
          ;;
       -poodle)
          poodle=true
+         machine_name="poodle"
+         config_site="poodle18.cmake"
          shift
          ;;
       -lassen)
          lassen=true
+         machine_name="lassen"
+         config_site="lassen708.cmake"
          shift
          ;;
       -rzwhippet)
          rzwhippet=true
+         machine_name="rzwhippet"
+         config_site="rzwhippet17.cmake"
          shift
          ;;
       -rzvernal)
          rzvernal=true
+         machine_name="rzvernal"
+         config_site="rzvernal10.cmake"
          shift
          ;;
       -magma)
          magma=true
+         machine_name="magma"
+         config_site="magma190.cmake"
          shift
          ;;
       -sierra)
          sierra=true
+         machine_name="sierra"
+         config_site="sierra4358.cmake"
          shift
          ;;
       -d)
@@ -475,25 +490,93 @@ if test ! -d $result_dir ; then
 fi
 
 #
-# Build on kickit.
+# create the build script
 #
-rm -f kickit
-cat <<EOF > kickit
+rm -f machine_specific_build_script
+cat <<EOF > machine_specific_build_script
 #!/bin/sh
 set -e
+EOF
+
+#
+# set up paths
+#
+if [ "$kickit" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
 export PATH=/usr/gapps/gcc/gcc-9.1/bin:\$PATH
 export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64
-if test ! -e /home/$user/kickit ; then
-   mkdir /home/$user/kickit
+EOF
+elif [ "$poodle" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+EOF
+elif [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
+cat <<EOF >> machine_specific_build_script
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
+EOF
+elif [ "$rzwhippet" = "true" ] || [ "$magma" = "true" ]; then
+cat <<EOF >> machine_specific_build_script
+XLOCALEDIR=/usr/lib/X11/locale"
+PATH=/usr/bin/X11:\$PATH"
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH"
+EOF
+elif [ "$rzvernal" = "true" ]; then
+cat <<EOF >> machine_specific_build_script
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
 fi
-rm -rf /home/$user/kickit/visitbuild
-mkdir /home/$user/kickit/visitbuild
-mv kickit_$dist.tar.gz /home/$user/kickit/visitbuild/$dist.tar.gz
-cd /home/$user/kickit/visitbuild
+
+#
+# housekeeping
+#
+if [ "$kickit" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+if test ! -e /home/$user/$machine_name ; then
+   mkdir /home/$user/$machine_name
+fi
+rm -rf /home/$user/$machine_name/visitbuild
+mkdir /home/$user/$machine_name/visitbuild
+cp $machine_name_$dist.tar.gz /home/$user/$machine_name/visitbuild/$dist.tar.gz
+cd /home/$user/$machine_name/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+EOF
+elif [ "$poodle" = "true" ] || [ "$magma" = "true" ] || [ "$rzvernal" = "true" ] || \
+     [ "$rzwhippet" = "true" ] || [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+if test ! -d /usr/tmp/$user/$machine_name ; then
+   mkdir -p /usr/tmp/$user/$machine_name
+fi
+rm -rf /usr/tmp/$user/$machine_name/visitbuild
+mkdir /usr/tmp/$user/$machine_name/visitbuild
+cp $machine_name_$dist.tar.gz /usr/tmp/$user/$machine_name/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/$machine_name/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/$config_site\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+# 
+# Actually build
+# 
+if [ "$kickit" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
 mkdir ../build
 cd ../build
 /usr/gapps/visit/thirdparty_shared/3.4.0/opengl/cmake/3.24.3/linux-x86_64_gcc-9.1/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
@@ -501,8 +584,59 @@ make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
+EOF
+elif [ "$poodle" = "true" ] || [ "$magma" = "true" ] || [ "$rzvernal" = "true" ] || [ "$rzwhippet" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
+cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+EOF
+elif [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
+cat <<EOF >> machine_specific_build_script
+# skip manuals, old openssl on lassen undermines us
+cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> buildlog 2>&1
+# cmake --build build --target manuals >> buildlog 2>&1
+cmake --build build --target package -j 24 >> buildlog 2>&1
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# move things to result directory
+#
+if [ "$kickit" = "true" ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_build_script
+EOF
+elif [ "$poodle" = "true" ] || [ "$rzwhippet" = "true" ] || [ "$rzvernal" = "true" ] || \
+     [ "$magma" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+rm -f $result_dir/buildlog.$machine_name
+cp buildlog $result_dir/buildlog.$machine_name
+rm -f $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
+cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
+EOF
+elif [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+rm -f $result_dir/buildlog.$machine_name
+cp buildlog $result_dir/buildlog.$machine_name
+rm -f $result_dir/visit\$ver2.linux-intel-$machine_name.tar.gz
+cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-$machine_name.tar.gz
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# result log
+#
+if [ "$kickit" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
 rm -f resultlog
-echo "        build of visit on kickit"       > resultlog 2>&1
+echo "        build of visit on $machine_name"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -513,6 +647,35 @@ echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+elif [ "$poodle" = "true" ] || [ "$magma" = "true" ] || [ "$rzvernal" = "true" ] || \
+     [ "$rzwhippet" = "true" ] || [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+rm -f resultlog
+echo "        build of visit on $machine_name"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.$machine_name
+cp resultlog $result_dir/resultlog.$machine_name
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# bonus content for kickit
+#
+if [ "$kickit" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
 rm -rf $dist
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
@@ -524,7 +687,7 @@ make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
 cd ../..
 echo ""                                       >> resultlog 2>&1
-echo "        build of visit on kickit"       >> resultlog 2>&1
+echo "        build of visit on $machine_name"       >> resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -536,369 +699,55 @@ echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
-
-if [ "$kickit" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on kickit"
-      cp kickit ~/kickit_buildit
-      cp $dist.tar.gz ~/kickit_$dist.tar.gz
-      echo "cd;chmod 750 kickit_buildit;./kickit_buildit" | bash &
-   fi
-fi
-
-#
-# Build on poodle
-#
-rm -f poodle
-cat <<EOF > poodle
-#!/bin/sh
-set -e
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
-if test ! -d /usr/tmp/$user/poodle ; then
-   mkdir -p /usr/tmp/$user/poodle
-fi
-rm -rf /usr/tmp/$user/poodle/visitbuild
-mkdir /usr/tmp/$user/poodle/visitbuild
-cp poodle_$dist.tar.gz /usr/tmp/$user/poodle/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/poodle/visitbuild
-tar -xzvf $dist.tar.gz > buildlog 2>&1
-ver=\`cat $dist/src/VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-echo "Version: \$ver"
-export CONFIG_SITE=\`readlink -f $dist/src/config-site/poodle18.cmake\`
-echo "CONFIG_SITE=\${CONFIG_SITE}"
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
-cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-rm -f $result_dir/buildlog.poodle
-cp buildlog $result_dir/buildlog.poodle
-rm -f $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
-cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
-rm -f resultlog
-echo "        build of visit on poodle"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.lassen
-cp resultlog $result_dir/resultlog.lassen
+elif [ "$poodle" = "true" ] || [ "$magma" = "true" ] || [ "$rzvernal" = "true" ] || \
+     [ "$rzwhippet" = "true" ] || [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_build_script
 EOF
-
-if [ "$poodle" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on poodle"
-      cp poodle poodle_buildit
-      cp $dist.tar.gz poodle_$dist.tar.gz
-      chmod 750 poodle_buildit
-      ./poodle_buildit
-   fi
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
 fi
 
 #
-# Build on lassen.
+# email
 #
-rm -f lassen
-cat <<EOF > lassen
-#!/bin/sh
-set -e
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
-if test ! -d /usr/tmp/$user/lassen ; then
-   mkdir -p /usr/tmp/$user/lassen
-fi
-rm -rf /usr/tmp/$user/lassen/visitbuild
-mkdir /usr/tmp/$user/lassen/visitbuild
-mv lassen_$dist.tar.gz /usr/tmp/$user/lassen/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/lassen/visitbuild
-tar -xzvf $dist.tar.gz > buildlog 2>&1
-ver=\`cat $dist/src/VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-echo "Version: \$ver"
-export CONFIG_SITE=\`readlink -f $dist/src/config-site/lassen708.cmake\`
-echo "CONFIG_SITE=\${CONFIG_SITE}"
-# skip manuals, old openssl on lassen undermines us
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-# cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-rm -f $result_dir/buildlog.lassen
-cp buildlog $result_dir/buildlog.lassen
-rm -f $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
-cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
-rm -f resultlog
-echo "        build of visit on lassen"       > resultlog 2>&1
-echo "       -------------------------- "     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.lassen
-cp resultlog $result_dir/resultlog.lassen
-mail  -s "VisIt build ($dist): lassen" $emailName < resultlog
+if [ "$poodle" = "true" ] || [ "$lassen" = "true" ] || [ "$rzwhippet" = "true" ] || \
+   [ "$rzvernal" = "true" ]; then
+   cat <<EOF >> machine_specific_build_script
+mail  -s "VisIt build ($dist): $machine_name" $emailName < resultlog
 EOF
-
-if [ "$lassen" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on lassen"
-      cp lassen lassen_buildit
-      cp $dist.tar.gz lassen_$dist.tar.gz
-      chmod 750 lassen_buildit
-      ./lassen_buildit
-   fi
-fi
-
-#
-# Build on rzwhippet.
-#
-rm -f rzwhippet
-cat <<EOF > rzwhippet
-#!/bin/sh
-set -e
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
-if test ! -d /usr/tmp/$user/rzwhippet ; then
-   mkdir -p /usr/tmp/$user/rzwhippet
-fi
-rm -rf /usr/tmp/$user/rzwhippet/visitbuild
-mkdir /usr/tmp/$user/rzwhippet/visitbuild
-mv rzwhippet_$dist.tar.gz /usr/tmp/$user/rzwhippet/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzwhippet/visitbuild
-tar -xzvf $dist.tar.gz > buildlog 2>&1
-ver=\`cat $dist/src/VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export CONFIG_SITE=\`readlink -f $dist/src/config-site/rzwhippet17.cmake\`
-echo "CONFIG_SITE=\${CONFIG_SITE}"
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
-cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-rm -f $result_dir/buildlog.rzwhippet
-cp buildlog $result_dir/buildlog.rzwhippet
-rm -f $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
-cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
-rm -f resultlog
-echo "        build of visit on rzwhippet"    > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.rzwhippet
-cp resultlog $result_dir/resultlog.rzwhippet
-mail  -s "VisIt build ($dist): rzwhippet" $emailName < resultlog
+elif  [ "$kickit" = "true" ] || [ "$magma" = "true" ] || [ "$sierra" = "true" ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_build_script
 EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
 
-if [ "$rzwhippet" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on rzwhippet"
-      cp rzwhippet rzwhippet_buildit
-      cp $dist.tar.gz rzwhippet_$dist.tar.gz
-      chmod 750 rzwhippet_buildit
-      ./rzwhippet_buildit
+#########################################################################
+
+#
+# Call our machine-specific build script
+#
+if [ "$test" = "no" ]; then
+   if [ "$kickit" = "true" ]; then
+      echo "Building on ${machine_name}"
+      cp machine_specific_build_script ~/${machine_name}_buildit
+      cp $dist.tar.gz ~/${machine_name}_$dist.tar.gz
+      echo "cd;chmod 750 ${machine_name}_buildit;./${machine_name}_buildit" | bash &
+   elif [ condition ]; then
+      echo "Building on $machine_name"
+      cp machine_specific_build_script ${machine_name}_buildit
+      cp $dist.tar.gz ${machine_name}_$dist.tar.gz
+      chmod 750 ${machine_name}_buildit
+      ./${machine_name}_buildit
+   else
+      echo "case for $machine_name not implemented. Bailing out."
+   exit
    fi
-fi
 
-#
-# Build on rzvernal.
-#
-rm -f rzvernal
-cat <<EOF > rzvernal
-#!/bin/sh
-set -e
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
-if test ! -d /usr/tmp/$user/rzvernal ; then
-   mkdir -p /usr/tmp/$user/rzvernal
-fi
-rm -rf /usr/tmp/$user/rzvernal/visitbuild
-mkdir /usr/tmp/$user/rzvernal/visitbuild
-mv rzvernal_$dist.tar.gz /usr/tmp/$user/rzvernal/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzvernal/visitbuild
-tar -xzvf $dist.tar.gz > buildlog 2>&1
-ver=\`cat $dist/src/VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export CONFIG_SITE=\`readlink -f $dist/src/config-site/rzvernal10.cmake\`
-echo "CONFIG_SITE=\${CONFIG_SITE}"
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
-cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-rm -f $result_dir/buildlog.rzvernal
-cp buildlog $result_dir/buildlog.rzvernal
-rm -f $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
-cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
-rm -f resultlog
-echo "        build of visit on rzvernal"     > resultlog 2>&1
-echo "       ----------------------------"    >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.rzvernal
-cp resultlog $result_dir/resultlog.rzvernal
-mail  -s "VisIt build ($dist): rzvernal" $emailName < resultlog
-EOF
-
-if [ "$rzvernal" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on rzvernal"
-      cp rzvernal rzvernal_buildit
-      cp $dist.tar.gz rzvernal_$dist.tar.gz
-      chmod 750 rzvernal_buildit
-      ./rzvernal_buildit
-   fi
-fi
-
-#
-# Build on magma
-#
-rm -f magma
-cat <<EOF > magma
-#!/bin/sh
-set -e
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
-if test ! -d /usr/tmp/$user/magma ; then
-   mkdir -p /usr/tmp/$user/magma
-fi
-rm -rf /usr/tmp/$user/magma/visitbuild
-mkdir /usr/tmp/$user/magma/visitbuild
-cp magma_$dist.tar.gz /usr/tmp/$user/magma/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/magma/visitbuild
-tar -xzvf $dist.tar.gz > buildlog 2>&1
-ver=\`cat $dist/src/VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-echo "Version: \$ver"
-export CONFIG_SITE=\`readlink -f $dist/src/config-site/magma190.cmake\`
-echo "CONFIG_SITE=\${CONFIG_SITE}"
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
-cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-rm -f $result_dir/buildlog.magma
-cp buildlog $result_dir/buildlog.magma
-rm -f $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
-cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
-rm -f resultlog
-echo "        build of visit on magma"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.magma
-cp resultlog $result_dir/resultlog.magma
-EOF
-
-if [ "$magma" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on magma"
-      cp magma magma_buildit
-      cp $dist.tar.gz magma_$dist.tar.gz
-      chmod 750 magma_buildit
-      ./magma_buildit
-   fi
-fi
-
-#
-# Build on sierra
-#
-rm -f sierra
-cat <<EOF > sierra
-#!/bin/sh
-set -e
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
-if test ! -d /usr/tmp/$user/sierra ; then
-   mkdir -p /usr/tmp/$user/sierra
-fi
-rm -rf /usr/tmp/$user/sierra/visitbuild
-mkdir /usr/tmp/$user/sierra/visitbuild
-cp sierra_$dist.tar.gz /usr/tmp/$user/sierra/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/sierra/visitbuild
-tar -xzvf $dist.tar.gz > buildlog 2>&1
-ver=\`cat $dist/src/VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-echo "Version: \$ver"
-export CONFIG_SITE=\`readlink -f $dist/src/config-site/sierra4358.cmake\`
-echo "CONFIG_SITE=\${CONFIG_SITE}"
-# skip manuals, old openssl on lassen undermines us
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> buildlog 2>&1
-# cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-rm -f $result_dir/buildlog.sierra
-cp buildlog $result_dir/buildlog.sierra
-rm -f $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
-cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
-rm -f resultlog
-echo "        build of visit on sierra"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.sierra
-cp resultlog $result_dir/resultlog.sierra
-EOF
-
-if [ "$sierra" = "true" ]
-then
-   if [ "$test" = "no" ]
-   then
-      echo "Building on sierra"
-      cp sierra sierra_buildit
-      cp $dist.tar.gz sierra_$dist.tar.gz
-      chmod 750 sierra_buildit
-      ./sierra_buildit
-   fi
-fi
-
-#
-# Clean up.
-#
-if [ "$test" = "no" ]
-then
-   rm -f kickit poodle lassen rzwhippet rzvernal magma sierra
+   # Clean up
+   rm -f machine_specific_build_script
 fi
