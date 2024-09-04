@@ -28,6 +28,10 @@
 #   the var is always defined, but may be empty. The new test will return
 #   return true only if the var is not empty. This fixes the case where
 #   VISIT_VTKM_DIR hasn't been set by config-site file.
+#
+#   Eric Brugger, Wed Sep  4 10:31:31 PT 2024
+#   Modified the logic to also install static libraries. I also fixed a
+#   bug that prevented installing dependent libraries.
 # 
 #****************************************************************************/
 
@@ -60,7 +64,6 @@ IF (VISIT_VTKM_DIR)
    # ever change to shared libraries, this may be needed.
    function(get_lib_loc_and_install _lib)
        get_target_property(ttype ${_lib} TYPE)
-       MESSAGE(STATUS "_lib=${_lib}, ttype=${ttype}")
        if (ttype STREQUAL "INTERFACE_LIBRARY")
            return()
        endif()
@@ -72,7 +75,6 @@ IF (VISIT_VTKM_DIR)
          get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELWITHDEBINFO)
        endif()
        if(i_loc)
-           MESSAGE(STATUS "installing i_loc=${i_loc}")
            THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
        endif()
    endfunction()
@@ -85,6 +87,7 @@ IF (VISIT_VTKM_DIR)
        if(VTKM_LL_DEP)
            foreach(ll_dep ${VTKM_LL_DEP})
                # only process libraries that start with vtkm
+	       string(SUBSTRING ${ll_dep} 0 4 ll_dep_prefix)
                if ("${ll_dep_prefix}" STREQUAL "vtkm")
                    # don't process duplicates
                    if (NOT ${ll_dep} IN_LIST VTKM_INT_LL AND
