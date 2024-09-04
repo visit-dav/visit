@@ -9,7 +9,7 @@ set -e
 # Date:   October 27, 2000
 #
 # Usage:
-#    visit-build -d <distribution>
+#    visit-build [-<machine name>] -d <distribution>
 # 
 # Notes:
 #    This script used to be two scripts, visit-build-open and 
