@@ -576,6 +576,7 @@ cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 rm -f $result_dir/buildlog.poodle
 cp buildlog $result_dir/buildlog.poodle
+rm -f $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-poodle.tar.gz
 rm -f resultlog
 echo "        build of visit on poodle"       > resultlog 2>&1
@@ -589,6 +590,8 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.lassen
+cp resultlog $result_dir/resultlog.lassen
 EOF
 
 if [ "$poodle" = "true" ]
@@ -630,6 +633,7 @@ cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE
 cmake --build build --target package -j 24 >> buildlog 2>&1
 rm -f $result_dir/buildlog.lassen
 cp buildlog $result_dir/buildlog.lassen
+rm -f $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
 cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-lassen.tar.gz
 rm -f resultlog
 echo "        build of visit on lassen"       > resultlog 2>&1
@@ -642,8 +646,8 @@ echo "number of operator plugins = "\`ls build/plugins/operators/libI* | wc -l\`
 echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-cp resultlog $result_dir/resultlog.lassen
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.lassen
 cp resultlog $result_dir/resultlog.lassen
 mail  -s "VisIt build ($dist): lassen" $emailName < resultlog
 EOF
@@ -687,6 +691,7 @@ cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 rm -f $result_dir/buildlog.rzwhippet
 cp buildlog $result_dir/buildlog.rzwhippet
+rm -f $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzwhippet.tar.gz
 rm -f resultlog
 echo "        build of visit on rzwhippet"    > resultlog 2>&1
@@ -700,6 +705,7 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.rzwhippet
 cp resultlog $result_dir/resultlog.rzwhippet
 mail  -s "VisIt build ($dist): rzwhippet" $emailName < resultlog
 EOF
@@ -743,6 +749,7 @@ cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 rm -f $result_dir/buildlog.rzvernal
 cp buildlog $result_dir/buildlog.rzvernal
+rm -f $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-rzvernal.tar.gz
 rm -f resultlog
 echo "        build of visit on rzvernal"     > resultlog 2>&1
@@ -756,6 +763,7 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.rzvernal
 cp resultlog $result_dir/resultlog.rzvernal
 mail  -s "VisIt build ($dist): rzvernal" $emailName < resultlog
 EOF
@@ -800,6 +808,7 @@ cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 rm -f $result_dir/buildlog.magma
 cp buildlog $result_dir/buildlog.magma
+rm -f $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-magma.tar.gz
 rm -f resultlog
 echo "        build of visit on magma"        > resultlog 2>&1
@@ -813,6 +822,7 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.magma
 cp resultlog $result_dir/resultlog.magma
 EOF
 
@@ -855,6 +865,7 @@ cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE
 cmake --build build --target package -j 24 >> buildlog 2>&1
 rm -f $result_dir/buildlog.sierra
 cp buildlog $result_dir/buildlog.sierra
+rm -f $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
 cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-sierra.tar.gz
 rm -f resultlog
 echo "        build of visit on sierra"       > resultlog 2>&1
@@ -868,6 +879,7 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f $result_dir/resultlog.sierra
 cp resultlog $result_dir/resultlog.sierra
 EOF
 
