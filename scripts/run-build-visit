@@ -7,7 +7,7 @@
 # Date:   May 17, 2022
 #
 # Usage:
-#    run-build-visit +<machine name> -v <version> -s <build_visit_script>
+#    run-build-visit -<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
 #       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
 #       kickit_opengl (B-Div, Linux, x86_64, opengl),
@@ -70,6 +70,8 @@ rztopaz=false
 rzvernal=false
 trinity=false
 
+machine_name="unknown"
+
 version=undefined
 build_visit_script=undefined
 
@@ -83,36 +85,44 @@ ran_build_visit=false
 for abc
 do
    case $1 in
-      +kickit_mesagl)
+      -kickit_mesagl)
          kickit_mesagl=true
+         machine_name="kickit_mesagl"
          shift
          ;;
-      +kickit_opengl)
+      -kickit_opengl)
          kickit_opengl=true
+         machine_name="kickit_opengl"
          shift
          ;;
-      +poodle)
+      -poodle)
          poodle=true
+         machine_name="poodle"
          shift
          ;;
-      +lassen)
+      -lassen)
          lassen=true
+         machine_name="lassen"
          shift
          ;;
-      +rzwhippet)
+      -rzwhippet)
          rzwhippet=true
+         machine_name="rzwhippet"
          shift
          ;;
-      +rztopaz)
+      -rztopaz)
          rztopaz=true
+         machine_name="rztopaz"
          shift
          ;;
-      +rzvernal)
+      -rzvernal)
          rzvernal=true
+         machine_name="rzvernal"
          shift
          ;;
-      +trinity)
+      -trinity)
          trinity=true
+         machine_name="trinity"
          shift
          ;;
       -v)
@@ -131,7 +141,7 @@ done
 #
 if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
-   echo "Usage: +<machine name> -v <version> -s <build_visit_script>"
+   echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
    echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
@@ -153,23 +163,92 @@ then
    exit
 fi
 
+#######################################################
+############ MACHINE SPECIFIC INSTRUCTIONS ############
+#######################################################
+
 #
-# Build using mesagl on kickit.
+# Info line
 #
-if [ "$kickit_mesagl" = "true" ]
-then
-   echo "Building using mesagl on kickit"
+if [ "$kickit_mesagl" = "true" ]; then
+   echo "Building using mesagl on $machine_name"
+elif [ "$kickit_opengl" = "true" ]; then
+   echo "Building using opengl on $machine_name"
+elif [ "$poodle" = "true" ] || [ "$lassen" = "true" ] || [ "$rzwhippet" = "true" ] || \
+     [ "$rztopaz" = "true" ] || [ "$rzvernal" = "true" ] || [ "$trinity" = "true" ]; then
+   echo "Building on $machine_name"
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# Set ran_build_visit
+#
+if [ "$kickit_mesagl" = "true" ] || [ "$kickit_opengl" = "true" ] || \
+   [ "$poodle" = "true" ] || [ "$lassen" = "true" ] || [ "$rzwhippet" = "true" ] || \
+   [ "$rztopaz" = "true" ] || [ "$rzvernal" = "true" ] || [ "$trinity" = "true" ]; then
    ran_build_visit=true
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# Set destination directory
+#
+if [ "$kickit_mesagl" = "true" ]; then
    dest_dir=/usr/gapps/visit/thirdparty_shared/$version/mesagl
+elif [ "$kickit_opengl" = "true" ]; then
+   dest_dir=/usr/gapps/visit/thirdparty_shared/$version/opengl
+elif [ "$poodle" = "true" ] || [ "$rzwhippet" = "true" ] || [ "$rztopaz" = "true" ]; then
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+elif [ "$lassen" = "true" ]; then
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
+elif [ "$rzvernal" = "true" ]; then
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray
+elif [ "$trinity" = "true" ]; then
+   dest_dir=/usr/projects/views/visit/thirdparty_shared/$version
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# Set destination group
+#
+if [ "$kickit_mesagl" = "true" ] || [ "$kickit_opengl" = "true" ] || \
+   [ "$poodle" = "true" ] || [ "$lassen" = "true" ] || [ "$rzwhippet" = "true" ] || \
+   [ "$rztopaz" = "true" ] || [ "$rzvernal" = "true" ]; then
    dest_group=visit
-   if [ -f ${build_visit_script}_log.mesagl ]
-   then
-      mv ${build_visit_script}_log.mesagl ${build_visit_script}_log
+elif [ "$trinity" = "true" ]; then
+   dest_group=viz
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# housekeeping
+#
+if [ "$kickit_mesagl" = "true" ] || [ "$kickit_opengl" = "true" ] || \
+   [ "$poodle" = "true" ] || [ "$lassen" = "true" ] || [ "$rzwhippet" = "true" ] || \
+   [ "$rztopaz" = "true" ] || [ "$rzvernal" = "true" ] || [ "$trinity" = "true" ]; then
+   if [ -f ${build_visit_script}_log.${machine_name} ]; then
+      mv ${build_visit_script}_log.${machine_name} ${build_visit_script}_log
    fi
-   if [ ! -d ${dest_dir} ]
-   then
+   if [ ! -d ${dest_dir} ]; then
       mkdir -p ${dest_dir}
    fi
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# Call build_visit
+#
+if [ "$kickit_mesagl" = "true" ]; then
    export CC=/usr/gapps/gcc/gcc-9.1/bin/gcc
    export CXX=/usr/gapps/gcc/gcc-9.1/bin/g++
    export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
@@ -178,30 +257,7 @@ then
    ./$build_visit_script --group ${dest_group} --required --optional --parallel \
     --mpich --mesagl --uintah --vtk9 --qwt --no-adios2 --no-moab --no-visit --makeflags -j4 \
     --thirdparty-path ${dest_dir}
-   mv ${build_visit_script}_log ${build_visit_script}_log.mesagl
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build using opengl on kickit.
-#
-if [ "$kickit_opengl" = "true" ]
-then
-   echo "Building using opengl on kickit"
-   ran_build_visit=true
-   dest_dir=/usr/gapps/visit/thirdparty_shared/$version/opengl
-   dest_group=visit
-   if [ -f ${build_visit_script}_log.opengl ]
-   then
-      mv ${build_visit_script}_log.opengl ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir -p ${dest_dir}
-   fi
+elif [ "$kickit_opengl" = "true" ]; then
    export CC=/usr/gapps/gcc/gcc-9.1/bin/gcc
    export CXX=/usr/gapps/gcc/gcc-9.1/bin/g++
    export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
@@ -210,59 +266,26 @@ then
    ./$build_visit_script --group ${dest_group} --skip-opengl-context-check --required --optional \
     --parallel --mpich --osmesa --uintah --vtk9 --qwt --no-adios2 --no-moab --no-visit --makeflags -j4 \
     --thirdparty-path ${dest_dir}
-   mv ${build_visit_script}_log ${build_visit_script}_log.opengl
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build on poodle.
-#
-if [ "$poodle" = "true" ]
-then
-   echo "Building on poodle"
-   ran_build_visit=true
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
-   dest_group=visit
-   if [ -f ${build_visit_script}_log.poodle ]
-   then
-      mv ${build_visit_script}_log.poodle ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir -p ${dest_dir}
-   fi
+elif [ "$poodle" = "true" ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel\
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
        --qt6 --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
-   mv ${build_visit_script}_log ${build_visit_script}_log.poodle
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build on lassen.
-#
-if [ "$lassen" = "true" ]
-then
-   echo "Building on lassen"
-   ran_build_visit=true
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
-   dest_group=visit
-   if [ -f ${build_visit_script}_log.lassen ]
-   then
-      mv ${build_visit_script}_log.lassen ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir -p ${dest_dir}
-   fi
+elif [ "$rztopaz" = "true" ]; then
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j16 --thirdparty-path ${dest_dir} 
+elif [ "$rzwhippet" = "true" ]; then
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+        --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
+        --thirdparty-path ${dest_dir}
+elif [ "$lassen" = "true" ]; then
    module load gcc/8.3.1
    env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicxx \
@@ -271,118 +294,13 @@ then
        --no-gdal --no-openexr --no-embree --no-ispc --no-tbb --no-pidx \
        --no-ospray --parallel --qt --qwt --vtk9 --no-pyside --no-visit --no-boost --makeflags -j16 \
        --thirdparty-path ${dest_dir}
-   mv ${build_visit_script}_log ${build_visit_script}_log.lassen
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build on rzwhippet.
-#
-if [ "$rzwhippet" = "true" ]
-then
-   echo "Building on rzwhippet"
-   ran_build_visit=true
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
-   dest_group=visit
-   if [ -f ${build_visit_script}_log.rzwhippet ]
-   then
-      mv ${build_visit_script}_log.rzwhippet ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir -p ${dest_dir}
-   fi
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel\
-        --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
-        --thirdparty-path ${dest_dir}
-   mv ${build_visit_script}_log ${build_visit_script}_log.rzwhippet
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build on rztopaz.
-#
-if [ "$rztopaz" = "true" ]
-then
-   echo "Building on rztopaz"
-   ran_build_visit=true
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
-   dest_group=visit
-   if [ -f ${build_visit_script}_log.rztopaz ]
-   then
-      mv ${build_visit_script}_log.rztopaz ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir -p ${dest_dir}
-   fi
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
-       --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j16 --thirdparty-path ${dest_dir} 
-   mv ${build_visit_script}_log ${build_visit_script}_log.rztopaz
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build on rzvernal.
-#
-if [ "$rzvernal" = "true" ]
-then
-   echo "Building on rzvernal"
-   ran_build_visit=true
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray
-   dest_group=visit
-   if [ -f ${build_visit_script}_log.rzvernal ]
-   then
-      mv ${build_visit_script}_log.rzvernal ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir -p ${dest_dir}
-   fi
+elif [ "$rzvernal" = "true" ]; then
    env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
-   mv ${build_visit_script}_log ${build_visit_script}_log.rzvernal
-   # just in case perms
-   echo "changing permissions of ${dest_dir}"
-   chmod -R ug+w,a+rX ${dest_dir}
-   chgrp -R ${dest_group} ${dest_dir}
-fi
-
-#
-# Build on trinity
-#
-if [ "$trinity" = "true" ]
-then
-   echo "Building on trinity"
-   ran_build_visit=true
-   dest_dir=/usr/projects/views/visit/thirdparty_shared/$version
-   dest_group=viz
-   if [ -f ${build_visit_script}_log.trinity ]
-   then
-      mv ${build_visit_script}_log.trinity ${build_visit_script}_log
-   fi
-   if [ ! -d ${dest_dir} ]
-   then
-      mkdir /usr/projects/views/visit/thirdparty_shared/$version
-   fi
+elif [ "$trinity" = "true" ]; then
    module swap PrgEnv-intel/6.0.10 PrgEnv-gnu/6.0.10
    module swap gcc/11.2.0 gcc/8.2.0
    export XTPE_LINK_TYPE=dynamic
@@ -396,11 +314,25 @@ then
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --no-adios --no-adios2 --no-mili --no-pyside --qt510 --qwt --no-visit \
        --makeflags -j16 --thirdparty-path ${dest_dir}
-   mv ${build_visit_script}_log ${build_visit_script}_log.trinity
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# Final housekeeping and permissions
+#
+if [ "$kickit_mesagl" = "true" ] || [ "$kickit_opengl" = "true" ] || \
+   [ "$poodle" = "true" ] || [ "$lassen" = "true" ] || [ "$rzwhippet" = "true" ] || \
+   [ "$rztopaz" = "true" ] || [ "$rzvernal" = "true" ] || [ "$trinity" = "true" ]; then
+   mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
    # just in case perms
    echo "changing permissions of ${dest_dir}"
    chmod -R ug+w,a+rX ${dest_dir}
    chgrp -R ${dest_group} ${dest_dir}
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
 fi
 
 #
@@ -409,7 +341,7 @@ fi
 if [ "$ran_build_visit" = "false" ]
 then
    echo "Invalid or missing machine name."
-   echo "Usage: +<machine name> -v <version> -s <build_visit_script>"
+   echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
    echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"

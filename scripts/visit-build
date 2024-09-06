@@ -401,16 +401,6 @@ config_site="unknown"
 for abc
 do
    case $1 in
-      -none)
-         kickit=false
-         poodle=false
-         lassen=false
-         rzwhippet=false
-         rzvernal=false
-         magma=false
-         sierra=false
-         shift
-         ;;
       -kickit)
          kickit=true
          machine_name="kickit"
