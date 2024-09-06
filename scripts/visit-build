@@ -737,7 +737,8 @@ if [ "$test" = "no" ]; then
       cp machine_specific_build_script ~/${machine_name}_buildit
       cp $dist.tar.gz ~/${machine_name}_$dist.tar.gz
       echo "cd;chmod 750 ${machine_name}_buildit;./${machine_name}_buildit" | bash &
-   elif [ condition ]; then
+   elif [ "$poodle" = "true" ] || [ "$magma" = "true" ] || [ "$rzvernal" = "true" ] || \
+        [ "$rzwhippet" = "true" ] || [ "$lassen" = "true" ] || [ "$sierra" = "true" ]; then
       echo "Building on $machine_name"
       cp machine_specific_build_script ${machine_name}_buildit
       cp $dist.tar.gz ${machine_name}_$dist.tar.gz
