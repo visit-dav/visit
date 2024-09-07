@@ -446,109 +446,43 @@ else
    exit
 fi
 
-
 #
-# Install on kickit.
+# email
 #
-rm -f kickit_install
-cat <<EOF > kickit_install
-
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ]; then
+   cat <<EOF >> machine_specific_install_script
+mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
 EOF
+elif  [ "$kickit" = true ] || [ "$magma" = true ] || [ "$sierra" = true ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_install_script
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
 
-if [ "$kickit" = true ]
-then
-   if [ "$test" = "no" ]
-   then
+#########################################################################
+
+#
+# Call our machine-specific install script
+#
+if [ "$test" = "no" ]; then
+   if [ "$kickit" = true ]; then
+      cp machine_specific_install_script ${machine_name}_install
       cp /home/$user/kickit/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel7.tar.gz
       cp /home/$user/kickit/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-rhel7-wmesa.tar.gz
       chmod 750 kickit_install;./kickit_install
+   elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+        [ "$magma" = true ] || [ "$sierra" = true ]; then
+      cp machine_specific_install_script ${machine_name}_install
+      cp $result_dir/visit$ver2.${architecture}-${machine_name}.tar.gz .
+      chmod 750 ${machine_name}_install;./${machine_name}_install
+   else
+      echo "case for $machine_name not implemented. Bailing out."
+      exit
    fi
-fi
 
-#
-# Install on poodle.
-#
-rm -f poodle_install
-cat <<EOF > poodle_install
-EOF
-if [ "$poodle" = true ]
-then
-   if [ "$test" = "no" ]
-   then
-      cp $result_dir/visit$ver2.linux-x86_64-poodle.tar.gz .
-      chmod 750 poodle_install;./poodle_install
-   fi
-fi
-
-#
-# Install on lassen.
-#
-rm -f lassen_install
-cat <<EOF > lassen_install
-EOF
-
-if [ "$lassen" = true ]
-then
-   if [ "$test" = "no" ]
-   then
-      cp $result_dir/visit$ver2.linux-intel-lassen.tar.gz .
-      chmod 750 lassen_install;./lassen_install
-   fi
-fi
-
-#
-# Install on rzwhippet
-#
-rm -f rzwhippet_install
-cat <<EOF > rzwhippet_install
-mail -s "VisIt install ($ver): rzwhippet" $emailName < resultlog.rzwhippet
-EOF
-
-if [ "$rzwhippet" = true ]
-then
-   if [ "$test" = "no" ]
-   then
-     cp $result_dir/visit$ver2.linux-x86_64-rzwhippet.tar.gz .
-     chmod 750 rzwhippet_install;./rzwhippet_install
-   fi
-fi
-
-#
-# Install on magma.
-#
-rm -f magma_install
-cat <<EOF > magma_install
-EOF
-
-if [ "$magma" = true ]
-then
-   if [ "$test" = "no" ]
-   then
-      cp $result_dir/visit$ver2.linux-x86_64-magma.tar.gz .
-      chmod 750 magma_install;./magma_install
-   fi
-fi
-
-#
-# Install on sierra
-#
-rm -f sierra_install
-cat <<EOF > sierra_install
-EOF
-
-if [ "$sierra" = true ]
-then
-   if [ "$test" = "no" ]
-   then
-      cp $result_dir/visit$ver2.linux-intel-sierra.tar.gz .
-      chmod 750 sierra_install;./sierra_install
-   fi
-fi
-
-#
-# Clean up.
-#
-if [ "$test" = "no" ]
-then
-   rm -f kickit_install poodle_install lassen_install rzwhippet_install magma_install sierra_install
+   # Clean up
+   rm -f machine_specific_install_script
 fi

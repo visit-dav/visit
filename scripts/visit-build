@@ -747,7 +747,7 @@ if [ "$test" = "no" ]; then
       ./${machine_name}_buildit
    else
       echo "case for $machine_name not implemented. Bailing out."
-   exit
+      exit
    fi
 
    # Clean up
