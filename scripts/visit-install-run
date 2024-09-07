@@ -470,9 +470,9 @@ fi
 if [ "$test" = "no" ]; then
    if [ "$kickit" = true ]; then
       cp machine_specific_install_script ${machine_name}_install
-      cp /home/$user/kickit/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel7.tar.gz
-      cp /home/$user/kickit/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-rhel7-wmesa.tar.gz
-      chmod 750 kickit_install;./kickit_install
+      cp /home/$user/${machine_name}/visitbuild/visit$ver2.${architecture}.tar.gz visit$ver2.${architecture}-rhel7.tar.gz
+      cp /home/$user/${machine_name}/visitbuild/visit$ver2.${architecture}-wmesa.tar.gz visit$ver2.${architecture}-rhel7-wmesa.tar.gz
+      chmod 750 ${machine_name}_install;./${machine_name}_install
    elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
         [ "$magma" = true ] || [ "$sierra" = true ]; then
       cp machine_specific_install_script ${machine_name}_install
