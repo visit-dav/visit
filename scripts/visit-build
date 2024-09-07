@@ -226,6 +226,7 @@ set -e
 #   Eric Brugger,
 #   I added rzvernal.
 # 
+##################################################################
 # Modifications from visit-build-closed:
 #   Hank Childs, Mon Oct 15 09:04:12 PDT 2007
 #   Add some print statements for usability.
@@ -333,9 +334,13 @@ set -e
 #   Updated magma and sierra.
 #   Removed trinity.
 # 
+##################################################################
 # Modifications:
 #   Justin Privitera, Fri Jun 14 15:30:31 PDT 2024
 #   Combined visit-build-open and visit-build-closed into one script.
+# 
+#   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
+#   Completely reworked this script to have no more duplication.
 #-----------------------------------------------------------------------
 
 test=no

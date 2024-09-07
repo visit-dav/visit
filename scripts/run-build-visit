@@ -53,8 +53,11 @@
 #    Changed /usr/workspace/wsa/visit/visit/... to
 #    /usr/workspace/visit/visit/... for lassen.
 #
-#    Eric Brugger,
+#    Eric Brugger, 05/22/24
 #    Added support for building on rzvernal.
+# 
+#    Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
+#    Completely reworked this script to have no more duplication.
 #
 #-----------------------------------------------------------------------
 

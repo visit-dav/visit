@@ -242,6 +242,9 @@ set -e
 #   The scripts visit-install-open and visit-install-closed have been
 #   combined into a single script called visit-install-run. This script
 #   calls the visit-install script as before.
+# 
+#   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
+#   Completely reworked this script to have no more duplication.
 #
 #-----------------------------------------------------------------------
 
