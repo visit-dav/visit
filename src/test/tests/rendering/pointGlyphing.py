@@ -1,12 +1,10 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  Test Case:  renderpoints.py
+#  Test Case:  pointGlyphing.py
 #
 #  Tests:      mesh      - 3D point
 #              plots     - pseudocolor, subset, mesh
-#
-#  Defect ID:  none
 #
 #  Programmer: Kathleen Biagas
 #  Date:       August 28, 2024 
