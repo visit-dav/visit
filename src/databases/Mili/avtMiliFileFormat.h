@@ -83,6 +83,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     virtual int            GetNTimesteps(void);
 
+    void                   ActivateTimestep(void);
+
     virtual vtkDataSet    *GetMesh(int,
                                    int,
                                    const char *);

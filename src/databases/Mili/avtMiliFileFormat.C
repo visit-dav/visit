@@ -469,6 +469,29 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 
 
 // ****************************************************************************
+//  Method: avtMiliFileFormat::ActivateTimestep
+//
+//  Purpose: Provides a guarenteed collective entry point for operations
+//    that may involve collective parallel communication.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Mon Sep  9 16:48:10 PDT 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::ActivateTimestep(void)
+{
+
+
+
+    std::vector<intVector> labelIds = 
+}
+
+
+// ****************************************************************************
 //  Method: avtMiliFileFormat::OpenDB
 //
 //  Purpose:
@@ -3866,6 +3889,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
     miliMetaData = new avtMiliMetaData *[nMeshes];
 
+    // TODO is this not a memory leak?
     for (int i = 0; i < nMeshes; ++i)
     {
         miliMetaData[i] = NULL;
