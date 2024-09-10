@@ -14,7 +14,6 @@
 #       poodle    (LC, Linux, x86_64, toss4),
 #       lassen    (LC, Linux, power9),
 #       rzwhippet (LC, Linux, x86_64, toss4),
-#       rztopaz   (LC, Linux, x86_64, toss4),
 #       rzvernal  (LC, Linux, x86_64, toss4-cray),
 #       trinity   (LANL, x86_64)
 #
@@ -69,7 +68,6 @@ kickit_opengl=false
 poodle=false
 lassen=false
 rzgenie=false
-rztopaz=false
 rzvernal=false
 trinity=false
 
@@ -113,11 +111,6 @@ do
          machine_name="rzwhippet"
          shift
          ;;
-      -rztopaz)
-         rztopaz=true
-         machine_name="rztopaz"
-         shift
-         ;;
       -rzvernal)
          rzvernal=true
          machine_name="rzvernal"
@@ -151,7 +144,6 @@ then
    echo "    poodle    (LC, Linux, x86_64, toss4),"
    echo "    lassen    (LC, Linux, power9),"
    echo "    rzwhippet (LC, Linux, x86_64, toss4),"
-   echo "    rztopaz   (LC, Linux, x86_64, toss4),"
    echo "    rzvernal  (LC, Linux, x86_64, toss4-cray),"
    echo "    trinity   (LANL, Linux, x86_64)"
    exit
@@ -178,7 +170,7 @@ if [ "$kickit_mesagl" = true ]; then
 elif [ "$kickit_opengl" = true ]; then
    echo "Building using opengl on $machine_name"
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$rztopaz" = true ] || [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+     [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
    echo "Building on $machine_name"
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -190,7 +182,7 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rztopaz" = true ] || [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
    ran_build_visit=true
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -204,7 +196,7 @@ if [ "$kickit_mesagl" = true ]; then
    dest_dir=/usr/gapps/visit/thirdparty_shared/$version/mesagl
 elif [ "$kickit_opengl" = true ]; then
    dest_dir=/usr/gapps/visit/thirdparty_shared/$version/opengl
-elif [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rztopaz" = true ]; then
+elif [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$lassen" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
@@ -222,7 +214,7 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rztopaz" = true ] || [ "$rzvernal" = true ]; then
+   [ "$rzvernal" = true ]; then
    dest_group=visit
 elif [ "$trinity" = true ]; then
    dest_group=viz
@@ -236,7 +228,7 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rztopaz" = true ] || [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
       mv ${build_visit_script}_log.${machine_name} ${build_visit_script}_log
    fi
@@ -275,12 +267,6 @@ elif [ "$poodle" = true ]; then
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
        --qt6 --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
-elif [ "$rztopaz" = true ]; then
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
-       --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j16 --thirdparty-path ${dest_dir} 
 elif [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
@@ -327,7 +313,7 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rztopaz" = true ] || [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
    # just in case perms
    echo "changing permissions of ${dest_dir}"
@@ -351,7 +337,6 @@ then
    echo "    poodle   (LC, Linux, x86_64, toss4),"
    echo "    lassen   (LC, Linux, power9),"
    echo "    rzgenie  (LC, Linux, x86_64, toss3),"
-   echo "    rztopaz  (LC, Linux, x86_64, toss4),"
    echo "    rzvernal (LC, Linux, x86_64, toss4-cray),"
    echo "    trinity  (LANL, Linux, x86_64)"
    exit
