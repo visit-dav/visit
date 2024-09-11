@@ -4275,6 +4275,8 @@ return type : dictionary
     For time queries that create multiple curves, e.g. Time Pick with multiple variables, the dictionary contains a 'Curves' object, and each curve is referenced by it's associated variable name.
     This was introduced in VisIt 3.4.1.
 
+    Single-curve output (like Lineout) will utilize the variable name as the dictionary key.
+    This was introduced in VisIt 3.4.2.
 
 **Single Curve Example:**
 
@@ -4287,7 +4289,7 @@ return type : dictionary
   Lineout((0, 0), (1, 1))
   SetActiveWindow(2)
   info = GetPlotInformation()
-  lineout = info["Curve"]
+  lineout = info["d"]
   print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
 
 **Multiple Curve Example:**

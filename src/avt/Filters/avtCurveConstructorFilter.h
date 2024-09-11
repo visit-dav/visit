@@ -25,17 +25,17 @@
 //  Creation:   Sat Apr 20 13:01:58 PST 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Jul 12 16:53:11 PDT 2002  
+//    Kathleen Bonnell, Fri Jul 12 16:53:11 PDT 2002
 //    Removed vtk filters associated with label-creation.  Now handled by
 //    the plot.
 //
 //    Kathleen Bonnell, Mon Dec 23 08:23:26 PST 2002
-//    Added UpdateDataObjectInfo. 
-//    
+//    Added UpdateDataObjectInfo.
+//
 //    Hank Childs, Fri Oct  3 11:10:29 PDT 2003
 //    Moved from /plots/Curve.  Renamed to CurveConstructorFilter.
 //
-//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Add PostExecute and outputArray.
 //
 //    Kathleen Bonnell, Thu Mar 19 17:42:14 PDT 2009
@@ -51,6 +51,10 @@
 //    Add a MapNode to store multi-curve output for adding to PlotInformation.
 //    Add vname and count arguments to CreateSingleOutput.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add outputArrayName to store single-curve output name for adding
+//    to PlotInformation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -59,12 +63,13 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
                               avtCurveConstructorFilter();
     virtual                  ~avtCurveConstructorFilter();
 
-    virtual const char       *GetType(void)  
-                                       { return "avtCurveConstructorFilter"; };
+    virtual const char       *GetType(void)
+                                       { return "avtCurveConstructorFilter"; }
     virtual const char       *GetDescription(void)
-                                  { return "Constructing Curve"; };
+                                  { return "Constructing Curve"; }
 
   protected:
+    std::string               outputArrayName;
     doubleVector              outputArray;
     MapNode                   outputInfo;
     vtkDataSet               *CreateSingleOutput(avtDataTree_p inTree, const std::string &vname, const int count);
@@ -72,8 +77,7 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
     virtual void              Execute(void);
     virtual void              PostExecute(void);
     virtual void              VerifyInput(void);
-    avtContract_p
-                           ModifyContract(avtContract_p spec);
+    avtContract_p             ModifyContract(avtContract_p spec);
     virtual void              UpdateDataObjectInfo(void);
 };
 

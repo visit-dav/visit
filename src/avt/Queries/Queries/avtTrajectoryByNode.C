@@ -136,17 +136,36 @@ avtTrajectoryByNode::PostExecute(void)
 //    Override default TimeCurveSpecs 
 //
 //  Programmer:  Kathleen Bonnell 
-//  Creation:    July 8, 2008 
+//  Creation:    July 8, 2008
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Sep 11
+//    Add QueryAttributes argument. Use it to get variable and element info
+//    for outputCurveLabel.
 //
 // ****************************************************************************
 
 const MapNode&
-avtTrajectoryByNode::GetTimeCurveSpecs() 
+avtTrajectoryByNode::GetTimeCurveSpecs(const QueryAttributes *qa)
 {
     timeCurveSpecs["useTimeForXAxis"] = false;
     timeCurveSpecs["nResultsToStore"] = 2;
+
+    stringVector vars = qa->GetVariables();
+    const MapNode qip = qa->GetQueryInputParams();
+    bool global = (qip.HasEntry("use_global_id") && qip.GetEntry("use_global_id")->AsInt());
+    string n = "_node_" + std::to_string(qip.GetEntry("element")->AsInt());
+    if(global)
+        n = "_global" + n;
+    string v = "Trajectory_" + vars[0] + "_" + vars[1] + n;
+    if(qip.HasEntry("domain") && !global)
+    {
+        v += "_domain_";
+        v += std::to_string(qip.GetEntry("domain")->AsInt());
+    }
+  
+    timeCurveSpecs["outputCurveLabel"] = v;
+
     return timeCurveSpecs;
 }
 

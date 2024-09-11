@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
 #  Test Case:  lineout.py #
@@ -14,34 +14,34 @@
 #    Kathleen Bonnell, Mon Mar 17 09:54:14 PST 2003
 #    Added TestMultiVarLineout2D.
 #
-#    Kathleen Bonnell, Tue Dec 23 09:29:29 PST 2003 
+#    Kathleen Bonnell, Tue Dec 23 09:29:29 PST 2003
 #    Added TestSAMRAI.
 #
-#    Kathleen Bonnell, Thu Jul 29 11:59:35 PDT 2004 
+#    Kathleen Bonnell, Thu Jul 29 11:59:35 PDT 2004
 #    Added tests for no-sampling version, renamed old Curve* tests to
-#    indicate they were generated with-sampling. 
+#    indicate they were generated with-sampling.
 #
-#    Kathleen Bonnell, Thu Aug  5 10:44:22 PDT 2004 
+#    Kathleen Bonnell, Thu Aug  5 10:44:22 PDT 2004
 #    Added calls to ResetPickLetter() and ResetLineoutColor() at the end of
 #    each test, so that failure on any one test won't necessarily affect the
-#    tests that follow. 
+#    tests that follow.
 #
-#    Kathleen Bonnell, Wed Nov 24 11:38:55 PST 2004 
+#    Kathleen Bonnell, Wed Nov 24 11:38:55 PST 2004
 #    Modified the way that sampling gets turned on due to changes in Lineout
 #    Attributes and GlobalLineoutAttributes.  Use global version to turn
-#    sampling on and off. 
+#    sampling on and off.
 #
-#    Kathleen Bonnell, Fri Feb  4 11:17:56 PST 2005 
+#    Kathleen Bonnell, Fri Feb  4 11:17:56 PST 2005
 #    Added TestDynamic, to test new global atts: curveOption and colorOption.
 #
 #    Hank Childs, Wed Feb 16 07:34:07 PST 2005
 #    Rename variables that have unsupported characters.
 #
-#    Kathleen Bonnell, Wed Mar 23 17:58:20 PST 2005 
-#    Added TestDynamic2. 
+#    Kathleen Bonnell, Wed Mar 23 17:58:20 PST 2005
+#    Added TestDynamic2.
 #
-#    Kathleen Bonnell, hu May 19 11:26:39 PDT 2005 
-#    Added TestTecPlot. 
+#    Kathleen Bonnell, hu May 19 11:26:39 PDT 2005
+#    Added TestTecPlot.
 #
 #    Jeremy Meredith, Wed Sep  7 12:06:04 PDT 2005
 #    Allowed spaces in variable names.
@@ -77,10 +77,14 @@
 #
 #    Justin Privitera, Wed May 18 11:25:46 PDT 2022
 #    Changed *active* to *default* for everything related to color tables.
-# 
+#
+#    Kathleen Biagas, Wed Sep 11, 2024
+#    Added var argument to GetOutputArray. Needed when returning the array
+#    from plotInfo.
+#
 # ----------------------------------------------------------------------------
 
-def GetOutputArray(plotID = -1, winID = -1):
+def GetOutputArray(plotID = -1, winID = -1, var="Curve"):
     gInfo = GetGlobalAttributes()
     oldWin = gInfo.windows[gInfo.activeWindow]
     # Set the active window
@@ -97,7 +101,7 @@ def GetOutputArray(plotID = -1, winID = -1):
         SetActivePlots(plotID)
 
     pInfo = GetPlotInformation()
- 
+
     # Restore the old active plots
     if len(active) > 0:
         SetActivePlots(tuple(active))
@@ -106,7 +110,7 @@ def GetOutputArray(plotID = -1, winID = -1):
     if winID != -1:
         SetActiveWindow(oldWin)
 
-    return pInfo["Curve"]
+    return pInfo[var]
 
 def InitAnnotation():
     a = AnnotationAttributes()
@@ -148,11 +152,11 @@ def TestLineout2D(time, suffix):
 
     if (time == 2):
         SetActiveWindow(1)
-        oa = GetOutputArray(4, 2)
+        oa = GetOutputArray(4, 2, "d")
         s = ''.join(['%f, '% x for x in oa])
         s = '(' + s + ')'
         TestText("Lineout2d_output_04", s)
-        oa = GetOutputArray(8, 2)
+        oa = GetOutputArray(8, 2, "d")
         s = ''.join(['%f, '% x for x in oa])
         s = '(' + s + ')'
         TestText("Lineout2d_output_08", s)
@@ -163,11 +167,11 @@ def TestLineout2D(time, suffix):
     Test("CurvesFrom2d" + suffix)
 
     if (time == 2):
-        oa = GetOutputArray(2)
+        oa = GetOutputArray(2, var="d")
         s = ''.join(['%f, '% x for x in oa])
         s = '(' + s + ')'
         TestText("Lineout2d_output_02", s)
-        oa = GetOutputArray()
+        oa = GetOutputArray(var="d")
         s = ''.join(['%f, '% x for x in oa])
         s = '(' + s + ')'
         TestText("Lineout2d_output_15", s)
@@ -305,11 +309,11 @@ def TestSpecifyLineoutWindow(time, suffix):
     #window 1
     OpenDatabase(data_path("pdb_test_data/dbA00.pdb"))
 
-    AddPlot("Pseudocolor", "mesh/ireg") 
+    AddPlot("Pseudocolor", "mesh/ireg")
     DrawPlots()
     ResetView()
 
-    Lineout((0, 2.5), (5, 2.5)) 
+    Lineout((0, 2.5), (5, 2.5))
 
     if (time == 1):
         SetActiveWindow(1)
@@ -326,13 +330,13 @@ def TestSpecifyLineoutWindow(time, suffix):
     SetTimeSliderState(4)
     DrawPlots()
 
-    
+
     gla = GetGlobalLineoutAttributes()
     gla.createWindow = 0
     gla.windowId = 4
     SetGlobalLineoutAttributes(gla)
 
-    Lineout((0, 2.5), (5, 2.5)) 
+    Lineout((0, 2.5), (5, 2.5))
 
     if (time == 1):
         SetActiveWindow(3)
@@ -366,7 +370,7 @@ def TestDynamicLineout(time, suffix):
     DrawPlots()
     ResetView()
 
-    Lineout((0, 0.5, 2.5), (10, 0.5, 2.5)) 
+    Lineout((0, 0.5, 2.5), (10, 0.5, 2.5))
 
     gla = GetGlobalLineoutAttributes()
     gla.Dynamic = 1
@@ -385,7 +389,7 @@ def TestDynamicLineout(time, suffix):
     Test("CurvesFromDynamic_01")
 
     # go back to the beginning time state
-    # and have new curves created for each new time 
+    # and have new curves created for each new time
     SetActiveWindow(1)
     t = 0
     SetTimeSliderState(t)
@@ -437,7 +441,7 @@ def TestDynamicLineout(time, suffix):
 
     #Lineout for dbC00.pdb in window 2
     Lineout((5.0, 7.5, 0.), (10, 7.5, 0.))
-   
+
     SetActiveWindow(1)
     SetActivePlots(1)
 
@@ -456,7 +460,7 @@ def TestDynamicLineout(time, suffix):
     SetActiveWindow(1)
     SetActiveTimeSlider(dbs[1])
     SetTimeSliderState(15)
-   
+
     SetActiveWindow(3)
     Test("CurvesFromDynamic_04")
 
@@ -470,8 +474,8 @@ def TestDynamicLineout(time, suffix):
 
     SetActiveWindow(2)
     SetTimeSliderState(29)
-    
-    SetActiveWindow(3) 
+
+    SetActiveWindow(3)
     Test("CurvesFromDynamic_06")
 
     ResetLineoutColor()
@@ -485,15 +489,15 @@ def TestDynamicLineout(time, suffix):
     DeleteAllPlots()
 
 def TestDynamic2():
-    # VisIt00006006 -- ensure  that 'ClearRefLines' will 'disconnect' the lineout 
+    # VisIt00006006 -- ensure  that 'ClearRefLines' will 'disconnect' the lineout
     # from its originating plot, and won't update when orig plot changes time.
     OpenDatabase(silo_data_path("wave.visit"))
 
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
-    SetTimeSliderState(0) 
-    Lineout((0, 0.5, 2.5), (10, 0.5, 2.5)) 
+    SetTimeSliderState(0)
+    Lineout((0, 0.5, 2.5), (10, 0.5, 2.5))
 
     SetActiveWindow(2)
     InitAnnotation()
@@ -513,7 +517,7 @@ def TestDynamic2():
     SetActiveWindow(1)
     gla.Dynamic = 0
     SetGlobalLineoutAttributes(gla)
-  
+
     SetTimeSliderState(52)
 
     SetActiveWindow(2)

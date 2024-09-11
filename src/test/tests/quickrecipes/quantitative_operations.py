@@ -2,6 +2,11 @@
 #  CLASSES: nightly
 #
 #  Mark C. Miller, Fri Aug 26 14:31:48 PDT 2022
+#
+#  Modifications:
+#   Kathleen Biagas, Wed Sep 11, 2024
+#   Use var name when retrieving lineout plot information. (lineout2).
+# 
 # ----------------------------------------------------------------------------
 
 #
@@ -10,7 +15,7 @@
 Source(tests_path('quickrecipes','vqr_utils.py.inc'))
 
 def defining_expressions():
- 
+
   try:
     # defining expressions {
     # Creating a new expression
@@ -26,9 +31,9 @@ def defining_expressions():
     TestFOA('defining expressions exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
- 
+
 def pick():
- 
+
   try:
     # pick {
     OpenDatabase("~juanita/silo/stuff/noise.silo")
@@ -64,7 +69,7 @@ def pick():
   vqr_cleanup()
 
 def lineout1():
- 
+
   try:
     # lineout 1 {
     p0 = (-5,-3, 0)
@@ -88,20 +93,24 @@ def lineout1():
   # vqr_cleanup()
 
 def lineout2():
- 
+
   try:
     # lineout 2 {
     # Set active window to one containing Lineout curve plots (typically #2)
     SetActiveWindow(2)
-    # Get array of x,y pairs for first curve plot in window
-    SetActivePlots(0)
-    hg_vals = GetPlotInformation()["Curve"]
-    # Get array of x,y pairs for second curve plot in window
-    SetActivePlots(1)
-    avf_vals = GetPlotInformation()["Curve"]
+
+    # Start with third curve plot, the first one generated with
+    # lineout of multiple vars.
+
     # Get array of x,y pairs for third curve plot in window
     SetActivePlots(2)
-    rad_vals = GetPlotInformation()["Curve"]
+    hg_vals = GetPlotInformation()["hardyglobal"]
+    # Get array of x,y pairs for fourth curve plot in window
+    SetActivePlots(3)
+    avf_vals = GetPlotInformation()["airVf"]
+    # Get array of x,y pairs for fifth curve plot in window
+    SetActivePlots(4)
+    rad_vals = GetPlotInformation()["radial"]
 
     # Write it as CSV data to a file
     for i in range(int(len(hg_vals) / 2)):
@@ -115,9 +124,9 @@ def lineout2():
     pass
   DeleteWindow()
   vqr_cleanup()
- 
+
 def query():
- 
+
   try:
     # query {
     OpenDatabase("~juanita/silo/stuff/noise.silo")
@@ -135,7 +144,7 @@ def query():
   vqr_cleanup()
 
 def finding_the_min_and_max():
- 
+
   try:
     # finding the min and max {
     # Define a helper function to get node/zone id's from query string.
@@ -180,7 +189,7 @@ def finding_the_min_and_max():
     TestFOA('finding the min and max exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
- 
+
 def csv_query_over_time():
 
   try:
