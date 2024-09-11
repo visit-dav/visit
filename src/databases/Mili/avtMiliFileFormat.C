@@ -3889,7 +3889,6 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
     miliMetaData = new avtMiliMetaData *[nMeshes];
 
-    // TODO is this not a memory leak?
     for (int i = 0; i < nMeshes; ++i)
     {
         miliMetaData[i] = NULL;
