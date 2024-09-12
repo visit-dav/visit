@@ -4276,9 +4276,24 @@ return type : dictionary
     This was introduced in VisIt 3.4.1.
 
     Single-curve output (like Lineout) will utilize the variable name as the dictionary key.
+    Time queries may use the query name or a combination of query name and variable name (with underscores separating them).
     This was introduced in VisIt 3.4.2.
 
-**Single Curve Example:**
+**Single Curve Example: (pre VisIt 3.4.2)**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+  AddPlot("Pseudocolor", "Curve")
+  DrawPlots()
+  Lineout((0, 0), (1, 1))
+  SetActiveWindow(2)
+  info = GetPlotInformation()
+  lineout = info["d"]
+  print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
+
+**Single Curve Examples: (starting with VisIt 3.4.2)**
 
 ::
 
@@ -4290,7 +4305,16 @@ return type : dictionary
   SetActiveWindow(2)
   info = GetPlotInformation()
   lineout = info["d"]
-  print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
+
+  DeleteAllPlots()
+  SetActiveWindow(1)
+  QueryOverTime("Max", vars=("p"))
+  SetActiveWindow(2)
+  info = GetPlotInformation()
+  max_over_time=info["Max_p"]
+
+
+
 
 **Multiple Curve Example:**
 
