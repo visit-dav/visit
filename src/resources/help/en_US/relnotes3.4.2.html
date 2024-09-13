@@ -45,6 +45,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug in the Blueprint reader so it will use <i>elements/offsets</i>  for unstructured topologies, when present.</li>
   <li>Fixed a bug with transparent rendering where the transparent portions of the image were rendered with a white cast when in scalable rendering mode and all the geometry was on the first processor.</li>
   <li>Fixed a bug with point glyphing where points would be 'lost' and other miscolered if poly-vertex cells were present in the dataset.</li>
+  <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
+  <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
+  <li>ChooseCenter with a mouse on Scatter plot now works.</li>
 </ul>
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
@@ -57,8 +60,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Blueprint writer lets users specify Blueprint write options.</li>
   <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
   <li>Host profiles for KAUST have been updated.</li>
-  <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
-  <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
 </ul>
 
 <a name="Dev_changes"></a>
