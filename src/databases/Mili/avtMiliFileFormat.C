@@ -484,10 +484,114 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 void
 avtMiliFileFormat::ActivateTimestep(void)
 {
+    // for each mesh for each domain there is a set of label ids
+    std::map<int, std::map<int, std::set<int>>> mesh_domain_label_ids;
+    // mesh_domain_label_ids[meshId][domainId] = set of label ids
 
+    // 
+    // read the label ids from the mili file
+    // 
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        {
+            if (dbid[domainId] != -1)
+            {
+                //
+                // Perform an mc call to retrieve the number of nodes
+                // on this domain, and update our meta data.
+                //
+                char nodeSName[] = "node";
+                int classIdx     = 0;
+                int nNodes       = 0;
+                char shortName[1024];
+                char longName[1024];
 
+                int rval = mc_get_class_info(dbid[domainId],
+                                             meshId,
+                                             M_NODE,
+                                             classIdx,
+                                             shortName,
+                                             longName,
+                                             &nNodes);
 
-    std::vector<intVector> labelIds = 
+                if (rval != OK)
+                {
+                    char msg[512];
+                    snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
+                    EXCEPTION1(ImproperUseException, msg);
+                }
+
+                int numBlocks     = 0;
+                int *blockRanges  = NULL;
+                int *labelIds     = new int[nNodes];
+
+                // TODO std::fill?
+                for (int nodeId = 0; nodeId < nNodes; nodeId ++)
+                {
+                    labelIds[nodeId] = -1;
+                }
+
+                rval = mc_load_node_labels(dbid[domainId],
+                                           meshId,
+                                           shortName,
+                                           &numBlocks,
+                                           &blockRanges,
+                                           labelIds);
+
+                if (rval != OK)
+                {
+                    debug1 << "MILI: mc_load_node_labels failed!\n";
+                    numBlocks   = 0;
+                    blockRanges = NULL;
+                }
+
+                for (int nodeId = 0; nodeId < nNodes; nodeId ++)
+                {
+                    mesh_domain_label_ids[meshId][domainId].insert(labelIds[nodeId]);
+                }
+
+                //
+                // Mili mallocs blockRanges using C style.
+                //
+                if (blockRanges != NULL)
+                {
+                    free(blockRanges);
+                }
+                delete [] labelIds;
+            }
+        }
+    }
+
+    // 
+    // discover where the domains overlap
+    // 
+    // TODO move this object to header file and use in getmesh
+    std::map<int, std::set<int>> mesh_shared_node_labels;
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        // for each domain, we will look at every other domain
+        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        {
+            if (dbid[domainId] != -1)
+            {
+                for (int otherDomainId = 0; otherDomainId < dbid.size(); otherDomainId ++)
+                {
+                    if (dbid[otherDomainId] != -1)
+                    {
+                        std::set<int> &curr_dom_labels = mesh_domain_label_ids[meshId][domainId];
+                        std::set<int> &othr_dom_labels = mesh_domain_label_ids[meshId][otherDomainId];
+
+                        // TODO does this blow away what is already in mesh_shared_node_labels[meshId]?
+                        std::set_intersection(curr_dom_labels.begin(), curr_dom_labels.end(), 
+                                              othr_dom_labels.begin(), othr_dom_labels.end(),
+                                              std::inserter(mesh_shared_node_labels[meshId], 
+                                                            mesh_shared_node_labels[meshId].begin()));
+                    }
+                }
+            }
+        }
+    }
 }
 
 
