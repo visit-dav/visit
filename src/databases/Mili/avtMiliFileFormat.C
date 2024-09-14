@@ -987,7 +987,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             // if the label id for this node is in the list of shared label ids
             if (mesh_shared_node_labels[meshId].count(labelIds[nodeId]) > 0)
             {
-                std::cout << "it is happening" << std::endl;
                 ghostNodePtr[nodeId] = 0;
                 avtGhostData::AddGhostNodeType(ghostNodePtr[nodeId],
                     DUPLICATED_NODE);
