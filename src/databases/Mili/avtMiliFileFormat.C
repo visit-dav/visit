@@ -566,8 +566,6 @@ avtMiliFileFormat::ActivateTimestep(void)
     // 
     // discover where the domains overlap
     // 
-    // TODO move this object to header file and use in getmesh
-    std::map<int, std::set<int>> mesh_shared_node_labels;
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         // for each domain, we will look at every other domain
@@ -581,12 +579,13 @@ avtMiliFileFormat::ActivateTimestep(void)
                     {
                         std::set<int> &curr_dom_labels = mesh_domain_label_ids[meshId][domainId];
                         std::set<int> &othr_dom_labels = mesh_domain_label_ids[meshId][otherDomainId];
+                        std::set<int> &result          = mesh_shared_node_labels[meshId];
 
                         // TODO does this blow away what is already in mesh_shared_node_labels[meshId]?
                         std::set_intersection(curr_dom_labels.begin(), curr_dom_labels.end(), 
                                               othr_dom_labels.begin(), othr_dom_labels.end(),
-                                              std::inserter(mesh_shared_node_labels[meshId], 
-                                                            mesh_shared_node_labels[meshId].begin()));
+                                              std::inserter(result, 
+                                                            result.begin()));
                     }
                 }
             }
@@ -972,6 +971,26 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             {
                 avtGhostData::AddGhostZoneType(ghostZonePtr[i],
                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
+            }
+        }
+
+        std::vector<int> labelIds = miliMetaData[meshId]->GetClassMDByShortName("node")->
+                                                          GetLabelIds()[dom];
+
+        if (labelIds.size() != nNodes)
+        {
+            EXCEPTION1(InvalidVariableException, "node");
+        }
+
+        for (int nodeId = 0; nodeId < nNodes; nodeId ++)
+        {
+            // if the label id for this node is in the list of shared label ids
+            if (mesh_shared_node_labels[meshId].count(labelIds[nodeId]) > 0)
+            {
+                std::cout << "it is happening" << std::endl;
+                ghostNodePtr[nodeId] = 0;
+                avtGhostData::AddGhostNodeType(ghostNodePtr[nodeId],
+                    DUPLICATED_NODE);
             }
         }
 

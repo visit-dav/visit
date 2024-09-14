@@ -21,6 +21,9 @@ extern "C" {
 #include <avtMTMDFileFormat.h>
 #include <avtMiliMetaData.h>
 
+// TODO delete me
+#include <set>
+
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 
@@ -251,6 +254,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     boolVector             meshRead;
     std::vector<Famid>     dbid;
     std::string            globalIntegrationPoint;
+    std::map<int, std::set<int>> mesh_shared_node_labels;
 };
 
 #endif
