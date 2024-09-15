@@ -242,7 +242,7 @@ Test("transparency_15")
 DeleteAllPlots()
 
 # Test with 3d multi block data
-OpenDatabase("/usr/gapps/visit/data/multi_rect3d.silo")
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 DefineScalarExpression("x", "coord(mesh1)[0]")
 DefineScalarExpression("y", "coord(mesh1)[1]")
