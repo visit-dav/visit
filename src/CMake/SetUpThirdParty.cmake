@@ -45,6 +45,9 @@
 #   Kathleen Biagas, Thu May 2, 2024
 #   Add '*.inl' to acceptable patterns when installing headers.
 #
+#   Eric Brugger, Wed Sep  4 10:31:31 PDT 2024
+#   I re-enabled vtkm.
+#
 #****************************************************************************/
 
 # ==============================================
@@ -631,7 +634,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
-    #include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
+    include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
+
     include(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
 endif()
 
