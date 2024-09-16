@@ -757,12 +757,16 @@ QvisExpressionsWindow::SetStandardEditorReadOnly(bool read_only)
 {
     if(read_only)
     {
+        nameEditLabel->setText(tr("Name (Read Only)"));
+        nameEdit->setReadOnly(true);
         stdDefinitionEdit->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                                    Qt::TextSelectableByKeyboard );
         stdDefinitionEditLabel->setText(tr("Definition (Read Only)"));
     }
     else
     {
+        nameEditLabel->setText(tr("Name"));
+        nameEdit->setReadOnly(false);
         stdDefinitionEdit->setTextInteractionFlags(Qt::TextEditable);
         stdDefinitionEditLabel->setText(tr("Definition"));
     }
@@ -1025,7 +1029,6 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
         read_only = true;
     }
 
-    nameEdit->setEnabled(enable && !read_only);
     delButton->setEnabled(enable && !read_only);
 
     typeList->setEnabled(enable && !read_only);
