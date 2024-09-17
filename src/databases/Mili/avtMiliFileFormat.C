@@ -496,15 +496,30 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 void
 avtMiliFileFormat::ActivateTimestep(int ts)
 {
-    // for each mesh for each domain there is a set of label ids
-    std::map<int, std::map<int, std::set<int>>> mesh_domain_label_ids;
-    // mesh_domain_label_ids[meshId][domainId] = set of label ids
+    // we cannot make any assumptions across timesteps so we clear it each time
+    if (mesh_shared_node_labels)
+    {
+        for (int meshId = 0; meshId < nMeshes; meshId ++)
+        {
+            if (mesh_shared_node_labels[meshId])
+            {
+                delete [] mesh_shared_node_labels[meshId];
+            }
+        }
+        delete [] mesh_shared_node_labels;
+    }
 
-    // 
-    // read the label ids from the mili file
-    // 
+    mesh_shared_node_labels = new int *[nMeshes];
+
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
+        // for each mesh for each domain there is a set of label ids
+        std::map<int, std::set<int>> domain_label_ids;
+        // domain_label_ids[domainId] = set of label ids
+
+        // 
+        // read the label ids from the mili file
+        // 
         for (int domainId = 0; domainId < dbid.size(); domainId ++)
         {
             if (dbid[domainId] == -1)
@@ -563,7 +578,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
 
             for (int nodeId = 0; nodeId < nNodes; nodeId ++)
             {
-                mesh_domain_label_ids[meshId][domainId].insert(labelIds[nodeId]);
+                domain_label_ids[domainId].insert(labelIds[nodeId]);
             }
 
             //
@@ -575,33 +590,24 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             }
             delete [] labelIds;
         }
-    }
 
-    //
-    // determine max label
-    //
-    // maps meshid to max label for that mesh
-    std::map<int, int> mesh_max_label;
-    for (int meshId = 0; meshId < nMeshes; meshId ++)
-    {
-        int curr_max = -1;
+        //
+        // determine max label
+        //
+        int max_label = -1;
         for (int domainId = 0; domainId < dbid.size(); domainId ++)
         {
-            const int max_label = *(mesh_domain_label_ids[meshId][domainId].rbegin());
-            if (max_label > curr_max)
+            const int curr_max = *(domain_label_ids[domainId].rbegin());
+            if (curr_max > max_label)
             {
-                curr_max = max_label;
+                max_label = curr_max;
             }
         }
-        mesh_max_label[meshId] = curr_max;
-    }
 
-    // 
-    // discover where the domains overlap
-    // 
-    std::map<int, std::set<int>> mesh_shared_node_labels_map;
-    for (int meshId = 0; meshId < nMeshes; meshId ++)
-    {
+        // 
+        // discover where the domains overlap
+        // 
+        std::set<int> shared_node_labels;
         // for each domain, we will look at every other domain
         for (int domainId = 0; domainId < dbid.size(); domainId ++)
         {
@@ -609,46 +615,26 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             {
                 if (domainId != otherDomainId)
                 {
-                    std::set<int> &curr_dom_labels = mesh_domain_label_ids[meshId][domainId];
-                    std::set<int> &othr_dom_labels = mesh_domain_label_ids[meshId][otherDomainId];
-                    std::set<int> &result          = mesh_shared_node_labels_map[meshId];
-
+                    std::set<int> &curr_dom_labels = domain_label_ids[domainId];
+                    std::set<int> &othr_dom_labels = domain_label_ids[otherDomainId];
                     std::set_intersection(curr_dom_labels.begin(), curr_dom_labels.end(), 
                                           othr_dom_labels.begin(), othr_dom_labels.end(),
-                                          std::inserter(result, 
-                                                        result.begin()));
+                                          std::inserter(shared_node_labels, 
+                                                        shared_node_labels.begin()));
                 }
             }
         }
-    }
 
-    // we cannot make any assumptions across timesteps so we clear it each time
-    if (mesh_shared_node_labels)
-    {
-        for (int meshId = 0; meshId < nMeshes; meshId ++)
-        {
-            if (mesh_shared_node_labels[meshId])
-            {
-                delete [] mesh_shared_node_labels[meshId];
-            }
-        }
-        delete [] mesh_shared_node_labels;
-    }
-
-    // 
-    // fill our MPI-friendly data structure
-    // 
-    mesh_shared_node_labels = new int *[nMeshes];
-    for (int meshId = 0; meshId < nMeshes; meshId ++)
-    {
-        const int max_label_for_mesh = mesh_max_label[meshId];
-        mesh_shared_node_labels[meshId] = new int[max_label_for_mesh];
-        for (int labelId = 0; labelId < max_label_for_mesh; labelId ++)
+        // 
+        // fill our MPI-friendly data structure
+        // 
+        mesh_shared_node_labels[meshId] = new int[max_label];
+        for (int labelId = 0; labelId < max_label; labelId ++)
         {
             mesh_shared_node_labels[meshId][labelId] = 0;
         }
 
-        for (const auto &dupl_label : mesh_shared_node_labels_map[meshId])
+        for (const auto &dupl_label : shared_node_labels)
         {
             mesh_shared_node_labels[meshId][dupl_label] ++;
         }
