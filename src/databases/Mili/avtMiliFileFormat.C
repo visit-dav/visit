@@ -482,7 +482,7 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 // ****************************************************************************
 
 void
-avtMiliFileFormat::ActivateTimestep(void)
+avtMiliFileFormat::ActivateTimestep(int ts)
 {
     // for each mesh for each domain there is a set of label ids
     std::map<int, std::map<int, std::set<int>>> mesh_domain_label_ids;
