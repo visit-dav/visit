@@ -563,6 +563,28 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         }
     }
 
+    //
+    // determine max label
+    //
+    // maps meshid to max label for that mesh
+    std::map<int, int> mesh_max_label;
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        int curr_max = -1;
+        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        {
+            if (dbid[domainId] != -1)
+            {
+                const int max_label = *(mesh_domain_label_ids[meshId][domainId].rbegin());
+                if (max_label > curr_max)
+                {
+                    curr_max = max_label;
+                }
+            }
+        }
+        mesh_max_label[meshId] = curr_max;
+    }
+
     // 
     // discover where the domains overlap
     // 
@@ -581,7 +603,6 @@ avtMiliFileFormat::ActivateTimestep(int ts)
                         std::set<int> &othr_dom_labels = mesh_domain_label_ids[meshId][otherDomainId];
                         std::set<int> &result          = mesh_shared_node_labels[meshId];
 
-                        // TODO does this blow away what is already in mesh_shared_node_labels[meshId]?
                         std::set_intersection(curr_dom_labels.begin(), curr_dom_labels.end(), 
                                               othr_dom_labels.begin(), othr_dom_labels.end(),
                                               std::inserter(result, 
