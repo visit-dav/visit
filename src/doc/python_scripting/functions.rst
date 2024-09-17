@@ -3742,6 +3742,37 @@ return type : string
   msg = GetLastError(1)
 
 
+GetLastMessage
+--------------
+
+**Synopsis:**
+
+::
+
+  GetLastMessage() -> (message, severity)
+  GetLastMessage(int-clr) -> (message, severity)
+
+Returns:
+    GetLastMessage returns a tuple containing 2 strings, the last message and its severity.
+    If int-clr is present and is non-zero, once the message is retrieved it is also cleared.
+
+
+**Description:**
+
+    The GetLastMessage function returns a tuple containing the last message and its severity that VisIt issued since being cleared.
+    If int-clr is present and is non-zero, once the message is retrieved it is also cleared.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/this/database/does/not/exist")
+  msg, severity = GetLastMessage()
+  print("VisIt %s: %s" % (severity, msg))
+
+
 GetLight
 --------
 
