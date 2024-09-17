@@ -66,7 +66,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Updated Conduit to 0.9.2.</li>
   <li>Docker containers were added for RockyLinux (RHEL compatible).</li>
-  <li>Qwt is now optional. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--qwt</code> to the build_visit command line to build qwt. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
+  <li>Qwt is now optional, but built by default. If you encounter issues with Qwt when running build_visit, add <code>--no-qwt</code> to the build_visit command line to disable Qwt. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
   <li>Added ICE-T support for Windows builds.</li>
   <li>Fixed bug where printing the build_visit log file location prepended extra paths.</li>
   <li>Fixed glitch that prevented VISIT_CXX_FLAGS defined in config-site file from being applied.</li>
