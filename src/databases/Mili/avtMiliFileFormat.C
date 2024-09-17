@@ -579,7 +579,6 @@ avtMiliFileFormat::ActivateTimestep(int ts)
 
     //
     // determine max label
-    // TODO this doesn't work!
     //
     // maps meshid to max label for that mesh
     std::map<int, int> mesh_max_label;
@@ -636,7 +635,9 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         delete [] mesh_shared_node_labels;
     }
 
-    // load our MPI-friendly data structure
+    // 
+    // fill our MPI-friendly data structure
+    // 
     mesh_shared_node_labels = new int *[nMeshes];
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
