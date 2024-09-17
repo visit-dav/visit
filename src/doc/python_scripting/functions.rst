@@ -3392,7 +3392,6 @@ return type : dictionary
 ::
 
   #% visit -cli
-  OpenMDServer()
   opts = GetDefaultFileOpenOptions("VASP")
   opts["Allow multiple timesteps"] = 1
   SetDefaultFileOpenOptions("VASP", opts)
