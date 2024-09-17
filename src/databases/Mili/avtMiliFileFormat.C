@@ -575,7 +575,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             {
                 for (int otherDomainId = 0; otherDomainId < dbid.size(); otherDomainId ++)
                 {
-                    if (dbid[otherDomainId] != -1)
+                    if (dbid[otherDomainId] != -1 && domainId != otherDomainId)
                     {
                         std::set<int> &curr_dom_labels = mesh_domain_label_ids[meshId][domainId];
                         std::set<int> &othr_dom_labels = mesh_domain_label_ids[meshId][otherDomainId];
