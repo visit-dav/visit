@@ -28,9 +28,7 @@ class QTreeWidget;
 
 class QvisSimulationCommandWindow;
 class QvisSimulationMessageWindow;
-#ifdef HAVE_QWT
 class QvisStripChartMgr;
-#endif
 class QvisUiLoader;
 
 class EngineList;
@@ -38,8 +36,6 @@ class StatusAttributes;
 class avtSimulationCommandSpecification;
 class SimulationUIValues;
 class SimCommandSlots;
-
-class QwtPlot;
 
 // ****************************************************************************
 // Class: QvisSimulationWindow
@@ -134,9 +130,7 @@ private slots:
     void interruptEngine();
     void selectEngine(int index);
     void clearMessages();
-#ifdef HAVE_QWT
     void clearStripCharts();
-#endif
     void clearCache();
     void showCustomUIWindow();
     void executePushButtonCommand(const QString &cmd);
@@ -146,9 +140,7 @@ private slots:
     void executeStepCommand(const QString &value);
 
 public:
-#ifdef HAVE_QWT
     void setStripChartVar(const QString &value);
-#endif
 
 private:
     EngineList           *engines;
@@ -170,9 +162,7 @@ private:
     QPushButton        *clearCacheButton;
     QWidget            *CustomUIWindow;
     QvisUiLoader       *uiLoader;
-#ifdef HAVE_QWT
     QvisStripChartMgr  *stripChartMgr;
-#endif
     QvisSimulationCommandWindow  *simCommands;
     QvisSimulationMessageWindow  *simMessages;
 
