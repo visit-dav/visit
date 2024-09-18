@@ -510,12 +510,12 @@ avtMiliFileFormat::ActivateTimestep(int ts)
     }
 
     mesh_shared_node_labels = new int *[nMeshes];
+    int nNodes = 0;
 
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         // for each mesh for each domain there is a set of label ids
-        std::map<int, std::set<int>> domain_label_ids;
-        // domain_label_ids[domainId] = set of label ids
+        int **domain_label_ids = new int *[dbid.size()];
 
         // 
         // read the label ids from the mili file
@@ -533,7 +533,6 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             //
             char nodeSName[] = "node";
             int classIdx     = 0;
-            int nNodes       = 0;
             char shortName[1024];
             char longName[1024];
 
@@ -576,9 +575,11 @@ avtMiliFileFormat::ActivateTimestep(int ts)
                 blockRanges = NULL;
             }
 
+            domain_label_ids[domainId] = new int[nNodes];
+
             for (int nodeId = 0; nodeId < nNodes; nodeId ++)
             {
-                domain_label_ids[domainId].insert(labelIds[nodeId]);
+                domain_label_ids[domainId][nodeId] = labelIds[nodeId];
             }
 
             //
@@ -597,12 +598,17 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         int max_label = -1;
         for (int domainId = 0; domainId < dbid.size(); domainId ++)
         {
-            const int curr_max = *(domain_label_ids[domainId].rbegin());
-            if (curr_max > max_label)
+            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
             {
-                max_label = curr_max;
+                const int curr_label = domain_label_ids[domainId][nodeId];
+                if (curr_label > max_label)
+                {
+                    max_label = curr_label;
+                }
             }
         }
+
+        // TODO left off here - need to do set intersection w/o sets
 
         // 
         // discover where the domains overlap
@@ -638,6 +644,12 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         {
             mesh_shared_node_labels[meshId][dupl_label] ++;
         }
+
+        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        {
+            delete [] domain_label_ids[domainId];
+        }
+        delete [] domain_label_ids;
     }
 }
 
