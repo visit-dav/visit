@@ -6897,6 +6897,10 @@ visit_DatabasePlugins(PyObject *self, PyObject *args)
 //    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
 //    Added better error message for when plugin wasn't found.
 //
+//    Eric Brugger, Tue Sep 17 13:48:49 PDT 2024
+//    Added logic to open a metadata server if the list of file open
+//    options was empty.
+//
 // ****************************************************************************
 STATIC PyObject *
 visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
@@ -6911,6 +6915,18 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     MUTEX_LOCK();
     FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
     MUTEX_UNLOCK();
+
+    // Open an mdserver if the type names is empty.
+    if(foo->GetTypeNames().empty())
+    {
+        PyObject *hargs = PyTuple_New(1);
+        PyTuple_SET_ITEM(hargs, 0, PyString_FromString("localhost"));
+        PyObject *ret = visit_OpenMDServer(self, hargs);
+        Py_DECREF(hargs);
+        if(ret == NULL)
+            return NULL;
+        Py_DECREF(ret);
+    }
 
     PyObject *dict = NULL;
     const stringVector &types = foo->GetTypeNames();
@@ -6933,16 +6949,15 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
-                "Metadata Server is running.", plugin);
+        sprintf(msg, "\"%s\" is not a valid plugin name.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
     if (!dict)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin, but appear to have "
-                "have no options for opening files.", plugin);
+        sprintf(msg, "\"%s\" is a valid plugin name, but does not "
+                "have options for opening files.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
