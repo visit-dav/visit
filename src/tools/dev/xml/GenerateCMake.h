@@ -295,11 +295,10 @@ class CMakeGeneratorPlugin : public Plugin
         for(int i = 0; i < newlist.size(); ++i)
         {
             QString tmp(newlist[i]);
-            if(tmp.startsWith("vtkm_"))
+            if(tmp.startsWith("vtkm_") && !using_dev)
             {
-                if (!using_dev)
-                    // append the vtk version for VTK-8
-                    tmp.append(vtkmversion);
+                // append the vtkm version
+                tmp.append(vtkmversion);
             }
             libs += " " + tmp;
         }
