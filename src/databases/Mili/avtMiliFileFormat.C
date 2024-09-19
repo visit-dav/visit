@@ -11,6 +11,11 @@
 
 #include <visit-config.h> // For LIB_VERSION_LE
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif 
+
 #include <limits>
 #include <visitstream.h>
 
@@ -519,13 +524,14 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         // for each mesh for each domain there is a set of label ids
         int **domain_label_ids = new int *[num_domains];
 
-        // TODO MPI get rank and num ranks
-        const int rank = 0;
-        const int num_ranks = 1;
+        int start_domain, stop_domain;
+
+#ifdef PARALLEL
+        const int rank = PAR_Rank();
+        const int num_ranks = PAR_Size();
 
         const int count = num_domains / num_ranks;
         const int remainder = num_domains % num_ranks;
-        int start_domain, stop_domain;
 
         if (rank < remainder)
         {
@@ -537,6 +543,10 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             start_domain = rank * count + remainder;
             stop_domain = start_domain + count;
         }
+#else
+        start_domain = 0;
+        stop_domain = num_domains;
+#endif
 
         // 
         // read the label ids from the mili file
@@ -611,26 +621,31 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         //
         // determine max label
         //
-        int max_label = -1;
+        int local_max_label = -1;
         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
             for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
             {
                 const int curr_label = domain_label_ids[domainId][nodeId];
-                if (curr_label > max_label)
+                if (curr_label > local_max_label)
                 {
-                    max_label = curr_label;
+                    local_max_label = curr_label;
                 }
             }
         }
 
-        // TODO MPI share max label with everyone
+        int max_label = -1;
+#ifdef PARALLEL
+        MPI_Allreduce(&local_max_label, &max_label, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+#else
+        max_label = local_max_label;
+#endif
 
-        mesh_shared_node_labels[meshId] = new int[max_label];
+        int *local_shared_node_labels = new int[max_label];
         // TODO std::fill?
         for (int labelId = 0; labelId < max_label; labelId ++)
         {
-            mesh_shared_node_labels[meshId][labelId] = 0;
+            local_shared_node_labels[labelId] = 0;
         }
 
         // 
@@ -641,11 +656,19 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
             {
                 const int label = domain_label_ids[domainId][nodeId];
-                mesh_shared_node_labels[meshId][label] ++;
+                local_shared_node_labels[label] ++;
             }
         }
 
-        // TODO MPI sum reduction on the array
+#ifdef PARALLEL
+        mesh_shared_node_labels[meshId] = new int[max_label];
+        MPI_Allreduce(local_shared_node_labels,
+                      mesh_shared_node_labels[meshId],
+                      max_label, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+        delete [] local_shared_node_labels;
+#else
+        mesh_shared_node_labels[meshId] = local_shared_node_labels;
+#endif
 
         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
