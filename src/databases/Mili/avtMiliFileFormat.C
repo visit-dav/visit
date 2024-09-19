@@ -509,18 +509,38 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         delete [] mesh_shared_node_labels;
     }
 
+    const int num_domains = dbid.size();
+
     mesh_shared_node_labels = new int *[nMeshes];
-    int *nNodes_for_dom = new int[dbid.size()];
+    int *nNodes_for_dom = new int[num_domains];
 
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         // for each mesh for each domain there is a set of label ids
-        int **domain_label_ids = new int *[dbid.size()];
+        int **domain_label_ids = new int *[num_domains];
+
+        const int rank = 0;
+        const int num_ranks = 1;
+
+        const int count = num_domains / num_ranks;
+        const int remainder = num_domains % num_ranks;
+        int start_domain, stop_domain;
+
+        if (rank < remainder)
+        {
+            start_domain = rank * (count + 1);
+            stop_domain = start_domain + count + 1;
+        }
+        else
+        {
+            start_domain = rank * count + remainder;
+            stop_domain = start_domain + count;
+        }
 
         // 
         // read the label ids from the mili file
         // 
-        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
             if (dbid[domainId] == -1)
             {
@@ -591,7 +611,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         // determine max label
         //
         int max_label = -1;
-        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
             for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
             {
@@ -612,7 +632,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         // 
         // fill our MPI-friendly data structure
         // 
-        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
             for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
             {
@@ -621,7 +641,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             }
         }
 
-        for (int domainId = 0; domainId < dbid.size(); domainId ++)
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
             delete [] domain_label_ids[domainId];
         }
