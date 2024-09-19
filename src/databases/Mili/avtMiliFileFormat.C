@@ -392,16 +392,18 @@ avtMiliFileFormat::~avtMiliFileFormat()
         delete [] fampath;
     }
 
-    if (mesh_shared_node_labels)
+    if (nullptr != mesh_shared_node_labels)
     {
         for (int meshId = 0; meshId < nMeshes; meshId ++)
         {
-            if (mesh_shared_node_labels[meshId])
+            if (nullptr != mesh_shared_node_labels[meshId])
             {
                 delete [] mesh_shared_node_labels[meshId];
+                mesh_shared_node_labels[meshId] = nullptr;
             }
         }
         delete [] mesh_shared_node_labels;
+        mesh_shared_node_labels = nullptr;
     }
 }
 
@@ -503,22 +505,33 @@ void
 avtMiliFileFormat::ActivateTimestep(int ts)
 {
     // we cannot make any assumptions across timesteps so we clear it each time
-    if (mesh_shared_node_labels)
+    if (nullptr != mesh_shared_node_labels)
     {
         for (int meshId = 0; meshId < nMeshes; meshId ++)
         {
-            if (mesh_shared_node_labels[meshId])
+            if (nullptr != mesh_shared_node_labels[meshId])
             {
                 delete [] mesh_shared_node_labels[meshId];
+                mesh_shared_node_labels[meshId] = nullptr;
             }
         }
         delete [] mesh_shared_node_labels;
+        mesh_shared_node_labels = nullptr;
     }
 
     const int num_domains = dbid.size();
 
+    // TODO do these have to be like this
     mesh_shared_node_labels = new int *[nMeshes];
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        mesh_shared_node_labels[meshId] = nullptr;
+    }
     int *nNodes_for_dom = new int[num_domains];
+    for (int domainId = 0; domainId < num_domains; domainId ++)
+    {
+        nNodes_for_dom[domainId] = -1;
+    }
 
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
@@ -642,41 +655,50 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         max_label = local_max_label;
 #endif
 
+        // TODO JUSTIN left off here: max_label is -1 and we have confirmed we are in serial
+        // that means local_max_label is -1 still. Need to investigate the domain start and end
+        // and the whole mechanism above. I am running with
+        // bin/visit -o testdata/mili_test_data/single_proc/m_plot.mili
+        // to expose the error.
+
         int *local_shared_node_labels = new int[max_label];
-        // TODO std::fill?
-        for (int labelId = 0; labelId < max_label; labelId ++)
-        {
-            local_shared_node_labels[labelId] = 0;
-        }
+        // // TODO std::fill?
+        // for (int labelId = 0; labelId < max_label; labelId ++)
+        // {
+        //     local_shared_node_labels[labelId] = 0;
+        // }
 
-        // 
-        // fill our MPI-friendly data structure
-        // 
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
-            {
-                const int label = domain_label_ids[domainId][nodeId];
-                local_shared_node_labels[label] ++;
-            }
-        }
+//         // 
+//         // fill our MPI-friendly data structure
+//         // 
+//         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
+//         {
+//             for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
+//             {
+//                 const int label = domain_label_ids[domainId][nodeId];
+//                 local_shared_node_labels[label] ++;
+//             }
+//         }
 
-#ifdef PARALLEL
-        mesh_shared_node_labels[meshId] = new int[max_label];
-        MPI_Allreduce(local_shared_node_labels,
-                      mesh_shared_node_labels[meshId],
-                      max_label, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
-        delete [] local_shared_node_labels;
-#else
-        mesh_shared_node_labels[meshId] = local_shared_node_labels;
-#endif
+// #ifdef PARALLEL
+//         mesh_shared_node_labels[meshId] = new int[max_label];
+//         MPI_Allreduce(local_shared_node_labels,
+//                       mesh_shared_node_labels[meshId],
+//                       max_label, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+//         delete [] local_shared_node_labels;
+// #else
+//         mesh_shared_node_labels[meshId] = local_shared_node_labels;
+// #endif
 
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            delete [] domain_label_ids[domainId];
-        }
-        delete [] domain_label_ids;
+//         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
+//         {
+//             delete [] domain_label_ids[domainId];
+//         }
+//         delete [] domain_label_ids;
     }
+
+    // TODO change my name
+    // delete [] nNodes_for_dom;
 }
 
 
