@@ -556,12 +556,12 @@ avtMiliFileFormat::ActivateTimestep(int ts)
 
             int numBlocks     = 0;
             int *blockRanges  = NULL;
-            int *labelIds     = new int[nNodes];
+            domain_label_ids[domainId] = new int[nNodes];
 
             // TODO std::fill?
             for (int nodeId = 0; nodeId < nNodes; nodeId ++)
             {
-                labelIds[nodeId] = -1;
+                domain_label_ids[domainId][nodeId] = -1;
             }
 
             rval = mc_load_node_labels(dbid[domainId],
@@ -569,20 +569,13 @@ avtMiliFileFormat::ActivateTimestep(int ts)
                                        shortName,
                                        &numBlocks,
                                        &blockRanges,
-                                       labelIds);
+                                       domain_label_ids[domainId]);
 
             if (rval != OK)
             {
                 debug1 << "MILI: mc_load_node_labels failed!\n";
                 numBlocks   = 0;
                 blockRanges = NULL;
-            }
-
-            domain_label_ids[domainId] = new int[nNodes];
-
-            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
-            {
-                domain_label_ids[domainId][nodeId] = labelIds[nodeId];
             }
 
             //
@@ -592,7 +585,6 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             {
                 free(blockRanges);
             }
-            delete [] labelIds;
         }
 
         //
@@ -1039,10 +1031,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                         DUPLICATED_NODE);
                 }
             }
-        }
-        else
-        {
-            std::cout << "help" << std::endl;
         }
 
         delete [] sandBuffer;
