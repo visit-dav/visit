@@ -519,6 +519,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         // for each mesh for each domain there is a set of label ids
         int **domain_label_ids = new int *[num_domains];
 
+        // TODO MPI get rank and num ranks
         const int rank = 0;
         const int num_ranks = 1;
 
@@ -623,7 +624,10 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             }
         }
 
+        // TODO MPI share max label with everyone
+
         mesh_shared_node_labels[meshId] = new int[max_label];
+        // TODO std::fill?
         for (int labelId = 0; labelId < max_label; labelId ++)
         {
             mesh_shared_node_labels[meshId][labelId] = 0;
@@ -640,6 +644,8 @@ avtMiliFileFormat::ActivateTimestep(int ts)
                 mesh_shared_node_labels[meshId][label] ++;
             }
         }
+
+        // TODO MPI sum reduction on the array
 
         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
