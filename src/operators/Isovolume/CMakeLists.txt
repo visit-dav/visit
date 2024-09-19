@@ -81,11 +81,19 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 
 ADD_LIBRARY(EIsovolumeOperator_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EIsovolumeOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
+if(HAVE_LIBVTKM)
+    target_link_libraries(EIsovolumeOperator_ser  vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion vtkm_worklet)
+endif()
+
 SET(INSTALLTARGETS ${INSTALLTARGETS} EIsovolumeOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EIsovolumeOperator_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EIsovolumeOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
+    if(HAVE_LIBVTKM)
+        target_link_libraries(EIsovolumeOperator_par  vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion vtkm_worklet)
+    endif()
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} EIsovolumeOperator_par)
 ENDIF(VISIT_PARALLEL)
 
