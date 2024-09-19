@@ -1,0 +1,4 @@
+Target: xml2cmake
+Condition:       HAVE_LIBVTKM
+ELinkLibraries:  vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion vtkm_worklet
+
