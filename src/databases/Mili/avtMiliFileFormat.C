@@ -510,7 +510,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
     }
 
     mesh_shared_node_labels = new int *[nMeshes];
-    int nNodes = 0;
+    int *nNodes_for_dom = new int[dbid.size()];
 
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
@@ -535,6 +535,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             int classIdx     = 0;
             char shortName[1024];
             char longName[1024];
+            int nNodes = 0;
 
             int rval = mc_get_class_info(dbid[domainId],
                                          meshId,
@@ -543,6 +544,8 @@ avtMiliFileFormat::ActivateTimestep(int ts)
                                          shortName,
                                          longName,
                                          &nNodes);
+
+            nNodes_for_dom[domainId] = nNodes;
 
             if (rval != OK)
             {
@@ -598,7 +601,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         int max_label = -1;
         for (int domainId = 0; domainId < dbid.size(); domainId ++)
         {
-            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
+            for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
             {
                 const int curr_label = domain_label_ids[domainId][nodeId];
                 if (curr_label > max_label)
@@ -608,41 +611,22 @@ avtMiliFileFormat::ActivateTimestep(int ts)
             }
         }
 
-        // TODO left off here - need to do set intersection w/o sets
-
-        // 
-        // discover where the domains overlap
-        // 
-        std::set<int> shared_node_labels;
-        // for each domain, we will look at every other domain
-        for (int domainId = 0; domainId < dbid.size(); domainId ++)
-        {
-            for (int otherDomainId = 0; otherDomainId < dbid.size(); otherDomainId ++)
-            {
-                if (domainId != otherDomainId)
-                {
-                    std::set<int> &curr_dom_labels = domain_label_ids[domainId];
-                    std::set<int> &othr_dom_labels = domain_label_ids[otherDomainId];
-                    std::set_intersection(curr_dom_labels.begin(), curr_dom_labels.end(), 
-                                          othr_dom_labels.begin(), othr_dom_labels.end(),
-                                          std::inserter(shared_node_labels, 
-                                                        shared_node_labels.begin()));
-                }
-            }
-        }
-
-        // 
-        // fill our MPI-friendly data structure
-        // 
         mesh_shared_node_labels[meshId] = new int[max_label];
         for (int labelId = 0; labelId < max_label; labelId ++)
         {
             mesh_shared_node_labels[meshId][labelId] = 0;
         }
 
-        for (const auto &dupl_label : shared_node_labels)
+        // 
+        // fill our MPI-friendly data structure
+        // 
+        for (int domainId = 0; domainId < dbid.size(); domainId ++)
         {
-            mesh_shared_node_labels[meshId][dupl_label] ++;
+            for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
+            {
+                const int label = domain_label_ids[domainId][nodeId];
+                mesh_shared_node_labels[meshId][label] ++;
+            }
         }
 
         for (int domainId = 0; domainId < dbid.size(); domainId ++)
@@ -1048,7 +1032,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             {
                 // if the label id for this node is in the list of shared label ids
                 const int &label_for_node = labelIds[nodeId];
-                if (mesh_shared_node_labels[meshId][label_for_node] > 0)
+                if (mesh_shared_node_labels[meshId][label_for_node] > 1)
                 {
                     ghostNodePtr[nodeId] = 0;
                     avtGhostData::AddGhostNodeType(ghostNodePtr[nodeId],

@@ -21,9 +21,6 @@ extern "C" {
 #include <avtMTMDFileFormat.h>
 #include <avtMiliMetaData.h>
 
-// TODO delete me
-#include <set>
-
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 
