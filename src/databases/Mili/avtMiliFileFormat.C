@@ -240,6 +240,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     datasets   = NULL;
     materials  = NULL;
     globalIntegrationPoint = "Middle";
+    mesh_shared_node_labels = nullptr;
 
     if (opts != NULL)
     {
