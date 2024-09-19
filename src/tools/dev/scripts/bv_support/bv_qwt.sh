@@ -1,6 +1,6 @@
 function bv_qwt_initialize
 {
-    export DO_QWT="no"
+    export DO_QWT="yes"
     export USE_SYSTEM_QWT="no"
     export USE_ALT_QWT="no"
     add_extra_commandline_args "qwt" "system-qwt" 0 "Use Qwt found on system"

@@ -13,6 +13,9 @@
 #   Cyrus Harrison, Mon Dec  9 13:39:19 PST 2019
 #   Rename main files to correspond to their actual use.
 #
+#   Kathleen Biagas, Wed Sep 18, 2024 
+#   Add VTKM version to xml2cmake compile definitions.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -42,7 +45,7 @@ foreach(tool xml2atts xml2avt xml2cmake xml2info xml2java xml2python xml2sim
 endforeach()
 
 
-target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION})
+target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION} VTKM_SMALL=${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 
 # Install the targets
 VISIT_INSTALL_TARGETS(xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake)
