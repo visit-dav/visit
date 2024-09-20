@@ -287,6 +287,7 @@ class CMakeGeneratorPlugin : public Plugin
     void
     FilterConditionalLibs(QString &links, QString &libs)
     {
+#ifdef HAVE_LIBVTKM
         // Will convert vtkm_xxx to vtkm_xxx-version
         // otherwise will leave it alone.
         QString vtkmversion = QString("-%1").arg(VTKM_SMALL);
@@ -302,6 +303,9 @@ class CMakeGeneratorPlugin : public Plugin
             }
             libs += " " + tmp;
         }
+#else
+        libs = links;
+#endif
     }
 
     void
