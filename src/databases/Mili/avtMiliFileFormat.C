@@ -1148,6 +1148,11 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 if (mesh_shared_node_labels[meshId][label_for_node] > 1 &&
                     mesh_shared_node_owners[meshId][label_for_node] != dom)
                 {
+                    // TODO this is a waking nightmare
+                    // how do we know what to do?
+                    // duplicated nodes may not be the answer after all
+                    // might have to think about external surface calculations
+                    // http://visitusers.org/index.php?title=Ghost_Zone_and_Face_List_Filter
                     ghostNodePtr[nodeId] = 0;
                     avtGhostData::AddGhostNodeType(ghostNodePtr[nodeId],
                         DUPLICATED_NODE);
