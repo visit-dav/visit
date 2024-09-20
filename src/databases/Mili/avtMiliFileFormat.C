@@ -241,6 +241,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     materials  = NULL;
     globalIntegrationPoint = "Middle";
     mesh_shared_node_labels = nullptr;
+    mesh_shared_node_owners = nullptr;
 
     if (opts != NULL)
     {
@@ -405,6 +406,20 @@ avtMiliFileFormat::~avtMiliFileFormat()
         delete [] mesh_shared_node_labels;
         mesh_shared_node_labels = nullptr;
     }
+
+    if (nullptr != mesh_shared_node_owners)
+    {
+        for (int meshId = 0; meshId < nMeshes; meshId ++)
+        {
+            if (nullptr != mesh_shared_node_owners[meshId])
+            {
+                delete [] mesh_shared_node_owners[meshId];
+                mesh_shared_node_owners[meshId] = nullptr;
+            }
+        }
+        delete [] mesh_shared_node_owners;
+        mesh_shared_node_owners = nullptr;
+    }
 }
 
 
@@ -504,7 +519,13 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 void
 avtMiliFileFormat::ActivateTimestep(int ts)
 {
-    // we cannot make any assumptions across timesteps so we clear it each time
+    const int num_domains = dbid.size();
+    if (num_domains == 1)
+    {
+        return;
+    }
+
+    // we cannot make any assumptions across timesteps so we clear these each time
     if (nullptr != mesh_shared_node_labels)
     {
         for (int meshId = 0; meshId < nMeshes; meshId ++)
@@ -518,14 +539,27 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         delete [] mesh_shared_node_labels;
         mesh_shared_node_labels = nullptr;
     }
-
-    const int num_domains = dbid.size();
+    if (nullptr != mesh_shared_node_owners)
+    {
+        for (int meshId = 0; meshId < nMeshes; meshId ++)
+        {
+            if (nullptr != mesh_shared_node_owners[meshId])
+            {
+                delete [] mesh_shared_node_owners[meshId];
+                mesh_shared_node_owners[meshId] = nullptr;
+            }
+        }
+        delete [] mesh_shared_node_owners;
+        mesh_shared_node_owners = nullptr;
+    }
 
     // TODO do these have to be like this
     mesh_shared_node_labels = new int *[nMeshes];
+    mesh_shared_node_owners = new int *[nMeshes];
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         mesh_shared_node_labels[meshId] = nullptr;
+        mesh_shared_node_owners[meshId] = nullptr;
     }
     int *nNodes_for_dom = new int[num_domains];
     for (int domainId = 0; domainId < num_domains; domainId ++)
@@ -533,6 +567,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         nNodes_for_dom[domainId] = -1;
     }
 
+    // main loop
     for (int meshId = 0; meshId < nMeshes; meshId ++)
     {
         // for each mesh for each domain there is a set of label ids
@@ -635,6 +670,7 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         //
         // determine max label
         //
+
         int local_max_label = -1;
         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
         {
@@ -655,50 +691,61 @@ avtMiliFileFormat::ActivateTimestep(int ts)
         max_label = local_max_label;
 #endif
 
-        // TODO JUSTIN left off here: max_label is -1 and we have confirmed we are in serial
-        // that means local_max_label is -1 still. Need to investigate the domain start and end
-        // and the whole mechanism above. I am running with
-        // bin/visit -o testdata/mili_test_data/single_proc/m_plot.mili
-        // to expose the error.
-
         int *local_shared_node_labels = new int[max_label];
-        // // TODO std::fill?
-        // for (int labelId = 0; labelId < max_label; labelId ++)
-        // {
-        //     local_shared_node_labels[labelId] = 0;
-        // }
+        int *local_shared_node_owners = new int[max_label];
+        // TODO std::fill?
+        for (int labelId = 0; labelId < max_label; labelId ++)
+        {
+            local_shared_node_labels[labelId] = 0;
+            local_shared_node_owners[labelId] = 0;
+        }
 
-//         // 
-//         // fill our MPI-friendly data structure
-//         // 
-//         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-//         {
-//             for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
-//             {
-//                 const int label = domain_label_ids[domainId][nodeId];
-//                 local_shared_node_labels[label] ++;
-//             }
-//         }
+        // 
+        // fill our MPI-friendly data structures
+        // 
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
+        {
+            for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
+            {
+                const int label = domain_label_ids[domainId][nodeId];
+                local_shared_node_labels[label] ++;
 
-// #ifdef PARALLEL
-//         mesh_shared_node_labels[meshId] = new int[max_label];
-//         MPI_Allreduce(local_shared_node_labels,
-//                       mesh_shared_node_labels[meshId],
-//                       max_label, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
-//         delete [] local_shared_node_labels;
-// #else
-//         mesh_shared_node_labels[meshId] = local_shared_node_labels;
-// #endif
+                // mark that the node with this label belongs to this domain
+                // we don't care if it gets overwritten, we just want one
+                // domain to own this node at the end of the day.
+                local_shared_node_owners[label] = domainId;
+            }
+        }
 
-//         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-//         {
-//             delete [] domain_label_ids[domainId];
-//         }
-//         delete [] domain_label_ids;
+#ifdef PARALLEL
+        mesh_shared_node_labels[meshId] = new int[max_label];
+        mesh_shared_node_owners[meshId] = new int[max_label];
+        
+        MPI_Allreduce(local_shared_node_labels,
+                      mesh_shared_node_labels[meshId],
+                      max_label, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+        // give the node to the max domain # that has it
+        MPI_Allreduce(local_shared_node_owners,
+                      mesh_shared_node_owners[meshId],
+                      max_label, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+
+        delete [] local_shared_node_labels;
+        delete [] local_shared_node_owners;
+
+#else
+        mesh_shared_node_labels[meshId] = local_shared_node_labels;
+        mesh_shared_node_owners[meshId] = local_shared_node_owners;
+#endif
+
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
+        {
+            delete [] domain_label_ids[domainId];
+        }
+        delete [] domain_label_ids;
     }
 
     // TODO change my name
-    // delete [] nNodes_for_dom;
+    delete [] nNodes_for_dom;
 }
 
 
@@ -1090,13 +1137,16 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             EXCEPTION1(InvalidVariableException, "node");
         }
 
-        if (mesh_shared_node_labels && mesh_shared_node_labels[meshId])
+        if (mesh_shared_node_labels && mesh_shared_node_labels[meshId] &&
+            mesh_shared_node_owners && mesh_shared_node_owners[meshId])
         {
             for (int nodeId = 0; nodeId < nNodes; nodeId ++)
             {
-                // if the label id for this node is in the list of shared label ids
                 const int &label_for_node = labelIds[nodeId];
-                if (mesh_shared_node_labels[meshId][label_for_node] > 1)
+                // if the label id for this node is in the list of shared label ids AND
+                // the node belongs to a different domain
+                if (mesh_shared_node_labels[meshId][label_for_node] > 1 &&
+                    mesh_shared_node_owners[meshId][label_for_node] != dom)
                 {
                     ghostNodePtr[nodeId] = 0;
                     avtGhostData::AddGhostNodeType(ghostNodePtr[nodeId],

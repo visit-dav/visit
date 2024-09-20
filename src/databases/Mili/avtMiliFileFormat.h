@@ -252,6 +252,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     std::vector<Famid>     dbid;
     std::string            globalIntegrationPoint;
     int                  **mesh_shared_node_labels;
+    int                  **mesh_shared_node_owners;
 };
 
 #endif
