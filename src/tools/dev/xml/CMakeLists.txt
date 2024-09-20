@@ -44,8 +44,11 @@ foreach(tool xml2atts xml2avt xml2cmake xml2info xml2java xml2python xml2sim
     endif()
 endforeach()
 
+target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION})
 
-target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION} VTKM_SMALL=${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
+if(HAVE_LIBVTKM)
+    target_compile_definitions(xml2cmake PRIVATE VTKM_SMALL=${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
+endif()
 
 # Install the targets
 VISIT_INSTALL_TARGETS(xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake)
