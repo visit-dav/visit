@@ -391,7 +391,7 @@ function build_visit
         return 1
     fi
     mv visit*.*.tar.gz ../..
-    cp ../src/tools/dev/scripts/visit-install ../..
+    cp ../scripts/visit-install ../..
     warn "All indications are that VisIt was successfully packaged."
 
     #
