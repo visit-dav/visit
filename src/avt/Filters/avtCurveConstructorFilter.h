@@ -51,10 +51,6 @@
 //    Add a MapNode to store multi-curve output for adding to PlotInformation.
 //    Add vname and count arguments to CreateSingleOutput.
 //
-//    Kathleen Biagas, Wed Sep 11, 2024
-//    Add outputArrayName to store single-curve output name for adding
-//    to PlotInformation.
-//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -69,7 +65,6 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
                                   { return "Constructing Curve"; }
 
   protected:
-    std::string               outputArrayName;
     doubleVector              outputArray;
     MapNode                   outputInfo;
     vtkDataSet               *CreateSingleOutput(avtDataTree_p inTree, const std::string &vname, const int count);

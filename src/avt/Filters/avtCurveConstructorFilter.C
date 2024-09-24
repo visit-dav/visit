@@ -520,10 +520,6 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string
             outputInfo[varname] = outputArray;
             outputArray.clear();
         }
-        else
-        {
-            outputArrayName = varname;
-        }
     }
     else
     {
@@ -643,8 +639,6 @@ avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 //    Kathleen Biagas, Wed Sep 11, 2024
 //    Moved test for ouputArray size to CreateSingleOutput, so that we
 //    don't save multiple curves when outputArray is too large.
-//    Use saved outputArrayName instead of 'Curve' when adding single-curve
-//    plot information.
 //
 // ****************************************************************************
 
@@ -656,7 +650,7 @@ avtCurveConstructorFilter::PostExecute(void)
         PlotInfoAttributes plotInfoAtts;
         MapNode data;
         data = outputArray;
-        GetOutput()->GetInfo().GetAttributes().AddPlotInformation(outputArrayName, data);
+        GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
     }
     else if (outputInfo.GetNumEntries() > 0)
     {

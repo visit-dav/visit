@@ -749,6 +749,8 @@ avtTimeLoopQOTFilter::CreateTree(const doubleVector &times,
             label = outputLabel;
         else if (useVarForYAxis)
             label = vars[0];
+
+        std::replace(label.begin(), label.end(), ' ', '_');
         avtDataTree_p tree = new avtDataTree(rgrid, 0, label);
         rgrid->Delete();
         return tree;
