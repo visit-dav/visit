@@ -272,8 +272,6 @@ Read Options via CLI
 
 ::
 
-  # MDServer must be started in order grab the default Open options for the reader
-  OpenMDServer("localhost")
   # Grab the default options
   opts = GetDefaultFileOpenOptions("PLOT3D")
   # and change a couple of things 

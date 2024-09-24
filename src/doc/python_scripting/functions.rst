@@ -2948,88 +2948,6 @@ forceNoSharedMemory:
     print(numpy.asarray(data["zoneTable"]))
 
 
-GetDefaultContinuousColorTable
-------------------------------
-
-**Synopsis:**
-
-::
-
-  GetDefaultContinuousColorTable() -> string
-
-
-return type : string
-    Returns a string object containing the name of a color table.
-
-
-**Description:**
-
-    A color table is a set of color values that are used as the colors for
-    plots. VisIt supports two flavors of color table: continuous and discrete.
-    A continuous color table is defined by a small set of color control points
-    and the colors specified by the color control points are interpolated
-    smoothly to fill in any gaps. Continuous color tables are used for plots
-    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
-    discrete color table is a set of color control points that are used to
-    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
-    notion of default continuous and default discrete color tables so plots can
-    just use the "default" color table. This lets you change the color table
-    used by many plots by just changing the "default" color table. The
-    GetDefaultContinuousColorTable function returns the name of the default
-    continuous color table. The GetDefaultDiscreteColorTable function returns
-    the name of the default discrete color table.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
-  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
-
-
-GetDefaultDiscreteColorTable
-----------------------------
-
-**Synopsis:**
-
-::
-
-  GetDefaultDiscreteColorTable() -> string
-
-
-return type : string
-    Returns a string object containing the name of a color table.
-
-
-**Description:**
-
-    A color table is a set of color values that are used as the colors for
-    plots. VisIt supports two flavors of color table: continuous and discrete.
-    A continuous color table is defined by a small set of color control points
-    and the colors specified by the color control points are interpolated
-    smoothly to fill in any gaps. Continuous color tables are used for plots
-    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
-    discrete color table is a set of color control points that are used to
-    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
-    notion of default continuous and default discrete color tables so plots can
-    just use the "default" color table. This lets you change the color table
-    used by many plots by just changing the "default" color table. The
-    GetDefaultContinuousColorTable function returns the name of the default
-    continuous color table. The GetDefaultDiscreteColorTable function returns
-    the name of the default discrete color table.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
-  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
-
-
 GetActiveTimeSlider
 -------------------
 
@@ -3364,6 +3282,88 @@ return type : CLI_return_t
   print("VisIt's debug level is: %d" % GetDebugLevel())
 
 
+GetDefaultContinuousColorTable
+------------------------------
+
+**Synopsis:**
+
+::
+
+  GetDefaultContinuousColorTable() -> string
+
+
+return type : string
+    Returns a string object containing the name of a color table.
+
+
+**Description:**
+
+    A color table is a set of color values that are used as the colors for
+    plots. VisIt supports two flavors of color table: continuous and discrete.
+    A continuous color table is defined by a small set of color control points
+    and the colors specified by the color control points are interpolated
+    smoothly to fill in any gaps. Continuous color tables are used for plots
+    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
+    discrete color table is a set of color control points that are used to
+    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
+    notion of default continuous and default discrete color tables so plots can
+    just use the "default" color table. This lets you change the color table
+    used by many plots by just changing the "default" color table. The
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
+    the name of the default discrete color table.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
+
+
+GetDefaultDiscreteColorTable
+----------------------------
+
+**Synopsis:**
+
+::
+
+  GetDefaultDiscreteColorTable() -> string
+
+
+return type : string
+    Returns a string object containing the name of a color table.
+
+
+**Description:**
+
+    A color table is a set of color values that are used as the colors for
+    plots. VisIt supports two flavors of color table: continuous and discrete.
+    A continuous color table is defined by a small set of color control points
+    and the colors specified by the color control points are interpolated
+    smoothly to fill in any gaps. Continuous color tables are used for plots
+    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
+    discrete color table is a set of color control points that are used to
+    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
+    notion of default continuous and default discrete color tables so plots can
+    just use the "default" color table. This lets you change the color table
+    used by many plots by just changing the "default" color table. The
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
+    the name of the default discrete color table.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
+
+
 GetDefaultFileOpenOptions
 -------------------------
 
@@ -3392,7 +3392,6 @@ return type : dictionary
 ::
 
   #% visit -cli
-  OpenMDServer()
   opts = GetDefaultFileOpenOptions("VASP")
   opts["Allow multiple timesteps"] = 1
   SetDefaultFileOpenOptions("VASP", opts)
@@ -3741,6 +3740,37 @@ return type : string
   print("VisIt Error: %s" % GetLastError())
   # Get last message into msg and then clear last error message to ""
   msg = GetLastError(1)
+
+
+GetLastMessage
+--------------
+
+**Synopsis:**
+
+::
+
+  GetLastMessage() -> (message, severity)
+  GetLastMessage(int-clr) -> (message, severity)
+
+Returns:
+    GetLastMessage returns a tuple containing 2 strings, the last message and its severity.
+    If int-clr is present and is non-zero, once the message is retrieved it is also cleared.
+
+
+**Description:**
+
+    The GetLastMessage function returns a tuple containing the last message and its severity that VisIt issued since being cleared.
+    If int-clr is present and is non-zero, once the message is retrieved it is also cleared.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/this/database/does/not/exist")
+  msg, severity = GetLastMessage()
+  print("VisIt %s: %s" % (severity, msg))
 
 
 GetLight
