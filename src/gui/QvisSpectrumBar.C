@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <stdlib.h> // for qsort
+#include <algorithm>  // std::min, std::max
 #include <QvisSpectrumBar.h>
 
 #include <QKeyEvent>
@@ -1609,9 +1610,6 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 //
 // ****************************************************************************
 
-#define EVAL_MIN(A,B) (((A)<(B))?(A):(B))
-#define EVAL_MAX(A,B) (((A)>(B))?(A):(B))
-
 float
 QvisSpectrumBar::evalCubicSpline(float t, const float *allX, const float *allY, int n) const
 {
@@ -1624,10 +1622,10 @@ QvisSpectrumBar::evalCubicSpline(float t, const float *allX, const float *allY, 
         if(allX[i] >= t)
             break;
     int idx[4];
-    idx[0] = EVAL_MAX(i-2, 0);
-    idx[1] = EVAL_MAX(i-1, 0);
+    idx[0] = std::max(i-2, 0);
+    idx[1] = std::max(i-1, 0);
     idx[2] = i;
-    idx[3] = EVAL_MIN(i+1, n-1);
+    idx[3] = std::min(i+1, n-1);
     float X[4], Y[4];
     for(int j = 0; j < 4; ++j)
     {

@@ -17,6 +17,7 @@
 #include <vtkTextProperty.h>
 
 #include <avtVector.h>
+#include <algorithm>
 
 #define SPHERE_SIZE 1.
 
@@ -81,8 +82,7 @@ VisitSphereTool::VisitSphereTool(VisWindowToolProxy &p) :
     double dXd2 = 0.5 * (bounds[1] - bounds[0]);
     double dYd2 = 0.5 * (bounds[3] - bounds[2]);
     double dZd2 = 0.5 * (bounds[5] - bounds[4]);
-#define spMIN(A,B) (((A)<(B))?(A):(B))
-    double rad = spMIN(spMIN(dXd2, dYd2), dZd2);
+    double rad = std::min(std::min(dXd2, dYd2), dZd2);
     Interface.SetOrigin(bounds[0] + dXd2,
                         bounds[2] + dYd2,
                         bounds[4] + dZd2);

@@ -39,7 +39,7 @@ Creating first two release assets: source tarball and build_visit script
 
 Now you are ready to create the distribution tar file. ::
 
-    src/tools/dev/scripts/visit-dist visit3.3.3
+    scripts/visit-dist visit3.3.3
 
 Now you are ready to create the unified ``build_visit`` script. ::
 

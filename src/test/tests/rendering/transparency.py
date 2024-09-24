@@ -40,8 +40,12 @@
 #   Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #   Added ability to swtich between Silo's HDF5 and PDB data.
 #
-#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
-#    Use FilledBoundary plot for materials instead of Subset.
+#   Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#   Use FilledBoundary plot for materials instead of Subset.
+#
+#   Eric Brugger, Fri Aug  9 13:45:49 PDT 2024
+#   Added a test of combining opaque and transparent plots from
+#   multi_ucd3d.silo.
 #
 # ----------------------------------------------------------------------------
 
@@ -189,5 +193,121 @@ v.shear = (0, 0, 1)
 v.windowValid = 1
 SetView3D(v)
 Test("transparency_14")
+
+# Test both opaque and transparent plots with 3d multi block data
+DeleteAllPlots()
+OpenDatabase("localhost:/usr/gapps/visit/data/multi_ucd3d.silo", 0)
+
+AddPlot("Subset", "mesh1", 1, 1)
+s = SubsetAttributes()
+s.colorType = s.ColorBySingleColor
+s.singleColor = (153, 153, 153, 255)
+SetPlotOptions(s)
+AddOperator("Slice", 1)
+SliceAtts = SliceAttributes()
+SliceAtts.originType = SliceAtts.Intercept
+SliceAtts.originIntercept = 2.5
+SliceAtts.project2d = 0
+SetOperatorOptions(SliceAtts, 0, 1)
+
+AddPlot("Subset", "domains(mesh1)", 1, 0)
+s = SubsetAttributes()
+s.opacity = 0.403922
+SetPlotOptions(s)
+
+DrawPlots()
+v = GetView3D()
+v.viewNormal = (0.281187, 0.666153, 0.690778)
+v.focus = (0, 2.5, 10)
+v.viewUp = (-0.285935, 0.745284, -0.602323)
+v.viewAngle = 30
+v.parallelScale = 11.4564
+v.nearPlane = -22.9129
+v.farPlane = 22.9129
+v.imagePan = (0, 0)
+v.imageZoom = 1
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0, 2.5, 10)
+v.axis3DScaleFlag = 0
+v.axis3DScales = (1, 1, 1)
+v.shear = (0, 0, 1)
+v.windowValid = 1
+SetView3D(v)
+
+Test("transparency_15")
+
+DeleteAllPlots()
+
+# Test with 3d multi block data
+OpenDatabase("/usr/gapps/visit/data/multi_rect3d.silo")
+
+DefineScalarExpression("x", "coord(mesh1)[0]")
+DefineScalarExpression("y", "coord(mesh1)[1]")
+DefineScalarExpression("z", "coord(mesh1)[2]")
+DefineScalarExpression("radial", "sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)+(z-0.5)*(z-0.5))")
+DefineScalarExpression("const", "nodal_constant(<mesh1>, 2.0)")
+
+AddPlot("Pseudocolor", "const")
+pc = PseudocolorAttributes()
+pc.lightingFlag = 0
+pc.opacityType = pc.Constant
+pc.opacity = 0.4
+SetPlotOptions(pc)
+
+AddOperator("Isovolume", 1)
+isovol = IsovolumeAttributes()
+isovol.lbound = 0
+isovol.ubound = 0.4
+isovol.variable = "radial"
+SetOperatorOptions(isovol, 0, 1)
+
+AddOperator("Slice", 1)
+slice = SliceAttributes()
+slice.originType = slice.Intercept
+slice.originIntercept = 0.7
+slice.axisType = slice.XAxis
+slice.project2d = 0
+SetOperatorOptions(slice, 1, 0)
+DrawPlots()
+
+AddPlot("Pseudocolor", "const", 1, 1)
+pc.opacity = 0.7
+SetPlotOptions(pc)
+slice.originIntercept = 0.5
+SetOperatorOptions(slice, 1, 0)
+DrawPlots()
+
+AddPlot("Pseudocolor", "const", 1, 1)
+pc.opacityType = pc.FullyOpaque
+SetPlotOptions(pc)
+slice.originIntercept = 0.3
+SetOperatorOptions(slice, 1, 0)
+DrawPlots()
+
+v = View3DAttributes()
+v.viewNormal = (0.786444, 0.436457, 0.437048)
+v.focus = (0.5, 0.5, 0.5)
+v.viewUp = (-0.599183, 0.367316, 0.711378)
+v.viewAngle = 30
+v.parallelScale = 0.866025
+v.nearPlane = -1.73205
+v.farPlane = 1.73205
+v.imagePan = (0, 0)
+v.imageZoom = 1
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0.5, 0.5, 0.5)
+v.axis3DScaleFlag = 0
+v.axis3DScales = (1, 1, 1)
+v.shear = (0, 0, 1)
+v.windowValid = 1
+SetView3D(v)
+
+Test("transparency_16")
+
+DeleteAllPlots()
 
 Exit()

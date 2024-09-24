@@ -42,7 +42,7 @@ Unix (gzipped tar file):
 
 1.  Run the visit-install script to install visit.  If you have built your
     own visit binary distribution, you can find the visit-install script
-    in the src/tools/dev/scripts/visit-install directory.  The visit-install
+    located at scripts/visit-install.  The visit-install
     script can create a new distribution directory or update an existing
     distribution.  This is handled automatically.
 

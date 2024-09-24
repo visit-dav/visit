@@ -38,9 +38,7 @@
 
 #include <DebugStream.h>
 #include <InvalidExpressionException.h>
-
-#define VMAX(A,B) (((A) > (B)) ? (A) : (B))
-
+#include <algorithm>
 //
 // Include icons
 //
@@ -397,8 +395,8 @@ AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(
                     }
 
                     // Find the maximum pixmap width and height
-                    maxPixmapWidth = VMAX(maxPixmapWidth, pix.width());
-                    maxPixmapHeight = VMAX(maxPixmapHeight, pix.height());
+                    maxPixmapWidth = std::max(maxPixmapWidth, pix.width());
+                    maxPixmapHeight = std::max(maxPixmapHeight, pix.height());
 
                     // Add a choice for plot so that it has an icon.
                     QString tip(tr("Add %1 plot").arg(menuName));

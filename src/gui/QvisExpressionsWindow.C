@@ -32,8 +32,6 @@
 
 #include <DebugStream.h>
 
-#define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
-#define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
 
 // ****************************************************************************
 //  Expression Lists
@@ -740,6 +738,44 @@ QvisExpressionsWindow::CreateStandardEditor()
 }
 
 // ****************************************************************************
+// Method: QvisExpressionsWindow::SetStandardEditorReadOnly()
+//
+// Purpose:
+//   Sets interaction of widgets according to if we are in a read only mode.
+//   We still want to be able to copy text even if read only.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Aug 23 10:00:47 PDT 2024
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::SetStandardEditorReadOnly(bool read_only)
+{
+    if(read_only)
+    {
+        nameEditLabel->setText(tr("Name (Read Only)"));
+        nameEdit->setReadOnly(true);
+        stdDefinitionEdit->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                                   Qt::TextSelectableByKeyboard );
+        stdDefinitionEditLabel->setText(tr("Definition (Read Only)"));
+    }
+    else
+    {
+        nameEditLabel->setText(tr("Name"));
+        nameEdit->setReadOnly(false);
+        stdDefinitionEdit->setTextInteractionFlags(Qt::TextEditable);
+        stdDefinitionEditLabel->setText(tr("Definition"));
+    }
+
+    stdInsertFunctionButton->setEnabled(!read_only);
+    stdInsertVariableButton->setEnabled(!read_only);
+}
+
+// ****************************************************************************
 // Method: QvisExpressionsWindow::CreatePythonFilterEditor()
 //
 // Purpose:
@@ -972,12 +1008,16 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Capture currentIndex before setting enablement of the tabs, then reset
 //    it afterwards.
 //
+//    Cyrus Harrison, Thu Aug 22 14:27:14 PDT 2024
+//    Set text editing modes for the editor widgets, don't fully disable them.
+//
 // ****************************************************************************
 
 void
 QvisExpressionsWindow::UpdateWindowSensitivity()
 {
     bool enable = true;
+    bool read_only = false;
     int index = exprListBox->currentRow();
 
     if (index <  0)
@@ -986,15 +1026,17 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     }
     else if ((*exprList)[indexMap[index]].GetFromDB())
     {
-        enable = false;
+        read_only = true;
     }
 
+    delButton->setEnabled(enable && !read_only);
 
-    nameEdit->setEnabled(enable);
-    delButton->setEnabled(enable);
+    typeList->setEnabled(enable && !read_only);
+    notHidden->setEnabled(enable && !read_only);
 
-    typeList->setEnabled(enable);
-    notHidden->setEnabled(enable);
+    SetStandardEditorReadOnly(read_only);
+    // we don't have db defined python exprs
+    editorTabs->setTabVisible(1,!read_only);
 
     // calling setTableEnbled with a value of false seems to change the
     // current index, so capture that information and reset it after.
@@ -1003,7 +1045,8 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     editorTabs->setTabEnabled(1, enable && pyExprActive);
     editorTabs->setCurrentIndex(ci);
     editorTabs->update();
-    
+
+
     this->update();
 }
 

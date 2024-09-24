@@ -25,15 +25,10 @@ VTK_MODULE_INIT(vtkRenderingOSPRay);
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <algorithm>
+
 #ifndef NO_DATA_VALUE
 #define NO_DATA_VALUE -1e+37
-#endif
-
-#ifndef MAX
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
 // ****************************************************************************
@@ -337,7 +332,7 @@ avtDefaultRenderer::Render(
             transFunc->AddRGBPoint(i, rgba[rgbIdx] / 255.f,
                 rgba[rgbIdx + 1] / 255.f,
                 rgba[rgbIdx + 2] / 255.f);
-            opacity->AddPoint(i, MAX(0.0, MIN(1.0, curOp)));
+            opacity->AddPoint(i, std::max(0.0, std::min(1.0, curOp)));
         }
 
         //
