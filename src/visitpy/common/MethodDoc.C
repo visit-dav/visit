@@ -3853,7 +3853,7 @@ const char *visit_GetMaterials_doc =
 "DrawPlots()\n"
 "mats = GetMaterials()\n"
 "for m in mats[:-1]:\n"
-"    TurnMaterialOff(m)\n"
+"    TurnMaterialsOff(m)\n"
 ;
 const char *visit_GetMeshManagementAttributes_doc = 
 "GetMeshManagementAttributes\n"
