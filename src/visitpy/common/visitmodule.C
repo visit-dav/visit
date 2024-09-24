@@ -18254,6 +18254,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Tue Dec 19 16:16:12 PST 2023
 //   Added GetLastMessage.
 //
+//   Eric Brugger, Tue Sep 24 11:44:41 PDT 2024
+//   Added documentation for GetExportOptions.
+//
 // ****************************************************************************
 
 static void
@@ -18407,7 +18410,7 @@ AddProxyMethods()
                                           visit_GetDefaultFileOpenOptions_doc);
     AddMethod("GetEngineList", visit_GetEngineList, visit_GetEngineList_doc);
     AddMethod("GetEngineProperties", visit_GetEngineProperties, visit_GetEngineProperties_doc);
-    AddMethod("GetExportOptions", visit_GetExportOptions, NULL);
+    AddMethod("GetExportOptions", visit_GetExportOptions, visit_GetExportOptions_doc);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes,
                                                 visit_GetGlobalAttributes_doc);
     AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes,
