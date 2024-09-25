@@ -35,7 +35,7 @@ class vtkUnstructuredGrid;
 //      but there are some significant drawbacks that must be noted:
 //
 //          1. This filter can only retrieve "original" data, meaning that
-//             the query will be performed before any other plots and filter
+//             the query will be performed before any other plots and filters
 //             are applied (excluding the expression filter).
 //          2. The QOTDataset is limited in its ability to process expressions.
 //          3. This filter cannot preserve coordinates during a QOT pick.
