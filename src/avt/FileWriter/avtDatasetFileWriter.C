@@ -835,13 +835,15 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int comp
     }
 
     vtkPoints *pts = pd->GetPoints();
+    bool useLabels = !labels.empty();
+    bool numberedCurves = line_segments.size() > 1;
     for (size_t i = 0 ; i < line_segments.size() ; i++)
     {
         // Prefer labels if present
-        if (!labels.empty())
+        if (useLabels)
             ofile() << varTag << " " << labels[i] << endl;
         // Default to generic 'curve'
-        else if (line_segments.size() > 1)
+        else if (numberedCurves)
             ofile() << varTag << " curve" << i << endl;
         else
             ofile() << varTag << " curve" << endl;
