@@ -3526,6 +3526,45 @@ return type : EngineProperties object
   props = GetEngineProperties(GetEngineList()[0])
 
 
+GetExportOptions
+----------------
+
+**Synopsis:**
+
+::
+
+  GetExportOptions(pluginName) -> dictionary
+
+
+pluginName : string
+    The name of a plugin.
+
+return type : dictionary
+    Returns a dictionary containing the options.
+
+
+**Description:**
+
+    GetExportOptions returns the current export options used to export
+    files when a specific plugin is triggered.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  e = ExportDBAttributes()
+  e.db_type = "Silo"
+  e.filename = "rect2d_u.silo"
+  opts = GetExportOptions("Silo")
+  opts["Driver"] = "HDF5"
+  OpenDatabase("rect2d.silo")
+  AddPlot("Pseudocolor", "u")
+  DrawPlots()
+  ExportDatabase(e, opts)
+
+
 GetFlattenOutput
 -------------------
 
