@@ -54,6 +54,9 @@ class     DBOptionsAttributes;
 //
 //    Cyrus Harrison, Thu Nov  2 11:25:15 PDT 2023
 //    Added AugmentBlueprintIndex helper.
+// 
+//    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//    Added support for species sets.
 // ****************************************************************************
 
 class avtBlueprintTreeCache;

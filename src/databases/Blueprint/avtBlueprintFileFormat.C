@@ -145,6 +145,9 @@ sanitize_var_name(const std::string &varname)
 //
 //    Brad Whitlock, Mon May 22 16:55:01 PDT 2023
 //    I initialized some new members.
+// 
+//    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//    Added specset info.
 //
 // ****************************************************************************
 avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
@@ -752,8 +755,8 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //    I added code to treat HO materials specially since we want them to be
 //    refined according to the selected level of detail (m_selected_lod).
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
 //
 //    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
 //    I added display_name support.
@@ -918,11 +921,11 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //  Method: avtBlueprintFileFormat::ReadBlueprintSpecset
 //
 //  Purpose:
-//      TODO Reads specset info for the given domain into the `out` conduit Node.
+//      Reads specset info for the given domain into the `out` conduit Node.
 //
 //
-//  Programmer: TODO
-//  Creation:   TODO
+//  Programmer: Justin Privitera
+//  Creation:   09/27/24
 //
 //  Modifications:
 //
@@ -1957,8 +1960,11 @@ avtBlueprintFileFormat::AugmentBlueprintIndex(conduit::Node &blueprint_index)
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Bookkeeping for 1D curves.
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
+// 
+//    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//    Added support for species.
 //
 // ****************************************************************************
 
@@ -2978,6 +2984,9 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 //  Modifications:
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+// 
+//     Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//     Added support for species.
 //
 // ****************************************************************************
 void *
@@ -3009,7 +3018,8 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //  Method: avtBlueprintFileFormat::GetMaterial
 //
 //  Purpose:
-//      Gets the auxiliary data from a Blueprint Database.
+//      Gets the matset object from the Blueprint database and converts it 
+//      into an avtMaterial.
 //
 //  Arguments:
 //      domain     The domain of interest.
@@ -3152,7 +3162,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 //  Method: avtBlueprintFileFormat::GetSpecies
 //
 //  Purpose:
-//      Gets the auxiliary data from a Blueprint Database.
+//      Gets the specset object from the Blueprint database and converts it 
+//      into an avtSpecies.
 //
 //  Arguments:
 //      domain     The domain of interest.
@@ -3162,7 +3173,7 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 //              supported data type.
 //
 //  Programmer: Justin Privitera
-//  Creation:   TODO
+//  Creation:   09/27/24
 //
 //  Modifications:
 //
