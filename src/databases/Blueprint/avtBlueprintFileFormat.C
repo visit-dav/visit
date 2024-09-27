@@ -1557,8 +1557,9 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
             mesh_topo_name,    // The name of the mesh the species is defined on.
             mesh_matset_name,  // The name of the material the species is defined on.
             nmat,              // The number of materials in the matset.
-            num_species,        // The number of species for each material.
-            species_names);     // The name of each species for each material.
+            num_species,       // The number of species for each material.
+            species_names);    // The name of each species for each material.
+        smd->validVariable = true;
         md->Add(smd);
     }
 }
