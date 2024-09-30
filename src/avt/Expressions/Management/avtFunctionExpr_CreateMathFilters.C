@@ -35,6 +35,9 @@
 #include <avtMinReductionExpression.h>
 #include <avtAvgReductionExpression.h>
 #include <avtSumReductionExpression.h>
+#include <avtStdDevReductionExpression.h>
+#include <avtVarianceReductionExpression.h>
+#include <avtRMSReductionExpression.h>
 
 #include <DebugStream.h>
 
@@ -112,6 +115,12 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
         f = new avtAvgReductionExpression();
     else if (functionName == "sum_reduce")
         f = new avtSumReductionExpression();
+    else if (functionName == "std_dev_reduce")
+        f = new avtStdDevReductionExpression();
+    else if (functionName == "variance_reduce")
+        f = new avtVarianceReductionExpression();
+    else if (functionName == "rms_reduce")
+        f = new avtRMSReductionExpression();
     else if (functionName == "mod" || functionName == "modulo")
         f = new avtBinaryModuloExpression();
     else if (functionName == "rad2deg")

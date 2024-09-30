@@ -248,6 +248,9 @@ const char *expr_math[] = {
     "min_reduce",
     "avg_reduce",
     "sum_reduce",
+    "std_dev_reduce",
+    "variance_reduce",
+    "rms_reduce",
     NULL
 };
 
