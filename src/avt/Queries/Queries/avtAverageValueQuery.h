@@ -23,6 +23,10 @@
 //  Programmer: Hank Childs
 //  Creation:   May 12. 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add GetTimeCurveSpecs method.
+//
 // ****************************************************************************
 
 class QUERY_API avtAverageValueQuery : public avtWeightedVariableSummationQuery
@@ -31,12 +35,13 @@ class QUERY_API avtAverageValueQuery : public avtWeightedVariableSummationQuery
                          avtAverageValueQuery();
     virtual             ~avtAverageValueQuery();
 
-    virtual const char  *GetType(void)  
-                             { return "avtAverageValueQuery"; };
+    virtual const char  *GetType(void)
+                             { return "avtAverageValueQuery"; }
+    const MapNode       &GetTimeCurveSpecs(const QueryAttributes *) override;
 
   protected:
     virtual avtDataObject_p    CreateVariable(avtDataObject_p d);
-    virtual bool               CalculateAverage(void) { return true; };
+    virtual bool               CalculateAverage(void) { return true; }
 };
 
 

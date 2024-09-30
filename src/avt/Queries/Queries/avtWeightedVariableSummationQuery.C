@@ -26,15 +26,15 @@ using     std::string;
 // ****************************************************************************
 //  Method: avtWeightedVariableSummationQuery constructor
 //
-//  Programmer: Hank Childs 
-//  Creation:   February 3, 2004 
+//  Programmer: Hank Childs
+//  Creation:   February 3, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Aug 10 14:05:07 PDT 2005
 //    Force only positive volumes, but allow negative values from var.
 //
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
-//    Added revolvedVolume. 
+//    Added revolvedVolume.
 //
 //    Hank Childs, Wed Apr 28 05:27:24 PDT 2010
 //    Add support for edges (1D cross sections)
@@ -44,7 +44,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery() 
+avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
     : avtSummationQuery()
 {
     length = new avtEdgeLength;
@@ -62,7 +62,7 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 
     revolvedVolume = new avtRevolvedVolume;
     revolvedVolume->SetOutputVariableName("avt_weights");
-    
+
     constExpr = new avtConstantCreatorExpression;
     constExpr->SetOutputVariableName("avt_weights");
 
@@ -76,8 +76,8 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 // ****************************************************************************
 //  Method: avtWeightedVariableSummationQuery destructor
 //
-//  Programmer: Hank Childs 
-//  Creation:   February 3, 2004 
+//  Programmer: Hank Childs
+//  Creation:   February 3, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
@@ -121,11 +121,11 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Minimize work done by creating new SIL.
 //
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
-//    Set SILRestriction via member restriction, instead of SILUseSet. 
+//    Set SILRestriction via member restriction, instead of SILUseSet.
 //
-//    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005 
-//    Rework so that both time-varying and non use artificial pipeline. 
-//    Only difference is the pipeline spec used. 
+//    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005
+//    Rework so that both time-varying and non use artificial pipeline.
+//    Only difference is the pipeline spec used.
 //
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added revolvedVolume, use it when 2D data and meshcoord type is RZ or ZR.
@@ -134,16 +134,16 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Add support for filters to inherit from this class and create new
 //    variables based on the mesh.
 //
-//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008 
+//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008
 //    Retrieve the varname from the dataAtts instead of DataRequest, as
 //    DataRequest may have the wrong value based on other pipelines sharing
-//    the same source. 
+//    the same source.
 //
-//    Kathleen Bonnell, Tue Jul 29 9:03:15 PDT 2008 
+//    Kathleen Bonnell, Tue Jul 29 9:03:15 PDT 2008
 //    For better error messages, check if there is an active variable in the
 //    data attributes, and if not then retrieve from data request.
 //
-//    Kathleen Bonnell, Tue Sep 23 08:53:03 PDT 2008 
+//    Kathleen Bonnell, Tue Sep 23 08:53:03 PDT 2008
 //    Move setting of secondary var "avt_weights" till after the contract
 //    has been set for the time-varying case.
 //
@@ -169,14 +169,14 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     string varname;
     if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
         varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
-    else 
+    else
         varname = GetInput()->GetOriginatingSource()->GetFullDataRequest()->
                   GetVariable();
     varname = GetVarname(varname);
     SetSumType(varname);
 
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    
+
     if(topo == 0)
     {
         debug5 << "WeightedVariableSum using Point" << endl;
@@ -199,7 +199,7 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
             area->SetInput(dob);
             dob = area->GetOutput();
         }
-        else 
+        else
         {
             debug5 << "WeightedVariableSum using RevolvedVolume" << endl;
             revolvedVolume->SetInput(dob);
@@ -226,14 +226,14 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Cause our artificial pipeline to execute.
     //
-    avtContract_p contract = 
+    avtContract_p contract =
         inData->GetOriginatingSource()->GetGeneralContract();
 
-    if (timeVarying) 
-    { 
+    if (timeVarying)
+    {
         avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
                                            ->GetFullDataRequest();
-        avtDataRequest_p newDS = new 
+        avtDataRequest_p newDS = new
             avtDataRequest(dataRequest, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
@@ -260,12 +260,12 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 //      Now that we have an input, we can determine what the variable units
 //      are and tell the base class about it.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 28, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 28, 2004
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
-//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable. 
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
+//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable.
 //
 //    Hank Childs, Thu May 11 14:13:30 PDT 2006
 //    Do not set the units if the variable doesn't match the variable of
@@ -284,7 +284,7 @@ avtWeightedVariableSummationQuery::VerifyInput(void)
 
     if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
     {
-        std::string varname1 = 
+        std::string varname1 =
                         GetInput()->GetInfo().GetAttributes().GetVariableName();
         std::string varname2 = GetVarname(varname1);
         if (varname1 == varname2)
@@ -297,4 +297,23 @@ avtWeightedVariableSummationQuery::VerifyInput(void)
     }
 }
 
+// ****************************************************************************
+//  Method: avtWeightedVariableSummationQuery::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Override default TimeCurveSpecs
+//
+//  Programmer:  Kathleen Bigags
+//  Creation:    Sep 11, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtWeightedVariableSummationQuery::GetTimeCurveSpecs(const QueryAttributes *qa)
+{
+    timeCurveSpecs["outputCurveLabel"] = "Weighted_sum_" + qa->GetVariables()[0];
+    return timeCurveSpecs;
+}
 
