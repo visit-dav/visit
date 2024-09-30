@@ -1158,3 +1158,29 @@ avtMinMaxQuery::GetDefaultInputParams(MapNode &params)
 {
     params["use_actual_data"] = 1;
 }
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuwey::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Override default TimeCurveSpecs
+//
+//  Programmer:  Kathleen Bigags
+//  Creation:    Sep 11, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtMinMaxQuery::GetTimeCurveSpecs(const QueryAttributes *qa)
+{
+    string label = "Min_";
+    if(doMax)
+        label = "Max_";
+    label += qa->GetVariables()[0];
+    timeCurveSpecs["outputCurveLabel"] = label;
+    return timeCurveSpecs;
+}
+

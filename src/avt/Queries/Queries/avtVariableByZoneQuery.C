@@ -25,7 +25,7 @@ using std::string;
 //  Purpose:
 //      Construct an avtVariableByZoneQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     July 29, 2004
 //
 //  Modifications:
@@ -46,8 +46,8 @@ avtVariableByZoneQuery::avtVariableByZoneQuery()
 //  Purpose:
 //      Destruct an avtVariableByZoneQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     July 29, 2004 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     July 29, 2004
 //
 //  Modifications:
 //
@@ -66,17 +66,17 @@ avtVariableByZoneQuery::~avtVariableByZoneQuery()
 //  Arguments:
 //    params:  MapNode containing input.
 //
-//  Programmer:   Kathleen Biagas 
+//  Programmer:   Kathleen Biagas
 //  Creation:     June 20, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
-//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    Use newer MapNode methods that check for numeric entries and retrieves
 //    to specific type. Add error checking for size of passed vectors.
 //
 // ****************************************************************************
 
-void 
+void
 avtVariableByZoneQuery::SetInputParams(const MapNode &params)
 {
     if (params.HasEntry("vars"))
@@ -99,14 +99,14 @@ avtVariableByZoneQuery::SetInputParams(const MapNode &params)
         EXCEPTION1(QueryArgumentException, "element");
 }
 
- 
+
 // ****************************************************************************
 //  Method: avtVariableByZoneQuery::Preparation
 //
 //  Purpose:
-//    Sets pickAtts based on queryAtts. 
+//    Sets pickAtts based on queryAtts.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     July 29, 2004
 //
 //  Modifications:
@@ -118,10 +118,10 @@ avtVariableByZoneQuery::SetInputParams(const MapNode &params)
 //
 // ****************************************************************************
 
-void 
+void
 avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 {
-    avtDataRequest_p dataRequest = 
+    avtDataRequest_p dataRequest =
         GetInput()->GetOriginatingSource()->GetFullDataRequest();
 
     pickAtts.SetTimeStep(queryAtts.GetTimeStep());
@@ -143,7 +143,7 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 //    gathered the info, to processor 0.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 29, 2004 
+//  Creation:   July 29, 2004
 //
 //  Modifications:
 //    Brad Whitlock, Tue Mar 13 11:26:59 PDT 2007
@@ -173,8 +173,8 @@ void
 avtVariableByZoneQuery::PostExecute(void)
 {
     avtPickQuery::PostExecute();
-   
-    if (PAR_Rank() == 0) 
+
+    if (PAR_Rank() == 0)
     {
         doubleVector vals;
         if (pickAtts.GetFulfilled())
@@ -218,7 +218,7 @@ avtVariableByZoneQuery::PostExecute(void)
         }
         else
         {
-            char msg[120]; 
+            char msg[120];
             snprintf(msg, 120, "Could not retrieve information from domain "
                      " %d element %d.", domain, zone);
             SetResultMessage(msg);
@@ -232,17 +232,19 @@ avtVariableByZoneQuery::PostExecute(void)
 //  Method: avtVariableByZoneQuery::GetTimeCurveSpecs
 //
 //  Purpose:
-//    Override default TimeCurveSpecs 
+//    Override default TimeCurveSpecs
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    July 8, 2008 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 8, 2008
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Added QueryAttributes argument (currently unused here).
 //
 // ****************************************************************************
 
 const MapNode&
-avtVariableByZoneQuery::GetTimeCurveSpecs()
+avtVariableByZoneQuery::GetTimeCurveSpecs(const QueryAttributes *)
 {
     timeCurveSpecs["useVarForYAxis"] = true;
     return timeCurveSpecs;
