@@ -32,6 +32,7 @@
 #include <avtTanhExpression.h>
 
 #include <avtMaxReductionExpression.h>
+#include <avtMinReductionExpression.h>
 
 #include <DebugStream.h>
 
@@ -103,6 +104,8 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
         f = new avtBase10LogWithMinExpression();
     else if (functionName == "max_reduce")
         f = new avtMaxReductionExpression();
+    else if (functionName == "min_reduce")
+        f = new avtMinReductionExpression();
     else if (functionName == "mod" || functionName == "modulo")
         f = new avtBinaryModuloExpression();
     else if (functionName == "rad2deg")

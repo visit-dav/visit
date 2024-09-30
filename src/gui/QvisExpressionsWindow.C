@@ -234,6 +234,7 @@ const char *expr_math[] = {
     "max",
     "max_reduce",
     "min",
+    "min_reduce",
     "mod",
     "round",
     "sqr",
