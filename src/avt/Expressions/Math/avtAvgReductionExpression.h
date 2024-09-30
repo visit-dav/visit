@@ -3,11 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtMinReductionExpression.h                          //
+//                               avtAvgReductionExpression.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_MIN_REDUCE_FILTER_H
-#define AVT_MIN_REDUCE_FILTER_H
+#ifndef AVT_AVG_REDUCE_FILTER_H
+#define AVT_AVG_REDUCE_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 
@@ -15,7 +15,7 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtMinReductionExpression
+//  Class: avtAvgReductionExpression
 //
 //  Purpose:
 //      TODO
@@ -27,15 +27,15 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMinReductionExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtAvgReductionExpression : public avtUnaryMathExpression
 {
   public:
-                              avtMinReductionExpression();
-    virtual                  ~avtMinReductionExpression();
+                              avtAvgReductionExpression();
+    virtual                  ~avtAvgReductionExpression();
 
-    virtual const char       *GetType(void)   { return "avtMinReductionExpression"; };
+    virtual const char       *GetType(void)   { return "avtAvgReductionExpression"; };
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating min across mesh"; };
+                                              { return "Calculating average across mesh"; };
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,

@@ -232,9 +232,7 @@ const char *expr_math[] = {
     "ln",
     "log10",
     "max",
-    "max_reduce",
     "min",
-    "min_reduce",
     "mod",
     "round",
     "sqr",
@@ -246,6 +244,9 @@ const char *expr_math[] = {
     "/",
     "^",
     "&",
+    "max_reduce",
+    "min_reduce",
+    "avg_reduce",
     NULL
 };
 

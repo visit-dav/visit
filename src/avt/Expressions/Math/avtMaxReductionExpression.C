@@ -72,7 +72,6 @@ void
 avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples)
 {
-    std::vector<double> comp_maxes(ncomponents);
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double comp_max = in->GetComponent(0, comp_id);
@@ -84,17 +83,10 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                 comp_max = val;
             }
         }
-        comp_maxes[comp_id] = comp_max;
-    }
 
-    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-    {
-        double &comp_max = comp_maxes[comp_id];
         for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
             out->SetComponent(tuple_id, comp_id, comp_max);
         }
     }
 }
-
-

@@ -37,6 +37,7 @@ set(MATH_SOURCES
     avtInverseExpression.C
     avtMaxReductionExpression.C
     avtMinReductionExpression.C
+    avtAvgReductionExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C

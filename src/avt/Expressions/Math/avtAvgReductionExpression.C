@@ -3,17 +3,17 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtMinReductionExpression.C                          //
+//                               avtAvgReductionExpression.C                          //
 // ************************************************************************* //
 
-#include <avtMinReductionExpression.h>
+#include <avtAvgReductionExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 
 // ****************************************************************************
-//  Method: avtMinReductionExpression constructor
+//  Method: avtAvgReductionExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -24,14 +24,14 @@
 //
 // ****************************************************************************
 
-avtMinReductionExpression::avtMinReductionExpression()
+avtAvgReductionExpression::avtAvgReductionExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtMinReductionExpression destructor
+//  Method: avtAvgReductionExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -42,14 +42,14 @@ avtMinReductionExpression::avtMinReductionExpression()
 //
 // ****************************************************************************
 
-avtMinReductionExpression::~avtMinReductionExpression()
+avtAvgReductionExpression::~avtAvgReductionExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtMinReductionExpression::DoOperation
+//  Method: avtAvgReductionExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -69,25 +69,21 @@ avtMinReductionExpression::~avtMinReductionExpression()
 // ****************************************************************************
  
 void
-avtMinReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+avtAvgReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples)
 {
-    std::vector<double> comp_mins(ncomponents);
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
-        double comp_min = in->GetComponent(0, comp_id);
-        for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
-        {
-            const double val = in->GetComponent(tuple_id, comp_id);
-            if (val < comp_min)
-            {
-                comp_min = val;
-            }
-        }
-
+        double sum = 0;
         for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            out->SetComponent(tuple_id, comp_id, comp_min);
+            const double val = in->GetComponent(tuple_id, comp_id);
+            sum += val;
+        }
+        const double comp_avg = (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            out->SetComponent(tuple_id, comp_id, comp_avg);
         }
     }
 }
