@@ -244,7 +244,7 @@ USAGE: visit [options]::
                              command to run when launching a specific 
                              component. For example, '-norun engine_par' will
                              show the full launch command for the parallel 
-                             engine without execution it.
+                             engine without executing it.
         -verbose             Prints status information during pipeline
                              execution.
         -dir <directory>     Run a version of VisIt in the specified directory.
