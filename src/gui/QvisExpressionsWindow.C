@@ -247,6 +247,7 @@ const char *expr_math[] = {
     "max_reduce",
     "min_reduce",
     "avg_reduce",
+    "sum_reduce",
     NULL
 };
 
