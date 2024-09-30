@@ -25,7 +25,7 @@ using std::string;
 //  Purpose:
 //      Construct an avtVariableByNodeQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     July 29, 2004
 //
 //  Modifications:
@@ -47,8 +47,8 @@ avtVariableByNodeQuery::avtVariableByNodeQuery()
 //  Purpose:
 //      Destruct an avtVariableByNodeQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     July 29, 2004 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     July 29, 2004
 //
 //  Modifications:
 //
@@ -67,17 +67,17 @@ avtVariableByNodeQuery::~avtVariableByNodeQuery()
 //  Arguments:
 //    params:     MapNode containing input.
 //
-//  Programmer:   Kathleen Biagas 
+//  Programmer:   Kathleen Biagas
 //  Creation:     June 20, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
-//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    Use newer MapNode methods that check for numeric entries and retrieves
 //    to specific type.  Add error checking for size of passed vectors.
 //
 // ****************************************************************************
 
-void 
+void
 avtVariableByNodeQuery::SetInputParams(const MapNode &params)
 {
     if (params.HasEntry("vars"))
@@ -103,14 +103,14 @@ avtVariableByNodeQuery::SetInputParams(const MapNode &params)
         useGlobalId = params.GetEntry("use_global_id")->ToBool();
 }
 
- 
+
 // ****************************************************************************
 //  Method: avtVariableByNodeQuery::Preparation
 //
 //  Purpose:
-//    Sets pickAtts information from queryAtts. 
+//    Sets pickAtts information from queryAtts.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     July 29, 2004
 //
 //  Modifications:
@@ -122,10 +122,10 @@ avtVariableByNodeQuery::SetInputParams(const MapNode &params)
 //
 // ****************************************************************************
 
-void 
+void
 avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 {
-    avtDataRequest_p dataRequest = 
+    avtDataRequest_p dataRequest =
         GetInput()->GetOriginatingSource()->GetFullDataRequest();
 
     pickAtts.SetTimeStep(queryAtts.GetTimeStep());
@@ -148,7 +148,7 @@ avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 //    gathered the info, to processor 0.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 29, 2004 
+//  Creation:   July 29, 2004
 //
 //  Modifications:
 //    Brad Whitlock, Tue Mar 13 11:26:59 PDT 2007
@@ -164,7 +164,7 @@ avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 //    a Mesh plot.
 //
 //    Kathleen Bonnell, Thu Feb  3 16:17:37 PST 2011
-//    Verify that pickvarinfo's values aren't empty before attempting to 
+//    Verify that pickvarinfo's values aren't empty before attempting to
 //    reference an element.
 //
 //    Kathleen Bonnell, Tue Mar  1 16:06:04 PST 2011
@@ -179,8 +179,8 @@ void
 avtVariableByNodeQuery::PostExecute(void)
 {
     avtPickQuery::PostExecute();
-   
-    if (PAR_Rank() == 0) 
+
+    if (PAR_Rank() == 0)
     {
         doubleVector vals;
         if (pickAtts.GetFulfilled())
@@ -192,12 +192,12 @@ avtVariableByNodeQuery::PostExecute(void)
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
             if (pickAtts.GetNumVarInfos() == 1)
-            { 
+            {
                 doubleVector dvals = pickAtts.GetVarInfo(0).GetValues();
                 if (dvals.size() > 0)
                 {
                     SetResultValue(dvals[dvals.size()-1]);
-                }   
+                }
                 else
                 {
                     debug3 << "Variable by Node query reports a fulfilled "
@@ -226,7 +226,7 @@ avtVariableByNodeQuery::PostExecute(void)
         }
         else
         {
-            char msg[120]; 
+            char msg[120];
             snprintf(msg, 120, "Could not retrieve information from domain "
                      " %d element %d.", domain, node);
             SetResultMessage(msg);
@@ -241,17 +241,19 @@ avtVariableByNodeQuery::PostExecute(void)
 //  Method: avtVariableByNodeQuery::GetTimeCurveSpecs
 //
 //  Purpose:
-//    Override default TimeCurveSpecs 
+//    Override default TimeCurveSpecs
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    July 8, 2008 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 8, 2008
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Added QueryAttributes argument (currently unused here).
 //
 // ****************************************************************************
 
 const MapNode&
-avtVariableByNodeQuery::GetTimeCurveSpecs()
+avtVariableByNodeQuery::GetTimeCurveSpecs(const QueryAttributes *)
 {
     timeCurveSpecs["useVarForYAxis"] = true;
     return timeCurveSpecs;

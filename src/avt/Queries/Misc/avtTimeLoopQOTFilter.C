@@ -35,6 +35,8 @@
 #include <DebugStream.h>
 #include <MapNode.h>
 
+using std::string;
+
 // ****************************************************************************
 //  Method: avtTimeLoopQOTFilter constructor
 //
@@ -67,12 +69,16 @@
 //    Replaced CATCHALL(...) with CATCHALL.
 //
 //    Alister Maguire, Tue May 22 10:17:15 PDT 2018
-//    Added init of cacheIdx and useCache. 
+//    Added init of cacheIdx and useCache.
+//
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Send QueryAttributes to GetTimeCurveSpecs.
+//    Renamed 'label' to 'yLabel'. Added outputLabel.
 //
 // ****************************************************************************
 
 avtTimeLoopQOTFilter::avtTimeLoopQOTFilter(const AttributeGroup *a)
- : avtQueryOverTimeFilter(a)
+ : avtQueryOverTimeFilter(a), outputLabel(), yLabel()
 {
     SetTimeLoop(atts.GetStartTime(), atts.GetEndTime(), atts.GetStride());
     cacheIdx = 0;
@@ -90,14 +96,16 @@ avtTimeLoopQOTFilter::avtTimeLoopQOTFilter(const AttributeGroup *a)
             CreateQuery(&qatts);
         numAdditionalFilters = query->GetNFilters()+1; // 1 for query itself
         if (query->GetShortDescription() != NULL)
-            label = query->GetShortDescription();
+            yLabel = query->GetShortDescription();
         else
-            label = qatts.GetName();
+            yLabel = qatts.GetName();
 
-        const MapNode &tqs = query->GetTimeCurveSpecs();
+
+        const MapNode &tqs = query->GetTimeCurveSpecs(&qatts);
         useTimeForXAxis = tqs.GetEntry("useTimeForXAxis")->AsBool();
         useVarForYAxis  = tqs.GetEntry("useVarForYAxis")->AsBool();
         nResultsToStore = tqs.GetEntry("nResultsToStore")->AsInt();
+        outputLabel     = tqs.GetEntry("outputCurveLabel")->AsString();
         delete query;
     }
     CATCHALL
@@ -193,7 +201,7 @@ avtTimeLoopQOTFilter::Create(const AttributeGroup *atts)
 //    Add support for parallelizing over time.
 //
 //    Alister Maguire, Tue May 22 10:17:15 PDT 2018
-//    Added ability to plot pick curves from a cache. 
+//    Added ability to plot pick curves from a cache.
 //
 // ****************************************************************************
 
@@ -228,7 +236,7 @@ avtTimeLoopQOTFilter::Execute(void)
     //
     // If the curve points are already cached, there's no need to
     // perform any more queries. Otherwise, we need to perform
-    // the queries ourselves. 
+    // the queries ourselves.
     //
     if (useCache)
     {
@@ -285,17 +293,17 @@ avtTimeLoopQOTFilter::Execute(void)
         query->SetTimeVarying(true);
         query->SetSILRestriction(currentSILR);
 
-        //  
+        //
         // HokeyHack ... we want only 1 curve, so limit the
         // query to 1 variable to avoid unnecessary processing.
-        // 
+        //
         if (nResultsToStore==1)
         {
             stringVector useThisVar;
             useThisVar.push_back(qatts.GetVariables()[0]);
             qatts.SetVariables(useThisVar);
         }
-        // 
+        //
         // End HokeyHack.
         //
 
@@ -413,6 +421,9 @@ avtTimeLoopQOTFilter::FilterSupportsTimeParallelization(void)
 //    Kathleen Biagas, Thu Sep 29 06:13:54 PDT 2011
 //    Set ConstructMultipleCurves in the output's DataAttributes.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Renamed 'label' to 'yLabel'.
+//
 // ****************************************************************************
 
 void
@@ -430,7 +441,7 @@ avtTimeLoopQOTFilter::UpdateDataObjectInfo(void)
         if (useTimeForXAxis)
         {
             outAtts.SetXLabel("Time");
-            outAtts.SetYLabel(label);
+            outAtts.SetYLabel(yLabel);
             if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
             {
                 outAtts.SetXUnits("cycle");
@@ -611,7 +622,7 @@ avtTimeLoopQOTFilter::CreateFinalOutput()
                 << ") experienced\n"
                 << "problems with the following timesteps and \n"
                 << "skipped them while generating the curve:\n   ";
-    
+
             for (size_t j = 0; j < skippedTimes.size(); j++)
                 osm << skippedTimes[j] << " ";
             osm << "\nLast message received: " << errorMessage.c_str() << ends;
@@ -662,6 +673,10 @@ avtTimeLoopQOTFilter::CreateFinalOutput()
 //    Kathleen Bonnell, Thu Feb 17 09:43:16 PST 2011
 //    Renamed from CreateRGrid to CreateTree, to reflect the possibility
 //    of creating multiple outputs.  Added vars and doMultiCurvePlot args.
+//
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add label to single-curve output avtDataTree.
+//    Can be used for curve names when saving curves to files.
 //
 // ****************************************************************************
 
@@ -729,7 +744,14 @@ avtTimeLoopQOTFilter::CreateTree(const doubleVector &times,
                 sc->SetTuple1(i, res[i*2+1]);
             }
         }
-        avtDataTree_p tree = new avtDataTree(rgrid, 0);
+        string label = yLabel;
+        if (!outputLabel.empty())
+            label = outputLabel;
+        else if (useVarForYAxis)
+            label = vars[0];
+
+        std::replace(label.begin(), label.end(), ' ', '_');
+        avtDataTree_p tree = new avtDataTree(rgrid, 0, label);
         rgrid->Delete();
         return tree;
     }

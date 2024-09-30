@@ -17,12 +17,12 @@ using     std::string;
 // ****************************************************************************
 //  Method: avtAverageValueQuery constructor
 //
-//  Programmer: Hank Childs 
+//  Programmer: Hank Childs
 //  Creation:   May 12, 2011
 //
 // ****************************************************************************
 
-avtAverageValueQuery::avtAverageValueQuery() 
+avtAverageValueQuery::avtAverageValueQuery()
     : avtWeightedVariableSummationQuery()
 {
     ;
@@ -32,7 +32,7 @@ avtAverageValueQuery::avtAverageValueQuery()
 // ****************************************************************************
 //  Method: avtAverageValueQuery destructor
 //
-//  Programmer: Hank Childs 
+//  Programmer: Hank Childs
 //  Creation:   May 12, 2011
 //
 // ****************************************************************************
@@ -60,4 +60,23 @@ avtAverageValueQuery::CreateVariable(avtDataObject_p inData)
     return inData;
 }
 
+// ****************************************************************************
+//  Method: avtAverageValueQuery::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Override default TimeCurveSpecs
+//
+//  Programmer:  Kathleen Bigags
+//  Creation:    Sept 11, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtAverageValueQuery::GetTimeCurveSpecs(const QueryAttributes *qa)
+{
+    timeCurveSpecs["outputCurveLabel"] = "Average_Value_" + qa->GetVariables()[0];
+    return timeCurveSpecs;
+}
 
