@@ -232,6 +232,7 @@ const char *expr_math[] = {
     "ln",
     "log10",
     "max",
+    "max_reduce",
     "min",
     "mod",
     "round",

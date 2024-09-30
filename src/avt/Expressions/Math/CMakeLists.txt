@@ -35,6 +35,7 @@ set(MATH_SOURCES
     avtFloorExpression.C
     avtIdentityExpression.C
     avtInverseExpression.C
+    avtMaxReductionExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C
