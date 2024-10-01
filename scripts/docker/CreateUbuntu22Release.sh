@@ -17,13 +17,13 @@
 # and image tags.
 
 /collab/usr/gapps/lcweg/containers/scripts/enable-podman.sh
-podman build -f Dockerfile-ubuntu22 -t visitdev:3.4.1-ubuntu22 
+podman build -f Dockerfile-ubuntu22 -t visitdev:3.4.2-ubuntu22 
 
-podman save visitdev:3.4.1-ubuntu22 > visitdev3.4.1-ubuntu22.tar
+podman save visitdev:3.4.2-ubuntu22 > visitdev3.4.2-ubuntu22.tar
 
-podman create --name dummy visitdev:3.4.1-ubuntu22
+podman create --name dummy visitdev:3.4.2-ubuntu22
 
-podman cp dummy:/home/visit/visit3_4_1.linux-x86_64.tar.gz ./visit3_4_1.linux-x86_64-ubuntu22.tar.gz
+podman cp dummy:/home/visit/visit3_4_2.linux-x86_64.tar.gz ./visit3_4_2.linux-x86_64-ubuntu22.tar.gz
 podman cp dummy:/home/visit/visit0000.png .
 
 podman rm -f dummy

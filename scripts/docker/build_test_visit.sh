@@ -41,6 +41,6 @@ mv visit$version2.linux-x86_64.tar.gz ../..
 # Test the distribution.
 #
 cd ../..
-cp visit$version/src/tools/dev/scripts/visit-install .
+cp visit$version/scripts/visit-install .
 ./visit-install -c none $version linux-x86_64 visit
 visit/bin/visit -cli -nowin -s test_visit.py
