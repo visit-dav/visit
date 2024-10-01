@@ -42,6 +42,7 @@ set(MATH_SOURCES
     avtStdDevReductionExpression.C
     avtVarianceReductionExpression.C
     avtRMSReductionExpression.C
+    avtCountReductionExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C

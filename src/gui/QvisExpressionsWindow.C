@@ -244,13 +244,6 @@ const char *expr_math[] = {
     "/",
     "^",
     "&",
-    "max_reduce",
-    "min_reduce",
-    "avg_reduce",
-    "sum_reduce",
-    "std_dev_reduce",
-    "variance_reduce",
-    "rms_reduce",
     NULL
 };
 
@@ -451,7 +444,19 @@ const char *expr_time_iteration[] = {
     NULL
 };
 
-#define NUM_EXPRESSION_CATEGORIES 15
+const char *expr_reduction[] = {
+    "max_reduce",
+    "min_reduce",
+    "avg_reduce",
+    "sum_reduce",
+    "count_reduce",
+    "std_dev_reduce",
+    "variance_reduce",
+    "rms_reduce",
+    NULL
+};
+
+#define NUM_EXPRESSION_CATEGORIES 16
 ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 
 // ****************************************************************************
@@ -520,6 +525,8 @@ QvisExpressionsWindow::QvisExpressionsWindow(
     exprlist[13].list = expr_logical;
     exprlist[14].name = tr("Time iteration");
     exprlist[14].list = expr_time_iteration;
+    exprlist[15].name = tr("Reductions");
+    exprlist[15].list = expr_reduction;
 
     exprList = exprList_;
 }

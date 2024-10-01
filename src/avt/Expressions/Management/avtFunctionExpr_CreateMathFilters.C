@@ -38,6 +38,7 @@
 #include <avtStdDevReductionExpression.h>
 #include <avtVarianceReductionExpression.h>
 #include <avtRMSReductionExpression.h>
+#include <avtCountReductionExpression.h>
 
 #include <DebugStream.h>
 
