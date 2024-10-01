@@ -17,6 +17,10 @@
 #
 #  Mark C. Miller, Fri Mar 11 14:33:30 PST 2022
 #  Based on original code by Eric Brugger in our documentation
+# 
+#  Modifications:
+#    Justin Privitera, Fri Sep 27 15:03:48 PDT 2024
+#    Added tests for files with 1-char variable names.
 # ----------------------------------------------------------------------------
 import copy, math, os, sys
 
@@ -112,6 +116,43 @@ def Create2DArrayDataFile(filename):
                    f.write("%g\n" % dist)
     # Array gen }
 
+def CreateAnother2DArrayDataFile(filename):
+
+    # Array gen 2 {
+    with open(filename, "wt") as f:
+        # Only the first column name matters.
+        # The others are required but otherwise ignored.
+        f.write("d c2 c3 c4 c5 c6 c7 c8\n")
+        f.write("0 1 2 3 4 5 6 7\n")
+        f.write("1 1.41421 2.23607 3.16228 4.12311 5.09902 6.08276 7.07107\n")
+        f.write("2 2.23607 2.82843 3.60555 4.47214 5.38516 6.32456 7.28011\n")
+        f.write("3 3.16228 3.60555 4.24264 5 5.83095 6.7082 7.61577\n")
+        f.write("4 4.12311 4.47214 5 5.65685 6.40312 7.2111 8.06226\n")
+        f.write("5 5.09902 5.38516 5.83095 6.40312 7.07107 7.81025 8.60233\n")
+        f.write("6 6.08276 6.32456 6.7082 7.2111 7.81025 8.48528 9.21954\n")
+        f.write("7 7.07107 7.28011 7.61577 8.06226 8.60233 9.21954 9.89949\n")
+        f.write("8 8.06226 8.24621 8.544 8.94427 9.43398 10 10.6301\n")
+        f.write("9 9.05539 9.21954 9.48683 9.84886 10.2956 10.8167 11.4018\n")
+    # Array gen 2 }
+
+def Create1DArrayDataFile(filename):
+
+    # Array gen 2 {
+    with open(filename, "wt") as f:
+        # Only the first column name matters.
+        # The others are required but otherwise ignored.
+        f.write("x y v\n")
+        f.write("0 0 0.5\n")
+        f.write("1 0 1.0\n")
+        f.write("2 0 0.5\n")
+        f.write("0 1 1.0\n")
+        f.write("1 1 0.5\n")
+        f.write("2 1 1.0\n")
+        f.write("0 2 0.5\n")
+        f.write("1 2 1.0\n")
+        f.write("2 2 0.5\n")
+    # Array gen 2 }
+
 def TestCSVCurves():
     TestSection("CSV data as Curves")
     CreateCurvesDataFile("curves.csv")
@@ -206,6 +247,60 @@ def TestCSV2DArray():
     CloseDatabase("array.txt")
     os.unlink("array.txt")
 
+def TestCSVShortVarNames():
+    TestSection("CSV data with 1-character variable names")
+
+    #
+    # test 2d
+    #
+    CreateAnother2DArrayDataFile("2darray_short_names.txt")
+
+    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions['First row has variable names'] = 1
+    plainTextOpenOptions['Data layout'] = '2D Array'
+    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+
+    OpenDatabase("2darray_short_names.txt")
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+    Test("PlainText_2DArray")
+    
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase("2darray_short_names.txt")
+    os.unlink("2darray_short_names.txt")
+
+    #
+    # test 1d
+    #
+    Create1DArrayDataFile("1darray_short_names.txt")
+
+    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions['First row has variable names'] = 1
+    plainTextOpenOptions['Data layout'] = '1D Columns'
+    plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
+    plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
+    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+
+    OpenDatabase("1darray_short_names.txt")
+    AddPlot("Pseudocolor", "v")
+    DrawPlots()
+    SetActivePlots(0)
+    PseudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts.pointSizePixels = 20
+    SetPlotOptions(PseudocolorAtts)
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (-0.4641, 2.4641, -0.4641, 2.4641)
+    View2DAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
+    SetView2D(View2DAtts)
+
+    Test("PlainText_1dArray_Short_Var_Names")
+    
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase("1darray_short_names.txt")
+    os.unlink("1darray_short_names.txt")
+
 def main():
 
     if 'genonly' in sys.argv:
@@ -213,6 +308,8 @@ def main():
         CreateCurvesDataFileWithNoXCoordinates('curves_nox.csv')
         Create3DPointsWithVariablesDataFile('points.txt')
         Create2DArrayDataFile('array.txt')
+        CreateAnother2DArrayDataFile("2darray_short_names.txt")
+        Create1DArrayDataFile("1darray_short_names.txt")
         sys.exit(0)
 
     #
@@ -235,6 +332,8 @@ def main():
     TestCSV3DPointsAndVariables()
 
     TestCSV2DArray()
+
+    TestCSVShortVarNames()
 
     Exit()
 
