@@ -57,7 +57,7 @@ ConvertSlashes(char *str)
     size_t len = strlen(str);
     for (size_t i = 0; i < len; ++i)
     {
-#ifndef WIN32
+#ifndef _WIN32
         if (str[i] == '\\')
             str[i] = '/';
 #else

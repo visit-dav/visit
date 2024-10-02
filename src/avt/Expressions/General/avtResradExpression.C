@@ -215,6 +215,7 @@ avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 
 #include <stdlib.h>
 #include <math.h>
+#include <algorithm>
 
 #define NPG   200
 #define NGPS  2000
@@ -224,13 +225,6 @@ avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 #define RES(k,j)    res[((j)+8)*(NRES+NRES+1)+((k)+8)]
 #define VAR(i,j)    var[((j)-1)*nxvar+((i)-1)]
 #define NEWVAR(i,j) newvar[((j)-1)*nxvar+((i)-1)]
-
-#ifndef MIN
-#define MIN(a,b) ((a < b) ? a : b)
-#endif
-#ifndef MAX
-#define MAX(a,b) ((a > b) ? a : b)
-#endif
 
 static double    res[(NRES+NRES+1)*(NRES+NRES+1)];
 static int       kx [NPG], jy [NPG];
@@ -392,11 +386,11 @@ varres (T *var, T *newvar, int nxvar, int nyvar, int reflflag,
       * Calculate resolution effect on var
       */
      for (jj = -jext; jj <= jext; jj++) {
-          j2 = MIN (nyvar, nyvar - jj);
+          j2 = std::min(nyvar, nyvar - jj);
 
           for (kk = -kext; kk <= kext; kk++) {
-               k1 = MAX (1, 1 - kk);
-               k2 = MIN (nxvar, nxvar - kk);
+               k1 = std::max(1, 1 - kk);
+               k2 = std::min(nxvar, nxvar - kk);
 
                for (j = 1; j <= j2; j++) {
                     jm = j + jj;

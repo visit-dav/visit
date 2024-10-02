@@ -23,6 +23,7 @@
 
 #include <silo.h>
 
+#include <algorithm>
 #include <map>
 #include <vector>
 using std::map;
@@ -40,9 +41,6 @@ using std::vector;
 #define STRLEN          256 
 #define MIXMAX          20000       // Maximum length of the mixed arrays
 #define MAXMATNO        3
-
-#define MIN(x, y) (x) < (y) ? (x) : (y)
-#define MAX(x, y) (x) > (y) ? (x) : (y)
 
 #define ALLOC_N(T,N)    ((T*)calloc((N),sizeof(T)))
 #define FREE(M)         if(M){free(M);(M)=NULL;}
@@ -2165,16 +2163,16 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
         // Now extract the data for this block.
         //
         imin = (block % nblocks_x) * delta_x - 1;
-        imax = MIN(imin + delta_x + 3, NX + 1);
-        imin = MAX(imin, 0);
+        imax = std::min(imin + delta_x + 3, NX + 1);
+        imin = std::max(imin, 0);
         nx = imax - imin;
         jmin = ((block % (nblocks_x * nblocks_y)) / nblocks_x) * delta_y - 1;
-        jmax = MIN(jmin + delta_y + 3, NY + 1);
-        jmin = MAX(jmin, 0);
+        jmax = std::min(jmin + delta_y + 3, NY + 1);
+        jmin = std::max(jmin, 0);
         ny = jmax - jmin;
         kmin = (block / (nblocks_x * nblocks_y)) * delta_z - 1;
-        kmax = MIN(kmin + delta_z + 3, NZ + 1);
-        kmin = MAX(kmin, 0);
+        kmax = std::min(kmin + delta_z + 3, NZ + 1);
+        kmin = std::max(kmin, 0);
         nz = kmax - kmin;
 
         for (k = 0, n_z = kmin; n_z < kmax; k++, n_z++)

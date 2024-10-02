@@ -34,7 +34,7 @@
 #define TECPLOT_VERSION_7X(v) (v >= TECPLOT_71 && v <= 79)
 #define TECPLOT_VERSION_104GE(v) (v >= TECPLOT_104)
 
-#ifdef WIN32
+#ifdef _WIN32
 #define FSEEK _fseeki64
 #define FTELL _ftelli64
 #else

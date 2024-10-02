@@ -2174,7 +2174,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
                  !GetViewerProperties()->GetNoConfig())
         {
             specifiedConfig = true;
-#ifndef WIN32
+#ifndef _WIN32
             GetViewerProperties()->SetConfigurationFileName(argv[i+1]);
 #else
             string tmp = argv[i+1];
@@ -2500,7 +2500,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             // Make sure the -config flag and the filename that follows it is
             // not passed along to other components.
-#ifndef WIN32
+#ifndef _WIN32
             ++i;
 #else
             i+=nConfigArgs;

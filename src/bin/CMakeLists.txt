@@ -63,6 +63,10 @@
 #  Kathleen Biagas, Tue Jan 31, 2023
 #  Change how files are copied on Windows.
 #
+#  Cyrus Harrison, Fri Aug 23 14:17:16 PDT 2024
+#  Use custom command to copy bin files so that cmake keeps them
+#  up-to-date in `/bin` when the source files are modified.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -118,11 +122,20 @@ if(NOT WIN32)
     # otherwise.
     #
     # this is copying to build dir
+    set(__all_visit_bin_build_dir_items)
     foreach(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
-                                ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
+        # use custom command so cmake captures the dependency, triggering
+        # a copy whenever the source files change
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM}
+                           COMMAND ${CMAKE_COMMAND} -E copy
+                                   ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
+                                   ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM}
+                           MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM})
+        list(APPEND __all_visit_bin_build_dir_items ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
     endforeach()
+
+    add_custom_target(visit_bin_exec_items ALL DEPENDS ${__all_visit_bin_build_dir_items})
+    unset(__all_visit_bin_build_dir_items)
 
     file(MAKE_DIRECTORY ${VISIT_EXECUTABLE_DIR})
     configure_file(makemili_driver_ser ${VISIT_EXECUTABLE_DIR} COPYONLY)

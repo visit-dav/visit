@@ -194,6 +194,10 @@
 //    Add -ZC:__cplusplus for MSVC.
 //    Add 'VISIT_PLUGIN_TARGET_OUTPUT_DIR' only for Dev builds.
 //
+//    Kathleen Biagas, Wed Sep 18, 2024
+//    Add 'FilterConditionalLibs' so that VTKM version can be appended to
+//    vtkm_ libraries when run outside dev environment (eg pluginVsInstall).
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -278,6 +282,26 @@ class CMakeGeneratorPlugin : public Plugin
                 s += (ConvertDollarParenthesis(vec[i]) + " ");
         }
         return s;
+    }
+
+    void
+    FilterConditionalLibs(QString &links, QString &libs)
+    {
+        // Will convert vtkm_xxx to vtkm_xxx-version
+        // otherwise will leave it alone.
+        QString vtkmversion = QString("-%1").arg(VTKM_SMALL);
+
+        QStringList newlist = links.split(" ");
+        for(int i = 0; i < newlist.size(); ++i)
+        {
+            QString tmp(newlist[i]);
+            if(tmp.startsWith("vtkm_") && !using_dev)
+            {
+                // append the vtkm version
+                tmp.append(vtkmversion);
+            }
+            libs += " " + tmp;
+        }
     }
 
     void
@@ -485,8 +509,10 @@ class CMakeGeneratorPlugin : public Plugin
         {
             for (int i = 0; i < conditions.size(); ++i)
             {
+                QString libs;
+                FilterConditionalLibs(links[i], libs);
                 out << indent << "if(" << conditions[i] << ")" << Endl;
-                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << links[i] << ")" << Endl;
+                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << libs << ")" << Endl;
                 out << indent << "endif()" << Endl;
                 out << Endl;
             }
@@ -1256,7 +1282,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         QString guilibname("gui");
         QString viewerlibname("viewer");
-#ifdef WIN32
+#ifdef _WIN32
         if (! using_dev)
         {
             // when calling from an installed version, cmake doesn't know that

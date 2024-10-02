@@ -470,7 +470,7 @@ VisItViewer::Setup()
     {
 
         std::string pluginDir(GetVisItHome());
-#ifndef WIN32
+#ifndef _WIN32
         pluginDir += "/plugins";
 #endif
 

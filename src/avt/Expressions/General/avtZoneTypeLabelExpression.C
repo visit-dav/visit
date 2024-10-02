@@ -76,6 +76,9 @@ avtZoneTypeLabelExpression::~avtZoneTypeLabelExpression()
 //    Made val 8 characters long to avoid a compiler error on Power 9 systems
 //    with gcc.
 //
+//    Mark C. Miller, Wed Jul 24 09:17:46 PDT 2024
+//    Make default value 'unk' instead of '" ? "'
+//
 // ****************************************************************************
 
 #define SET_VAL(STR) strncpy(val, #STR, sizeof(val))
@@ -97,7 +100,7 @@ avtZoneTypeLabelExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         // loop body.
         //
         char val[8];
-        SET_VAL(" ? ");
+        SET_VAL(unk);
         switch (in_ds->GetCellType(i))
         {
             // 2D cell types, lower case letters

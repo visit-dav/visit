@@ -14,7 +14,7 @@
 
 #include <avtffpFileFormat.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -68,7 +68,7 @@ static trlistp_t _trlistp = 0;
 static int InitLibStripack()
 {
     static char const * const envar = "VISIT_FFP_STRIPACK_PATH";
-#ifdef WIN32
+#ifdef _WIN32
     HINSTANCE libh = NULL;
     if (Environment::exists(envar))
         libh = LoadLibrary(Environment::get(envar).c_str());

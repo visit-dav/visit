@@ -94,7 +94,7 @@
 #define ompi_fortran_integer_t int
 
 #ifndef OMPI_DECLSPEC
-#if defined(WIN32)
+#if defined(_WIN32)
 #define OMPI_DECLSPEC __declspec(dllimport)
 #else
 #define OMPI_DECLSPEC

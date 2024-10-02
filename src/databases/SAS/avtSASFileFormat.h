@@ -11,7 +11,7 @@
 
 #include <avtMTMDFileFormat.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #define OPEN    ::_open
 #define CLOSE   ::_close

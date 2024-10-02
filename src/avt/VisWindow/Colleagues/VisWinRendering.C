@@ -66,6 +66,14 @@ bool VisWinRendering::stereoEnabled = false;
 #include <vtkFloatArray.h>
 #endif
 
+//
+// vtkBackgroundPass is no longer used. It was previously used in
+// PostProcessScreenCapture to copy the composited image to the image
+// before rendering the foreground annotations. I'm leaving it here in
+// case we ever need it again and as an example of a render pass and
+// using an OpenGL shader in VTK.
+//
+
 // For vtkBackgroundPass
 #include <vtkOpenGLQuadHelper.h>
 #include <vtkOpenGLRenderUtilities.h>
@@ -1434,6 +1442,11 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    that's why these things are conditionally compiled. They'll need to
 //    be changed to render passes for VTK 8.
 //
+//    Eric Brugger, Fri Aug  9 13:45:49 PDT 2024
+//    Change the calls to SetPixelData and SetRGBACharPixelData to write
+//    to the back buffer instead of the front buffer. The behavior changed
+//    with VTK9.
+//
 // ****************************************************************************
 
 void
@@ -1556,9 +1569,9 @@ VisWinRendering::ScreenRender(avtImageType imgT,
             int nchan = input->GetImage().GetNumberOfColorChannels();
 
             if (nchan == 3)
-                renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 1);
+                renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 0);
             else
-                renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 1);
+                renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 0);
 
             glDepthMask(GL_TRUE);
         }
@@ -1873,6 +1886,11 @@ VisWinRendering::BackgroundReadback(bool doViewportOnly)
 //    the vtkBackgroundPass render pass (at the top of this file) to
 //    accomplish this. The old mechanism no longer worked with VTK9.
 //
+//    Eric Brugger, Thu Aug  8 15:33:43 PDT 2024
+//    Switch back to using the old method to set the pixel data with
+//    SetPixelData and SetRGBACharPixelData, except writing to the back
+//    buffer instead of the front buffer.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1903,34 +1921,21 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     writer->Delete();
 #endif
 
-    // Get the render window.
+    // temporarily remove canvas and background renderers
     vtkRenderWindow *renWin = GetRenderWindow();
+    renWin->RemoveRenderer(canvas);
+    renWin->RemoveRenderer(background);
 
-    // Create a renderer that uses the vtkBackgroundPass to render the
-    // composited image.
-    vtkRenderer *imageRenderer = vtkRenderer::New();
-    vtkBackgroundPass *imagePass = vtkBackgroundPass::New();
+    // set pixel data
     unsigned char *pixels = input->GetImage().GetRGBBuffer();
     int nChannels = input->GetImage().GetNumberOfColorChannels();
-    imagePass->SetBackground(nChannels, c0, r0, w, h, pixels);
-    imageRenderer->SetPass(imagePass);
-    imageRenderer->SetLayer(1);
-    imageRenderer->SetBackground(1., 1., 1.);
+    if(nChannels == 4)
+        renWin->SetRGBACharPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*back=*/0);
+    else
+        renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*back=*/0);
 
-    // Replace the canvas with the image.
-    renWin->RemoveRenderer(canvas);
-    renWin->AddRenderer(imageRenderer);
-
-    // Render.
-    renWin->Render();
-
-    // Restore the canvas.
-    renWin->RemoveRenderer(imageRenderer);
-    renWin->AddRenderer(canvas);
-
-    // Clean up the image renderer.
-    imagePass->Delete();
-    imageRenderer->Delete();
+    // render (foreground layer only)
+    RenderRenderWindow();
 
     // Capture the whole image now.
     GetCaptureRegion(r0, c0, w, h, false);
@@ -1967,6 +1972,10 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
             keepZBuffer ? input->GetImage().GetZBufferVTK() : 0));
 
     im->Delete();
+
+    // add canvas and background renderers back in
+    renWin->AddRenderer(background);
+    renWin->AddRenderer(canvas);
 
     return output;
 }

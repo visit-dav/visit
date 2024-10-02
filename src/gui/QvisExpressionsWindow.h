@@ -111,6 +111,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     QString QuoteVariable(const QString &);
 
     void    CreateStandardEditor();
+    void    SetStandardEditorReadOnly(bool read_only);
     void    CreatePythonFilterEditor();
     void    UpdatePythonExpression();
     bool    ParsePythonExpression(const QString &, QString &, QString &);

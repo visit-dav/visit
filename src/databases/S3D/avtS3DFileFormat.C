@@ -34,7 +34,7 @@
 using     std::string;
 using     std::vector;
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <stdio.h>
 #define F_SLASH_STRING "/"
 #define B_SLASH_STRING "\\"
@@ -54,7 +54,7 @@ using     std::vector;
 static string
 parse_dirname(char *wholePath)
 {
-#ifndef WIN32
+#ifndef _WIN32
     return string(dirname(wholePath));
 #else
     string wholePathString(wholePath);
@@ -102,7 +102,7 @@ CreateStringFromDouble(double ts)
     char temp[256];
     snprintf(temp,256,"%1.3E",ts);
     string tempStr(temp);
-#ifdef WIN32
+#ifdef _WIN32
     size_t off = tempStr.find("E+0");
     if (off < tempStr.size())
     {

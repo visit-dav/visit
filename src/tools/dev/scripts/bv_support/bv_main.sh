@@ -104,7 +104,7 @@ function check_minimum_compiler_version()
         echo "apple clang version $VERSION"
         testvercomp $VERSION 5.0 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need clang++ version >= 0.0"
+            echo "Need clang++ version >= 5.0"
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "clang++" ]] ; then 

@@ -900,7 +900,7 @@ avtSiloFileFormat::OpenFile(const char *n, bool skipGlobalInfo)
     // do not treat it as relative to the toc file. This permits root
     // files to have multi-block objects with absolute path names.
     //
-#ifdef WIN32
+#ifdef _WIN32
     // Example "C:\foo\bar"
     if (strlen(n) > 2 && n[1] == ':' && n[2] == VISIT_SLASH_CHAR)
 #else

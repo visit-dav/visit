@@ -34,6 +34,12 @@ class DBOptionsAttributes;
 //
 //  Modifications:
 //
+//     Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//     Added bpOutputType enum.
+//     Removed m_mbDirName, m_output_dir, m_nblocks, m_genRoot, n_root_file,
+//        and m_root_file.
+//     Added m_output_type and m_special_options.
+//     Removed CreateOutputDir(), GenRootNode(), and WriteMeshDomain().
 //
 // ****************************************************************************
 
@@ -55,29 +61,26 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
       BP_MESH_OP_PARTITION
     };
 
+    enum bpOutputType {
+      HDF5,
+      YAML,
+      JSON
+    };
+
     std::string     m_stem;
     std::string     m_meshName;
-    std::string     m_mbDirName;
-    std::string     m_output_dir;
     double          m_time;
     int             m_cycle;
-    int             m_nblocks;
-    bool            m_genRoot;
-    conduit::Node   n_root_file;
-    std::string     m_root_file;
+    std::string     m_output_type;
 
     bpMeshOp        m_op;
     conduit::Node   m_options;
+    conduit::Node   m_special_options;
     conduit::Node   m_chunks;
 
     ExpressionList exprList;
 
     void           ChunkToBpMesh(vtkDataSet *, int, int, conduit::Node &);
-    void           CreateOutputDir();
-    void           GenRootNode(conduit::Node &mesh,
-                               const std::string output_dir,
-                               const int ndims);
-    void           WriteMeshDomain(conduit::Node &mesh, int);
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,

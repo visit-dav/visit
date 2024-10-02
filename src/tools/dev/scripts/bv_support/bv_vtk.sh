@@ -145,6 +145,36 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_vtkopenglpolydatamapper_patch
+{
+  # patch that allows extra large extents datasets to be rendered correctly
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/vtkOpenGLPolyDataMapper.cxx.orig    2024-08-23 08:45:54.157974000 -0700
++++ Rendering/OpenGL2/vtkOpenGLPolyDataMapper.cxx 2024-08-23 08:57:58.918823000 -0700
+@@ -2241,9 +2241,12 @@
+     }
+     else // not lines, so surface
+     {
++      // The partial derivatives are scaled by the inverse of fwidth
++      // to avoid overflow or underflow in the following computations.
+       vtkShaderProgram::Substitute(FSSource, "//VTK::UniformFlow::Impl",
+-        "vec3 fdx = dFdx(vertexVC.xyz);\n"
+-        "  vec3 fdy = dFdy(vertexVC.xyz);\n"
++        "float scale = 1.0/length(fwidth(vertexVC.xyz));\n"
++        "  vec3 fdx = dFdx(vertexVC.xyz)*scale;\n"
++        "  vec3 fdy = dFdy(vertexVC.xyz)*scale;\n"
+         "  //VTK::UniformFlow::Impl\n" // For further replacements
+       );
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+}
+
 function apply_vtk9_gcc13_patch
 {
   # patches that allows VTK9 to be built g++-13
@@ -247,6 +277,32 @@ EOF
       return 1
     fi
     return 0;
+}
+
+function apply_vtk9_vtkdatawriter_patch2
+{
+  # patch vtkDataWriter always write legacy file versions
+   patch -p0 << \EOF
+--- IO/Legacy/vtkDataWriter.cxx.orig    2024-08-07 14:40:17.383506000 -0700
++++ IO/Legacy/vtkDataWriter.cxx   2024-08-08 13:52:18.147942000 -0700
+@@ -82,7 +82,7 @@
+   this->Header = new char[257];
+   strcpy(this->Header, "vtk output");
+   this->FileType = VTK_ASCII;
+-  this->FileVersion = VTK_LEGACY_READER_VERSION_5_1;
++  this->FileVersion = VTK_LEGACY_READER_VERSION_4_2;
+ 
+   this->ScalarsName = nullptr;
+   this->VectorsName = nullptr;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkDataWriter.cxx failed."
+      return 1
+    fi
+    return 0;
+
 }
 
 function apply_vtk9_vtkdatawriter_patch
@@ -1263,6 +1319,11 @@ function apply_vtk_patch
        return 1
     fi
 
+    apply_vtk9_vtkdatawriter_patch2
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
+
     apply_vtk9_osmesa_render_patch
     if [[ $? != 0 ]] ; then
         return 1
@@ -1273,6 +1334,10 @@ function apply_vtk_patch
         return 1
     fi
 
+    apply_vtk9_vtkopenglpolydatamapper_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
     return 0
 }

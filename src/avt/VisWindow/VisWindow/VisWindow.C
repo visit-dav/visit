@@ -24,6 +24,7 @@
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
+#include <vtkPointPicker.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -7312,6 +7313,11 @@ VisWindow::GetInteractorAtts() const
 //  Modifications:
 //    Kathleen Bonnell, Thu Nov  4 16:46:31 PST 2004
 //    Make plots pickable before performing intersection, and unpickable after.
+//
+//    Kathleen Biagas, Thu Sep 12, 2024
+//    If doing intersectionOnly, and vtkCellPicker fails, try vtkPointPicker.
+//    This allows ChooseCenter for Scatter plots to work.
+//
 // ****************************************************************************
 
 bool
@@ -7325,21 +7331,13 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
 
     plots->MakeAllPickable();
     bool success;
-    vtkCellPicker *picker = vtkCellPicker::New();
-    picker->SetTolerance(1.0e-6);
-    picker->Pick(x, y, 0, ren);
 
-    int cell = picker->GetCellId();
+    vtkNew<vtkCellPicker> cellPicker;
+    cellPicker->SetTolerance(1.0e-6);
 
-    if ( cell < 0 )
+    if(cellPicker->Pick(x, y, 0, ren))
     {
-       debug5 << "vtkCellPicker found no intersection with surface."  << endl;
-       success = false;
-    }
-    else
-    {
-        vtkDataSet *ds = picker->GetDataSet();
-        if (ds == NULL)
+        if(cellPicker->GetDataSet() == nullptr)
         {
             success = false;
             debug5 << "vtkCellPicker returned NULL dataset." << endl;
@@ -7347,12 +7345,35 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
         else
         {
             success = true;
-            isect[0] = picker->GetPickPosition()[0];
-            isect[1] = picker->GetPickPosition()[1];
-            isect[2] = picker->GetPickPosition()[2];
+            isect[0] = cellPicker->GetPickPosition()[0];
+            isect[1] = cellPicker->GetPickPosition()[1];
+            isect[2] = cellPicker->GetPickPosition()[2];
         }
     }
-    picker->Delete();
+    else
+    {
+        success = false;
+        debug5 << "VisWindow::FindIntersection: vtkCellPicker found no intersection."  << endl;
+
+        if(pickForIntersectionOnly)
+        {
+            // try point picking
+            vtkNew<vtkPointPicker> pointPicker;
+            pointPicker->UseCellsOff();
+            if(pointPicker->Pick(x, y, 0, ren))
+            {
+                success = true;
+                isect[0] = pointPicker->GetPickPosition()[0];
+                isect[1] = pointPicker->GetPickPosition()[1];
+                isect[2] = pointPicker->GetPickPosition()[2];
+            }
+            else
+            {
+                success = false;
+                debug5 << "VisWindow::FindIntersection: vtkPointPicker found no intersection."  << endl;
+            }
+        }
+    }
     plots->MakeAllUnPickable();
     return success;
 }
@@ -7794,3 +7815,4 @@ VisWindow::GetExtents(double ext[2]) // TODO: Remove with VTK8
 {
     plots->GetDataRange(ext[0], ext[1]);
 }
+

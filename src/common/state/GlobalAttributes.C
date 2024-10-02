@@ -115,7 +115,7 @@ void GlobalAttributes::Init()
     createTimeDerivativeExpressions = true;
     createVectorMagnitudeExpressions = true;
     newPlotsInheritSILRestriction = true;
-#ifdef WIN32
+#ifdef _WIN32
     userDirForSessionFiles = true;
 #else
     userDirForSessionFiles = false;

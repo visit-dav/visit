@@ -1157,9 +1157,9 @@ endif()
 # quotes to unite the strings or CMake will create a list.
 #-----------------------------------------------------------------------------
 set(CMAKE_VERBOSE_MAKEFILE ${VISIT_VERBOSE_MAKEFILE})
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VISIT_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIT_CXX_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VISIT_C_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIT_CXX_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}" CACHE STRING "" FORCE)
 
 #-----------------------------------------------------------------------------
 # Top-level subdirectories
@@ -1357,7 +1357,34 @@ if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
 
+#-------------------------------------------------------------------------
+# Create a visit-dist target, and checksums for the resultant file.
+#
+# Caution:
+# This only tars up src as-is, so use at own discretion if there
+# are modifications or temporary files in your checkout
 
+set(dist_name visit${VISIT_VERSION})
+
+# cannot use "${CMAKE_COMMAND} -E tar hzcf" because cmake doesn't
+# support the use of the '-h' option, which resolve symlinks
+
+add_custom_target(visit-dist
+  # retrieve current GIT version
+  COMMAND cd ${VISIT_SOURCE_DIR} && git log -1 --format=%h > GIT_VERSION && cd ${CMAKE_CURRENT_BINARY_DIR}
+  # create the dir to tar up
+  COMMAND  ${CMAKE_COMMAND} -E make_directory ${dist_name}
+  # Add symlink to src
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR} ${dist_name}/src
+  # Tar it up, resolving symlinks
+  COMMAND tar hzcf ${dist_name}.tar.gz ${dist_name}
+  # get the checksums
+  COMMAND ${CMAKE_COMMAND} -E sha256sum ${dist_name}.tar.gz > visit-dist-sha256sum.txt
+  COMMAND ${CMAKE_COMMAND} -E md5sum ${dist_name}.tar.gz > visit-dist-md5sum.txt
+  # clean up
+  COMMAND ${CMAKE_COMMAND} -E rm ${VISIT_SOURCE_DIR}/GIT_VERSION
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${dist_name}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DR})
 
 #-------------------------------------------------------------------------
 #
@@ -1387,4 +1414,3 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
 install(EXPORT visitTargets
         NAMESPACE visit::
         DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
-

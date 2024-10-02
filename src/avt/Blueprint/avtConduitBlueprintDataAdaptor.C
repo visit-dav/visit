@@ -739,6 +739,8 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 //  Creation:   Tue Jun 18 13:59:05 PDT 2024
 //
 //  Modifications:
+//    Brad Whitlock, Mon Aug 26 13:42:59 PDT 2024
+//    Use offsets if they are present.
 //
 // ****************************************************************************
 
@@ -765,19 +767,39 @@ HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 
     ida->SetNumberOfTuples(totalsize);
 
-    int comp_index = 0;
-    int topo_conn_index = 0;
-    for (int cell_id = 0; cell_id < ncells; cell_id ++)
+    if(n_topo.has_path("elements/offsets"))
     {
-        const int curr_size = topo_sizes[cell_id];
-        ida->SetComponent(comp_index, 0, curr_size);
-        comp_index ++;
-        for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
+        const int_accessor topo_offsets = n_topo["elements/offsets"].value();
+        int comp_index = 0;
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
         {
-            ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+            const int curr_size = topo_sizes[cell_id];
+            const int curr_offset = topo_offsets[cell_id];
+            ida->SetComponent(comp_index, 0, curr_size);
             comp_index ++;
+            for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id++)
+            {
+                ida->SetComponent(comp_index, 0, topo_conn[curr_offset + shape_conn_id]);
+                comp_index ++;
+            }
         }
-        topo_conn_index += curr_size;
+    }
+    else
+    {
+        int comp_index = 0;
+        int topo_conn_index = 0;
+        for (int cell_id = 0; cell_id < ncells; cell_id ++)
+        {
+            const int curr_size = topo_sizes[cell_id];
+            ida->SetComponent(comp_index, 0, curr_size);
+            comp_index ++;
+            for (int shape_conn_id = 0; shape_conn_id < curr_size; shape_conn_id ++)
+            {
+                ida->SetComponent(comp_index, 0, topo_conn[topo_conn_index + shape_conn_id]);
+                comp_index ++;
+            }
+            topo_conn_index += curr_size;
+        }
     }
 
     cells->SetCells(ncells, ida);
@@ -814,6 +836,9 @@ HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
 //    Use int_accessor to simplify logic.
 //
+//    Brad Whitlock, Mon Aug 26 13:42:59 PDT 2024
+//    Use offsets if they are present.
+//
 // ****************************************************************************
 
 vtkCellArray *
@@ -829,11 +854,10 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         (n_topo.has_path("elements/shape") &&
          n_topo["elements/shape"].as_string() == "point"))
     {
-        // TODO, why is this 2 * npts?
         ida->SetNumberOfTuples(2*npts);
         for (int i = 0 ; i < npts; i++)
         {
-            ida->SetComponent(2*i  , 0, 1);
+            ida->SetComponent(2*i  , 0, VTK_VERTEX);
             ida->SetComponent(2*i+1, 0, i);
         }
         ca->SetCells(npts, ida);
@@ -847,13 +871,32 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
         ida->SetNumberOfTuples(ncells * (csize + 1));
 
-        int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
-        for (int i = 0 ; i < ncells; i++)
+        const int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
+        vtkIdType output = 0;
+        if(n_topo.has_path("elements/offsets"))
         {
-            ida->SetComponent((csize+1)*i, 0, csize);
-            for (int j = 0; j < csize; j++)
+            // There are offsets so use them.
+            const int_accessor topo_offsets = n_topo["elements/offsets"].value();
+            for (int i = 0 ; i < ncells; i++)
             {
-                ida->SetComponent((csize+1)*i+j+1, 0,topo_conn[i*csize+j]);
+                const int offset = topo_offsets[i];
+                ida->SetComponent(output++, 0, csize);
+                for (int j = 0; j < csize; j++)
+                {
+                    ida->SetComponent(output++, 0, topo_conn[offset + j]);
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0 ; i < ncells; i++)
+            {
+                ida->SetComponent(output++, 0, csize);
+                const int offset = i * csize;
+                for (int j = 0; j < csize; j++)
+                {
+                    ida->SetComponent(output++, 0, topo_conn[offset + j]);
+                }
             }
         }
         ca->SetCells(ncells, ida);
@@ -1526,6 +1569,9 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedM
 //    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
 //    Handle mixed element topologies.
 //
+//    Brad Whitlock, Wed Jul 17 17:59:16 PDT 2024
+//    Add shape_map support in the mixed non-PH topology case.
+//
 // ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(int domain,
@@ -1706,8 +1752,8 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     // The coords could be changed in the call above, so this must happen
     // after the conditionals
     vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr,*topo_ptr);
-
     ugrid->SetPoints(points);
+    points->Delete();
 
     if (oca != NULL)
     {
@@ -1720,23 +1766,38 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
     if (topo_ptr->has_path("elements/shape") &&
         topo_ptr->fetch("elements/shape").as_string() == "mixed")
     {
-
         const int ncells = topo_ptr->fetch("elements/shapes").dtype().number_of_elements();
         
         vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
         cellTypes->SetNumberOfValues(ncells);
         unsigned char *cell_types_ptr = cellTypes->GetPointer(0);
 
-        int_accessor shapes_accessor = topo_ptr->fetch("elements/shapes").value();
+        const int_accessor shapes_accessor = topo_ptr->fetch("elements/shapes").value();
+
+        // Make a map of shape map value to VTK cell type.
+        std::map<int, int> sm2vtk;
+        const conduit::Node &n_shape_map = topo_ptr->fetch_existing("elements/shape_map");
+        for(index_t i = 0; i < n_shape_map.number_of_children(); i++)
+        {
+            const int cellValue = n_shape_map[i].to_int();
+            sm2vtk[cellValue] = ElementShapeNameToVTKCellType(n_shape_map[i].name());
+        }
+
         for (int cell_id = 0; cell_id < ncells; cell_id ++)
         {
-            *cell_types_ptr++ = shapes_accessor[cell_id];
+            const int shape_value = shapes_accessor[cell_id];
+            const auto it = sm2vtk.find(shape_value);
+            if(it == sm2vtk.end())
+            {
+                AVT_CONDUIT_BP_WARNING("Shape value " << shape_value << " is not in shape_map.");
+            }
+            // Store the VTK cell type in the cell types.
+            *cell_types_ptr++ = static_cast<unsigned char>(it->second);
         }
 
         vtkCellArray *cells = HeterogeneousShapeTopologyToVTKCellArray(*topo_ptr, ncells);
         ugrid->SetCells(cellTypes, cells);
         cells->Delete();
-        points->Delete();
         cellTypes->Delete();
     }
     else
@@ -1745,7 +1806,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         // Now, add explicit topology
         //
         vtkCellArray *cells = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
-        points->Delete();
         ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), cells);
         cells->Delete();
     }
@@ -2731,10 +2791,6 @@ ShapeNameToGeomType(const std::string &shape_name)
 // ****************************************************************************
 
 //---------------------------------------------------------------------------//
-//---------------------------------------------------------------------------//
-// TODO:
-// In the future: these methods will be in MFEM's ConduitDataCollection
-// we will those, instead of VisIt's own implementation.
 //---------------------------------------------------------------------------//
 mfem::Mesh *
 avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(

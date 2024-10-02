@@ -19,6 +19,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryAddExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryAndExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryDivideExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryModuloExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryMultiplyExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryPowerExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinarySubtractExpression.C
@@ -35,7 +36,6 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFloorExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtIdentityExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtInverseExpression.C
-          ${CMAKE_CURRENT_SOURCE_DIR}/avtModuloExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtNaturalLogExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtPolarCoordinatesExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtRadianToDegreeExpression.C
@@ -64,6 +64,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryAndExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryDivideExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryMultiplyExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryModuloExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinaryPowerExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtBinarySubtractExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtCeilingExpression.h
@@ -79,7 +80,6 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFloorExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtIdentityExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtInverseExpression.h
-          ${CMAKE_CURRENT_SOURCE_DIR}/avtModuloExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtNaturalLogExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtPolarCoordinatesExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtRadianToDegreeExpression.h

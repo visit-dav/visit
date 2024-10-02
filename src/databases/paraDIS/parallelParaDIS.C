@@ -28,7 +28,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <stdio.h>
 #define F_SLASH_STRING "/"
 #define B_SLASH_STRING "\\"
@@ -36,7 +36,7 @@
 #else
 #include <libgen.h>
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h> /* for _getcwd */
 #define getcwd _getcwd
 #else
@@ -60,7 +60,7 @@ using namespace std;
 static string
 parse_dirname(char *wholePath)
 {
-#ifndef WIN32
+#ifndef _WIN32
     return string(dirname(wholePath)) + "/";
 #else
     string wholePathString(wholePath);
@@ -635,7 +635,7 @@ bool ParallelData:: ParseMetaDataFile(void) {
   } else {
     cwd = string(buf) + "/"; 
   }
-#ifndef WIN32
+#ifndef _WIN32
   if (mMetaDataFileName[0] != '/' )
 #else
   if (mMetaDataFileName.size() > 1 && mMetaDataFileName[1] != ':' )

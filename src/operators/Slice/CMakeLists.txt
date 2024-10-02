@@ -81,11 +81,19 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 
 ADD_LIBRARY(ESliceOperator_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(ESliceOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
+if(HAVE_LIBVTKM)
+    target_link_libraries(ESliceOperator_ser  vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis)
+endif()
+
 SET(INSTALLTARGETS ${INSTALLTARGETS} ESliceOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESliceOperator_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(ESliceOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
+    if(HAVE_LIBVTKM)
+        target_link_libraries(ESliceOperator_par  vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis)
+    endif()
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESliceOperator_par)
 ENDIF(VISIT_PARALLEL)
 

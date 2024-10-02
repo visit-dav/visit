@@ -175,7 +175,7 @@ int
 get_errno()
 {
    int eno = 0;
-#ifdef WIN32
+#ifdef _WIN32
     _get_errno(&eno);
 #else
     eno = errno;

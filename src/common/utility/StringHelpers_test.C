@@ -17,7 +17,7 @@ using std::string;
 static string slash_swap_for_os(string const in)
 {
     string out = in;
-#ifdef WIN32
+#ifdef _WIN32
     for (size_t i = 0; i < in.size(); i++)
         if (in[i] == '/') out[i] = '\\';
 #endif
@@ -250,7 +250,7 @@ int main(int argc, char **argv)
     CHECK_BASENAME_WITH_SUFFIX("/foo/bar/gorfo.txt",  "gorfo.txt", "gorfo.txt");
     CHECK_BASENAME_WITH_SUFFIX("/foo/bar/gorfo.txt",  "",          "gorfo.txt");
 
-#ifdef WIN32
+#ifdef _WIN32
     // test with unix-style path separators
     CHECK_PATHNAMES("C:/usr/lib",    "C:/usr",        "lib");
     CHECK_PATHNAMES("D:/usr/",       "D:/usr",        "");

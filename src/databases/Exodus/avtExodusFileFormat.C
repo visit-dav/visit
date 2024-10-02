@@ -54,6 +54,7 @@
 #include <cstdlib> // for qsort
 #include <cstdarg>
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
@@ -230,7 +231,7 @@ static void fill_tmp_suffixes(int n, ...)
     va_end(ap);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 
@@ -2113,11 +2114,6 @@ avtExodusFileFormat::AddVar(avtDatabaseMetaData *md, char const *vname,
 //    instead of just variables the plugin is responsible for serving up.
 // ****************************************************************************
 
-#ifdef MAX
-#undef MAX
-#endif
-#define MAX(A,B) ((A)>(B)?(A):(B))
-
 void
 avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
@@ -2167,7 +2163,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             continue;
         }
 
-        topologicalDimension = MAX(topologicalDimension,
+        topologicalDimension = std::max(topologicalDimension,
             ExodusElemTypeAtt2TopoDim(connect_elem_type_attval, spatialDimension));
         delete [] connect_elem_type_attval;
     }

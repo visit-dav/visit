@@ -288,7 +288,7 @@ avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
 
     PyObject *py_addy_int = pyi->GetGlobalObject("_vtkaddy");
 
-#ifdef WIN32
+#ifdef _WIN32
     if(py_addy_int == NULL)
         return NULL;
 

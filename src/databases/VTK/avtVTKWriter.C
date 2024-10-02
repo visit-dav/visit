@@ -31,7 +31,7 @@
 #include <FileFunctions.h>
 
 #include <DBOptionsAttributes.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>
 #endif
 
@@ -122,7 +122,7 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
     {
        // we want the basename without the extension to use as a sub-dir name
        mbDirName = FileFunctions::Basename(stem);
-#ifdef WIN32
+#ifdef _WIN32
        _mkdir(stem.c_str());
 #else
        mkdir(stem.c_str(), 0777);

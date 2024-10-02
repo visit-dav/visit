@@ -5943,7 +5943,7 @@ visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 STATIC PyObject *
@@ -20018,7 +20018,7 @@ cli_runscript(const char *fileName)
         if(fp)
         {
             std::string fn(fileName);
-#ifdef WIN32
+#ifdef _WIN32
             std::replace(fn.begin(), fn.end(), '\\', '/');
 #endif
             // book keeping for source stack

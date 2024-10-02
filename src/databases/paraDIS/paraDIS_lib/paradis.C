@@ -15,7 +15,7 @@
 #include "paradis_version.h"
 //#include "visit_writer.h"
 
-#ifndef WIN32
+#ifndef _WIN32
 #  include <dirent.h>
 #else
 #  include <direct.h>
@@ -3085,7 +3085,7 @@ namespace paraDIS {
   //===========================================================================
   bool DataSet::Mkdir(const char *dirname) {
     dbprintf(3, "Mkdir(%s)",dirname); 
-#ifndef WIN32
+#ifndef _WIN32
     DIR *dir = opendir(dirname); 
     if (!dir)
       {
@@ -4496,7 +4496,7 @@ namespace paraDIS {
 
     uint32_t numMetaArms = 0, numArms = 0, totalArms = Arm::mArms.size(); 
     STARTPROGRESS(); 
-#ifndef WIN32
+#ifndef _WIN32
     dbprintf(4, "FindMetaArms: %s\n", datestring()); 
 #endif
     for (vector<Arm*>::iterator currentArm = Arm::mArms.begin(); currentArm != Arm::mArms.end(); ++currentArm, ++numArms) {

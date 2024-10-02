@@ -28,7 +28,7 @@
 #include <InvalidVariableException.h>
 #include <ImproperUseException.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <dirent.h>
 #include <unistd.h>
 #else
@@ -329,13 +329,13 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     char buf[2048];
     string fullFileName = rootDir + VISIT_SLASH_STRING + fileName;
     int fd =
-#ifndef WIN32
+#ifndef _WIN32
         open(fullFileName.c_str(), O_RDONLY);
 #else
         ::_open(fullFileName.c_str(), _O_RDONLY|_O_BINARY);
 #endif
     int nread = 
-#ifndef WIN32
+#ifndef _WIN32
         read(fd, buf, sizeof(buf)-1);
 #else
         ::_read(fd, buf, sizeof(buf)-1);
@@ -547,7 +547,7 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     //char buf[2048];
     string fullFileName = rootDir + VISIT_SLASH_STRING + fileName;
     int fd =
-#ifndef WIN32
+#ifndef _WIN32
         open(fullFileName.c_str(), O_RDONLY);
 #else
         ::_open(fullFileName.c_str(), _O_RDONLY|_O_BINARY);
@@ -1218,7 +1218,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     char *buf = new char[dsLength+1];
     string fullFileName = rootDir + VISIT_SLASH_STRING + gridFilenames[timeState];
     int fd =
-#ifndef WIN32
+#ifndef _WIN32
         open(fullFileName.c_str(), O_RDONLY);
 #else
         ::_open(fullFileName.c_str(), _O_RDONLY|_O_BINARY);
@@ -1232,7 +1232,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     }
     lseek(fd, dsOffset, SEEK_SET);
     int nread =
-#ifndef WIN32
+#ifndef _WIN32
         read(fd, buf, dsLength);
 #else
         ::_read(fd, buf, dsLength);

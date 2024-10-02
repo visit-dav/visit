@@ -22,7 +22,7 @@
 #include <string>
 
 // For shared memory access
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -100,7 +100,7 @@ public:
             << ", isMemMapped=" << isMemMapped << std::endl;
         if(isMemMapped)
         {
-    #ifndef WIN32
+    #ifndef _WIN32
             if(ptr)
             {
                 munmap(ptr, len);
@@ -435,7 +435,7 @@ LoadFromSharedMemory(const std::string &shmName,
                      std::array<void*, 2> &outPtrs)
 {
     outPtrs[0] = outPtrs[1] = nullptr;
-#ifndef WIN32
+#ifndef _WIN32
     debug5 << "Loading flatten data from shared memory." << std::endl;
     int fd = shm_open(shmName.c_str(), O_RDWR, 0);
     if(fd == -1)

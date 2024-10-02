@@ -1458,7 +1458,7 @@ QvisGUIApplication::HandleSynchronize(int val)
         if(GetViewerState()->GetGlobalAttributes()->GetUserDirForSessionFiles())
             sessionDir = GetUserVisItDirectory();
         else
-#ifndef WIN32
+#ifndef _WIN32
             sessionDir = QString(QDir(".").absolutePath() + VISIT_SLASH_STRING).toStdString();
 #else
             sessionDir = fileServer->GetPath();
@@ -4603,7 +4603,7 @@ QvisGUIApplication::SaveSessionAs()
     }
     else
     {
-#ifdef WIN32
+#ifdef _WIN32
         if (sessionDir.substr(0,2) == "\\\\")
             defaultFile = QString("%1visit%2.session")
                 .arg(sessionDir.c_str())
@@ -5132,7 +5132,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
 
         // If the file could not be opened then try and prepend the
         // VisIt directory to it.
-#ifndef WIN32
+#ifndef _WIN32
         if(node == 0)
         {
             if(guifilename[0] != VISIT_SLASH_CHAR)
@@ -7000,7 +7000,7 @@ QvisGUIApplication::PrintWindow()
     QPrintDialog printDialog(printer, mainWin);
     if(printDialog.exec() == QDialog::Accepted)
     {
-#ifdef WIN32
+#ifdef _WIN32
         // If printer->outputFileName is NOT NULL, then 'Print to file' was
         // chosen and the outputFileName set to 'FILE:'.  Not a very helpful
         // name, and default location will be '%HOMEDRIVE%', eg "C:\"

@@ -12,7 +12,7 @@
 
 #include "QuadMesh.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 // What's the header for getcwd
 #else
 #include <unistd.h>
@@ -90,7 +90,7 @@ public:
 std::string
 GetCurrentDirectory()
 {
-#ifdef WIN32
+#ifdef _WIN32
     cerr << "GetCurrentDirectory not implemented" << endl;
     // For now...
     return std::string();
@@ -123,7 +123,7 @@ GetCurrentDirectory()
 void
 GotoDirectory(const std::string &dirname)
 {
-#ifdef WIN32
+#ifdef _WIN32
     cerr << "GotoDirectory not implemented" << endl;
 #else
     if ( (mkdir(dirname.c_str(), S_IRWXU) && (errno!=EEXIST))

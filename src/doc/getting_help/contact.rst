@@ -36,4 +36,4 @@ In general, **coverage** is during normal West Coast business hours, 8am-12pm an
 
 A |ghd|_ is the preferred method of contact because it is likely to be seen by more people who can provide a timely response and because any response we produce can be viewed by the widest possible audience.
 
-If you are so inclined, we welcome you to read more about the VisIt project's :ref:`Site Reliability Engineering <site_reliability_engineering>` processes to understand how we provide support.
+If you are so inclined, we welcome you to read more about the VisIt project's :ref:`Software Reliability Engineering <software_reliability_engineering>` processes to understand how we provide support.

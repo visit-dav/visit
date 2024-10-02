@@ -22,6 +22,8 @@ Source code repository for the VisIt Scientific Visualization and Data Analysis 
 
 * [Github Development Info](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/GitHub.html)
 * [Newly Submitted Issues](https://github.com/visit-dav/visit/issues?utf8=✓&q=is%3Aissue+is%3Aopen+-label%3Areviewed)
+* [Open Uncommented Discussions](https://github.com/visit-dav/visit/discussions?discussions_q=is%3Aunanswered+-label%3Asre+comments%3A0+is%3Aopen)
+* [Open, Unanswered Discussions](https://github.com/visit-dav/visit/discussions?discussions_q=is%3Aunanswered+-label%3Asre+is%3Aopen+)
 
 
 ## License

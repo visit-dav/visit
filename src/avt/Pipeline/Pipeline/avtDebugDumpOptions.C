@@ -170,7 +170,7 @@ avtDebugDumpOptions::SetDumpDirectory(const string &odir)
             res_dir += slash;
 
         // make sure the dir exists!
-#ifdef WIN32
+#ifdef _WIN32
         DWORD resAttrs = GetFileAttributes(res_dir.c_str());
         if (resAttrs == INVALID_FILE_ATTRIBUTES)
             invalidDir = true;

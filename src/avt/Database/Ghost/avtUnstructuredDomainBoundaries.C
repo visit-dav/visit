@@ -28,6 +28,7 @@
 #include <DebugStream.h>
 #include <VisItException.h>
 
+#include <algorithm>
 #include <set>
 #include <map>
 
@@ -864,10 +865,6 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //
 // ****************************************************************************
 
-#ifndef MIN
-#define MIN(A,B) ((A)>(B)?(B):(A))
-#endif
-
 vector<avtMaterial*>
 avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
                                                      vector<avtMaterial*> mats)
@@ -910,23 +907,23 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         //
         int         *new_matlist  = new int[newNCells];
         const int   *old_matlist  = mats[i]->GetMatlist();
-        memcpy(new_matlist, old_matlist, sizeof(int)*MIN(oldNCells,newNCells));
+        memcpy(new_matlist, old_matlist, sizeof(int)*std::min(oldNCells,newNCells));
 
         int         *new_mix_next = new int[newMixlen];
         const int   *old_mix_next = mats[i]->GetMixNext();
-        memcpy(new_mix_next, old_mix_next, sizeof(int)*MIN(oldMixlen,newMixlen));
+        memcpy(new_mix_next, old_mix_next, sizeof(int)*std::min(oldMixlen,newMixlen));
 
         int         *new_mix_mat  = new int[newMixlen];
         const int   *old_mix_mat  = oldMat->GetMixMat();
-        memcpy(new_mix_mat, old_mix_mat, sizeof(int)*MIN(oldMixlen,newMixlen));
+        memcpy(new_mix_mat, old_mix_mat, sizeof(int)*std::min(oldMixlen,newMixlen));
 
         float       *new_mix_vf   = new float[newMixlen];
         const float *old_mix_vf   = oldMat->GetMixVF();
-        memcpy(new_mix_vf, old_mix_vf, sizeof(float)*MIN(oldMixlen,newMixlen));
+        memcpy(new_mix_vf, old_mix_vf, sizeof(float)*std::min(oldMixlen,newMixlen));
 
         int         *new_mix_zone = new int[newMixlen];
         const int   *old_mix_zone = oldMat->GetMixZone();
-        memcpy(new_mix_zone, old_mix_zone, sizeof(int)*MIN(oldMixlen,newMixlen));
+        memcpy(new_mix_zone, old_mix_zone, sizeof(int)*std::min(oldMixlen,newMixlen));
 
         //
         // Now copy over the ghost information.  By iterating over the

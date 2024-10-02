@@ -245,10 +245,13 @@ DatabaseActionBase::OpenDatabaseHelper(const std::string &entireDBName,
                                                                forcedFileType);
     if (mdptr != NULL)
     {
+#if 0
+        // Disabled this warning message July 24, 2024
         if (mdptr->ShouldDisableSEG(Environment::exists(mdptr->GetSEGEnvVarName())))
         {
             GetViewerMessaging()->Warning(mdptr->GetSEGWarningString());
         }
+#endif
 
         avtDatabaseMetaData md(*mdptr);
 
