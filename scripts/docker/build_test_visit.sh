@@ -33,7 +33,6 @@ cd build
   -DVISIT_ENABLE_XDB:BOOL=OFF -DVISIT_PARADIS:BOOL=ON \
   -DVISIT_CREATE_XMLTOOLS_GEN_TARGETS:BOOL=OFF \
   -DVISIT_CONFIG_SITE="/home/visit/visit-config.cmake" ../src
-make manuals
 make -j 4 package
 mv visit$version2.linux-x86_64.tar.gz ../..
 
