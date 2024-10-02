@@ -22,7 +22,7 @@ class vtkDataSet;
 //  Class: avtVariableByZoneQuery
 //
 //  Purpose:
-//    A query that retrieves var information about a mesh given a 
+//    A query that retrieves var information about a mesh given a
 //    particular domain and zone number.
 //
 //  Programmer: Kathleen Bonnell
@@ -41,6 +41,9 @@ class vtkDataSet;
 //    Kathleen Biagas, Mon Jun 20 10:31:43 PDT 2011
 //    Added SetInputParams, removed SetNumVars, added domain, zone.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Added QueryAttributes argument to GetTimeCurveSpecs.
+//
 // ****************************************************************************
 
 class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
@@ -50,14 +53,14 @@ class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
     virtual                  ~avtVariableByZoneQuery();
 
 
-    virtual const char       *GetType(void)   
-                              { return "avtVariableByZoneQuery"; };
+    virtual const char       *GetType(void)
+                              { return "avtVariableByZoneQuery"; }
     virtual const char       *GetDescription(void)
                               { return "Retrieving var information on mesh."; }
 
     virtual void              SetInputParams(const MapNode &);
 
-    virtual const MapNode    &GetTimeCurveSpecs(); 
+    const MapNode            &GetTimeCurveSpecs(const QueryAttributes *) override;
 
   protected:
     virtual void                    Preparation(const avtDataAttributes &);
