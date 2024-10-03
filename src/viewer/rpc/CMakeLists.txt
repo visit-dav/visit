@@ -8,12 +8,30 @@
 #    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
 #    Add xml tools code gen targets
 #
+#    Kathleen Biagas, Thu Oct 3, 2024
+#    Utilize visit_add_library.
+#
 #****************************************************************************
+
+visit_add_library(
+    NAME        viewerrpc
+    SOURCES     PostponedAction.C
+                ViewerMethods.C
+                ViewerRPC.C
+                ViewerState.C
+    HEADERS     PostponedAction.h
+                ViewerMethods.h
+                ViewerRPC.h
+                ViewerState.h
+                viewerrpc_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/rpc>
+    DEPENDS_ON  visitcommon avtdbatts)
 
 
 # Add XML Code Gen Targets
 
-set(VIEWER_RPC_GEN_OBJECTS 
+set(VIEWER_RPC_GEN_OBJECTS
     ViewerRPC
     PostponedAction)
 
@@ -24,23 +42,3 @@ foreach(obj_name ${VIEWER_RPC_GEN_OBJECTS})
                        ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
-SET(VIEWERRPC_SOURCES
-PostponedAction.C
-ViewerMethods.C
-ViewerRPC.C
-ViewerState.C
-)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_LIBRARY(viewerrpc ${VIEWERRPC_SOURCES})
-TARGET_LINK_LIBRARIES(viewerrpc visitcommon avtdbatts)
-
-VISIT_INSTALL_TARGETS(viewerrpc)

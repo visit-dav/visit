@@ -32,199 +32,134 @@
 #  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #  Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
-#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Kathleen Biagas, Tue Sep 5, 2023
 #   Remove untested, unused EGL logic.
+#
+#   Kathleen Biagas, Thu Oct 3, 2024
+#   Utilize visit_add_library.
 #
 #****************************************************************************
 
-IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
-    SET(VIEWERLIB_WIN32_SOURCES
-        ViewerSubmitParallelEngineToWindowsHPC.cpp
-    )
-    SET_SOURCE_FILES_PROPERTIES(ViewerEngineManager.C PROPERTIES
-        COMPILE_DEFINITIONS VISIT_SUPPORTS_WINDOWS_HPC
-    )
-ENDIF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
+set(VIEWERLIB_SOURCES
+    SharedDaemon.C
+    ViewerBaseUI.C
+    ViewerClientConnection.C
+    ViewerCommandFromSimObserver.C
+    ViewerEngineManager.C
+    ViewerEngineManagerImplementation.C
+    ViewerFactoryMain.C
+    ViewerFileServer.C
+    ViewerFileServerImplementation.C
+    ViewerMasterXfer.C
+    ViewerMetaDataObserver.C
+    ViewerObserverToSignal.C
+    ViewerServerManager.C
+    ViewerSILAttsObserver.C
+    ViewerStateBuffered.C
+    ViewerSubject.C
+    VisItViewer.C
+    WebSocketConnection.C)
 
-IF(VISIT_DDT)
-SET(VIEWER_DDT
-ddt/DDTManager.C
-ddt/DDTSession.C
-ddt/DDTActions.C
-ddt/DDTActionsUI.C
-)
-ENDIF(VISIT_DDT)
+set(VIEWERLIB_HEADERS
+    SharedDaemon.h
+    ViewerBaseUI.h
+    ViewerClientConnection.h
+    ViewerCommandFromSimObserver.h
+    ViewerEngineManager.h
+    ViewerEngineManagerImplementation.h
+    ViewerEngineManagerImplementation_macros.h
+    ViewerFactoryMain.h
+    ViewerFileServer.h
+    ViewerFileServerImplementation.h
+    ViewerMasterXfer.h
+    ViewerMetaDataObserver.h
+    ViewerObserverToSignal.h
+    ViewerServerManager.h
+    ViewerSILAttsObserver.h
+    ViewerStateBuffered.h
+    ViewerSubject.h
+    VisItViewer.h
+    WebSocketConnection.h
+    viewer_exports.h)
 
-SET(VIEWER_UI
-ui/AnimationActionsUI.C
-ui/LockActionsUI.C
-ui/PlotAndOperatorActionsUI.C
-ui/PrintWindowAction.C
-ui/SetAppearanceAction.C
-ui/ToolbarActionsUI.C
-ui/ViewActionsUI.C
-ui/ViewerActionManagerUI.C
-ui/ViewerActionUI.C
-ui/ViewerActionUIMultiple.C
-ui/ViewerActionUISingle.C
-ui/ViewerActionUIToggle.C
-ui/ViewerChangeUsernameUI.C
-ui/ViewerConnectionPrinterUI.C
-ui/ViewerConnectionProgressDialog.C
-ui/ViewerFactoryUI.C
-ui/ViewerHostProfileSelectorWithWin.C
-ui/ViewerMessagingUI.C
-ui/ViewerPasswordWindow.C
-ui/ViewerPopupMenu.C
-ui/ViewerToolbar.C
-ui/ViewerWindowUI.C
-ui/VisItChangeUsernameWindow.C
-ui/VisItPasswordWindow.C
-ui/WindowActionsUI.C
-)
-
-SET(VIEWERLIB_SOURCES
-${VIEWER_UI}
-${VIEWER_DDT}
-SharedDaemon.C
-ViewerBaseUI.C
-ViewerClientConnection.C
-ViewerCommandFromSimObserver.C
-ViewerEngineManager.C
-ViewerEngineManagerImplementation.C
-ViewerFactoryMain.C
-ViewerFileServer.C
-ViewerFileServerImplementation.C
-ViewerMasterXfer.C
-ViewerMetaDataObserver.C
-ViewerObserverToSignal.C
-ViewerSILAttsObserver.C
-ViewerServerManager.C
-ViewerStateBuffered.C
-ViewerSubject.C
-VisItViewer.C
-WebSocketConnection.C
-${VIEWERLIB_WIN32_SOURCES}
-)
-
-# If the viewer is static then we need some static symbol lookup functions
-IF(VISIT_STATIC)
-    SET(VIEWER_STATIC_SOURCES ViewerStaticSymbolLocator.C)
-ENDIF(VISIT_STATIC)
-
-IF (NOT WIN32)
-    # This keeps comm's exceptions visible when using -fvisibility=hidden
-    ADD_DEFINITIONS(-DCOMM_EXPORTS)
-ENDIF (NOT WIN32)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${CMAKE_CURRENT_SOURCE_DIR}/ui
-${CMAKE_CURRENT_SOURCE_DIR}/ddt
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/viewer/rpc
-${VISIT_SOURCE_DIR}/viewer/core
-${VISIT_SOURCE_DIR}/viewer/core/actions
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/FileWriter
-${VISIT_SOURCE_DIR}/avt/Filters
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/avt/Plotter/vtk
-${VISIT_SOURCE_DIR}/avt/QtVisWindow
-${VISIT_SOURCE_DIR}/avt/View
-${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
-${VISIT_SOURCE_DIR}/avt/VisWindow/Interactors
-${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
-${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/engine/proxy
-${VISIT_SOURCE_DIR}/engine/rpc
-${VISIT_SOURCE_DIR}/launcher/proxy
-${VISIT_SOURCE_DIR}/launcher/rpc
-${VISIT_SOURCE_DIR}/mdserver/proxy
-${VISIT_SOURCE_DIR}/mdserver/rpc
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/vtkqt
-${VISIT_SOURCE_DIR}/winutil
-${VTK_INCLUDE_DIRS}
-)
-
-
-if(HAVE_OSMESA)
-    include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
+if(WIN32 AND VISIT_PARALLEL AND HAVE_HPC_SCHEDULER)
+    list(APPEND VIEWERLIB_SOURCES
+        ViewerSubmitParallelEngineToWindowsHPC.cpp)
+    set_source_files_properties(ViewerEngineManager.C PROPERTIES
+        COMPILE_DEFINITIONS VISIT_SUPPORTS_WINDOWS_HPC)
 endif()
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+# If the viewer is static then we need some static symbol lookup functions
+if(VISIT_STATIC)
+    list(APPEND VIEWERLIB_SOURCES ViewerStaticSymbolLocator.C)
+endif()
 
+set(VIEWERLIB_DEPENDS
+    viewerrpc
+    viewercore_ser
+    visitcommon
+    mdserverrpc
+    mdserverproxy
+    vclrpc
+    vclproxy
+    enginerpc
+    engineproxy
+    avtdbatts
+    avtview
+    avtmath
+    avtpipeline_ser
+    avtplotter_ser
+    avtfilters_ser
+    avtviswindow_ser
+    avtwriter_ser
+    avtqtviswindow
+    winutil
+    Threads::Threads
+    ${QT_QTGUI_LIBRARY}
+    ${QT_QTOPENGL_LIBRARY}
+    ${QT_QTCORE_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    VTK::GUISupportQt)
 
-#*************************** The viewer library ******************************
-ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
+if(HAVE_OSMESA)
+    list(APPEND VIEWERLIB_DEPENDS visit_vtk_offscreen)
+endif()
 
-set_target_properties(viewer PROPERTIES AUTOMOC ON)
-
-IF (WIN32)
-    SET_TARGET_PROPERTIES(viewer PROPERTIES OUTPUT_NAME viewerlib)
-ENDIF (WIN32)
-
-SET(VIEWER_QT_LIBS 
-${QT_QTGUI_LIBRARY}
-${QT_QTOPENGL_LIBRARY}
-${QT_QTCORE_LIBRARY}
-${QT_QTNETWORK_LIBRARY}
-)
-IF(VISIT_STATIC)
-    SET(VIEWER_QT_LIBS 
-        ${VIEWER_QT_LIBS}
+if(VISIT_STATIC)
+    list(APPEND VIEWERLIB_DEPENDS
         ${QT_QTGUI_LIB_DEPENDENCIES}
         ${QT_QTOPENGL_LIB_DEPENDENCIES}
         ${QT_QTCORE_LIB_DEPENDENCIES}
-        ${QT_QTNETWORK_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
+        ${QT_QTNETWORK_LIB_DEPENDENCIES})
+endif()
 
-set(vtkqtlib VTK::GUISupportQt)
+#*************************** The viewer library ******************************
+visit_add_library(
+    NAME        viewer
+    SOURCES     ${VIEWERLIB_SOURCES}
+    HEADERS     ${VIEWERLIB_HEADERS}
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/main>
+    DEPENDS_ON  ${VIEWERLIB_DEPENDS})
 
-
+set_target_properties(viewer PROPERTIES AUTOMOC ON)
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(viewer)
 endif()
 
-TARGET_LINK_LIBRARIES(viewer 
-viewerrpc
-viewercore_ser
-visitcommon
-mdserverrpc
-mdserverproxy
-vclrpc
-vclproxy
-enginerpc
-engineproxy
-avtdbatts
-avtview
-avtmath
-avtpipeline_ser
-avtplotter_ser
-avtfilters_ser
-avtviswindow_ser
-avtwriter_ser
-avtqtviswindow
-winutil
-${VIEWER_QT_LIBS}
-Threads::Threads
-${vtkqtlib}
-)
-
-if(HAVE_OSMESA)
-    target_link_libraries(viewer visit_vtk_offscreen)
+if(WIN32)
+    set_target_properties(viewer PROPERTIES OUTPUT_NAME viewerlib)
+else()
+    # This keeps comm's exceptions visible when using -fvisibility=hidden
+    target_compile_definitions(viewer PRIVATE COMM_EXPORTS)
 endif()
+
+if(VISIT_DDT)
+    add_subdirectory(ddt)
+endif()
+
+add_subdirectory(ui)
+
 
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
@@ -236,7 +171,7 @@ ELSE(NOT APPLE)
     )
 
     ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
-    
+
     SET_TARGET_PROPERTIES( viewer_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in)
     SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
@@ -246,7 +181,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
     SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC")
-    
+
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
     ENDIF(VISIT_STATIC)
@@ -275,4 +210,4 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-VISIT_INSTALL_TARGETS(viewer_exe viewer)
+VISIT_INSTALL_TARGETS(viewer_exe )

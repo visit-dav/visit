@@ -7,6 +7,6 @@
 #
 #****************************************************************************
 
-ADD_SUBDIRECTORY(rpc)
-ADD_SUBDIRECTORY(proxy)
-ADD_SUBDIRECTORY(main)
+add_subdirectory(rpc)
+add_subdirectory(proxy)
+add_subdirectory(main)

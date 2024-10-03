@@ -7,24 +7,20 @@
 #  Kathleen Biagas, Thu Feb 27 2020
 #  Only build examples if VISIT_ENABLE_EXAMPLES is ON (the default is ON).
 #
+#  Kathleen Biagas, Thu Oct 3, 2024
+#  Utilize visit_add_library.
+#
 #****************************************************************************
 
-SET(VIEWERPROXY_SOURCES
-ViewerProxy.C
-)
+visit_add_library(
+    NAME        viewerproxy
+    SOURCES     ViewerProxy.C
+    HEADERS     ViewerProxy.h
+                viewerproxy_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/proxy>
+    DEPENDS_ON  viewerrpc visitcommon avtdbatts)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/viewer/rpc
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_LIBRARY(viewerproxy ${VIEWERPROXY_SOURCES})
-TARGET_LINK_LIBRARIES(viewerproxy viewerrpc visitcommon avtdbatts)
 
 if(VISIT_ENABLE_EXAMPLES)
   add_executable(proxyexample proxyexample.C)
@@ -35,4 +31,3 @@ if(VISIT_ENABLE_EXAMPLES)
   target_link_libraries(proxyexample viewerrpc viewerproxy visitcommon avtdbatts)
 endif()
 
-VISIT_INSTALL_TARGETS(viewerproxy)

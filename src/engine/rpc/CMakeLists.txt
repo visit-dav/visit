@@ -23,58 +23,80 @@
 #   Kathleen Biagas, Mon Dec 22 05:53:52 PST 2014
 #   Added SetRemoveDuplicateNodesRPC.
 #
+#   Kathleen Biagas, Thu Oct 3, 2024
+#   Utilize visit_add_library.
+#
 #****************************************************************************
 
-SET(ENGINERPC_SOURCES
-ApplyOperatorRPC.C
-ClearCacheRPC.C
-CloneNetworkRPC.C
-ConstructDataBinningRPC.C
-DefineVirtualDatabaseRPC.C
-EnginePropertiesRPC.C 
-EngineState.C
-ExecuteRPC.C
-ExportDatabaseRPC.C
-MakePlotRPC.C
-NamedSelectionRPC.C
-OpenDatabaseRPC.C
-PickRPC.C
-ProcInfoRPC.C
-QueryRPC.C
-QueryParametersRPC.C
-ReadRPC.C
-ReleaseDataRPC.C
-RenderRPC.C
-SetBackendTypeRPC.C
-SetEFileOpenOptionsRPC.C
-SetPrecisionTypeRPC.C
-SetRemoveDuplicateNodesRPC.C
-SetWinAnnotAttsRPC.C
-SimulationCommandRPC.C
-StartPickRPC.C
-StartQueryRPC.C
-UpdatePlotAttsRPC.C
-UseNetworkRPC.C
-)
+set(ENGINERPC_SOURCES
+    ApplyOperatorRPC.C
+    ClearCacheRPC.C
+    CloneNetworkRPC.C
+    ConstructDataBinningRPC.C
+    DefineVirtualDatabaseRPC.C
+    EnginePropertiesRPC.C
+    EngineState.C
+    ExecuteRPC.C
+    ExportDatabaseRPC.C
+    MakePlotRPC.C
+    NamedSelectionRPC.C
+    OpenDatabaseRPC.C
+    PickRPC.C
+    ProcInfoRPC.C
+    QueryParametersRPC.C
+    QueryRPC.C
+    ReadRPC.C
+    ReleaseDataRPC.C
+    RenderRPC.C
+    SetBackendTypeRPC.C
+    SetEFileOpenOptionsRPC.C
+    SetPrecisionTypeRPC.C
+    SetRemoveDuplicateNodesRPC.C
+    SetWinAnnotAttsRPC.C
+    SimulationCommandRPC.C
+    StartPickRPC.C
+    StartQueryRPC.C
+    UpdatePlotAttsRPC.C
+    UseNetworkRPC.C)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/engine/rpc
-)
+set(ENGINERPC_HEADERS
+    ApplyOperatorRPC.h
+    ClearCacheRPC.h
+    CloneNetworkRPC.h
+    ConstructDataBinningRPC.h
+    DefineVirtualDatabaseRPC.h
+    EnginePropertiesRPC.h
+    EngineState.h
+    ExecuteRPC.h
+    ExportDatabaseRPC.h
+    MakePlotRPC.h
+    NamedSelectionRPC.h
+    OpenDatabaseRPC.h
+    PickRPC.h
+    ProcInfoRPC.h
+    QueryParametersRPC.h
+    QueryRPC.h
+    ReadRPC.h
+    ReleaseDataRPC.h
+    RenderRPC.h
+    SetBackendTypeRPC.h
+    SetEFileOpenOptionsRPC.h
+    SetPrecisionTypeRPC.h
+    SetRemoveDuplicateNodesRPC.h
+    SetWinAnnotAttsRPC.h
+    SimulationCommandRPC.h
+    StartPickRPC.h
+    StartQueryRPC.h
+    UpdatePlotAttsRPC.h
+    UseNetworkRPC.h
+    engine_rpc_exports.h)
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+visit_add_library(
+    NAME        enginerpc
+    SOURCES     ${ENGINERPC_SOURCES}
+    HEADERS     ${ENGINERPC_HEADERS}
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Pipeline/Data>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/engine/rpc>
+    DEPENDS_ON  visitcommon avtdbatts)
 
-ADD_LIBRARY(enginerpc ${ENGINERPC_SOURCES})
-TARGET_LINK_LIBRARIES(enginerpc visitcommon avtdbatts)
-
-VISIT_INSTALL_TARGETS(enginerpc)
