@@ -50,7 +50,6 @@ find_package_handle_standard_args(QWT DEFAULT_MSG
     _qwt_INCLUDE_DIR
     _qwt_LIBRARY)
 
-
 if(QWT_FOUND)
     get_filename_component(lib_qwt ${_qwt_LIBRARY} NAME)
 
@@ -96,12 +95,11 @@ if(QWT_FOUND)
     endif()
     if(WIN32)
         # need to copy the dll to the build dir
-        cmake_path(REPLACE_EXTENSION lib_qwt dll OUTPUT_VARIABLE _qwt_DLL)
-        get_filename_component(_qwt_LIBRRARY_DIR ${_qwt_LIBRARY} PATH)
-        if(EXISTS ${_qwt_DLL})
-            cmake_path(SET _qwt_DLL ${_qwt_LIBRARY_DIR}/${_qwt_DLL})
-        else()    
-            cmake_path(SET _qwt_DLL NORMALIZE ${_qwt_LIBRARY_DIR}/../bin/${_qwt_DLL})
+        cmake_path(REPLACE_EXTENSION _qwt_LIBRARY dll OUTPUT_VARIABLE _qwt_DLL)
+        if(NOT EXISTS ${_qwt_DLL})
+            get_filename_component(_qwt_LIBRRARY_DIR _qwt_LIBRARY PATH)
+            get_filename_component(dll_qwt ${_qwt_DLL} NAME)
+            cmake_path(SET _qwt_DLL NORMALIZE ${_qwt_LIBRARY_DIR}/../bin/${dll_qwt})
         endif()
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                         ${_qwt_DLL}
