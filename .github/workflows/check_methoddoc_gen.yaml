@@ -73,8 +73,22 @@ jobs:
             exit 1
          fi
 
+#
 # Documentation of this action
 #
 # This action is designed to catch cases where developers make inconsistent changes to
 # functions.rst and MethodDoc.C. MethodDoc.C is ordinarily *generated* from functions.rst
-# So, developers should just edit functions 
+# So, developers should just edit functions.rst and then follow the documentation
+# https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html
+# to regenerate MethodDoc.C.
+#
+# The logic in this action only gets triggered if any of the files listed as `path` members of
+# `the pull_request` action are involved. Next, if any those files are involved, it then examines
+# the list of ALL changed files in the PR to check if functions.rst is invovled and if MethodDoc.C
+# is involved.
+#
+# If either one or the other is involved but not both, it fails with an error message.
+#
+# If both are involved, it then tries to perform the MethodDoc.C generation and confirm the
+# result is what is being committed. If not, it fails also.
+#
