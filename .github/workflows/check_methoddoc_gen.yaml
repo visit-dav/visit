@@ -33,9 +33,9 @@ jobs:
         have_func_rst=0
         have_methdoc_c=0
         for f in ${{ steps.changed-files.outputs.all_changed_files }}; do
-          if [[ "$f" == "src/doc/python_script/functions.rst" ]]; then
+          if [ "$f" = "src/doc/python_script/functions.rst" ]; then
             have_func_rst=1
-          elif [[ "$f" == "src/visitpy/common/MethodDoc.C" ]]; then
+          elif [ "$f" = "src/visitpy/common/MethodDoc.C" ]; then
             have_methdoc_c=1
           fi
         done
