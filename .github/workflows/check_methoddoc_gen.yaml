@@ -29,7 +29,6 @@ jobs:
 
     - name: Check synced files
       run: |
-        set -x
         have_func_rst=0
         have_methdoc_c=0
         for f in ${{ steps.changed-files.outputs.all_changed_files }}; do
