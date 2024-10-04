@@ -29,6 +29,7 @@ jobs:
 
     - name: Check synced files
       run: |
+        set -x
         have_func_rst=0
         have_methdoc_c=0
         for f in ${{ steps.changed-files.outputs.all_changed_files }}; do
@@ -61,6 +62,7 @@ jobs:
          ./functions_to_plain_py.py
          2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py
          ./functions_to_method_doc.py
+         popd
          diff --brief src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig
          if [ $? -ne 0 ]; then
             echo "Error: MethodDoc.C does not appear to have been generated from functions.rst"
