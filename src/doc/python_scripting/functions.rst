@@ -178,11 +178,15 @@ variableName : string
 
 inheritSIL : integer
     An integer flag indicating whether the plot should inherit the
-    active plot's SIL restriction.
+    active plot's SIL restriction. A zero value indicates that the SIL
+    should **not** be inherited. A non-zero value indicates that the SIL
+    should be inherited.
 
 applyOperators : integer
     An integer flag indicating whether the operators from the active
-    plot should be applied to the new plot.
+    plot should be applied to the new plot. A zero value indicates that
+    the operators should **not** be applied. A non-zero value indicates that
+    the operators should be applied.
 
 return type : CLI_return_t
     The AddPlot function returns an integer value of 1 for success and 0 for
