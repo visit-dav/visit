@@ -9,7 +9,6 @@ on:
     paths:
       - 'src/doc/python_scripting/functions.rst'
       - 'src/visitpy/common/MethodDoc.C'
-      - 'src/visitpy/common/MethodDoc.h'
 
 jobs:
   check-sync:
@@ -42,20 +41,10 @@ jobs:
             have_methdoc_c=1
           fi
         done
-        if [[ $have_func_rst -ne 0 ]]; then
-          if [[ $have_methdoc_c -eq 0 ]]; then
-             echo "Error: Changes to functions.rst require regeneration of MethodDoc.C (and possibly MethodDoc.h)"
-             echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
-             exit 1
-          fi
-        fi
-        if [[ $have_methdoc_c -ne 0 ]]; then
-          if [[ $have_func_rst -eq 0 ]]; then
-             echo "Error: You have made changes directly to a *generated* file, MethodDoc.C."
-             echo "       You must make your changes to functions.rst and regenerate MethodDoc.C (and possibly MethodDoc.h)."
-             echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
-             exit 1
-          fi
+        if [[ $have_func_rst -ne $have_methdoc_c ]]; then
+          echo "Error: MethodDoc.C (and possibly MethodDoc.h) should be regenerated from functions.rst"
+          echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
+          exit 1
         fi
 
     - name: Check Generated MethodDoc.C
