@@ -1,5 +1,9 @@
 name: Check sync of functions.rst and MethodDoc.C
 
+#
+# See documentation at bottom of file
+#
+
 on:
   pull_request:
     paths:
