@@ -66,7 +66,7 @@ jobs:
          2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py
          ./functions_to_method_doc.py
          popd
-         diff --brief src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig
+         diff src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig
          if [ $? -ne 0 ]; then
             echo "Error: MethodDoc.C does not appear to have been generated from functions.rst"
             echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
