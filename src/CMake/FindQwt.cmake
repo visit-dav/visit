@@ -18,49 +18,96 @@
 #*****************************************************************************
 
 if(VISIT_USE_SYSTEM_QWT)
-   find_path(QWT_INCLUDE_DIR qwt.h
+   find_path(_qwt_INCLUDE_DIR qwt.h
              PATH_SUFFIXES include
                            include/qt6
                            include/qt6/qwt)
 
-    find_library(QWT_LIBRARY
+    find_library(_qwt_LIBRARY
              NAMES qwt qwt-qt6
              PATH_SUFFIXES lib lib64)
 
-    find_package_handle_standard_args(QWT DEFAULT_MSG
-        QWT_INCLUDE_DIR
-        QWT_LIBRARY)
-
-    if(QWT_FOUND)
-        message(STATUS "Qwt include: ${QWT_INCLUDE_DIR}")
-        message(STATUS "Qwt library: ${QWT_LIBRARY}")
-    else()
-        message(STATUS "Qwt could not be found in the system.")
-    endif()
-
 elseif(VISIT_QWT_DIR)
-    if(APPLE)
-        if(VISIT_STATIC)
-            SET_UP_THIRD_PARTY(QWT LIBS qwt)
-        else()
-            SET_UP_THIRD_PARTY(QWT
-                INCDIR lib/qwt.framework/Versions/Current/Headers
-                LIBS qwt)
-        endif()
-    else()
-        SET_UP_THIRD_PARTY(QWT LIBS qwt)
-    endif()
 
-    if(QWT_FOUND)
-        set(QWT_LIBRARY ${QWT_LIBRARY_DIR}/${QWT_LIB} CACHE FILEPATH "full path to qwt library" FORCE)
-    else()
-        message(STATUS "Qwt installation (${VISIT_QWT_DIR}) could not be used.")
-    endif()
+    find_path(_qwt_INCLUDE_DIR qwt.h
+        PATHS ${QWT_DIR}
+        PATH_SUFFIXES include
+                      lib/qwt.framework/Versions/Current/Headers
+        NO_DEFAULT_PATH)
+
+    find_library(_qwt_LIBRARY
+        NAMES qwt 
+        PATHS ${QWT_DIR}
+        PATH_SUFFIXES lib lib64
+        NO_DEFAULT_PATH)
+
 else()
     message(STATUS "Qwt not requested.")
+    return()
 endif()
 
+find_package_handle_standard_args(QWT DEFAULT_MSG
+    _qwt_INCLUDE_DIR
+    _qwt_LIBRARY)
+
+
 if(QWT_FOUND)
+    get_filename_component(lib_qwt ${_qwt_LIBRARY} NAME)
+
+    blt_import_library(
+        NAME        qwt
+        INCLUDES    $<BUILD_INTERFACE:${_qwt_INCLUDE_DIR}>
+                    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/qwt/include>
+        LIBRARIES   $<BUILD_INTERFACE:${_qwt_LIBRARY}>
+        EXPORTABLE  ON)
+
+
+    # CMake doesn't prepend ${_IMPORT_PREFIX} in the generated export
+    # set for INTERFACE libs, so "${IMPORT_PREFIX}" needs to be
+    # explicitly added to the INSTALL_INTERFACE, and escaped so it
+    # doesn't get evaluated.
+    #
+    # Also, it seems if the INSTALL_INTERFACE is used in the
+    # blt_import_library,  the ${_IMPORT_PREFIX} is stripped, even
+    # if it is escaped, so it appears to be getting evaluated.
+    # That's why it is added separately here instead of being added
+    # to the LIBRARIES above.
+    target_link_libraries(qwt INTERFACE
+        $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${lib_qwt}>)
+
+    target_compile_definitions(qwt INTERFACE HAVE_QWT)
+
+    # install and export
+    if(VISIT_INSTALL_THIRD_PARTY)
+        visit_install_export_targets(qwt)
+
+        # headers aren't being installed. Perhaps because it is INTERFACE lib?
+        # There is a PUBLIC_HEADER property for INTERFACE libraries
+        # that will allow the installation of the headers in a normal
+        # install(TARGETS) command (like the one being used by
+        # visit_install_export_targets).
+        # However, you cannot specifiy a directory as PUBLIC_HEADER
+        # property, but must instead list them all, so using this
+        # property would require a file(glob). Do we want to do that?
+        # I think it is easier to install the directory the way we do
+        # for TP libs in the following function:
+
+        THIRD_PARTY_INSTALL_INCLUDE(qwt ${_qwt_INCLUDE_DIR})
+    endif()
+    if(WIN32)
+        # need to copy the dll to the build dir
+        cmake_path(REPLACE_EXTENSION lib_qwt dll OUTPUT_VARIABLE _qwt_DLL)
+        get_filename_component(_qwt_LIBRRARY_DIR ${_qwt_LIBRARY} PATH)
+        if(EXISTS ${_qwt_DLL})
+            cmake_path(SET _qwt_DLL ${_qwt_LIBRARY_DIR}/${_qwt_DLL})
+        else()    
+            cmake_path(SET _qwt_DLL NORMALIZE ${_qwt_LIBRARY_DIR}/../bin/${_qwt_DLL})
+        endif()
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                        ${_qwt_DLL}
+                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+    endif()
+
     set(HAVE_QWT TRUE CACHE BOOL "Have Qwt library")
 endif()
 
