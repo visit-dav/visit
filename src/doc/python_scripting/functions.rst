@@ -179,11 +179,15 @@ variableName : string
 
 inheritSIL : integer
     An integer flag indicating whether the plot should inherit the
-    active plot's SIL restriction.
+    active plot's SIL restriction. A zero value indicates that the SIL
+    should **not** be inherited. A non-zero value indicates that the SIL
+    should be inherited.
 
 applyOperators : integer
     An integer flag indicating whether the operators from the active
-    plot should be applied to the new plot.
+    plot should be applied to the new plot. A zero value indicates that
+    the operators should **not** be applied. A non-zero value indicates that
+    the operators should be applied.
 
 return type : CLI_return_t
     The AddPlot function returns an integer value of 1 for success and 0 for
@@ -4342,14 +4346,16 @@ return type : dictionary
     For example, a Curve plot will return the xy pairs that comprise the curve.
     The tuple is arranged <x1, y1, x2, y2, ..., xn, yn>.
 
-    For time queries that create multiple curves, e.g. Time Pick with multiple variables, the dictionary contains a 'Curves' object, and each curve is referenced by it's associated variable name.
-    This was introduced in VisIt 3.4.1.
+    For time queries that create multiple curves, e.g. Time Pick with multiple
+    variables, the dictionary contains a 'Curves' object, and each curve is
+    referenced by it's associated variable name. This was introduced in
+    VisIt 3.4.1.
 
-
-**Single Curve Example:**
+**Example:**
 
 ::
 
+  # Single curve example
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
   AddPlot("Pseudocolor", "d")
@@ -4360,10 +4366,7 @@ return type : dictionary
   lineout = info["Curve"]
   print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
 
-**Multiple Curve Example:**
-
-::
-
+  # Multiple curve example
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/wave.visit")
   AddPlot("Pseudocolor", "pressure")
