@@ -72,3 +72,9 @@ jobs:
             echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
             exit 1
          fi
+
+# Documentation of this action
+#
+# This action is designed to catch cases where developers make inconsistent changes to
+# functions.rst and MethodDoc.C. MethodDoc.C is ordinarily *generated* from functions.rst
+# So, developers should just edit functions 

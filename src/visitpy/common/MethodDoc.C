@@ -10093,7 +10093,7 @@ const char *visit_SetQueryFloatFormat_doc =
 "Description:\n"
 "\n"
 "The SetQueryFloatFormat method sets a printf-style format string that\n"
-"is used by VisIt's querys to produce textual output.\n"
+"is used by VisIt's queries to produce textual output.\n"
 "\n"
 "\n"
 "Example:\n"
