@@ -775,7 +775,10 @@ Axes3D::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("triadColor")) != 0)
         SetTriadColor(node->AsIntArray());
     if((node = searchNode->GetNode("triadLineWidth")) != 0)
-        SetTriadLineWidth(node->AsFloat());
+    {
+        const float width = node->AsFloat();
+        SetTriadLineWidth(0 == static_cast<int>(width) ? 1.0 : width);
+    }
     if((node = searchNode->GetNode("triadFont")) != 0)
         SetTriadFont(node->AsInt());
     if((node = searchNode->GetNode("triadBold")) != 0)
@@ -785,7 +788,6 @@ Axes3D::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("triadSetManually")) != 0)
         SetTriadSetManually(node->AsBool());
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////

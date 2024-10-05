@@ -73,4 +73,6 @@
     <Field name="triadSetManually" label="Set the triad manually" type="bool">
       false
     </Field>
+   <Function name="SetFromNode" user="false" member="true">
+    </Function>
   </Attribute>
