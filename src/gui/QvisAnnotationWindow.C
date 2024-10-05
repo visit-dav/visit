@@ -1627,7 +1627,7 @@ QvisAnnotationWindow::UpdateAxes3D()
         triadLineWidth->blockSignals(true);
         triadLineWidth->SetLineWidth(0);
         triadLineWidth->blockSignals(false);
-        annotationAtts->GetAxes3D().SetTriadLineWidth(0.0);
+        annotationAtts->GetAxes3D().SetTriadLineWidth(1.0);
  
         triadFontComboBox->blockSignals(true);
         triadFontComboBox->setCurrentIndex(0);
@@ -2721,7 +2721,7 @@ QvisAnnotationWindow::setTriadColor()
 void
 QvisAnnotationWindow::triadLineWidthChanged(int index)
 {
-    annotationAtts->GetAxes3D().SetTriadLineWidth((float)index);
+    annotationAtts->GetAxes3D().SetTriadLineWidth(static_cast<float>(index + 1));
     annotationAtts->SelectAxes3D();
     SetUpdate(false);
     Apply();
