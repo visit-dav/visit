@@ -166,6 +166,9 @@
 #
 #   Justin Privitera, Mon Sep 23 10:18:29 PDT 2024
 #   Update visit-install location.
+#
+#   Eric Brugger, Mon Oct  7 11:15:18 PDT 2024
+#   Updated to run the test suite on poodle instead of pascal.
 # 
 
 # Determine the users name and e-mail address.
@@ -225,7 +228,7 @@ debug="false"
 branch="trunk"
 revision="latest"
 serial="false"
-testHost="pascal"
+testHost="poodle"
 testDir="/usr/WS1/visit"
 post="true"
 
@@ -643,10 +646,10 @@ EOF
 chmod 750 postit_${testHost}
 
 # Run the test suite.
-if test "$testHost" = "pascal" ; then
+if test "$testHost" = "poodle" ; then
     subTag=`date +%Y-%m-%d-%H:%M`
-    ./checkout_pascal $subTag
-    sbatch --partition=pvis --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o pascal_testit_$subTag.out ./runit_pascal $subTag
+    ./checkout_poodle $subTag
+    sbatch --partition=pbatch --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o poodle_testit_$subTag.out ./runit_poodle $subTag
     sleep 28800
-    ./postit_pascal $subTag
+    ./postit_poodle $subTag
 fi
