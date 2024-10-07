@@ -168,7 +168,8 @@
 #   Update visit-install location.
 #
 #   Eric Brugger, Mon Oct  7 11:15:18 PDT 2024
-#   Updated to run the test suite on poodle instead of pascal.
+#   Updated to run the test suite on poodle instead of pascal. Made
+#   the logic that detects new test results more general.
 # 
 
 # Determine the users name and e-mail address.
@@ -592,7 +593,7 @@ if test "$post" = "true" ; then
 
     # Check the results into github.
     cd $buildDir/test
-    newResults=\`ls -d *22:00\`
+    newResults=\`ls -d ????-??-??-??:??\`
     # should the dashboard have group perms?
     cd /usr/WS1/visit/dashboard/dashboard
     git add \$newResults baselines index.html
