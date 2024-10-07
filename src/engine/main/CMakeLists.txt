@@ -229,7 +229,7 @@ if(VISIT_PARALLEL)
             target_include_directories(engine_par PUBLIC
                $<BUILD_INTERFACE:${OPENGL_INCLUDE_DIR}>)
         endif()
-        target_compile_definitions(engine_par HAVE_ICET)
+        target_compile_definitions(engine_par PRIVATE HAVE_ICET)
     endif()
 
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)

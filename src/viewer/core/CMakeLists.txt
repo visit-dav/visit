@@ -148,7 +148,7 @@ visit_add_library(
 
 if(NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
-    target_compile_definitions(viewercore_ser COMM_EXPORTS)
+    target_compile_definitions(viewercore_ser PRIVATE COMM_EXPORTS)
 endif()
 
 set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
@@ -176,7 +176,7 @@ if(VISIT_PARALLEL)
 
     if(NOT WIN32)
         # This keeps comm's exceptions visible when using -fvisibility=hidden
-        target_compile_definitions(viewercore_par COMM_EXPORTS)
+        target_compile_definitions(viewercore_par PRIVATE COMM_EXPORTS)
     endif()
 endif()
 
