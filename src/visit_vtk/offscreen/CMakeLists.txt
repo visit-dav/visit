@@ -4,25 +4,24 @@
 
 #****************************************************************************
 # Modifications:
-#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Kathleen Biagas, Tue Sep 5, 2023
 #   Remove untested, unused EGL logic.
+#
+#   Kathleen Biagas, Thu Oct 3, 2024
+#   Utilize visit_add_library.
 #
 #****************************************************************************
 
 
-include_directories(
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/include
-${VTK_INCLUDE_DIRS}
-)
+visit_add_library(
+    NAME        visit_vtk_offscreen
+    SOURCES     vtkOffScreenRenderingFactory.C
+    HEADERS     vtkOffScreenRenderingFactory.h
+                visit_vtk_offscreen_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visit_vtk/offscreen>
+    DEPENDS_ON  VTK::CommonCore
+                VTK::RenderingOpenGL2
+                ${OSMESA_LIBRARIES})
 
-
-add_library(visit_vtk_offscreen vtkOffScreenRenderingFactory.C)
-
-target_link_libraries(visit_vtk_offscreen VTK::CommonCore VTK::RenderingOpenGL2)
-
-if(HAVE_OSMESA)
-    target_link_libraries(visit_vtk_offscreen ${OSMESA_LIBRARIES})
-endif()
-
-VISIT_INSTALL_TARGETS(visit_vtk_offscreen)

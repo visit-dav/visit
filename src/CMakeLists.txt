@@ -864,7 +864,7 @@ if(NOT WIN32)
     endif()
     #
     # Note that the last line in the EXECUTE_PROCESS command below should
-    # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truely correct.
+    # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truly correct.
     # The code creates a symbolic link from "current" to the current visit
     # version number.  Because of the coding error it succeeds when doing
     # a "make install" and fails when doing a "make package", which is
@@ -878,22 +878,17 @@ if(NOT WIN32)
     # fails in our case.
     #
     if(VISIT_INSTALL_AS_BETA)
-        install(CODE "
-          message(\"Symlinking beta to ${VISIT_VERSION}\")
-          EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
-            COMMAND \${CMAKE_COMMAND} -E create_symlink
-            \"${VISIT_VERSION}\"
-            \"${CMAKE_INSTALL_PREFIX}/beta\")
-        ")
+        set(symlink_name "beta")
     else()
-        install(CODE "
-          message(\"Symlinking current to ${VISIT_VERSION}\")
-          EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
+        set(symlink_name "current")
+    endif()
+    install(CODE "
+        message(\"Symlinking ${symlink_name} to ${VISIT_VERSION}\")
+        EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
             COMMAND \${CMAKE_COMMAND} -E create_symlink
             \"${VISIT_VERSION}\"
-            \"${CMAKE_INSTALL_PREFIX}/current\")
+            \"${CMAKE_INSTALL_PREFIX}/${symlink_name}\")
         ")
-    endif()
 endif()
 
 

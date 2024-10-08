@@ -7,11 +7,18 @@
 #
 #****************************************************************************
 
-add_subdirectory(rpc)
-add_subdirectory(proxy)
-if(NOT VISIT_STATIC)
-    # "main" is handled from the top level in the static case so it can be
-    # created after we know which plugins are in use. This is needed for
-    # static linking.
-    add_subdirectory(main)
-endif()
+target_sources(viewer PRIVATE
+    DDTActions.C
+    DDTActionsUI.C
+    DDTManager.C
+    DDTSession.C
+    DDTActions.h
+    DDTActionsUI.h
+    DDTManager.h
+    DDTSession.h)
+
+blt_patch_target(
+    NAME     viewer
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/main/ddt>)
+

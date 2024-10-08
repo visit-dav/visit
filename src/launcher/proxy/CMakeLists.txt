@@ -4,22 +4,17 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Oct 3, 2024
+#   Utilize visit_add_library.
 #
 #****************************************************************************
 
-SET(VCLPROXY_SOURCES
-LauncherProxy.C
-)
+visit_add_library(
+    NAME        vclproxy
+    SOURCES     LauncherProxy.C
+    HEADERS     LauncherProxy.h
+                vclproxy_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/launcher/proxy>
+    DEPENDS_ON  visitcommon vclrpc)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/launcher/rpc
-)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
-
-ADD_LIBRARY(vclproxy ${VCLPROXY_SOURCES})
-TARGET_LINK_LIBRARIES(vclproxy vclrpc visitcommon)
-
-VISIT_INSTALL_TARGETS(vclproxy)
