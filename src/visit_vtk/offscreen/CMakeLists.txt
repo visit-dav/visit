@@ -22,9 +22,6 @@ visit_add_library(
                 $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visit_vtk/offscreen>
     DEPENDS_ON  VTK::CommonCore
-                VTK::RenderingOpenGL2)
-
-if(HAVE_OSMESA)
-    target_link_libraries(visit_vtk_offscreen PUBLIC ${OSMESA_LIBRARIES})
-endif()
+                VTK::RenderingOpenGL2
+                ${OSMESA_LIBRARIES})
 

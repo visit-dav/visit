@@ -388,7 +388,14 @@ endif()
 
 
 
-set(GUI_QT_LIBS
+set(GUI_DEPENDS
+    viewerrpc
+    viewerproxy
+    visitcommon
+    mdserverrpc
+    mdserverproxy
+    avtdbatts
+    winutil
     ${QT_QTUITOOLS_LIBRARY}
     ${QT_QTOPENGL_LIBRARY} 
     ${QT_QTGUI_LIBRARY} 
@@ -397,8 +404,12 @@ set(GUI_QT_LIBS
     ${QT_QTCORE_LIBRARY}
     ${QT_QTPRINTSUPPORT_LIBRARY})
 
+if(QWT_FOUND)
+    list(APPEND GUI_DEPENDS qwt)
+endif()
+
 if(VISIT_STATIC)
-    list(APPEND GUI_QT_LIBS
+    list(APPEND GUI_DEPENDS
         ${QT_QTCORE_LIB_DEPENDENCIES} 
         ${QT_QTGUI_LIB_DEPENDENCIES} 
         ${QT_QTOPENGL_LIB_DEPENDENCIES} 
@@ -417,19 +428,8 @@ visit_add_library(
                 $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/common>
                 $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/third_party_builtin>
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui>
-    DEPENDS_ON  viewerrpc
-                viewerproxy
-                visitcommon
-                mdserverrpc
-                mdserverproxy
-                avtdbatts
-                winutil
-                ${GUI_QT_LIBS})
+    DEPENDS_ON  ${GUI_DEPENDS})
 
-if (NOT WIN32)
-    # This keeps comm's exceptions visible when using -fvisibility=hidden
-    target_compile_definitions(gui PRIVATE COMM_EXPORTS)
-endif()
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(gui)
@@ -438,26 +438,21 @@ endif()
 set_target_properties(gui PROPERTIES AUTOMOC ON)
 
 if(WIN32)
-    set_target_properties(gui PROPERTIES OUTPUT_NAME guilib)
+    set_target_properties(gui PROPERTIES
+        OUTPUT_NAME guilib
+        LINK_FLAGS "/NODEFAULTLIB:libcmt")
     if(QWT_FOUND)
         set_target_properties(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
     endif()
+else()
+    # This keeps comm's exceptions visible when using -fvisibility=hidden
+    target_compile_definitions(gui PRIVATE COMM_EXPORTS)
+    if(APPLE)
+        set_target_properties(gui PROPERTIES LINK_FLAGS "-framework Carbon")
+    else()
+        target_link_libraries(gui PUBLIC X11)
+    endif()
 endif()
-
-if(QWT_FOUND)
-    target_link_libraries(gui PUBLIC qwt)
-endif()
-
-if(APPLE)
-    set_target_properties(gui PROPERTIES LINK_FLAGS "-framework Carbon")
-elseif(WIN32)
-    # Needed because Qt has one library, QT_QTUITOOLS_LIBRARY,
-    # with a default link library in it.
-    set_target_properties(gui PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt")
-elseif(UNIX)
-    target_link_libraries(gui PUBLIC X11)
-endif()
-
 
 if(NOT VISIT_STATIC)
     add_subdirectory(main)

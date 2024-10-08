@@ -114,7 +114,7 @@ if(HAVE_OSMESA)
     list(APPEND LIBENGINE_DEPENDS visit_vtk_offscreen)
 endif()
 
-#********************************* SERIAL ************************************
+#************************** SERIAL LIBRARY ************************************
 visit_add_library(
     NAME        engine_ser
     SOURCES     ${LIBENGINE_SOURCES}
@@ -134,6 +134,63 @@ else()
     target_compile_definitions(engine_ser PRIVATE COMM_EXPORTS)
 endif()
 
+
+#************************** PARALLEL LIBRARY **********************************
+
+if(VISIT_PARALLEL)
+    # If we have Ice-T then add more sources to the build
+    if(ICET_FOUND)
+        set(ICET_SOURCES IceTNetworkManager.C)
+        set(ICET_HEADERS IceTNetworkManager.h)
+        if(APPLE)
+            # We need to link with OpenGL on Mac when we have IceT.
+            set(ICET_OPENGL ${OPENGL_LIBRARIES})
+        endif()
+
+        if(VISIT_STATIC)
+            set(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
+        else()
+            set(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
+        endif()
+    endif()
+
+    visit_add_parallel_library(
+        NAME        engine_par
+        SOURCES     ${LIBENGINE_SOURCES}
+                    ${ICET_SOURCES}
+                    MPIXfer.C
+        HEADERS     ${LIBENGINE_HEADERS}
+                    ${ICET_HEADERS}
+                    MPIXfer.h
+        INCLUDES    ${LIBENGINE_INCLUDES}
+        DEPENDS_ON  ${LIBENGINE_DEPENDS}
+                    avtwriter_par
+                    avtplotter_par
+                    avtquery_par
+                    avtviswindow_par
+                    avtpipeline_par
+                    ${ICET_DYNAMIC_LIB}
+                    cognomen)
+
+    if(WIN32)
+        set_target_properties(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
+    endif()
+
+    if(ICET_FOUND)
+        target_include_directories(engine_par PUBLIC
+            $<BUILD_INTERFACE:${ICET_INCLUDE_DIR}>
+            $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/icet>)
+        target_link_directories(engine_par PUBLIC ${ICET_LIBRARY_DIR})
+        if(VISIT_MESAGL_DIR)
+            target_include_directories(engine_par PUBLIC
+               $<BUILD_INTERFACE:${OPENGL_INCLUDE_DIR}>)
+        endif()
+        target_compile_definitions(engine_par PRIVATE HAVE_ICET)
+    endif()
+endif()
+
+
+#*********************** SERIAL EXECUTABLE ************************************
 
 # These 3 variables are only defined when building statically.
 # engine_ser_exe_EDatabase_ser = The list of database libE libraries needed to link
@@ -179,59 +236,9 @@ endif()
 
 VISIT_INSTALL_TARGETS(engine_ser_exe)
 
-#********************************* PARALLEL **********************************
+#************************ PARALLEL EXECUTABLE *********************************
+
 if(VISIT_PARALLEL)
-    # If we have Ice-T then add more sources to the build
-    if(ICET_FOUND)
-        set(ICET_SOURCES IceTNetworkManager.C)
-        set(ICET_HEADERS IceTNetworkManager.h)
-        if(APPLE)
-            # We need to link with OpenGL on Mac when we have IceT.
-            set(ICET_OPENGL ${OPENGL_LIBRARIES})
-        endif()
-
-        if(VISIT_STATIC)
-            set(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
-        else()
-            set(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
-        endif()
-    endif()
-
-    visit_add_parallel_library(
-        NAME        engine_par
-        SOURCES     ${LIBENGINE_SOURCES}
-                    ${ICET_SOURCES}
-                    MPIXfer.C
-        HEADERS     ${LIBENGINE_HEADERS}
-                    ${ICET_HEADERS}
-                    MPIXfer.h
-        INCLUDES    ${LIBENGINE_INCLUDES}
-        DEPENDS_ON  ${LIBENGINE_DEPENDS}
-                    avtwriter_par
-                    avtplotter_par
-                    avtquery_par
-                    avtviswindow_par
-                    avtpipeline_par
-                    ${ICET_DYNAMIC_LIB}
-                    cognomen)
-
-    if(WIN32)
-        set_target_properties(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
-    endif()
-
-    # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
-    if(ICET_FOUND)
-        target_include_directories(engine_par PUBLIC
-            $<BUILD_INTERFACE:${ICET_INCLUDE_DIR}>
-            $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/icet>)
-        target_link_directories(engine_par PUBLIC ${ICET_LIBRARY_DIR})
-        if(VISIT_MESAGL_DIR)
-            target_include_directories(engine_par PUBLIC
-               $<BUILD_INTERFACE:${OPENGL_INCLUDE_DIR}>)
-        endif()
-        target_compile_definitions(engine_par PRIVATE HAVE_ICET)
-    endif()
-
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
         add_library(link_mpi_libs STATIC empty.c)
         target_link_libraries(link_mpi_libs ${VISIT_PARALLEL_LIBS})

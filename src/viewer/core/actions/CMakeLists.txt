@@ -43,17 +43,19 @@ target_sources(viewercore_ser PRIVATE
      ${VIEWERCORE_ACTION_SOURCES}
      ${VIEWERCORE_ACTION_HEADERS})
 
-target_include_directories(viewercore_ser PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/core/actions>)
+blt_patch_target(
+    NAME     viewercore_ser
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/core/actions>)
 
 if(VISIT_PARALLEL)
     target_sources(viewercore_par PRIVATE
          ${VIEWERCORE_ACTION_SOURCES}
          ${VIEWERCORE_ACTION_HEADERS})
 
-    target_include_directories(viewercore_par PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/core/actions>)
+    blt_patch_target(
+        NAME     viewercore_par
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/core/actions>)
 endif()
 

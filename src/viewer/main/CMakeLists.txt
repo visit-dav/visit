@@ -142,10 +142,11 @@ visit_add_library(
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/main>
     DEPENDS_ON  ${VIEWERLIB_DEPENDS})
 
-set_target_properties(viewer PROPERTIES AUTOMOC ON)
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(viewer)
 endif()
+
+set_target_properties(viewer PROPERTIES AUTOMOC ON)
 
 if(WIN32)
     set_target_properties(viewer PROPERTIES OUTPUT_NAME viewerlib)

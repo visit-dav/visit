@@ -17,7 +17,8 @@ target_sources(viewer PRIVATE
     DDTManager.h
     DDTSession.h)
 
-target_include_directories(viewer PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/main/ddt>)
+blt_patch_target(
+    NAME     viewer
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/main/ddt>)
 
