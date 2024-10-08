@@ -1587,6 +1587,9 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
 //   Added enabling/disabling of triad options based on
 //   the TriadSetManually flag. 
+// 
+//   Justin Privitera, Tue Oct  8 14:43:15 PDT 2024
+//   Set triad line width to 1.0.
 //
 // ****************************************************************************
 
@@ -2715,6 +2718,8 @@ QvisAnnotationWindow::setTriadColor()
 // Creation:   Thu Mar  1 14:43:11 PST 2018
 //
 // Modifications:
+//    Justin Privitera, Tue Oct  8 14:43:15 PDT 2024
+//    Ensure width is set to the 1-index (so line width 1 corresponds to 1.0).
 //
 // ****************************************************************************
  
