@@ -1,6 +1,7 @@
 import os
 import hashlib
 import shutil
+import fnmatch
 
 out_dir = "/usr/workspace/wsa/visit/dashboard/dashboard"
 
@@ -355,7 +356,7 @@ def copy_results(cur_dir):
 def main():
     dirs = []
     for dir in os.listdir("."):
-        if (dir.endswith("????-??-??-??:??")):
+        if (fnmatch.fnmatch(dir, "????-??-??-??:??")):
             dirs.append(dir)
 
     dirs.sort()
