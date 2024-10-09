@@ -58,7 +58,7 @@
       0
       0
     </Field>
-    <Field name="triadLineWidth" label="Triad Line Width" type="float">
+    <Field name="triadLineWidth" label="Triad Line Width" type="linewidth">
       1.000000
     </Field>
     <Field name="triadFont" label="Triad Font" type="int">
@@ -73,6 +73,4 @@
     <Field name="triadSetManually" label="Set the triad manually" type="bool">
       false
     </Field>
-   <Function name="SetFromNode" user="false" member="true">
-    </Function>
   </Attribute>
