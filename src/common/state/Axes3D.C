@@ -108,6 +108,7 @@ void Axes3D::Init()
     bboxFlag = true;
     xAxis.GetTitle().SetTitle("X-Axis");
     yAxis.GetTitle().SetTitle("Y-Axis");
+    zAxis.GetTitle().SetTitle("Z-Axis");
     setBBoxLocation = false;
     bboxLocation[0] = 0;
     bboxLocation[1] = 1;
