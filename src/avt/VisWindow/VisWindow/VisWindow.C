@@ -4741,7 +4741,7 @@ VisWindow::UpdateAxes3D()
         }
         triad->SetForegroundColor(scaledColor[0], scaledColor[1], scaledColor[2]);
     }
-    float lineWidth = annotationAtts.GetAxes3D().GetTriadLineWidth();
+    const int lineWidth = annotationAtts.GetAxes3D().GetTriadLineWidth();
     triad->SetLineWidth(lineWidth, lineWidth, lineWidth);
     triad->SetBold(annotationAtts.GetAxes3D().GetTriadBold());
     triad->SetItalic(annotationAtts.GetAxes3D().GetTriadItalic());
