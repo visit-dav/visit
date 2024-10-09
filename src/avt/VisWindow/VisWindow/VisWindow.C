@@ -4652,6 +4652,9 @@ VisWindow::UpdateParallelAxes()
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
 //   Only update the triad color if the
 //   set manually flag is raised.
+// 
+//   Justin Privitera, Wed Oct  9 14:35:28 PDT 2024
+//   Fix triad line width so it uses linewidth infrastructure.
 //
 // ****************************************************************************
 
