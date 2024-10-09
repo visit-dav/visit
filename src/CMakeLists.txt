@@ -564,6 +564,9 @@
 #    Modified VISIT_LIBRARY_DIR to use $<CONFIG> instead of
 #    ${CMAKE_CFG_INTDIR} on Windows, since the latter is deprecated.
 #
+#    Kathleen Biagas, Mon Sep 30, 2024
+#    Add build/install scripts from scripts directory to visit-dist target.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -1373,6 +1376,12 @@ add_custom_target(visit-dist
   COMMAND  ${CMAKE_COMMAND} -E make_directory ${dist_name}
   # Add symlink to src
   COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR} ${dist_name}/src
+  COMMAND  ${CMAKE_COMMAND} -E make_directory ${dist_name}/scripts
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/run-build-visit  ${dist_name}/scripts/run-build-visit
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-build ${dist_name}/scripts/visit-build
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-dist ${dist_name}/scripts/visit-dist
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install  ${dist_name}/scripts/visit-install
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install-run  ${dist_name}/scripts/visit-install-run
   # Tar it up, resolving symlinks
   COMMAND tar hzcf ${dist_name}.tar.gz ${dist_name}
   # get the checksums

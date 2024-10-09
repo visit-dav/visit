@@ -56,12 +56,11 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.2"}
+    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.3"}
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
-    export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}"}
-    export UINTAH_SHA256_CHECKSUM="446f6426d019f277635002e2ec6f7f93227abfe7f433db2ecc59871dcd4afa84"
+    export UINTAH_SHA256_CHECKSUM="1b98cd31d4d216239b23a2a42f84623f3d999cdc32da6893499508879f2e4e91"
 }
 
 function bv_uintah_print
@@ -103,7 +102,7 @@ function bv_uintah_host_profile
 function bv_uintah_ensure
 {
     if [[ "$DO_UINTAH" == "yes" && "$USE_SYSTEM_UINTAH" == "no" ]] ; then
-        ensure_built_or_ready "uintah" $UINTAH_VERSION $UINTAH_BUILD_DIR $UINTAH_FILE $UINTAH_URL 
+        ensure_built_or_ready "uintah" $UINTAH_VERSION $UINTAH_BUILD_DIR $UINTAH_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_UINTAH="no"
@@ -269,7 +268,7 @@ function build_uintah
         info "Invoking command to configure UINTAH"
         set -x
         sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS -std=c++11\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
@@ -290,7 +289,7 @@ function build_uintah
         info "Invoking command to configure UINTAH"
         set -x
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS -std=c++11\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
