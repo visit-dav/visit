@@ -25,21 +25,21 @@ class vtkDataSet;
 //  Class: avtMinMaxQuery
 //
 //  Purpose:
-//    A query that retrieves min and max information about a variable. 
+//    A query that retrieves min and max information about a variable.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 23, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Feb  3 17:54:19 PST 2004
-//    Renamed from avtPlotMinMaxQuery. Made into parent class. 
+//    Renamed from avtPlotMinMaxQuery. Made into parent class.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004 
-//    Added args to constructor. 
+//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
+//    Added args to constructor.
 //
-//    Kathleen Bonnell, Tue Jul  6 16:59:26 PDT 2004 
+//    Kathleen Bonnell, Tue Jul  6 16:59:26 PDT 2004
 //    Encapsulated elNum, vals, domain, coords in class MinMaxInfo.
-//    Removed CreateMinMessage, CreateMaxMessage.  
+//    Removed CreateMinMessage, CreateMaxMessage.
 //    Added InfoToString, CreateMessage, FindElement, FinalizeZoneCoord,
 //    FinalizeNodeCoord.
 //
@@ -52,6 +52,9 @@ class vtkDataSet;
 //    Kathleen Biagas, Tue Jul 26 13:48:11 PDT 2011
 //    Add GetDefaultInputParams.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add GetTimeCurveSpecs method.
+//
 // ****************************************************************************
 
 class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
@@ -61,12 +64,14 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
     virtual                ~avtMinMaxQuery();
 
 
-    virtual const char     *GetType(void)   
-                                { return "avtMinMaxQuery"; };
+    virtual const char     *GetType(void)
+                                { return "avtMinMaxQuery"; }
     virtual const char     *GetDescription(void)
-                                { return "Calculating min/max."; };
+                                { return "Calculating min/max."; }
 
     static  void            GetDefaultInputParams(MapNode &);
+
+    const MapNode          &GetTimeCurveSpecs(const QueryAttributes *) override;
 
   protected:
     virtual void            Execute(vtkDataSet *, const int);
@@ -74,8 +79,8 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
     virtual void            PostExecute(void);
             void            StandardPostExecute(void);
             void            TimeVaryingPostExecute(void);
-    virtual void            VerifyInput(void);   
-            void            Preparation(avtDataObject_p);   
+    virtual void            VerifyInput(void);
+            void            Preparation(avtDataObject_p);
 
   private:
 
@@ -108,21 +113,21 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
 
     const avtMatrix        *invTransform;
 
-    void                    GetNodeCoord(vtkDataSet *ds, const int id, 
+    void                    GetNodeCoord(vtkDataSet *ds, const int id,
                                         double coord[3]);
-    void                    GetCellCoord(vtkDataSet *ds, const int id, 
+    void                    GetCellCoord(vtkDataSet *ds, const int id,
                                         double coord[3]);
 
     void                    CreateResultMessage(const int);
 
     std::string             InfoToString(const MinMaxInfo &);
-    void                    CreateMessage(const int, const MinMaxInfo &, 
+    void                    CreateMessage(const int, const MinMaxInfo &,
                                           const MinMaxInfo &, std::string &,
                                           doubleVector &);
 
     void                    FindElement(MinMaxInfo &);
-    void                    FinalizeZoneCoord(vtkDataSet *, 
-                                              vtkDataArray *, 
+    void                    FinalizeZoneCoord(vtkDataSet *,
+                                              vtkDataArray *,
                                               MinMaxInfo &, bool);
     void                    FinalizeNodeCoord(vtkDataSet *, MinMaxInfo &);
 };

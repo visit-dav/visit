@@ -92,6 +92,7 @@ extern const char *visit_GetDefaultFileOpenOptions_doc;
 extern const char *visit_GetDomains_doc;
 extern const char *visit_GetEngineList_doc;
 extern const char *visit_GetEngineProperties_doc;
+extern const char *visit_GetExportOptions_doc;
 extern const char *visit_GetFlattenOutput_doc;
 extern const char *visit_GetGlobalAttributes_doc;
 extern const char *visit_GetGlobalLineoutAttributes_doc;
