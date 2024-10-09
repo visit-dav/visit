@@ -2721,7 +2721,7 @@ QvisAnnotationWindow::setTriadColor()
 void
 QvisAnnotationWindow::triadLineWidthChanged(int index)
 {
-    annotationAtts->GetAxes3D().SetTriadLineWidth(float(index));
+    annotationAtts->GetAxes3D().SetTriadLineWidth((float)index);
     annotationAtts->SelectAxes3D();
     SetUpdate(false);
     Apply();
