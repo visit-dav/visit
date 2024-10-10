@@ -107,7 +107,7 @@ Typically, when starting up VisIt_ and attaching a debugger, the launcher logic 
 Instead, it opens with the debugger's interactive prompt where the user must enter ``run`` to actually start the component.
 This allows the user to set breakpoints even before starting the component.
 
-Alternatively, the startup option, ``-break`,` can be used to inject a breakpoint into the debugger before it starts running the VisIt_ component.
+Alternatively, the startup option, ``-break`` can be used to inject a breakpoint into the debugger before it starts running the VisIt_ component.
 For example, the following command will start the ``mdserver`` component under ``lldb`` (debugger used on macOS) in its own X-terminal and set a breakpoint in the function ``MDServerMain`` which is one of the first functions executed when the ``mdserver`` is starting up... ::
 
     ./bin/visit -xterm -lldb mdserver -break MDServerMain
@@ -152,27 +152,35 @@ cli        src/visitpy/cli/cli.C      main
 
   .. code-block:: c
 
-       // Example only, the code block is incomplete.
-      #include <Utility.h>
+    // Example only, the code block is incomplete.
+    #include <Utility.h>
 
-      int
-      GUIMain(int argc, char **argv)
-      {
-          WaitUntilFile("~/guiwait.txt");
+    int
+    GUIMain(int argc, char **argv)
+    {
+        WaitUntilFile("~/guiwait.txt");
 
-          int retval = 0;
+        int retval = 0;
 
-          TRY
-          {
-              // Initialize error logging.
-              VisItInit::SetComponentName("gui");
+        TRY
+        {
+            // Initialize error logging.
+            VisItInit::SetComponentName("gui");
   
 
 raise(SIGSTOP)
 --------------
 
 Sometimes, its easiest to get a debugger to break exactly where you want by modifing the source code using the `raise() <https://man7.org/linux/man-pages/man3/raise.3.html>`__ function.
-The following example shows how to use ``raise()`` to have the program break in ``factorial()`` ::
+The following example shows how to use ``raise()`` to have the program break in ``factorial()``
+
+.. container:: collapsible
+
+  .. container:: header
+
+    An example of using raise(SIGSTOP)
+
+  .. code-block:: c
 
     #include <signal.h>
 
@@ -190,6 +198,7 @@ The following example shows how to use ``raise()`` to have the program break in 
         return factorial(argc);
     }
 
+
 When the program runs, it will stop in the function ``raise(SIGSTOP)`` and will not continue until it has been sent a signal to continue, ``SIGCONT``.
 This allows the user to attach a debugger and then simply type ``cont`` once attached to continue.
 Or, the ``kill`` shell command can be used to send a signal to the stopped program as in ::
@@ -203,7 +212,15 @@ PrintCallStack()
 ----------------
 
 The VisIt_ sources also includes a helpful utility function in ``<Utility.h>`` that will print the call stack in effect at the moment the function is reached.
-For example, to debug MOAB's database read options ``PrintCallStack()`` can be added to the ``avtMOABOptions.C`` ::
+For example, to debug MOAB's database read options ``PrintCallStack()`` can be added to the ``avtMOABOptions.C``
+
+.. container:: collapsible
+
+  .. container:: header
+
+    An example of using PrintCallStack
+
+  .. code-block:: c
 
     #include <Utility.h>
     .
@@ -222,7 +239,16 @@ For example, to debug MOAB's database read options ``PrintCallStack()`` can be a
        .
        .
 
+
 When the code gets executed, it will produce output something like ::
+
+.. container:: collapsible
+
+  .. container:: header
+
+    An output from using PrintCallStack
+
+  .. code-block:: c
 
     In GetMOABReadOptions()
     Call stack from /Users/miller86/visit/visit/34rc/src/databases/MOAB/avtMOABOptions.C 39
@@ -238,6 +264,7 @@ When the code gets executed, it will produce output something like ::
     10:  10  mdserver                            0x000000010d7c3189 _Z12MDServerMainiPPc + 281
     11:  11  mdserver                            0x000000010d7c37e2 main + 34
     12:  12  dyld                                0x00007ff81344c418 start + 1896
+
 
 Debugging a regression failure outside of the test suite
 --------------------------------------------------------
