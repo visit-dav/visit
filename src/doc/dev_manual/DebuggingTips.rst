@@ -103,6 +103,14 @@ Attaching a debugger
 VisIt_ has various options for attaching debuggers on Linux machines, including ``gdb``, ``totalview``, and ``valgrind`` to name a few.
 The full list is available in the :ref:`Startup options<StartupOptions>` section under ``Debugging options``.
 
+Typically, when starting up VisIt_ and attaching a debugger, the launcher logic starts the debugger and loads the VisIt_ component executable and sets the command-line arguments but does not actually start the executable.
+Instead, it opens with the debugger's interactive prompt where the user must enter ``run`` to actually start the component.
+This allows the user to set breakpoints even before starting the component.
+
+Alternatively, the startup option, ``-break`,` can be used to inject a breakpoint into the debugger before it starts running the VisIt_ component.
+For example, the following command will start the ``mdserver`` component under ``lldb`` (debugger used on macOS) in its own X-terminal and set a breakpoint in the function ``MDServerMain`` which is one of the first functions executed when the ``mdserver`` is starting up... ::
+
+    ./bin/visit -xterm -lldb mdserver -break MDServerMain
 
 WaitUntilFile function
 ----------------------
@@ -159,6 +167,77 @@ cli        src/visitpy/cli/cli.C      main
               // Initialize error logging.
               VisItInit::SetComponentName("gui");
   
+
+raise(SIGSTOP)
+--------------
+
+Sometimes, its easiest to get a debugger to break exactly where you want by modifing the source code using the `raise() <https://man7.org/linux/man-pages/man3/raise.3.html>`__ function.
+The following example shows how to use ``raise()`` to have the program break in ``factorial()`` ::
+
+    #include <signal.h>
+
+    int factorial(int a)
+    {
+        int retval = 1;
+        raise(SIGSTOP);
+        for (int i = 1; i <= a; i++)
+            retval *= i;
+        return retval;
+    }
+
+    int main(int argc, char **argv)
+    {
+        return factorial(argc);
+    }
+
+When the program runs, it will stop in the function ``raise(SIGSTOP)`` and will not continue until it has been sent a signal to continue, ``SIGCONT``.
+This allows the user to attach a debugger and then simply type ``cont`` once attached to continue.
+Or, the ``kill`` shell command can be used to send a signal to the stopped program as in ::
+
+    kill -SIGCONT <PID>
+
+Where ``<PID>`` is the program's process id.
+The command ``kill -l`` will list all the signals that can be sent to the program.
+
+PrintCallStack()
+----------------
+
+The VisIt_ sources also includes a helpful utility function in ``<Utility.h>`` that will print the call stack in effect at the moment the function is reached.
+For example, to debug MOAB's database read options ``PrintCallStack()`` can be added to the ``avtMOABOptions.C`` ::
+
+    #include <Utility.h>
+    .
+    .
+    .
+
+    DBOptionsAttributes *
+    GetMOABReadOptions(void)
+    {
+       printf("In GetMOABReadOptions()\n");
+       PrintCallStack(std::cout, __FILE__, __LINE__);
+
+        DBOptionsAttributes *rv = new DBOptionsAttributes;
+        rv->SetBool("Parallel format", true);
+       .
+       .
+       .
+
+When the code gets executed, it will produce output something like ::
+
+    In GetMOABReadOptions()
+    Call stack from /Users/miller86/visit/visit/34rc/src/databases/MOAB/avtMOABOptions.C 39
+    1:  1   libMMOABDatabase.dylib              0x00000001194cd671 _Z18GetMOABReadOptionsv + 49
+    2:  2   libMMOABDatabase.dylib              0x00000001194b2541 _ZNK20MOABCommonPluginInfo14GetReadOptionsEv + 17
+    3:  3   mdserver                            0x000000010d7aeb06 _ZN18MDServerConnection15GetDBPluginInfoEv + 502
+    4:  4   mdserver                            0x000000010d7a0705 _ZN26GetDBPluginInfoRPCExecutor6UpdateEP7Subject + 165
+    5:  5   libvisitcommon.dylib                0x00000001136148d8 _ZN7Subject6NotifyEv + 168
+    6:  6   libvisitcommon.dylib                0x00000001133fa39d _ZN16AttributeSubject6NotifyEv + 29
+    7:  7   libvisitcommon.dylib                0x00000001136763d6 _ZN4Xfer7ProcessEv + 470
+    8:  8   mdserver                            0x000000010d7abf81 _ZN18MDServerConnection12ProcessInputEv + 65
+    9:  9   mdserver                            0x000000010d7a5b57 _ZN19MDServerApplication7ExecuteEv + 471
+    10:  10  mdserver                            0x000000010d7c3189 _Z12MDServerMainiPPc + 281
+    11:  11  mdserver                            0x000000010d7c37e2 main + 34
+    12:  12  dyld                                0x00007ff81344c418 start + 1896
 
 Debugging a regression failure outside of the test suite
 --------------------------------------------------------
