@@ -119,7 +119,7 @@ void Axes3D::Init()
     triadColor[0] = 0;
     triadColor[1] = 0;
     triadColor[2] = 0;
-    triadLineWidth = 1;
+    triadLineWidth = 0;
     triadFont = 0;
     triadBold = true;
     triadItalic = true;
@@ -775,7 +775,7 @@ Axes3D::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("triadColor")) != 0)
         SetTriadColor(node->AsIntArray());
     if((node = searchNode->GetNode("triadLineWidth")) != 0)
-        SetTriadLineWidth(node->AsFloat());
+        SetTriadLineWidth(node->AsInt());
     if((node = searchNode->GetNode("triadFont")) != 0)
         SetTriadFont(node->AsInt());
     if((node = searchNode->GetNode("triadBold")) != 0)
@@ -892,7 +892,7 @@ Axes3D::SetTriadColor(const int *triadColor_)
 }
 
 void
-Axes3D::SetTriadLineWidth(float triadLineWidth_)
+Axes3D::SetTriadLineWidth(int triadLineWidth_)
 {
     triadLineWidth = triadLineWidth_;
     Select(ID_triadLineWidth, (void *)&triadLineWidth);
@@ -1044,7 +1044,7 @@ Axes3D::GetTriadColor()
     return triadColor;
 }
 
-float
+int
 Axes3D::GetTriadLineWidth() const
 {
     return triadLineWidth;
@@ -1189,7 +1189,7 @@ Axes3D::GetFieldType(int index) const
     case ID_setBBoxLocation:  return FieldType_bool;
     case ID_bboxLocation:     return FieldType_doubleArray;
     case ID_triadColor:       return FieldType_intArray;
-    case ID_triadLineWidth:   return FieldType_float;
+    case ID_triadLineWidth:   return FieldType_linewidth;
     case ID_triadFont:        return FieldType_int;
     case ID_triadBold:        return FieldType_bool;
     case ID_triadItalic:      return FieldType_bool;
@@ -1232,7 +1232,7 @@ Axes3D::GetFieldTypeName(int index) const
     case ID_setBBoxLocation:  return "bool";
     case ID_bboxLocation:     return "doubleArray";
     case ID_triadColor:       return "intArray";
-    case ID_triadLineWidth:   return "float";
+    case ID_triadLineWidth:   return "linewidth";
     case ID_triadFont:        return "int";
     case ID_triadBold:        return "bool";
     case ID_triadItalic:      return "bool";
