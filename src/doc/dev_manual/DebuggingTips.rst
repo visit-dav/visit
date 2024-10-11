@@ -240,7 +240,7 @@ For example, to debug MOAB's database read options ``PrintCallStack()`` can be a
        .
 
 
-When the code gets executed, it will produce output something like ::
+When the code gets executed, it will produce output something like
 
 .. container:: collapsible
 
