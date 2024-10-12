@@ -712,6 +712,8 @@ avtXdmfFileFormat::FirstRealGrid(XdmfGrid *start)
 //    Brad Whitlock, Tue Apr 14 16:36:26 PDT 2015
 //    Handle grids that are collections of collections of real grids.
 //
+//    Mark C. Miller, Sat Oct 12 12:10:16 PDT 2024
+//    Add logic to handle possible curve objects.
 // ****************************************************************************
 
 vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *_meshname)
@@ -742,14 +744,22 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *_
             break;
         case VTK_RECTILINEAR_GRID:
             dataSet = this->ReadRectilinearGrid(gridToRead);
-#if 0
-            if (!strcmp(_meshname, meshname)) {
+
+            // If we're here for a curve object, we adjust the rectgrid by ignoring
+            // Y and Z dimensions and then add the curve's "values" as a point data array.
+            // We do this by creating a new rectgrid and copying X coordinates over.
+            if (strcmp(_meshname, meshname))
+            {
+                vtkRectilinearGrid *oldGrid = vtkRectilinearGrid::SafeDownCast(dataSet);
+                vtkRectilinearGrid *newGrid = vtkRectilinearGrid::New();
+                newGrid->SetDimensions(oldGrid->GetDimensions()[0], 1, 1);
+                newGrid->SetXCoordinates(oldGrid->GetXCoordinates());
                 vtkDataArray *yvals = GetVar(timestate, domain, _meshname);
                 yvals->SetName(meshname);
-                vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(dataSet);
-                rgrid->GetPointData()->SetScalars(yvals);
+                newGrid->GetPointData()->SetScalars(yvals);
+                oldGrid->Delete();
+                dataSet = newGrid;
             }
-#endif
             break;
         case VTK_UNSTRUCTURED_GRID:
             dataSet = this->ReadUnstructuredGrid(gridToRead);
@@ -1591,6 +1601,10 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
 //    Brad Whitlock, Tue Apr 14 16:36:26 PDT 2015
 //    Handle grids that are collections of collections of real grids.
 //
+//    Mark C. Miller, Sat Oct 12 12:08:14 PDT 2024
+//    Add logic to handle curves in Xdmf files. These are one component
+//    variables defined on 2DRectMesh objects with dimensions in the .xmf file
+//    of the form "1 N" where N is greater than 1.
 // ****************************************************************************
 
 void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
@@ -1671,8 +1685,11 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
                 switch (attribute->GetAttributeType()) {
                     case (XDMF_ATTRIBUTE_TYPE_SCALAR): {
                         if (numComponents <= 1) {
-                            if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYLINE &&
-                                grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY) {
+                            XdmfInt64 dimensions[XDMF_MAX_DIMENSION];
+                            grid->GetTopology()->GetShapeDesc()->GetShape(dimensions);
+                            if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DRECTMESH &&
+                                grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVY &&
+                                dimensions[1]>1 && dimensions[0]==1) {
                                 avtCurveMetaData *cmd = new avtCurveMetaData(attributeName.str());
                                 md->Add(cmd);
                                 curveToGridMap[attributeName.str()] = grid->GetName();
@@ -1777,18 +1794,7 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     vtkDoubleArray * zarray = vtkDoubleArray::New();
 
     int rgdims[3]={0,0,0};
-    if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_XY)
-    {
-        rgdims[0] = scaled_dims[1];
-        rgdims[1] = 1;
-        rgdims[2] = 1;
-        rg->SetDimensions(rgdims);
-
-        xarray->SetNumberOfTuples(scaled_dims[1]);
-        yarray->SetNumberOfTuples(1);
-        zarray->SetNumberOfTuples(1);
-    }
-    else if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_VXVY)
+    if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_VXVY)
     {
         rgdims[0] = scaled_dims[1];
         rgdims[1] = scaled_dims[2];
