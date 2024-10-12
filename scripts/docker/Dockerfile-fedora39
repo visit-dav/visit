@@ -1,0 +1,83 @@
+FROM fedora:39
+MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
+
+# fetch build env
+ENV TZ=America/Los_Angeles
+RUN dnf -y upgrade && dnf -y install \
+    git \
+    wget \
+    bzip2 \
+    unzip \
+    xz \
+    patch \
+    hostname \
+    gcc \
+    gcc-c++ \
+    gcc-gfortran \
+    make \
+    zlib-devel \
+    python3 \
+    libX11* \
+    libX11-* \
+    libXrender \
+    libXrender-devel \
+    xcb* \
+    xcb-* \
+    libxcb* \
+    libxcb-* \
+    xcb-util \
+    xcb-util-devel \
+    xcb-util-keysyms \
+    xcb-util-image \
+    xcb-util-cursor \
+    xcb-util-renderutil-devel \
+    libxcb-devel \
+    libxkbcommon-x11 \
+    libxkbcommon-x11-devel \
+    libxkbcommon-devel \
+    libXext-devel \
+    libXfixes-devel \
+    libXi-devel \
+    libXt-devel \
+    fontconfig \
+    fontconfig-devel \
+    freetype-devel \
+    autoconf \
+    libtool \
+    libxml2 \
+    libxml2-devel \
+    vim \
+    emacs \
+    cpio \
+    mesa-libGL \
+    mesa-libGL-devel \
+    openssl-devel \
+    lapack \
+    lapack-devel \
+    expat \
+    expat-devel \
+    perl \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN dnf -y upgrade && dnf -y install libffi-devel && rm -rf /var/lib/apt/lists/*
+
+RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
+WORKDIR /home/visit
+
+# Create the third-party directory
+RUN mkdir third-party
+# Copy build_visit and the script to run it
+COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit run_build_visit_fedora39.sh /home/visit
+COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
+# Build the third party libraries
+RUN /bin/bash run_build_visit_fedora39.sh
+
+COPY --chown=visit:visit build_test_visit.sh /home/visit
+COPY --chown=visit:visit test_visit.py /home/visit
+COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
+RUN /bin/bash build_test_visit.sh -v 3.4.1
+

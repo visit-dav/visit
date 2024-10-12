@@ -5830,6 +5830,9 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
 //
 //    Mark C. Miller, Wed Mar  4 18:00:38 PST 2009
 //    Adjusted for dbio-only build
+// 
+//    Justin Privitera, Fri Sep 27 10:18:37 PDT 2024
+//    Relaxed restriction on input data only being floats.
 // ****************************************************************************
 
 void
@@ -5860,8 +5863,7 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
         for (int j = 0 ; j < n_cell_vars ; j++)
         {
             vtkDataArray *arr = inCD->GetArray(j);
-            if (arr->GetDataType() != VTK_FLOAT ||
-                arr->GetNumberOfComponents() != 1)
+            if (arr->GetNumberOfComponents() != 1)
             {
                 continue;
             }

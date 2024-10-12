@@ -87,7 +87,7 @@ Test("volume_01")
 
 # test software volume render
 volAtts=VolumeAttributes()
-volAtts.rendererType = volAtts.RayCasting
+volAtts.rendererType = volAtts.Composite
 SetPlotOptions(volAtts)
 Test("volume_02")
 

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                           avtTrajectoryByZone.                            //
+//                           avtTrajectoryByZone                             //
 // ************************************************************************* //
 
 #include <avtTrajectoryByZone.h>
@@ -22,7 +22,7 @@ using std::string;
 //  Purpose:
 //      Construct an avtTrajectoryByZone object.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     November 8, 2005
 //
 //  Modifications:
@@ -39,8 +39,8 @@ avtTrajectoryByZone::avtTrajectoryByZone()
 //  Purpose:
 //      Destruct an avtTrajectoryByZone object.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     November 8, 2005 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     November 8, 2005
 //
 //  Modifications:
 //
@@ -50,28 +50,28 @@ avtTrajectoryByZone::~avtTrajectoryByZone()
 {
 }
 
- 
+
 // ****************************************************************************
 //  Method: avtTrajectoryByZone::Preparation
 //
 //  Purpose:
-//    Sets pickAtts based on queryAtts. 
+//    Sets pickAtts based on queryAtts.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     November 8, 2005
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-void 
+void
 avtTrajectoryByZone::Preparation(const avtDataAttributes &inAtts)
 {
     if (inAtts.ValidVariable(queryAtts.GetVariables()[0].c_str()))
         queryAtts.SetXUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[0].c_str()));
     if (inAtts.ValidVariable(queryAtts.GetVariables()[1].c_str()))
         queryAtts.SetYUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[1].c_str()));
- 
+
     avtVariableByZoneQuery::Preparation(inAtts);
 }
 
@@ -85,7 +85,7 @@ avtTrajectoryByZone::Preparation(const avtDataAttributes &inAtts)
 //    gathered the info, to processor 0.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 8, 2005 
+//  Creation:   November 8, 2005
 //
 //  Modifications:
 //    Brad Whitlock, Tue Mar 13 11:27:42 PDT 2007
@@ -97,8 +97,8 @@ void
 avtTrajectoryByZone::PostExecute(void)
 {
     avtPickQuery::PostExecute();
-   
-    if (PAR_Rank() == 0) 
+
+    if (PAR_Rank() == 0)
     {
         if (pickAtts.GetFulfilled())
         {
@@ -116,7 +116,7 @@ avtTrajectoryByZone::PostExecute(void)
         }
         else
         {
-            char msg[120]; 
+            char msg[120];
             snprintf(msg, 120, "Could not retrieve information from domain "
                      " %d element %d.", domain, zone);
             SetResultMessage(msg);
@@ -130,20 +130,38 @@ avtTrajectoryByZone::PostExecute(void)
 //  Method: avtTrajectoryByZone::GetTimeCurveSpecs
 //
 //  Purpose:
-//    Override default TimeCurveSpecs 
+//    Override default TimeCurveSpecs
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    July 8, 2008 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 8, 2008
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Sep 11
+//    Add QueryAttributes argument. Use it to get variable and element info
+//    for outputCurveLabel.
 //
 // ****************************************************************************
 
 const MapNode&
-avtTrajectoryByZone::GetTimeCurveSpecs() 
+avtTrajectoryByZone::GetTimeCurveSpecs(const QueryAttributes *qa)
 {
     timeCurveSpecs["useTimeForXAxis"] = false;
     timeCurveSpecs["nResultsToStore"] = 2;
+
+    stringVector vars = qa->GetVariables();
+    const MapNode qip = qa->GetQueryInputParams();
+    bool global = (qip.HasEntry("use_global_id") && qip.GetEntry("use_global_id")->AsInt());
+    string z = "_zone_" + std::to_string(qip.GetEntry("element")->AsInt());
+    if(global)
+        z = "_global" + z;
+    string v = "Trajectory_" + vars[0] + "_" + vars[1] + z;
+    if(qip.HasEntry("domain") && !global)
+    {
+        v += "_domain_";
+        v += std::to_string(qip.GetEntry("domain")->AsInt());
+    }
+
+    timeCurveSpecs["outputCurveLabel"] = v;
     return timeCurveSpecs;
 }
 
@@ -151,7 +169,7 @@ avtTrajectoryByZone::GetTimeCurveSpecs()
 // ****************************************************************************
 // Method:  avtTrajectoryByZone::GetDefaultInputParams
 //
-// Programmer:  Kathleen Biagas 
+// Programmer:  Kathleen Biagas
 // Creation:    July 26, 2011
 //
 // ****************************************************************************

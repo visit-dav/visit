@@ -7,7 +7,6 @@
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </required>
 
@@ -44,6 +43,7 @@
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="qwt"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
@@ -60,7 +60,6 @@
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </group>
 
@@ -91,6 +90,7 @@
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="qwt"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
@@ -103,7 +103,6 @@
             <lib name="no-python"/>
             <lib name="no-qt6" />
             <lib name="no-qt" />
-            <lib name="no-qwt" />
             <lib name="no-vtk"/>
             <lib name="no-zlib"/>
         </group>
@@ -195,7 +194,6 @@
             <lib name="vtk"/>
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </required>
 
@@ -212,6 +210,7 @@
             <lib name="mpich"/>
             <lib name="osmesa"/>
             <lib name="pyqt"/>
+            <lib name="qwt"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
             <lib name="xercesc"/>
@@ -225,7 +224,6 @@
             <lib name="vtk"/>
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </group>
 
@@ -234,6 +232,7 @@
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="mpich"/>
+            <lib name="qwt"/>
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
@@ -247,7 +246,6 @@
             <lib name="no-python"/>
             <lib name="no-qt6" />
             <lib name="no-qt" />
-            <lib name="no-qwt" />
             <lib name="no-vtk"/>
             <lib name="no-zlib"/>
         </group>

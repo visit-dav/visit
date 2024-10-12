@@ -279,12 +279,6 @@ namespace ospray {
 #ifndef CLAMP
 # define CLAMP(x, l, h) (x > l ? x < h ? x : h : l)
 #endif
-#ifndef M_MIN
-# define M_MIN(x, r) (x < r ? x : r)
-#endif
-#ifndef M_MAX
-# define M_MAX(x, r) (x > r ? x : r)
-#endif
 
 // ostreams customized for ospray
 #ifdef ospout

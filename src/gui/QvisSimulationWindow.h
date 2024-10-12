@@ -37,8 +37,6 @@ class avtSimulationCommandSpecification;
 class SimulationUIValues;
 class SimCommandSlots;
 
-class QwtPlot;
-
 // ****************************************************************************
 // Class: QvisSimulationWindow
 //

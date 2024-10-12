@@ -158,6 +158,78 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_vtkopenglpolydatamapper_patch
+{
+  # patch that allows extra large extents datasets to be rendered correctly
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/vtkOpenGLPolyDataMapper.cxx.orig    2024-08-23 08:45:54.157974000 -0700
++++ Rendering/OpenGL2/vtkOpenGLPolyDataMapper.cxx 2024-08-23 08:57:58.918823000 -0700
+@@ -2241,9 +2241,12 @@
+     }
+     else // not lines, so surface
+     {
++      // The partial derivatives are scaled by the inverse of fwidth
++      // to avoid overflow or underflow in the following computations.
+       vtkShaderProgram::Substitute(FSSource, "//VTK::UniformFlow::Impl",
+-        "vec3 fdx = dFdx(vertexVC.xyz);\n"
+-        "  vec3 fdy = dFdy(vertexVC.xyz);\n"
++        "float scale = 1.0/length(fwidth(vertexVC.xyz));\n"
++        "  vec3 fdx = dFdx(vertexVC.xyz)*scale;\n"
++        "  vec3 fdy = dFdy(vertexVC.xyz)*scale;\n"
+         "  //VTK::UniformFlow::Impl\n" // For further replacements
+       );
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+}
+
+function apply_vtk9_gcc13_patch
+{
+  # patches that allows VTK9 to be built g++-13
+   patch -p0 << \EOF
+--- ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp.orig	2024-05-22 12:53:48.817462000 -0700
++++ ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp	2024-05-22 12:54:07.659499000 -0700
+@@ -33,6 +33,7 @@
+ 
+ #include <vector>
+ #include <string>
++#include <cstdint>
+ 
+ #define CPL_DLL
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+   patch -p0 << \EOF
+--- IO/Image/vtkSEPReader.h.orig	2024-05-22 13:50:27.027369000 -0700
++++ IO/Image/vtkSEPReader.h	2024-05-22 13:50:55.044422000 -0700
+@@ -27,6 +27,7 @@
+ 
+ #include <array>  // for std::array
+ #include <string> // for std::string
++#include <cstdint> // for std::uint8_t
+ 
+ namespace details
+ {
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtkSEPReader patch allowing VTK to build with g++-13 failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 function apply_vtk9_allow_onscreen_and_osmesa_patch
 {
   # patch that allows VTK9 to be built with onscreen and osmesa support.
@@ -218,6 +290,32 @@ EOF
       return 1
     fi
     return 0;
+}
+
+function apply_vtk9_vtkdatawriter_patch2
+{
+  # patch vtkDataWriter always write legacy file versions
+   patch -p0 << \EOF
+--- IO/Legacy/vtkDataWriter.cxx.orig    2024-08-07 14:40:17.383506000 -0700
++++ IO/Legacy/vtkDataWriter.cxx   2024-08-08 13:52:18.147942000 -0700
+@@ -82,7 +82,7 @@
+   this->Header = new char[257];
+   strcpy(this->Header, "vtk output");
+   this->FileType = VTK_ASCII;
+-  this->FileVersion = VTK_LEGACY_READER_VERSION_5_1;
++  this->FileVersion = VTK_LEGACY_READER_VERSION_4_2;
+ 
+   this->ScalarsName = nullptr;
+   this->VectorsName = nullptr;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkDataWriter.cxx failed."
+      return 1
+    fi
+    return 0;
+
 }
 
 function apply_vtk9_vtkdatawriter_patch
@@ -1052,32 +1150,47 @@ function apply_vtk9_vtkRectilinearGridReader_patch
   # patch vtkRectilinearGridReader.cxx, per this issue:
   # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
    patch -p0 << \EOF
-*** IO/Legacy/vtkRectilinearGridReader.cxx.orig	Thu Jan 27 10:55:12 2022
---- IO/Legacy/vtkRectilinearGridReader.cxx	Thu Jan 27 11:01:04 2022
-***************
-*** 95,101 ****
-          break;
-        }
-  
-!       if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
-        {
-          int dim[3];
-          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
---- 95,108 ----
-          break;
-        }
-  
-!       // Have to read field data because it may be binary.
-!       if (!strncmp(this->LowerCase(line), "field", 5))
-!       {
-!         vtkFieldData* fd = this->ReadFieldData();
-!         fd->Delete();
-!       }
-! 
-!       else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
-        {
-          int dim[3];
-          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+--- IO/Legacy/vtkRectilinearGridReader.cxx.orig	2024-06-05 14:21:59.105807000 -0700
++++ IO/Legacy/vtkRectilinearGridReader.cxx	2024-06-05 14:26:30.561802000 -0700
+@@ -95,7 +95,16 @@
+         break;
+       }
+ 
+-      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
++      // If data file is binary and FieldData is present, it
++      // must be read here, otherwise a ReadString will fail and the
++      // loop will terminate before reading dimensions.
++      if (!strncmp(this->LowerCase(line), "field", 5))
++      {
++        vtkFieldData* fd = this->ReadFieldData();
++        fd->Delete();
++      }
++
++      else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+       {
+         int dim[3];
+         if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+@@ -127,6 +136,20 @@
+ 
+         dimsRead = true;
+       }
++      // if the coordinates have been reached, should be no reason
++      // to keep reading
++      else if (strncmp(this->LowerCase(line), "x_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "y_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "z_coordinate", 12) == 0)
++      {
++        break;
++      }
+     }
+   }
+ 
 EOF
     if [[ $? != 0 ]] ; then
         warn "vtk patch for vtkRectilinearGridReader.cxx failed."
@@ -2521,6 +2634,11 @@ function apply_vtk_patch
 {
 
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        apply_vtk9_gcc13_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
         apply_vtk9_allow_onscreen_and_osmesa_patch
         if [[ $? != 0 ]] ; then
             return 1
@@ -2546,12 +2664,22 @@ function apply_vtk_patch
            return 1
         fi
 
+        apply_vtk9_vtkdatawriter_patch2
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
         apply_vtk9_osmesa_render_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
 
         apply_vtk9_vtkgeotransform_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk9_vtkopenglpolydatamapper_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -2850,6 +2978,9 @@ function build_vtk
                     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES"
                     if [[ "$DO_QT6" == "yes" ]]; then
                         vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
+                        vopts="${vopts} -DQt6CoreTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
+                        vopts="${vopts} -DQt6GuiTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
+                        vopts="${vopts} -DQt6WidgetsTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
                     else
                         vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                     fi
@@ -2859,6 +2990,9 @@ function build_vtk
                         vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT6_INSTALL_DIR}/bin/qmake"
                         vopts="${vopts} -DVTK_QT_VERSION=6"
                         vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT6_INSTALL_DIR}/lib/cmake"
+                        vopts="${vopts} -DQt6CoreTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
+                        vopts="${vopts} -DQt6GuiTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
+                        vopts="${vopts} -DQt6WidgetsTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
                     else
                         vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
                         vopts="${vopts} -DVTK_QT_VERSION=5"

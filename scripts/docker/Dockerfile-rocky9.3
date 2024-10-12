@@ -1,0 +1,107 @@
+FROM rockylinux:9.3
+MAINTAINER Kathleen Biagas<biagas2@llnl.gov>
+
+ENV TZ=America/Phoenix
+
+# the default repos for rockylinux use mirrors. 
+# if there is difficulty running yum due to the mirrors, then
+# hand-modify /etc/yum.repos.d/* to comment out the mirrors and uncomment
+# the baseurl.
+# then the packages below will have to be installed by hand.
+
+RUN yum update -y && yum install -y yum-utils 
+
+# enable the 'devel' repo, it has some packages we need but is not
+# enabled by default
+RUN yum-config-manager --enable devel
+
+# fetch build env
+RUN yum install -y \
+    libxcb \
+    libxcb-devel \
+    xcb-util \
+    xcb-util-devel \
+    xcb-util-image \
+    xcb-util-image-devel \
+    xcb-util-keysyms \
+    xcb-util-keysyms-devel \
+    xcb-util-renderutil \
+    xcb-util-renderutil-devel \
+    xcb-util-wm \
+    xcb-util-wm-devel \
+    xcb-proto \
+    libxkbcommon \
+    libxkbcommon-devel \
+    libxkbcommon-x11 \
+    libxkbcommon-x11-devel \
+    mesa-libGL-devel \
+    expat \
+    expat-devel \
+    libX11 \
+    libX11-common \
+    libX11-devel \
+    libX11-xcb \
+    libXext \
+    libXext-devel \
+    fontconfig \
+    fontconfig-devel \
+    xorg-x11-utils \
+    libXt-devel \
+    libXrender-devel \
+    libXfixes \
+    libXfixes-devel \
+    libXcursor \
+    libXcursor-devel
+
+
+## Install other visit dependencies
+RUN yum install -y \
+    patch \
+    perl \
+    libtool \
+    autoconf \
+    automake \
+    git \
+    wget \
+    unzip \
+    zlib-devel \
+    python3 \
+    libSM-devel \
+    openssl-devel \
+    freetype-devel \
+    libxml2 \
+    libxml2-devel \
+    vim \
+    libffi-devel  \
+    gcc \
+    g++ \
+    lapack \
+    lapack-devel \
+    xz \
+    cpio
+
+RUN yum install -y --allowerasing curl
+
+RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
+WORKDIR /home/visit
+
+
+# Create the third-party directory
+RUN mkdir /home/visit/third-party
+# Copy build_visit and the script to run it
+COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit run_build_visit.sh /home/visit
+COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
+# build thirdparty libraries
+RUN /bin/bash run_build_visit.sh
+
+# build and test visit
+COPY --chown=visit:visit build_test_visit.sh /home/visit
+COPY --chown=visit:visit test_visit.py /home/visit
+COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
+# Build visit, package, install and test.
+RUN /bin/bash build_test_visit.sh -v 3.4.1
+

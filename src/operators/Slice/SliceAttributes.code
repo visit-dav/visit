@@ -391,3 +391,8 @@ SliceAttributes::SetValue(const std::string &name, const bool &value)
         retval = AttributeSubject::SetValue(name, value);
     return retval;
 }
+
+Target: xml2cmake
+Condition:       HAVE_LIBVTKM
+ELinkLibraries:  vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis
+

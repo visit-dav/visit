@@ -88,6 +88,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Fri Jun 17 16:25:09 PDT 2011
 //    Added SetInputParams.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add QueryAttributes argument to GetTimeCurveSpecs.
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -97,11 +100,11 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual                ~avtDataObjectQuery();
 
     virtual const char     *GetType(void) = 0;
-    virtual const char     *GetDescription(void) { return NULL; };
-    virtual const char     *GetShortDescription(void) { return NULL; };
+    virtual const char     *GetDescription(void) { return NULL; }
+    virtual const char     *GetShortDescription(void) { return NULL; }
 
-    virtual void            SetInputParams(const MapNode &) {;};
-    virtual bool            OriginalData(void) { return false; };
+    virtual void            SetInputParams(const MapNode &) {;}
+    virtual bool            OriginalData(void) { return false; }
     virtual void            PerformQuery(QueryAttributes *) = 0;
     virtual std::string     GetResultMessage(void) = 0;
 
@@ -112,7 +115,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual int             GetNFilters();
 
     virtual void            SetTimeVarying(bool val) { timeVarying = val;}
-    virtual const MapNode  &GetTimeCurveSpecs();
+    virtual const MapNode  &GetTimeCurveSpecs(const QueryAttributes *);
 
     void                    SetSILRestriction(const SILRestrictionAttributes *);
     void                    SetSILRestriction(const avtSILRestriction_p);
@@ -121,11 +124,11 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
                                 { units = _units;}
 
     virtual bool            QuerySupportsTimeParallelization(void)
-                                { return false; };
+                                { return false; }
     void                    SetParallelizingOverTime(bool v)
-                                { parallelizingOverTime = v; };
+                                { parallelizingOverTime = v; }
     bool                    ParallelizingOverTime(void)
-                                { return parallelizingOverTime; };
+                                { return parallelizingOverTime; }
 
   protected:
     static InitializeProgressCallback

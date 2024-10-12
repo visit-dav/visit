@@ -26,14 +26,14 @@ class vtkRectilinearGrid;
 //  Class: avtTimeLoopQOTFilter
 //
 //  Purpose:
-//    Performs a query over time. 
+//    Performs a query over time.
 //
 //  Note: This class was previously named avtQueryOverTimeFilter. Now that
 //        there are multiple QOT filters to choose from, a base class has
 //        been created with the name avtQueryOverTimeFilter, and this class
-//        has been renamed avtTimeLoopQOTFilter. 
+//        has been renamed avtTimeLoopQOTFilter.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   March 19, 2004
 //
 //  Modifications:
@@ -41,9 +41,9 @@ class vtkRectilinearGrid;
 //    Fixed for Windows.
 //
 //    Kathleen Bonnell, Tue May  4 14:21:37 PDT 2004
-//    Removed SilUseSet in favor of SILRestrictionAttributes. 
+//    Removed SilUseSet in favor of SILRestrictionAttributes.
 //
-//    Kathleen Bonnell, Thu Jan  6 11:12:35 PST 2005 
+//    Kathleen Bonnell, Thu Jan  6 11:12:35 PST 2005
 //    Added inheritance from avtTimeLoopFilter, which handles the stepping
 //    through time.  Removed PostExecute method.  Added CreateFinalOutput,
 //    ExecutionSuccessful (required by new inheritance).  Added qRes, times
@@ -51,9 +51,9 @@ class vtkRectilinearGrid;
 //    sucess and finalOutputCreated.
 //
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
-//    Added CreatePolys method, and members useTimeForXAxis, nResultsToStore. 
+//    Added CreatePolys method, and members useTimeForXAxis, nResultsToStore.
 //
-//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006
 //    Curves now represented as 1D RectilinearGrid, Renamed CreatedPolys to
 //    CreateRGRid.
 //
@@ -61,9 +61,9 @@ class vtkRectilinearGrid;
 //    Try to correctly quote how many additional filters there will be
 //    for one time step.
 //
-//    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007 
+//    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007
 //    Added member 'label', to store a shorter y-axis label than the query
-//    name if desired. 
+//    name if desired.
 //
 //    Kathleen Bonnell, Tue Jul  8 15:48:11 PDT 2008
 //    Add useVarForYAxis.
@@ -76,12 +76,15 @@ class vtkRectilinearGrid;
 //
 //    Alister Maguire, Wed May 23 09:21:45 PDT 2018
 //    Added cacheIdx and useCache to allow plotting pick curves
-//    from cached picks. 
+//    from cached picks.
 //
 //    Alister Maguire, Mon Sep 23 11:13:48 MST 2019
-//    Changed name from avtQueryOverTimeFilter to avtTimeLoopQOTFilter, 
+//    Changed name from avtQueryOverTimeFilter to avtTimeLoopQOTFilter,
 //    and added avtQueryOverTimeFilter inheritance. Also removed methods
-//    that are now defined in avtQueryOverTimeFilter. 
+//    that are now defined in avtQueryOverTimeFilter.
+//
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Rename 'label' as 'yLabel', add 'outputLabel'.
 //
 // ****************************************************************************
 
@@ -94,8 +97,8 @@ class QUERY_API avtTimeLoopQOTFilter : public avtTimeLoopFilter,
 
     static avtFilter     *Create(const AttributeGroup*);
 
-    virtual const char   *GetType(void)  { return "avtTimeLoopQOTFilter"; };
-    virtual const char   *GetDescription(void) { return "Querying over Time"; };
+    virtual const char   *GetType(void)  { return "avtTimeLoopQOTFilter"; }
+    virtual const char   *GetDescription(void) { return "Querying over Time"; }
 
     virtual bool          FilterSupportsTimeParallelization(void);
 
@@ -104,7 +107,8 @@ class QUERY_API avtTimeLoopQOTFilter : public avtTimeLoopFilter,
     doubleVector          times;
     bool                  success;
     bool                  finalOutputCreated;
-    std::string           label;
+    std::string           yLabel;
+    std::string           outputLabel;
 
     bool                  useTimeForXAxis;
     bool                  useVarForYAxis;
@@ -116,12 +120,12 @@ class QUERY_API avtTimeLoopQOTFilter : public avtTimeLoopFilter,
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);
 
-    virtual int           AdditionalPipelineFilters(void) 
-                                            { return numAdditionalFilters; };
+    virtual int           AdditionalPipelineFilters(void)
+                                            { return numAdditionalFilters; }
 
     virtual void          CreateFinalOutput(void);
-    virtual bool          ExecutionSuccessful(void) { return success; } ;
-    avtDataTree_p         CreateTree(const doubleVector &, 
+    virtual bool          ExecutionSuccessful(void) { return success; }
+    avtDataTree_p         CreateTree(const doubleVector &,
                                      const doubleVector &,
                                      stringVector &,
                                      const bool);

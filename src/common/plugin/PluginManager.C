@@ -505,16 +505,13 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
             if (filename == "." || filename == "..")
                 continue;
 
-#define PLUGIN_MAX(A,B) (((A) < (B)) ? (B) : (A))
-
             // Ignore it if it does not end in the correct extension
-            if (filename.length() < (size_t)PLUGIN_MAX((1 + prefixLen),extLen) ||
+            if (filename.length() < (size_t)std::max((1 + prefixLen),extLen) ||
                 !(filename.substr(filename.length()-extLen,extLen) == ext))
             {
                 continue;
             }
 
-#undef PLUGIN_MAX
             // It is a valid library name so add it to the list.
             tmp[dir].push_back(files[dir][f]);
         }

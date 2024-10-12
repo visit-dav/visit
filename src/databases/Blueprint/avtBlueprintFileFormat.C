@@ -15,6 +15,7 @@
 #include "avtResolutionSelection.h"
 
 #include "avtMaterial.h"
+#include "avtSpecies.h"
 #include "avtMixedVariable.h"
 #include "avtVariableCache.h"
 #include "DBOptionsAttributes.h"
@@ -32,6 +33,7 @@
 //-----------------------------------------------------------------------------
 // vtk includes
 //-----------------------------------------------------------------------------
+#include <vtkUnstructuredGrid.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -143,6 +145,9 @@ sanitize_var_name(const std::string &varname)
 //
 //    Brad Whitlock, Mon May 22 16:55:01 PDT 2023
 //    I initialized some new members.
+// 
+//    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//    Added specset info.
 //
 // ****************************************************************************
 avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
@@ -153,6 +158,7 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_selected_lod(0),
       m_mesh_and_topo_info(),
       m_matset_info(),
+      m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
       m_new_refine(true)
@@ -749,8 +755,8 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //    I added code to treat HO materials specially since we want them to be
 //    refined according to the selected level of detail (m_selected_lod).
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
 //
 //    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
 //    I added display_name support.
@@ -765,14 +771,13 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     BP_PLUGIN_INFO("ReadBlueprintMatsetVolFracs: " << abs_matsetname
                    << " [domain " << domain << "]");
 
-    string abs_matsetname_str(abs_matsetname);
     // replace colons, etc
-    abs_matsetname_str = sanitize_var_name(abs_matsetname_str);
+    const std::string abs_matsetname_str = sanitize_var_name(abs_matsetname);
 
     // we need to know what mesh name this matset is associated with
     const Node &mset_info = m_matset_info[abs_matsetname_str];
     
-    string abs_meshname = mset_info["full_mesh_name"].as_string();
+    const string abs_meshname = mset_info["full_mesh_name"].as_string();
 
     BP_PLUGIN_INFO("matset " << abs_matsetname << " is defined on mesh " << abs_meshname);
 
@@ -801,8 +806,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     const Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["matsets"][matset_name];
     BP_PLUGIN_INFO(bp_index_matset.to_yaml());
 
-    string topo_tag  = bp_index_matset["topology"].as_string();
-    string data_path = bp_index_matset["path"].as_string();
+    const string data_path = bp_index_matset["path"].as_string();
 
     // See whether the materials in the index correspond to HO fields.
     std::vector<std::string> matNames;
@@ -909,6 +913,94 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 
         // provide material_map
         out["matnames"] = n_mat_names;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadBlueprintSpecset
+//
+//  Purpose:
+//      Reads specset info for the given domain into the `out` conduit Node.
+//
+//
+//  Programmer: Justin Privitera
+//  Creation:   09/27/24
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
+                                            const string &specset_name,
+                                            Node &out)
+{
+    BP_PLUGIN_INFO("ReadBlueprintSpecsetMassFracs: " << specset_name
+                   << " [domain " << domain << "]");
+
+    // replace colons, etc
+    const std::string specset_name_str = sanitize_var_name(specset_name);
+
+    // we need to know what mesh name this specset is associated with
+    const Node &specset_info = m_specset_info[specset_name_str];
+    const std::string abs_meshname = specset_info["full_mesh_name"].as_string();
+    const std::string matset_name = specset_info["matset_name"].as_string();
+    const std::string bp_specset_name = specset_info["specset_name"].as_string();
+
+    BP_PLUGIN_INFO("specset " << specset_name << " is defined on mesh " << abs_meshname);
+
+    const std::string mesh_name = specset_info["mesh_name"].as_string();
+    const std::string topo_name = specset_info["topo_name"].as_string();
+    const Node &n_spec_names = specset_info["species"];
+
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
+    BP_PLUGIN_INFO("matset name: " << matset_name);
+    BP_PLUGIN_INFO("specset name: " << bp_specset_name);
+    BP_PLUGIN_INFO("specnames: " << n_spec_names.to_yaml());
+
+    if (!m_root_node["blueprint_index"].has_child(mesh_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "mesh " << mesh_name << " not found in blueprint index");
+    }
+
+    if (!m_root_node["blueprint_index"][mesh_name]["matsets"].has_child(matset_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "matset " << matset_name << " not found in blueprint index");
+    }
+
+    if (!m_root_node["blueprint_index"][mesh_name]["specsets"].has_child(bp_specset_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "specset " << bp_specset_name << " not found in blueprint index");
+    }
+
+    const Node &bp_index_specset = m_root_node["blueprint_index"][mesh_name]["specsets"][bp_specset_name];
+    BP_PLUGIN_INFO(bp_index_specset.to_yaml());
+
+    const string data_path = bp_index_specset["path"].as_string();
+
+    try
+    {
+        m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
+                                         data_path,
+                                         out);
+
+        BP_PLUGIN_INFO("done loading conduit data for " 
+                        << specset_name_str << " [domain "<< domain << "]" );
+    }
+    catch(InvalidVariableException const&)
+    {
+        BP_PLUGIN_WARNING("failed to load conduit data for "
+                           << specset_name_str << " [domain "<< domain << "]"
+                           << " -- skipping field for this domain");
+        // if something went wrong, reset the output node to
+        // signal the read failed, and return.
+        out.reset();
     }
 }
 
@@ -1275,10 +1367,10 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             return;
         }
 
-        std::string topo_name = n_mset["topology"].as_string();
-        string mesh_topo_name = mesh_name + "_" + topo_name;
+        const std::string topo_name = n_mset["topology"].as_string();
+        const string mesh_topo_name = mesh_name + "_" + topo_name;
 
-        string mesh_matset_name = mesh_topo_name + "_" + mset_name;
+        const string mesh_matset_name = mesh_topo_name + "_" + mset_name;
 
         BP_PLUGIN_INFO("adding material set "
                         <<  mesh_topo_name << " " <<  mesh_matset_name);
@@ -1341,6 +1433,137 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         mmd->validVariable = true;
         mmd->hideFromGUI = false;
         md->Add(mmd);
+    }
+}
+
+
+// ****************************************************************************
+// helper method used to add species meta data for a blueprint mesh.
+//
+// Justin Privitera, Wed Mar 13 16:18:30 PDT 2024
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
+                                                    string const &mesh_name,
+                                                    const Node &n_mesh_info)
+{
+    if (!n_mesh_info.has_child("specsets"))
+    {
+        BP_PLUGIN_INFO("Input data file has no specsets.");
+        return;
+    }
+    BP_PLUGIN_INFO("adding species for " <<  mesh_name);
+
+    NodeConstIterator specsets_itr = n_mesh_info["specsets"].children();
+
+    while (specsets_itr.has_next())
+    {
+        const Node &n_specset = specsets_itr.next();
+        const string specset_name = specsets_itr.name();
+
+        if (!n_specset.has_child("matset"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " missing `matset`,"
+                           << " skipping specset" );
+            return;
+        }
+
+        if (!n_specset.has_child("species"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " missing `species`,"
+                           << " skipping specset" );
+            return;
+        }
+
+        const std::string matset_name = n_specset["matset"].as_string();
+
+        if (! n_mesh_info.has_path("matsets/" + matset_name))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " associated matset missing,"
+                           << " skipping specset" );
+            return;
+        }
+
+        if (! n_mesh_info.has_path("matsets/" + matset_name + "/topology"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " specset index: "
+                           << specset_name
+                           << " associated matset missing `topology`,"
+                           << " skipping specset" );
+            return;
+        }
+
+        const std::string topo_name = n_mesh_info["matsets"][matset_name]["topology"].as_string();
+        const string mesh_topo_name = mesh_name + "_" + topo_name;
+        const string mesh_matset_name = mesh_topo_name + "_" + matset_name;
+        const string mesh_specset_name = mesh_topo_name + "_" + matset_name + "_" + specset_name;
+
+        BP_PLUGIN_INFO("adding species set "
+                        <<  mesh_topo_name << " " <<  mesh_specset_name);
+
+        const int nmat = n_specset["species"].number_of_children();
+
+        std::vector<int> num_species;
+        std::vector<std::vector<std::string>> species_names;
+
+        auto mat_itr = n_specset["species"].children();
+        while (mat_itr.has_next())
+        {
+            const Node &mat_val = mat_itr.next();
+            num_species.push_back(mat_val.number_of_children());
+
+            std::vector<std::string> spec_names_for_mat;
+            auto specie_itr = mat_val.children();
+            while (specie_itr.has_next())
+            {
+                const std::string specname = specie_itr.next().name();
+                spec_names_for_mat.push_back(specname);
+            }
+            species_names.push_back(spec_names_for_mat);
+        }
+
+        m_specset_info[mesh_specset_name]["full_mesh_name"] = mesh_topo_name;
+        m_specset_info[mesh_specset_name]["mesh_name"] = mesh_name;
+        m_specset_info[mesh_specset_name]["topo_name"] = topo_name;
+        m_specset_info[mesh_specset_name]["full_material_name"] = mesh_matset_name;
+        m_specset_info[mesh_specset_name]["matset_name"] = matset_name;
+        m_specset_info[mesh_specset_name]["specset_name"] = specset_name;
+
+        m_specset_info[mesh_specset_name]["nmat"] = nmat;
+        m_specset_info[mesh_specset_name]["nmatspec"].set(num_species);
+        m_specset_info[mesh_specset_name]["species"].set(n_specset["species"]);
+
+
+        BP_PLUGIN_INFO("Specset Info for "
+                       << mesh_specset_name
+                       << " : " << m_specset_info[mesh_specset_name].to_yaml())
+
+        avtSpeciesMetaData *smd = new avtSpeciesMetaData(
+            mesh_specset_name, // The name of the species
+            mesh_topo_name,    // The name of the mesh the species is defined on.
+            mesh_matset_name,  // The name of the material the species is defined on.
+            nmat,              // The number of materials in the matset.
+            num_species,       // The number of species for each material.
+            species_names);    // The name of each species for each material.
+        smd->validVariable = true;
+        md->Add(smd);
     }
 }
 
@@ -1737,8 +1960,11 @@ avtBlueprintFileFormat::AugmentBlueprintIndex(conduit::Node &blueprint_index)
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Bookkeeping for 1D curves.
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
+// 
+//    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//    Added support for species.
 //
 // ****************************************************************************
 
@@ -1757,6 +1983,8 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
     m_mesh_and_topo_info.reset();
     // clear full matset to info map
     m_matset_info.reset();
+    // clear full specset to info map
+    m_specset_info.reset();
 
     try
     {
@@ -1830,6 +2058,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
 
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
             AddBlueprintMaterialsMetadata(metadata, itr.name(), n);
+            AddBlueprintSpeciesMetadata(metadata, itr.name(), n);
         }
 
         // Process all expressions *after* all fields. This
@@ -2179,6 +2408,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    Add MFEM refinement for certain fields that are low-order but live on a
 //    mesh that has been refined. This prevents the field from having too few
 //    values for the refined mesh.
+// 
+//    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+//    Handle the polytopal mixed topology case.
 //
 // ****************************************************************************
 
@@ -2240,7 +2472,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         // else, normal field case
 
         Node n_field;
-        Node side_mesh;
+        Node intermediate_data;
         Node *field_ptr = &n_field;
 
         ReadBlueprintField(domain,abs_varname_str,*field_ptr);
@@ -2300,7 +2532,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("mesh name: " << mesh_name);
             BP_PLUGIN_INFO("topo name: " << topo_name);
 
-            const Node &n_topo = n_mesh["topologies/" + topo_name];
+            Node &n_topo = n_mesh["topologies/" + topo_name];
+            Node *topo_ptr = &n_topo;
+            const Node &n_coords = n_mesh["coordsets/" + n_topo["coordset"].as_string()];
             int tdims = -1;
             if (n_topo.has_path("elements/shape"))
             {
@@ -2315,9 +2549,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                     coords_name = n_topo["coordset"].as_string();
 
                     Node s2dmap, d2smap, options;
-                    Node &side_coords = side_mesh["coordsets/" + coords_name];
-                    Node &side_topo = side_mesh["topologies/" + topo_name];
-                    Node &side_fields = side_mesh["fields"];
+                    Node &side_coords = intermediate_data["side_mesh"]["coordsets/" + coords_name];
+                    Node &side_topo = intermediate_data["side_mesh"]["topologies/" + topo_name];
+                    Node &side_fields = intermediate_data["side_mesh"]["fields"];
 
                     field_name = FileFunctions::Basename(abs_varname_str);
                     n_mesh["fields/" + field_name].set_external(*field_ptr);
@@ -2332,6 +2566,210 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                       options);
 
                     field_ptr = side_fields.fetch_ptr(field_name);
+                    topo_ptr = intermediate_data.fetch_ptr("side_mesh/topologies/" + topo_name);
+                }
+                // polytopal mixed case
+                else if (n_topo["elements/shape"].as_string() == "mixed" &&
+                         (n_topo.has_child("subelements") || 
+                          n_topo.has_path("elements/shape_map/polygonal")))
+                {
+                    const string field_name = FileFunctions::Basename(abs_varname_str);
+                    // either we are making a polyhedral mesh or a polygonal mesh
+                    const bool mesh_is_polyhedral = n_topo.has_child("subelements");
+
+                    if (mesh_is_polyhedral && n_topo.has_path("elements/shape_map/polygonal"))
+                    {
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                             "The mixed polygonal and polyhedral mesh "
+                                             "case is currently unsupported.");
+                    }
+
+                    // 
+                    // step 1: threshold out the polytopal elements, placing 
+                    // them in their own topology
+                    // 
+                    const std::string coordset_name = n_topo["coordset"].as_string();
+                    Node &polytopal_mesh = intermediate_data["mixed_transformation/polytopal_mesh"];
+                    
+                    const int num_polytopal_elements = 
+                        avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh(
+                            n_coords, 
+                            n_topo,
+                            polytopal_mesh);
+
+                    const Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
+
+                    int_accessor n_shapes = n_topo["elements"]["shapes"].value();
+
+                    // we must create the field on the polytopal mesh ourselves
+                    Node &polytopal_field = polytopal_mesh["fields"][field_name];
+                    const bool elem_assoc = field_ptr->fetch("association").as_string() == "element";
+                    auto field_entry_itr = field_ptr->children();
+                    while (field_entry_itr.has_next())
+                    {
+                        const Node &field_entry = field_entry_itr.next();
+                        const std::string entry_name = field_entry_itr.name();
+
+                        // modify field values if we are element associated
+                        // grab only the ones we need
+                        if (entry_name == "values" && elem_assoc)
+                        {
+                            double_accessor n_field_values = n_field["values"].value();
+
+                            polytopal_field["values"].set(DataType::float64(num_polytopal_elements));
+                            double_array new_field_values = polytopal_field["values"].value();
+                            int new_field_index = 0;
+
+                            if (mesh_is_polyhedral)
+                            {
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                                {
+                                    if (n_shapes[zoneid] == VTK_POLYHEDRON)
+                                    {
+                                        new_field_values[new_field_index] = n_field_values[zoneid];
+                                        new_field_index ++;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                                {
+                                    if (n_shapes[zoneid] == VTK_POLYGON)
+                                    {
+                                        new_field_values[new_field_index] = n_field_values[zoneid];
+                                        new_field_index ++;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            polytopal_field[entry_name].set_external(field_entry);
+                        }
+                    }
+
+                    // 
+                    // step 2: run the polytopal mesh through generate_sides
+                    // 
+                    Node &side_mesh = intermediate_data["mixed_transformation/side_mesh"];
+                    Node &side_topo = side_mesh[n_topo.name()];
+                    Node &side_coords = side_mesh[coordset_name];
+                    Node &side_fields = side_mesh["fields"];
+                    Node &s2dmap = intermediate_data["mixed_transformation/maps/s2dmap"];
+                    Node &d2smap = intermediate_data["mixed_transformation/maps/d2smap"];
+                    blueprint::mesh::topology::unstructured::generate_sides(
+                        polytopal_topo,
+                        side_topo,
+                        side_coords,
+                        side_fields,
+                        s2dmap,
+                        d2smap);
+
+                    // 
+                    // step 3: stitch the topology back together to create a 
+                    // brand new mixed topology
+                    // 
+
+                    Node &new_mixed_topo = intermediate_data["mixed_transformation/new_mixed_topo"];
+
+                    if (mesh_is_polyhedral)
+                    {
+                        if (side_topo["elements/shape"].as_string() != "tet")
+                        {
+                            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                                 "Generated elements for mixed polyhedral "
+                                                 "topology must be tetrahedrons.");
+                        }
+                    }
+                    else
+                    {
+                        if (side_topo["elements/shape"].as_string() != "tri")
+                        {
+                            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                                 "Generated elements for mixed polygonal "
+                                                 "topology must be triangles.");
+                        }
+                    }
+
+                    avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedMeshes(
+                        n_topo,
+                        side_topo,
+                        new_mixed_topo);
+
+                    // 
+                    // step 4: stitch the field back together
+                    // 
+
+                    Node &new_field = intermediate_data["mixed_transformation/fields/" + field_name];
+                    field_entry_itr = side_fields[field_name].children();
+                    while (field_entry_itr.has_next())
+                    {
+                        const Node &field_entry = field_entry_itr.next();
+                        const std::string entry_name = field_entry_itr.name();
+
+                        // modify field values if we are element associated
+                        // grab only the ones we need
+                        if (entry_name == "values" && elem_assoc)
+                        {
+                            double_accessor n_field_values = n_field["values"].value();
+                            double_accessor side_field_values = side_fields[field_name]["values"].value();
+
+                            // the number of elements is the number of non-polytopal elements plus the number 
+                            // of new triangular/tetrahedral elements.
+                            const int final_num_elems = n_shapes.number_of_elements() - num_polytopal_elements
+                                                      + side_field_values.number_of_elements();
+
+                            new_field["values"].set(DataType::float64(final_num_elems));
+                            double_array new_field_values = new_field["values"].value();
+                            int new_field_index = 0;
+
+                            // grab original field values
+                            if (mesh_is_polyhedral)
+                            {
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                                {
+                                    // grab all the original shapes
+                                    if (n_shapes[zoneid] != VTK_POLYHEDRON)
+                                    {
+                                        new_field_values[new_field_index] = n_field_values[zoneid];
+                                        new_field_index ++;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                for (int zoneid = 0; zoneid < n_shapes.dtype().number_of_elements(); zoneid ++)
+                                {
+                                    // grab all the original shapes
+                                    if (n_shapes[zoneid] != VTK_POLYGON)
+                                    {
+                                        new_field_values[new_field_index] = n_field_values[zoneid];
+                                        new_field_index ++;
+                                    }
+                                }
+                            }
+                            
+                            // get new field values
+                            for (int zoneid = 0; zoneid < side_field_values.dtype().number_of_elements(); zoneid ++)
+                            {
+                                // grab all the new shapes
+                                new_field_values[new_field_index] = side_field_values[zoneid];
+                                new_field_index ++;
+                            }
+                        }
+                        else
+                        {
+                            new_field[entry_name].set_external(field_entry);
+                        }
+                    }
+
+                    // 
+                    // step 5: update the reference to the field and topology to
+                    // point to the new ones we created
+                    // 
+                    field_ptr = intermediate_data.fetch_ptr("mixed_transformation/fields/" + field_name);
+                    topo_ptr = intermediate_data.fetch_ptr("mixed_transformation/new_mixed_topo");
                 }
             }
 
@@ -2370,7 +2808,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             else
             {
                 // low-order case, use vtk
-                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
+                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(*topo_ptr,
                                                                                  *field_ptr);
             }
         }
@@ -2546,6 +2984,9 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 //  Modifications:
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
+// 
+//     Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//     Added support for species.
 //
 // ****************************************************************************
 void *
@@ -2563,6 +3004,12 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
         df = avtMaterial::Destruct;
     }
 
+    if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = static_cast<void *>(GetSpecies(domain, var));
+        df = avtSpecies::Destruct;
+    }
+
     return rv;
 }
 
@@ -2571,7 +3018,8 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //  Method: avtBlueprintFileFormat::GetMaterial
 //
 //  Purpose:
-//      Gets the auxiliary data from a Blueprint Database.
+//      Gets the matset object from the Blueprint database and converts it 
+//      into an avtMaterial.
 //
 //  Arguments:
 //      domain     The domain of interest.
@@ -2705,6 +3153,116 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         std::ostringstream err_oss;
         err_oss <<  "Conduit Exception in Blueprint Plugin "
                     << "avtBlueprintFileFormat::GetMaterial: " << endl
+                    << e.message();
+        BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
+    }
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::GetSpecies
+//
+//  Purpose:
+//      Gets the specset object from the Blueprint database and converts it 
+//      into an avtSpecies.
+//
+//  Arguments:
+//      domain     The domain of interest.
+//      spec_name  The species set of interest.
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Justin Privitera
+//  Creation:   09/27/24
+//
+//  Modifications:
+//
+// ****************************************************************************
+avtSpecies *
+avtBlueprintFileFormat::GetSpecies(int domain,
+                                   const char *spec_name)
+{
+    try
+    {
+        BP_PLUGIN_INFO("avtBlueprintFileFormat::GetSpecies " 
+                        << domain << " "
+                        << spec_name);
+
+        Node n_specset;
+        ReadBlueprintSpecset(domain,
+                             spec_name,
+                             n_specset);
+
+        if (!n_specset.has_child("matset"))
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "specset " << spec_name << " is missing associated matset.");
+        }
+
+        const std::string matset_name = m_specset_info[spec_name]["full_material_name"].as_string();
+
+        Node n_matset;
+        ReadBlueprintMatset(domain,
+                            matset_name,
+                            n_matset);
+
+        Node n_silo_matset;
+        conduit::blueprint::mesh::matset::to_silo(n_matset,
+                                                  n_silo_matset);
+
+        Node n_silo_specset;
+        conduit::blueprint::mesh::specset::to_silo(n_specset,
+                                                   n_matset,
+                                                   n_silo_specset);
+
+        if (!n_silo_specset.has_child("speclist"))
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "intermediate silo representation of species set " << 
+                                 spec_name << " is missing speclist.");
+        }
+
+        // first we need number of zones
+        const int nzones = n_silo_specset["speclist"].dtype().number_of_elements();
+
+        if (!m_specset_info.has_path(std::string(spec_name) + "/topo_name"))
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "Species set information is missing topology for species set " << 
+                                 spec_name);
+        }
+
+        Node n_tmp;
+        n_silo_specset["nmatspec"].to_int_array(n_tmp["nmatspec"]);
+        n_silo_specset["speclist"].to_int_array(n_tmp["speclist"]);
+        n_silo_specset["mix_spec"].to_int_array(n_tmp["mix_spec"]);
+        n_silo_specset["species_mf"].to_float_array(n_tmp["species_mf"]);
+
+        const int    nmat        = n_silo_specset["nmat"].as_int();
+        const int*   nmatspec    = n_tmp["nmatspec"].as_int_ptr();
+        const int*   speclist    = n_tmp["speclist"].as_int_ptr();
+        const int    mixlen      = n_silo_specset["mixlen"].as_int();
+        const int*   mix_spec    = n_tmp["mix_spec"].as_int_ptr();
+        const int    nspecies_mf = n_silo_specset["nspecies_mf"].value();
+        const float* species_mf  = n_tmp["species_mf"].as_float_ptr();
+
+        avtSpecies *spec = new avtSpecies(nmat,        // number of materials
+                                          nmatspec,    // number of species associated with each material
+                                          1,           // number of dimensions in the speclist array
+                                          &nzones,     // array of length ndims that defines the shape of the speclist array
+                                          speclist,    // indices into species_mf and mix_spec
+                                          mixlen,      // length of mix_spec array
+                                          mix_spec,    // array of length mixlen containing indices into the species_mf array
+                                          nspecies_mf, // length of the species_mf array
+                                          species_mf); // mass fractions of the matspecies in an array of length nspecies_mf
+        
+        return spec;
+    }
+    catch (conduit::Error &e)
+    {
+        std::ostringstream err_oss;
+        err_oss <<  "Conduit Exception in Blueprint Plugin "
+                    << "avtBlueprintFileFormat::GetSpecies: " << endl
                     << e.message();
         BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
     }

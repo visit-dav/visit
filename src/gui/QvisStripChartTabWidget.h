@@ -12,7 +12,9 @@
 
 
 class QScrollArea;
+#ifdef HAVE_QWT
 class QvisStripChart;
+#endif
 
 #define MAX_STRIP_CHARTS 5
 
@@ -28,6 +30,10 @@ class QvisStripChart;
 // Creation:   Wed Aug  1 15:11:06 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation blocks around QvisStripChart usage.
+//   Allows simulation callbacks into the StripChar gui widgets to not crash
+//   the sim, even if VisIt wasn't build with Qwt.
 //
 // ****************************************************************************
 
@@ -121,8 +127,10 @@ private:
     // index of the currently displayed strip chart
     unsigned int currentStripChart;
 
+#ifdef HAVE_QWT
     // array of maxStripCharts
     QvisStripChart *stripCharts[MAX_STRIP_CHARTS];
+#endif
     SC_NamesVector SC_Info;
 };
 #endif /* QVISSTRIPCHARTTABWIDGET */
