@@ -97,6 +97,33 @@ function bv_mfem_ensure
     fi
 }
 
+function apply_mfem_gcc13_patch
+{
+    # On IBM PPC systems the system defines "__VSX__" but some of the
+    # VSX functions are not defined with gcc, which VisIt typically
+    # uses. To avoid this we disable all the VSX coding. This is ok
+    # since VSX just optimizes performance, so no functionality is lost.
+    patch -p0 << \EOF
+--- general/kdtree.hpp.orig	2024-05-22 14:18:30.891172000 -0700
++++ general/kdtree.hpp	2024-05-22 14:19:38.630192000 -0700
+@@ -17,6 +17,7 @@
+ #include <fstream>
+ #include <iostream>
+ #include <cmath>
++#include <cstdint>
+ #include <tuple>
+ 
+ namespace mfem
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MFEM patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_mfem_patch
 {
     # On IBM PPC systems the system defines "__VSX__" but some of the
@@ -133,6 +160,23 @@ EOF
     return 0;
 }
 
+function apply_mfem_patches
+{
+    apply_mfem_patch
+    if [[ $? != 0 ]] ; then
+        warn "MFEM patch failed."
+        return 1
+    fi
+
+    apply_mfem_gcc13_patch
+    if [[ $? != 0 ]] ; then
+        warn "MFEM gcc13 patch failed."
+        return 1
+    fi
+
+    return 0
+}
+
 # *************************************************************************** #
 #                            Function 8, build_mfem
 # *************************************************************************** #
@@ -154,7 +198,7 @@ function build_mfem
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
 
     info "Patching MFEM"
-    apply_mfem_patch
+    apply_mfem_patches
     if [[ $? != 0 ]] ; then
         if [[ $untarred_mfem == 1 ]] ; then
             warn "Giving up on MFEM build because the patch failed."

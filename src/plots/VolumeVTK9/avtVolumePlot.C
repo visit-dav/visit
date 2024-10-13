@@ -16,7 +16,6 @@
 #include <avtGradientExpression.h>
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
-#include <avtResampleFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtUserDefinedMapper.h>
 #include <avtVolumeFilter.h>
@@ -456,6 +455,10 @@ avtVolumePlot::GetMapper(void)
 //    Kathleen Biagas, Wed July 12, 2023
 //    Add volumeResampleFilter.
 //
+//    Kathleen Biagas, Mon July 8, 2024
+//    Move use of avtVolumeResampleFilter to ApplyRenderingTransformation,
+//    to fix issues when SILR has been applied.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -482,16 +485,6 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
         dob = shiftCentering->GetOutput();
     }
 
-#ifdef ENGINE
-    if (volumeResampleFilter != nullptr)
-    {
-        delete volumeResampleFilter;
-        volumeResampleFilter = nullptr;
-    }
-    volumeResampleFilter = new avtVolumeResampleFilter(atts);
-    volumeResampleFilter->SetInput(dob);
-    dob = volumeResampleFilter->GetOutput();
-#endif
 
     return dob;
 }
@@ -552,9 +545,14 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    The new default renderer requires a single domain rectilinear dataset.
 //    I've updated the logic to address this.
 //
-//    Kathleen Biagas, Wed July 12, 2023 
+//    Kathleen Biagas, Wed July 12, 2023
 //    Resampling decisions moved to avtVolumeResampleFilter, utilized during
 //    ApplyOperators method.
+//
+//    Kathleen Biagas, Mon July 8, 2024
+//    Move use of avtVolumeResampleFilter from ApplyOperators method.
+//    Set its ouput transient status to false. Fixes problem rendering a
+//    volume plot when SIL Restriction applied.
 //
 // ****************************************************************************
 
@@ -578,6 +576,11 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     {
         delete volumeFilter;
         volumeFilter = nullptr;
+    }
+    if (volumeResampleFilter != nullptr)
+    {
+        delete volumeResampleFilter;
+        volumeResampleFilter = nullptr;
     }
 
     avtDataObject_p dob = input;
@@ -619,6 +622,12 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         gradientFilter->GetOutput()->SetTransientStatus(false);
         dob = gradientFilter->GetOutput();
     }
+
+    InternalResampleAttributes a;
+    volumeResampleFilter = new avtVolumeResampleFilter(&a, atts);
+    volumeResampleFilter->SetInput(dob);
+    volumeResampleFilter->GetOutput()->SetTransientStatus(false);
+    dob = volumeResampleFilter->GetOutput();
 #endif
 
     if (atts.GetRendererType() == VolumeAttributes::Composite ||
@@ -764,6 +773,10 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Mon July 8, 2024
+//    Add lowResVolumeFilter, volumeResampleFilter, gradientFilter.
+//
 // ****************************************************************************
 
 void
@@ -778,6 +791,18 @@ avtVolumePlot::ReleaseData(void)
     if (shiftCentering != nullptr)
     {
         shiftCentering->ReleaseData();
+    }
+    if (lowResVolumeFilter != nullptr)
+    {
+        lowResVolumeFilter->ReleaseData();
+    }
+    if (volumeResampleFilter != nullptr)
+    {
+        volumeResampleFilter->ReleaseData();
+    }
+    if (gradientFilter != nullptr)
+    {
+        gradientFilter->ReleaseData();
     }
 }
 

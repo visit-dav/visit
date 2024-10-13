@@ -29,6 +29,7 @@
 #include "V_GaussIntegration.h"
 #include "verdict_defines.h"
 #include <memory.h>
+#include <algorithm>
 
 //! the average volume of a hex
 VERDICT_REAL verdict_hex_size = 0;
@@ -423,13 +424,13 @@ VERDICT_REAL hex_edge_length(int max_min, VERDICT_REAL coordinates[][3])
   if(max_min == 0)
   {
     for( i = 1; i<12; i++) 
-      _edge = VERDICT_MIN( _edge, edge[i] ); 
+      _edge = std::min( _edge, edge[i] ); 
     return (VERDICT_REAL)_edge;
   }  
   else
   {
     for( i = 1; i<12; i++) 
-      _edge = VERDICT_MAX( _edge, edge[i] );
+      _edge = std::max( _edge, edge[i] );
     return (VERDICT_REAL)_edge;
   }
   
@@ -474,13 +475,13 @@ VERDICT_REAL diag_length(int max_min, VERDICT_REAL coordinates[][3])
   if(max_min == 0 )  //Return min diagonal
   { 
     for( i = 1; i<4; i++)
-      diagonal = VERDICT_MIN( diagonal, diag[i] );
+      diagonal = std::min( diagonal, diag[i] );
     return (VERDICT_REAL)diagonal;
   }
   else          //Return max diagonal
   {
     for( i = 1; i<4; i++)
-      diagonal = VERDICT_MAX( diagonal, diag[i] );
+      diagonal = std::max( diagonal, diag[i] );
     return (VERDICT_REAL)diagonal;  
   }
 
@@ -600,15 +601,15 @@ C_FUNC_DEF VERDICT_REAL v_hex_aspect (int /*num_nodes*/, VERDICT_REAL coordinate
   double mag_efg2 = efg2.length();
   double mag_efg3 = efg3.length();
   
-  aspect_12 = safe_ratio( VERDICT_MAX( mag_efg1, mag_efg2 ) , VERDICT_MIN( mag_efg1, mag_efg2 ) );
-  aspect_13 = safe_ratio( VERDICT_MAX( mag_efg1, mag_efg3 ) , VERDICT_MIN( mag_efg1, mag_efg3 ) );
-  aspect_23 = safe_ratio( VERDICT_MAX( mag_efg2, mag_efg3 ) , VERDICT_MIN( mag_efg2, mag_efg3 ) );
+  aspect_12 = safe_ratio( std::max( mag_efg1, mag_efg2 ) , std::min( mag_efg1, mag_efg2 ) );
+  aspect_13 = safe_ratio( std::max( mag_efg1, mag_efg3 ) , std::min( mag_efg1, mag_efg3 ) );
+  aspect_23 = safe_ratio( std::max( mag_efg2, mag_efg3 ) , std::min( mag_efg2, mag_efg3 ) );
 
-  aspect = VERDICT_MAX( aspect_12, VERDICT_MAX( aspect_13, aspect_23 ) );
+  aspect = std::max( aspect_12, std::max( aspect_13, aspect_23 ) );
 
   if( aspect > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( aspect, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( aspect, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( aspect, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( aspect, -VERDICT_DBL_MAX );
  
 }
 
@@ -639,11 +640,11 @@ C_FUNC_DEF VERDICT_REAL v_hex_skew( int /*num_nodes*/, VERDICT_REAL coordinates[
   skew_2 = fabs(efg1 % efg3);
   skew_3 = fabs(efg2 % efg3);
 
-  double skew = (VERDICT_MAX( skew_1, VERDICT_MAX( skew_2, skew_3 ) ));
+  double skew = (std::max( skew_1, std::max( skew_2, skew_3 ) ));
 
   if( skew > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( skew, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( skew, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( skew, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( skew, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -664,15 +665,15 @@ C_FUNC_DEF VERDICT_REAL v_hex_taper( int /*num_nodes*/, VERDICT_REAL coordinates
   VerdictVector efg13 = calc_hex_efg( 13, node_pos);
   VerdictVector efg23 = calc_hex_efg( 23, node_pos);
 
-  double taper_1 = fabs( safe_ratio( efg12.length(), VERDICT_MIN( efg1.length(), efg2.length())));
-  double taper_2 = fabs( safe_ratio( efg13.length(), VERDICT_MIN( efg1.length(), efg3.length())));
-  double taper_3 = fabs( safe_ratio( efg23.length(), VERDICT_MIN( efg2.length(), efg3.length())));
+  double taper_1 = fabs( safe_ratio( efg12.length(), std::min( efg1.length(), efg2.length())));
+  double taper_2 = fabs( safe_ratio( efg13.length(), std::min( efg1.length(), efg3.length())));
+  double taper_3 = fabs( safe_ratio( efg23.length(), std::min( efg2.length(), efg3.length())));
 
-  double taper = (VERDICT_REAL)VERDICT_MAX(taper_1, VERDICT_MAX(taper_2, taper_3));  
+  double taper = (VERDICT_REAL)std::max(taper_1, std::max(taper_2, taper_3));  
 
   if( taper > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( taper, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( taper, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( taper, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( taper, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -693,8 +694,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_volume( int /*num_nodes*/, VERDICT_REAL coordinate
   volume = (VERDICT_REAL) (efg1 % (efg2 * efg3))/64.0;
 
   if( volume > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( volume, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( volume, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( volume, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( volume, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -712,8 +713,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_stretch( int /*num_nodes*/, VERDICT_REAL coordinat
   double stretch = HEX_STRETCH_SCALE_FACTOR * safe_ratio(min_edge, max_diag);
 
   if( stretch > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( stretch, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( stretch, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( stretch, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( stretch, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -751,8 +752,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_diagonal_ratio( int /*num_nodes*/, VERDICT_REAL co
   double diagonal = safe_ratio( min_diag, max_diag);
 
   if( diagonal > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( diagonal, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( diagonal, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( diagonal, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( diagonal, -VERDICT_DBL_MAX );
 }
 
 #define SQR(x) ((x) * (x))
@@ -1120,8 +1121,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_oddy( int /*num_nodes*/, VERDICT_REAL coordinates[
   if ( current_oddy > oddy ) { oddy = current_oddy; }
   
   if( oddy > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( oddy, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( oddy, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( oddy, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( oddy, -VERDICT_DBL_MAX );
 
 }
 
@@ -1221,8 +1222,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_condition( int /*num_nodes*/, VERDICT_REAL coordin
   condition /= 3.0;
 
   if( condition > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( condition, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( condition, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( condition, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( condition, -VERDICT_DBL_MAX );
 
 }
 
@@ -1322,8 +1323,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_jacobian( int /*num_nodes*/, VERDICT_REAL coordina
   if ( current_jacobian < jacobian ) { jacobian = current_jacobian; }
 
   if( jacobian > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( jacobian, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( jacobian, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( jacobian, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( jacobian, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -1560,8 +1561,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_scaled_jacobian( int /*num_nodes*/, VERDICT_REAL c
     temp_norm_jac = jacobi;
 
   if( min_norm_jac> 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_norm_jac, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_norm_jac, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_norm_jac, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_norm_jac, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -1600,7 +1601,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths;
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(1,0,0):
@@ -1622,7 +1623,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(1,1,0):
@@ -1644,7 +1645,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(0,1,0):
@@ -1666,7 +1667,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(0,0,1):
@@ -1688,7 +1689,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(1,0,1):
@@ -1710,7 +1711,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(1,1,1):
@@ -1732,7 +1733,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
 
   // J(0,1,1):
@@ -1754,14 +1755,14 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( det < VERDICT_DBL_MIN ) { return 0; }
 
   shear = det / lengths; 
-  min_shear = VERDICT_MIN( shear, min_shear );
+  min_shear = std::min( shear, min_shear );
 
   if( min_shear <= VERDICT_DBL_MIN )
     min_shear = 0;
   
   if( min_shear > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_shear, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_shear, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_shear, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_shear, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -1906,8 +1907,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_shape( int /*num_nodes*/, VERDICT_REAL coordinates
     min_shape = 0;
 
   if( min_shape > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_shape, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_shape, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_shape, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_shape, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -2017,14 +2018,14 @@ C_FUNC_DEF VERDICT_REAL v_hex_relative_size_squared( int /*num_nodes*/, VERDICT_
   {
     tau = det_sum / ( 8*detw);
 
-    tau = VERDICT_MIN( tau, 1.0/tau); 
+    tau = std::min( tau, 1.0/tau); 
 
     size = tau*tau; 
   }
 
   if( size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( size, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -2040,8 +2041,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_shape_and_size( int num_nodes, VERDICT_REAL coordi
   double shape_size = size * shape;
 
   if( shape_size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( shape_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( shape_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( shape_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( shape_size, -VERDICT_DBL_MAX );
 
 }
 
@@ -2060,8 +2061,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear_and_size( int num_nodes, VERDICT_REAL coordi
   double shear_size = shear * size; 
 
   if( shear_size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( shear_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( shear_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( shear_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( shear_size, -VERDICT_DBL_MAX );
 
 }
 
@@ -2525,11 +2526,11 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       double mag_efg2 = efg2.length();
       double mag_efg3 = efg3.length();
       
-      aspect_12 = safe_ratio( VERDICT_MAX( mag_efg1, mag_efg2 ) , VERDICT_MIN( mag_efg1, mag_efg2 ) );
-      aspect_13 = safe_ratio( VERDICT_MAX( mag_efg1, mag_efg3 ) , VERDICT_MIN( mag_efg1, mag_efg3 ) );
-      aspect_23 = safe_ratio( VERDICT_MAX( mag_efg2, mag_efg3 ) , VERDICT_MIN( mag_efg2, mag_efg3 ) );
+      aspect_12 = safe_ratio( std::max( mag_efg1, mag_efg2 ) , std::min( mag_efg1, mag_efg2 ) );
+      aspect_13 = safe_ratio( std::max( mag_efg1, mag_efg3 ) , std::min( mag_efg1, mag_efg3 ) );
+      aspect_23 = safe_ratio( std::max( mag_efg2, mag_efg3 ) , std::min( mag_efg2, mag_efg3 ) );
 
-      metric_vals->aspect = (VERDICT_REAL)VERDICT_MAX( aspect_12, VERDICT_MAX( aspect_13, aspect_23 ) );
+      metric_vals->aspect = (VERDICT_REAL)std::max( aspect_12, std::max( aspect_13, aspect_23 ) );
     }
     
     if(metrics_request_flag & V_HEX_SKEW)
@@ -2551,7 +2552,7 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
         double skewy = fabs(vec1 % vec3);
         double skewz = fabs(vec2 % vec3);
 
-        metric_vals->skew = (VERDICT_REAL)(VERDICT_MAX( skewx, VERDICT_MAX( skewy, skewz ) ));
+        metric_vals->skew = (VERDICT_REAL)(std::max( skewx, std::max( skewy, skewz ) ));
       }
     }
   
@@ -2561,11 +2562,11 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       VerdictVector efg13 = calc_hex_efg( 13, node_pos);
       VerdictVector efg23 = calc_hex_efg( 23, node_pos);
 
-      double taperx = fabs( safe_ratio( efg12.length(), VERDICT_MIN( efg1.length(), efg2.length())));
-      double tapery = fabs( safe_ratio( efg13.length(), VERDICT_MIN( efg1.length(), efg3.length())));
-      double taperz = fabs( safe_ratio( efg23.length(), VERDICT_MIN( efg2.length(), efg3.length())));
+      double taperx = fabs( safe_ratio( efg12.length(), std::min( efg1.length(), efg2.length())));
+      double tapery = fabs( safe_ratio( efg13.length(), std::min( efg1.length(), efg3.length())));
+      double taperz = fabs( safe_ratio( efg23.length(), std::min( efg2.length(), efg3.length())));
       
-      metric_vals->taper = (VERDICT_REAL)VERDICT_MAX(taperx, VERDICT_MAX(tapery, taperz));  
+      metric_vals->taper = (VERDICT_REAL)std::max(taperx, std::max(tapery, taperz));  
     }
   }
   
@@ -2982,7 +2983,7 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       if(det_sum > VERDICT_DBL_MIN && rel_size_error != VERDICT_TRUE)
       {
         double tau = det_sum / ( 8 * detw );
-        metric_vals->relative_size_squared = (VERDICT_REAL)VERDICT_MIN( tau*tau, 1.0/tau/tau);
+        metric_vals->relative_size_squared = (VERDICT_REAL)std::min( tau*tau, 1.0/tau/tau);
       }
       else
         metric_vals->relative_size_squared = 0.0;
@@ -3022,7 +3023,7 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       static const double HEX_STRETCH_SCALE_FACTOR = sqrt(3.0);
       double min_edge=length_squared[0];
       for(int j=1; j<12; j++)
-        min_edge = VERDICT_MIN(min_edge, length_squared[j]);
+        min_edge = std::min(min_edge, length_squared[j]);
 
       double max_diag = diag_length(1, coordinates);
         
@@ -3046,104 +3047,104 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
   //take care of any overflow problems
   //aspect
   if( metric_vals->aspect > 0 )
-    metric_vals->aspect = (VERDICT_REAL) VERDICT_MIN( metric_vals->aspect, VERDICT_DBL_MAX );
+    metric_vals->aspect = (VERDICT_REAL) std::min( metric_vals->aspect, VERDICT_DBL_MAX );
   else
-    metric_vals->aspect = (VERDICT_REAL) VERDICT_MAX( metric_vals->aspect, -VERDICT_DBL_MAX );
+    metric_vals->aspect = (VERDICT_REAL) std::max( metric_vals->aspect, -VERDICT_DBL_MAX );
 
   //skew
   if( metric_vals->skew > 0 )
-    metric_vals->skew = (VERDICT_REAL) VERDICT_MIN( metric_vals->skew, VERDICT_DBL_MAX );
+    metric_vals->skew = (VERDICT_REAL) std::min( metric_vals->skew, VERDICT_DBL_MAX );
   else
-    metric_vals->skew = (VERDICT_REAL) VERDICT_MAX( metric_vals->skew, -VERDICT_DBL_MAX );
+    metric_vals->skew = (VERDICT_REAL) std::max( metric_vals->skew, -VERDICT_DBL_MAX );
 
   //taper
   if( metric_vals->taper > 0 )
-    metric_vals->taper = (VERDICT_REAL) VERDICT_MIN( metric_vals->taper, VERDICT_DBL_MAX );
+    metric_vals->taper = (VERDICT_REAL) std::min( metric_vals->taper, VERDICT_DBL_MAX );
   else
-    metric_vals->taper = (VERDICT_REAL) VERDICT_MAX( metric_vals->taper, -VERDICT_DBL_MAX );
+    metric_vals->taper = (VERDICT_REAL) std::max( metric_vals->taper, -VERDICT_DBL_MAX );
 
   //volume
   if( metric_vals->volume > 0 )
-    metric_vals->volume = (VERDICT_REAL) VERDICT_MIN( metric_vals->volume, VERDICT_DBL_MAX );
+    metric_vals->volume = (VERDICT_REAL) std::min( metric_vals->volume, VERDICT_DBL_MAX );
   else
-    metric_vals->volume = (VERDICT_REAL) VERDICT_MAX( metric_vals->volume, -VERDICT_DBL_MAX );
+    metric_vals->volume = (VERDICT_REAL) std::max( metric_vals->volume, -VERDICT_DBL_MAX );
 
   //stretch
   if( metric_vals->stretch > 0 )
-    metric_vals->stretch = (VERDICT_REAL) VERDICT_MIN( metric_vals->stretch, VERDICT_DBL_MAX );
+    metric_vals->stretch = (VERDICT_REAL) std::min( metric_vals->stretch, VERDICT_DBL_MAX );
   else
-    metric_vals->stretch = (VERDICT_REAL) VERDICT_MAX( metric_vals->stretch, -VERDICT_DBL_MAX );
+    metric_vals->stretch = (VERDICT_REAL) std::max( metric_vals->stretch, -VERDICT_DBL_MAX );
 
   //diagonal ratio
   if( metric_vals->diagonal_ratio > 0 )
-    metric_vals->diagonal_ratio = (VERDICT_REAL) VERDICT_MIN( metric_vals->diagonal_ratio, VERDICT_DBL_MAX );
+    metric_vals->diagonal_ratio = (VERDICT_REAL) std::min( metric_vals->diagonal_ratio, VERDICT_DBL_MAX );
   else
-    metric_vals->diagonal_ratio = (VERDICT_REAL) VERDICT_MAX( metric_vals->diagonal_ratio, -VERDICT_DBL_MAX );
+    metric_vals->diagonal_ratio = (VERDICT_REAL) std::max( metric_vals->diagonal_ratio, -VERDICT_DBL_MAX );
 
   //dimension
   if( metric_vals->dimension > 0 )
-    metric_vals->dimension = (VERDICT_REAL) VERDICT_MIN( metric_vals->dimension, VERDICT_DBL_MAX );
+    metric_vals->dimension = (VERDICT_REAL) std::min( metric_vals->dimension, VERDICT_DBL_MAX );
   else
-    metric_vals->dimension = (VERDICT_REAL) VERDICT_MAX( metric_vals->dimension, -VERDICT_DBL_MAX );
+    metric_vals->dimension = (VERDICT_REAL) std::max( metric_vals->dimension, -VERDICT_DBL_MAX );
 
   //oddy
   if( metric_vals->oddy > 0 )
-    metric_vals->oddy = (VERDICT_REAL) VERDICT_MIN( metric_vals->oddy, VERDICT_DBL_MAX );
+    metric_vals->oddy = (VERDICT_REAL) std::min( metric_vals->oddy, VERDICT_DBL_MAX );
   else
-    metric_vals->oddy = (VERDICT_REAL) VERDICT_MAX( metric_vals->oddy, -VERDICT_DBL_MAX );
+    metric_vals->oddy = (VERDICT_REAL) std::max( metric_vals->oddy, -VERDICT_DBL_MAX );
 
   //condition
   if( metric_vals->condition > 0 )
-    metric_vals->condition = (VERDICT_REAL) VERDICT_MIN( metric_vals->condition, VERDICT_DBL_MAX );
+    metric_vals->condition = (VERDICT_REAL) std::min( metric_vals->condition, VERDICT_DBL_MAX );
   else
-    metric_vals->condition = (VERDICT_REAL) VERDICT_MAX( metric_vals->condition, -VERDICT_DBL_MAX );
+    metric_vals->condition = (VERDICT_REAL) std::max( metric_vals->condition, -VERDICT_DBL_MAX );
 
   //jacobian
   if( metric_vals->jacobian > 0 )
-    metric_vals->jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->jacobian, VERDICT_DBL_MAX );
+    metric_vals->jacobian = (VERDICT_REAL) std::min( metric_vals->jacobian, VERDICT_DBL_MAX );
   else
-    metric_vals->jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->jacobian, -VERDICT_DBL_MAX );
+    metric_vals->jacobian = (VERDICT_REAL) std::max( metric_vals->jacobian, -VERDICT_DBL_MAX );
 
   //scaled_jacobian
   if( metric_vals->scaled_jacobian > 0 )
-    metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
+    metric_vals->scaled_jacobian = (VERDICT_REAL) std::min( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
   else
-    metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
+    metric_vals->scaled_jacobian = (VERDICT_REAL) std::max( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
 
   //shear
   if( metric_vals->shear > 0 )
-    metric_vals->shear = (VERDICT_REAL) VERDICT_MIN( metric_vals->shear, VERDICT_DBL_MAX );
+    metric_vals->shear = (VERDICT_REAL) std::min( metric_vals->shear, VERDICT_DBL_MAX );
   else
-    metric_vals->shear = (VERDICT_REAL) VERDICT_MAX( metric_vals->shear, -VERDICT_DBL_MAX );
+    metric_vals->shear = (VERDICT_REAL) std::max( metric_vals->shear, -VERDICT_DBL_MAX );
 
   //shape
   if( metric_vals->shape > 0 )
-    metric_vals->shape = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape, VERDICT_DBL_MAX );
+    metric_vals->shape = (VERDICT_REAL) std::min( metric_vals->shape, VERDICT_DBL_MAX );
   else
-    metric_vals->shape = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape, -VERDICT_DBL_MAX );
+    metric_vals->shape = (VERDICT_REAL) std::max( metric_vals->shape, -VERDICT_DBL_MAX );
 
   //relative_size_squared
   if( metric_vals->relative_size_squared > 0 )
-    metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MIN( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
+    metric_vals->relative_size_squared = (VERDICT_REAL) std::min( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
   else
-    metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MAX( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
+    metric_vals->relative_size_squared = (VERDICT_REAL) std::max( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
 
   //shape_and_size
   if( metric_vals->shape_and_size > 0 )
-    metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape_and_size, VERDICT_DBL_MAX );
+    metric_vals->shape_and_size = (VERDICT_REAL) std::min( metric_vals->shape_and_size, VERDICT_DBL_MAX );
   else
-    metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
+    metric_vals->shape_and_size = (VERDICT_REAL) std::max( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
 
   //shear_and_size
-  if( metric_vals->shear_and_size > 0 ) metric_vals->shear_and_size = (VERDICT_REAL) VERDICT_MIN( metric_vals->shear_and_size, VERDICT_DBL_MAX );
+  if( metric_vals->shear_and_size > 0 ) metric_vals->shear_and_size = (VERDICT_REAL) std::min( metric_vals->shear_and_size, VERDICT_DBL_MAX );
   else
-    metric_vals->shear_and_size = (VERDICT_REAL) VERDICT_MAX( metric_vals->shear_and_size, -VERDICT_DBL_MAX );
+    metric_vals->shear_and_size = (VERDICT_REAL) std::max( metric_vals->shear_and_size, -VERDICT_DBL_MAX );
   
   //distortion
   if( metric_vals->distortion > 0 )
-    metric_vals->distortion = (VERDICT_REAL) VERDICT_MIN( metric_vals->distortion, VERDICT_DBL_MAX );
+    metric_vals->distortion = (VERDICT_REAL) std::min( metric_vals->distortion, VERDICT_DBL_MAX );
   else
-    metric_vals->distortion = (VERDICT_REAL) VERDICT_MAX( metric_vals->distortion, -VERDICT_DBL_MAX );
+    metric_vals->distortion = (VERDICT_REAL) std::max( metric_vals->distortion, -VERDICT_DBL_MAX );
 
 }
 

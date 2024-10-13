@@ -439,19 +439,10 @@ function build_qt6_tools
     fi
 
     cd ${QT6_TOOLS_BUILD_DIR}
-    copts="-DQt6_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
-    copts="${copts} -DCMAKE_INSTALL_PREFIX:PATH=${QT6_INSTALL_DIR}"
-    copts="${copts} -DCMAKE_CXX_STANDARD:STRING=17"
-    copts="${copts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
-    info "qt6 tools options: $copts"
-    info "cmake_install ${CMAKE_INSTALL}"
-    info "cmake_command ${CMAKE_COMMAND}"
-    qt6_path="${CMAKE_INSTALL}:$PATH"
-    info "qt6 tools path: $qt6_path"
    
     info "Configuring Qt6 tools . . . "
-    env PATH="${qt6_path}" CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${CMAKE_COMMAND} ${copts} ../${QT6_TOOLS_SOURCE_DIR}
+    env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
+        ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_TOOLS_SOURCE_DIR}
 
     info "Building Qt6 tools . . . "
     ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
@@ -492,19 +483,10 @@ function build_qt6_svg
     fi
 
     cd ${QT6_SVG_BUILD_DIR}
-    copts="-DQt6_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
-    copts="${copts} -DCMAKE_INSTALL_PREFIX:PATH=${QT6_INSTALL_DIR}"
-    copts="${copts} -DCMAKE_CXX_STANDARD:STRING=17"
-    copts="${copts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
-    info "qt6 svg options: $copts"
-    info "cmake_install ${CMAKE_INSTALL}"
-    info "cmake_command ${CMAKE_COMMAND}"
-    qt6_path="${CMAKE_INSTALL}:$PATH"
-    info "qt6 svg path: $qt6_path"
 
     info "Configuring Qt6 svg . . . "
-    env PATH="${qt6_path}" CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${CMAKE_COMMAND} ${copts} ../${QT6_SVG_SOURCE_DIR} 
+    env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
+        ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_SVG_SOURCE_DIR}
 
     info "Building Qt6 svg . . . "
     ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS

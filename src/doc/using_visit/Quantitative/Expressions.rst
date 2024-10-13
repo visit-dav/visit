@@ -323,6 +323,13 @@ Logical AND Operator (``&``) : ``exprL & exprR``
     probably most useful for expressions involving integer data but can be
     applied to expressions involving any type.
 
+.. _Modulo_Expression_Operator:
+
+Modulo Operator (``%``) : ``exprL % exprR``
+    Creates a new expression which is everywhere the first argument, ``exprL``, modulo (e.g. remainder after dividing) the second argument, ``exprR``.
+    Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>__` function.
+    Attempts to divide by zero are detected and an exception is thrown.
+
 .. _Associative_Expression_Operator:
 
 Associative Operator (``()``) : ``( expr0 OP expr1 )``
@@ -383,8 +390,9 @@ Min Function (``min()``) : ``min(expr0, exrp1 [, ...])``
 .. _Modulo_Expression_Function:
 
 Modulo Function (``mod()``) : ``mod(expr0,exrp1)``
-    Creates a new expression which is everywhere the first argument, ``expr0``,
-    modulo the second argument, ``expr1``.
+    Creates a new expression which is everywhere the first argument, ``expr0``, modulo (e.g. remainder after dividing) the second argument, ``expr1``.
+    Uses the C/C++ math library's `fmod() <https://man7.org/linux/man-pages/man3/fmod.3p.html>__` function.
+    Attempts to divide by zero are detected and an exception is thrown.
 
 .. _Random_Expression_Function:
 
@@ -2257,6 +2265,12 @@ In cases where an expression involves the *output* of an operator, or the operat
 The :ref:`DeferExpression operator` is designed for this purpose.
 It will cause expressions in its list to be evaluated at the time of it's own execution in the pipeline.
 
-
 Automatic expressions
 ~~~~~~~~~~~~~~~~~~~~~
+
+For databases with small numbers of variables, VisIt_ will create several convenient expressions automatically.
+For example, for every *vector* variable, it will create vector magnitude expressions.
+However, for databases with a large number of variables (say more than 1000), this process of *speculative* expression generation can become onerous and a performance issue.
+So, it is disabled for databases for large numbers of variables.
+If users encounter a situation where speculative expression generation was skipped and they really, really want it and are willing to suffer through whatever the associated performance cost may be, they can exit VisIt_ and set an environment variable, ``VISIT_FORCE_SPECULATIVE_EXPRESSION_GENERATION`` and re-launch VisIt_ with that variable set to a non-zero integer value.
+If a user is running client/server, this environment variable will need to be set on both client and server.

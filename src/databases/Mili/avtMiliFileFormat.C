@@ -636,6 +636,9 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 //
 //    Alister Maguire, Fri Mar  6 10:55:34 PST 2020
 //    Adding ghost zones to aid the pick operator.
+// 
+//    Justin Privitera, Wed Aug 28 14:57:42 PDT 2024
+//    Remove duplicated loop for ghost nodes.
 //
 // ****************************************************************************
 
@@ -809,13 +812,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         ghostZones->SetNumberOfTuples(nCells);
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
-
-        for (int i = 0; i < nNodes; ++i)
-        {
-            ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
-                NODE_NOT_APPLICABLE_TO_PROBLEM);
-        }
 
         for (int i = 0; i < nCells; ++i)
         {
@@ -3208,6 +3204,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Creation:   April 9, 2019
 //
 //  Modifications
+//    Justin Privitera, Tue Aug 27 11:40:54 PDT 2024
+//    Took quotes off of AUXILIARY_DATA_IDENTIFIERS.
 //
 // ****************************************************************************
 
@@ -3224,7 +3222,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
     {
         return NULL;
     }
@@ -3234,7 +3232,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         ReadMesh(dom);
     }
 
-    if (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") == 0)
+    if (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
         //
         // Retrieve the node/zone labels.

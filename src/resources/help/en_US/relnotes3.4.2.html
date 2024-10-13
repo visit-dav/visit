@@ -30,22 +30,60 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Enabled "Tunnel data connections through SSH" in the LLNL RZ host profiles where it was missing.</li>
   <li>Removed the obsolete LLNL host profiles for RZTopaz, Surface and Vulcan.</li>
   <li>Fixed a bug where the LLNL host profiles for Boraxo, Dane and Ruby didn't get installed in some situations.</li>
+  <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
+  <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
+  <li>Fixed bug with Volume plot when SILRestriction applied, and when Composite rendering caused problem when a different RendererType used directly afterwards.</li>
+  <li>The Blueprint writer no longer writes the wrong path to root files when specifying a directory to export files to.</li>
+  <li>The Blueprint writer now correctly puts the right cycle number in file names.</li>
+  <li>Fixed a bug in zonetype-label expression where unknown zone types would render a weird symbol, <code>&quot;?</code>.</li>
+  <li>Disabled warning message regarding skipping of speculative expression generation for databases with many variables. For more information, read our documentation about <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html#automatic-expressions">automatic expressions</a>.</li>
+  <li>Forced VTK file exports to use VTK data file format 4.2 instead of the new, not backwards compatible 5.1.</li>
+  <li>Fixed a bug where the opaque geometry in an image containing both opaque and transparent geometry wouldn't be rendered poperly when rendered using scalable rendering.</li>
+  <li>Fixed a bug where saving an image with transparent geometry would hang when using scalable rendering.</li>
+  <li>Fixed a bug where perspective mode set to `off` in config files would not be restored correctly.</li>
+  <li>Fixed an issue in the Mili plugin where requesting OriginalZoneLabels and OriginalNodeLabels did not work as intended.</li>
+  <li>Fixed a bug in the Blueprint reader so it will use <i>elements/offsets</i>  for unstructured topologies, when present.</li>
+  <li>Fixed a bug with transparent rendering where the transparent portions of the image were rendered with a white cast when in scalable rendering mode and all the geometry was on the first processor.</li>
+  <li>Fixed a bug with point glyphing where points would be 'lost' and other miscolered if poly-vertex cells were present in the dataset.</li>
+  <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
+  <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
+  <li>ChooseCenter with a mouse on Scatter plot now works.</li>
+  <li>Fixed an issue causing species set selection to only work on fields that were represented as floating point data.</li>
+  <li>Fixed a bug in the Plaintext Reader causing reading variable names that were single-characters to fail.</li>
+  <li>Fixed a bug where the operator attribute windows will show the default attributes when displaying the attributes for an operator applied to a plot after restoring a session. The plots displayed in the visualization windows will be correct, just the attributes displayed in the attribute window will be incorrect. This happens with session files saved with releases 3.4 and 3.4.1. To fix the issue you will need to save a new session file using a newer version of VisIt. If you restored a session with a bad session file, you will need to change the attributes of any affected operators before saving the new session file.</li>
 </ul>
-
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
 <ul>
   <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
   <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Windows to easier find more options.</li>
   <li>A host profile has been added for running on LLNL's RZVernal system.</li>
+
+  <li>The Blueprint reader and writer now supports mixed element topologies.</li>
+  <li>The <code>VISIT_VERSION_GE()</code> macro useful in detecting the VisIt version being used at compile time has been made public in its own header file, <code>visit-version.h</code>, which is found in <code>VISIT_INSTALL/include/visit/include</code>.</li>
+  <li>The Blueprint writer lets users specify Blueprint write options.</li>
+  <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
+  <li>Host profiles for KAUST have been updated.</li>
+  <li>The function <code>GetDefaultFileOpenOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
+  <li>The function <code>GetExportOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
+  <li>Re-enabled support for using VTKm, which was removed in the 3.4.0 release.</li>
+  <li>Added species set support to the Blueprint Reader.</li>
+  <li>Saving results of time queries to curve files now uses query name and/or variable names as curve names instead of just 'Curve'.</li>
   <li>Curves are now supported in Xdmf files. They are handled as 2DRectMesh objects with >1 points in X and 1 point in Y.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.4.2</font></b></p>
 <ul>
-  <li>Developer Changes 1</li>
-  <li>Developer Changes 2</li>
+  <li>Updated Conduit to 0.9.2.</li>
+  <li>Docker containers were added for RockyLinux (RHEL compatible).</li>
+  <li>Qwt is now optional, but built by default. If you encounter issues with Qwt when running build_visit, add <code>--no-qwt</code> to the build_visit command line to disable Qwt. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
+  <li>Added ICE-T support for Windows builds.</li>
+  <li>Fixed bug where printing the build_visit log file location prepended extra paths.</li>
+  <li>Fixed glitch that prevented VISIT_CXX_FLAGS defined in config-site file from being applied.</li>
+  <li>Removed the config site files for rztopaz and quartz since those machines have been retired.</li>
+  <li>Updated Uintah to 2.6.3.</li>
+  <li>Documented the -norun option in visit --fullhelp.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

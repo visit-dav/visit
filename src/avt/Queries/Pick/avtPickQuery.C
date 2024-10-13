@@ -2036,6 +2036,10 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
 //
 //  Programmer: Matt Larsen
 //  Creation:   May 4, 2017
+// 
+//  Modifications:
+//    Justin Privitera, Fri Aug 30 11:44:59 PDT 2024
+//    Removed quotes from AUXILIARY_DATA_IDENTIFIERS.
 //
 // ****************************************************************************
 bool
@@ -2061,7 +2065,7 @@ avtPickQuery::GetElementIdByLabel(const std::string &elementLabel,
     avtDataObject_p dataObject = this->GetInput();
     VoidRefList result;
     void * args = NULL;
-    const char * type ="AUXILIARY_DATA_IDENTIFIERS";
+    const char * type = AUXILIARY_DATA_IDENTIFIERS;
     TRY
     {
         dataObject->GetOriginatingSource()->GetVariableAuxiliaryData(type, args, contract_p, result);

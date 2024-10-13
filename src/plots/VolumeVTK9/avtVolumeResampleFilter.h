@@ -12,8 +12,8 @@
 #include <avtDatasetToDatasetFilter.h>
 
 #include <VolumeAttributes.h>
+#include <avtResampleFilter.h>
 
-class avtResampleFilter;
 
 // ****************************************************************************
 //  Class: avtVolumeResampleFilter
@@ -24,28 +24,32 @@ class avtResampleFilter;
 //  Creation:   July 11, 2023 
 //
 //  Modifications:
+//    Kathleen Biagas, Monday July 8, 2024
+//    Inherit from avtResampleFilter. Override it's Execute method.
+//    Rename atts to volAtts to distinguish from avtResampleFilter's atts
+//    which are InternalResampleAttributes.
 //
 // ****************************************************************************
 
-class avtVolumeResampleFilter : public avtDatasetToDatasetFilter
+class avtVolumeResampleFilter : public avtResampleFilter
 {
   public:
-                             avtVolumeResampleFilter(const VolumeAttributes &);
+                             avtVolumeResampleFilter(
+                                 const InternalResampleAttributes *,
+                                 const VolumeAttributes &);
+
     virtual                 ~avtVolumeResampleFilter();
 
     virtual const char      *GetType(void) { return "avtVolumeResampleFilter"; };
     virtual const char      *GetDescription(void)
                                   { return "Volume resampling"; };
-
   protected:
-    VolumeAttributes         atts;
-    avtResampleFilter       *resampleFilter;
 
     void                     Execute(void) override;
-    avtContract_p            ModifyContract(avtContract_p) override;
-    void                     VerifyInput(void) override;
-    bool                     FilterUnderstandsTransformedRectMesh() override
-                                 { return true; }
+
+  private:
+    VolumeAttributes         volAtts;
+
     int                      DataMustBeResampled(avtDataObject_p input);
 };
 

@@ -26,6 +26,7 @@
 #include <avtBinaryAddExpression.h>
 #include <avtBinaryAndExpression.h>
 #include <avtBinaryDivideExpression.h>
+#include <avtBinaryModuloExpression.h>
 #include <avtBinaryMultiplyExpression.h>
 #include <avtBinaryPowerExpression.h>
 #include <avtBinarySubtractExpression.h>
@@ -234,6 +235,8 @@ avtBinaryExpr::CreateFilters(ExprPipelineState *state)
         f = new avtBinaryPowerExpression();
     else if (op == '&')
         f = new avtBinaryAndExpression();
+    else if (op == '%')
+        f = new avtBinaryModuloExpression();
     else
     {
         string error =

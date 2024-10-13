@@ -189,11 +189,7 @@ function error
              "the VisIt project via https://visit-help.llnl.gov. You may "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
              "so it will fit within the size limits for attachments."
-        if [[ -n "$START_DIR" ]]; then
-            info "Log file full path: " ${START_DIR}/${LOG_FILE}
-        else
-            info "Log file full path: " $(pwd)/${LOG_FILE}
-        fi
+        info "Log file full path: " ${LOG_FILE}
     fi
     exit 1
 }

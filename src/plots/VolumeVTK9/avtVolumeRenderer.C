@@ -40,13 +40,6 @@
   #define NO_DATA_VALUE -1e+37
 #endif
 
-#ifndef MAX
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
-
 // #define LOCAL_DEBUG std::cerr << __LINE__ << "  " << mName
 #define LOCAL_DEBUG debug5 << mName
 

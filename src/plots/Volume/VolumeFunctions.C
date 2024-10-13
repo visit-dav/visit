@@ -30,17 +30,11 @@
 #include <InvalidLimitsException.h>
 #include <ImproperUseException.h>
 #include <string>
+#include <algorithm>
 
 const double PI = atan(1.0)*4.0;
 
 #define NO_DATA_VALUE -1e+37
-
-#ifndef MAX
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
 
 // ****************************************************************************
 //  Method: VolumeGetRange
@@ -784,18 +778,18 @@ VolumeGradient_Sobel(vtkRectilinearGrid  *grid, vtkDataArray *opac,
                     for (int c=0; c<3; c++)
                     {
                         int kk = k-1+c;
-                        kk = MAX(0, MIN(nz-1, kk));
+                        kk = std::max(0, std::min(nz-1, kk));
                         int kny = kk * ny;
                         for (int b=0; b<3; b++)
                         {
                             int jj = j-1+b;
-                            jj = MAX(0, MIN(ny-1, jj));
+                            jj = std::max(0, std::min(ny-1, jj));
                             int row = (kny + jj) * nx;
 
                             for (int a=0; a<3; a++)
                             {
                                 int ii = i-1+a;
-                                ii = MAX(0, MIN(nx-1, ii));
+                                ii = std::max(0, std::min(nx-1, ii));
 
                                 float val = fopac[row + ii];
                                 if (val < NO_DATA_VALUE)
@@ -831,18 +825,18 @@ VolumeGradient_Sobel(vtkRectilinearGrid  *grid, vtkDataArray *opac,
                     for (int c=0; c<3; c++)
                     {
                         int kk = k-1+c;
-                        kk = MAX(0, MIN(nz-1, kk));
+                        kk = std::max(0, std::min(nz-1, kk));
                         int kny = kk * ny;
                         for (int b=0; b<3; b++)
                         {
                             int jj = j-1+b;
-                            jj = MAX(0, MIN(ny-1, jj));
+                            jj = std::max(0, std::min(ny-1, jj));
                             int row = (kny + jj) * nx;
 
                             for (int a=0; a<3; a++)
                             {
                                 int ii = i-1+a;
-                                ii = MAX(0, MIN(nx-1, ii));
+                                ii = std::max(0, std::min(nx-1, ii));
 
                                 float val = opac->GetTuple1(row + ii);
                                 if (val < NO_DATA_VALUE)
@@ -1034,7 +1028,7 @@ VolumeCalculateGradient_SPH(vtkDataSet *ds, vtkDataArray *opac,
                 r[2] = p[2] - r[2];
                 h = r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
                 h = sqrt(h);
-                hmax = MAX(h,hmax);
+                hmax = std::max(h,hmax);
                 //cout<<"hmax is now: "<<hmax<<endl;
             }
             //calculate the gradient
