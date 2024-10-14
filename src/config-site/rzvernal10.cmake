@@ -18,8 +18,12 @@ VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
+# Using cc and CC, which are part of cce and are the CRAY compilers.
+# Using them to get externals cray_dset_detect and cray_sset_detet from
+# libavtpipeline_ser.so. They are in the library
+# /opt/cray/pe/cce/18.0.0/cce/x86_64/lib/libu.so.1
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER cc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER CC TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
