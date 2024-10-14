@@ -73,8 +73,10 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     virtual void        OnMouseWheelBackward();
 
   protected:
+#if 0
     int                 lastGuideX;
     int                 lastGuideY;
+#endif
 
     vtkPolyData                 *guideLines;
     vtkPolyDataMapper2D         *guideLinesMapper;
@@ -83,9 +85,11 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     virtual void        StartRubberBand(int, int);
     virtual void        EndRubberBand();
     virtual void        UpdateRubberBand(int, int, int, int, int, int);
+#if 0
     void                UpdateGuideLines(int, int, int, int, int, int);
     
     void                DrawAllGuideLines(int, int, int, int);
+#endif
    
     void                DrawGuideLines(int, int, int, int, const bool which[8]);
     void                DrawGuideLine(int, int, int, int);
