@@ -16,27 +16,49 @@
 #   Brad Whitlock, Tue Jan 25 12:28:55 PST 2011
 #   I made Mac 10.x and later use darwin-x86_64.
 #
+#   Eric Brugger, Tue Oct  8 10:56:56 PDT 2024
+#   I added support for gpu architectures on x86_64 systems. I removed
+#   support for obsolete architectures. I changed the default linux
+#   architecture to be x86_64 and added support for ppc64le.
+#
 #****************************************************************************
+
+function(GET_GPU_ARCHITECTURE arch)
+    list(APPEND dirs
+	 "/opt/rocm-6.2.2/lib/llvm/bin/offload-arch"
+	 "/opt/rocm-6.2.1/lib/llvm/bin/offload-arch"
+	 "/opt/rocm-6.2.0/lib/llvm/bin/offload-arch"
+	 "/opt/rocm-6.1.3/lib/llvm/bin/offload-arch"
+	 "/opt/rocm-6.1.2/lib/llvm/bin/offload-arch"
+	 "/opt/rocm-6.1.1/lib/llvm/bin/offload-arch"
+         "/opt/rocm-6.1.0/lib/llvm/bin/offload-arch")
+
+    set(gpu_arch "None")
+    foreach(dir ${dirs})
+        if(EXISTS ${dir})
+		execute_process(COMMAND ${dir} OUTPUT_VARIABLE gpu_arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+	    break()
+        endif()
+    endforeach()
+
+    set(${arch} ${gpu_arch} PARENT_SCOPE)
+endfunction()
 
 MACRO(DETERMINE_VISIT_ARCHITECTURE ARCH)
     IF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc")
-            SET(${ARCH} linux-ppc)
-        ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64")
-            SET(${ARCH} linux-ppc64)
+        IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64le")
+            SET(${ARCH} linux-ppc64le)
         ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+	    GET_GPU_ARCHITECTURE(gpu_arch)
+	    if(${gpu_arch} STREQUAL "None")
+                set(${ARCH} linux-x86_64)
+            else()
+                set(${ARCH} "linux-x86_64-${gpu_arch}")
+            endif()
+	    message(STATUS "ARCH=${${ARCH}}")
+        ELSE(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64le")
             SET(${ARCH} linux-x86_64)
-        ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ia64")
-            SET(${ARCH} linux-ia64)
-        ELSE(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc")
-            SET(${ARCH} linux-intel)
-        ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc")
-    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        IF($ENV{OBJECT_MODE} STREQUAL "32")
-            SET(${ARCH} "ibm-aix-pwr")
-        ELSE($ENV{OBJECT_MODE} STREQUAL "32")
-            SET(${ARCH} "ibm-aix-pwr64")
-        ENDIF($ENV{OBJECT_MODE} STREQUAL "32")
+        ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64le")
     ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
         IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
             EXECUTE_PROCESS(COMMAND uname -r
@@ -56,12 +78,6 @@ MACRO(DETERMINE_VISIT_ARCHITECTURE ARCH)
         ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
     ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
         SET(${ARCH} "freebsd-${CMAKE_SYSTEM_VERSION}")
-    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "IRIX")
-        SET(${ARCH} sgi-irix6-mips2)
-    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "SunOS")
-        SET(${ARCH} "sun4-${CMAKE_SYSTEM_VERSION}-sparc")
-    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Tru64")
-        SET(${ARCH} dec-osf1-alpha)
     ELSE(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         # Unhandled case. Make up a string.
         SET(VISITARCHTMP "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
