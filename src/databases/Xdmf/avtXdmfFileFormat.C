@@ -57,6 +57,16 @@
 #include <queue>
 #include <string>
 
+#if defined(_WIN32)
+// for _strnicmp
+#include <string.h>
+#define STRNCASECMP _strnicmp
+#else
+// for strcasecmp
+#include <strings.h>
+#define STRNCASECMP strncasecmp
+#endif
+
 using std::string;
 
 // ****************************************************************************
@@ -1624,13 +1634,16 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
 
         int block_origin = 0;
+        XdmfInt64 dimensions[XDMF_MAX_DIMENSION];
+        gridToExamine->GetTopology()->GetShapeDesc()->GetShape(dimensions);
         int spatial_dimension = this->GetSpatialDimensions(gridToExamine->GetGeometry()->GetGeometryType());
         int topological_dimension = this->GetTopologicalDimensions(gridToExamine->GetTopology()->GetTopologyType());
         double *extents = NULL;
 
         avtMeshType mt = AVT_UNSTRUCTURED_MESH;
-        if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYLINE &&
-            grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY) {
+        if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DRECTMESH &&
+            grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY &&
+            dimensions[1]>1 && dimensions[0]==1) {
             mt = AVT_UNKNOWN_MESH; // temporary placeholder for a curve object
         }
         else if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYVERTEX) {
@@ -1685,11 +1698,18 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
                 switch (attribute->GetAttributeType()) {
                     case (XDMF_ATTRIBUTE_TYPE_SCALAR): {
                         if (numComponents <= 1) {
-                            XdmfInt64 dimensions[XDMF_MAX_DIMENSION];
+                            // This lengthy if conditional is intended to really lock down the
+                            // manner in which an XY curve object is recognized in an Xdmf file.
+                            // It must be 2DRectMesh. The Y dimension must be of size 1 and
+                            // there must be an additional xml attrbute, GridPurpose, defined with
+                            // value "curve". That latter bit is outside Xdmf spec but because
+                            // it is handled as an xml attribute in the <Grid> tag, it should be ok.
                             grid->GetTopology()->GetShapeDesc()->GetShape(dimensions);
                             if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DRECTMESH &&
                                 grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVY &&
-                                dimensions[1]>1 && dimensions[0]==1) {
+                                dimensions[1]>1 && dimensions[0]==1 &&
+                                grid->Get("GridPurpose") &&
+                                !STRNCASECMP(grid->Get("GridPurpose"), "curve", 5)) {
                                 avtCurveMetaData *cmd = new avtCurveMetaData(attributeName.str());
                                 md->Add(cmd);
                                 curveToGridMap[attributeName.str()] = grid->GetName();
