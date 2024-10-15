@@ -49,10 +49,6 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-  #define strcasecmp stricmp
-#endif
-
 using std::array;
 using std::string;
 using std::vector;
@@ -656,19 +652,19 @@ avtVTKFileReader::ReadInDataset(int domain)
                 continue;
             }
 
-            if (!strcasecmp(expr_substrs[1].c_str(),"curve"))
+            if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"curve"))
                 vtype = Expression::CurveMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"scalar"))
+            else if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"scalar"))
                 vtype = Expression::ScalarMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"vector"))
+            else if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"vector"))
                 vtype = Expression::VectorMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"tensor"))
+            else if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"tensor"))
                 vtype = Expression::TensorMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"array"))
+            else if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"array"))
                 vtype = Expression::ArrayMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"material"))
+            else if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"material"))
                 vtype = Expression::Material;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"species"))
+            else if (StringHelpers::CaseInsensitiveEqual(expr_substrs[1].c_str(),"species"))
                 vtype = Expression::Species;
 
             Expression expr;

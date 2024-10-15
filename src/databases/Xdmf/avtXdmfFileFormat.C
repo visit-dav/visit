@@ -36,6 +36,7 @@
 #include <avtGhostData.h>
 
 #include <Expression.h>
+#include <StringHelpers.h>
 
 #include <InvalidDBTypeException.h>
 #include <InvalidSourceException.h>
@@ -56,16 +57,6 @@
 #include <iterator>
 #include <queue>
 #include <string>
-
-#if defined(_WIN32)
-// for _strnicmp
-#include <string.h>
-#define STRNCASECMP _strnicmp
-#else
-// for strcasecmp
-#include <strings.h>
-#define STRNCASECMP strncasecmp
-#endif
 
 using std::string;
 
@@ -1709,7 +1700,7 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
                                 grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVY &&
                                 dimensions[1]>1 && dimensions[0]==1 &&
                                 grid->Get("GridPurpose") &&
-                                !STRNCASECMP(grid->Get("GridPurpose"), "curve", 5)) {
+                                !StringHelpers::CaseInsensitiveEqual(grid->Get("GridPurpose"), "curve", 5)) {
                                 avtCurveMetaData *cmd = new avtCurveMetaData(attributeName.str());
                                 md->Add(cmd);
                                 curveToGridMap[attributeName.str()] = grid->GetName();

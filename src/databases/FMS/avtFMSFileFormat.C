@@ -327,7 +327,7 @@ FmsMetaDataGetString(FmsMetaData mdata, const std::string &key, std::string &val
         case FMS_STRING:
             if(FmsMetaDataGetString(mdata, &mdata_name, &str_value) == 0)
             {
-                if(strcasecmp(key.c_str(), mdata_name) == 0)
+                if(StringHelpers::CaseInsensitiveEqual(key.c_str(), mdata_name))
                 {
                     retval = true;
                     value = str_value;

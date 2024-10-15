@@ -35,7 +35,6 @@
 
 
 #ifdef _WIN32
-#define strncasecmp _strnicmp
 static unsigned long long
 v_strtoull(const char *__restrict str, char **__restrict endptr, int base)
 {
@@ -437,17 +436,17 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         JSONRootExpr &jexpr = root_md.Expression(expr_names[i]);
         
         Expression::ExprType vartype = Expression::Unknown;
-        if      (!strncasecmp(jexpr.Type().c_str(), "scalar", 6))
+        if      (StringHelpers::CaseInsensitiveEqual(jexpr.Type().c_str(), "scalar", 6))
             vartype = Expression::ScalarMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "vector", 6))
+        else if (StringHelpers::CaseInsensitiveEqual(jexpr.Type().c_str(), "vector", 6))
             vartype = Expression::VectorMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "tensor", 6))
+        else if (StringHelpers::CaseInsensitiveEqual(jexpr.Type().c_str(), "tensor", 6))
             vartype = Expression::TensorMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "array", 5))
+        else if (StringHelpers::CaseInsensitiveEqual(jexpr.Type().c_str(), "array", 5))
             vartype = Expression::ArrayMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "material", 8))
+        else if (StringHelpers::CaseInsensitiveEqual(jexpr.Type().c_str(), "material", 8))
             vartype = Expression::Material;
-        else if (!strncasecmp(jexpr.Type().c_str(), "species", 7))
+        else if (StringHelpers::CaseInsensitiveEqual(jexpr.Type().c_str(), "species", 7))
             vartype = Expression::Species;
         else
         {
