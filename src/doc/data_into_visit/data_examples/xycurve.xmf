@@ -2,7 +2,7 @@
 <!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
 <Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="2.0">
     <Domain>
-        <Grid Name="Curve" GridType="Uniform">
+        <Grid Name="Curve" GridType="Uniform" GridPurpose="Curve">
             <Topology TopologyType="2DRectMesh" NumberOfElements="1 12"/>
             <Geometry Type="VXVY">
                 <DataItem Format="XML" Dimensions="12">

@@ -328,6 +328,8 @@ We can represent XY curves in an Xdmf file with a special case for a ``2DRectMes
 The X coordinates of the ``2DRectMesh`` are the x-values of the xy pairs of the curve.
 The Y coordinates of the ``2DRectMesh`` are of size 1 and that 1 value is 0. 
 The y values of the curve are then represented as a node-centered ``Attribute`` with the same ``Dimensions`` as the ``2DRectMesh`` of ``"1 N"``.
+Finally, an extra XML attribute, ``GridPurpose`` on the ``<Grid>`` tag is *required* and should have value ``"Curve"``.
+This latter bit of logic falls outside the Xdmf data model specification but because it is handled as an XML attribute inside the ``<Grid>`` tag, it is otherwise ignored by Xdmf consumers.
 
 Here an example Xdmf file for an xy curve...
 
