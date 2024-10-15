@@ -2691,7 +2691,8 @@ class MainLauncher(object):
         for file in files:
             if os.path.exists(file):
                 p = subprocess.run(file, capture_output=True, text=True)
-                gpu_arch = p.stdout.rstrip()
+                if p.stdout != "":
+                    gpu_arch = p.stdout.rstrip()
                 break
 
         return gpu_arch
