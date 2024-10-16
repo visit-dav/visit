@@ -1323,7 +1323,7 @@ if [ "$beta" = "true" ]; then
    ln -s $version beta
 elif [ "$private" = "false" ]; then
    [ -e $version+ ] &&           mv $version+ $version
-   [ -e ./current ] &&           rm -f ./current
+   [ -e current ] &&             rm -f current
    ln -s $version current
 fi
 
