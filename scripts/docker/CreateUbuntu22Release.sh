@@ -4,7 +4,7 @@
 # scripts for building TP libs, and building, installing and testing VisIt.
 #
 # For use on LC.
-# 
+#
 # You must run this script on an allocated node, so first run:
 #   salloc -N 1 -t 300 -p pbatch
 #
@@ -19,7 +19,7 @@
 /collab/usr/gapps/lcweg/containers/scripts/enable-podman.sh
 
 podman build --userns-uid-map 0:0:1 --userns-uid-map 1:1:1999 --userns-uid-map 65534:2047:1 \
-    -f Dockerfile-ubuntu22 -t visitdev:3.4.2-ubuntu22 
+    -f Dockerfile-ubuntu22 -t visitdev:3.4.2-ubuntu22
 
 # optional: create a tar file for using the container at a later date.
 # podman save visitdev:3.4.2-ubuntu22 > visitdev3.4.2-ubuntu22.tar

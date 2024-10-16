@@ -3,13 +3,13 @@ MAINTAINER Kathleen Biagas<biagas2@llnl.gov>
 
 ENV TZ=America/Phoenix
 
-# the default repos for rockylinux use mirrors. 
+# the default repos for rockylinux use mirrors.
 # if there is difficulty running yum due to the mirrors, then
 # hand-modify /etc/yum.repos.d/* to comment out the mirrors and uncomment
 # the baseurl.
 # then the packages below will have to be installed by hand.
 
-RUN yum update -y && yum install -y yum-utils 
+RUN yum update -y && yum install -y yum-utils
 
 # enable the 'devel' repo, it has some packages we need but is not
 # enabled by default
@@ -71,7 +71,7 @@ RUN yum install -y \
     libxml2 \
     libxml2-devel \
     vim \
-    libffi-devel 
+    libffi-devel
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
