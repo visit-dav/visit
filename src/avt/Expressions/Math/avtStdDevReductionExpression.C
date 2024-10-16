@@ -70,7 +70,7 @@ avtStdDevReductionExpression::~avtStdDevReductionExpression()
  
 void
 avtStdDevReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                          int ncomponents, int ntuples)
+                          int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {

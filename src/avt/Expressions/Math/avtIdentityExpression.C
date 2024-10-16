@@ -75,7 +75,7 @@ avtIdentityExpression::~avtIdentityExpression()
  
 void
 avtIdentityExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                   int ncomponents, int ntuples)
+                                   int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     void *out_ptr = out->GetVoidPointer(0);
 

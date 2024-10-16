@@ -44,7 +44,7 @@ class EXPRESSION_API avtDeterminantExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual int               GetNumberOfComponentsInOutput(int)
                                           { return 1; };
 };

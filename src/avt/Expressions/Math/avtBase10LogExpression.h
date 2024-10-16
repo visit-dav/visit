@@ -54,7 +54,7 @@ class EXPRESSION_API avtBase10LogExpression : public avtUnaryMathExpression
 
   protected:
     virtual void           DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                       int ncomponents, int ntuples);
+                                       int ncomponents, int ntuples, vtkDataSet *in_ds);
 
     double                 defaultErrorValue;
     bool                   useDefaultOnError;

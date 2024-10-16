@@ -43,7 +43,7 @@ class EXPRESSION_API avtTensorMaximumShearExpression : public avtUnaryMathExpres
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual int               GetNumberOfComponentsInOutput(int) { return 1; };
 };
 

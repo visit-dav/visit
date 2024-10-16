@@ -39,7 +39,7 @@ class EXPRESSION_API avtCountReductionExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
 };
 
 

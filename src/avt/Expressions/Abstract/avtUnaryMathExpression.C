@@ -11,6 +11,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkPointData.h>
 
 #include <ImproperUseException.h>
@@ -285,7 +286,7 @@ avtUnaryMathExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
     // number.  So send in the input.  Really doesn't matter.
     //
     cur_mesh = in_ds;
-    DoOperation(data, dv, ncomps, nvals);
+    DoOperation(data, dv, ncomps, nvals, in_ds);
     cur_mesh = NULL;
 
     return dv;

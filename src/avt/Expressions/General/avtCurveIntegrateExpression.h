@@ -40,7 +40,7 @@ class EXPRESSION_API avtCurveIntegrateExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual avtVarType       GetVariableType(void) { return AVT_CURVE; };
 };
 

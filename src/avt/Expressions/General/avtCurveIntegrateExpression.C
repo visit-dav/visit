@@ -70,7 +70,7 @@ avtCurveIntegrateExpression::~avtCurveIntegrateExpression()
 
 void
 avtCurveIntegrateExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples)
+                                         int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     vtkRectilinearGrid *curve = vtkRectilinearGrid::SafeDownCast(cur_mesh);
     vtkDataArray *xcoords = curve->GetXCoordinates();

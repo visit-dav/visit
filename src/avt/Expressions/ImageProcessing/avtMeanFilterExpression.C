@@ -190,7 +190,7 @@ avtMeanFilterExpression::ProcessArguments(ArgsExpr *args,
 
     void
 avtMeanFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out, 
-        int ncomponents,int ntuples)
+        int ncomponents,int ntuples, vtkDataSet *in_ds)
 {
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID &&
             cur_mesh->GetDataObjectType() != VTK_STRUCTURED_GRID)

@@ -73,7 +73,7 @@ avtUnaryMinusExpression::~avtUnaryMinusExpression()
  
 void
 avtUnaryMinusExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                 int ncomponents, int ntuples)
+                                 int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     for (int i = 0 ; i < ntuples ; i++)
     {

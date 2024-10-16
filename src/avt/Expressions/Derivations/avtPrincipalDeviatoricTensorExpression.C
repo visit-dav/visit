@@ -76,7 +76,8 @@ avtPrincipalDeviatoricTensorExpression::~avtPrincipalDeviatoricTensorExpression(
 
 void
 avtPrincipalDeviatoricTensorExpression::DoOperation(vtkDataArray *in, 
-                                    vtkDataArray *out, int ncomps, int ntuples)
+                                    vtkDataArray *out, int ncomps, int ntuples,
+                                    vtkDataSet *in_ds)
 {
     if (ncomps == 9)
     {

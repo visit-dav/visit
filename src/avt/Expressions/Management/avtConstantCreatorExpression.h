@@ -62,7 +62,7 @@ class EXPRESSION_API avtConstantCreatorExpression
 
   protected:
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples);
+                                         int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
     virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);

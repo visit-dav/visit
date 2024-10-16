@@ -64,7 +64,8 @@ class EXPRESSION_API avtUnaryMathExpression : public avtSingleInputExpressionFil
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples) = 0;
+                                          int ncomponents, int ntuples, 
+                                          vtkDataSet *in_ds) = 0;
     virtual vtkDataArray     *CreateArray(vtkDataArray *);
     virtual int               GetNumberOfComponentsInOutput(int numInInput)
                                           { return numInInput; };

@@ -221,7 +221,7 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
 
 void
 avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in, 
-    vtkDataArray *out, int ncomponents, int ntuples)
+    vtkDataArray *out, int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     // Ensure we are dealing with scalar data
     if (ncomponents != 1)

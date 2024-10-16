@@ -99,7 +99,7 @@ avtAbelInversionExpression::PreExecute(void)
 
 void
 avtAbelInversionExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out, 
-                           int ncomponents,int ntuples)
+                           int ncomponents,int ntuples, vtkDataSet *in_ds)
 {
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {

@@ -67,7 +67,7 @@ avtLogicalNegationExpression::~avtLogicalNegationExpression()
  
 void
 avtLogicalNegationExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                      int ncomponents, int ntuples)
+                                      int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     int inncomps = in->GetNumberOfComponents();
     if (inncomps != 1)

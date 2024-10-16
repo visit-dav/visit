@@ -78,7 +78,7 @@ avtTimeExpression::~avtTimeExpression()
  
 void
 avtTimeExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
-                               int /*ncomponents*/, int ntuples)
+                               int /*ncomponents*/, int ntuples, vtkDataSet *in_ds)
 {
     double val = 0;
     switch (mode)

@@ -49,7 +49,7 @@ class EXPRESSION_API avtPerformColorTableLookupExpression : public avtUnaryMathE
     virtual int               GetNumberOfComponentsInOutput(int numInInput)
                                   { return 3; }
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
   private:
     enum LookupMapping         { Identity = 0, Log = 1, Skew = 2 } ;
     std::string                mLUTName;

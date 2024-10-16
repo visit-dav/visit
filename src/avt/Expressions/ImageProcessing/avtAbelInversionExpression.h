@@ -42,7 +42,7 @@ class EXPRESSION_API avtAbelInversionExpression : public avtUnaryMathExpression
 
     virtual void     PreExecute(void);
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *out, 
-                                 int ncomps, int ntuples);
+                                 int ncomps, int ntuples, vtkDataSet *in_ds);
 };
 
 

@@ -70,7 +70,7 @@ avtMinReductionExpression::~avtMinReductionExpression()
  
 void
 avtMinReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                          int ncomponents, int ntuples)
+                          int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     std::vector<double> comp_mins(ncomponents);
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)

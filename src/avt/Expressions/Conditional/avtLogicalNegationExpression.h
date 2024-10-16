@@ -44,7 +44,7 @@ class EXPRESSION_API avtLogicalNegationExpression : public avtUnaryMathExpressio
 
   protected:
     virtual void           DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                       int ncomps, int ntuples);
+                                       int ncomps, int ntuples, vtkDataSet *in_ds);
     virtual int            GetNumberOfComponentsInOutput(int) { return 1; };
     virtual vtkDataArray  *CreateArray(vtkDataArray *)
                                 { return vtkUnsignedCharArray::New(); };

@@ -71,7 +71,7 @@ avtEffectiveTensorExpression::~avtEffectiveTensorExpression()
 
 void
 avtEffectiveTensorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                   int ncomps, int ntuples)
+                                   int ncomps, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomps == 9)
     {

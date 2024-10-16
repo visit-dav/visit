@@ -70,7 +70,7 @@ avtInverseExpression::~avtInverseExpression()
  
 void
 avtInverseExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                  int ncomponents, int ntuples)
+                                  int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomponents == 9)
     {
