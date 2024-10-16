@@ -1162,8 +1162,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
         delete [] sandBuffer;
 
-        rv->GetPointData()->AddArray(ghostNodes);
-        rv->GetCellData()->AddArray(ghostZones);
+        // rv->GetPointData()->AddArray(ghostNodes);
+        // rv->GetCellData()->AddArray(ghostZones);
         ghostNodes->Delete();
         ghostZones->Delete();
     }
@@ -3534,7 +3534,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) &&
+         (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) != 0))
     {
         return NULL;
     }
@@ -3593,6 +3594,41 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         df = avtMaterial::Destruct;
 
         return (void*) mat;
+    }
+    else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        const char *mesh = varName;
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        intVector labelIds = miliClass->GetLabelIds()[dom];
+
+        int *myLabelIds = new int[labelIds.size()];
+        for (int i = 0; i < labelIds.size(); i ++)
+        {
+            myLabelIds[i] = labelIds[i];
+        }
+
+        vtkIntArray *rv = vtkIntArray::New();
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
+        rv->SetNumberOfComponents(1);
+
+        df = avtVariableCache::DestructVTKObject;
+
+        return (void *) rv;
     }
 
     return NULL;
