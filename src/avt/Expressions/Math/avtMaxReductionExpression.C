@@ -11,6 +11,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
+#include <vtkPointData.h>
 
 #include <ImproperUseException.h>
 #include <ExpressionException.h>
@@ -76,39 +77,38 @@ void
 avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
+    bool has_ghosts = false;
+    vtkDataArray *ghost_data = nullptr;
+
     if (centering == AVT_ZONECENT)
     {
-
+        const int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
+        for (int cellArrayId = 0; cellArrayId < ncellArray; cellArrayId ++)
+        {
+            vtkDataArray *currArray = in_ds->GetCellData()->GetArray(cellArrayId);
+            const std::string arrayName = currArray->GetName();
+            if (arrayName == "avtGhostZones")
+            {
+                has_ghosts = true;
+                ghost_data = currArray;
+                break;
+            }
+        }
     }
     else // node centered
     {
-
-    }
-
-
-    const int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
-    bool has_ghosts = false;
-    vtkDataArray *ghost_data = nullptr;
-    for (int cellArrayId = 0; cellArrayId < ncellArray; cellArrayId ++)
-    {
-        vtkDataArray *currArray = in_ds->GetCellData()->GetArray(cellArrayId);
-        const std::string arrayName = currArray->GetName();
-        std::cout << arrayName << std::endl;
-        if (arrayName == "avtGhostZones")
+        const int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
+        for (int pointArrayId = 0; pointArrayId < npointArray; pointArrayId ++)
         {
-            has_ghosts = true;
-            ghost_data = currArray;
-            break;
+            vtkDataArray *currArray = in_ds->GetPointData()->GetArray(pointArrayId);
+            const std::string arrayName = currArray->GetName();
+            if (arrayName == "avtGhostNodes")
+            {
+                has_ghosts = true;
+                ghost_data = currArray;
+                break;
+            }
         }
-    }
-
-    std::cout << "ntuples " << ntuples << std::endl;
-    std::cout << "ncomponents " << ncomponents << std::endl;
-
-    if (has_ghosts)
-    {
-        std::cout << "ghost_data->GetNumberOfTuples() " << ghost_data->GetNumberOfTuples() << std::endl;
-        std::cout << "ghost_data->GetNumberOfComponents() " << ghost_data->GetNumberOfComponents() << std::endl;
     }
 
     if (has_ghosts)
@@ -168,8 +168,6 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                     comp_max = val;
                 }
             }
-
-            std::cout << comp_max << std::endl;
 
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
