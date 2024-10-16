@@ -64,10 +64,7 @@ Zoom2D_SetLineProperties(vtkPolyData *guideLines,
 //    if the shift key was released before the left mouse button.
 //
 //    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
-//    I modified the class to use the APPLE path in all cases. I also
-//    changed the cues to be four lines, two parallel to the Y axis
-//    extending from xmin to xmax and two parallel to the X axis extending
-//    from ymin to ymax.
+//    I modified the class to use the APPLE path in all cases.
 //
 // ****************************************************************************
 
@@ -86,15 +83,15 @@ Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
     Zoom2D_SetLineProperties(guideLines, 2, 3, false);
 
     vtkPoints *pts = vtkPoints::New();
-    pts->SetNumberOfPoints(8);
+    pts->SetNumberOfPoints(12);
     guideLines->SetPoints(pts);
     pts->Delete();
 
     vtkCellArray *lines  = vtkCellArray::New();
-    vtkIdType  ids[4][2] = {
-       {0, 1}, {2,3}, {4,5}, {6,7}
+    vtkIdType  ids[8][2] = {
+       {0, 1}, {2,3}, {4,5}, {6,7}, {8,1}, {5,9}, {10,2}, {6,11}
     };
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 8; ++i)
         lines->InsertNextCell(2, ids[i]);
     guideLines->SetLines(lines);
     lines->Delete();
@@ -479,10 +476,7 @@ Zoom2D::OnMouseWheelBackward()
 //    Have windows follow the APPLE path.
 //
 //    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
-//    I modified the class to use the APPLE path in all cases. I also
-//    changed the cues to be four lines, two parallel to the Y axis
-//    extending from xmin to xmax and two parallel to the X axis extending
-//    from ymin to ymax.
+//    I modified the class to use the APPLE path in all cases.
 //
 // ****************************************************************************
 
@@ -563,10 +557,7 @@ Zoom2D::EndRubberBand()
 //    Have windows follow the APPLE path.
 //
 //    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
-//    I modified the class to use the APPLE path in all cases. I also
-//    changed the cues to be four lines, two parallel to the Y axis
-//    extending from xmin to xmax and two parallel to the X axis extending
-//    from ymin to ymax.
+//    I modified the class to use the APPLE path in all cases.
 //
 // ****************************************************************************
 
@@ -599,13 +590,17 @@ Zoom2D::UpdateRubberBand(int aX, int aY, int lX, int lY, int nX, int nY)
         vtkViewport *ren = proxy.GetBackground();
         vtkPoints *pts = guideLines->GetPoints();
         pts->SetPoint(0, (double) xMin, (double) y0, 0.);
-        pts->SetPoint(1, (double) xMax, (double) y0, 0.);
-        pts->SetPoint(2, (double) xMin, (double) y1, 0.);
-        pts->SetPoint(3, (double) xMax, (double) y1, 0.);
-        pts->SetPoint(4, (double) x0,   (double) yMin, 0.);
-        pts->SetPoint(5, (double) x0,   (double) yMax, 0.);
-        pts->SetPoint(6, (double) x1,   (double) yMin, 0.);
-        pts->SetPoint(7, (double) x1,   (double) yMax, 0.);
+        pts->SetPoint(1, (double) x0,   (double) y0, 0.);
+        pts->SetPoint(2, (double) x1,   (double) y0, 0.);
+        pts->SetPoint(3, (double) xMax, (double) y0, 0.);
+        pts->SetPoint(4, (double) xMin, (double) y1, 0.);
+        pts->SetPoint(5, (double) x0,   (double) y1, 0.);
+        pts->SetPoint(6, (double) x1,   (double) y1, 0.);
+        pts->SetPoint(7, (double) xMax, (double) y1, 0.);
+        pts->SetPoint(8, (double) x0,   (double) yMin, 0.);
+        pts->SetPoint(9, (double) x0,   (double) yMax, 0.);
+        pts->SetPoint(10, (double) x1,  (double) yMin, 0.);
+        pts->SetPoint(11, (double) x1,  (double) yMax, 0.);
         guideLinesMapper->RenderOverlay(ren, guideLinesActor);
 #if 0
         lastGuideX = nX;

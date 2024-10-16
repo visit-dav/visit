@@ -54,6 +54,9 @@ class VisWindowInteractorProxy;
 //    the left mouse button would result in the window being stuck in pan mode
 //    if the shift key was released before the left mouse button.
 //
+//    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
+//    I modified the class to use the APPLE path in all cases.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Zoom2D : public ZoomInteractor
@@ -73,11 +76,6 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     virtual void        OnMouseWheelBackward();
 
   protected:
-#if 0
-    int                 lastGuideX;
-    int                 lastGuideY;
-#endif
-
     vtkPolyData                 *guideLines;
     vtkPolyDataMapper2D         *guideLinesMapper;
     vtkActor2D                  *guideLinesActor;
@@ -85,11 +83,6 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     virtual void        StartRubberBand(int, int);
     virtual void        EndRubberBand();
     virtual void        UpdateRubberBand(int, int, int, int, int, int);
-#if 0
-    void                UpdateGuideLines(int, int, int, int, int, int);
-    
-    void                DrawAllGuideLines(int, int, int, int);
-#endif
    
     void                DrawGuideLines(int, int, int, int, const bool which[8]);
     void                DrawGuideLine(int, int, int, int);
