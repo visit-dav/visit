@@ -3,6 +3,7 @@ import os
 import math
 import socket
 import stat
+import subprocess
 import time
 
 ###############################################################################
@@ -2667,6 +2668,36 @@ class MainLauncher(object):
             
 
     ############################################################################
+    # Method: GetGPUArchitecture
+    #
+    # Purpose: Returns a string represening the GPU architecture. This only
+    #          works for relatively new AMD GPUs.
+    #
+    # Programmer: Eric Brugger
+    # Date: Tue Oct  8 10:56:56 PDT 2024
+    #
+    ############################################################################
+
+    def GetGPUArchitecture(self):
+        files = ["/opt/rocm-6.2.2/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.2.1/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.2.0/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.3/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.2/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.1/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.0/lib/llvm/bin/offload-arch"]
+
+        gpu_arch = None
+        for file in files:
+            if os.path.exists(file):
+                p = subprocess.run(file, capture_output=True, text=True)
+                if p.stdout != "":
+                    gpu_arch = p.stdout.rstrip()
+                break
+
+        return gpu_arch
+
+    ############################################################################
     # Method: DetermineArchitecture
     #
     # Purpose: Determine a list of supported VisIt architecture strings.
@@ -2682,6 +2713,11 @@ class MainLauncher(object):
     #   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
     #   Python 3 universal_newlines for Popen
     #
+    #   Eric Brugger, Tue Oct  8 10:56:56 PDT 2024
+    #   I added support for gpu architectures on x86_64 systems. I removed
+    #   support for obsolete architectures. I changed the default linux
+    #   architecture to be x86_64 and added support for ppc64le.
+    #
     ############################################################################
 
     def DetermineArchitecture(self):
@@ -2695,18 +2731,15 @@ class MainLauncher(object):
         if self.os == "linux":
             mach = self.uname("-m")
             if mach == "x86_64": 
-                arch = "linux-x86_64"
-            elif mach == "ia64": 
-                arch = "linux-ia64"
-            elif mach == "ppc64": 
-                arch = "linux-ppc64"
-                # Tack on the BlueGene compiler for the engine.
-                if exe_name[:6] == "engine" and compiler != None:
-                    arch = arch + "-" + compiler
-            elif mach == "alpha": 
-                arch = "linux-alpha"
+                gpu = launcher.GetGPUArchitecture()
+                if (gpu == None):
+                    arch = "linux-x86_64"
+                else:
+                    arch = "linux-x86_64-" + gpu
+            elif mach == "ppc64le":
+                arch = "linux-ppc64le"
             else:
-                arch = "linux-intel"
+                arch = "linux-x86_64"
                 if compiler != None:
                     arch = arch + "-" + compiler
             supportedarches.append(arch)
@@ -2751,12 +2784,6 @@ class MainLauncher(object):
                             supportedarches.append("darwin-x86_64")
                             supportedarches.append("darwin-i386")
                         break
-        elif self.os == "aix":
-            arch = "ibm-aix-pwr"
-            arch = arch + objectmode
-            if compiler != None:
-                arch = arch + "-" + compiler
-            supportedarches.append(arch)
         elif self.os == "freebsd":
             mach = uname("-m")
             version = uname("-r")
