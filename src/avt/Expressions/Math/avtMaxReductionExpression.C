@@ -12,6 +12,9 @@
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 
+#include <ImproperUseException.h>
+#include <ExpressionException.h>
+
 
 // ****************************************************************************
 //  Method: avtMaxReductionExpression constructor
@@ -108,28 +111,70 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         std::cout << "ghost_data->GetNumberOfComponents() " << ghost_data->GetNumberOfComponents() << std::endl;
     }
 
-    for (int tuple_id = 0; tuple_id < 100; tuple_id ++)
+    if (has_ghosts)
     {
-        const int ghost = ghost_data->GetComponent(tuple_id, 0);
-    }
-
-    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-    {
-        double comp_max = in->GetComponent(0, comp_id);
-        for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            const double val = in->GetComponent(tuple_id, comp_id);
-            if (val > comp_max)
+            bool init_max_set = false;
+            double comp_max;
+            int start_tuple_id = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                comp_max = val;
+                const int ghost = ghost_data->GetComponent(tuple_id, 0);
+                if (0 == ghost)
+                {
+                    comp_max = in->GetComponent(tuple_id, comp_id);
+                    start_tuple_id = tuple_id;
+                    init_max_set = true;
+                    break;
+                }
+            }
+
+            if (!init_max_set)
+            {
+                EXCEPTION2(ExpressionException, outputVariableName,
+                     "BAD");
+            }
+
+            for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
+            {
+                const int ghost = ghost_data->GetComponent(tuple_id, 0);
+                if (0 == ghost)
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    if (val > comp_max)
+                    {
+                        comp_max = val;
+                    }
+                }
+            }
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, comp_max);
             }
         }
-
-        std::cout << comp_max << std::endl;
-
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+    }
+    else
+    {
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            out->SetComponent(tuple_id, comp_id, comp_max);
+            double comp_max = in->GetComponent(0, comp_id);
+            for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
+            {
+                const double val = in->GetComponent(tuple_id, comp_id);
+                if (val > comp_max)
+                {
+                    comp_max = val;
+                }
+            }
+
+            std::cout << comp_max << std::endl;
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, comp_max);
+            }
         }
     }
 }
