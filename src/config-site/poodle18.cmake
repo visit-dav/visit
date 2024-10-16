@@ -1,4 +1,4 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Tue Feb 20 16:48:56 PST 2024
@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.1/toss4)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.2/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ### NOTE: Modified from build_visit output
@@ -178,8 +178,8 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.9.1)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.1/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.9.2)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ${VISIT_SILO_LIBDEP} TYPE STRING)
 
 ##
