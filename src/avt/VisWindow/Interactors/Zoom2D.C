@@ -588,6 +588,7 @@ Zoom2D::UpdateRubberBand(int aX, int aY, int lX, int lY, int nX, int nY)
     // call. The rubberBand doesn't need it exactly, but we do.
     if (shouldDrawGuides)
     {
+        int x0 = (aX < nX) ? aX : nX;
         int x1 = (aX > nX) ? aX : nX;
         int y0 = (aY < nY) ? aY : nY;
         int y1 = (aY > nY) ? aY : nY;
