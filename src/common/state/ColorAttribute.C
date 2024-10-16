@@ -4,8 +4,8 @@
 
 #include <ColorAttribute.h>
 #include <DataNode.h>
-#include <StringHelpers.h>
 #include <cstring>
+#include <StringHelpers.h>
 
 // **************************************************************************
 // Constant: namedColors
