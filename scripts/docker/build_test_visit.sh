@@ -33,7 +33,6 @@ cd build
   -DVISIT_ENABLE_XDB:BOOL=OFF -DVISIT_PARADIS:BOOL=ON \
   -DVISIT_CREATE_XMLTOOLS_GEN_TARGETS:BOOL=OFF \
   -DVISIT_CONFIG_SITE="/home/visit/visit-config.cmake" ../src
-make manuals
 make -j 4 package
 mv visit$version2.linux-x86_64.tar.gz ../..
 
@@ -41,6 +40,6 @@ mv visit$version2.linux-x86_64.tar.gz ../..
 # Test the distribution.
 #
 cd ../..
-cp visit$version/src/tools/dev/scripts/visit-install .
+cp visit$version/scripts/visit-install .
 ./visit-install -c none $version linux-x86_64 visit
 visit/bin/visit -cli -nowin -s test_visit.py
