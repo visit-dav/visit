@@ -80,6 +80,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Removed the config site files for rztopaz and quartz since those machines have been retired.</li>
   <li>Updated Uintah to 2.6.3.</li>
   <li>Documented the -norun option in visit --fullhelp.</li>
+  <li>Added support for GPU architectures in <code>CMake</code> and the <code>internallauncher</code>. When a <code>make package</code> comnand is executed, the GPU architecture will be added to the operating system and CPU identifier in the tar file name. For example, on a Linux system with an x86_64 CPU and an AMD MI250X GPU the tar file name will be <code>visit3_4_2.linux-x86_64-gfx90a.tar.gz</code>. Likewise, the operating system and CPU identiefier identifier in a VisIt installation will include the GPU architecture in the same manner. As part of this change, the CPU identifier for a 64 bit, little endian, PowerPC processor will now be <code>ppc64le</code> instead of <code>intel</code>. The default CPU identifier for an unidentified CPU will now be <code>x86_64</code> instead of <code>intel</code>. Currently, only relatively new AMD GPUs are supported.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
