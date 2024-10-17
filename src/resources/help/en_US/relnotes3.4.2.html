@@ -48,6 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
   <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
   <li>ChooseCenter with a mouse on Scatter plot now works.</li>
+  <li>Fixed an issue causing species set selection to only work on fields that were represented as floating point data.</li>
   <li>Fixed a bug in the Plaintext Reader causing reading variable names that were single-characters to fail.</li>
   <li>Fixed a bug where the operator attribute windows will show the default attributes when displaying the attributes for an operator applied to a plot after restoring a session. The plots displayed in the visualization windows will be correct, just the attributes displayed in the attribute window will be incorrect. This happens with session files saved with releases 3.4 and 3.4.1. To fix the issue you will need to save a new session file using a newer version of VisIt. If you restored a session with a bad session file, you will need to change the attributes of any affected operators before saving the new session file.</li>
 </ul>
@@ -65,6 +66,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The function <code>GetDefaultFileOpenOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
   <li>The function <code>GetExportOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
   <li>Re-enabled support for using VTKm, which was removed in the 3.4.0 release.</li>
+  <li>Added species set support to the Blueprint Reader.</li>
   <li>Saving results of time queries to curve files now uses query name and/or variable names as curve names instead of just 'Curve'.</li>
   <li>Curves are now supported in Xdmf files. They are handled as 2DRectMesh objects with >1 points in X and 1 point in Y.</li>
 </ul>
