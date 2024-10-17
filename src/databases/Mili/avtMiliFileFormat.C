@@ -3285,41 +3285,38 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        const int meshId = [&](const std::string meshname) -> int
+        const char *mesh = varName;
+        //
+        // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
+        // We need to verify the name, and get the meshId.
+        //
+        bool isSandMesh = false;
+        if (strstr(mesh, "sand_mesh") == mesh)
         {
-            // I expect names to be "mesh1" or "sand_mesh1"
-            //                  (5 char long)   (10 char long)
-            if (meshname.size() < 5)
-            {
-                EXCEPTION1(InvalidVariableException, ("Unknown mesh name in " + meshname).c_str());
-            }
+            isSandMesh = true;
+        }
+        else if (strstr(mesh, "mesh") != mesh)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
 
-            // gimme the first four characters
-            const std::string start_of_meshname = meshname.substr(0, 4);
-            const std::string rest_of_string = [meshname](const std::string &start_of_meshname) -> std::string
-            {
-                if ("mesh" == start_of_meshname)
-                {
-                    return meshname.substr(4);
-                }
-                else if ("sand" == start_of_meshname)
-                {
-                    // names like "sand_mesh1"
-                    if (meshname.size() < 10)
-                    {
-                        EXCEPTION1(InvalidVariableException, ("Unknown mesh name in " + meshname).c_str());
-                    }
-                    // get everything after "sand_mesh"
-                    return meshname.substr(9);
-                }
-                else
-                {
-                    EXCEPTION1(InvalidVariableException, ("Unknown mesh name in " + meshname).c_str());
-                    return "";
-                }
-            }(start_of_meshname);
-            return std::stoi(rest_of_string) - 1;
-        }(varName);
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        if (isSandMesh)
+        {
+            offset = 9;
+        }
+
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
 
         MiliClassMetaData *miliClass =
             miliMetaData[meshId]->GetClassMDByShortName("node");
