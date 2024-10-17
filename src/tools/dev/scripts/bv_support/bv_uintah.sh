@@ -1,6 +1,5 @@
 function bv_uintah_initialize
 {
-    export FORCE_UINTAH="no"
     export DO_UINTAH="no"
     export USE_SYSTEM_UINTAH="no"
     add_extra_commandline_args "uintah" "alt-uintah-dir" 1 "Use alternative directory for uintah"
@@ -8,10 +7,6 @@ function bv_uintah_initialize
 
 function bv_uintah_enable
 {
-    if [[ "$1" == "force" ]]; then
-        FORCE_UINTAH="yes"
-    fi
-
     DO_UINTAH="yes"
 }
 
@@ -43,7 +38,7 @@ function bv_uintah_depends_on
 
 function bv_uintah_initialize_vars
 {
-    if [[ "$FORCE_UINTAH" == "no" && "$parallel" == "no" ]]; then
+    if [[ "$parallel" == "no" ]]; then
         bv_uintah_disable
         warn "Uintah requested by default but the parallel flag has not been set. Uintah will not be built."
         return

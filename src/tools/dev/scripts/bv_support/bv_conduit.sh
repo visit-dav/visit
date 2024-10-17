@@ -15,7 +15,7 @@ function bv_conduit_disable
 
 function bv_conduit_depends_on
 {
-    local depends_on=""
+    local depends_on="cmake"
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         depends_on="hdf5"
@@ -116,18 +116,16 @@ function apply_conduit_patch
 function build_conduit
 {
     #
-    # Conduit uses CMake  -- make sure we have it built.
+    # Conduit uses CMake  -- make sure we have it.
     #
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
         info "Conduit: CMake found"
     else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
+        warn "Unable to find cmake, cannot build Conduit. Giving up."
+        return 1
     fi
+
 
     #
     # Prepare build dir
