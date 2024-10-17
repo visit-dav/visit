@@ -11,11 +11,6 @@
 
 #include <visit-config.h> // For LIB_VERSION_LE
 
-#ifdef PARALLEL
-#include <mpi.h>
-#include <avtParallel.h>
-#endif 
-
 #include <limits>
 #include <visitstream.h>
 
