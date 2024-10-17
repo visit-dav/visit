@@ -406,7 +406,7 @@ def test7(datapath):
 def test8(datapath):
     TestSection("Curves")
     OpenDatabase(pjoin(datapath,"curve.xmf"))
-    AddPlot("Curve", "Curve/Node Centered Values")
+    AddPlot("Curve", "XYCurve/Node Centered Values")
     ca = CurveAttributes()
     ca.showLabels = 0
     SetPlotOptions(ca)

@@ -1633,8 +1633,10 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
 
         avtMeshType mt = AVT_UNSTRUCTURED_MESH;
         if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DRECTMESH &&
-            grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY &&
-            dimensions[1]>1 && dimensions[0]==1) {
+            gridToExamine->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY &&
+            dimensions[1]>1 && dimensions[0]==1 &&
+            gridToExamine->Get("GridPurpose") &&
+            StringHelpers::CaseInsensitiveEqual(gridToExamine->Get("GridPurpose"), "curve", 5)) {
             mt = AVT_UNKNOWN_MESH; // temporary placeholder for a curve object
         }
         else if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYVERTEX) {
@@ -1700,7 +1702,7 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
                                 grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVY &&
                                 dimensions[1]>1 && dimensions[0]==1 &&
                                 grid->Get("GridPurpose") &&
-                                !StringHelpers::CaseInsensitiveEqual(grid->Get("GridPurpose"), "curve", 5)) {
+                                StringHelpers::CaseInsensitiveEqual(grid->Get("GridPurpose"), "curve", 5)) {
                                 avtCurveMetaData *cmd = new avtCurveMetaData(attributeName.str());
                                 md->Add(cmd);
                                 curveToGridMap[attributeName.str()] = grid->GetName();
