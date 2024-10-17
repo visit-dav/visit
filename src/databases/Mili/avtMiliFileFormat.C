@@ -3285,19 +3285,41 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        const char *mesh = varName;
-        char *check = 0;
-        int meshId;
-        int offset = 4;
-        //
-        // Do a checked conversion to integer.
-        //
-        meshId = (int) strtol(mesh + offset, &check, 10);
-        if (meshId == 0 || check == mesh + offset)
+        const int meshId = [&](const std::string meshname) -> int
         {
-            EXCEPTION1(InvalidVariableException, mesh)
-        }
-        --meshId;
+            // I expect names to be "mesh1" or "sand_mesh1"
+            //                  (5 char long)   (10 char long)
+            if (meshname.size() < 5)
+            {
+                EXCEPTION1(InvalidVariableException, ("Unknown mesh name in " + meshname).c_str());
+            }
+
+            // gimme the first four characters
+            const std::string start_of_meshname = meshname.substr(0, 4);
+            const std::string rest_of_string = [meshname](const std::string &start_of_meshname) -> std::string
+            {
+                if ("mesh" == start_of_meshname)
+                {
+                    return meshname.substr(4);
+                }
+                else if ("sand" == start_of_meshname)
+                {
+                    // names like "sand_mesh1"
+                    if (meshname.size() < 10)
+                    {
+                        EXCEPTION1(InvalidVariableException, ("Unknown mesh name in " + meshname).c_str());
+                    }
+                    // get everything after "sand_mesh"
+                    return meshname.substr(9);
+                }
+                else
+                {
+                    EXCEPTION1(InvalidVariableException, ("Unknown mesh name in " + meshname).c_str());
+                    return "";
+                }
+            }(start_of_meshname);
+            return std::stoi(rest_of_string) - 1;
+        }(varName);
 
         MiliClassMetaData *miliClass =
             miliMetaData[meshId]->GetClassMDByShortName("node");
