@@ -5,6 +5,7 @@
 #include <ColorAttribute.h>
 #include <DataNode.h>
 #include <cstring>
+#include <StringHelpers.h>
 
 // **************************************************************************
 // Constant: namedColors
@@ -1674,11 +1675,7 @@ bool ColorAttribute::SetByName(const char *const colorName)
     //
     for (int i = 0; i < numNamedColors; i++)
     {
-#if defined(_WIN32)
-        if (!stricmp(colorName, namedColors[i].n))
-#else
-        if (!strcasecmp(colorName, namedColors[i].n))
-#endif
+        if (StringHelpers::CaseInsensitiveEqual(colorName, namedColors[i].n))
         {
             SetRed(namedColors[i].r);
             SetGreen(namedColors[i].g);
