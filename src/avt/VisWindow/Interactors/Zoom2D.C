@@ -495,10 +495,6 @@ Zoom2D::StartRubberBand(int x, int y)
         vtkRenderer *ren = proxy.GetBackground();
         ren->AddActor2D(guideLinesActor);
        
-#if 0
-        lastGuideX = x;
-        lastGuideY = y;
-#endif
         UpdateRubberBand(x,y,x,y,x,y);
     }
 }
@@ -602,10 +598,6 @@ Zoom2D::UpdateRubberBand(int aX, int aY, int lX, int lY, int nX, int nY)
         pts->SetPoint(10, (double) x1,  (double) yMin, 0.);
         pts->SetPoint(11, (double) x1,  (double) yMax, 0.);
         guideLinesMapper->RenderOverlay(ren, guideLinesActor);
-#if 0
-        lastGuideX = nX;
-        lastGuideY = nY;
-#endif
     }
 }
 
@@ -658,143 +650,6 @@ GetGuideSegment(int a, int l, int n, int &outl, int &newl)
         newl += offset;
     }
 }
-
-
-#if 0
-// ****************************************************************************
-//  Method: Zoom2D::UpdateGuideLines
-//
-//  Purpose:
-//      Updates the guide lines to new positions, with minimized flashing. 
-//      This method only updates the guide lines, assuming that guide
-//      lines already exist on the screen (to be erased if needed).
-//      Uses same naming conventions as described in DrawGuideLines.
-//
-//  Arguments:
-//      aX      The x-coordinate of the anchor in display coordinates.
-//      aY      The y-coordinate of the anchor in display coordinates.
-//      lX      The x-coordinate of the last corner in display coordinates.
-//      lY      The y-coordinate of the last corner in display coordinates.
-//      nX      The x-coordinate of the new corner in display coordinates.
-//      nY      The y-coordinate of the new corner in display coordinates.
-//
-//  Programmer: Akira Haddox 
-//  Creation:   July 3, 2003
-//
-// ****************************************************************************
-
-void
-Zoom2D::UpdateGuideLines(int aX, int aY, int lX, int lY, int nX, int nY)
-{
-    // Certain lines need to be completely erased and redrawn. Those we
-    // draw using DrawGuideLines with this array. Lines which need to be
-    // 'adjusted' (like how the rubberBand is adjusted in ZoomInteractor)
-    // are done manually in this function.
-    bool refresh[8];
-    int i;
-    for (i = 0; i < 8; ++i)
-    {
-        refresh[i] = false;
-    }
-    
-    // If any lines will be or are down on a border, or we're moving over
-    // a line, just erase and redraw. It's more work than it's worth
-    // to make it work, and it doesn't happen often enough for the flashing
-    // to be noticable.
-    if (((nX-aX)*(lX-aX) <= 0) || ((nY-aY)*(lY-aY) <= 0))
-    {
-        for (i = 0; i < 8; ++i)
-            refresh[i] = true;
-    }
-    else
-    {
-        bool cornerPartialRefresh = true;
-        // If both coordinates have changed, the following refreshes: 
-        // refresh: corner [h/v], shareX[h], shareY[v]
-        if (nX != lX && nY != lY)
-        {
-            refresh[2] = refresh[3] = refresh[4] = refresh[7] = true;
-            cornerPartialRefresh = false;
-        }
-        
-        // If the x coordinate has changed, the following refreshes:
-        // refresh: corner[v], shareY[v]
-        // partials: shareY[h], corner[h]
-        if(nX != lX)
-        {
-            refresh[3] = refresh[7] = true;
-            
-            // Partially refresh shareY[h]
-//            guideLinesMapper->SetHorizontalBias(true);
-            Zoom2D_SetLineProperties(guideLines, 2, 3, true);
-
-            int fromX, toX;
-            GetGuideSegment(aX, lX, nX, fromX, toX);
-        
-            DrawGuideLine(fromX, aY, toX, aY);
-
-            // Partially refresh corner[h]
-            if (cornerPartialRefresh)
-                DrawGuideLine(fromX, nY, toX, nY);
-        }
-       
-        // If the y coordinate has changed, the following refreshes:
-        // refresh: corner[h], shareX[h]
-        // partials: shareX[v], corner[v]
-        if(nY != lY)
-        {
-            refresh[2] = refresh[4] = true;
-            
-            // Partially refresh shareX[v]
-//            guideLinesMapper->SetHorizontalBias(false);
-            Zoom2D_SetLineProperties(guideLines, 2, 3, false);
-            int fromY, toY;
-            GetGuideSegment(aY, lY, nY, fromY, toY);
-            DrawGuideLine(aX, fromY, aX, toY);
-            
-            //Partially refresh corner[v]
-            if (cornerPartialRefresh)
-                DrawGuideLine(nX, fromY, nX, toY);
-        }
-    }
-   
-    // Completely refreshed lines
-    // Draw the new lines
-    DrawGuideLines(aX, aY, nX, nY, refresh);
-    // Erase the old lines
-    DrawGuideLines(aX, aY, lX, lY, refresh);
-}
-#endif
-
-
-#if 0
-// ****************************************************************************
-//  Method: Zoom2D::DrawAllGuideLines
-//
-//  Purpose:
-//      Draw all the guide lines without considering what may already be
-//      on the screen. Useful for initial drawing, and for erasing all
-//      lines on the screen.
-//
-//  Arguments:
-//      aX:     Anchor's x display coordinate
-//      aY:     Anchor's y display coordinate
-//      nX:     Oppossite corner's x display coordinate
-//      nY:     Oppossite corner's y display coordinate
-//
-//  Programmer: Akira Haddox 
-//  Creation:   July 3, 2003
-//
-// ****************************************************************************
-
-void
-Zoom2D::DrawAllGuideLines(int aX, int aY, int nX, int nY)
-{
-    const bool drawAll[8] = { true, true, true, true, true, true, true, true };
-    DrawGuideLines(aX, aY, nX, nY, drawAll);
-}
-#endif
-
 
 // ****************************************************************************
 //  Method: Zoom2D::DrawGuideLines
