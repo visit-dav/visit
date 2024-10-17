@@ -111,6 +111,14 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         }
     }
 
+    // TODO
+    // iterate through all cells and mark cells that are touching non-ghost zones as good to count
+    // need to figure out which zone a node belongs to
+    //  |----> how to do this? -> rv->GetCellPoints(i, nCellPts, cellPts);
+    //      cellpts are indices into node arrays
+    // if that node belongs to only zones that are ghosted then do not count it
+    // also ignore things in ghost node array
+
     if (has_ghosts)
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
