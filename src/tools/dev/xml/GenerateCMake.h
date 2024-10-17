@@ -1006,10 +1006,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << "        )" << Endl;
         WriteCMake_ConditionalSources(out, "S", "        ");
         out << "        ADD_LIBRARY(S"<<name<<ptype<<" ${LIBS_SOURCES})" << Endl;
-        out << "        IF(WIN32)" << Endl;
-        out << "            # This prevents python from #defining snprintf as _snprintf" << Endl;
-        out << "            SET_TARGET_PROPERTIES(S"<<name<<ptype<<" PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << Endl;
-        out << "        ENDIF()" << Endl;
         out << "        TARGET_LINK_LIBRARIES(S" << name << ptype
             << " visitcommon visitpy ${PYTHON_LIBRARY})" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "S", ptype, "        ");
