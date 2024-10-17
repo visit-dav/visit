@@ -83,8 +83,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     virtual int            GetNTimesteps(void);
 
-    void                   ActivateTimestep(int ts);
-
     virtual vtkDataSet    *GetMesh(int,
                                    int,
                                    const char *);
@@ -251,8 +249,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     boolVector             meshRead;
     std::vector<Famid>     dbid;
     std::string            globalIntegrationPoint;
-    int                  **mesh_shared_node_labels;
-    int                  **mesh_shared_node_owners;
 };
 
 #endif

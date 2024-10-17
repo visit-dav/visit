@@ -298,6 +298,68 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
 }
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::AugmentGhostData
+//
+//  Purpose:
+//      TODO
+//
+//  Arguments:
+//      TODO
+//
+//  Returns:    TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   10/17/24
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
+                                     avtSourceFromDatabase *src)
+{
+    char  progressString[1024] = "Augmenting Ghost Zone Array";
+    src->DatabaseProgress(0, 0, progressString);
+    const int ndomains = ds.GetNDomains();
+    for (int domain_id = 0; domain_id < ndomains; domain_id ++)
+    {
+        vtkDataSet *dataset = ds.GetDataset(domain_id, 0);
+        vtkUnsignedCharArray *ghostZones = 
+            static_cast<vtkUnsignedCharArray*>(
+                dataset->GetCellData()->GetArray("avtGhostZones"));
+        vtkUnsignedCharArray *extraGhostZones = 
+            static_cast<vtkUnsignedCharArray*>(
+                dataset->GetCellData()->GetArray("avtExtraGhostZones"));
+
+        if (dataset != NULL && ghostZones && extraGhostZones)
+        {
+            const int num_comps = ghostZones->GetNumberOfComponents();
+            const int num_tuples = ghostZones->GetNumberOfTuples();
+            vtkUnsignedCharArray *newGhostZones = vtkUnsignedCharArray::New();
+            newGhostZones->SetName("avtGhostZones");
+            newGhostZones->SetNumberOfComponents(num_comps);
+            newGhostZones->SetNumberOfTuples(num_tuples);
+            unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+            unsigned char *extraGhostZonePtr = extraGhostZones->GetPointer(0);
+            unsigned char *newGhostZonePtr = newGhostZones->GetPointer(0);
+            for (int cell_id = 0; cell_id < num_tuples; cell_id ++)
+            {
+                // bitwise OR
+                newGhostZonePtr[cell_id] = ghostZonePtr[cell_id] | extraGhostZonePtr[cell_id];
+            }
+            dataset->GetCellData()->RemoveArray("avtGhostZones");
+            dataset->GetCellData()->AddArray(newGhostZones);
+            newGhostZones->Delete();
+            dataset->GetCellData()->CopyFieldOn("avtGhostZones");
+        }
+
+        src->DatabaseProgress(domain_id, ndomains, progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::GetOutput
 //
 //  Purpose:
@@ -837,6 +899,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains,
                                       spec, src, allDomains,
                                       canDoCollectiveCommunication);
+        AugmentGhostData(datasetCollection, src);
     }
 
     //

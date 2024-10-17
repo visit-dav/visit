@@ -240,8 +240,6 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     datasets   = NULL;
     materials  = NULL;
     globalIntegrationPoint = "Middle";
-    mesh_shared_node_labels = nullptr;
-    mesh_shared_node_owners = nullptr;
 
     if (opts != NULL)
     {
@@ -392,34 +390,6 @@ avtMiliFileFormat::~avtMiliFileFormat()
     {
         delete [] fampath;
     }
-
-    if (nullptr != mesh_shared_node_labels)
-    {
-        for (int meshId = 0; meshId < nMeshes; meshId ++)
-        {
-            if (nullptr != mesh_shared_node_labels[meshId])
-            {
-                delete [] mesh_shared_node_labels[meshId];
-                mesh_shared_node_labels[meshId] = nullptr;
-            }
-        }
-        delete [] mesh_shared_node_labels;
-        mesh_shared_node_labels = nullptr;
-    }
-
-    if (nullptr != mesh_shared_node_owners)
-    {
-        for (int meshId = 0; meshId < nMeshes; meshId ++)
-        {
-            if (nullptr != mesh_shared_node_owners[meshId])
-            {
-                delete [] mesh_shared_node_owners[meshId];
-                mesh_shared_node_owners[meshId] = nullptr;
-            }
-        }
-        delete [] mesh_shared_node_owners;
-        mesh_shared_node_owners = nullptr;
-    }
 }
 
 
@@ -500,252 +470,6 @@ bool
 avtMiliFileFormat::CanCacheVariable(const char *varname)
 {
     return false;
-}
-
-
-// ****************************************************************************
-//  Method: avtMiliFileFormat::ActivateTimestep
-//
-//  Purpose: Provides a guarenteed collective entry point for operations
-//    that may involve collective parallel communication.
-//
-//  Programmer: Justin Privitera
-//  Creation:   Mon Sep  9 16:48:10 PDT 2024
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMiliFileFormat::ActivateTimestep(int ts)
-{
-    const int num_domains = dbid.size();
-    if (num_domains == 1)
-    {
-        return;
-    }
-
-    // we cannot make any assumptions across timesteps so we clear these each time
-    if (nullptr != mesh_shared_node_labels)
-    {
-        for (int meshId = 0; meshId < nMeshes; meshId ++)
-        {
-            if (nullptr != mesh_shared_node_labels[meshId])
-            {
-                delete [] mesh_shared_node_labels[meshId];
-                mesh_shared_node_labels[meshId] = nullptr;
-            }
-        }
-        delete [] mesh_shared_node_labels;
-        mesh_shared_node_labels = nullptr;
-    }
-    if (nullptr != mesh_shared_node_owners)
-    {
-        for (int meshId = 0; meshId < nMeshes; meshId ++)
-        {
-            if (nullptr != mesh_shared_node_owners[meshId])
-            {
-                delete [] mesh_shared_node_owners[meshId];
-                mesh_shared_node_owners[meshId] = nullptr;
-            }
-        }
-        delete [] mesh_shared_node_owners;
-        mesh_shared_node_owners = nullptr;
-    }
-
-    // TODO do these have to be like this
-    mesh_shared_node_labels = new int *[nMeshes];
-    mesh_shared_node_owners = new int *[nMeshes];
-    for (int meshId = 0; meshId < nMeshes; meshId ++)
-    {
-        mesh_shared_node_labels[meshId] = nullptr;
-        mesh_shared_node_owners[meshId] = nullptr;
-    }
-    int *nNodes_for_dom = new int[num_domains];
-    for (int domainId = 0; domainId < num_domains; domainId ++)
-    {
-        nNodes_for_dom[domainId] = -1;
-    }
-
-    // main loop
-    for (int meshId = 0; meshId < nMeshes; meshId ++)
-    {
-        // for each mesh for each domain there is a set of label ids
-        int **domain_label_ids = new int *[num_domains];
-
-        int start_domain, stop_domain;
-
-#ifdef PARALLEL
-        const int rank = PAR_Rank();
-        const int num_ranks = PAR_Size();
-
-        const int count = num_domains / num_ranks;
-        const int remainder = num_domains % num_ranks;
-
-        if (rank < remainder)
-        {
-            start_domain = rank * (count + 1);
-            stop_domain = start_domain + count + 1;
-        }
-        else
-        {
-            start_domain = rank * count + remainder;
-            stop_domain = start_domain + count;
-        }
-#else
-        start_domain = 0;
-        stop_domain = num_domains;
-#endif
-
-        // 
-        // read the label ids from the mili file
-        // 
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            if (dbid[domainId] == -1)
-            {
-                OpenDB(domainId);
-            }
-
-            //
-            // Perform an mc call to retrieve the number of nodes
-            // on this domain, and update our meta data.
-            //
-            char nodeSName[] = "node";
-            int classIdx     = 0;
-            char shortName[1024];
-            char longName[1024];
-            int nNodes = 0;
-
-            int rval = mc_get_class_info(dbid[domainId],
-                                         meshId,
-                                         M_NODE,
-                                         classIdx,
-                                         shortName,
-                                         longName,
-                                         &nNodes);
-
-            nNodes_for_dom[domainId] = nNodes;
-
-            if (rval != OK)
-            {
-                char msg[512];
-                snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
-                EXCEPTION1(ImproperUseException, msg);
-            }
-
-            int numBlocks     = 0;
-            int *blockRanges  = NULL;
-            domain_label_ids[domainId] = new int[nNodes];
-
-            // TODO std::fill?
-            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
-            {
-                domain_label_ids[domainId][nodeId] = -1;
-            }
-
-            rval = mc_load_node_labels(dbid[domainId],
-                                       meshId,
-                                       shortName,
-                                       &numBlocks,
-                                       &blockRanges,
-                                       domain_label_ids[domainId]);
-
-            if (rval != OK)
-            {
-                debug1 << "MILI: mc_load_node_labels failed!\n";
-                numBlocks   = 0;
-                blockRanges = NULL;
-            }
-
-            //
-            // Mili mallocs blockRanges using C style.
-            //
-            if (blockRanges != NULL)
-            {
-                free(blockRanges);
-            }
-        }
-
-        //
-        // determine max label
-        //
-
-        int local_max_label = -1;
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
-            {
-                const int curr_label = domain_label_ids[domainId][nodeId];
-                if (curr_label > local_max_label)
-                {
-                    local_max_label = curr_label;
-                }
-            }
-        }
-
-        int max_label = -1;
-#ifdef PARALLEL
-        MPI_Allreduce(&local_max_label, &max_label, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#else
-        max_label = local_max_label;
-#endif
-
-        int *local_shared_node_labels = new int[max_label];
-        int *local_shared_node_owners = new int[max_label];
-        // TODO std::fill?
-        for (int labelId = 0; labelId < max_label; labelId ++)
-        {
-            local_shared_node_labels[labelId] = 0;
-            local_shared_node_owners[labelId] = 0;
-        }
-
-        // 
-        // fill our MPI-friendly data structures
-        // 
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            for (int nodeId = 0; nodeId < nNodes_for_dom[domainId]; nodeId ++)
-            {
-                const int label = domain_label_ids[domainId][nodeId];
-                local_shared_node_labels[label] ++;
-
-                // mark that the node with this label belongs to this domain
-                // we don't care if it gets overwritten, we just want one
-                // domain to own this node at the end of the day.
-                local_shared_node_owners[label] = domainId;
-            }
-        }
-
-#ifdef PARALLEL
-        mesh_shared_node_labels[meshId] = new int[max_label];
-        mesh_shared_node_owners[meshId] = new int[max_label];
-        
-        MPI_Allreduce(local_shared_node_labels,
-                      mesh_shared_node_labels[meshId],
-                      max_label, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
-        // give the node to the max domain # that has it
-        MPI_Allreduce(local_shared_node_owners,
-                      mesh_shared_node_owners[meshId],
-                      max_label, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
-
-        delete [] local_shared_node_labels;
-        delete [] local_shared_node_owners;
-
-#else
-        mesh_shared_node_labels[meshId] = local_shared_node_labels;
-        mesh_shared_node_owners[meshId] = local_shared_node_owners;
-#endif
-
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            delete [] domain_label_ids[domainId];
-        }
-        delete [] domain_label_ids;
-    }
-
-    // TODO change my name
-    delete [] nNodes_for_dom;
 }
 
 
@@ -1076,7 +800,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         }
 
         vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-        ghostNodes->SetName("avtGhostNodes");
+        ghostNodes->SetName("avtExtraGhostNodes");
         ghostNodes->SetNumberOfTuples(nNodes);
 
         unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
@@ -1089,7 +813,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         }
 
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
+        ghostZones->SetName("avtExtraGhostZones");
         ghostZones->SetNumberOfTuples(nCells);
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
@@ -1129,41 +853,10 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
 
-        std::vector<int> labelIds = miliMetaData[meshId]->GetClassMDByShortName("node")->
-                                                          GetLabelIds()[dom];
-
-        if (labelIds.size() != nNodes)
-        {
-            EXCEPTION1(InvalidVariableException, "node");
-        }
-
-        if (mesh_shared_node_labels && mesh_shared_node_labels[meshId] &&
-            mesh_shared_node_owners && mesh_shared_node_owners[meshId])
-        {
-            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
-            {
-                const int &label_for_node = labelIds[nodeId];
-                // if the label id for this node is in the list of shared label ids AND
-                // the node belongs to a different domain
-                if (mesh_shared_node_labels[meshId][label_for_node] > 1 &&
-                    mesh_shared_node_owners[meshId][label_for_node] != dom)
-                {
-                    // TODO this is a waking nightmare
-                    // how do we know what to do?
-                    // duplicated nodes may not be the answer after all
-                    // might have to think about external surface calculations
-                    // http://visitusers.org/index.php?title=Ghost_Zone_and_Face_List_Filter
-                    ghostNodePtr[nodeId] = 0;
-                    avtGhostData::AddGhostNodeType(ghostNodePtr[nodeId],
-                        DUPLICATED_NODE);
-                }
-            }
-        }
-
         delete [] sandBuffer;
 
-        // rv->GetPointData()->AddArray(ghostNodes);
-        // rv->GetCellData()->AddArray(ghostZones);
+        rv->GetPointData()->AddArray(ghostNodes);
+        rv->GetCellData()->AddArray(ghostZones);
         ghostNodes->Delete();
         ghostZones->Delete();
     }
