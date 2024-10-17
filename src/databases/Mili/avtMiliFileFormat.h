@@ -249,6 +249,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     boolVector             meshRead;
     std::vector<Famid>     dbid;
     std::string            globalIntegrationPoint;
+    bool                   nodeLablesExist;
 };
 
 #endif

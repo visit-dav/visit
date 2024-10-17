@@ -235,6 +235,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     datasets   = NULL;
     materials  = NULL;
     globalIntegrationPoint = "Middle";
+    nodeLablesExist = false;
 
     if (opts != NULL)
     {
@@ -3285,6 +3286,11 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
+        if (!nodeLablesExist)
+        {
+            return NULL;
+        }
+
         const char *mesh = varName;
         //
         // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
@@ -3330,8 +3336,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         }
 
         vtkIntArray *rv = vtkIntArray::New();
-        rv->SetArray(myLabelIds, labelIds.size(), 0);
         rv->SetNumberOfComponents(1);
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
 
         df = avtVariableCache::DestructVTKObject;
 
@@ -4138,7 +4144,7 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
                                    nExpectedLabels, &numBlocks,
                                    &blockRanges, elemList, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_conn_labels failed at " << shortName << "!\n";
         numBlocks   = 0;
@@ -4210,11 +4216,15 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
     int rval = mc_load_node_labels(dbid[dom], meshId, shortName,
                                    &numBlocks, &blockRanges, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_node_labels failed!\n";
         numBlocks   = 0;
         blockRanges = NULL;
+    }
+    else
+    {
+        nodeLablesExist = true;
     }
 
     MiliClassMetaData *miliClass =
