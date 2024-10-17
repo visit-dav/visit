@@ -44,6 +44,7 @@
 #include <InvalidDBTypeException.h>
 #include <NonCompliantFileException.h>
 
+#include <StringHelpers.h>
 #include <TimingsManager.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -51,14 +52,6 @@
 #endif
 
 #define USE_SIMPLE_BLOCK_NUMBERING 1
-
-#ifndef STREQUAL
-#if defined(_WIN32) 
-#  define STREQUAL(a,b)              stricmp(a,b)
-#else
-#  define STREQUAL(a,b)              strcasecmp(a,b)
-#endif
-#endif
 
 #include <algorithm>
 #include <fstream>
@@ -369,26 +362,26 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
             continue;
         }
 
-        if (STREQUAL("endian:", tag.c_str())==0)
+        if (StringHelpers::CaseInsensitiveEqual("endian:", tag.c_str()))
         {
             //This tag is deprecated.  There's a float written into each binary file
             //from which endianness can be determined.
             string  dummy_endianness;
             f >> dummy_endianness;
         }
-        else if (STREQUAL("filetemplate:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("filetemplate:", tag.c_str()))
         {
             f >> fileTemplate;
         }
-        else if (STREQUAL("firsttimestep:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("firsttimestep:", tag.c_str()))
         {
             f >> iFirstTimestep;
         }
-        else if (STREQUAL("numtimesteps:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("numtimesteps:", tag.c_str()))
         {
             f >> iNumTimesteps;
         }
-        else if (STREQUAL("meshcoords:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("meshcoords:", tag.c_str()))
         {
             //This tag is now deprecated.  The same info can be discovered by
             //this reader while it scans all the headers for time and cycle info.
@@ -402,22 +395,22 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
                 f >> step;
             }
         }
-        else if (STREQUAL("type:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("type:", tag.c_str()))
         {
             //This tag can be deprecated, because the type can be determined
             //from the header 
             string t;
             f >> t;
-            if (STREQUAL("binary", t.c_str())==0)
+            if (StringHelpers::CaseInsensitiveEqual("binary", t.c_str()))
             {
                 bBinary = true;
             }
-            else if (STREQUAL("binary6", t.c_str())==0)
+            else if (StringHelpers::CaseInsensitiveEqual("binary6", t.c_str()))
             {
                 bBinary = true;
                 bParFormat = true;
             }
-            else if (STREQUAL("ascii", t.c_str())==0)
+            else if (StringHelpers::CaseInsensitiveEqual("ascii", t.c_str()))
             {
                 bBinary = false;
             }
@@ -427,7 +420,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
                     "Value following \"type\" must be \"ascii\" or \"binary\" or \"binary6\"" );
             }
         }
-        else if (STREQUAL("numoutputdirs:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("numoutputdirs:", tag.c_str()))
         {
             //This tag can be deprecated, because the number of output dirs 
             //can be determined from the header, and the parallel nature of the
@@ -437,19 +430,19 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
             if (iNumOutputDirs > 1)
                 bParFormat = true;
         }
-        else if (STREQUAL("timeperiods:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("timeperiods:", tag.c_str()))
         {
             f >> numberOfTimePeriods;
         }
-        else if (STREQUAL("gapBetweenTimePeriods:", tag.c_str())==0)
+        else if (StringHelpers::CaseInsensitiveEqual("gapBetweenTimePeriods:", tag.c_str()))
         {
             f >> gapBetweenTimePeriods;
         }
-        else if (STREQUAL("NEK3D", tag.c_str()) != 0)
+        else if (StringHelpers::CaseInsensitiveEqual("NEK3D", tag.c_str()) != 0)
         {
             //This is an obsolete tag, ignore it.
         }
-        else if (STREQUAL("version:", tag.c_str()) != 0)
+        else if (StringHelpers::CaseInsensitiveEqual("version:", tag.c_str()) != 0)
         {
             //This is an obsolete tag, ignore it, skipping the version number
             //as well.
@@ -2436,35 +2429,35 @@ avtNek5000FileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
     if (var)
     {
         int iNumPrecedingFloats = 0;
-        if (STREQUAL(var, "velocity")==0  || 
-            STREQUAL(var, "velocity_mag")==0 ||
-            STREQUAL(var, "x_velocity")==0)
+        if (StringHelpers::CaseInsensitiveEqual(var, "velocity") || 
+            StringHelpers::CaseInsensitiveEqual(var, "velocity_mag") ||
+            StringHelpers::CaseInsensitiveEqual(var, "x_velocity"))
         {
             if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
         }
-        else if (STREQUAL(var, "y_velocity")==0)
+        else if (StringHelpers::CaseInsensitiveEqual(var, "y_velocity"))
         {
             if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
 
             iNumPrecedingFloats += 1;
         }
-        else if (STREQUAL(var, "z_velocity")==0)
+        else if (StringHelpers::CaseInsensitiveEqual(var, "z_velocity"))
         {
             if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
 
             iNumPrecedingFloats += 2;
         }
-        else if (STREQUAL(var, "pressure")==0)
+        else if (StringHelpers::CaseInsensitiveEqual(var, "pressure"))
         {
             if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
             if (bHasVelocity)
                 iNumPrecedingFloats += iDim;
         }
-        else if (STREQUAL(var, "temperature")==0)
+        else if (StringHelpers::CaseInsensitiveEqual(var, "temperature"))
         {
             if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;

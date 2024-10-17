@@ -75,10 +75,6 @@
 #include <vtkDataArray.h>
 #include <algorithm>
 
-#ifdef _WIN32
-#define strcasecmp stricmp
-#endif
-
 using std::string;
 using namespace conduit;
 using namespace mfem;
@@ -1367,7 +1363,7 @@ AddBlueprintExpressionMetadata(avtDatabaseMetaData *md, string const &mesh_name,
         const Node &n_expr = exprs_itr.next();
 
         if (n_expr.has_child("consumer") &&
-            strcasecmp(n_expr["consumer"].as_string().c_str(), "visit"))
+            !StringHelpers::CaseInsensitiveEqual(n_expr["consumer"].as_string().c_str(), "visit"))
             continue;
 
         string expname = exprs_itr.name();
