@@ -15,16 +15,6 @@
 #include <sys/stat.h>
 #include <string>
 
-#if defined(_WIN32)
-// for _strnicmp
-#include <string.h>
-#define STRNCASECMP _strnicmp
-#else
-// for strcasecmp
-#include <strings.h>
-#define STRNCASECMP strncasecmp
-#endif
-
 #include <vtkCellType.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -37,6 +27,7 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
 
 using     std::string;
 
@@ -411,7 +402,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 break;
             }
         }
-        else if(STRNCASECMP(line, "NBLOCK", 6) == 0)
+        else if(StringHelpers::CaseInsensitiveEqual(line, "NBLOCK", 6))
         {
             int numFields = 6;
             char *comma = strstr(line, ",");
@@ -450,7 +441,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 fatalError = true;
             }
         }
-        else if(STRNCASECMP(line, "EBLOCK", 6) == 0)
+        else if(StringHelpers::CaseInsensitiveEqual(line, "EBLOCK", 6))
         {
               line [MAX_ANSYS_LINE-1] = '\0';
               int numFields = -1;
@@ -495,21 +486,21 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 }
               }
         }
-        else if(STRNCASECMP(line, "/COM", 4) == 0)
+        else if(StringHelpers::CaseInsensitiveEqual(line, "/COM", 4))
         {
             if(title == "")
                 title = std::string(line+6);
             recognized = true;
         }
-        else if(STRNCASECMP(line, "/TITLE", 6) == 0)
+        else if(StringHelpers::CaseInsensitiveEqual(line, "/TITLE", 6))
         {
             title = std::string(line+8);
             recognized = true;
         }
-        else if(STRNCASECMP(line, "/BATCH",  6) == 0 ||
-                STRNCASECMP(line, "/NOPR",   5) == 0 ||
-                STRNCASECMP(line, "/CONFIG", 7) == 0 ||
-                STRNCASECMP(line, "/NOLIST", 7) == 0)
+        else if(StringHelpers::CaseInsensitiveEqual(line, "/BATCH",  6) ||
+                StringHelpers::CaseInsensitiveEqual(line, "/NOPR",   5) ||
+                StringHelpers::CaseInsensitiveEqual(line, "/CONFIG", 7) ||
+                StringHelpers::CaseInsensitiveEqual(line, "/NOLIST", 7))
         {
             recognized = true;
         }
@@ -726,7 +717,7 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int numFields,
     expectedLineLength = 0;
     bool keepGoing = true;
     bool first = true;
-    bool isStdNBLOCKFmt = numFields==6 && STRNCASECMP(line, "(3i8,6e16.9)", 12)==0;
+    bool isStdNBLOCKFmt = numFields==6 && StringHelpers::CaseInsensitiveEqual(line, "(3i8,6e16.9)", 12);
     while(keepGoing)
     {
         int linelen = 0;

@@ -25,7 +25,6 @@
 #ifdef THREADS
 #if defined(_WIN32)
 #include <windows.h>
-#define strcasecmp stricmp
 #else
 #include <pthread.h>
 #endif
@@ -2379,7 +2378,7 @@ visit_SetBackendType(PyObject *self, PyObject *args)
 
     int index = 0;
 #if defined(HAVE_LIBVTKM)
-    if(strcasecmp(name, "vtkm") == 0)
+    if(StringHelpers::CaseInsensitiveEqual(name, "vtkm"))
         index = 1;
 #endif
 
@@ -5943,9 +5942,6 @@ visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
-#ifdef _WIN32
-#define strcasecmp stricmp
-#endif
 STATIC PyObject *
 visit_SetPrecisionType(PyObject *self, PyObject *args)
 {
@@ -5963,11 +5959,11 @@ visit_SetPrecisionType(PyObject *self, PyObject *args)
         }
         else
         {
-            if (strcasecmp(sflag, "float") == 0)
+            if (StringHelpers::CaseInsensitiveEqual(sflag, "float"))
                 flag = 0;
-            else if (strcasecmp(sflag, "native") == 0)
+            else if (StringHelpers::CaseInsensitiveEqual(sflag, "native"))
                 flag = 1;
-            else if (strcasecmp(sflag, "double") == 0)
+            else if (StringHelpers::CaseInsensitiveEqual(sflag, "double"))
                 flag = 2;
             else
             {
@@ -12374,11 +12370,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     // Check for global flag.
     std::string qname(queryName);
 
-#if defined(_WIN32)
-    if (_strnicmp(queryName, "Global ", 7) == 0)
-#else
-    if (strncasecmp(queryName, "Global ", 7) == 0)
-#endif
+    if (StringHelpers::CaseInsensitiveEqual(queryName, "Global", 7))
     {
         // here's where we can distinguish form other '9th' attempts, possibly
         // move to w/i the '9th' section?
@@ -12531,11 +12523,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     // Special case of a convenience query name , but viewer needs query name
     // without 'Global'.  Perhaps should force proper query name and use
     // of UseGlobalId=1 in kwargs?
-#if defined(_WIN32)
-    if (_strnicmp(queryName.c_str(), "Global ", 7) == 0)
-#else
-    if (strncasecmp(queryName.c_str(), "Global ", 7) == 0)
-#endif
+    if (StringHelpers::CaseInsensitiveEqual(queryName.c_str(), "Global", 7))
     {
         std::string::size_type pos1 = 0;
         std::string qname(queryName);
