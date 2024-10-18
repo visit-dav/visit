@@ -749,6 +749,10 @@ QvisExpressionsWindow::CreateStandardEditor()
 // Creation:   Fri Aug 23 10:00:47 PDT 2024
 //
 // Modifications:
+//  Kathleen Biags, Fri Oct 18, 2024
+//  Set the non-read-only Interaction flags to Qt::TextEditorInteraction,
+//  Qt docs state it is the default for a text editor and  is the same as
+//  Qt::TextEditable | Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard.
 //
 // ****************************************************************************
 
@@ -767,7 +771,7 @@ QvisExpressionsWindow::SetStandardEditorReadOnly(bool read_only)
     {
         nameEditLabel->setText(tr("Name"));
         nameEdit->setReadOnly(false);
-        stdDefinitionEdit->setTextInteractionFlags(Qt::TextEditable);
+        stdDefinitionEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
         stdDefinitionEditLabel->setText(tr("Definition"));
     }
 
