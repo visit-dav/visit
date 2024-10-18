@@ -455,10 +455,10 @@ def TestMaterialEdgeLines():
     db_path = multi_domain_path + "/d3samp6.plt.mili"
     OpenDatabase(db_path)
 
-    AddPlot("FilledBoundary", "materials1", 1, 1)
+    AddPlot("FilledBoundary", "materials1")
     DrawPlots()
 
-    AddPlot("FilledBoundary", "materials1", 1, 1)
+    AddPlot("FilledBoundary", "materials1")
 
     silr = SILRestriction()
     silr.SuspendCorrectnessChecking()
@@ -519,7 +519,7 @@ def TestMaterialEdgeLines():
 
     DrawPlots()
 
-    Test("Edge lines")
+    Test("mili_hidden_material_edge_lines")
 
     SetViewExtentsType(0)
     DeleteAllPlots()
@@ -542,7 +542,7 @@ def Main():
     TestMultiSubrecRead()
     TestDerivedVariables()
     TestGlobalIntegrationPoint()
-    # TestMaterialEdgeLines()
+    TestMaterialEdgeLines()
 
 Main()
 Exit()
