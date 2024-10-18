@@ -2381,9 +2381,10 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
     static bool first = true;
     if (first)
     {
+        int const SwapLayoutToFixBlankStartup = -5;
         first = false;
-        SetWindowLayout(-5); // -5 is magic number to trigger special logic
-        SetWindowLayout(-5); // -5 is magic number to trigger special logic
+        SetWindowLayout(SwapLayoutToFixBlankStartup);
+        SetWindowLayout(SwapLayoutToFixBlankStartup);
     }
 #endif
 }

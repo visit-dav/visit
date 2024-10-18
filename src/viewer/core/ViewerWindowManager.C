@@ -4510,8 +4510,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
     // VisIt thinks the window size actually is failed to return the window
     // to its original size.
 #if defined(__APPLE__)
+    int const SwapLayoutToFixBlankStartup = -5;
     static size_t count = 0;
-    if (windowLayout == -5 && count < 2)
+    if (windowLayout == SwapLayoutToFixBlankStartup && count < 2)
     {
         static int origlo = layout;
         static int tmplo = layout==2?1:2;
