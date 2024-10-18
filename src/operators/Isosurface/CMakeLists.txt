@@ -62,10 +62,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SIsosurfaceOperator ${LIBS_SOURCES})
-        IF(WIN32)
-            # This prevents python from #defining snprintf as _snprintf
-            SET_TARGET_PROPERTIES(SIsosurfaceOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
-        ENDIF()
         TARGET_LINK_LIBRARIES(SIsosurfaceOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SIsosurfaceOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)
