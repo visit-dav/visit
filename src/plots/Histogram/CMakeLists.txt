@@ -69,10 +69,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SHistogramPlot ${LIBS_SOURCES})
-        IF(WIN32)
-            # This prevents python from #defining snprintf as _snprintf
-            SET_TARGET_PROPERTIES(SHistogramPlot PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
-        ENDIF()
         TARGET_LINK_LIBRARIES(SHistogramPlot visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SHistogramPlot)
     ENDIF(VISIT_PYTHON_SCRIPTING)
