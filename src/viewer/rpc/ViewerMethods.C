@@ -2376,7 +2376,7 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
 
     // Stop gap to avert blank viewer windows (#18090)
     // There is associated logic in core/ViewerWindowManager::SetWindowLayout
-    // which responds to these two successive calls
+    // which responds to this call.
 #if defined(__APPLE__)
     static bool first = true;
     if (first)
