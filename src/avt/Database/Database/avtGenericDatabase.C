@@ -319,39 +319,101 @@ void
 avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
                                      avtSourceFromDatabase *src)
 {
-    char  progressString[1024] = "Augmenting Ghost Zone Array";
+    char  progressString[1024] = "Augmenting Ghost Arrays";
     src->DatabaseProgress(0, 0, progressString);
     const int ndomains = ds.GetNDomains();
     for (int domain_id = 0; domain_id < ndomains; domain_id ++)
     {
         vtkDataSet *dataset = ds.GetDataset(domain_id, 0);
-        vtkUnsignedCharArray *ghostZones = 
-            static_cast<vtkUnsignedCharArray*>(
-                dataset->GetCellData()->GetArray("avtGhostZones"));
-        vtkUnsignedCharArray *extraGhostZones = 
-            static_cast<vtkUnsignedCharArray*>(
-                dataset->GetCellData()->GetArray("avtExtraGhostZones"));
-
-        if (dataset != NULL && ghostZones && extraGhostZones)
+        if (dataset != NULL)
         {
-            const int num_comps = ghostZones->GetNumberOfComponents();
-            const int num_tuples = ghostZones->GetNumberOfTuples();
-            vtkUnsignedCharArray *newGhostZones = vtkUnsignedCharArray::New();
-            newGhostZones->SetName("avtGhostZones");
-            newGhostZones->SetNumberOfComponents(num_comps);
-            newGhostZones->SetNumberOfTuples(num_tuples);
-            unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
-            unsigned char *extraGhostZonePtr = extraGhostZones->GetPointer(0);
-            unsigned char *newGhostZonePtr = newGhostZones->GetPointer(0);
-            for (int cell_id = 0; cell_id < num_tuples; cell_id ++)
+            std::cout << "good data" << std::endl;
+            // zones first
+            vtkUnsignedCharArray *ghostZones = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetCellData()->GetArray("avtGhostZones"));
+            vtkUnsignedCharArray *extraGhostZones = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetCellData()->GetArray("avtExtraGhostZones"));
+
+            // TODO worry about num_comps
+            // TODO is a single bool in the mili db header fine for valid node ids?
+            // TODO why would extraGhostZones not be true???
+                // make a mesh plot of testdata/mili_test_data/single_proc/m_plot.mili
+
+            if (extraGhostZones)
             {
-                // bitwise OR
-                newGhostZonePtr[cell_id] = ghostZonePtr[cell_id] | extraGhostZonePtr[cell_id];
+                std::cout << "extra ghost zones" << std::endl;
+                if (ghostZones)
+                {
+                    std::cout << "ghost zones" << std::endl;
+                    const int num_comps = ghostZones->GetNumberOfComponents();
+                    const int num_tuples = ghostZones->GetNumberOfTuples();
+                    vtkUnsignedCharArray *newGhostZones = vtkUnsignedCharArray::New();
+                    newGhostZones->SetName("avtGhostZones");
+                    newGhostZones->SetNumberOfComponents(num_comps);
+                    newGhostZones->SetNumberOfTuples(num_tuples);
+                    unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+                    unsigned char *extraGhostZonePtr = extraGhostZones->GetPointer(0);
+                    unsigned char *newGhostZonePtr = newGhostZones->GetPointer(0);
+                    for (int cell_id = 0; cell_id < num_tuples; cell_id ++)
+                    {
+                        // bitwise OR
+                        newGhostZonePtr[cell_id] = ghostZonePtr[cell_id] | extraGhostZonePtr[cell_id];
+                    }
+                    dataset->GetCellData()->RemoveArray("avtGhostZones");
+                    dataset->GetCellData()->AddArray(newGhostZones);
+                    newGhostZones->Delete();
+                    dataset->GetCellData()->CopyFieldOn("avtGhostZones");
+                }
+                else // we can still succeed with no ghost zones
+                {
+                    std::cout << "no ghost zones" << std::endl;
+                    dataset->GetCellData()->AddArray(extraGhostZones);
+                    dataset->GetCellData()->CopyFieldOn("avtGhostZones");
+                }
             }
-            dataset->GetCellData()->RemoveArray("avtGhostZones");
-            dataset->GetCellData()->AddArray(newGhostZones);
-            newGhostZones->Delete();
-            dataset->GetCellData()->CopyFieldOn("avtGhostZones");
+
+            // nodes second
+            vtkUnsignedCharArray *ghostNodes = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetPointData()->GetArray("avtGhostNodes"));
+            vtkUnsignedCharArray *extraGhostNodes = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetPointData()->GetArray("avtExtraGhostNodes"));
+
+            if (extraGhostNodes)
+            {
+                std::cout << "extra ghost nodes" << std::endl;
+                if (ghostNodes)
+                {
+                    std::cout << "ghost nodes" << std::endl;
+                    const int num_comps = ghostNodes->GetNumberOfComponents();
+                    const int num_tuples = ghostNodes->GetNumberOfTuples();
+                    vtkUnsignedCharArray *newGhostNodes = vtkUnsignedCharArray::New();
+                    newGhostNodes->SetName("avtGhostNodes");
+                    newGhostNodes->SetNumberOfComponents(num_comps);
+                    newGhostNodes->SetNumberOfTuples(num_tuples);
+                    unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+                    unsigned char *extraGhostNodePtr = extraGhostNodes->GetPointer(0);
+                    unsigned char *newGhostNodePtr = newGhostNodes->GetPointer(0);
+                    for (int node_id = 0; node_id < num_tuples; node_id ++)
+                    {
+                        // bitwise OR
+                        newGhostNodePtr[node_id] = ghostNodePtr[node_id] | extraGhostNodePtr[node_id];
+                    }
+                    dataset->GetPointData()->RemoveArray("avtGhostNodes");
+                    dataset->GetPointData()->AddArray(newGhostNodes);
+                    newGhostNodes->Delete();
+                    dataset->GetPointData()->CopyFieldOn("avtGhostNodes");
+                }
+                else // we can still succeed with no ghost nodes
+                {
+                    std::cout << "no ghost nodes" << std::endl;
+                    dataset->GetPointData()->AddArray(extraGhostNodes);
+                    dataset->GetPointData()->CopyFieldOn("avtGhostNodes");
+                }
+            }
         }
 
         src->DatabaseProgress(domain_id, ndomains, progressString);
