@@ -851,7 +851,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
         delete [] sandBuffer;
 
-        std::cout << "the arrays got added" << std::endl;
         rv->GetPointData()->AddArray(ghostNodes);
         rv->GetCellData()->AddArray(ghostZones);
         ghostNodes->Delete();
