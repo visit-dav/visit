@@ -1,6 +1,5 @@
 function bv_adios2_initialize
 {
-    export FORCE_ADIOS2="no"
     export DO_ADIOS2="no"
     export USE_SYSTEM_ADIOS2="no"
     add_extra_commandline_args "adios2" "alt-adios2-dir" 1 "Use alternative directory for adios"
@@ -9,10 +8,6 @@ function bv_adios2_initialize
 
 function bv_adios2_enable
 {
-    if [[ "$1" == "force" ]]; then
-        FORCE_ADIOS2="yes"
-    fi
-
     DO_ADIOS2="yes"
 }
 
@@ -38,7 +33,7 @@ function bv_adios2_depends_on
     if [[ "$USE_SYSTEM_ADIOS2" == "yes" ]]; then
         echo ""
     else
-        depends_on=""
+        depends_on="cmake"
 
         if [[ "$DO_MPICH" == "yes" ]] ; then
             depends_on="$depends_on mpich"
@@ -66,7 +61,6 @@ function bv_adios2_info
     export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.10.0-rc1"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
-    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/refs/tags/v${ADIOS2_VERSION}"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
     export ADIOS2_SHA256_CHECKSUM="8b72142bd5aabfb80c7963f524df11b8721c09ef20caea6df5fb00c31a7747c0"
 }
@@ -126,17 +120,14 @@ function bv_adios2_ensure
 function build_adios2
 {
     #
-    # ADIOS2 uses CMake  -- make sure we have it built.
+    # ADIOS2 uses CMake  -- make sure we have it.
     #
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
         info "ADIOS2: CMake found"
     else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
+        warn "Unable to find cmake, cannot build ADIOS2. Giving up."
+        return 1
     fi
 
     #
