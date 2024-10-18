@@ -588,6 +588,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
 
+    void
+                                AugmentGhostData(avtDatasetCollection &ds,
+                                                 avtDataRequest_p &spec,
+                                                 avtSourceFromDatabase *src);
+
     bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
                                   intVector &, intVector &,
                                   avtDataRequest_p &, bool);

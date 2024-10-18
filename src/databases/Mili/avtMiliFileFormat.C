@@ -235,6 +235,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     datasets   = NULL;
     materials  = NULL;
     globalIntegrationPoint = "Middle";
+    nodeLablesExist = false;
 
     if (opts != NULL)
     {
@@ -795,7 +796,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         }
 
         vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-        ghostNodes->SetName("avtGhostNodes");
+        ghostNodes->SetName("avtExtraGhostNodes");
         ghostNodes->SetNumberOfTuples(nNodes);
 
         unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
@@ -808,7 +809,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         }
 
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
+        ghostZones->SetName("avtExtraGhostZones");
         ghostZones->SetNumberOfTuples(nCells);
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
@@ -3222,7 +3223,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) &&
+         (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) != 0))
     {
         return NULL;
     }
@@ -3281,6 +3283,65 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         df = avtMaterial::Destruct;
 
         return (void*) mat;
+    }
+    else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        if (!nodeLablesExist)
+        {
+            return NULL;
+        }
+
+        const char *mesh = varName;
+        //
+        // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
+        // We need to verify the name, and get the meshId.
+        //
+        bool isSandMesh = false;
+        if (strstr(mesh, "sand_mesh") == mesh)
+        {
+            isSandMesh = true;
+        }
+        else if (strstr(mesh, "mesh") != mesh)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        if (isSandMesh)
+        {
+            offset = 9;
+        }
+
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        intVector labelIds = miliClass->GetLabelIds()[dom];
+
+        int *myLabelIds = new int[labelIds.size()];
+        for (int i = 0; i < labelIds.size(); i ++)
+        {
+            myLabelIds[i] = labelIds[i];
+        }
+
+        vtkIntArray *rv = vtkIntArray::New();
+        rv->SetNumberOfComponents(1);
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
+
+        df = avtVariableCache::DestructVTKObject;
+
+        return (void *) rv;
     }
 
     return NULL;
@@ -4083,7 +4144,7 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
                                    nExpectedLabels, &numBlocks,
                                    &blockRanges, elemList, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_conn_labels failed at " << shortName << "!\n";
         numBlocks   = 0;
@@ -4155,11 +4216,15 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
     int rval = mc_load_node_labels(dbid[dom], meshId, shortName,
                                    &numBlocks, &blockRanges, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_node_labels failed!\n";
         numBlocks   = 0;
         blockRanges = NULL;
+    }
+    else
+    {
+        nodeLablesExist = true;
     }
 
     MiliClassMetaData *miliClass =
