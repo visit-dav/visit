@@ -25,7 +25,6 @@
 #ifdef THREADS
 #if defined(_WIN32)
 #include <windows.h>
-#define strcasecmp stricmp
 #else
 #include <pthread.h>
 #endif
@@ -2379,7 +2378,7 @@ visit_SetBackendType(PyObject *self, PyObject *args)
 
     int index = 0;
 #if defined(HAVE_LIBVTKM)
-    if(strcasecmp(name, "vtkm") == 0)
+    if(StringHelpers::CaseInsensitiveEqual(name, "vtkm"))
         index = 1;
 #endif
 
@@ -5943,9 +5942,6 @@ visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
-#ifdef WIN32
-#define strcasecmp stricmp
-#endif
 STATIC PyObject *
 visit_SetPrecisionType(PyObject *self, PyObject *args)
 {
@@ -5963,11 +5959,11 @@ visit_SetPrecisionType(PyObject *self, PyObject *args)
         }
         else
         {
-            if (strcasecmp(sflag, "float") == 0)
+            if (StringHelpers::CaseInsensitiveEqual(sflag, "float"))
                 flag = 0;
-            else if (strcasecmp(sflag, "native") == 0)
+            else if (StringHelpers::CaseInsensitiveEqual(sflag, "native"))
                 flag = 1;
-            else if (strcasecmp(sflag, "double") == 0)
+            else if (StringHelpers::CaseInsensitiveEqual(sflag, "double"))
                 flag = 2;
             else
             {
@@ -6754,6 +6750,10 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
 //    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
 //    Added better error message for when plugin wasn't found.
 //
+//    Eric Brugger, Tue Sep 24 11:44:41 PDT 2024
+//    Added logic to open a metadata server if the list of plugin info
+//    attributes was empty.
+//
 // ****************************************************************************
 STATIC PyObject *
 visit_GetExportOptions(PyObject *self, PyObject *args)
@@ -6769,6 +6769,18 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
         DBPluginInfoAttributes *dbplugininfo =
                         GetViewerState()->GetDBPluginInfoAttributes();
     MUTEX_UNLOCK();
+
+    // Open an mdserver if the type names is empty.
+    if(dbplugininfo->GetTypes().empty())
+    {
+        PyObject *hargs = PyTuple_New(1);
+        PyTuple_SET_ITEM(hargs, 0, PyString_FromString("localhost"));
+        PyObject *ret = visit_OpenMDServer(self, hargs);
+        Py_DECREF(hargs);
+        if(ret == NULL)
+            return NULL;
+        Py_DECREF(ret);
+    }
 
     PyObject *dict = NULL;
     const stringVector &types = dbplugininfo->GetTypes();
@@ -6795,15 +6807,14 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
-                "Metadata Server is running.", plugin);
+        sprintf(msg, "\"%s\" is not a valid plugin name.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
     if (!hasWriter)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin type.  But it does *not* have\n"
+        sprintf(msg, "\"%s\" is a valid plugin, but does not have\n"
                 "a database writer", plugin);
         VisItErrorFunc(msg);
         return NULL;
@@ -6811,8 +6822,8 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     if (!dict)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin with export capability, but "
-                "appears to have no options.", plugin);
+        sprintf(msg, "\"%s\" is a valid plugin with export capability, but\n"
+                "does not have any options.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
@@ -6908,7 +6919,7 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *plugin = NULL;
-    // Try and get the export attributes and database options.
+    // Try and get the file open options.
     if(!PyArg_ParseTuple(args,"s",&plugin))
         return NULL;
 
@@ -6956,7 +6967,7 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     if (!dict)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin name, but does not "
+        sprintf(msg, "\"%s\" is a valid plugin, but does not "
                 "have options for opening files.", plugin);
         VisItErrorFunc(msg);
         return NULL;
@@ -12359,11 +12370,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     // Check for global flag.
     std::string qname(queryName);
 
-#if defined(_WIN32)
-    if (_strnicmp(queryName, "Global ", 7) == 0)
-#else
-    if (strncasecmp(queryName, "Global ", 7) == 0)
-#endif
+    if (StringHelpers::CaseInsensitiveEqual(queryName, "Global", 7))
     {
         // here's where we can distinguish form other '9th' attempts, possibly
         // move to w/i the '9th' section?
@@ -12516,11 +12523,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     // Special case of a convenience query name , but viewer needs query name
     // without 'Global'.  Perhaps should force proper query name and use
     // of UseGlobalId=1 in kwargs?
-#if defined(_WIN32)
-    if (_strnicmp(queryName.c_str(), "Global ", 7) == 0)
-#else
-    if (strncasecmp(queryName.c_str(), "Global ", 7) == 0)
-#endif
+    if (StringHelpers::CaseInsensitiveEqual(queryName.c_str(), "Global", 7))
     {
         std::string::size_type pos1 = 0;
         std::string qname(queryName);
@@ -18239,6 +18242,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Tue Dec 19 16:16:12 PST 2023
 //   Added GetLastMessage.
 //
+//   Eric Brugger, Tue Sep 24 11:44:41 PDT 2024
+//   Added documentation for GetExportOptions.
+//
 // ****************************************************************************
 
 static void
@@ -18392,7 +18398,7 @@ AddProxyMethods()
                                           visit_GetDefaultFileOpenOptions_doc);
     AddMethod("GetEngineList", visit_GetEngineList, visit_GetEngineList_doc);
     AddMethod("GetEngineProperties", visit_GetEngineProperties, visit_GetEngineProperties_doc);
-    AddMethod("GetExportOptions", visit_GetExportOptions, NULL);
+    AddMethod("GetExportOptions", visit_GetExportOptions, visit_GetExportOptions_doc);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes,
                                                 visit_GetGlobalAttributes_doc);
     AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes,

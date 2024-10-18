@@ -279,7 +279,7 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
         vertPtr++; //Now segptr points at vtx0.
 #else
       auto verts = vtk::TakeSmartPointer(ds->GetVerts()->NewIterator());
-      for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell());
+      for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell())
       {
         const vtkIdType *vertPtr;
         verts->GetCurrentCell(nPts, vertPtr);
@@ -327,7 +327,7 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
         segPtr++; //Now segptr points at vtx0.
 #else
       auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
-      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell());
+      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
       {
         const vtkIdType *segPtr;
         lines->GetCurrentCell(nPts, segPtr);
