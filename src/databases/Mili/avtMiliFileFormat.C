@@ -495,126 +495,107 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 void
 avtMiliFileFormat::ActivateTimestep(int ts)
 {
-//     const int num_domains = dbid.size();
-//     // main loop
-//     for (int meshId = 0; meshId < nMeshes; meshId ++)
-//     {
-//         int start_domain, stop_domain;
+    const int num_domains = dbid.size();
+    // main loop
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        int start_domain, stop_domain;
 
-// #ifdef PARALLEL
-//         const int rank = PAR_Rank();
-//         const int num_ranks = PAR_Size();
+#ifdef PARALLEL
+        const int rank = PAR_Rank();
+        const int num_ranks = PAR_Size();
 
-//         const int count = num_domains / num_ranks;
-//         const int remainder = num_domains % num_ranks;
+        const int count = num_domains / num_ranks;
+        const int remainder = num_domains % num_ranks;
 
-//         if (rank < remainder)
-//         {
-//             start_domain = rank * (count + 1);
-//             stop_domain = start_domain + count + 1;
-//         }
-//         else
-//         {
-//             start_domain = rank * count + remainder;
-//             stop_domain = start_domain + count;
-//         }
-// #else
-//         start_domain = 0;
-//         stop_domain = num_domains;
-// #endif
+        if (rank < remainder)
+        {
+            start_domain = rank * (count + 1);
+            stop_domain = start_domain + count + 1;
+        }
+        else
+        {
+            start_domain = rank * count + remainder;
+            stop_domain = start_domain + count;
+        }
+#else
+        start_domain = 0;
+        stop_domain = num_domains;
+#endif
 
-//         // 
-//         // read the label ids from the mili file
-//         // 
-//         for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-//         {
+        // 
+        // read the label ids from the mili file
+        // 
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
+        {
+            if (dbid[domainId] == -1)
+            {
+                OpenDB(domainId);
+            }
 
-//             std::cout << "put me in jail 0" << std::endl;
-//             if (dbid[domainId] == -1)
-//             {
-//                 std::cout << "put me in jail 1" << std::endl;
-//                 OpenDB(domainId);
-//                 std::cout << "put me in jail 2" << std::endl;
-//             }
+            //
+            // Perform an mc call to retrieve the number of nodes
+            // on this domain, and update our meta data.
+            //
+            int classIdx     = 0;
+            char shortName[1024];
+            char longName[1024];
+            int nNodes = 0;
 
-//             //
-//             // Perform an mc call to retrieve the number of nodes
-//             // on this domain, and update our meta data.
-//             //
-//             int classIdx     = 0;
-//             char shortName[1024];
-//             char longName[1024];
-//             int nNodes = 0;
+            int rval = mc_get_class_info(dbid[domainId],
+                                         meshId,
+                                         M_NODE,
+                                         classIdx,
+                                         shortName,
+                                         longName,
+                                         &nNodes);
 
-//             std::cout << "put me in jail 3" << std::endl;
+            if (rval != OK)
+            {
+                char msg[512];
+                snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
+                EXCEPTION1(ImproperUseException, msg);
+            }
 
-//             int rval = mc_get_class_info(dbid[domainId],
-//                                          meshId,
-//                                          M_NODE,
-//                                          classIdx,
-//                                          shortName,
-//                                          longName,
-//                                          &nNodes);
+            int numBlocks     = 0;
+            int *blockRanges  = NULL;
+            int *domain_label_ids = new int[nNodes];
 
-//             std::cout << "put me in jail 4" << std::endl;
+            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
+            {
+                domain_label_ids[nodeId] = -1;
+            }
 
-//             if (rval != OK)
-//             {
-//                 char msg[512];
-//                 snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
-//                 EXCEPTION1(ImproperUseException, msg);
-//             }
+            rval = mc_load_node_labels(dbid[domainId],
+                                       meshId,
+                                       shortName,
+                                       &numBlocks,
+                                       &blockRanges,
+                                       domain_label_ids);
 
-//             std::cout << "put me in jail 5" << std::endl;
+            if (rval != OK || 0 == numBlocks)
+            {
+                debug1 << "MILI: mc_load_node_labels failed!\n";
+                nodeLabelsExistForMesh[meshId] = false;
+            }
 
-//             int numBlocks     = 0;
-//             int *blockRanges  = NULL;
-//             int *domain_label_ids = new int[nNodes];
+            //
+            // Mili mallocs blockRanges using C style.
+            //
+            if (blockRanges != NULL)
+            {
+                free(blockRanges);
+            }
 
-//             std::cout << "put me in jail 6" << std::endl;
+        }
 
-//             for (int nodeId = 0; nodeId < nNodes; nodeId ++)
-//             {
-//                 domain_label_ids[nodeId] = -1;
-//             }
-
-//             std::cout << "put me in jail 7" << std::endl;
-
-//             rval = mc_load_node_labels(dbid[domainId],
-//                                        meshId,
-//                                        shortName,
-//                                        &numBlocks,
-//                                        &blockRanges,
-//                                        domain_label_ids);
-
-//             std::cout << "put me in jail 8" << std::endl;
-
-//             if (rval != OK || 0 == numBlocks)
-//             {
-//                 debug1 << "MILI: mc_load_node_labels failed!\n";
-//                 nodeLabelsExistForMesh[meshId] = false;
-//             }
-
-//             std::cout << "put me in jail 9" << std::endl;
-
-//             //
-//             // Mili mallocs blockRanges using C style.
-//             //
-//             if (blockRanges != NULL)
-//             {
-//                 free(blockRanges);
-//             }
-
-//             std::cout << "put me in jail 10" << std::endl;
-//         }
-
-// #ifdef PARALLEL
-//         int result;
-//         MPI_Allreduce(&nodeLabelsExistForMesh[meshId], &result, 1,
-//                       MPI_INT, MPI_MIN, VISIT_MPI_COMM);
-//         nodeLabelsExistForMesh[meshId] = result;
-// #endif
-//     }
+#ifdef PARALLEL
+        int result;
+        MPI_Allreduce(&nodeLabelsExistForMesh[meshId], &result, 1,
+                      MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+        nodeLabelsExistForMesh[meshId] = result;
+#endif
+    }
 }
 
 
