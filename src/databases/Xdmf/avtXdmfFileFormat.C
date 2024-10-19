@@ -1655,9 +1655,9 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
 
         if (mt == AVT_UNKNOWN_MESH) {
             // This is really a faux mesh object for an associated curve object
-            int const nblocks = 1, blockOrigin = 0; cellOrigin = 0; groupOrigin = 0;
+            int const nblocks = 1, blockOrigin = 0, cellOrigin = 0, groupOrigin = 0;
             int const spatial_dim = 2, topo_dim = 1;
-            int const meshType = AVT_RECTILINEAR_MESH;
+            avtMeshType const meshType = AVT_RECTILINEAR_MESH;
             mt = meshType;
             avtMeshMetaData *mmd = new avtMeshMetaData(grid->GetName(), nblocks,
                 blockOrigin, cellOrigin, groupOrigin, spatial_dim, topo_dim, meshType);
