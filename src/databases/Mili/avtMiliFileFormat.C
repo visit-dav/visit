@@ -11,6 +11,11 @@
 
 #include <visit-config.h> // For LIB_VERSION_LE
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
+
 #include <limits>
 #include <visitstream.h>
 
@@ -235,6 +240,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     datasets   = NULL;
     materials  = NULL;
     globalIntegrationPoint = "Middle";
+    nodeLabelsExistForMesh.clear();
 
     if (opts != NULL)
     {
@@ -385,6 +391,11 @@ avtMiliFileFormat::~avtMiliFileFormat()
     {
         delete [] fampath;
     }
+
+    // 
+    // don't need to track the node label existence anymore
+    // 
+    nodeLabelsExistForMesh.clear();
 }
 
 
@@ -465,6 +476,126 @@ bool
 avtMiliFileFormat::CanCacheVariable(const char *varname)
 {
     return false;
+}
+
+
+// ****************************************************************************
+//  Method: avtMiliFileFormat::ActivateTimestep
+//
+//  Purpose: Provides a guarenteed collective entry point for operations
+//    that may involve collective parallel communication.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Mon Sep  9 16:48:10 PDT 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::ActivateTimestep(int ts)
+{
+    const int num_domains = dbid.size();
+    // main loop
+    for (int meshId = 0; meshId < nMeshes; meshId ++)
+    {
+        int start_domain, stop_domain;
+
+#ifdef PARALLEL
+        const int rank = PAR_Rank();
+        const int num_ranks = PAR_Size();
+
+        const int count = num_domains / num_ranks;
+        const int remainder = num_domains % num_ranks;
+
+        if (rank < remainder)
+        {
+            start_domain = rank * (count + 1);
+            stop_domain = start_domain + count + 1;
+        }
+        else
+        {
+            start_domain = rank * count + remainder;
+            stop_domain = start_domain + count;
+        }
+#else
+        start_domain = 0;
+        stop_domain = num_domains;
+#endif
+
+        // 
+        // read the label ids from the mili file
+        // 
+        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
+        {
+            if (dbid[domainId] == -1)
+            {
+                OpenDB(domainId);
+            }
+
+            //
+            // Perform an mc call to retrieve the number of nodes
+            // on this domain, and update our meta data.
+            //
+            int classIdx     = 0;
+            char shortName[1024];
+            char longName[1024];
+            int nNodes = 0;
+
+            int rval = mc_get_class_info(dbid[domainId],
+                                         meshId,
+                                         M_NODE,
+                                         classIdx,
+                                         shortName,
+                                         longName,
+                                         &nNodes);
+
+            if (rval != OK)
+            {
+                char msg[512];
+                snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
+                EXCEPTION1(ImproperUseException, msg);
+            }
+
+            int numBlocks     = 0;
+            int *blockRanges  = NULL;
+            int *domain_label_ids = new int[nNodes];
+
+            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
+            {
+                domain_label_ids[nodeId] = -1;
+            }
+
+            rval = mc_load_node_labels(dbid[domainId],
+                                       meshId,
+                                       shortName,
+                                       &numBlocks,
+                                       &blockRanges,
+                                       domain_label_ids);
+
+            if (rval != OK || 0 == numBlocks)
+            {
+                debug1 << "MILI: mc_load_node_labels failed!\n";
+                nodeLabelsExistForMesh[meshId] = false;
+            }
+
+            //
+            // Mili mallocs blockRanges using C style.
+            //
+            if (blockRanges != NULL)
+            {
+                free(blockRanges);
+            }
+
+        }
+
+#ifdef PARALLEL
+        int result;
+        MPI_Allreduce(&nodeLabelsExistForMesh[meshId], &result, 1,
+                      MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+        nodeLabelsExistForMesh[meshId] = result;
+#endif
+    }
 }
 
 
@@ -795,7 +926,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         }
 
         vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-        ghostNodes->SetName("avtGhostNodes");
+        ghostNodes->SetName("avtExtraGhostNodes");
         ghostNodes->SetNumberOfTuples(nNodes);
 
         unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
@@ -808,7 +939,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         }
 
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
+        ghostZones->SetName("avtExtraGhostZones");
         ghostZones->SetNumberOfTuples(nCells);
 
         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
@@ -3222,7 +3353,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) &&
+         (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) != 0))
     {
         return NULL;
     }
@@ -3281,6 +3413,65 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         df = avtMaterial::Destruct;
 
         return (void*) mat;
+    }
+    else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        const char *mesh = varName;
+        //
+        // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
+        // We need to verify the name, and get the meshId.
+        //
+        bool isSandMesh = false;
+        if (strstr(mesh, "sand_mesh") == mesh)
+        {
+            isSandMesh = true;
+        }
+        else if (strstr(mesh, "mesh") != mesh)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        if (isSandMesh)
+        {
+            offset = 9;
+        }
+
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
+        
+        if (!nodeLabelsExistForMesh[meshId])
+        {
+            return NULL;
+        }
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        intVector labelIds = miliClass->GetLabelIds()[dom];
+
+        int *myLabelIds = new int[labelIds.size()];
+        for (int i = 0; i < labelIds.size(); i ++)
+        {
+            myLabelIds[i] = labelIds[i];
+        }
+
+        vtkIntArray *rv = vtkIntArray::New();
+        rv->SetNumberOfComponents(1);
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
+
+        df = avtVariableCache::DestructVTKObject;
+
+        return (void *) rv;
     }
 
     return NULL;
@@ -3869,6 +4060,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     for (int i = 0; i < nMeshes; ++i)
     {
         miliMetaData[i] = NULL;
+        nodeLabelsExistForMesh.push_back(true);
     }
 
     //
@@ -4083,7 +4275,7 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
                                    nExpectedLabels, &numBlocks,
                                    &blockRanges, elemList, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_conn_labels failed at " << shortName << "!\n";
         numBlocks   = 0;
