@@ -22,18 +22,18 @@ The official Xdmf file format specification and description can be found `at xdm
 Basic structure of an Xdmf file
 -------------------------------
 
-The overarching structure in an Xdmf file is a `Domain`.
-A `Domain` consists of one or more `Grids`.
-A `Grid` can be either `Uniform` or a `Collection`.
-A Collection contains one or more `Uniform Grids`. 
+The overarching structure in an Xdmf file is a ``Domain``.
+A ``Domain`` consists of one or more ``Grids``.
+A ``Grid`` can be either ``Uniform`` or a ``Collection``.
+A Collection contains one or more ``Uniform Grids``. 
 
-A `Uniform` grid is the basic unit of grid and consists of a `Topology`, `Geometry` and zero or more `Attributes`.
-The `Geometry` defines the coordinates of the mesh.
-The `Topology` defines how the coordinates are connected.
-The `Attributes` are the fields on the mesh.
+A ``Uniform`` grid is the basic unit of grid and consists of a ``Topology``, ``Geometry`` and zero or more ``Attributes``.
+The ``Geometry`` defines the coordinates of the mesh.
+The ``Topology`` defines how the coordinates are connected.
+The ``Attributes`` are the fields on the mesh.
 
-The data values for a `Topology` and  `Geometry` are stored as a `DataItem`.
-A `DataItem` can be used to store numeric values directly within the Xdmf file or in an external file.
+The data values for a ``Topology`` and  ``Geometry`` are stored as a ``DataItem``.
+A ``DataItem`` can be used to store numeric values directly within the Xdmf file or in an external file.
 
 Here is the structure of a basic Xdmf file. ::
 
@@ -60,27 +60,27 @@ Here is the structure of a basic Xdmf file. ::
 DataItem
 ~~~~~~~~
 
-The `DataItem` is used to store embedded data or external binary data.
+The ``DataItem`` is used to store embedded data or external binary data.
 
-The following is an example of a `DataItem` that embeds the data directly in the Xdmf file. ::
+The following is an example of a ``DataItem`` that embeds the data directly in the Xdmf file. ::
 
     <DataItem Format="XML" NumberType="Float" Precision="4" Dimensions="3">
         1.0 2.0 3.0
     </DataItem>
 
-The following is an example of a `DataItem` that references an array in an HDF5 file. ::
+The following is an example of a ``DataItem`` that references an array in an HDF5 file. ::
 
     <DataItem Format="HDF" NumberType="Float" Precision="4" Dimensions="3">
         output.h5:/values
     </DataItem>
 
-The following is an example of a `DataItem` that references an array in a binary file. ::
+The following is an example of a ``DataItem`` that references an array in a binary file. ::
 
     <DataItem Format="Binary" NumberType="Float" Precision="4" Endian="Little" Seek="0" Dimensions="3">
         output.bin
     </DataItem>
 
-The valid values for `Format` are:
+The valid values for ``Format`` are:
 
 ======  ===================================
 XML     Text imbedded in the xml file
@@ -88,7 +88,7 @@ HDF     Binary data stored in an HDF5 file
 Binary  Binary data stored in a binary file
 ======  ===================================
 
-The valid values for `NumberType` are:
+The valid values for ``NumberType`` are:
 
 =====  ==================
 Float  Floating point
@@ -98,7 +98,7 @@ Char   Character
 UChar  Unsigned character
 =====  ==================
 
-The valid values for `Precision` are:
+The valid values for ``Precision`` are:
 
 =  ==================
 1  Char or UChar
@@ -107,9 +107,9 @@ The valid values for `Precision` are:
 8  Float, Int or UInt
 =  ==================
 
-`Dimensions` consists of one to three values representing a 1D, 2D or 3D array.
+``Dimensions`` consists of one to three values representing a 1D, 2D or 3D array.
 
-The valid values for `Endian` are:
+The valid values for ``Endian`` are:
 
 ======  ===========================================
 Native  Native endian representation on the machine
@@ -117,7 +117,7 @@ Big     Big endian representation
 Little  Little endian representation
 ======  ===========================================
 
-`Seek` is an byte offset into a binary file.
+``Seek`` is an byte offset into a binary file.
 
 Topology
 ~~~~~~~~
@@ -205,7 +205,7 @@ ORIGIN_DXDY    Four values, Ox, Oy + Dx, Dy
 Attribute
 ~~~~~~~~~
 
-The following `AttributeType` are supported.
+The following ``AttributeType`` are supported.
 
 =======  =================
 Scalar
@@ -214,7 +214,7 @@ Tensor   9 values expected
 Tensor6  6 values expected
 =======  =================
 
-The following `Centering` are supported.
+The following ``Centering`` are supported.
 
 ==== ====================================
 Node Attributes are associated with nodes
@@ -233,7 +233,7 @@ An example of a point mesh
 
 A point mesh consists of an unstructured mesh made up of a collection of points.
 The mesh can be 2D or 3D.
-It is defined by a `Polyvertex` topology.
+It is defined by a ``Polyvertex`` topology.
 
 Here is the code that writes a 3D point mesh.
 
@@ -249,7 +249,7 @@ An example of a regular mesh file
 
 A regular mesh consists of a structured mesh with constant spacing in each direction.
 The mesh can be 2D or 3D.
-It is defined by a `2DCoRectMesh` or `3DCoRectMesh` topology.
+It is defined by a ``2DCoRectMesh`` or ``3DCoRectMesh`` topology.
 
 Here is the code that writes a 3D regular mesh.
 
@@ -274,7 +274,7 @@ An example of a rectilinear mesh
 
 A rectilinear mesh consists of a structured mesh where the coordinates along each axis are specified as a 1-D array of values.
 The mesh can be 2D or 3D.
-It is defined by a `2DRectMesh` or `3DRectMesh` topology.
+It is defined by a ``2DRectMesh`` or ``3DRectMesh`` topology.
 
 Here is the code that writes a 3D rectilinear mesh.
 
@@ -299,7 +299,7 @@ An example of a curvilinear mesh
 
 A curvilinear mesh consists of a structured mesh where the coordinates are specified as multi-dimensional arrays of values.
 The mesh can be 2D or 3D.
-It is defined by a `2DSMesh` or `3DSMesh` topology.
+It is defined by a ``2DSMesh`` or ``3DSMesh`` topology.
 
 Here is the code that writes a 3D curvilinear mesh.
 
@@ -319,3 +319,18 @@ Here is the resultant Xdmf file.
 
 .. literalinclude:: data_examples/curv2d.xmf
 
+XY Curves in Xdmf
+-----------------
+
+The Xdmf file format supports only 2D and 3D mesh objects.
+XY curves are defined on 1D objects; a set of X coordinates.
+We can represent XY curves in an Xdmf file with a special case for a ``2DRectMesh`` with ``Dimensions`` of the form ``"1 N"`` where ``N`` is greater than 1.
+The X coordinates of the ``2DRectMesh`` are the x-values of the xy pairs of the curve.
+The Y coordinates of the ``2DRectMesh`` are of size 1 and that 1 value is 0. 
+The y values of the curve are then represented as a node-centered ``Attribute`` with the same ``Dimensions`` as the ``2DRectMesh`` of ``"1 N"``.
+Finally, an extra XML attribute, ``GridPurpose`` on the ``<Grid>`` tag is *required* and should have value ``"Curve"``.
+This latter bit of logic falls outside the Xdmf data model specification but because it is handled as an XML attribute inside the ``<Grid>`` tag, it is otherwise ignored by Xdmf consumers.
+
+Here an example Xdmf file for an xy curve...
+
+.. literalinclude:: data_examples/xycurve.xmf

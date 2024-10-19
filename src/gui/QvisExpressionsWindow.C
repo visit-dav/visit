@@ -749,6 +749,10 @@ QvisExpressionsWindow::CreateStandardEditor()
 // Creation:   Fri Aug 23 10:00:47 PDT 2024
 //
 // Modifications:
+//  Kathleen Biags, Fri Oct 18, 2024
+//  Set the non-read-only Interaction flags to Qt::TextEditorInteraction,
+//  Qt docs state it is the default for a text editor and  is the same as
+//  Qt::TextEditable | Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard.
 //
 // ****************************************************************************
 
@@ -767,7 +771,7 @@ QvisExpressionsWindow::SetStandardEditorReadOnly(bool read_only)
     {
         nameEditLabel->setText(tr("Name"));
         nameEdit->setReadOnly(false);
-        stdDefinitionEdit->setTextInteractionFlags(Qt::TextEditable);
+        stdDefinitionEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
         stdDefinitionEditLabel->setText(tr("Definition"));
     }
 
@@ -1011,6 +1015,10 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Cyrus Harrison, Thu Aug 22 14:27:14 PDT 2024
 //    Set text editing modes for the editor widgets, don't fully disable them.
 //
+//    Eric Brugger, Tue Oct 15 13:33:46 PDT 2024
+//    Use setTabEnabled instead of setTabVisible for the python expression
+//    tab if the Qt version is earlier than Qt6.
+//
 // ****************************************************************************
 
 void
@@ -1036,7 +1044,11 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
 
     SetStandardEditorReadOnly(read_only);
     // we don't have db defined python exprs
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    editorTabs->setTabEnabled(1,!read_only);
+#else
     editorTabs->setTabVisible(1,!read_only);
+#endif
 
     // calling setTableEnbled with a value of false seems to change the
     // current index, so capture that information and reset it after.
