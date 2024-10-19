@@ -1,0 +1,83 @@
+name: Check sync of functions.rst and MethodDoc.C
+
+#
+# See documentation at bottom of file
+#
+
+on:
+  pull_request:
+    paths:
+      - 'src/doc/python_scripting/functions.rst'
+      - 'src/visitpy/common/MethodDoc.C'
+
+jobs:
+  check-sync:
+    runs-on: ubuntu-latest
+  
+    steps:
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+  
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Get Changed Files (for PRs)
+      id: changed-files
+      uses: tj-actions/changed-files@v42
+      with:
+        separator: ' '
+
+    - name: Check synced files
+      run: |
+        have_func_rst=0
+        have_methdoc_c=0
+        for f in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          if [ "$f" = "src/doc/python_scripting/functions.rst" ]; then
+            have_func_rst=1
+          elif [ "$f" = "src/visitpy/common/MethodDoc.C" ]; then
+            have_methdoc_c=1
+          fi
+        done
+        if [[ $have_func_rst -ne $have_methdoc_c ]]; then
+          echo "Error: MethodDoc.C (and possibly MethodDoc.h) should be regenerated from functions.rst"
+          echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
+          exit 1
+        fi
+
+    - name: Check Generated MethodDoc.C
+      run: |
+         cp src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig
+         pushd src/doc
+         ./functions_to_plain_py.py
+         2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py
+         ./functions_to_method_doc.py
+         popd
+         diff src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig
+         if [ $? -ne 0 ]; then
+            echo "Error: MethodDoc.C does not appear to have been generated from functions.rst"
+            echo "       Please follow https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html"
+            exit 1
+         fi
+
+#
+# Documentation of this action
+#
+# This action is designed to catch cases where developers make inconsistent changes to
+# functions.rst and MethodDoc.C. MethodDoc.C is ordinarily *generated* from functions.rst
+# So, developers should just edit functions.rst and then follow the documentation
+# https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/UpdatingPythonDocStrings.html
+# to regenerate MethodDoc.C.
+#
+# The logic in this action only gets triggered if any of the files listed as `path` members of
+# `the pull_request` action are involved. Next, if any those files are involved, it then examines
+# the list of ALL changed files in the PR to check if functions.rst is invovled and if MethodDoc.C
+# is involved.
+#
+# If either one or the other is involved but not both, it fails with an error message.
+#
+# If both are involved, it then tries to perform the MethodDoc.C generation and confirm the
+# result is what is being committed. If not, it fails also.
+#
