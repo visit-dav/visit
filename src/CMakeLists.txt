@@ -684,7 +684,7 @@ macro(include_visit_config_site)
         else()
             unset(VISIT_CONFIG_SITE_FILE CACHE)
             unset(VISIT_CONFIG_SITE CACHE)
-            message(FATAL_ERROR "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
+            message(FATAL_ERROR "The config-site file, ${VISIT_CONFIG_SITE_FILE}, does not exist. Pass -DVISIT_CONFIG_SITE=NONE if no config-site file is needed.")
         endif()
     endif()
 
