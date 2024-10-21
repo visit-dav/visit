@@ -20,7 +20,7 @@ Examples of *config site* files for a variety of machines VisIt_ developers dire
   make -j
 
 For cases where a *config-site* file will not be used, this must be explicitly indicated by passing ``-DVISIT_CONFIG_SITE=NONE``.
-This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified the command-line to CMake itself instead of a *config-site* file.
+This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command-line to CMake itself instead of a *config-site* file.
 
 .. code:: bash
 
