@@ -5676,6 +5676,47 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //    Mark C. Miller, Wed Nov 11 12:28:25 PST 2009
 //    Added guard against case where some mmadj->nodelists arrays are null.
 // ****************************************************************************
+static bool 
+process_one_domain_for_pbcs(int dom, int &nnidx, int &onidx, int &pbcidx,
+    int *old_nneighbors, int const *old_neighbors, int *new_neighbors,
+    int const *pbcBndList, int const *pbcDomList)
+{
+    if (pbcDomList[pbcidx] > dom) // copy all neighbors for this dom
+    {
+printf("copying all neighbors for domain %d\n", dom);
+        int nneighbors = old_nneighbors[dom];
+        for (int i = 0; i < nneighbors; i++)
+            new_neighbors[nnidx++] = old_neighbors[onidx++];
+        return true;
+    }
+    else if (pbcDomList[pbcidx] == dom) // copy only non-pbc neighbors for this dom
+    {
+        int i, ncopied = 0;
+        int nneighbors = old_nneighbors[dom];
+        for (i = 0; (i < nneighbors) && (pbcDomList[pbcidx] == dom); i++)
+        {
+            if (i < pbcBndList[pbcidx])
+            {
+                new_neighbors[nnidx++] = old_neighbors[onidx++];
+                ncopied++;    
+            }
+            else
+            {
+                onidx++;
+                pbcidx++;
+            }
+        }
+        for (int j = i; j < nneighbors; j++)
+        {
+            new_neighbors[nnidx++] = old_neighbors[onidx++];
+            ncopied++;    
+        }
+printf("copied %d neighbors for domain %d\n", ncopied, dom);
+        old_nneighbors[dom] = ncopied;
+        return true;
+    }
+    return false;
+}
 
 void
 avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
@@ -5721,6 +5762,53 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
 
     if (needConnectivityInfo)
     {
+
+        /* If we have information needed to break periodic boundary conditions
+           (PBCs) from completely enshrouding the whole mesh, read and process it */
+        if (DBInqVarExists(dbfile, "PeriodicBndList") &&
+            DBInqVarExists(dbfile, "PeriodicDomList"))
+        {
+            int nBndEntries = DBGetVarLength(dbfile, "PeriodicBndList");
+            int nDomEntries = DBGetVarLength(dbfile, "PeriodicDomList");
+            if (nBndEntries != nDomEntries)
+            {
+                DBFreeMultimeshadj(mmadj_obj);
+                EXCEPTION1(InvalidFilesException, "PeriodicBndList size != PeriodicDomList size");
+            }
+
+            int *pbcBndList = (int*) DBGetVar(dbfile, "PeriodicBndList");
+            int *pbcDomList = (int*) DBGetVar(dbfile, "PeriodicDomList");
+
+            int new_lneighbors = mmadj_obj->lneighbors - nBndEntries;
+            int *new_neighbors = (int *) malloc(new_lneighbors*sizeof(int));
+
+            int nnidx = 0; // index into new_neighbors
+            int onidx = 0; // index into old_neighbors (mmadj_obj->neighbors)
+            int pbcidx = 0; // index into pbc lists
+
+            for (int i = 0; i < ndomains; i++)
+            {
+                bool ok = process_one_domain_for_pbcs(i, nnidx, onidx, pbcidx, 
+                             mmadj_obj->nneighbors, mmadj_obj->neighbors,
+                             new_neighbors, pbcBndList, pbcDomList);
+                if (!ok)
+                {
+                    DBFreeMultimeshadj(mmadj_obj);
+                    free(new_neighbors);
+                    EXCEPTION1(InvalidFilesException, "Problem processing PeriodicBndList");
+                }
+            }
+            printf("new_lneighbors = %d, onidx = %d\n", new_lneighbors, onidx);
+            free(pbcBndList);
+            free(pbcDomList);
+
+            // Replace mmadj's neighbors data with the new stuff modified for pbcs
+            // Note: mmadj_obj->nneighbors gets modified in place.
+            free(mmadj_obj->neighbors);
+            mmadj_obj->lneighbors = new_lneighbors;
+            mmadj_obj->neighbors = new_neighbors;
+        }
+
         extents = new int[ndomains*6];
         nneighbors = new int[ndomains];
         lneighbors = 0;
