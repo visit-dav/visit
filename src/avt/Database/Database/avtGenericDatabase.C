@@ -298,6 +298,183 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
 }
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::AugmentGhostData
+//
+//  Purpose:
+//      Merge generated ghost zones/nodes with extra ghost zones/nodes provided
+//      by the database in the form of avtExtraGhostZones and 
+//      avtExtraGhostNodes.
+//
+//  Returns:    void
+//
+//  Programmer: Justin Privitera
+//  Creation:   10/17/24
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
+                                     avtDataRequest_p &spec,
+                                     avtSourceFromDatabase *src)
+{
+    char  progressString[1024] = "Augmenting Ghost Arrays";
+    src->DatabaseProgress(0, 0, progressString);
+    const int ndomains = ds.GetNDomains();
+    for (int domain_id = 0; domain_id < ndomains; domain_id ++)
+    {
+        vtkDataSet *dataset = ds.GetDataset(domain_id, 0);
+        if (dataset != NULL)
+        {
+            // TODO is a single bool in the mili db header fine for valid node ids?
+
+            // this lambda handles zone and node cases
+            auto combineGhosts = [this, spec, domain_id](vtkUnsignedCharArray* ghosts, 
+                                                         vtkUnsignedCharArray* extraGhosts,
+                                                         vtkDataSet* dataset,
+                                                         const std::string &arrayName,
+                                                         bool cellCentered)
+            {
+                // if we have provided extra ghost zones or nodes to begin with.
+                // if we haven't, then there is nothing to do
+                if (extraGhosts)
+                {
+                    // is there already a ghost node or ghost zone array
+                    if (ghosts)
+                    {
+                        const int num_comps = ghosts->GetNumberOfComponents();
+                        if (1 != num_comps || 1 != extraGhosts->GetNumberOfComponents())
+                        {
+                            // we don't know what to do in the case that the ghost
+                            // zone/node array has more than one component
+                            EXCEPTION0(ImproperUseException);
+                        }
+                        const int num_tuples = ghosts->GetNumberOfTuples();
+                        if (num_tuples != extraGhosts->GetNumberOfTuples())
+                        {
+                            // we don't know what to do in the case that the original
+                            // and extra ghost zone/node arrays do not have the same 
+                            // number of tuples.
+                            EXCEPTION0(ImproperUseException);
+                        }
+
+                        // create a new ghost zone/node array that will be the result 
+                        // of merging the existing and extra.
+                        vtkUnsignedCharArray *newGhosts = vtkUnsignedCharArray::New();
+                        newGhosts->SetName(arrayName.c_str());
+                        newGhosts->SetNumberOfComponents(num_comps);
+                        newGhosts->SetNumberOfTuples(num_tuples);
+                        unsigned char *ghostPtr = ghosts->GetPointer(0);
+                        unsigned char *extraGhostPtr = extraGhosts->GetPointer(0);
+                        unsigned char *newGhostPtr = newGhosts->GetPointer(0);
+
+                        for (int tuple_id = 0; tuple_id < num_tuples; tuple_id ++)
+                        {
+                            // bitwise OR
+                            newGhostPtr[tuple_id] = ghostPtr[tuple_id] | extraGhostPtr[tuple_id];
+                        }
+
+                        if (cellCentered)
+                        {
+                            dataset->GetCellData()->RemoveArray(arrayName.c_str());
+                            dataset->GetCellData()->AddArray(newGhosts);
+                            newGhosts->Delete();
+                            dataset->GetCellData()->CopyFieldOn(arrayName.c_str());
+                        }
+                        else
+                        {
+                            dataset->GetPointData()->RemoveArray(arrayName.c_str());
+                            dataset->GetPointData()->AddArray(newGhosts);
+                            newGhosts->Delete();
+                            dataset->GetPointData()->CopyFieldOn(arrayName.c_str());
+                        }
+                    }
+                    else // we can still succeed with no ghosts
+                    {
+                        const int num_comps = extraGhosts->GetNumberOfComponents();
+                        if (1 != num_comps)
+                        {
+                            // we don't know what to do in the case that the extra ghost
+                            // zone/node array has more than one component
+                            EXCEPTION0(ImproperUseException);
+                        }
+                        const int num_tuples = extraGhosts->GetNumberOfTuples();
+
+                        // create a new ghost zone/node array that will be a copy of
+                        // the extra ghost zone/node array
+                        vtkUnsignedCharArray *newGhosts = vtkUnsignedCharArray::New();
+                        newGhosts->SetName(arrayName.c_str());
+                        newGhosts->SetNumberOfComponents(num_comps);
+                        newGhosts->SetNumberOfTuples(num_tuples);
+                        unsigned char *extraGhostPtr = extraGhosts->GetPointer(0);
+                        unsigned char *newGhostPtr = newGhosts->GetPointer(0);
+                        for (int tuple_id = 0; tuple_id < num_tuples; tuple_id ++)
+                        {
+                            // copy data
+                            newGhostPtr[tuple_id] = extraGhostPtr[tuple_id];
+                        }
+
+                        if (cellCentered)
+                        {
+                            dataset->GetCellData()->AddArray(newGhosts);
+                            newGhosts->Delete();
+                            dataset->GetCellData()->CopyFieldOn(arrayName.c_str());
+
+                            // if we are cell centered then we need to perform some 
+                            // extra steps to tell the metadata that we now have 
+                            // ghost zones.
+                            const int ts = spec->GetTimestep();
+                            avtDatabaseMetaData *md = GetMetaData(ts);
+                            const char *varname = spec->GetVariable();
+                            string meshname = md->MeshForVar(varname);
+                            md->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+                        }
+                        else
+                        {
+                            dataset->GetPointData()->AddArray(newGhosts);
+                            newGhosts->Delete();
+                            dataset->GetPointData()->CopyFieldOn(arrayName.c_str());
+                        }
+                    }
+                }
+            };
+
+            // zones first
+            vtkUnsignedCharArray *ghostZones = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetCellData()->GetArray("avtGhostZones"));
+            vtkUnsignedCharArray *extraGhostZones = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetCellData()->GetArray("avtExtraGhostZones"));
+
+            combineGhosts(ghostZones,
+                          extraGhostZones,
+                          dataset,
+                          "avtGhostZones",
+                          true /*cell centered is true*/);
+
+            // nodes second
+            vtkUnsignedCharArray *ghostNodes = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetPointData()->GetArray("avtGhostNodes"));
+            vtkUnsignedCharArray *extraGhostNodes = 
+                static_cast<vtkUnsignedCharArray*>(
+                    dataset->GetPointData()->GetArray("avtExtraGhostNodes"));
+
+            combineGhosts(ghostNodes,
+                          extraGhostNodes,
+                          dataset,
+                          "avtGhostNodes",
+                          false /*cell centered is false*/);
+        }
+
+        src->DatabaseProgress(domain_id, ndomains, progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::GetOutput
 //
 //  Purpose:
@@ -492,6 +669,9 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
 //
 //    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
 //    Added a call to GetQOTOutput when prompted.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Call augment ghost data unconditionally.
 //
 // ****************************************************************************
 
@@ -838,6 +1018,8 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                                       spec, src, allDomains,
                                       canDoCollectiveCommunication);
     }
+    // unconditionally add ghost data if the database provided extra ghost information
+    AugmentGhostData(datasetCollection, spec, src);
 
     //
     // Finally, do the material selection.
@@ -3119,6 +3301,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //
 //    Kathleen Biagas, Thu Sep 11 09:10:42 PDT 2014
 //    Keep avtOriginalNodeNumbers if present.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Keep extra ghost zone/node arrays if present.
 //
 // ****************************************************************************
 
@@ -3259,6 +3444,16 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         rv->GetPointData()->AddArray(
             mesh->GetPointData()->GetArray("avtGhostNodes"));
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+    }
+    if (mesh->GetCellData()->GetArray("avtExtraGhostZones"))
+    {
+        rv->GetCellData()->AddArray(
+            mesh->GetCellData()->GetArray("avtExtraGhostZones"));
+    }
+    if (mesh->GetPointData()->GetArray("avtExtraGhostNodes"))
+    {
+        rv->GetPointData()->AddArray(
+            mesh->GetPointData()->GetArray("avtExtraGhostNodes"));
     }
     if (mesh->GetCellData()->GetArray("avtOriginalCellNumbers"))
     {
@@ -7791,6 +7986,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Modified to handle the case where a variable is defined on a subset
 //    of the materials and a domain has mixed materials without the material
 //    the variable was defined on.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Exchange extra ghost zone/node arrays.
 //
 // ****************************************************************************
 
@@ -8410,6 +8608,74 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             ds1->GetCellData()->AddArray(cellNumsOut[j]);
             cellNumsOut[j]->Delete();
         }
+    }
+
+    //
+    // Exchange ExtraGhostZone Arrays.
+    //
+    // this logic was added to support the functionality in the 
+    // AugmentGhostData() function.
+    vector<vtkDataArray *> extraGhostZones;
+    for (size_t j = 0 ; j < doms.size() ; j++)
+    {
+        vtkDataSet *ds1 = list[j];
+        if (ds1 == NULL ||
+            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+        {
+            extraGhostZones.push_back(NULL);
+            continue;
+        }
+        if (ds1->GetCellData()->GetArray("avtExtraGhostZones"))
+        {
+            extraGhostZones.push_back(ds1->GetCellData()->GetArray(
+                                                "avtExtraGhostZones"));            
+        }
+
+    }
+    vector<vtkDataArray *> extraGhostZonesOut;
+    extraGhostZonesOut = dbi->ExchangeScalar(doms,false,extraGhostZones);
+    for (int j = 0 ; j < (int)doms.size() ; j++)
+    {
+        vtkDataSet *ds1 = ds.GetDataset(j, 0);
+        if (ds1 == NULL ||
+            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+            continue;
+        ds1->GetCellData()->AddArray(extraGhostZonesOut[j]);
+        extraGhostZonesOut[j]->Delete();
+    }
+
+    //
+    // Exchange ExtraGhostNode Arrays.
+    //
+    // this logic was added to support the functionality in the 
+    // AugmentGhostData() function.
+    vector<vtkDataArray *> extraGhostNodes;
+    for (size_t j = 0 ; j < doms.size() ; j++)
+    {
+        vtkDataSet *ds1 = list[j];
+        if (ds1 == NULL ||
+            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+        {
+            extraGhostNodes.push_back(NULL);
+            continue;
+        }
+        if (ds1->GetPointData()->GetArray("avtExtraGhostNodes"))
+        {
+            extraGhostNodes.push_back(ds1->GetPointData()->GetArray(
+                                                "avtExtraGhostNodes"));            
+        }
+
+    }
+    vector<vtkDataArray *> extraGhostNodesOut;
+    extraGhostNodesOut = dbi->ExchangeScalar(doms,true,extraGhostNodes);
+    for (int j = 0 ; j < (int)doms.size() ; j++)
+    {
+        vtkDataSet *ds1 = ds.GetDataset(j, 0);
+        if (ds1 == NULL ||
+            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+            continue;
+        ds1->GetPointData()->AddArray(extraGhostNodesOut[j]);
+        extraGhostNodesOut[j]->Delete();
     }
 
     //
