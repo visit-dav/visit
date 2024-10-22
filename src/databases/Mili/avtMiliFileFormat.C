@@ -480,126 +480,6 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtMiliFileFormat::ActivateTimestep
-//
-//  Purpose: Provides a guarenteed collective entry point for operations
-//    that may involve collective parallel communication.
-//
-//  Programmer: Justin Privitera
-//  Creation:   Mon Sep  9 16:48:10 PDT 2024
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMiliFileFormat::ActivateTimestep(int ts)
-{
-    const int num_domains = dbid.size();
-    // main loop
-    for (int meshId = 0; meshId < nMeshes; meshId ++)
-    {
-        int start_domain, stop_domain;
-
-#ifdef PARALLEL
-        const int rank = PAR_Rank();
-        const int num_ranks = PAR_Size();
-
-        const int count = num_domains / num_ranks;
-        const int remainder = num_domains % num_ranks;
-
-        if (rank < remainder)
-        {
-            start_domain = rank * (count + 1);
-            stop_domain = start_domain + count + 1;
-        }
-        else
-        {
-            start_domain = rank * count + remainder;
-            stop_domain = start_domain + count;
-        }
-#else
-        start_domain = 0;
-        stop_domain = num_domains;
-#endif
-
-        // 
-        // read the label ids from the mili file
-        // 
-        for (int domainId = start_domain; domainId < stop_domain; domainId ++)
-        {
-            if (dbid[domainId] == -1)
-            {
-                OpenDB(domainId);
-            }
-
-            //
-            // Perform an mc call to retrieve the number of nodes
-            // on this domain, and update our meta data.
-            //
-            int classIdx     = 0;
-            char shortName[1024];
-            char longName[1024];
-            int nNodes = 0;
-
-            int rval = mc_get_class_info(dbid[domainId],
-                                         meshId,
-                                         M_NODE,
-                                         classIdx,
-                                         shortName,
-                                         longName,
-                                         &nNodes);
-
-            if (rval != OK)
-            {
-                char msg[512];
-                snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
-                EXCEPTION1(ImproperUseException, msg);
-            }
-
-            int numBlocks     = 0;
-            int *blockRanges  = NULL;
-            int *domain_label_ids = new int[nNodes];
-
-            for (int nodeId = 0; nodeId < nNodes; nodeId ++)
-            {
-                domain_label_ids[nodeId] = -1;
-            }
-
-            rval = mc_load_node_labels(dbid[domainId],
-                                       meshId,
-                                       shortName,
-                                       &numBlocks,
-                                       &blockRanges,
-                                       domain_label_ids);
-
-            if (rval != OK || 0 == numBlocks)
-            {
-                debug1 << "MILI: mc_load_node_labels failed!\n";
-                nodeLabelsExistForMesh[meshId] = false;
-            }
-
-            //
-            // Mili mallocs blockRanges using C style.
-            //
-            if (blockRanges != NULL)
-            {
-                free(blockRanges);
-            }
-
-        }
-
-#ifdef PARALLEL
-        int result;
-        MPI_Allreduce(&nodeLabelsExistForMesh[meshId], &result, 1,
-                      MPI_INT, MPI_MIN, VISIT_MPI_COMM);
-        nodeLabelsExistForMesh[meshId] = result;
-#endif
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtMiliFileFormat::OpenDB
 //
 //  Purpose:
@@ -4347,11 +4227,12 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
     int rval = mc_load_node_labels(dbid[dom], meshId, shortName,
                                    &numBlocks, &blockRanges, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_node_labels failed!\n";
         numBlocks   = 0;
         blockRanges = NULL;
+        nodeLabelsExistForMesh[meshId] = false;
     }
 
     MiliClassMetaData *miliClass =

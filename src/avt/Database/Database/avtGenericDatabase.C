@@ -344,13 +344,20 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
                     if (ghosts)
                     {
                         const int num_comps = ghosts->GetNumberOfComponents();
-                        if (1 != num_comps)
+                        if (1 != num_comps || 1 != extraGhosts->GetNumberOfComponents())
                         {
                             // we don't know what to do in the case that the ghost
                             // zone/node array has more than one component
                             EXCEPTION0(ImproperUseException);
                         }
                         const int num_tuples = ghosts->GetNumberOfTuples();
+                        if (num_tuples != extraGhosts->GetNumberOfTuples())
+                        {
+                            // we don't know what to do in the case that the original
+                            // and extra ghost zone/node arrays do not have the same 
+                            // number of tuples.
+                            EXCEPTION0(ImproperUseException);
+                        }
 
                         // create a new ghost zone/node array that will be the result 
                         // of merging the existing and extra.
