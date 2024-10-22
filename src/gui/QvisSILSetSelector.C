@@ -9,9 +9,13 @@
 #include <SILRestrictionAttributes.h>
 
 #include <QComboBox>
+#include <QLineEdit>
+#include <QCompleter>
 #include <QLabel>
 #include <QLayout>
 #include <QListWidget>
+#include <QStringList>
+#include <QStringListModel>
 #include <stdio.h>
 #include <string>
 #include <algorithm>
@@ -24,8 +28,8 @@ using std::string;
 //
 // Purpose:    Constructor
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
@@ -37,9 +41,17 @@ using std::string;
 //   Brad Whitlock, Thu Jul 17 16:41:18 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Monday Oct 21, 2024
+//   Added QCompleter and QStringListModel for use with subsetName ComboBox.
+//   Made subsetName editable, with a NoInsert policy. This allows users to
+//   type in their option rather than scrolling through a possbily very long
+//   list.  Changed the SIGNAL subsetName connects with to it's lineEdit's
+//   editingFinished.  This works with typed text and with a selection from
+//   the dropdown.
+//
 // ****************************************************************************
 
-QvisSILSetSelector::QvisSILSetSelector(QWidget *parent, 
+QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
         SILRestrictionAttributes *silra, intVector &r) :
     QWidget(parent), SimpleObserver(), GUIBase(), silUseSet()
 {
@@ -81,10 +93,25 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
     subsetName = new QComboBox(this);
     subsetName->addItem(defaultItem);
     subsetName->setCurrentIndex(0);
-    connect(subsetName, SIGNAL(activated(int)),
+    subsetName->setEditable(true);
+    subsetName->setInsertPolicy(QComboBox::NoInsert);
+
+    // don't want to use QComboBox::editTextChanged as that SIGNAL is emitted
+    // with every key stroke.  The QCompleter already helps with some of the
+    // validation that using editTextChanged would allow.
+    // Better just to wait until they are finished typing to do the
+    // validation.   editingFinished allows this.
+    connect(subsetName->lineEdit(), SIGNAL(editingFinished()),
             this, SLOT(subsetNameChanged()));
+
     mainLayout->addWidget(subsetName, 1,1);
     mainLayout->setColumnStretch(1, 10);
+
+    subsetNameCompleter = new QCompleter(this);
+    subsetNameCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+    subsetName->setCompleter(subsetNameCompleter);
+    subsetNameModel = new QStringListModel();
+    subsetName->setModel(subsetNameModel);
 
     UpdateComboBoxes();
 }
@@ -96,10 +123,10 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
 // Purpose:    Destructor
 //
 // Programmer: Kathleen Bonnell
-// Creation:   June 6, 2007 
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisSILSetSelector::~QvisSILSetSelector()
@@ -112,14 +139,14 @@ QvisSILSetSelector::~QvisSILSetSelector()
 // ****************************************************************************
 // Method: QvisSILSetSelector::Update
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   June 6, 2007 
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -136,35 +163,35 @@ QvisSILSetSelector::Update(Subject *TheChangedSubject)
 // ****************************************************************************
 // Method: QvisSILSetSelector::SubjectRemoved
 //
-// Purpose: 
-//   Detaches from the atts when they are going to be removed. 
+// Purpose:
+//   Detaches from the atts when they are going to be removed.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   June 6, 2007 
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 QvisSILSetSelector::SubjectRemoved(Subject *TheRemovedSubject)
 {
     if (TheRemovedSubject == silAtts)
-        silAtts = 0; 
+        silAtts = 0;
 }
 
 
 // ****************************************************************************
 // Method: QvisSILSetSelector::UpdateComboBoxes
 //
-// Purpose: 
-//   Determnes which combo box needs to be updated. 
+// Purpose:
+//   Determnes which combo box needs to be updated.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -191,10 +218,10 @@ QvisSILSetSelector::UpdateComboBoxes()
 // ****************************************************************************
 // Method: QvisSILSetSelector::FillCategoryBox
 //
-// Purpose: 
-//   Reads the current SILRestriction and updates the category list. 
+// Purpose:
+//   Reads the current SILRestriction and updates the category list.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   June 6, 2007
 //
 // Modifications:
@@ -225,7 +252,7 @@ QvisSILSetSelector::FillCategoryBox()
             if (std::find(allowedCategories.begin(), allowedCategories.end(),
                         (int)collection->GetRole()) != allowedCategories.end())
             {
-                categoryName->addItem(collectionName);    
+                categoryName->addItem(collectionName);
             }
         }
 
@@ -238,7 +265,7 @@ QvisSILSetSelector::FillCategoryBox()
             {
                 categoryName->setCurrentIndex(0);
             }
-            else 
+            else
             {
                 int idx = categoryName->findText(userCategory, Qt::MatchExactly);
                 if (idx == -1)
@@ -261,7 +288,7 @@ QvisSILSetSelector::FillCategoryBox()
         categoryName->setEnabled(false);
         categoryLabel->setEnabled(false);
     }
-    else 
+    else
     {
         categoryName->setEnabled(true);
         categoryLabel->setEnabled(true);
@@ -273,11 +300,11 @@ QvisSILSetSelector::FillCategoryBox()
 // ****************************************************************************
 // Method: QvisSILSetSelector::FillSubsetBox
 //
-// Purpose: 
-//   Reads the current SILRestriction and updates the subset list. 
+// Purpose:
+//   Reads the current SILRestriction and updates the subset list.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
@@ -288,6 +315,11 @@ QvisSILSetSelector::FillCategoryBox()
 //
 //   Hank Childs, Fri Dec 11 11:37:48 PST 2009
 //   Adapt to changes in the SIL interface.
+//
+//   Kathleen Biagas, Monday Oct 21, 2024
+//   Collect names in a QStringList, and use to set the QStringListModel.
+//   The Completer and the subsetName ComboBox will utilize the names
+//   from the model.
 //
 // ****************************************************************************
 
@@ -307,9 +339,10 @@ QvisSILSetSelector::FillSubsetBox()
         // Fill  with sets under the currently selected category.
         //
         int colIndex = restriction->GetCollectionIndex(cn.toStdString(), silTopSet);
-        avtSILCollection_p collection =restriction->GetSILCollection(colIndex); 
+        avtSILCollection_p collection =restriction->GetSILCollection(colIndex);
         if (*collection != NULL)
         {
+            QStringList snames;
             int numSubsets = collection->GetNumberOfSubsets();
             for (int i = 0; i < numSubsets; ++i)
             {
@@ -317,19 +350,22 @@ QvisSILSetSelector::FillSubsetBox()
                 if (silUseSet[setIdx] != 0)
                 {
                     avtSILSet_p set = restriction->GetSILSet(setIdx);
-                    subsetName->addItem(QString(set->GetName().c_str()));
-                } 
-            } 
+                    snames.append(QString(set->GetName().c_str()));
+                }
+            }
             //
-            // Set the current item for the subset 
+            // Set the current item for the subset
             //
-            if (subsetName->count() != 0)
+            if (snames.count() != 0)
             {
-                if (userSubset == defaultItem && lastGoodSubset == defaultItem) 
+                subsetNameModel->setStringList(snames);
+                // Model changed, Completer needs to be reset in the combo box
+                subsetName->setCompleter(subsetNameCompleter);
+                if (userSubset == defaultItem && lastGoodSubset == defaultItem)
                 {
                     subsetName->setCurrentIndex(0);
                 }
-                else 
+                else
                 {
                     int idx = subsetName->findText(userSubset, Qt::MatchExactly);
                     if (idx == -1)
@@ -367,15 +403,15 @@ QvisSILSetSelector::FillSubsetBox()
 // ****************************************************************************
 // Method: QvisSILSetSelector::categoryNameChanged
 //
-// Purpose: 
+// Purpose:
 //   A Qt slot called when a new subset name is chosen, emits a signal
 //   with the new subset name when not blocked.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -398,26 +434,48 @@ QvisSILSetSelector::categoryNameChanged()
 // ****************************************************************************
 // Method: QvisSILSetSelector::subsetNameChanged
 //
-// Purpose: 
+// Purpose:
 //   A Qt slot called when a new subset name is chosen, emits a signal
 //   with the new subset name when not blocked.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Monday Oct 21, 2024
+//   Since subsetName is now editable, check for valid entry, and issue
+//   a warning if it isn't valid, resetting to lastGoodSubset.
+//
 // ****************************************************************************
 
 void
 QvisSILSetSelector::subsetNameChanged()
 {
     QString temp = subsetName->currentText();
-    if (!temp.isEmpty())
+    if (subsetName->count() != 0)
     {
-        if (!signalsBlocked())
-            emit subsetChanged(temp);
-        lastGoodSubset = temp;
+        bool currentBlockSignals = signalsBlocked();
+        blockSignals(true);
+        if(subsetName->findText(temp, Qt::MatchExactly) == -1)
+        {
+            int idx = subsetName->findText(lastGoodSubset, Qt::MatchExactly);
+            idx = (idx == -1 ? 0 : idx);
+            subsetName->setCurrentIndex(idx);
+            lastGoodSubset = subsetName->currentText();
+            blockSignals(false);
+            QString msg = tr("%1 is not a valid Set name. "
+                "Resetting to the last good value: %2").arg(temp, lastGoodSubset);
+            Warning(msg);
+            temp = lastGoodSubset;
+        }
+        blockSignals(currentBlockSignals);
+
+        if (!temp.isEmpty())
+        {
+            if (!signalsBlocked())
+                emit subsetChanged(temp);
+            lastGoodSubset = temp;
+        }
     }
 }
 
@@ -425,19 +483,19 @@ QvisSILSetSelector::subsetNameChanged()
 // ****************************************************************************
 // Method: QvisSILSetSelector::SetCategoryName
 //
-// Purpose: 
-//   Sets the currently selected category name, if it exists in the list. 
+// Purpose:
+//   Sets the currently selected category name, if it exists in the list.
 //
 // Arguments:
 //   name      The category name to make current.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
 //   Added userCategory.
-//   
+//
 //   Hank Childs, Wed Jan  9 17:29:03 PST 2008
 //   Call method categoryNameChanged, so the subset names will be set up.
 //
@@ -446,7 +504,7 @@ QvisSILSetSelector::subsetNameChanged()
 //
 // ****************************************************************************
 
-void 
+void
 QvisSILSetSelector::SetCategoryName(const QString &name)
 {
     userCategory = name;
@@ -465,17 +523,17 @@ QvisSILSetSelector::SetCategoryName(const QString &name)
 // ****************************************************************************
 // Method: QvisSILSetSelector::GetCategoryName
 //
-// Purpose: 
+// Purpose:
 //   Returns the currently selected categoryName.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-QString 
+QString
 QvisSILSetSelector::GetCategoryName() const
 {
     return categoryName->currentText();
@@ -485,14 +543,14 @@ QvisSILSetSelector::GetCategoryName() const
 // ****************************************************************************
 // Method: QvisSILSetSelector::SetSubsetName
 //
-// Purpose: 
-//   Sets the currently selected subset name, if it exists in the list. 
+// Purpose:
+//   Sets the currently selected subset name, if it exists in the list.
 //
 // Arguments:
 //   name      The subset name to make current.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
@@ -503,7 +561,7 @@ QvisSILSetSelector::GetCategoryName() const
 //
 // ****************************************************************************
 
-void 
+void
 QvisSILSetSelector::SetSubsetName(const QString &name)
 {
     userSubset = name;
@@ -522,17 +580,17 @@ QvisSILSetSelector::SetSubsetName(const QString &name)
 // ****************************************************************************
 // Method: QvisSILSetSelector::GetSubsetName
 //
-// Purpose: 
-//   Returns the currently selected subset name. 
+// Purpose:
+//   Returns the currently selected subset name.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-QString 
+QString
 QvisSILSetSelector::GetSubsetName() const
 {
     return subsetName->currentText();
