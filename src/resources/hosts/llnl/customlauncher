@@ -72,6 +72,10 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   I tweeked the setting of the environment variables as part of the bsub
 #   command.
 #
+#   Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
+#   I split out the jsrun portion of the job launcher into its own job
+#   launcher.
+#
 ###############################################################################
 
 class JobSubmitter_bsub_LLNL(JobSubmitter):
@@ -89,7 +93,7 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
         parcmd = parcmd + ["LSF_LIBDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib"]
         parcmd = parcmd + ["LSF_SERVERDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/etc"]
         parcmd = parcmd + ["XLSF_UIDDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib/uid"]
-        parcmd = parcmd + ["/usr/tcetmp/bin/bsub"]
+        parcmd = parcmd + self.Executable()
         parcmd = parcmd + ["-core_isolation", "2"]
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
@@ -101,12 +105,37 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
             parcmd = parcmd + ["-W", self.parallel.time]
         if self.parallel.bank != None:
             parcmd = parcmd + ["-G", self.parallel.bank]
+
+        subcmd = launcher.JobSubmitterFactory(sublauncher).CreateCommand(args, debugger)
+        parcmd = parcmd + subcmd
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_jsrun_LLNL
+#
+# Purpose:    Custom "jsrun" job submitter for LLNL.
+#
+# Programmer: Eric Brugger
+# Date:       Mon Aug 26 10:54:18 PDT 2024
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_jsrun_LLNL(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_jsrun_LLNL, self).__init__(launcher)
+
+    def Executable(self):
+        return ["/usr/tce/packages/jsrun/jsrun-2019.05.02/bin/jsrun"]
+
+    def CreateCommand(self, args, debugger):
         nodes = self.parallel.nn
         if nodes == None:
             nodes = self.parallel.np
         ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
-        parcmd = parcmd + ["env", "LD_LIBRARY_PATH=%s" % GETENV("LD_LIBRARY_PATH")]
-        parcmd = parcmd + ["/usr/tce/packages/jsrun/jsrun-2019.05.02/bin/jsrun"]
+        parcmd = ["env", "LD_LIBRARY_PATH=%s" % GETENV("LD_LIBRARY_PATH")]
+        parcmd = parcmd + self.Executable()
         parcmd = parcmd + ["--np", self.parallel.np]
         parcmd = parcmd + ["--nrs", self.parallel.nn]
         parcmd = parcmd + ["-c", "ALL_CPUS", "-g", "ALL_GPUS"]
@@ -230,6 +259,9 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Cyrus Harrison, Wed Mar 27 09:45:27 PDT 2024
 #   Cleanup and added toss4 logic needed to run on CTS-2 with srun.
 #
+#   Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
+#   Added an LLNL specific job launcher for jsrun.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -313,6 +345,11 @@ class LLNLLauncher(MainLauncher):
                 self.sectorname() == "rzansel" or \
                 self.sectorname() == "sierra":
                 return JobSubmitter_bsub_LLNL(self)
+        elif launch[:5] == "jsrun":
+            if self.sectorname() == "lassen" or \
+                self.sectorname() == "rzansel" or \
+                self.sectorname() == "sierra":
+                return JobSubmitter_jsrun_LLNL(self)
         return super(LLNLLauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function
