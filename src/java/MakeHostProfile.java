@@ -27,6 +27,10 @@ import java.util.Vector;
 //
 //   Kathleen Biagas, Wed Nov  9 14:30:32 PST 2016
 //   Update host name to a machine that still exists.
+//
+//   Kathleen Biagas, Tuesday Oct 22, 2024
+//   Replace pascal with poodle.
+//
 // ****************************************************************************
 
 public class MakeHostProfile extends RunViewer
@@ -39,7 +43,7 @@ public class MakeHostProfile extends RunViewer
     protected void work(String[] args)
     {
         // Change these for your remote system.
-        String host = new String("pascal.llnl.gov");
+        String host = new String("poodle.llnl.gov");
         String user = new String("kbonnell");
         String remotevisitPath = new String("/usr/gapps/visit");
 

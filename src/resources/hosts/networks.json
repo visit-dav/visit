@@ -132,6 +132,9 @@
       "network": "llnl",
       "files": [
         {
+          "name": ".host_llnl_pascal.xml.swp"
+        },
+        {
           "name": "config"
         },
         {
@@ -154,9 +157,6 @@
         },
         {
           "name": "host_llnl_oslic.xml"
-        },
-        {
-          "name": "host_llnl_pascal.xml"
         },
         {
           "name": "host_llnl_poodle.xml"
