@@ -362,6 +362,8 @@ class MiliElementSetMetaData : public MiliVariableMetaData
 //  Creation:    Jan 16, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Add GetLabelIds method.
 //
 // ****************************************************************************
 

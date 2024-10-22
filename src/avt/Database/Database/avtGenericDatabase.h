@@ -330,6 +330,9 @@ class     vtkUnstructuredGrid;
 //
 //    Alister Maguire, Fri Nov  6 08:39:59 PST 2020
 //    Updated AddSecondaryQOTVariables to accept a vector of strings.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Add AugmentGhostData method.
 //
 // ****************************************************************************
 

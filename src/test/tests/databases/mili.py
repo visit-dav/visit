@@ -27,6 +27,9 @@
 #
 #    Alister Maguire, Fri Mar 26 10:25:08 PDT 2021
 #    Added more tests for derived variables (stress, strain, sand mesh).
+# 
+#    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+#    Add test for hiding material edge lines.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")

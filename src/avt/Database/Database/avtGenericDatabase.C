@@ -669,6 +669,9 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
 //
 //    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
 //    Added a call to GetQOTOutput when prompted.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Call augment ghost data unconditionally.
 //
 // ****************************************************************************
 
@@ -3298,6 +3301,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //
 //    Kathleen Biagas, Thu Sep 11 09:10:42 PDT 2014
 //    Keep avtOriginalNodeNumbers if present.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Keep extra ghost zone/node arrays if present.
 //
 // ****************************************************************************
 
@@ -7980,6 +7986,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Modified to handle the case where a variable is defined on a subset
 //    of the materials and a domain has mixed materials without the material
 //    the variable was defined on.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Exchange extra ghost zone/node arrays.
 //
 // ****************************************************************************
 

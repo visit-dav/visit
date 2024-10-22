@@ -11,11 +11,6 @@
 
 #include <visit-config.h> // For LIB_VERSION_LE
 
-#ifdef PARALLEL
-#include <mpi.h>
-#include <avtParallel.h>
-#endif
-
 #include <limits>
 #include <visitstream.h>
 
@@ -226,6 +221,9 @@ ReadMiliResults(Famid  &dbid,
 //      Added DBOptionsAttribtues and added checks for setting the
 //      globalIntegrationPoint value. Options are "Inner", "Middle",
 //      and "Outer".
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Clear nodeLabelsExistForMesh vector.
 //
 // ****************************************************************************
 
@@ -307,6 +305,8 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
 //  Creation:    Jan 16, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Clear nodeLabelsExistForMesh vector.
 //
 // ****************************************************************************
 
@@ -650,6 +650,9 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 // 
 //    Justin Privitera, Wed Aug 28 14:57:42 PDT 2024
 //    Remove duplicated loop for ghost nodes.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Make ghost zones and nodes "extra", which means they are handled later.
 //
 // ****************************************************************************
 
@@ -805,28 +808,28 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
 
-        vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-        ghostNodes->SetName("avtExtraGhostNodes");
-        ghostNodes->SetNumberOfTuples(nNodes);
+        vtkUnsignedCharArray *extraGhostNodes = vtkUnsignedCharArray::New();
+        extraGhostNodes->SetName("avtExtraGhostNodes");
+        extraGhostNodes->SetNumberOfTuples(nNodes);
 
-        unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+        unsigned char *extraGhostNodePtr = extraGhostNodes->GetPointer(0);
 
         for (int i = 0; i < nNodes; ++i)
         {
-            ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+            extraGhostNodePtr[i] = 0;
+            avtGhostData::AddGhostNodeType(extraGhostNodePtr[i],
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
 
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtExtraGhostZones");
-        ghostZones->SetNumberOfTuples(nCells);
+        vtkUnsignedCharArray *extraGhostZones = vtkUnsignedCharArray::New();
+        extraGhostZones->SetName("avtExtraGhostZones");
+        extraGhostZones->SetNumberOfTuples(nCells);
 
-        unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+        unsigned char *extraGhostZonePtr = extraGhostZones->GetPointer(0);
 
         for (int i = 0; i < nCells; ++i)
         {
-            ghostZonePtr[i] = 0;
+            extraGhostZonePtr[i] = 0;
 
             //
             // Element status > .5 is good.
@@ -847,24 +850,24 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                     for (int j = 0; j < nCellPts; ++j)
                     {
                         avtGhostData::RemoveGhostNodeType(
-                            ghostNodePtr[cellPts[j]],
+                            extraGhostNodePtr[cellPts[j]],
                             NODE_NOT_APPLICABLE_TO_PROBLEM);
                     }
                 }
             }
             else
             {
-                avtGhostData::AddGhostZoneType(ghostZonePtr[i],
+                avtGhostData::AddGhostZoneType(extraGhostZonePtr[i],
                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
             }
         }
 
         delete [] sandBuffer;
 
-        rv->GetPointData()->AddArray(ghostNodes);
-        rv->GetCellData()->AddArray(ghostZones);
-        ghostNodes->Delete();
-        ghostZones->Delete();
+        rv->GetPointData()->AddArray(extraGhostNodes);
+        rv->GetCellData()->AddArray(extraGhostZones);
+        extraGhostNodes->Delete();
+        extraGhostZones->Delete();
     }
 
 
@@ -3217,6 +3220,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Modifications
 //    Justin Privitera, Tue Aug 27 11:40:54 PDT 2024
 //    Took quotes off of AUXILIARY_DATA_IDENTIFIERS.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Support Global Node Ids.
 //
 // ****************************************************************************
 
@@ -3862,6 +3868,9 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //      Eric Brugger, Fri May  7 15:54:32 PDT 2021
 //      Remove the code that assigns a random color to a material if no
 //      material color is specified.
+// 
+//      Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//      Pad out nodeLabelsExistForMesh vector with all true.
 //
 // ****************************************************************************
 void
@@ -4125,6 +4134,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //  Date:   April 9, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Have a stricter check for if reading labels failed.
 //
 // ****************************************************************************
 
@@ -4204,6 +4215,9 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
 //  Date:   April 9, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Record that node labels do not exist and have a stricter check for 
+//    failure to read node labels.
 //
 // ****************************************************************************
 

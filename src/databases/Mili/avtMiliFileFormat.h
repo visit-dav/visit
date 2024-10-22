@@ -64,6 +64,9 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //    Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
 //    Added methods AddStressStrainDerivations, and
 //    AddSymmetricTensorComponentExpressions.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Add nodeLabelsExistForMesh vector.
 //
 // ****************************************************************************
 
