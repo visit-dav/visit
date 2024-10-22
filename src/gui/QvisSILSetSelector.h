@@ -12,17 +12,19 @@
 #include <vectortypes.h>
 
 class QComboBox;
+class QCompleter;
+class QStringListModel;
 class QLabel;
 class SILRestrictionAttributes;
 
 // ****************************************************************************
 // Class: QvisSILSetSelector
 //
-// Purpose: 
+// Purpose:
 //   Defines QvisSILSetSelector class.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2007
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 14 12:18:47 PDT 2007
@@ -32,10 +34,13 @@ class SILRestrictionAttributes;
 //   Brad Whitlock, Fri Jul 18 08:35:26 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Monday Oct 21, 2024
+//   Added QCompleter and QStringListModel for use with subsetName ComboBox.
+//
 // ****************************************************************************
 
-class GUI_API QvisSILSetSelector : public QWidget, 
-                                   public SimpleObserver, 
+class GUI_API QvisSILSetSelector : public QWidget,
+                                   public SimpleObserver,
                                    public GUIBase
 {
     Q_OBJECT
@@ -70,6 +75,8 @@ class GUI_API QvisSILSetSelector : public QWidget,
     QComboBox *categoryName;
     QLabel    *subsetLabel;
     QComboBox *subsetName;
+    QCompleter *subsetNameCompleter;
+    QStringListModel *subsetNameModel;
 
     SILRestrictionAttributes *silAtts;
     QString defaultItem;
