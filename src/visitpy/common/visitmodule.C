@@ -12370,7 +12370,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     // Check for global flag.
     std::string qname(queryName);
 
-    if (StringHelpers::CaseInsensitiveEqual(queryName, "Global", 7))
+    if (StringHelpers::CaseInsensitiveEqual(queryName, "Global ", 7))
     {
         // here's where we can distinguish form other '9th' attempts, possibly
         // move to w/i the '9th' section?
@@ -12523,7 +12523,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     // Special case of a convenience query name , but viewer needs query name
     // without 'Global'.  Perhaps should force proper query name and use
     // of UseGlobalId=1 in kwargs?
-    if (StringHelpers::CaseInsensitiveEqual(queryName.c_str(), "Global", 7))
+    if (StringHelpers::CaseInsensitiveEqual(queryName.c_str(), "Global ", 7))
     {
         std::string::size_type pos1 = 0;
         std::string qname(queryName);
