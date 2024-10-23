@@ -137,7 +137,7 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
         parcmd = ["env", "LD_LIBRARY_PATH=%s" % GETENV("LD_LIBRARY_PATH")]
         parcmd = parcmd + self.Executable()
         parcmd = parcmd + ["--np", self.parallel.np]
-        parcmd = parcmd + ["--nrs", self.parallel.nn]
+        parcmd = parcmd + ["--nrs", nodes]
         parcmd = parcmd + ["-c", "ALL_CPUS", "-g", "ALL_GPUS"]
         parcmd = parcmd + ["-d", "plane:%s" % ppn]
         parcmd = parcmd + ["-b", "none", "-X", "1", "/usr/tce/packages/lrun/lrun-2019.05.07/bin/mpibind10"]
