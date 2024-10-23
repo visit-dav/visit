@@ -132,9 +132,6 @@
       "network": "llnl",
       "files": [
         {
-          "name": ".host_llnl_pascal.xml.swp"
-        },
-        {
           "name": "config"
         },
         {
