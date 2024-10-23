@@ -4,7 +4,7 @@
     <Field name="host" type="string">rzansel</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">"rzansel#.llnl.gov rzansel##.llnl.gov rzansel# rzansel##"</Field>
-    <Field name="directory" type="string">/usr/workspace/brugger/visit_jsrun_dev/visit3.4.1/visit</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
