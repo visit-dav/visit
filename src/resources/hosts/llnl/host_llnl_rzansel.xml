@@ -102,8 +102,8 @@
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">80</Field>
-        <Field name="numNodesSet" type="bool">false</Field>
-        <Field name="numNodes" type="int">0</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">2</Field>
         <Field name="partitionSet" type="bool">false</Field>
         <Field name="partition" type="string"></Field>
         <Field name="bankSet" type="bool">false</Field>
