@@ -45,6 +45,7 @@
 
 #include <Expression.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
 
 #include <InvalidVariableException.h>
 
@@ -804,11 +805,7 @@ void avtCarpetHDF5FileFormat::open_all_files(const char* fname)
 avtCarpetHDF5FileFormat::multi_file* avtCarpetHDF5FileFormat::open_cached_file(const string fname)
 {
   if(getenv("CARPETHDF5_CACHE_METADATA") && 
-#ifdef _WIN32
-     stricmp(getenv("CARPETHDF5_CACHE_METADATA"), "no") == 0)
-#else
-     strcasecmp(getenv("CARPETHDF5_CACHE_METADATA"), "no") == 0)
-#endif
+     StringHelpers::CaseInsensitiveEqual(getenv("CARPETHDF5_CACHE_METADATA"), "no"))
     return new multi_file(fname.c_str());
 
   // if file already exists in cache, check if it is not outdated

@@ -48,7 +48,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
   <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
   <li>ChooseCenter with a mouse on Scatter plot now works.</li>
+  <li>The triad lines no longer disappear.</li>
+  <li>Fixed an issue causing species set selection to only work on fields that were represented as floating point data.</li>
   <li>Fixed a bug in the Plaintext Reader causing reading variable names that were single-characters to fail.</li>
+  <li>Fixed a bug where the operator attribute windows will show the default attributes when displaying the attributes for an operator applied to a plot after restoring a session. The plots displayed in the visualization windows will be correct, just the attributes displayed in the attribute window will be incorrect. This happens with session files saved with releases 3.4 and 3.4.1. To fix the issue you will need to save a new session file using a newer version of VisIt. If you restored a session with a bad session file, you will need to change the attributes of any affected operators before saving the new session file.</li>
+  <li>Fixed a bug where the rubber band lines are either broken or missing when you click and move the mouse when zooming an image using zoom mode on Linux systems.</li>
+  <li>Fixed a bug causing material edge lines to appear on problems produced by parallel runs.</li>
 </ul>
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
@@ -64,7 +69,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The function <code>GetDefaultFileOpenOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
   <li>The function <code>GetExportOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
   <li>Re-enabled support for using VTKm, which was removed in the 3.4.0 release.</li>
+  <li>Added species set support to the Blueprint Reader.</li>
   <li>Saving results of time queries to curve files now uses query name and/or variable names as curve names instead of just 'Curve'.</li>
+  <li>Curves are now supported in Xdmf files. They are handled as 2DRectMesh objects with >1 points in X and 1 point in Y.</li>
+  <li>The OnionPeel and IndexSelect operator Windows now allow typing into the 'Set' option as well as selecting from the dropwdown box. Typing will filter the available entries to match what has been typed so far, allowing easier selection than the pulldown if there is a large number of sets. If typing is completed with text that doesn't match an available entry a Warning message will pop up.<li>
+  <li>Support has been added for using the <code>jsrun</code> parallel job launcher.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -79,6 +88,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Removed the config site files for rztopaz and quartz since those machines have been retired.</li>
   <li>Updated Uintah to 2.6.3.</li>
   <li>Documented the -norun option in visit --fullhelp.</li>
+  <li>Added support for GPU architectures in <code>CMake</code> and the <code>internallauncher</code>. When a <code>make package</code> comnand is executed, the GPU architecture will be added to the operating system and CPU identifier in the tar file name. For example, on a Linux system with an x86_64 CPU and an AMD MI250X GPU the tar file name will be <code>visit3_4_2.linux-x86_64-gfx90a.tar.gz</code>. Likewise, the operating system and CPU identiefier identifier in a VisIt installation will include the GPU architecture in the same manner. As part of this change, the CPU identifier for a 64 bit, little endian, PowerPC processor will now be <code>ppc64le</code> instead of <code>intel</code>. The default CPU identifier for an unidentified CPU will now be <code>x86_64</code> instead of <code>intel</code>. Currently, only relatively new AMD GPUs are supported.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

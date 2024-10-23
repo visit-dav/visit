@@ -53,7 +53,6 @@
 
 #ifdef _WIN32
 #define FSEEK _fseeki64
-#define strcasecmp stricmp
 #include <Shlwapi.h> // for PathIsRelative
 #else
 #define FSEEK fseek
@@ -2106,7 +2105,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "HAS_BOUNDARY:") == 0)
                 {
                     line += strlen("HAS_BOUNDARY:") + 1;
-                    if (strcasecmp(line, "true") == 0)
+                    if (StringHelpers::CaseInsensitiveEqual(line, "true"))
                     {
                         hasBoundaries = true;
                     }
@@ -2203,7 +2202,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "DIVIDE_BRICK:") == 0)
                 {
                     line += strlen("DIVIDE_BRICK:") + 1;
-                    divideBrick = (strcasecmp(line, "true") == 0);
+                    divideBrick = StringHelpers::CaseInsensitiveEqual(line, "true");
                 }
             }
         }

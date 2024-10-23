@@ -14,9 +14,10 @@
 #include "error.h"
 #include <algorithm>
 
+#include <StringHelpers.h>
+
 #ifdef WIN32
 #define strtok_r(s,sep,lasts) (*(lasts)=strtok((s),(sep)))
-#define strcasecmp stricmp
 #endif
 
 static const char *filenames[] = { "object.data", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -1007,10 +1008,10 @@ int object_register(char *name, char *type, int itype, void *address)
 
 int modeindex(char *mode)
 {
-    if (!strcasecmp(mode, "FORMATTED")) return ASCII;
-    if (!strcasecmp(mode, "ASCII")) return ASCII;
-    if (!strcasecmp(mode, "BINARY")) return BINARY;
-    if (!strcasecmp(mode, "UNFORMATTED")) return BINARY;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "FORMATTED")) return ASCII;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "ASCII")) return ASCII;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "BINARY")) return BINARY;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "UNFORMATTED")) return BINARY;
     return ASCII;
 }
 void object_pack(PACKBUF *buf)

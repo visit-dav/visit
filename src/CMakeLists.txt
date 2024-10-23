@@ -564,6 +564,9 @@
 #    Modified VISIT_LIBRARY_DIR to use $<CONFIG> instead of
 #    ${CMAKE_CFG_INTDIR} on Windows, since the latter is deprecated.
 #
+#    Kathleen Biagas, Mon Sep 30, 2024
+#    Add build/install scripts from scripts directory to visit-dist target.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -657,7 +660,15 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
 #-----------------------------------------------------------------------------
 macro(include_visit_config_site)
     if(VISIT_CONFIG_SITE)
-        set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
+        string(TOUPPER ${VISIT_CONFIG_SITE} VISIT_CONFIG_SITE_UPPER)
+        if(VISIT_CONFIG_SITE_UPPER STREQUAL "OFF" OR
+           VISIT_CONFIG_SITE_UPPER STREQUAL "NO" OR
+           VISIT_CONFIG_SITE_UPPER STREQUAL "NONE")
+            set(VISIT_CONFIG_SITE_NONE TRUE)
+        else()
+            set(VISIT_CONFIG_SITE_NONE FALSE)
+            set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
+        endif()
     else()
         set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake")
         if(WIN32)
@@ -666,14 +677,19 @@ macro(include_visit_config_site)
             endif()
         endif()
     endif()
-    if(EXISTS ${VISIT_CONFIG_SITE_FILE})
-        message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
-        include(${VISIT_CONFIG_SITE_FILE})
-    else()
-        message(STATUS "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
+    if(NOT VISIT_CONFIG_SITE_NONE)
+        if(EXISTS ${VISIT_CONFIG_SITE_FILE})
+            message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
+            include(${VISIT_CONFIG_SITE_FILE})
+        else()
+            unset(VISIT_CONFIG_SITE_FILE CACHE)
+            unset(VISIT_CONFIG_SITE CACHE)
+            message(FATAL_ERROR "The config-site file, ${VISIT_CONFIG_SITE_FILE}, does not exist. Pass -DVISIT_CONFIG_SITE=NONE if no config-site file is needed.")
+        endif()
     endif()
 
-    unset(VISIT_CONFIG_SITE_FILE)
+    unset(VISIT_CONFIG_SITE_FILE CACHE)
+    unset(VISIT_CONFIG_SITE CACHE)
 endmacro()
 
 if(NOT WIN32)
@@ -1373,6 +1389,12 @@ add_custom_target(visit-dist
   COMMAND  ${CMAKE_COMMAND} -E make_directory ${dist_name}
   # Add symlink to src
   COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR} ${dist_name}/src
+  COMMAND  ${CMAKE_COMMAND} -E make_directory ${dist_name}/scripts
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/run-build-visit  ${dist_name}/scripts/run-build-visit
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-build ${dist_name}/scripts/visit-build
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-dist ${dist_name}/scripts/visit-dist
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install  ${dist_name}/scripts/visit-install
+  COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install-run  ${dist_name}/scripts/visit-install-run
   # Tar it up, resolving symlinks
   COMMAND tar hzcf ${dist_name}.tar.gz ${dist_name}
   # get the checksums

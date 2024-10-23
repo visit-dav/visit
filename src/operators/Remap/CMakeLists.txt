@@ -63,10 +63,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SRemapOperator ${LIBS_SOURCES})
-        IF(WIN32)
-            # This prevents python from #defining snprintf as _snprintf
-            SET_TARGET_PROPERTIES(SRemapOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
-        ENDIF()
         TARGET_LINK_LIBRARIES(SRemapOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SRemapOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)
