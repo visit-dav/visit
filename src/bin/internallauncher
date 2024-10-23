@@ -234,6 +234,43 @@ class JobSubmitter_mpiexec(JobSubmitter):
         return parcmd
 
 ###############################################################################
+# Class: JobSubmitter_jsrun
+#
+# Purpose:    Launch an MPI job with jsrun
+#
+# Programmer: Eric Brugger
+# Date:       Mon Aug 26 10:54:18 PDT 2024
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_jsrun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_jsrun,self).__init__(launcher)
+
+    def Executable(self):
+        return ["jsrun"]
+
+    def CreateCommand(self, args, debugger):
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = self.Executable()
+        parcmd = parcmd + ["--np", self.parallel.np]
+        parcmd = parcmd + ["--nrs", nodes]
+        parcmd = parcmd + ["-c", "ALL_CPUS", "-g", "ALL_GPUS"]
+        parcmd = parcmd + ["-d", "plane:%s" % ppn]
+        parcmd = parcmd + ["-b", "none", "-X", "1"]
+        if self.parallel.sublaunchargs != None:
+            parcmd = parcmd + self.parallel.sublaunchargs
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + args
+        parcmd = debugger.CreateCommand(parcmd)
+        return parcmd
+
+###############################################################################
 # Class: JobSubmitter_lrun
 #
 # Purpose:    Launch an MPI job with lrun (LLNL's jsrun wrapper)
@@ -3883,6 +3920,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #    Eric Brugger, Wed May 15 11:11:11 PDT 2024
     #    Added flux as a new job submitter.
     #
+    #    Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
+    #    Added jsrun as a new job submitter.
+    #
     ############################################################################
 
     def JobSubmitterFactory(self, launch):
@@ -3904,6 +3944,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return JobSubmitter_poe(self)
         elif launch == "ibrun":
             return JobSubmitter_ibrun(self)
+        elif launch == "jsrun":
+            return JobSubmitter_jsrun(self)
         elif launch == "lrun":
             return JobSubmitter_lrun(self)
         elif launch == "prun":
