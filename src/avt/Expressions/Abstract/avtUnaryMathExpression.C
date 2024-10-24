@@ -67,6 +67,94 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 
 
 // ****************************************************************************
+//  Method: avtUnaryMathExpression::IdentifyGhostedNodes
+//
+//  Purpose:
+//      TODO
+//      this function is for nodal vars
+//
+//  Programmer: Justin Privitera
+//  Creation:   10/24/24
+//
+// ****************************************************************************
+
+std::vector<int>
+avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
+                                             vtkDataArray *ghost_zones,
+                                             vtkDataArray *ghost_nodes)
+{
+    const int nPoints = in_ds->GetNumberOfPoints();
+
+    // we create an array to track if this point should be counted
+    std::vector<int> pointShouldBeCounted(nPoints);
+    if (ghost_zones)
+    {
+        // if there are ghost zones, we want to initialize all points to not being counted
+        fill(pointShouldBeCounted.begin(), pointShouldBeCounted.end(), false);
+    }
+    else
+    {
+        // If there are ghost nodes and NOT ghost zones, we want to initialize all points
+        // to being counted
+        // Alternatively, we will hit this case if there are neither ghost zones nor ghost
+        // nodes. In that case, we shouldn't even be in this function, but if we are here
+        // we might as well say all the points are valid since they are.
+        fill(pointShouldBeCounted.begin(), pointShouldBeCounted.end(), true);
+    }
+
+    if (ghost_zones)
+    {
+        const int nCells = in_ds->GetNumberOfCells();
+        // iterate through the cells and mark points that are touching non-ghosts
+        // as points that should be counted
+        for (int cellId = 0; cellId < nCells; cellId ++)
+        {
+            // if this zone is not a ghost zone
+            if (0 == ghost_zones->GetComponent(cellId, 0))
+            {
+                vtkIdType numCellPoints = 0;
+#if LIB_VERSION_LE(VTK,8,1,0)
+                vtkIdType *cellPoints = NULL;
+#else
+                const vtkIdType *cellPoints = nullptr;
+#endif
+                vtkIdList *ptIds = vtkIdList::New();
+                // we get the points for this zone
+                in_ds->GetCellPoints(cellId, numCellPoints, cellPoints, ptIds);
+
+                // and mark them as valid points
+                if (numCellPoints && cellPoints)
+                {
+                    for (int cellPointId = 0; cellPointId < numCellPoints; cellPointId ++)
+                    {
+                        const int pointId = cellPoints[cellPointId];
+                        pointShouldBeCounted[pointId] = true;
+                    }
+                }
+                ptIds->Delete();
+            }
+        }
+    }
+
+    if (ghost_nodes)
+    {
+        // iterate through all points and make sure points marked as ghost
+        // nodes are not counted
+        for (int pointId = 0; pointId < nPoints; pointId ++)
+        {
+            // if this node is a ghost node
+            if (0 != ghost_nodes->GetComponent(pointId, 0))
+            {
+                pointShouldBeCounted[pointId] = false;
+            }
+        }
+    }
+
+    return pointShouldBeCounted;
+}
+
+
+// ****************************************************************************
 //  Method: avtUnaryMathExpression::DeriveVariable
 //
 //  Purpose:

@@ -80,15 +80,6 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
 
-    // TODO
-    // iterate through all cells and mark cells that are touching non-ghost zones as good to count
-    // need to figure out which zone a node belongs to
-    //  |----> how to do this? -> rv->GetCellPoints(i, nCellPts, cellPts);
-    //      cellpts are indices into node arrays
-    // if that node belongs to only zones that are ghosted then do not count it
-    // also ignore things in ghost node array
-
-
     if (AVT_ZONECENT == centering)
     {
         if (ghost_zones)

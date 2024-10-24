@@ -10,6 +10,8 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 
 
 // ****************************************************************************
@@ -72,17 +74,92 @@ void
 avtSumReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
-    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+    vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
+    vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
+
+    if (AVT_ZONECENT == centering)
     {
-        double sum = 0;
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        if (ghost_zones)
         {
-            const double val = in->GetComponent(tuple_id, comp_id);
-            sum += val;
+            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+            {
+                double sum = 0;
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    const int ghost = ghost_zones->GetComponent(tuple_id, 0);
+                    if (0 == ghost)
+                    {
+                        const double val = in->GetComponent(tuple_id, comp_id);
+                        sum += val;
+                    }
+                }
+
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    out->SetComponent(tuple_id, comp_id, sum);
+                }
+            }
         }
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        else // no ghosts
         {
-            out->SetComponent(tuple_id, comp_id, sum);
+            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+            {
+                double sum = 0;
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    sum += val;
+                }
+
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    out->SetComponent(tuple_id, comp_id, sum);
+                }
+            }
+        }
+    }
+    else // AVT_NODECENT == centering
+    {
+        if (ghost_zones || ghost_nodes)
+        {
+            std::vector<int> pointShouldBeCounted = IdentifyGhostedNodes(
+                in_ds, ghost_zones, ghost_nodes);
+
+            // now we can compute our sum
+            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+            {
+                double sum = 0;
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    if (pointShouldBeCounted[tuple_id])
+                    {
+                        const double val = in->GetComponent(tuple_id, comp_id);
+                        sum += val;
+                    }
+                }
+
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    out->SetComponent(tuple_id, comp_id, sum);
+                }
+            }
+        }
+        else // !ghost_zones && !ghost_nodes
+        {
+            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+            {
+                double sum = 0;
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    sum += val;
+                }
+
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    out->SetComponent(tuple_id, comp_id, sum);
+                }
+            }
         }
     }
 }

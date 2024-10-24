@@ -61,6 +61,10 @@ class EXPRESSION_API avtUnaryMathExpression : public avtSingleInputExpressionFil
 
     virtual bool              NullInputIsExpected(void) { return false; };
 
+    static std::vector<int>   IdentifyGhostedNodes(vtkDataSet *in_ds,
+                                                   vtkDataArray *ghost_zones,
+                                                   vtkDataArray *ghost_nodes);
+
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
