@@ -327,8 +327,6 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
         vtkDataSet *dataset = ds.GetDataset(domain_id, 0);
         if (dataset != NULL)
         {
-            // TODO is a single bool in the mili db header fine for valid node ids?
-
             // this lambda handles zone and node cases
             auto combineGhosts = [this, spec, domain_id](vtkUnsignedCharArray* ghosts, 
                                                          vtkUnsignedCharArray* extraGhosts,
@@ -7989,6 +7987,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 // 
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Exchange extra ghost zone/node arrays.
+// 
+//    Justin Privitera, Thu Oct 24 11:50:43 PDT 2024
+//    Avoid segfault when exchanging extra ghost zone/node arrays.
 //
 // ****************************************************************************
 
@@ -8632,16 +8633,19 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         }
 
     }
-    vector<vtkDataArray *> extraGhostZonesOut;
-    extraGhostZonesOut = dbi->ExchangeScalar(doms,false,extraGhostZones);
-    for (int j = 0 ; j < (int)doms.size() ; j++)
+    if (extraGhostZones.size() > 0)
     {
-        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-        if (ds1 == NULL ||
-            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            continue;
-        ds1->GetCellData()->AddArray(extraGhostZonesOut[j]);
-        extraGhostZonesOut[j]->Delete();
+        vector<vtkDataArray *> extraGhostZonesOut;
+        extraGhostZonesOut = dbi->ExchangeScalar(doms,false,extraGhostZones);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                continue;
+            ds1->GetCellData()->AddArray(extraGhostZonesOut[j]);
+            extraGhostZonesOut[j]->Delete();
+        }
     }
 
     //
@@ -8666,16 +8670,19 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         }
 
     }
-    vector<vtkDataArray *> extraGhostNodesOut;
-    extraGhostNodesOut = dbi->ExchangeScalar(doms,true,extraGhostNodes);
-    for (int j = 0 ; j < (int)doms.size() ; j++)
+    if (extraGhostNodes.size() > 0)
     {
-        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-        if (ds1 == NULL ||
-            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            continue;
-        ds1->GetPointData()->AddArray(extraGhostNodesOut[j]);
-        extraGhostNodesOut[j]->Delete();
+        vector<vtkDataArray *> extraGhostNodesOut;
+        extraGhostNodesOut = dbi->ExchangeScalar(doms,true,extraGhostNodes);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                continue;
+            ds1->GetPointData()->AddArray(extraGhostNodesOut[j]);
+            extraGhostNodesOut[j]->Delete();
+        }
     }
 
     //
