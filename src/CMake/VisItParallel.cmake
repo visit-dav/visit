@@ -3,7 +3,7 @@
 # details.  No copyright assignment is required to contribute to VisIt.
 
 
-function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
+function(DETECT_MPI_SETTINGS COMP mlibs mdefs mflags mlflags mrpath)
     # Unset any variables that may have been set before by FindMPI
     unset(MPI_FOUND CACHE)
     unset(MPI_INCLUDE_PATH CACHE)
@@ -31,7 +31,8 @@ function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
         endforeach()
 
         set(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-        set(${mflags}  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
+        set(${mdefs}  "PARALLEL MPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel compiler defines")
+        set(${mflags}  "${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
         set(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
 
         #
@@ -153,11 +154,7 @@ function(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
 endfunction()
 
 
-if(WIN32)
-    set(VPFLAGS "PARALLEL MPICH_IGNORE_CXX_SEEK MPICH_SKIP_MPICXX OMPI_SKIP_MPICXX MPI_NO_CPPBIND")
-else()
-    set(VPFLAGS "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX -DMPI_NO_CPPBIND")
-endif()
+set(VPDEFS "PARALLEL MPICH_IGNORE_CXX_SEEK MPICH_SKIP_MPICXX OMPI_SKIP_MPICXX MPI_NO_CPPBIND")
 
 if(VISIT_MPI_COMPILER)
     message(STATUS "Setting up MPI using compiler wrapper")
@@ -165,23 +162,22 @@ if(VISIT_MPI_COMPILER)
     # Detect the MPI settings that C++ wants
     DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER}
         VISIT_PARALLEL_LIBS
+        VISIT_PARALLEL_DEFS
         VISIT_PARALLEL_CFLAGS
         VISIT_PARALLEL_LINKER_FLAGS
         VISIT_PARALLEL_RPATH)
 
     set(VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CFLAGS} CACHE STRING "Parallel CXXFLAGS")
-    set(VISIT_PARALLEL_CFLAGS "${VPFLAGS} ${VISIT_PARALLEL_CFLAGS}")
-    set(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS} ${VISIT_PARALLEL_CXXFLAGS}")
 
     # Detect the MPI settings that Fortran wants
     if(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
         DETECT_MPI_SETTINGS(${VISIT_MPI_FORTRAN_COMPILER}
             VISIT_PARALLEL_FORTRAN_LIBS
+            VISIT_PARALLEL_FORTRAN_DEFS
             VISIT_PARALLEL_FORTRAN_FLAGS
             VISIT_PARALLEL_FORTRAN_LINKER_FLAGS
             VISIT_PARALLEL_RPATH
             )
-        set(VISIT_PARALLEL_FORTRAN_FLAGS "${VPFLAGS} ${VISIT_PARALLEL_FORTRAN_FLAGS}")
     endif()
 
 else()
@@ -193,26 +189,26 @@ else()
             CACHE STRING "MPI libraries for Fortran")
 
         if(VISIT_MPI_C_FLAGS)
-            set(VISIT_PARALLEL_CFLAGS  " ${VPFLAGS} ${VISIT_MPI_C_FLAGS}"
+            set(VISIT_PARALLEL_CFLAGS  "${VISIT_MPI_C_FLAGS}"
                 CACHE STRING "Parallel CFLAGS")
         else()
-            set(VISIT_PARALLEL_CFLAGS  "${VPFLAGS}"
+            set(VISIT_PARALLEL_CFLAGS  ""
                 CACHE STRING "Parallel CFLAGS")
         endif()
 
         if(VISIT_MPI_CXX_FLAGS)
-            set(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS} ${VISIT_MPI_CXX_FLAGS}"
+            set(VISIT_PARALLEL_CXXFLAGS "${VISIT_MPI_CXX_FLAGS}"
                 CACHE STRING "Parallel CXXFLAGS")
         else()
-            set(VISIT_PARALLEL_CXXFLAGS  "${VPFLAGS}"
+            set(VISIT_PARALLEL_CXXFLAGS  ""
                 CACHE STRING "Parallel CXXFLAGS")
         endif()
 
         if(VISIT_MPI_FORTRAN_FLAGS)
-            set(VISIT_PARALLEL_FORTRAN_FLAGS "${VPFLAGS} ${VISIT_MPI_FORTRAN_FLAGS}"
+            set(VISIT_PARALLEL_FORTRAN_FLAGS "${VISIT_MPI_FORTRAN_FLAGS}"
                 CACHE STRING "Parallel Fortran flags")
         else()
-            set(VISIT_PARALLEL_FORTRAN_FLAGS  "${VPFLAGS}"
+            set(VISIT_PARALLEL_FORTRAN_FLAGS  ""
                 CACHE STRING "Parallel flags for Fortran")
         endif()
 
@@ -232,9 +228,7 @@ else()
           if(NOT MPI_FOUND)
             include(${CMAKE_ROOT}/Modules/FindMPI.cmake)
             if(MPI_FOUND)
-              string(REPLACE " " ";" VPFLAGS "${VPFLAGS}")
-              set(VISIT_PARALLEL_DEFS "${VPFLAGS}"
-                  CACHE STRING "parallel defines")
+              string(REPLACE " " ";" VISIT_PARALLEL_DEFS ${VPDEFS})
               set(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
                   CACHE STRING "MPI libraries")
               set(VISIT_PARALLEL_INCLUDE "${MPI_INCLUDE_PATH}"
