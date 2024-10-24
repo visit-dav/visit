@@ -2420,6 +2420,9 @@ def TestBatchSimulation(sim):
 #    Add --overlap option to srun, to work around recent changes to slurm,
 #    which prevented movie-generation processes from running.
 #
+#    Kathleen Biagas, Tuesday Oct 22, 2024
+#    Replaced pascal with poodle.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2459,7 +2462,7 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "pascal" in socket.gethostname() or \
+            if "poodle" in socket.gethostname() or \
                "quartz" in socket.gethostname() or \
                "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():
