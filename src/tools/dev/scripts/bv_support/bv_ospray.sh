@@ -57,7 +57,6 @@ function bv_ospray_info
     export OSPRAY_FILE=${OSPRAY_FILE:-"ospray-${OSPRAY_VERSION}.tar.gz"}
     export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
     export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
-    export OSPRAY_URL=${OSPRAY_URL:-"https://github.com/ospray/OSPRay/archive/v${OSPRAY_VERSION}"}
     export OSPRAY_SHA256_CHECKSUM="d8d8e632d77171c810c0f38f8d5c8387470ca19b75f5b80ad4d3d12007280288"
 }
 

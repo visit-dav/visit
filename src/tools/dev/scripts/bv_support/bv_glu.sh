@@ -34,7 +34,6 @@ function bv_glu_info
     export GLU_VERSION=${GLU_VERSION:-"9.0.0"}
     export GLU_BUILD_DIR=${GLU_BUILD_DIR:-"glu-9.0.0"}
     export GLU_SHA256_CHECKSUM="4387476a1933f36fec1531178ea204057bbeb04cc2d8396c9ea32720a1f7e264"
-    export GLU_URL=${GLU_URL:-"ftp://ftp.freedesktop.org/pub/mesa/glu"}
 }
 
 function bv_glu_print

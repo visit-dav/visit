@@ -25,7 +25,6 @@ function bv_h5part_info
     export H5PART_VERSION=${H5PART_VERSION:-"1.6.6"}
     export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
     export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
-    export H5PART_URL=${H5PART_URL:-"https://codeforge.lbl.gov/frs/download.php/387"}
     export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
     export H5PART_SHA256_CHECKSUM="10347e7535d1afbb08d51be5feb0ae008f73caf889df08e3f7dde717a99c7571"
 }

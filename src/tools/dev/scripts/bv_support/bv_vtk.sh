@@ -2,7 +2,6 @@ function bv_vtk_initialize
 {
     info "bv_vtk_initialize"
     export DO_VTK="yes"
-    export FORCE_VTK="no"
     export USE_SYSTEM_VTK="no"
     add_extra_commandline_args "vtk" "system-vtk" 0 "Using system VTK (exp)"
     add_extra_commandline_args "vtk" "alt-vtk-dir" 1 "Use alternate VTK (exp)"
@@ -12,13 +11,11 @@ function bv_vtk_enable
 {
     info "bv_vtk_enable"
     DO_VTK="yes"
-    FORCE_VTK="yes"
 }
 
 function bv_vtk_disable
 {
     DO_VTK="no"
-    FORCE_VTK="no"
 }
 
 function bv_vtk_system_vtk
@@ -74,14 +71,6 @@ function bv_vtk_depends_on
     echo ${depends_on}
 }
 
-function bv_vtk_force
-{
-    if [[ "$FORCE_VTK" == "yes" ]]; then
-        return 0;
-    fi
-    return 1;
-}
-
 function bv_vtk_info
 {
     info "bv_vtk_info"
@@ -90,7 +79,6 @@ function bv_vtk_info
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
     export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-${VTK_VERSION}"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
 }
