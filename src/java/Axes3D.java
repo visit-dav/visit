@@ -63,7 +63,7 @@ public class Axes3D extends AttributeSubject
         triadColor[0] = 0;
         triadColor[1] = 0;
         triadColor[2] = 0;
-        triadLineWidth = 1f;
+        triadLineWidth = 0;
         triadFont = 0;
         triadBold = true;
         triadItalic = true;
@@ -97,7 +97,7 @@ public class Axes3D extends AttributeSubject
         triadColor[0] = 0;
         triadColor[1] = 0;
         triadColor[2] = 0;
-        triadLineWidth = 1f;
+        triadLineWidth = 0;
         triadFont = 0;
         triadBold = true;
         triadItalic = true;
@@ -282,7 +282,7 @@ public class Axes3D extends AttributeSubject
         Select(13);
     }
 
-    public void SetTriadLineWidth(float triadLineWidth_)
+    public void SetTriadLineWidth(int triadLineWidth_)
     {
         triadLineWidth = triadLineWidth_;
         Select(14);
@@ -327,7 +327,7 @@ public class Axes3D extends AttributeSubject
     public boolean        GetSetBBoxLocation() { return setBBoxLocation; }
     public double[]       GetBboxLocation() { return bboxLocation; }
     public int[]          GetTriadColor() { return triadColor; }
-    public float          GetTriadLineWidth() { return triadLineWidth; }
+    public int            GetTriadLineWidth() { return triadLineWidth; }
     public int            GetTriadFont() { return triadFont; }
     public boolean        GetTriadBold() { return triadBold; }
     public boolean        GetTriadItalic() { return triadItalic; }
@@ -365,7 +365,7 @@ public class Axes3D extends AttributeSubject
         if(WriteSelect(13, buf))
             buf.WriteIntArray(triadColor);
         if(WriteSelect(14, buf))
-            buf.WriteFloat(triadLineWidth);
+            buf.WriteInt(triadLineWidth);
         if(WriteSelect(15, buf))
             buf.WriteInt(triadFont);
         if(WriteSelect(16, buf))
@@ -426,7 +426,7 @@ public class Axes3D extends AttributeSubject
             SetTriadColor(buf.ReadIntArray());
             break;
         case 14:
-            SetTriadLineWidth(buf.ReadFloat());
+            SetTriadLineWidth(buf.ReadInt());
             break;
         case 15:
             SetTriadFont(buf.ReadInt());
@@ -478,7 +478,7 @@ public class Axes3D extends AttributeSubject
         str = str + boolToString("setBBoxLocation", setBBoxLocation, indent) + "\n";
         str = str + doubleArrayToString("bboxLocation", bboxLocation, indent) + "\n";
         str = str + intArrayToString("triadColor", triadColor, indent) + "\n";
-        str = str + floatToString("triadLineWidth", triadLineWidth, indent) + "\n";
+        str = str + intToString("triadLineWidth", triadLineWidth, indent) + "\n";
         str = str + intToString("triadFont", triadFont, indent) + "\n";
         str = str + boolToString("triadBold", triadBold, indent) + "\n";
         str = str + boolToString("triadItalic", triadItalic, indent) + "\n";
@@ -502,7 +502,7 @@ public class Axes3D extends AttributeSubject
     private boolean        setBBoxLocation;
     private double[]       bboxLocation;
     private int[]          triadColor;
-    private float          triadLineWidth;
+    private int            triadLineWidth;
     private int            triadFont;
     private boolean        triadBold;
     private boolean        triadItalic;

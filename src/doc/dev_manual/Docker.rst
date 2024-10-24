@@ -134,7 +134,7 @@ Now go back to the first Command window and create your distribution. ::
 Now let's test it to make sure we can create an image. ::
 
     visit@bea87fee3276:~/visit3.0.2/build$ cd ../..
-    visit@bea87fee3276:~$ cp visit3.0.2/src/tools/dev/scripts/visit-install .
+    visit@bea87fee3276:~$ cp visit3.0.2/scripts/visit-install .
     visit@bea87fee3276:~$ ./visit-install 3.0.2 linux-x86_64 visit
     visit@bea87fee3276:~$ visit/bin/visit -cli -nowin
     >>> OpenDatabase("visit/data/curv2d.silo")

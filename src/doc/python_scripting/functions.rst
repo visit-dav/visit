@@ -178,11 +178,15 @@ variableName : string
 
 inheritSIL : integer
     An integer flag indicating whether the plot should inherit the
-    active plot's SIL restriction.
+    active plot's SIL restriction. A zero value indicates that the SIL
+    should **not** be inherited. A non-zero value indicates that the SIL
+    should be inherited.
 
 applyOperators : integer
     An integer flag indicating whether the operators from the active
-    plot should be applied to the new plot.
+    plot should be applied to the new plot. A zero value indicates that
+    the operators should **not** be applied. A non-zero value indicates that
+    the operators should be applied.
 
 return type : CLI_return_t
     The AddPlot function returns an integer value of 1 for success and 0 for
@@ -2948,88 +2952,6 @@ forceNoSharedMemory:
     print(numpy.asarray(data["zoneTable"]))
 
 
-GetDefaultContinuousColorTable
-------------------------------
-
-**Synopsis:**
-
-::
-
-  GetDefaultContinuousColorTable() -> string
-
-
-return type : string
-    Returns a string object containing the name of a color table.
-
-
-**Description:**
-
-    A color table is a set of color values that are used as the colors for
-    plots. VisIt supports two flavors of color table: continuous and discrete.
-    A continuous color table is defined by a small set of color control points
-    and the colors specified by the color control points are interpolated
-    smoothly to fill in any gaps. Continuous color tables are used for plots
-    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
-    discrete color table is a set of color control points that are used to
-    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
-    notion of default continuous and default discrete color tables so plots can
-    just use the "default" color table. This lets you change the color table
-    used by many plots by just changing the "default" color table. The
-    GetDefaultContinuousColorTable function returns the name of the default
-    continuous color table. The GetDefaultDiscreteColorTable function returns
-    the name of the default discrete color table.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
-  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
-
-
-GetDefaultDiscreteColorTable
-----------------------------
-
-**Synopsis:**
-
-::
-
-  GetDefaultDiscreteColorTable() -> string
-
-
-return type : string
-    Returns a string object containing the name of a color table.
-
-
-**Description:**
-
-    A color table is a set of color values that are used as the colors for
-    plots. VisIt supports two flavors of color table: continuous and discrete.
-    A continuous color table is defined by a small set of color control points
-    and the colors specified by the color control points are interpolated
-    smoothly to fill in any gaps. Continuous color tables are used for plots
-    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
-    discrete color table is a set of color control points that are used to
-    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
-    notion of default continuous and default discrete color tables so plots can
-    just use the "default" color table. This lets you change the color table
-    used by many plots by just changing the "default" color table. The
-    GetDefaultContinuousColorTable function returns the name of the default
-    continuous color table. The GetDefaultDiscreteColorTable function returns
-    the name of the default discrete color table.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
-  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
-
-
 GetActiveTimeSlider
 -------------------
 
@@ -3364,6 +3286,88 @@ return type : CLI_return_t
   print("VisIt's debug level is: %d" % GetDebugLevel())
 
 
+GetDefaultContinuousColorTable
+------------------------------
+
+**Synopsis:**
+
+::
+
+  GetDefaultContinuousColorTable() -> string
+
+
+return type : string
+    Returns a string object containing the name of a color table.
+
+
+**Description:**
+
+    A color table is a set of color values that are used as the colors for
+    plots. VisIt supports two flavors of color table: continuous and discrete.
+    A continuous color table is defined by a small set of color control points
+    and the colors specified by the color control points are interpolated
+    smoothly to fill in any gaps. Continuous color tables are used for plots
+    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
+    discrete color table is a set of color control points that are used to
+    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
+    notion of default continuous and default discrete color tables so plots can
+    just use the "default" color table. This lets you change the color table
+    used by many plots by just changing the "default" color table. The
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
+    the name of the default discrete color table.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
+
+
+GetDefaultDiscreteColorTable
+----------------------------
+
+**Synopsis:**
+
+::
+
+  GetDefaultDiscreteColorTable() -> string
+
+
+return type : string
+    Returns a string object containing the name of a color table.
+
+
+**Description:**
+
+    A color table is a set of color values that are used as the colors for
+    plots. VisIt supports two flavors of color table: continuous and discrete.
+    A continuous color table is defined by a small set of color control points
+    and the colors specified by the color control points are interpolated
+    smoothly to fill in any gaps. Continuous color tables are used for plots
+    that need to be colored smoothly by a variable (e.g. Pseudocolor plot). A
+    discrete color table is a set of color control points that are used to
+    color distinct regions of a plot (e.g. Subset plot). VisIt supports the
+    notion of default continuous and default discrete color tables so plots can
+    just use the "default" color table. This lets you change the color table
+    used by many plots by just changing the "default" color table. The
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
+    the name of the default discrete color table.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
+
+
 GetDefaultFileOpenOptions
 -------------------------
 
@@ -3392,7 +3396,6 @@ return type : dictionary
 ::
 
   #% visit -cli
-  OpenMDServer()
   opts = GetDefaultFileOpenOptions("VASP")
   opts["Allow multiple timesteps"] = 1
   SetDefaultFileOpenOptions("VASP", opts)
@@ -3525,6 +3528,45 @@ return type : EngineProperties object
   db = "/usr/gapps/visit/data/globe.silo"
   OpenDatabase(db)
   props = GetEngineProperties(GetEngineList()[0])
+
+
+GetExportOptions
+----------------
+
+**Synopsis:**
+
+::
+
+  GetExportOptions(pluginName) -> dictionary
+
+
+pluginName : string
+    The name of a plugin.
+
+return type : dictionary
+    Returns a dictionary containing the options.
+
+
+**Description:**
+
+    GetExportOptions returns the current export options used to export
+    files when a specific plugin is triggered.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  e = ExportDBAttributes()
+  e.db_type = "Silo"
+  e.filename = "rect2d_u.silo"
+  opts = GetExportOptions("Silo")
+  opts["Driver"] = "HDF5"
+  OpenDatabase("rect2d.silo")
+  AddPlot("Pseudocolor", "u")
+  DrawPlots()
+  ExportDatabase(e, opts)
 
 
 GetFlattenOutput
@@ -3741,6 +3783,37 @@ return type : string
   print("VisIt Error: %s" % GetLastError())
   # Get last message into msg and then clear last error message to ""
   msg = GetLastError(1)
+
+
+GetLastMessage
+--------------
+
+**Synopsis:**
+
+::
+
+  GetLastMessage() -> (message, severity)
+  GetLastMessage(int-clr) -> (message, severity)
+
+Returns:
+    GetLastMessage returns a tuple containing 2 strings, the last message and its severity.
+    If int-clr is present and is non-zero, once the message is retrieved it is also cleared.
+
+
+**Description:**
+
+    The GetLastMessage function returns a tuple containing the last message and its severity that VisIt issued since being cleared.
+    If int-clr is present and is non-zero, once the message is retrieved it is also cleared.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/this/database/does/not/exist")
+  msg, severity = GetLastMessage()
+  print("VisIt %s: %s" % (severity, msg))
 
 
 GetLight
@@ -4272,14 +4345,16 @@ return type : dictionary
     For example, a Curve plot will return the xy pairs that comprise the curve.
     The tuple is arranged <x1, y1, x2, y2, ..., xn, yn>.
 
-    For time queries that create multiple curves, e.g. Time Pick with multiple variables, the dictionary contains a 'Curves' object, and each curve is referenced by it's associated variable name.
-    This was introduced in VisIt 3.4.1.
+    For time queries that create multiple curves, e.g. Time Pick with multiple
+    variables, the dictionary contains a 'Curves' object, and each curve is
+    referenced by it's associated variable name. This was introduced in
+    VisIt 3.4.1.
 
-
-**Single Curve Example:**
+**Example:**
 
 ::
 
+  # Single curve example
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
   AddPlot("Pseudocolor", "d")
@@ -4290,10 +4365,7 @@ return type : dictionary
   lineout = info["Curve"]
   print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
 
-**Multiple Curve Example:**
-
-::
-
+  # Multiple curve example
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/wave.visit")
   AddPlot("Pseudocolor", "pressure")
@@ -10391,7 +10463,7 @@ format_string : string
 **Description:**
 
     The SetQueryFloatFormat method sets a :ref:`printf-style <FormattingNumbers>` format string that
-    is used by VisIt's querys to produce textual output.
+    is used by VisIt's queries to produce textual output.
 
 
 **Example:**

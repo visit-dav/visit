@@ -287,6 +287,7 @@ class CMakeGeneratorPlugin : public Plugin
     void
     FilterConditionalLibs(QString &links, QString &libs)
     {
+#ifdef HAVE_LIBVTKM
         // Will convert vtkm_xxx to vtkm_xxx-version
         // otherwise will leave it alone.
         QString vtkmversion = QString("-%1").arg(VTKM_SMALL);
@@ -302,6 +303,9 @@ class CMakeGeneratorPlugin : public Plugin
             }
             libs += " " + tmp;
         }
+#else
+        libs = links;
+#endif
     }
 
     void
@@ -922,10 +926,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << "        )" << Endl;
         WriteCMake_ConditionalSources(out, "S", "        ");
         out << "        ADD_LIBRARY(S"<<name<<ptype<<" ${LIBS_SOURCES})" << Endl;
-        out << "        IF(WIN32)" << Endl;
-        out << "            # This prevents python from #defining snprintf as _snprintf" << Endl;
-        out << "            SET_TARGET_PROPERTIES(S"<<name<<ptype<<" PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << Endl;
-        out << "        ENDIF()" << Endl;
         out << "        TARGET_LINK_LIBRARIES(S" << name << ptype
             << " visitcommon visitpy ${PYTHON_LIBRARY})" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "S", ptype, "        ");

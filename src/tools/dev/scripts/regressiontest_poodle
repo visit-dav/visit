@@ -164,6 +164,13 @@
 #   performed at the repo root. Perform the build completely outside the repo
 #   dir. Have make.out, make.err and installlog be local to the build dir.
 #
+#   Justin Privitera, Mon Sep 23 10:18:29 PDT 2024
+#   Update visit-install location.
+#
+#   Eric Brugger, Mon Oct  7 11:15:18 PDT 2024
+#   Updated to run the test suite on poodle instead of pascal. Made
+#   the logic that detects new test results more general.
+# 
 
 # Determine the users name and e-mail address.
 #
@@ -204,6 +211,9 @@ case $user in
     cyrush)
         userEmail=cyrush@llnl.gov
         ;;
+    justin)
+        userEmail=privitera1@llnl.gov
+        ;;
 esac
 
 if test "$userEmail" = "unknown" ; then
@@ -219,7 +229,7 @@ debug="false"
 branch="trunk"
 revision="latest"
 serial="false"
-testHost="pascal"
+testHost="poodle"
 testDir="/usr/WS1/visit"
 post="true"
 
@@ -467,7 +477,7 @@ echo "Starting install:\`date\`"
 # Install the package
 version=\`cat $repoDir/src/VERSION\`
 
-$repoDir/src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./install_log 2>&1
+$repoDir/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./install_log 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
@@ -583,7 +593,7 @@ if test "$post" = "true" ; then
 
     # Check the results into github.
     cd $buildDir/test
-    newResults=\`ls -d *22:00\`
+    newResults=\`ls -d ????-??-??-??:??\`
     # should the dashboard have group perms?
     cd /usr/WS1/visit/dashboard/dashboard
     git add \$newResults baselines index.html
@@ -637,10 +647,10 @@ EOF
 chmod 750 postit_${testHost}
 
 # Run the test suite.
-if test "$testHost" = "pascal" ; then
+if test "$testHost" = "poodle" ; then
     subTag=`date +%Y-%m-%d-%H:%M`
-    ./checkout_pascal $subTag
-    sbatch --partition=pvis --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o pascal_testit_$subTag.out ./runit_pascal $subTag
+    ./checkout_poodle $subTag
+    sbatch --partition=pbatch --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o poodle_testit_$subTag.out ./runit_poodle $subTag
     sleep 28800
-    ./postit_pascal $subTag
+    ./postit_poodle $subTag
 fi

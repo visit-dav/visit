@@ -65,7 +65,7 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit build_visit3_4_2 /home/visit
 COPY --chown=visit:visit run_build_visit_fedora31.sh /home/visit
 COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
 # Build the third party libraries
@@ -73,6 +73,6 @@ RUN /bin/bash run_build_visit_fedora31.sh
 
 COPY --chown=visit:visit build_test_visit.sh /home/visit
 COPY --chown=visit:visit test_visit.py /home/visit
-COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
-RUN /bin/bash build_test_visit.sh -v 3.4.1
+COPY --chown=visit:visit visit3.4.2.tar.gz /home/visit
+RUN /bin/bash build_test_visit.sh -v 3.4.2
 

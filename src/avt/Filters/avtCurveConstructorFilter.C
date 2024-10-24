@@ -312,6 +312,12 @@ void avtCurveConstructorFilter::Execute()
 //    Add vname and count arguments.
 //    Store xy-pairs in MapNode when creating multiple curves.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Moved test for ouputArray size from PostExecute to here, so that we
+//    don't save multiple curves when outputArray is too large.
+//    Utilize same varname for single-curve output as would be used for
+//    multi-curve output.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -506,10 +512,19 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string
         outputArray.push_back(sortedVal->GetTuple1(i));
     }
     string varname = (!label.empty() ? label : (pipelineVariable != NULL ? pipelineVariable : "Curve"));
-    if (count > 1)
+    // Limit outputArray size that we send back to the client.
+    if(outputArray.size() < 100000)
     {
-        outputInfo[varname] = outputArray;
-        outputArray.clear();
+        if (count > 1)
+        {
+            outputInfo[varname] = outputArray;
+            outputArray.clear();
+        }
+    }
+    else
+    {
+        debug5 << "Curve constructor filter does not send curves that contain "
+                  "more than 100K values to the client." << endl;
     }
 
     // Pass a copy of the avtCurveTransform data into the new curve object.
@@ -621,6 +636,10 @@ avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 //    Multi-curve output is stored in outputInfo. Single curve stored in
 //    outputArray.  Removed parallel broadcast (don't think its necessary).
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Moved test for ouputArray size to CreateSingleOutput, so that we
+//    don't save multiple curves when outputArray is too large.
+//
 // ****************************************************************************
 
 void
@@ -628,19 +647,10 @@ avtCurveConstructorFilter::PostExecute(void)
 {
     if(!outputArray.empty())
     {
-        // Limit outputArray size that we send back to the client.
-        if(outputArray.size() < 100000)
-        {
-            PlotInfoAttributes plotInfoAtts ;
-            MapNode data;
-            data = outputArray;
-            GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
-        }
-        else
-        {
-            debug5 << "Curve constructor filter does not send curves that contain "
-                      "more than 100K values to the client." << endl;
-        }
+        PlotInfoAttributes plotInfoAtts;
+        MapNode data;
+        data = outputArray;
+        GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
     }
     else if (outputInfo.GetNumEntries() > 0)
     {
