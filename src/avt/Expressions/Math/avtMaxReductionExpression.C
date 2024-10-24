@@ -79,248 +79,117 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
 {
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
+    int *nodeShouldBeIgnoredPtr = nullptr;
+
+    // We provide a simple calculation in the case that we don't need to worry
+    // about ghosts.
+    auto calculate_without_ghosts = [&]()
+    {
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+        {
+            double comp_max = in->GetComponent(0, comp_id);
+            // start at 1 since we already looked at the 0th element
+            for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
+            {
+                const double val = in->GetComponent(tuple_id, comp_id);
+                if (val > comp_max)
+                {
+                    comp_max = val;
+                }
+            }
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, comp_max);
+            }
+        }
+    };
+
+    // We provide a more complicated calculation that takes ghost data into account.
+    // The way this works is it takes a function called get_point_valid() that is 
+    // defined based on if we are working with zonal or nodal data. get_point_valid()
+    // itself takes two pointers and an index called tuple_id.
+    auto calculate_with_ghosts = [&](int (get_point_valid)(vtkDataArray *, int *, int))
+    {
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+        {
+            bool init_max_set = false;
+            double comp_max;
+            int start_tuple_id = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                {
+                    comp_max = in->GetComponent(tuple_id, comp_id);
+                    start_tuple_id = tuple_id + 1;
+                    init_max_set = true;
+                    break;
+                }
+            }
+
+            if (!init_max_set)
+            {
+                EXCEPTION2(ExpressionException, outputVariableName,
+                     "Everything is ghosted so the global_max expression is not valid.");
+            }
+
+            for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
+            {
+                if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    if (val > comp_max)
+                    {
+                        comp_max = val;
+                    }
+                }
+            }
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, comp_max);
+            }
+        }
+    };
 
     if (AVT_ZONECENT == centering)
     {
         if (ghost_zones)
         {
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                bool init_max_set = false;
-                double comp_max;
-                int start_tuple_id = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const int ghost = ghost_zones->GetComponent(tuple_id, 0);
-                    if (0 == ghost)
-                    {
-                        comp_max = in->GetComponent(tuple_id, comp_id);
-                        start_tuple_id = tuple_id + 1;
-                        init_max_set = true;
-                        break;
-                    }
-                }
-
-                if (!init_max_set)
-                {
-                    EXCEPTION2(ExpressionException, outputVariableName,
-                         "BAD");
-                }
-
-                for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
-                {
-                    const int ghost = ghost_zones->GetComponent(tuple_id, 0);
-                    if (0 == ghost)
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        if (val > comp_max)
-                        {
-                            comp_max = val;
-                        }
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, comp_max);
-                }
-            }
+            // we pass a lambda to calculate_with_ghosts() that
+            // looks at the ghost_zones to determine if a cell
+            // is valid and ignores the nodeShouldBeIgnoredPtr.
+            calculate_with_ghosts([](vtkDataArray *ghost_zones,
+                                     int *nodeShouldBeIgnoredPtr,
+                                     int tuple_id) -> int 
+                { return ghost_zones->GetComponent(tuple_id, 0); });
         }
-        else // no ghosts
+        else // no ghosts or just ghost nodes
         {
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                double comp_max = in->GetComponent(0, comp_id);
-                for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    if (val > comp_max)
-                    {
-                        comp_max = val;
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, comp_max);
-                }
-            }
+            calculate_without_ghosts();
         }
     }
     else // AVT_NODECENT == centering
     {
-        if (ghost_zones)
+        // if we have any kind of ghosts
+        if (ghost_zones || ghost_nodes)
         {
-            const int nCells = in_ds->GetNumberOfCells();
-            const int nPoints = in_ds->GetNumberOfPoints();
-            
-            // we create an array to track if this point should be counted
-            std::vector<int> pointShouldBeCounted(nPoints, false);
+            // we need to identify which nodes should be ignored
+            std::vector<int> nodeShouldBeIgnored = IdentifyGhostedNodes(
+                in_ds, ghost_zones, ghost_nodes);
+            nodeShouldBeIgnoredPtr = nodeShouldBeIgnored.data();
 
-            // iterate through the cells and mark points that are touching non-ghosts
-            // as points that should be counted
-            for (int cellId = 0; cellId < nCells; cellId ++)
-            {
-                // if this zone is not a ghost zone
-                if (0 == ghost_zones->GetComponent(cellId, 0))
-                {
-                    vtkIdType numCellPoints = 0;
-#if LIB_VERSION_LE(VTK,8,1,0)
-                    vtkIdType *cellPoints = NULL;
-#else
-                    const vtkIdType *cellPoints = nullptr;
-#endif
-                    vtkIdList *ptIds = vtkIdList::New();
-                    // we get the points for this zone
-                    in_ds->GetCellPoints(cellId, numCellPoints, cellPoints, ptIds);
-
-                    // and mark them as valid points
-                    if (numCellPoints && cellPoints)
-                    {
-                        for (int cellPointId = 0; cellPointId < numCellPoints; cellPointId ++)
-                        {
-                            const int pointId = cellPoints[cellPointId];
-                            pointShouldBeCounted[pointId] = true;
-                        }
-                    }
-                    ptIds->Delete();
-                }
-            }
-
-            if (ghost_nodes)
-            {
-                // iterate through all points and make sure points marked as ghost
-                // nodes are not counted
-                for (int pointId = 0; pointId < nPoints; pointId ++)
-                {
-                    // if this node is a ghost node
-                    if (0 != ghost_nodes->GetComponent(pointId, 0))
-                    {
-                        pointShouldBeCounted[pointId] = false;
-                    }
-                }
-            }
-
-            // now we can compute our max
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                bool init_max_set = false;
-                double comp_max;
-                int start_tuple_id = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (pointShouldBeCounted[tuple_id])
-                    {
-                        comp_max = in->GetComponent(tuple_id, comp_id);
-                        start_tuple_id = tuple_id + 1;
-                        init_max_set = true;
-                        break;
-                    }
-                }
-
-                if (!init_max_set)
-                {
-                    EXCEPTION2(ExpressionException, outputVariableName,
-                         "BAD");
-                }
-
-                for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (pointShouldBeCounted[tuple_id])
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        if (val > comp_max)
-                        {
-                            comp_max = val;
-                        }
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, comp_max);
-                }
-            }
+            // we pass a lambda to calculate_with_ghosts() that
+            // looks at the nodeShouldBeIgnoredPtr to determine 
+            // if a node is valid and ignores the ghost_zones.
+            calculate_with_ghosts([](vtkDataArray *ghost_zones,
+                                     int *nodeShouldBeIgnoredPtr,
+                                     int tuple_id) -> int 
+                { return nodeShouldBeIgnoredPtr[tuple_id]; });
         }
-        else if (!ghost_zones && ghost_nodes)
+        else // no ghosts
         {
-            const int nCells = in_ds->GetNumberOfCells();
-            const int nPoints = in_ds->GetNumberOfPoints();
-            
-            // we create an array to track if this point should be counted
-            std::vector<int> pointShouldBeCounted(nPoints, true);
-
-            // iterate through all points and make sure points marked as ghost
-            // nodes are not counted
-            for (int pointId = 0; pointId < nPoints; pointId ++)
-            {
-                // if this node is a ghost node
-                if (0 != ghost_nodes->GetComponent(pointId, 0))
-                {
-                    pointShouldBeCounted[pointId] = false;
-                }
-            }
-
-            // now we can compute our max
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                bool init_max_set = false;
-                double comp_max;
-                int start_tuple_id = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (pointShouldBeCounted[tuple_id])
-                    {
-                        comp_max = in->GetComponent(tuple_id, comp_id);
-                        start_tuple_id = tuple_id + 1;
-                        init_max_set = true;
-                        break;
-                    }
-                }
-
-                if (!init_max_set)
-                {
-                    EXCEPTION2(ExpressionException, outputVariableName,
-                         "BAD");
-                }
-
-                for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (pointShouldBeCounted[tuple_id])
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        if (val > comp_max)
-                        {
-                            comp_max = val;
-                        }
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, comp_max);
-                }
-            }
-        }
-        else // !ghost_zones && !ghost_nodes
-        {
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                double comp_max = in->GetComponent(0, comp_id);
-                for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    if (val > comp_max)
-                    {
-                        comp_max = val;
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, comp_max);
-                }
-            }
+            calculate_without_ghosts();
         }
     }
 }
