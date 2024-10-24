@@ -171,7 +171,7 @@ def TestSaveFormat(fmt):
             else:
                 SetActiveWindow(2)
                 if OpenDatabase(swatmp.fileName+"."+ext):
-                    AddPlot("Curve","curve")
+                    AddPlot("Curve","going_down")
                     if DrawPlots():
                         result = "Passed\n"
                     DeleteAllPlots()

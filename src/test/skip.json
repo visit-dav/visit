@@ -1,7 +1,6 @@
 { "skip_list":[
  {"mode":"serial","tests":[
-		    {"category":"databases","file":"blueprint.py","cases":["Misc_radial","Misc_specset","blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
-                    {"category":"databases","file":"vtk.py","cases":["export_file_version"]},
+		    {"category":"databases","file":"blueprint.py","cases":["blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},
@@ -41,8 +40,7 @@
                     {"platform":"win", "category":"unit","file":"launcher.py"}
                   ]},
  {"mode":"parallel","tests":[
-		    {"category":"databases","file":"blueprint.py","cases":["Misc_radial","Misc_specset","blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
-                    {"category":"databases","file":"vtk.py","cases":["export_file_version"]},
+		    {"category":"databases","file":"blueprint.py","cases":["blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_04"]},
@@ -98,8 +96,7 @@
                     {"platform":"win","category":"unit","file":"launcher.py"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
-		    {"category":"databases","file":"blueprint.py","cases":["Misc_radial","Misc_specset","blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
-                    {"category":"databases","file":"vtk.py","cases":["export_file_version"]},
+		    {"category":"databases","file":"blueprint.py","cases":["blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},

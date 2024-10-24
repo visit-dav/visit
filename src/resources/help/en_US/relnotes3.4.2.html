@@ -28,7 +28,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Windows build issues for custom plugins against an installed version of VisIt was fixed.</li>
   <li>Fixed a bug in OpenPMD reader that subverted its ability to read chunked, as opposed to contiguous datasets.</li>
   <li>Enabled "Tunnel data connections through SSH" in the LLNL RZ host profiles where it was missing.</li>
-  <li>Removed the obsolete LLNL host profiles for RZTopaz, Surface and Vulcan.</li>
+  <li>Removed the obsolete LLNL host profiles for RZTopaz, Pascal, Surface and Vulcan.</li>
   <li>Fixed a bug where the LLNL host profiles for Boraxo, Dane and Ruby didn't get installed in some situations.</li>
   <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
   <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
@@ -48,11 +48,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
   <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
   <li>ChooseCenter with a mouse on Scatter plot now works.</li>
+  <li>The triad lines no longer disappear.</li>
   <li>Fixed an issue causing species set selection to only work on fields that were represented as floating point data.</li>
   <li>Fixed a bug in the Plaintext Reader causing reading variable names that were single-characters to fail.</li>
   <li>Fixed a bug where the operator attribute windows will show the default attributes when displaying the attributes for an operator applied to a plot after restoring a session. The plots displayed in the visualization windows will be correct, just the attributes displayed in the attribute window will be incorrect. This happens with session files saved with releases 3.4 and 3.4.1. To fix the issue you will need to save a new session file using a newer version of VisIt. If you restored a session with a bad session file, you will need to change the attributes of any affected operators before saving the new session file.</li>
-</ul>
   <li>Fixed a bug where the rubber band lines are either broken or missing when you click and move the mouse when zooming an image using zoom mode on Linux systems.</li>
+  <li>Fixed a bug causing material edge lines to appear on problems produced by parallel runs.</li>
+</ul>
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
 <ul>
@@ -71,6 +73,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Saving results of time queries to curve files now uses query name and/or variable names as curve names instead of just 'Curve'.</li>
   <li>Curves are now supported in Xdmf files. They are handled as 2DRectMesh objects with >1 points in X and 1 point in Y.</li>
   <li>The OnionPeel and IndexSelect operator Windows now allow typing into the 'Set' option as well as selecting from the dropwdown box. Typing will filter the available entries to match what has been typed so far, allowing easier selection than the pulldown if there is a large number of sets. If typing is completed with text that doesn't match an available entry a Warning message will pop up.<li>
+  <li>Support has been added for using the <code>jsrun</code> parallel job launcher.</li>
 </ul>
 
 <a name="Dev_changes"></a>

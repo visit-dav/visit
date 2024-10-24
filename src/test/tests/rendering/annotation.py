@@ -57,6 +57,11 @@
 #
 #    Alister Maguire, Fri Mar  9 10:21:50 PST 2018
 #    Now using a 'set manually' flag for the triad attribtues. 
+# 
+#    Justin Privitera, Wed Oct  9 14:47:05 PDT 2024
+#    Changed triadlinewidth to 2 from 3 to avoid rebaselining.
+#    The triad line width is now an int not a float and 0 corresponds to 
+#    line width 1, so all the values have been shifted up.
 #
 # ----------------------------------------------------------------------------
 
@@ -453,7 +458,7 @@ Test("annot3d_10")
 # Change the triad attribtues manually
 a.axes3D.triadSetManually = 1
 a.axes3D.triadColor = (66, 244, 215)
-a.axes3D.triadLineWidth = 3
+a.axes3D.triadLineWidth = 2
 a.axes3D.triadFont = 1
 a.axes3D.triadBold = 0
 a.axes3D.triadItalic = 0
