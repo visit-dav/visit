@@ -69,97 +69,83 @@ avtSumReductionExpression::~avtSumReductionExpression()
 //  Modifications:
 //
 // ****************************************************************************
- 
+
 void
 avtSumReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
+    int *pointShouldBeIgnoredPtr = nullptr;
+
+    auto calculate_with_ghosts = [&](int (get_point_valid)(vtkDataArray *, int *, int))
+    {
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+        {
+            double sum = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                if (0 == get_point_valid(ghost_zones, pointShouldBeIgnoredPtr, tuple_id))
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    sum += val;
+                }
+            }
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, sum);
+            }
+        }
+    };
+
+    auto calculate_without_ghosts = [&]()
+    {
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+        {
+            double sum = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                const double val = in->GetComponent(tuple_id, comp_id);
+                sum += val;
+            }
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, sum);
+            }
+        }
+    };
 
     if (AVT_ZONECENT == centering)
     {
         if (ghost_zones)
         {
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const int ghost = ghost_zones->GetComponent(tuple_id, 0);
-                    if (0 == ghost)
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        sum += val;
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, sum);
-                }
-            }
+            calculate_with_ghosts([](vtkDataArray *ghost_zones,
+                                     int *pointShouldBeIgnoredPtr,
+                                     int tuple_id) -> int 
+                { return ghost_zones->GetComponent(tuple_id, 0); });
         }
-        else // no ghosts
+        else // no ghosts or just ghost nodes
         {
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, sum);
-                }
-            }
+            calculate_without_ghosts();
         }
     }
     else // AVT_NODECENT == centering
     {
         if (ghost_zones || ghost_nodes)
         {
-            std::vector<int> pointShouldBeCounted = IdentifyGhostedNodes(
+            std::vector<int> pointShouldBeIgnored = IdentifyGhostedNodes(
                 in_ds, ghost_zones, ghost_nodes);
-
-            // now we can compute our sum
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (pointShouldBeCounted[tuple_id])
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        sum += val;
-                    }
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, sum);
-                }
-            }
+            pointShouldBeIgnoredPtr = pointShouldBeIgnored.data();
+            calculate_with_ghosts([](vtkDataArray *ghost_zones,
+                                     int *pointShouldBeIgnoredPtr,
+                                     int tuple_id) -> int 
+                { return pointShouldBeIgnoredPtr[tuple_id]; });
         }
         else // !ghost_zones && !ghost_nodes
         {
-            for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-            {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
-                }
-
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    out->SetComponent(tuple_id, comp_id, sum);
-                }
-            }
+            calculate_without_ghosts();
         }
     }
 }

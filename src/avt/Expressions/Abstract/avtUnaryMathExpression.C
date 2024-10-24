@@ -86,11 +86,11 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
     const int nPoints = in_ds->GetNumberOfPoints();
 
     // we create an array to track if this point should be counted
-    std::vector<int> pointShouldBeCounted(nPoints);
+    std::vector<int> pointShouldBeIgnored(nPoints);
     if (ghost_zones)
     {
         // if there are ghost zones, we want to initialize all points to not being counted
-        fill(pointShouldBeCounted.begin(), pointShouldBeCounted.end(), false);
+        fill(pointShouldBeIgnored.begin(), pointShouldBeIgnored.end(), true);
     }
     else
     {
@@ -99,7 +99,7 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
         // Alternatively, we will hit this case if there are neither ghost zones nor ghost
         // nodes. In that case, we shouldn't even be in this function, but if we are here
         // we might as well say all the points are valid since they are.
-        fill(pointShouldBeCounted.begin(), pointShouldBeCounted.end(), true);
+        fill(pointShouldBeIgnored.begin(), pointShouldBeIgnored.end(), false);
     }
 
     if (ghost_zones)
@@ -128,7 +128,7 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
                     for (int cellPointId = 0; cellPointId < numCellPoints; cellPointId ++)
                     {
                         const int pointId = cellPoints[cellPointId];
-                        pointShouldBeCounted[pointId] = true;
+                        pointShouldBeIgnored[pointId] = false;
                     }
                 }
                 ptIds->Delete();
@@ -145,12 +145,12 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
             // if this node is a ghost node
             if (0 != ghost_nodes->GetComponent(pointId, 0))
             {
-                pointShouldBeCounted[pointId] = false;
+                pointShouldBeIgnored[pointId] = true;
             }
         }
     }
 
-    return pointShouldBeCounted;
+    return pointShouldBeIgnored;
 }
 
 

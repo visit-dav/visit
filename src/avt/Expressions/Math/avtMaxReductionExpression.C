@@ -72,7 +72,7 @@ avtMaxReductionExpression::~avtMaxReductionExpression()
 //  Modifications:
 //
 // ****************************************************************************
- 
+
 void
 avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
