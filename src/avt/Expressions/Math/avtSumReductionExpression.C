@@ -76,29 +76,10 @@ avtSumReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
 {
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
-    int *pointShouldBeIgnoredPtr = nullptr;
+    int *nodeShouldBeIgnoredPtr = nullptr;
 
-    auto calculate_with_ghosts = [&](int (get_point_valid)(vtkDataArray *, int *, int))
-    {
-        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-        {
-            double sum = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                if (0 == get_point_valid(ghost_zones, pointShouldBeIgnoredPtr, tuple_id))
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
-                }
-            }
-
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                out->SetComponent(tuple_id, comp_id, sum);
-            }
-        }
-    };
-
+    // We provide a simple calculation in the case that we don't need to worry
+    // about ghosts.
     auto calculate_without_ghosts = [&]()
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
@@ -117,12 +98,40 @@ avtSumReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         }
     };
 
+    // We provide a more complicated calculation that takes ghost data into account.
+    // The way this works is it takes a function called get_point_valid() that is 
+    // defined based on if we are working with zonal or nodal data. get_point_valid()
+    // itself takes two pointers and an index called tuple_id.
+    auto calculate_with_ghosts = [&](int (get_point_valid)(vtkDataArray *, int *, int))
+    {
+        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+        {
+            double sum = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    sum += val;
+                }
+            }
+
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                out->SetComponent(tuple_id, comp_id, sum);
+            }
+        }
+    };
+
     if (AVT_ZONECENT == centering)
     {
         if (ghost_zones)
         {
+            // we pass a lambda to calculate_with_ghosts() that
+            // looks at the ghost_zones to determine if a cell
+            // is valid and ignores the nodeShouldBeIgnoredPtr.
             calculate_with_ghosts([](vtkDataArray *ghost_zones,
-                                     int *pointShouldBeIgnoredPtr,
+                                     int *nodeShouldBeIgnoredPtr,
                                      int tuple_id) -> int 
                 { return ghost_zones->GetComponent(tuple_id, 0); });
         }
@@ -133,17 +142,23 @@ avtSumReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     }
     else // AVT_NODECENT == centering
     {
+        // if we have any kind of ghosts
         if (ghost_zones || ghost_nodes)
         {
-            std::vector<int> pointShouldBeIgnored = IdentifyGhostedNodes(
+            // we need to identify which nodes should be ignored
+            std::vector<int> nodeShouldBeIgnored = IdentifyGhostedNodes(
                 in_ds, ghost_zones, ghost_nodes);
-            pointShouldBeIgnoredPtr = pointShouldBeIgnored.data();
+            nodeShouldBeIgnoredPtr = nodeShouldBeIgnored.data();
+
+            // we pass a lambda to calculate_with_ghosts() that
+            // looks at the nodeShouldBeIgnoredPtr to determine 
+            // if a node is valid and ignores the ghost_zones.
             calculate_with_ghosts([](vtkDataArray *ghost_zones,
-                                     int *pointShouldBeIgnoredPtr,
+                                     int *nodeShouldBeIgnoredPtr,
                                      int tuple_id) -> int 
-                { return pointShouldBeIgnoredPtr[tuple_id]; });
+                { return nodeShouldBeIgnoredPtr[tuple_id]; });
         }
-        else // !ghost_zones && !ghost_nodes
+        else // no ghosts
         {
             calculate_without_ghosts();
         }
