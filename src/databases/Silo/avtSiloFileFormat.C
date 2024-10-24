@@ -5652,6 +5652,55 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 }
 
 // ****************************************************************************
+//  Function: process_pbcs_for_one_domain
+//
+//  Purpose: This function is designed to assume it is applied in order
+//  starting with the first domain at index 0 and ending with the last domain
+//  at index ndomains-1. For the given domain, it copies only those neigbhors
+//  which are not periodic boundary neighbors (identified by the pbcBndList and
+//  pbcDomList parallel array arguments). It then overwrites the number of
+//  neighbors (old_nneighbors) with the number of neighbors copied.
+// ****************************************************************************
+static bool 
+process_pbcs_for_one_domain(int dom, int &nnidx, int &onidx, int &pbcidx,
+    int *old_nneighbors, int const *old_neighbors, int *new_neighbors,
+    int const *pbcBndList, int const *pbcDomList)
+{
+    int ncopied = 0;
+
+    if (pbcDomList[pbcidx] > dom) // copy all neighbors for this dom
+    {
+        int nneighbors = old_nneighbors[dom];
+        for (int i = 0; i < nneighbors; ncopied++, i++)
+            new_neighbors[nnidx++] = old_neighbors[onidx++];
+    }
+    else if (pbcDomList[pbcidx] == dom) // copy only non-pbc neighbors for this dom
+    {
+        int i;
+        int nneighbors = old_nneighbors[dom];
+        for (i = 0; (i < nneighbors) && (pbcDomList[pbcidx] == dom); i++)
+        {
+            if (i < pbcBndList[pbcidx])
+            {
+                new_neighbors[nnidx++] = old_neighbors[onidx++];
+                ncopied++;    
+            }
+            else
+            {
+                onidx++;
+                pbcidx++;
+            }
+        }
+        for (int j = i; j < nneighbors; ncopied++, j++)
+            new_neighbors[nnidx++] = old_neighbors[onidx++];
+        old_nneighbors[dom] = ncopied;
+    }
+
+    return ncopied == 7 || ncopied == 11 ||
+          ncopied == 17 || ncopied == 26; // assumes rect. arrangement of domains
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::FindMultiMeshAdjConnectivity
 //
 //  Purpose:
@@ -5676,48 +5725,6 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //    Mark C. Miller, Wed Nov 11 12:28:25 PST 2009
 //    Added guard against case where some mmadj->nodelists arrays are null.
 // ****************************************************************************
-static bool 
-process_one_domain_for_pbcs(int dom, int &nnidx, int &onidx, int &pbcidx,
-    int *old_nneighbors, int const *old_neighbors, int *new_neighbors,
-    int const *pbcBndList, int const *pbcDomList)
-{
-    if (pbcDomList[pbcidx] > dom) // copy all neighbors for this dom
-    {
-printf("copying all neighbors for domain %d\n", dom);
-        int nneighbors = old_nneighbors[dom];
-        for (int i = 0; i < nneighbors; i++)
-            new_neighbors[nnidx++] = old_neighbors[onidx++];
-        return true;
-    }
-    else if (pbcDomList[pbcidx] == dom) // copy only non-pbc neighbors for this dom
-    {
-        int i, ncopied = 0;
-        int nneighbors = old_nneighbors[dom];
-        for (i = 0; (i < nneighbors) && (pbcDomList[pbcidx] == dom); i++)
-        {
-            if (i < pbcBndList[pbcidx])
-            {
-                new_neighbors[nnidx++] = old_neighbors[onidx++];
-                ncopied++;    
-            }
-            else
-            {
-                onidx++;
-                pbcidx++;
-            }
-        }
-        for (int j = i; j < nneighbors; j++)
-        {
-            new_neighbors[nnidx++] = old_neighbors[onidx++];
-            ncopied++;    
-        }
-printf("copied %d neighbors for domain %d\n", ncopied, dom);
-        old_nneighbors[dom] = ncopied;
-        return true;
-    }
-    return false;
-}
-
 void
 avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int *&nneighbors, int *&extents, int &lneighbors, int *&neighbors,
@@ -5786,21 +5793,32 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int onidx = 0; // index into old_neighbors (mmadj_obj->neighbors)
             int pbcidx = 0; // index into pbc lists
 
+            int failed_dom = -1;
             for (int i = 0; i < ndomains; i++)
             {
-                bool ok = process_one_domain_for_pbcs(i, nnidx, onidx, pbcidx, 
+                bool ok = process_pbcs_for_one_domain(i, nnidx, onidx, pbcidx, 
                              mmadj_obj->nneighbors, mmadj_obj->neighbors,
                              new_neighbors, pbcBndList, pbcDomList);
                 if (!ok)
                 {
-                    DBFreeMultimeshadj(mmadj_obj);
-                    free(new_neighbors);
-                    EXCEPTION1(InvalidFilesException, "Problem processing PeriodicBndList");
+                    failed_dom = i;
+                    break;
                 }
             }
-            printf("new_lneighbors = %d, onidx = %d\n", new_lneighbors, onidx);
+
             free(pbcBndList);
             free(pbcDomList);
+
+            if (failed_dom != -1 || new_lneighbors != nnidx)
+            {
+                char msg[128];
+                snprintf(msg, sizeof(msg), "Problem removing periodic boundary "
+                    "neighbors from multimeshadj for domain %d\n", failed_dom);
+                if (failed_dom == -1) msg[63] = '\0'; // truncate message
+                DBFreeMultimeshadj(mmadj_obj);
+                free(new_neighbors);
+                EXCEPTION1(InvalidFilesException, msg);
+            }
 
             // Replace mmadj's neighbors data with the new stuff modified for pbcs
             // Note: mmadj_obj->nneighbors gets modified in place.
