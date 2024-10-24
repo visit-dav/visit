@@ -7989,7 +7989,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Exchange extra ghost zone/node arrays.
 // 
 //    Justin Privitera, Thu Oct 24 11:50:43 PDT 2024
-//    Avoid segfault when exchanging ghost zone/node arrays.
+//    Avoid segfault when exchanging extra ghost zone/node arrays.
 //
 // ****************************************************************************
 
