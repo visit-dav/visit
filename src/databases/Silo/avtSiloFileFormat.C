@@ -5656,33 +5656,63 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //
 //  Purpose: This function is designed to assume it is applied in order
 //  starting with the first domain at index 0 and ending with the last domain
-//  at index ndomains-1. For the given domain, it copies only those neigbhors
-//  which are not periodic boundary neighbors (identified by the pbcBndList and
-//  pbcDomList parallel array arguments). It then overwrites the number of
-//  neighbors (old_nneighbors) with the number of neighbors copied.
+//  at index ndomains-1. For the given domain, it copies only the neigbhor info
+//  for domains which are not periodic boundary neighbors (identified by the
+//  pbcBndList and pbcDomList parallel array arguments).
 // ****************************************************************************
 static bool 
-process_pbcs_for_one_domain(int dom, int &nnidx, int &onidx, int &pbcidx,
-    int *old_nneighbors, int const *old_neighbors, int *new_neighbors,
-    int const *pbcBndList, int const *pbcDomList)
+process_pbcs_for_one_domain(int dom,
+    int &pbcidx, int const *pbcBndList, int const *pbcDomList,
+    int &onidx, DBmultimeshadj const *old_mmadj,
+    int &nnidx, DBmultimeshadj *new_mmadj)
 {
     int ncopied = 0;
 
-    if (pbcDomList[pbcidx] > dom) // copy all neighbors for this dom
+    if (pbcDomList[pbcidx] > dom) // copy all neighbor info for this dom
     {
-        int nneighbors = old_nneighbors[dom];
-        for (int i = 0; i < nneighbors; ncopied++, i++)
-            new_neighbors[nnidx++] = old_neighbors[onidx++];
+        int nneighbors = old_mmadj->nneighbors[dom];
+        for (int i = 0; i < nneighbors; nnidx++, onidx++, ncopied++, i++)
+        {
+            new_mmadj->neighbors[nnidx] = old_mmadj->neighbors[onidx];
+            new_mmadj->back[nnidx] = old_mmadj->back[onidx];
+            if (old_mmadj->nodelists)
+            {
+                new_mmadj->lnodelists[nnidx] = old_mmadj->lnodelists[onidx];
+                new_mmadj->nodelists[nnidx] = old_mmadj->nodelists[onidx];
+                old_mmadj->nodelists[onidx] = 0; // above, we copied the pointer
+            }
+            if (old_mmadj->zonelists)
+            {
+                new_mmadj->lzonelists[nnidx] = old_mmadj->lzonelists[onidx];
+                new_mmadj->zonelists[nnidx] = old_mmadj->zonelists[onidx];
+                old_mmadj->zonelists[onidx] = 0; // above, we copied the pointer
+            }
+        }
     }
     else if (pbcDomList[pbcidx] == dom) // copy only non-pbc neighbors for this dom
     {
         int i;
-        int nneighbors = old_nneighbors[dom];
+        int nneighbors = old_mmadj->nneighbors[dom];
         for (i = 0; (i < nneighbors) && (pbcDomList[pbcidx] == dom); i++)
         {
             if (i < pbcBndList[pbcidx])
             {
-                new_neighbors[nnidx++] = old_neighbors[onidx++];
+                new_mmadj->neighbors[nnidx] = old_mmadj->neighbors[onidx];
+                new_mmadj->back[nnidx] = old_mmadj->back[onidx];
+                if (old_mmadj->nodelists)
+                {
+                    new_mmadj->lnodelists[nnidx] = old_mmadj->lnodelists[onidx];
+                    new_mmadj->nodelists[nnidx] = old_mmadj->nodelists[onidx];
+                    old_mmadj->nodelists[onidx] = 0;
+                }
+                if (old_mmadj->zonelists)
+                {
+                    new_mmadj->lzonelists[nnidx] = old_mmadj->lzonelists[onidx];
+                    new_mmadj->zonelists[nnidx] = old_mmadj->zonelists[onidx];
+                    old_mmadj->zonelists[onidx] = 0;
+                }
+                nnidx++;
+                onidx++;
                 ncopied++;    
             }
             else
@@ -5691,10 +5721,27 @@ process_pbcs_for_one_domain(int dom, int &nnidx, int &onidx, int &pbcidx,
                 pbcidx++;
             }
         }
-        for (int j = i; j < nneighbors; ncopied++, j++)
-            new_neighbors[nnidx++] = old_neighbors[onidx++];
-        old_nneighbors[dom] = ncopied;
+        // Copy all entries remaining
+        for (int j = i; j < nneighbors; nnidx++, onidx++, ncopied++, j++)
+        {
+            new_mmadj->neighbors[nnidx] = old_mmadj->neighbors[onidx];
+            new_mmadj->back[nnidx] = old_mmadj->back[onidx];
+            if (old_mmadj->nodelists)
+            {
+                new_mmadj->lnodelists[nnidx] = old_mmadj->lnodelists[onidx];
+                new_mmadj->nodelists[nnidx] = old_mmadj->nodelists[onidx];
+                old_mmadj->nodelists[onidx] = 0;
+            }
+            if (old_mmadj->zonelists)
+            {
+                new_mmadj->lzonelists[nnidx] = old_mmadj->lzonelists[onidx];
+                new_mmadj->zonelists[nnidx] = old_mmadj->zonelists[onidx];
+                old_mmadj->zonelists[onidx] = 0;
+            }
+        }
     }
+
+    new_mmadj->nneighbors[dom] = ncopied;
 
     return ncopied == 7 || ncopied == 11 ||
           ncopied == 17 || ncopied == 26; // assumes rect. arrangement of domains
@@ -5786,19 +5833,33 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int *pbcBndList = (int*) DBGetVar(dbfile, "PeriodicBndList");
             int *pbcDomList = (int*) DBGetVar(dbfile, "PeriodicDomList");
 
+            // Build a new multimesh_adj object
             int new_lneighbors = mmadj_obj->lneighbors - nBndEntries;
-            int *new_neighbors = (int *) malloc(new_lneighbors*sizeof(int));
+            DBmultimeshadj *mmadj_newobj = DBAllocMultimeshadj(ndomains);
+            mmadj_newobj->neighbors = (int *) malloc(new_lneighbors*sizeof(int));
+            mmadj_newobj->back = (int *) malloc(new_lneighbors*sizeof(int));
+            if (mmadj_obj->nodelists)
+            {
+                mmadj_newobj->lnodelists = (int *) malloc(new_lneighbors*sizeof(int));
+                mmadj_newobj->nodelists = (int **) malloc(new_lneighbors*sizeof(int*));
+            }
+            if (mmadj_obj->zonelists)
+            {
+                mmadj_newobj->lzonelists = (int *) malloc(new_lneighbors*sizeof(int));
+                mmadj_newobj->zonelists = (int **) malloc(new_lneighbors*sizeof(int*));
+            }
 
-            int nnidx = 0; // index into new_neighbors
-            int onidx = 0; // index into old_neighbors (mmadj_obj->neighbors)
+            int nnidx = 0; // index into mmadj_newobj->neighbors
+            int onidx = 0; // index into mmadj_obj->neighbors
             int pbcidx = 0; // index into pbc lists
 
             int failed_dom = -1;
             for (int i = 0; i < ndomains; i++)
             {
-                bool ok = process_pbcs_for_one_domain(i, nnidx, onidx, pbcidx, 
-                             mmadj_obj->nneighbors, mmadj_obj->neighbors,
-                             new_neighbors, pbcBndList, pbcDomList);
+                bool ok = process_pbcs_for_one_domain(i,
+                             pbcidx, pbcBndList, pbcDomList,
+                             onidx, mmadj_obj,
+                             nnidx, mmadj_newobj);
                 if (!ok)
                 {
                     failed_dom = i;
@@ -5806,6 +5867,7 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
                 }
             }
 
+            DBFreeMultimeshadj(mmadj_obj);
             free(pbcBndList);
             free(pbcDomList);
 
@@ -5815,16 +5877,12 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
                 snprintf(msg, sizeof(msg), "Problem removing periodic boundary "
                     "neighbors from multimeshadj for domain %d\n", failed_dom);
                 if (failed_dom == -1) msg[63] = '\0'; // truncate message
-                DBFreeMultimeshadj(mmadj_obj);
-                free(new_neighbors);
+                DBFreeMultimeshadj(mmadj_newobj);
                 EXCEPTION1(InvalidFilesException, msg);
             }
 
-            // Replace mmadj's neighbors data with the new stuff modified for pbcs
-            // Note: mmadj_obj->nneighbors gets modified in place.
-            free(mmadj_obj->neighbors);
-            mmadj_obj->lneighbors = new_lneighbors;
-            mmadj_obj->neighbors = new_neighbors;
+            // Replace original multimeshadj with the new one
+            mmadj_obj = mmadj_newobj;
         }
 
         extents = new int[ndomains*6];
