@@ -128,10 +128,10 @@ visit_add_library(
                 avtpipeline_ser)
 
 if(WIN32)
-    set_target_properties(engine_ser PROPERTIES OUTPUT_NAME enginelib_ser)
+    visit_patch_target(NAME engine_ser OUTPUT_NAME enginelib_ser)
 else()
     # This keeps comm's exceptions visible when using -fvisibility=hidden
-    target_compile_definitions(engine_ser PRIVATE COMM_EXPORTS)
+    visit_patch_target(NAME engine_ser DEFINES COMM_EXPORTS)
 endif()
 
 
@@ -154,7 +154,8 @@ if(VISIT_PARALLEL)
         endif()
     endif()
 
-    visit_add_parallel_library(
+    visit_add_library(
+        DO_PARALLEL
         NAME        engine_par
         SOURCES     ${LIBENGINE_SOURCES}
                     ${ICET_SOURCES}
@@ -173,19 +174,21 @@ if(VISIT_PARALLEL)
                     cognomen)
 
     if(WIN32)
-        set_target_properties(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
+        visit_patch_target(NAME engine_par OUTPUT_NAME enginelib_par)
     endif()
 
     if(ICET_FOUND)
-        target_include_directories(engine_par PUBLIC
-            $<BUILD_INTERFACE:${ICET_INCLUDE_DIR}>
-            $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/icet>)
-        target_link_directories(engine_par PUBLIC ${ICET_LIBRARY_DIR})
+        visit_patch_target(
+            NAME        engine_par
+            INCLUDES    $<BUILD_INTERFACE:${ICET_INCLUDE_DIR}>
+                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/icet>
+            DEFINES     HAVE_ICET
+            LINKDIR     ${ICET_LIBRARY_DIR})
         if(VISIT_MESAGL_DIR)
-            target_include_directories(engine_par PUBLIC
-               $<BUILD_INTERFACE:${OPENGL_INCLUDE_DIR}>)
+            visit_patch_target(
+                NAME engine_par
+                INCLUDES $<BUILD_INTERFACE:${OPENGL_INCLUDE_DIR}>)
         endif()
-        target_compile_definitions(engine_par PRIVATE HAVE_ICET)
     endif()
 endif()
 

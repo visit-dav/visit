@@ -81,7 +81,8 @@ visit_add_library(
 
 
 if(VISIT_PARALLEL)
-    visit_add_parallel_library(
+    visit_add_library(
+        DO_PARALLEL
         NAME       avtquery_par
         SOURCES    ${avtquery_par_SOURCES}
         HEADERS    ${avtquery_par_HEADERS}
@@ -90,10 +91,14 @@ if(VISIT_PARALLEL)
                    avtexpressions_par
                    avtfilters_par)
         if(VISIT_PYTHON_FILTERS)
-            target_link_libraries(avtquery_par PUBLIC avtpythonfilters_par)
+            visit_patch_target(
+                 NAME avtquery_par
+                 DEPENDS_ON avtpythonfilters_par)
         endif()
         if(CONDUIT_FOUND)
-            target_link_libraries(avtquery_par PUBLIC conduit_mpi)
+            visit_patch_target(
+                NAME avtquery_par
+                DEPENDS_ON conduit_mpi)
         endif()
 endif()
 

@@ -243,7 +243,8 @@ visit_add_library(
 
 if(VISIT_PARALLEL)
 
-    visit_add_parallel_library(
+    visit_add_library(
+        DO_PARALLEL
         NAME       avtfilters_par
         SOURCES    ${avtfilters_SOURCES}
         HEADERS    ${avtfilters_HEADERS}

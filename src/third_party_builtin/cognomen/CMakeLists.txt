@@ -8,7 +8,7 @@
 #   Make cognomen always build static lib on windows.
 #
 #   Kathleen Biagas, Mon Oct 7, 2024
-#   Utilize visit_add_parallel_library.
+#   Utilize visit_add_library.
 #
 #****************************************************************************
 
@@ -18,7 +18,8 @@ else()
     set(is_shared ${BUILD_SHARED_LIBS})
 endif()
 
-visit_add_parallel_library(
+visit_add_library(
+    DO_PARALLEL
     NAME        cognomen
     SOURCES     ${CMAKE_CURRENT_SOURCE_DIR}/src/cognomen.c
     HEADERS     ${CMAKE_CURRENT_SOURCE_DIR}/src/cognomen.h
@@ -34,6 +35,6 @@ visit_add_parallel_library(
     FOLDER      thirdparty_builtin/cognomen)
 
 if(WIN32)
-    target_link_libraries(cognomen PUBLIC ws2_32)
+    visit_patch_target(NAME cognomen DEPENDS_ON ws2_32)
 endif()
 

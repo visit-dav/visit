@@ -132,7 +132,7 @@ visit_add_library(
 
 if(NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
-    target_compile_definitions(viewercore_ser PRIVATE COMM_EXPORTS)
+    visit_patch_target(NAME viewercore_ser DEFINES COMM_EXPORTS)
 endif()
 
 set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
@@ -143,7 +143,8 @@ set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
 # We build a _par version of viewercore because we can't allow it to have any _ser
 # library dependencies when we use it in the simV2 parallel runtime.
 if(VISIT_PARALLEL)
-    visit_add_parallel_library(
+    visit_add_library(
+        DO_PARALLEL
         NAME        viewercore_par
         SOURCES     ${VIEWERCORE_SOURCES}
         HEADERS     ${VIEWERCORE_HEADERS}
@@ -160,7 +161,7 @@ if(VISIT_PARALLEL)
 
     if(NOT WIN32)
         # This keeps comm's exceptions visible when using -fvisibility=hidden
-        target_compile_definitions(viewercore_par PRIVATE COMM_EXPORTS)
+        visit_patch_target(NAME viewercore_par DEFINES COMM_EXPORTS)
     endif()
 endif()
 

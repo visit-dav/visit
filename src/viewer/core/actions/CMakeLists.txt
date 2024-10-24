@@ -4,6 +4,8 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Oct 24, 2024
+#   Use visit_patch_target instead of blt_patch_target.
 #
 #****************************************************************************
 
@@ -39,22 +41,18 @@ set(VIEWERCORE_ACTION_HEADERS
     ViewActions.h
     WindowActions.h)
 
-target_sources(viewercore_ser PRIVATE
-     ${VIEWERCORE_ACTION_SOURCES}
-     ${VIEWERCORE_ACTION_HEADERS})
-
-blt_patch_target(
+visit_patch_target(
     NAME     viewercore_ser
+    SOURCES  ${VIEWERCORE_ACTION_SOURCES}
+    HEADERS  ${VIEWERCORE_ACTION_HEADERS}
     INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
              $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/core/actions>)
 
 if(VISIT_PARALLEL)
-    target_sources(viewercore_par PRIVATE
-         ${VIEWERCORE_ACTION_SOURCES}
-         ${VIEWERCORE_ACTION_HEADERS})
-
-    blt_patch_target(
+    visit_patch_target(
         NAME     viewercore_par
+        SOURCES  ${VIEWERCORE_ACTION_SOURCES}
+        HEADERS  ${VIEWERCORE_ACTION_HEADERS}
         INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                  $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/core/actions>)
 endif()

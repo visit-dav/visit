@@ -44,7 +44,8 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_parallel_library(
+    visit_add_library(
+        DO_PARALLEL
         NAME       avtdatabase_par
         SOURCES    ${avtdatabase_par_SOURCES}
         HEADERS    ${avtdatabase_par_HEADERS}
