@@ -157,7 +157,6 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     readInDataset = true;
 
     hasGroups = false;
-    multipleGroupInclusion = false;
     vtkStringArray *groupNames = vtkStringArray::SafeDownCast(
         dataset->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_AggregateGroupNames"));
     if (!groupNames) return;
@@ -167,11 +166,19 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
        for definining an enum scalar. The entries returned in the AggregateGroupNames
        array potentially list multiple names. That happens if the groups statements
        in the .obj file have spaces indicating the element's memberships in multiple
-       groups. We unravel that here into a list of unique group names. */
+       groups. We unravel that here into two lists. One is a std::set of unique group
+       names used to define an enumerated scalar. The other is a std::set where we
+       aggregate the space separated names into a single string and the resulting
+       aggregatedGroupNames is used to define a material object. */
     for (int i = 0; i < groupNames->GetNumberOfTuples(); i++)
     {
-        std::string str = groupNames->GetValue(i);
-        std::istringstream iss(str);
+        std::string str1 = groupNames->GetValue(i);
+        std::string str2 = str1;
+
+        std::replace(str2.begin(), str2.end(), ' ', '_');
+        aggregatedGroupNames.insert(str2);
+
+        std::istringstream iss(str1);
         int n = 0;
         do
         {
@@ -181,7 +188,6 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
             uniqueGroupNames.insert(sub);
             n++;
         } while (iss);
-        if (n > 1) multipleGroupInclusion = true;
     }
 }
 
@@ -358,7 +364,11 @@ avtWavefrontOBJFileFormat::GetAuxiliaryData(const char *var,
         dataset->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_AggregateGroupNames"));
         std::vector<std::string> matnames;
         for (int i = 0; i < groupNames->GetNumberOfTuples(); i++)
-            matnames.push_back(groupNames->GetValue(i));
+        {
+            std::string str = groupNames->GetValue(i);
+            std::replace(str.begin(), str.end(), ' ', '_');
+            matnames.push_back(str);
+        }
 
         avtMaterial *mat = new avtMaterial((int) matnames.size(), matnames, nCells,
             matlist, 0, 0, 0, 0, 0);
@@ -403,7 +413,8 @@ avtWavefrontOBJFileFormat::FreeUpResources(void)
 
 static void
 AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
-    std::set<std::string> const &uniqueGroupNames, bool multipleGroupInclusion)
+    std::set<std::string> const &uniqueGroupNames,
+    std::set<std::string> const &aggregatedGroupNames)
 {
     /* Always add groupings using an enum scalar */
     avtScalarMetaData *smd = new avtScalarMetaData("Groups", meshname, AVT_ZONECENT);
@@ -418,14 +429,17 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
     smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
     md->Add(smd);
 
-    /* If the defined groupings have multiple inclusion (e.g. a 'g' statement in
-       the OBJ file specifies multiple groups), we cannot also add materials */
-    if (multipleGroupInclusion) return;
-
     vtkStringArray *groupColors = vtkStringArray::SafeDownCast(
         ds->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_AggregateGroupColors"));
-    vtkStringArray *groupNames = vtkStringArray::SafeDownCast(
+    vtkStringArray *groupNamesTmp = vtkStringArray::SafeDownCast(
         ds->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_AggregateGroupNames"));
+    vtkStringArray *groupNames = vtkStringArray::New();
+    for (int n = 0; n < (int) groupNamesTmp->GetNumberOfTuples(); n++)
+    {
+        std::string str = groupNamesTmp->GetValue(n);
+        std::replace(str.begin(), str.end(), ' ', '_');
+        groupNames->InsertNextValue(str);
+    }
 
     if (!groupColors || !groupNames) return;
     if (groupColors->GetNumberOfTuples() != groupNames->GetNumberOfTuples()) return;
@@ -437,12 +451,12 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
     std::vector<std::string> matnames;
     std::vector<std::string> matcolors;
     bool valid = true;
-    for (std::set<std::string>::const_iterator cit = uniqueGroupNames.begin();
-        cit != uniqueGroupNames.end(); cit++)
+    for (std::set<std::string>::const_iterator cit = aggregatedGroupNames.begin();
+        cit != aggregatedGroupNames.end(); cit++)
     {
         char const *hchars = "0123456789ABCDEFabcdef#";
 
-        /* specify material names in order of their existence in uniqueGroupNames */
+        /* specify material names in order of their existence in aggregatedGroupNames */
         matnames.push_back(*cit);
         int groupIndex = groupNames->LookupValue(*cit);
         if (groupIndex < 0)
@@ -487,6 +501,7 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
     avtMaterialMetaData *mmd = new avtMaterialMetaData("GroupsAsMaterials", meshname,
         groupNames->GetNumberOfTuples(), matnames, matcolors);
     mmd->validVariable = valid;
+    groupNames->Delete();
 
     md->Add(mmd);
 }
@@ -548,5 +563,5 @@ avtWavefrontOBJFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     if (hasGroups)
         AddGroupings(md, dataset, MESHNAME, uniqueGroupNames,
-            multipleGroupInclusion);
+            aggregatedGroupNames);
 }
