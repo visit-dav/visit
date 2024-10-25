@@ -221,6 +221,9 @@ ReadMiliResults(Famid  &dbid,
 //      Added DBOptionsAttribtues and added checks for setting the
 //      globalIntegrationPoint value. Options are "Inner", "Middle",
 //      and "Outer".
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Clear nodeLabelsExistForMesh vector.
 //
 // ****************************************************************************
 
@@ -235,6 +238,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
     datasets   = NULL;
     materials  = NULL;
     globalIntegrationPoint = "Middle";
+    nodeLabelsExistForMesh.clear();
 
     if (opts != NULL)
     {
@@ -301,6 +305,8 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
 //  Creation:    Jan 16, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Clear nodeLabelsExistForMesh vector.
 //
 // ****************************************************************************
 
@@ -385,6 +391,11 @@ avtMiliFileFormat::~avtMiliFileFormat()
     {
         delete [] fampath;
     }
+
+    // 
+    // don't need to track the node label existence anymore
+    // 
+    nodeLabelsExistForMesh.clear();
 }
 
 
@@ -639,6 +650,9 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 // 
 //    Justin Privitera, Wed Aug 28 14:57:42 PDT 2024
 //    Remove duplicated loop for ghost nodes.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Make ghost zones and nodes "extra", which means they are handled later.
 //
 // ****************************************************************************
 
@@ -794,28 +808,28 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
 
-        vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-        ghostNodes->SetName("avtGhostNodes");
-        ghostNodes->SetNumberOfTuples(nNodes);
+        vtkUnsignedCharArray *extraGhostNodes = vtkUnsignedCharArray::New();
+        extraGhostNodes->SetName("avtExtraGhostNodes");
+        extraGhostNodes->SetNumberOfTuples(nNodes);
 
-        unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+        unsigned char *extraGhostNodePtr = extraGhostNodes->GetPointer(0);
 
         for (int i = 0; i < nNodes; ++i)
         {
-            ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+            extraGhostNodePtr[i] = 0;
+            avtGhostData::AddGhostNodeType(extraGhostNodePtr[i],
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
 
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
-        ghostZones->SetNumberOfTuples(nCells);
+        vtkUnsignedCharArray *extraGhostZones = vtkUnsignedCharArray::New();
+        extraGhostZones->SetName("avtExtraGhostZones");
+        extraGhostZones->SetNumberOfTuples(nCells);
 
-        unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+        unsigned char *extraGhostZonePtr = extraGhostZones->GetPointer(0);
 
         for (int i = 0; i < nCells; ++i)
         {
-            ghostZonePtr[i] = 0;
+            extraGhostZonePtr[i] = 0;
 
             //
             // Element status > .5 is good.
@@ -836,24 +850,24 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                     for (int j = 0; j < nCellPts; ++j)
                     {
                         avtGhostData::RemoveGhostNodeType(
-                            ghostNodePtr[cellPts[j]],
+                            extraGhostNodePtr[cellPts[j]],
                             NODE_NOT_APPLICABLE_TO_PROBLEM);
                     }
                 }
             }
             else
             {
-                avtGhostData::AddGhostZoneType(ghostZonePtr[i],
+                avtGhostData::AddGhostZoneType(extraGhostZonePtr[i],
                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
             }
         }
 
         delete [] sandBuffer;
 
-        rv->GetPointData()->AddArray(ghostNodes);
-        rv->GetCellData()->AddArray(ghostZones);
-        ghostNodes->Delete();
-        ghostZones->Delete();
+        rv->GetPointData()->AddArray(extraGhostNodes);
+        rv->GetCellData()->AddArray(extraGhostZones);
+        extraGhostNodes->Delete();
+        extraGhostZones->Delete();
     }
 
 
@@ -3206,6 +3220,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Modifications
 //    Justin Privitera, Tue Aug 27 11:40:54 PDT 2024
 //    Took quotes off of AUXILIARY_DATA_IDENTIFIERS.
+// 
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Support Global Node Ids.
 //
 // ****************************************************************************
 
@@ -3222,7 +3239,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) &&
+         (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) != 0))
     {
         return NULL;
     }
@@ -3281,6 +3299,65 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         df = avtMaterial::Destruct;
 
         return (void*) mat;
+    }
+    else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        const char *mesh = varName;
+        //
+        // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
+        // We need to verify the name, and get the meshId.
+        //
+        bool isSandMesh = false;
+        if (strstr(mesh, "sand_mesh") == mesh)
+        {
+            isSandMesh = true;
+        }
+        else if (strstr(mesh, "mesh") != mesh)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        if (isSandMesh)
+        {
+            offset = 9;
+        }
+
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
+        
+        if (!nodeLabelsExistForMesh[meshId])
+        {
+            return NULL;
+        }
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        intVector labelIds = miliClass->GetLabelIds()[dom];
+
+        int *myLabelIds = new int[labelIds.size()];
+        for (int i = 0; i < labelIds.size(); i ++)
+        {
+            myLabelIds[i] = labelIds[i];
+        }
+
+        vtkIntArray *rv = vtkIntArray::New();
+        rv->SetNumberOfComponents(1);
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
+
+        df = avtVariableCache::DestructVTKObject;
+
+        return (void *) rv;
     }
 
     return NULL;
@@ -3791,6 +3868,9 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //      Eric Brugger, Fri May  7 15:54:32 PDT 2021
 //      Remove the code that assigns a random color to a material if no
 //      material color is specified.
+// 
+//      Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//      Pad out nodeLabelsExistForMesh vector with all true.
 //
 // ****************************************************************************
 void
@@ -3869,6 +3949,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     for (int i = 0; i < nMeshes; ++i)
     {
         miliMetaData[i] = NULL;
+        nodeLabelsExistForMesh.push_back(true);
     }
 
     //
@@ -4053,6 +4134,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //  Date:   April 9, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Have a stricter check for if reading labels failed.
 //
 // ****************************************************************************
 
@@ -4083,7 +4166,7 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
                                    nExpectedLabels, &numBlocks,
                                    &blockRanges, elemList, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_conn_labels failed at " << shortName << "!\n";
         numBlocks   = 0;
@@ -4132,6 +4215,9 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
 //  Date:   April 9, 2019
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+//    Record that node labels do not exist and have a stricter check for 
+//    failure to read node labels.
 //
 // ****************************************************************************
 
@@ -4155,11 +4241,12 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
     int rval = mc_load_node_labels(dbid[dom], meshId, shortName,
                                    &numBlocks, &blockRanges, labelIds);
 
-    if (rval != OK)
+    if (rval != OK || numBlocks == 0)
     {
         debug1 << "MILI: mc_load_node_labels failed!\n";
         numBlocks   = 0;
         blockRanges = NULL;
+        nodeLabelsExistForMesh[meshId] = false;
     }
 
     MiliClassMetaData *miliClass =
