@@ -6,8 +6,8 @@
 //                               avtGlobalSumExpression.h                    //
 // ************************************************************************* //
 
-#ifndef AVT_SUM_REDUCE_FILTER_H
-#define AVT_SUM_REDUCE_FILTER_H
+#ifndef AVT_GLOBAL_SUM_FILTER_H
+#define AVT_GLOBAL_SUM_FILTER_H
 
 #include <avtGhostAwareUnaryMathExpression.h>
 

@@ -6,8 +6,8 @@
 //                               avtGlobalVarianceExpression.h               //
 // ************************************************************************* //
 
-#ifndef AVT_VARIANCE_REDUCE_FILTER_H
-#define AVT_VARIANCE_REDUCE_FILTER_H
+#ifndef AVT_GLOBAL_VARIANCE_FILTER_H
+#define AVT_GLOBAL_VARIANCE_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 

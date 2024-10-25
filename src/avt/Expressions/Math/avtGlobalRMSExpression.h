@@ -6,8 +6,8 @@
 //                               avtGlobalRMSExpression.h                    //
 // ************************************************************************* //
 
-#ifndef AVT_RMS_REDUCE_FILTER_H
-#define AVT_RMS_REDUCE_FILTER_H
+#ifndef AVT_GLOBAL_RMS_FILTER_H
+#define AVT_GLOBAL_RMS_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 

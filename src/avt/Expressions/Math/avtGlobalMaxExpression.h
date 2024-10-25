@@ -6,8 +6,8 @@
 //                               avtGlobalMaxExpression.h                    //
 // ************************************************************************* //
 
-#ifndef AVT_MAX_REDUCE_FILTER_H
-#define AVT_MAX_REDUCE_FILTER_H
+#ifndef AVT_GLOBAL_MAX_FILTER_H
+#define AVT_GLOBAL_MAX_FILTER_H
 
 #include <avtGhostAwareUnaryMathExpression.h>
 

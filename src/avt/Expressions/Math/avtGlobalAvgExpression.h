@@ -6,8 +6,8 @@
 //                               avtGlobalAvgExpression.h                    //
 // ************************************************************************* //
 
-#ifndef AVT_AVG_REDUCE_FILTER_H
-#define AVT_AVG_REDUCE_FILTER_H
+#ifndef AVT_GLOBAL_AVG_FILTER_H
+#define AVT_GLOBAL_AVG_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 

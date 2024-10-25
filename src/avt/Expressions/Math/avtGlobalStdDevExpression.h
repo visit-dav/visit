@@ -6,8 +6,8 @@
 //                               avtGlobalStdDevExpression.h                 //
 // ************************************************************************* //
 
-#ifndef AVT_STD_DEV_REDUCE_FILTER_H
-#define AVT_STD_DEV_REDUCE_FILTER_H
+#ifndef AVT_GLOBAL_STD_DEV_FILTER_H
+#define AVT_GLOBAL_STD_DEV_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 
