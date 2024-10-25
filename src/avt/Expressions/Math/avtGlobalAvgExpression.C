@@ -9,9 +9,6 @@
 #include <avtGlobalAvgExpression.h>
 
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkCellData.h>
-#include <vtkPointData.h>
 
 
 // ****************************************************************************
