@@ -444,15 +444,15 @@ const char *expr_time_iteration[] = {
     NULL
 };
 
-const char *expr_reduction[] = {
-    "max_reduce",
-    "min_reduce",
-    "avg_reduce",
-    "sum_reduce",
-    "count_reduce",
-    "std_dev_reduce",
-    "variance_reduce",
-    "rms_reduce",
+const char *expr_global[] = {
+    "global_max",
+    "global_min",
+    "global_avg",
+    "global_sum",
+    "global_count",
+    "global_std_dev",
+    "global_variance",
+    "global_rms",
     NULL
 };
 
@@ -525,8 +525,8 @@ QvisExpressionsWindow::QvisExpressionsWindow(
     exprlist[13].list = expr_logical;
     exprlist[14].name = tr("Time iteration");
     exprlist[14].list = expr_time_iteration;
-    exprlist[15].name = tr("Reductions");
-    exprlist[15].list = expr_reduction;
+    exprlist[15].name = tr("Global");
+    exprlist[15].list = expr_global;
 
     exprList = exprList_;
 }

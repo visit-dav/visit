@@ -3,19 +3,21 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtStdDevReductionExpression.C                          //
+//                               avtGlobalMaxExpression.C                    //
 // ************************************************************************* //
 
-#include <avtStdDevReductionExpression.h>
+#include <avtGlobalMaxExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
 
+#include <ExpressionException.h>
+
 
 // ****************************************************************************
-//  Method: avtStdDevReductionExpression constructor
+//  Method: avtGlobalMaxExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -26,14 +28,14 @@
 //
 // ****************************************************************************
 
-avtStdDevReductionExpression::avtStdDevReductionExpression()
+avtGlobalMaxExpression::avtGlobalMaxExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtStdDevReductionExpression destructor
+//  Method: avtGlobalMaxExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -44,14 +46,14 @@ avtStdDevReductionExpression::avtStdDevReductionExpression()
 //
 // ****************************************************************************
 
-avtStdDevReductionExpression::~avtStdDevReductionExpression()
+avtGlobalMaxExpression::~avtGlobalMaxExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtStdDevReductionExpression::DoOperation
+//  Method: avtGlobalMaxExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -71,7 +73,7 @@ avtStdDevReductionExpression::~avtStdDevReductionExpression()
 // ****************************************************************************
 
 void
-avtStdDevReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+avtGlobalMaxExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
@@ -84,33 +86,20 @@ avtStdDevReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            const double mean = [&]()
+            double comp_max = in->GetComponent(0, comp_id);
+            // start at 1 since we already looked at the 0th element
+            for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
             {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                const double val = in->GetComponent(tuple_id, comp_id);
+                if (val > comp_max)
                 {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
+                    comp_max = val;
                 }
-                return (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
-            }();
-            
-            const double intermediate_sum = [&]()
-            {
-                double intermediate_sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    intermediate_sum += pow(val - mean, 2);
-                }
-                return intermediate_sum;
-            }();
-
-            const double std_dev = sqrt(intermediate_sum / static_cast<double>(ntuples));
+            }
 
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, std_dev);
+                out->SetComponent(tuple_id, comp_id, comp_max);
             }
         }
     };
@@ -123,41 +112,39 @@ avtStdDevReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            int num_valid_tuples = 0;
-            const double mean = [&]()
+            int start_tuple_id = 0;
+            double comp_max = [&]() -> double
             {
-                double sum = 0;
                 for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
                 {
                     if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
                     {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        sum += val;
-                        num_valid_tuples ++;                    
+                        start_tuple_id = tuple_id + 1;
+                        return in->GetComponent(tuple_id, comp_id);
                     }
                 }
-                return (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
-            }();
-            
-            const double intermediate_sum = [&]()
-            {
-                double intermediate_sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        intermediate_sum += pow(val - mean, 2);                    
-                    }
-                }
-                return intermediate_sum;
+                EXCEPTION2(ExpressionException, outputVariableName,
+                     "Everything is ghosted so the global_max expression is not valid.");
+                return 0; // return so the compiler is happy
             }();
 
-            const double std_dev = sqrt(intermediate_sum / static_cast<double>(num_valid_tuples));
+            // start at start_tuple_id since it is the second non-ghosted tuple and we
+            // have already looked at the first.
+            for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
+            {
+                if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                {
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    if (val > comp_max)
+                    {
+                        comp_max = val;
+                    }
+                }
+            }
 
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, std_dev);
+                out->SetComponent(tuple_id, comp_id, comp_max);
             }
         }
     };

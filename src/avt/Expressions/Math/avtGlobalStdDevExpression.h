@@ -3,11 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtAvgReductionExpression.h                          //
+//                               avtGlobalStdDevExpression.h                 //
 // ************************************************************************* //
 
-#ifndef AVT_AVG_REDUCE_FILTER_H
-#define AVT_AVG_REDUCE_FILTER_H
+#ifndef AVT_STD_DEV_REDUCE_FILTER_H
+#define AVT_STD_DEV_REDUCE_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 
@@ -15,7 +15,7 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtAvgReductionExpression
+//  Class: avtGlobalStdDevExpression
 //
 //  Purpose:
 //      TODO
@@ -27,15 +27,15 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtAvgReductionExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtGlobalStdDevExpression : public avtUnaryMathExpression
 {
   public:
-                              avtAvgReductionExpression();
-    virtual                  ~avtAvgReductionExpression();
+                              avtGlobalStdDevExpression();
+    virtual                  ~avtGlobalStdDevExpression();
 
-    virtual const char       *GetType(void)   { return "avtAvgReductionExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalStdDevExpression"; };
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating average across mesh"; };
+                                              { return "Calculating standard deviation across mesh"; };
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,

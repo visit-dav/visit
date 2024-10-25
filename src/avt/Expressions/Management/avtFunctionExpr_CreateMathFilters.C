@@ -31,14 +31,14 @@
 #include <avtTanExpression.h>
 #include <avtTanhExpression.h>
 
-#include <avtMaxReductionExpression.h>
-#include <avtMinReductionExpression.h>
-#include <avtAvgReductionExpression.h>
-#include <avtSumReductionExpression.h>
-#include <avtStdDevReductionExpression.h>
-#include <avtVarianceReductionExpression.h>
-#include <avtRMSReductionExpression.h>
-#include <avtCountReductionExpression.h>
+// global expressions
+#include <avtGlobalMaxExpression.h>
+#include <avtGlobalMinExpression.h>
+#include <avtGlobalAvgExpression.h>
+#include <avtGlobalSumExpression.h>
+#include <avtGlobalStdDevExpression.h>
+#include <avtGlobalVarianceExpression.h>
+#include <avtGlobalRMSExpression.h>
 
 #include <DebugStream.h>
 
@@ -108,20 +108,20 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
         f = new avtBase10LogExpression();
     else if (functionName == "log10withmin") 
         f = new avtBase10LogWithMinExpression();
-    else if (functionName == "max_reduce")
-        f = new avtMaxReductionExpression();
-    else if (functionName == "min_reduce")
-        f = new avtMinReductionExpression();
-    else if (functionName == "avg_reduce")
-        f = new avtAvgReductionExpression();
-    else if (functionName == "sum_reduce")
-        f = new avtSumReductionExpression();
-    else if (functionName == "std_dev_reduce")
-        f = new avtStdDevReductionExpression();
-    else if (functionName == "variance_reduce")
-        f = new avtVarianceReductionExpression();
-    else if (functionName == "rms_reduce")
-        f = new avtRMSReductionExpression();
+    else if (functionName == "global_max")
+        f = new avtGlobalMaxExpression();
+    else if (functionName == "global_min")
+        f = new avtGlobalMinExpression();
+    else if (functionName == "global_avg")
+        f = new avtGlobalAvgExpression();
+    else if (functionName == "global_sum")
+        f = new avtGlobalSumExpression();
+    else if (functionName == "global_std_dev")
+        f = new avtGlobalStdDevExpression();
+    else if (functionName == "global_variance")
+        f = new avtGlobalVarianceExpression();
+    else if (functionName == "global_rms")
+        f = new avtGlobalRMSExpression();
     else if (functionName == "mod" || functionName == "modulo")
         f = new avtBinaryModuloExpression();
     else if (functionName == "rad2deg")

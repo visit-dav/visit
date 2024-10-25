@@ -3,11 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtMaxReductionExpression.h                          //
+//                               avtGlobalRMSExpression.h                    //
 // ************************************************************************* //
 
-#ifndef AVT_MAX_REDUCE_FILTER_H
-#define AVT_MAX_REDUCE_FILTER_H
+#ifndef AVT_RMS_REDUCE_FILTER_H
+#define AVT_RMS_REDUCE_FILTER_H
 
 #include <avtUnaryMathExpression.h>
 
@@ -15,7 +15,7 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtMaxReductionExpression
+//  Class: avtGlobalRMSExpression
 //
 //  Purpose:
 //      TODO
@@ -27,15 +27,15 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMaxReductionExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtGlobalRMSExpression : public avtUnaryMathExpression
 {
   public:
-                              avtMaxReductionExpression();
-    virtual                  ~avtMaxReductionExpression();
+                              avtGlobalRMSExpression();
+    virtual                  ~avtGlobalRMSExpression();
 
-    virtual const char       *GetType(void)   { return "avtMaxReductionExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalRMSExpression"; };
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating max across mesh"; };
+                                              { return "Calculating root mean square across mesh"; };
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,

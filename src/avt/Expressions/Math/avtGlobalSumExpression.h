@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtSumReductionExpression.h                          //
+//                               avtGlobalSumExpression.h                    //
 // ************************************************************************* //
 
 #ifndef AVT_SUM_REDUCE_FILTER_H
@@ -15,7 +15,7 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtSumReductionExpression
+//  Class: avtGlobalSumExpression
 //
 //  Purpose:
 //      TODO
@@ -27,13 +27,13 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtSumReductionExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtGlobalSumExpression : public avtUnaryMathExpression
 {
   public:
-                              avtSumReductionExpression();
-    virtual                  ~avtSumReductionExpression();
+                              avtGlobalSumExpression();
+    virtual                  ~avtGlobalSumExpression();
 
-    virtual const char       *GetType(void)   { return "avtSumReductionExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalSumExpression"; };
     virtual const char       *GetDescription(void) 
                                               { return "Calculating sum across mesh"; };
 

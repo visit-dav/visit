@@ -3,19 +3,21 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtAvgReductionExpression.C                          //
+//                               avtGlobalMinExpression.C                    //
 // ************************************************************************* //
 
-#include <avtAvgReductionExpression.h>
+#include <avtGlobalMinExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
 
+#include <ExpressionException.h>
+
 
 // ****************************************************************************
-//  Method: avtAvgReductionExpression constructor
+//  Method: avtGlobalMinExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -26,14 +28,14 @@
 //
 // ****************************************************************************
 
-avtAvgReductionExpression::avtAvgReductionExpression()
+avtGlobalMinExpression::avtGlobalMinExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtAvgReductionExpression destructor
+//  Method: avtGlobalMinExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -44,14 +46,14 @@ avtAvgReductionExpression::avtAvgReductionExpression()
 //
 // ****************************************************************************
 
-avtAvgReductionExpression::~avtAvgReductionExpression()
+avtGlobalMinExpression::~avtGlobalMinExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtAvgReductionExpression::DoOperation
+//  Method: avtGlobalMinExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -71,9 +73,28 @@ avtAvgReductionExpression::~avtAvgReductionExpression()
 // ****************************************************************************
 
 void
-avtAvgReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+avtGlobalMinExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
+    std::vector<double> comp_mins(ncomponents);
+    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+    {
+        double comp_min = in->GetComponent(0, comp_id);
+        for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
+        {
+            const double val = in->GetComponent(tuple_id, comp_id);
+            if (val < comp_min)
+            {
+                comp_min = val;
+            }
+        }
+
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            out->SetComponent(tuple_id, comp_id, comp_min);
+        }
+    }
+
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
     int *nodeShouldBeIgnoredPtr = nullptr;
@@ -84,17 +105,20 @@ avtAvgReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            double sum = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            double comp_min = in->GetComponent(0, comp_id);
+            // start at 1 since we already looked at the 0th element
+            for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
             {
                 const double val = in->GetComponent(tuple_id, comp_id);
-                sum += val;
+                if (val < comp_min)
+                {
+                    comp_min = val;
+                }
             }
 
-            const double comp_avg = (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, comp_avg);
+                out->SetComponent(tuple_id, comp_id, comp_min);
             }
         }
     };
@@ -107,22 +131,39 @@ avtAvgReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            double sum = 0;
-            int num_valid_tuples = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            int start_tuple_id = 0;
+            double comp_min = [&]() -> double
+            {
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                {
+                    if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                    {
+                        start_tuple_id = tuple_id + 1;
+                        return in->GetComponent(tuple_id, comp_id);
+                    }
+                }
+                EXCEPTION2(ExpressionException, outputVariableName,
+                     "Everything is ghosted so the global_min expression is not valid.");
+                return 0; // return so the compiler is happy
+            }();
+
+            // start at start_tuple_id since it is the second non-ghosted tuple and we
+            // have already looked at the first.
+            for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
             {
                 if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
                 {
                     const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
-                    num_valid_tuples ++;
+                    if (val < comp_min)
+                    {
+                        comp_min = val;
+                    }
                 }
             }
 
-            const double comp_avg = (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, comp_avg);
+                out->SetComponent(tuple_id, comp_id, comp_min);
             }
         }
     };

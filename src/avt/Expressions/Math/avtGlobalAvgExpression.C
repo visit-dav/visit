@@ -3,10 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtRMSReductionExpression.C                          //
+//                               avtGlobalAvgExpression.C                    //
 // ************************************************************************* //
 
-#include <avtRMSReductionExpression.h>
+#include <avtGlobalAvgExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -15,7 +15,7 @@
 
 
 // ****************************************************************************
-//  Method: avtRMSReductionExpression constructor
+//  Method: avtGlobalAvgExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -26,14 +26,14 @@
 //
 // ****************************************************************************
 
-avtRMSReductionExpression::avtRMSReductionExpression()
+avtGlobalAvgExpression::avtGlobalAvgExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtRMSReductionExpression destructor
+//  Method: avtGlobalAvgExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -44,14 +44,14 @@ avtRMSReductionExpression::avtRMSReductionExpression()
 //
 // ****************************************************************************
 
-avtRMSReductionExpression::~avtRMSReductionExpression()
+avtGlobalAvgExpression::~avtGlobalAvgExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtRMSReductionExpression::DoOperation
+//  Method: avtGlobalAvgExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -71,26 +71,9 @@ avtRMSReductionExpression::~avtRMSReductionExpression()
 // ****************************************************************************
 
 void
-avtRMSReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+avtGlobalAvgExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
-    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-    {
-        double sum_of_squares = 0;
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            const double val = in->GetComponent(tuple_id, comp_id);
-            sum_of_squares += pow(val, 2);
-        }
-
-        const double rms = (ntuples > 0) ? sqrt(sum_of_squares / static_cast<double>(ntuples)) : 0;
-
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, rms);
-        }
-    }
-
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
     int *nodeShouldBeIgnoredPtr = nullptr;
@@ -101,18 +84,17 @@ avtRMSReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            double sum_of_squares = 0;
+            double sum = 0;
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
                 const double val = in->GetComponent(tuple_id, comp_id);
-                sum_of_squares += pow(val, 2);
+                sum += val;
             }
 
-            const double rms = (ntuples > 0) ? sqrt(sum_of_squares / static_cast<double>(ntuples)) : 0;
-
+            const double comp_avg = (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, rms);
+                out->SetComponent(tuple_id, comp_id, comp_avg);
             }
         }
     };
@@ -125,23 +107,22 @@ avtRMSReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
+            double sum = 0;
             int num_valid_tuples = 0;
-            double sum_of_squares = 0;
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
                 if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
                 {
                     const double val = in->GetComponent(tuple_id, comp_id);
-                    sum_of_squares += pow(val, 2);
+                    sum += val;
                     num_valid_tuples ++;
                 }
             }
 
-            const double rms = (num_valid_tuples > 0) ? sqrt(sum_of_squares / static_cast<double>(num_valid_tuples)) : 0;
-
+            const double comp_avg = (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, rms);
+                out->SetComponent(tuple_id, comp_id, comp_avg);
             }
         }
     };

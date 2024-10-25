@@ -35,14 +35,13 @@ set(MATH_SOURCES
     avtFloorExpression.C
     avtIdentityExpression.C
     avtInverseExpression.C
-    avtMaxReductionExpression.C
-    avtMinReductionExpression.C
-    avtAvgReductionExpression.C
-    avtSumReductionExpression.C
-    avtStdDevReductionExpression.C
-    avtVarianceReductionExpression.C
-    avtRMSReductionExpression.C
-    avtCountReductionExpression.C
+    avtGlobalMaxExpression.C
+    avtGlobalMinExpression.C
+    avtGlobalAvgExpression.C
+    avtGlobalSumExpression.C
+    avtGlobalStdDevExpression.C
+    avtGlobalVarianceExpression.C
+    avtGlobalRMSExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C

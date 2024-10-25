@@ -3,21 +3,19 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtMaxReductionExpression.C                 //
+//                               avtGlobalRMSExpression.C                    //
 // ************************************************************************* //
 
-#include <avtMaxReductionExpression.h>
+#include <avtGlobalRMSExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
 
-#include <ExpressionException.h>
-
 
 // ****************************************************************************
-//  Method: avtMaxReductionExpression constructor
+//  Method: avtGlobalRMSExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -28,14 +26,14 @@
 //
 // ****************************************************************************
 
-avtMaxReductionExpression::avtMaxReductionExpression()
+avtGlobalRMSExpression::avtGlobalRMSExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtMaxReductionExpression destructor
+//  Method: avtGlobalRMSExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -46,14 +44,14 @@ avtMaxReductionExpression::avtMaxReductionExpression()
 //
 // ****************************************************************************
 
-avtMaxReductionExpression::~avtMaxReductionExpression()
+avtGlobalRMSExpression::~avtGlobalRMSExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtMaxReductionExpression::DoOperation
+//  Method: avtGlobalRMSExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -73,9 +71,26 @@ avtMaxReductionExpression::~avtMaxReductionExpression()
 // ****************************************************************************
 
 void
-avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+avtGlobalRMSExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
+    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+    {
+        double sum_of_squares = 0;
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            const double val = in->GetComponent(tuple_id, comp_id);
+            sum_of_squares += pow(val, 2);
+        }
+
+        const double rms = (ntuples > 0) ? sqrt(sum_of_squares / static_cast<double>(ntuples)) : 0;
+
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            out->SetComponent(tuple_id, comp_id, rms);
+        }
+    }
+
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghost_nodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
     int *nodeShouldBeIgnoredPtr = nullptr;
@@ -86,20 +101,18 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            double comp_max = in->GetComponent(0, comp_id);
-            // start at 1 since we already looked at the 0th element
-            for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
+            double sum_of_squares = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
                 const double val = in->GetComponent(tuple_id, comp_id);
-                if (val > comp_max)
-                {
-                    comp_max = val;
-                }
+                sum_of_squares += pow(val, 2);
             }
+
+            const double rms = (ntuples > 0) ? sqrt(sum_of_squares / static_cast<double>(ntuples)) : 0;
 
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, comp_max);
+                out->SetComponent(tuple_id, comp_id, rms);
             }
         }
     };
@@ -112,39 +125,23 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            int start_tuple_id = 0;
-            double comp_max = [&]() -> double
-            {
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
-                    {
-                        start_tuple_id = tuple_id + 1;
-                        return in->GetComponent(tuple_id, comp_id);
-                    }
-                }
-                EXCEPTION2(ExpressionException, outputVariableName,
-                     "Everything is ghosted so the global_max expression is not valid.");
-                return 0; // return so the compiler is happy
-            }();
-
-            // start at start_tuple_id since it is the second non-ghosted tuple and we
-            // have already looked at the first.
-            for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
+            int num_valid_tuples = 0;
+            double sum_of_squares = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
                 if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
                 {
                     const double val = in->GetComponent(tuple_id, comp_id);
-                    if (val > comp_max)
-                    {
-                        comp_max = val;
-                    }
+                    sum_of_squares += pow(val, 2);
+                    num_valid_tuples ++;
                 }
             }
 
+            const double rms = (num_valid_tuples > 0) ? sqrt(sum_of_squares / static_cast<double>(num_valid_tuples)) : 0;
+
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, comp_max);
+                out->SetComponent(tuple_id, comp_id, rms);
             }
         }
     };

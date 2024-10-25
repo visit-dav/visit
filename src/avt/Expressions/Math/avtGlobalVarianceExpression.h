@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtVarianceReductionExpression.h                          //
+//                               avtGlobalVarianceExpression.h               //
 // ************************************************************************* //
 
 #ifndef AVT_VARIANCE_REDUCE_FILTER_H
@@ -15,7 +15,7 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtVarianceReductionExpression
+//  Class: avtGlobalVarianceExpression
 //
 //  Purpose:
 //      TODO
@@ -27,13 +27,13 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVarianceReductionExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtGlobalVarianceExpression : public avtUnaryMathExpression
 {
   public:
-                              avtVarianceReductionExpression();
-    virtual                  ~avtVarianceReductionExpression();
+                              avtGlobalVarianceExpression();
+    virtual                  ~avtGlobalVarianceExpression();
 
-    virtual const char       *GetType(void)   { return "avtVarianceReductionExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalVarianceExpression"; };
     virtual const char       *GetDescription(void) 
                                               { return "Calculating variance across mesh"; };
 

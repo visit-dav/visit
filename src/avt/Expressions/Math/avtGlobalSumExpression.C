@@ -3,10 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtVarianceReductionExpression.C                          //
+//                               avtGlobalSumExpression.C                    //
 // ************************************************************************* //
 
-#include <avtVarianceReductionExpression.h>
+#include <avtGlobalSumExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -15,7 +15,7 @@
 
 
 // ****************************************************************************
-//  Method: avtVarianceReductionExpression constructor
+//  Method: avtGlobalSumExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -26,14 +26,14 @@
 //
 // ****************************************************************************
 
-avtVarianceReductionExpression::avtVarianceReductionExpression()
+avtGlobalSumExpression::avtGlobalSumExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtVarianceReductionExpression destructor
+//  Method: avtGlobalSumExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -44,14 +44,14 @@ avtVarianceReductionExpression::avtVarianceReductionExpression()
 //
 // ****************************************************************************
 
-avtVarianceReductionExpression::~avtVarianceReductionExpression()
+avtGlobalSumExpression::~avtGlobalSumExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtVarianceReductionExpression::DoOperation
+//  Method: avtGlobalSumExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -71,7 +71,7 @@ avtVarianceReductionExpression::~avtVarianceReductionExpression()
 // ****************************************************************************
 
 void
-avtVarianceReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+avtGlobalSumExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     vtkDataArray *ghost_zones = in_ds->GetCellData()->GetArray("avtGhostZones");
@@ -84,33 +84,16 @@ avtVarianceReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            const double mean = [&]()
+            double sum = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
-                }
-                return (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
-            }();
-            
-            const double intermediate_sum = [&]()
-            {
-                double intermediate_sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    intermediate_sum += pow(val - mean, 2);
-                }
-                return intermediate_sum;
-            }();
-
-            const double variance = intermediate_sum / static_cast<double>(ntuples);
+                const double val = in->GetComponent(tuple_id, comp_id);
+                sum += val;
+            }
 
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, variance);
+                out->SetComponent(tuple_id, comp_id, sum);
             }
         }
     };
@@ -123,41 +106,19 @@ avtVarianceReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            int num_valid_tuples = 0;
-            const double mean = [&]()
+            double sum = 0;
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                double sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
                 {
-                    if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        sum += val;
-                        num_valid_tuples ++;                    
-                    }
+                    const double val = in->GetComponent(tuple_id, comp_id);
+                    sum += val;
                 }
-                return (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
-            }();
-            
-            const double intermediate_sum = [&]()
-            {
-                double intermediate_sum = 0;
-                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-                {
-                    if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
-                    {
-                        const double val = in->GetComponent(tuple_id, comp_id);
-                        intermediate_sum += pow(val - mean, 2);                    
-                    }
-                }
-                return intermediate_sum;
-            }();
-
-            const double variance = intermediate_sum / static_cast<double>(num_valid_tuples);
+            }
 
             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                out->SetComponent(tuple_id, comp_id, variance);
+                out->SetComponent(tuple_id, comp_id, sum);
             }
         }
     };
