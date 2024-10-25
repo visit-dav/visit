@@ -13,7 +13,6 @@
 #include <vtkCellData.h>
 #include <vtkPointData.h>
 
-#include <ImproperUseException.h>
 #include <ExpressionException.h>
 
 
@@ -113,26 +112,24 @@ avtMaxReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
         {
-            bool init_max_set = false;
-            double comp_max;
             int start_tuple_id = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            double comp_max = [&]() -> double
             {
-                if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
                 {
-                    comp_max = in->GetComponent(tuple_id, comp_id);
-                    start_tuple_id = tuple_id + 1;
-                    init_max_set = true;
-                    break;
+                    if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
+                    {
+                        start_tuple_id = tuple_id + 1;
+                        return in->GetComponent(tuple_id, comp_id);
+                    }
                 }
-            }
-
-            if (!init_max_set)
-            {
                 EXCEPTION2(ExpressionException, outputVariableName,
                      "Everything is ghosted so the global_max expression is not valid.");
-            }
+                return 0; // return so the compiler is happy
+            }();
 
+            // start at start_tuple_id since it is the second non-ghosted tuple and we
+            // have already looked at the first.
             for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
             {
                 if (0 == get_point_valid(ghost_zones, nodeShouldBeIgnoredPtr, tuple_id))
