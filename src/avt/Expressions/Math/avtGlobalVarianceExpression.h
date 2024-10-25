@@ -9,7 +9,7 @@
 #ifndef AVT_GLOBAL_VARIANCE_FILTER_H
 #define AVT_GLOBAL_VARIANCE_FILTER_H
 
-#include <avtUnaryMathExpression.h>
+#include <avtGhostAwareUnaryMathExpression.h>
 
 class     vtkDataArray;
 
@@ -27,7 +27,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtGlobalVarianceExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtGlobalVarianceExpression : public avtGhostAwareUnaryMathExpression
 {
   public:
                               avtGlobalVarianceExpression();
@@ -38,8 +38,13 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtUnaryMathExpression
                                               { return "Calculating variance across mesh"; };
 
   protected:
-    virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
+    virtual void              CalculateWithoutGhosts(vtkDataArray *in, vtkDataArray *out,
+                                                     int ncomponents, int ntuples);
+    virtual void              CalculateWithGhosts(vtkDataArray *in, vtkDataArray *out,
+                                                  int ncomponents, int ntuples,
+                                                  int (getPointValid)(vtkDataArray *, int *, int),
+                                                  vtkDataArray *ghostZones,
+                                                  int *nodeShouldBeIgnoredPtr);
 };
 
 
