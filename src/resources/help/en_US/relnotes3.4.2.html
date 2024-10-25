@@ -70,6 +70,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added species set support to the Blueprint Reader.</li>
   <li>Saving results of time queries to curve files now uses query name and/or variable names as curve names instead of just 'Curve'.</li>
   <li>Curves are now supported in Xdmf files. They are handled as 2DRectMesh objects with >1 points in X and 1 point in Y.</li>
+  <li>The Silo plugin properly removes periodic boundary domain neighbors which can wholly enshroud a mesh rendering it invisible. This capability is restricted to rectangular arrangements of rectangular domains using the combination of a DBmultimeshadj object and auxiliary data structures to identify periodic domain neighbors.</li>
 </ul>
 
 <a name="Dev_changes"></a>
