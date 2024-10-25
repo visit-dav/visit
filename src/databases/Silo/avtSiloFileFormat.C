@@ -5733,7 +5733,7 @@ process_pbcs_for_one_domain(int dom,
 
     new_mmadj->nneighbors[dom] = ncopied;
 
-    // These sanity checks assume a rectangular arrangement of domains.
+    // These consistency checks assume a rectangular arrangement of domains.
     // 7 is for domains on extreme corners; 11 for domains on edges, 17
     // for domains on faces and 26 for wholly internal domains
     return ncopied == 7 || ncopied == 11 ||
