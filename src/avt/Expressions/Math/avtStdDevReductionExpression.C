@@ -136,7 +136,7 @@ avtStdDevReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                         num_valid_tuples ++;                    
                     }
                 }
-                return (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
+                return (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
             }();
             
             const double intermediate_sum = [&]()
