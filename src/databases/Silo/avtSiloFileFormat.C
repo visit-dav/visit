@@ -5662,6 +5662,95 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 }
 
 // ****************************************************************************
+//  Function: copy_mmadj_neighbor_entry
+//
+//  Purpose: Utility function for process_pbcs_for_one_domain to copy a single
+//  neighbor entry from source DBmultieshadj to destination DBmultimeshadj.
+//  Note that for the nodelist (and zonelist if present) data, we're copying a
+//  POINTER. So, we null out the entry in the source DBmultimeshadj so that
+//  later on when that object is freed, we won't loose the copied data the
+//  POINTER points at.
+//
+//  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
+// ****************************************************************************
+static void copy_mmadj_neighbor_entry(DBmultimeshadj *dst, int dstidx,
+    DBmultimeshadj const *src, int srcidx)
+{
+    dst->neighbors[dstidx] = src->neighbors[srcidx];
+    dst->back[dstidx] = src->back[srcidx];
+    if (src->nodelists)
+    {
+        dst->lnodelists[dstidx] = src->lnodelists[srcidx];
+        dst->nodelists[dstidx] = src->nodelists[srcidx];
+        src->nodelists[srcidx] = 0; // above, we copied the pointer
+    }
+    if (src->zonelists)
+    {
+        dst->lzonelists[dstidx] = src->lzonelists[srcidx];
+        dst->zonelists[dstidx] = src->zonelists[srcidx];
+        src->zonelists[srcidx] = 0; // above, we copied the pointer
+    }
+}
+
+// ****************************************************************************
+//  Function: process_pbcs_for_one_domain
+//
+//  Purpose: This function is designed to assume it is applied in order
+//  starting with the first domain at index 0 and ending with the last domain
+//  at index ndomains-1. For the given domain, it copies only the neigbhor info
+//  for domains which are not periodic boundary neighbors (identified by the
+//  pbcBndList and pbcDomList parallel array arguments).
+//
+//  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
+// ****************************************************************************
+static bool 
+process_pbcs_for_one_domain(int dom,
+    int &pbcidx, int const *pbcBndList, int const *pbcDomList,
+    int &onidx, DBmultimeshadj const *old_mmadj,
+    int &nnidx, DBmultimeshadj *new_mmadj)
+{
+    int ncopied = 0;
+
+    if (pbcDomList[pbcidx] > dom) // copy all neighbor info for this dom
+    {
+        int nneighbors = old_mmadj->nneighbors[dom];
+        for (int i = 0; i < nneighbors; nnidx++, onidx++, ncopied++, i++)
+            copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
+    }
+    else if (pbcDomList[pbcidx] == dom) // copy only non-pbc neighbors for this dom
+    {
+        int i;
+        int nneighbors = old_mmadj->nneighbors[dom];
+        for (i = 0; (i < nneighbors) && (pbcDomList[pbcidx] == dom); i++)
+        {
+            if (i < pbcBndList[pbcidx])
+            {
+                copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
+                nnidx++;
+                onidx++;
+                ncopied++;    
+            }
+            else
+            {
+                onidx++;
+                pbcidx++;
+            }
+        }
+        // Copy any entries that still remain
+        for (int j = i; j < nneighbors; nnidx++, onidx++, ncopied++, j++)
+            copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
+    }
+
+    new_mmadj->nneighbors[dom] = ncopied;
+
+    // These consistency checks assume a rectangular arrangement of domains.
+    // 7 is for domains on extreme corners; 11 for domains on edges, 17
+    // for domains on faces and 26 for wholly internal domains
+    return ncopied == 7 || ncopied == 11 ||
+          ncopied == 17 || ncopied == 26;
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::FindMultiMeshAdjConnectivity
 //
 //  Purpose:
@@ -5686,7 +5775,6 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //    Mark C. Miller, Wed Nov 11 12:28:25 PST 2009
 //    Added guard against case where some mmadj->nodelists arrays are null.
 // ****************************************************************************
-
 void
 avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int *&nneighbors, int *&extents, int &lneighbors, int *&neighbors,
@@ -5731,6 +5819,83 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
 
     if (needConnectivityInfo)
     {
+
+        /* If we have information needed to break periodic boundary conditions
+           (PBCs) from completely enshrouding the whole mesh, read and process it */
+        if (DBInqVarExists(dbfile, "PeriodicBndList") &&
+            DBInqVarExists(dbfile, "PeriodicDomList"))
+        {
+            int nBndEntries = DBGetVarLength(dbfile, "PeriodicBndList");
+            int nDomEntries = DBGetVarLength(dbfile, "PeriodicDomList");
+            if (nBndEntries != nDomEntries)
+            {
+                DBFreeMultimeshadj(mmadj_obj);
+                EXCEPTION1(InvalidFilesException, "PeriodicBndList size != PeriodicDomList size");
+            }
+
+            int *pbcBndList = (int*) DBGetVar(dbfile, "PeriodicBndList");
+            int *pbcDomList = (int*) DBGetVar(dbfile, "PeriodicDomList");
+
+            // Build a new DBmultimeshadj object
+            int new_lneighbors = mmadj_obj->lneighbors - nBndEntries;
+            DBmultimeshadj *mmadj_newobj = DBAllocMultimeshadj(ndomains);
+            mmadj_newobj->lneighbors = new_lneighbors;
+            mmadj_newobj->neighbors = (int *) malloc(new_lneighbors*sizeof(int));
+            mmadj_newobj->back = (int *) malloc(new_lneighbors*sizeof(int));
+            if (mmadj_obj->nodelists)
+            {
+                mmadj_newobj->lnodelists = (int *) malloc(new_lneighbors*sizeof(int));
+                mmadj_newobj->nodelists = (int **) malloc(new_lneighbors*sizeof(int*));
+            }
+            if (mmadj_obj->zonelists)
+            {
+                mmadj_newobj->lzonelists = (int *) malloc(new_lneighbors*sizeof(int));
+                mmadj_newobj->zonelists = (int **) malloc(new_lneighbors*sizeof(int*));
+            }
+
+            // Perform an iteration over all domains which is driven by the contents
+            // of the PeriodicBndList and PeriodicDomList parallel arrays. For each
+            // domain, we copy over into the new DBmultimeshadj object all the 
+            // information for each neighbor that is NOT a PBC neighbor.
+
+            int nnidx = 0; // index into mmadj_newobj->neighbors
+            int onidx = 0; // index into mmadj_obj->neighbors
+            int pbcidx = 0; // index into pbc lists
+            int failed_dom = -1;
+            for (int i = 0; i < ndomains; i++)
+            {
+                bool ok = process_pbcs_for_one_domain(i,
+                             pbcidx, pbcBndList, pbcDomList,
+                             onidx, mmadj_obj,
+                             nnidx, mmadj_newobj);
+                if (!ok)
+                {
+                    failed_dom = i;
+                    break;
+                }
+            }
+
+            // Silo's DBFreeMultimeshadj method is smart enough to not free nodelists 
+            // (or zonelists) that were already nulled in process_pbcs_for_one_domain()
+            // when their pointers were copied over.
+            DBFreeMultimeshadj(mmadj_obj);
+            free(pbcBndList);
+            free(pbcDomList);
+
+            if (failed_dom != -1 || new_lneighbors != nnidx)
+            {
+                char msg[128];
+                snprintf(msg, sizeof(msg), "Problem removing periodic boundary "
+                    "neighbors from multimeshadj for domain %d\n", failed_dom);
+                if (failed_dom == -1) msg[63] = '\0'; // truncate message
+                DBFreeMultimeshadj(mmadj_newobj);
+                EXCEPTION1(InvalidFilesException, msg);
+            }
+
+            // Replace original multimeshadj with the new one
+            mmadj_obj = mmadj_newobj;
+        }
+
         extents = new int[ndomains*6];
         nneighbors = new int[ndomains];
         lneighbors = 0;
