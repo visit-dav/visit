@@ -5833,9 +5833,10 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int *pbcBndList = (int*) DBGetVar(dbfile, "PeriodicBndList");
             int *pbcDomList = (int*) DBGetVar(dbfile, "PeriodicDomList");
 
-            // Build a new multimesh_adj object
+            // Build a new DBmultimeshadj object
             int new_lneighbors = mmadj_obj->lneighbors - nBndEntries;
             DBmultimeshadj *mmadj_newobj = DBAllocMultimeshadj(ndomains);
+            mmadj_newobj->lneighbors = new_lneighbors;
             mmadj_newobj->neighbors = (int *) malloc(new_lneighbors*sizeof(int));
             mmadj_newobj->back = (int *) malloc(new_lneighbors*sizeof(int));
             if (mmadj_obj->nodelists)
@@ -5849,10 +5850,13 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
                 mmadj_newobj->zonelists = (int **) malloc(new_lneighbors*sizeof(int*));
             }
 
+            // Perform an iteration over all domains which is driven by the contents
+            // of the PeriodicBndList and PeriodicDomList parallel arrays. For each
+            // domain, we copy over into the new DBmultimeshadj object all the 
+            // information for each neighbor that is NOT a PBC neighbor.
             int nnidx = 0; // index into mmadj_newobj->neighbors
             int onidx = 0; // index into mmadj_obj->neighbors
             int pbcidx = 0; // index into pbc lists
-
             int failed_dom = -1;
             for (int i = 0; i < ndomains; i++)
             {
@@ -5867,6 +5871,9 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
                 }
             }
 
+            // Silo's DBFreeMultimeshadj method is smart enough to not free nodelists 
+            // (or zonelists) that were already nulled in process_pbcs_for_one_domain()
+            // when their pointers were copied over.
             DBFreeMultimeshadj(mmadj_obj);
             free(pbcBndList);
             free(pbcDomList);
