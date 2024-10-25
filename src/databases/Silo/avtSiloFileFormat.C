@@ -5652,6 +5652,37 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 }
 
 // ****************************************************************************
+//  Function: mmadj_obj->nodelists[idx][12]
+//
+//  Purpose: Utility function for process_pbcs_for_one_domain to copy a single
+//  neighbor entry from source DBmultieshadj to destination DBmultimeshadj.
+//  Note that for the nodelist (and zonelist if present) data, we're copying a
+//  POINTER. So, we null out the entry in the source DBmultimeshadj so that
+//  later on when that object is freed, we won't loose the copied POINTER
+//  points at.
+//
+//  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
+// ****************************************************************************
+static void copy_mmadj_neighbor_entry(DBmultimeshadj *dst, int dstidx,
+    DBmultimeshadj const *src, int srcidx)
+{
+    dst->neighbors[dstidx] = src->neighbors[srcidx];
+    dst->back[dstidx] = src->back[srcidx];
+    if (src->nodelists)
+    {
+        dst->lnodelists[dstidx] = src->lnodelists[srcidx];
+        dst->nodelists[dstidx] = src->nodelists[srcidx];
+        src->nodelists[srcidx] = 0; // above, we copied the pointer
+    }
+    if (src->zonelists)
+    {
+        dst->lzonelists[dstidx] = src->lzonelists[srcidx];
+        dst->zonelists[dstidx] = src->zonelists[srcidx];
+        src->zonelists[srcidx] = 0; // above, we copied the pointer
+    }
+}
+
+// ****************************************************************************
 //  Function: process_pbcs_for_one_domain
 //
 //  Purpose: This function is designed to assume it is applied in order
@@ -5659,6 +5690,8 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //  at index ndomains-1. For the given domain, it copies only the neigbhor info
 //  for domains which are not periodic boundary neighbors (identified by the
 //  pbcBndList and pbcDomList parallel array arguments).
+//
+//  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
 // ****************************************************************************
 static bool 
 process_pbcs_for_one_domain(int dom,
@@ -5672,22 +5705,7 @@ process_pbcs_for_one_domain(int dom,
     {
         int nneighbors = old_mmadj->nneighbors[dom];
         for (int i = 0; i < nneighbors; nnidx++, onidx++, ncopied++, i++)
-        {
-            new_mmadj->neighbors[nnidx] = old_mmadj->neighbors[onidx];
-            new_mmadj->back[nnidx] = old_mmadj->back[onidx];
-            if (old_mmadj->nodelists)
-            {
-                new_mmadj->lnodelists[nnidx] = old_mmadj->lnodelists[onidx];
-                new_mmadj->nodelists[nnidx] = old_mmadj->nodelists[onidx];
-                old_mmadj->nodelists[onidx] = 0; // above, we copied the pointer
-            }
-            if (old_mmadj->zonelists)
-            {
-                new_mmadj->lzonelists[nnidx] = old_mmadj->lzonelists[onidx];
-                new_mmadj->zonelists[nnidx] = old_mmadj->zonelists[onidx];
-                old_mmadj->zonelists[onidx] = 0; // above, we copied the pointer
-            }
-        }
+            copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
     }
     else if (pbcDomList[pbcidx] == dom) // copy only non-pbc neighbors for this dom
     {
@@ -5697,20 +5715,7 @@ process_pbcs_for_one_domain(int dom,
         {
             if (i < pbcBndList[pbcidx])
             {
-                new_mmadj->neighbors[nnidx] = old_mmadj->neighbors[onidx];
-                new_mmadj->back[nnidx] = old_mmadj->back[onidx];
-                if (old_mmadj->nodelists)
-                {
-                    new_mmadj->lnodelists[nnidx] = old_mmadj->lnodelists[onidx];
-                    new_mmadj->nodelists[nnidx] = old_mmadj->nodelists[onidx];
-                    old_mmadj->nodelists[onidx] = 0;
-                }
-                if (old_mmadj->zonelists)
-                {
-                    new_mmadj->lzonelists[nnidx] = old_mmadj->lzonelists[onidx];
-                    new_mmadj->zonelists[nnidx] = old_mmadj->zonelists[onidx];
-                    old_mmadj->zonelists[onidx] = 0;
-                }
+                copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
                 nnidx++;
                 onidx++;
                 ncopied++;    
@@ -5721,30 +5726,18 @@ process_pbcs_for_one_domain(int dom,
                 pbcidx++;
             }
         }
-        // Copy all entries remaining
+        // Copy any entries that still remain
         for (int j = i; j < nneighbors; nnidx++, onidx++, ncopied++, j++)
-        {
-            new_mmadj->neighbors[nnidx] = old_mmadj->neighbors[onidx];
-            new_mmadj->back[nnidx] = old_mmadj->back[onidx];
-            if (old_mmadj->nodelists)
-            {
-                new_mmadj->lnodelists[nnidx] = old_mmadj->lnodelists[onidx];
-                new_mmadj->nodelists[nnidx] = old_mmadj->nodelists[onidx];
-                old_mmadj->nodelists[onidx] = 0;
-            }
-            if (old_mmadj->zonelists)
-            {
-                new_mmadj->lzonelists[nnidx] = old_mmadj->lzonelists[onidx];
-                new_mmadj->zonelists[nnidx] = old_mmadj->zonelists[onidx];
-                old_mmadj->zonelists[onidx] = 0;
-            }
-        }
+            copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
     }
 
     new_mmadj->nneighbors[dom] = ncopied;
 
+    // These sanity checks assume a rectangular arrangement of domains.
+    // 7 is for domains on extreme corners; 11 for domains on edges, 17
+    // for domains on faces and 26 for wholly internal domains
     return ncopied == 7 || ncopied == 11 ||
-          ncopied == 17 || ncopied == 26; // assumes rect. arrangement of domains
+          ncopied == 17 || ncopied == 26;
 }
 
 // ****************************************************************************
