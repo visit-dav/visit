@@ -5658,8 +5658,8 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //  neighbor entry from source DBmultieshadj to destination DBmultimeshadj.
 //  Note that for the nodelist (and zonelist if present) data, we're copying a
 //  POINTER. So, we null out the entry in the source DBmultimeshadj so that
-//  later on when that object is freed, we won't loose the copied POINTER
-//  points at.
+//  later on when that object is freed, we won't loose the copied data the
+//  POINTER points at.
 //
 //  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
 // ****************************************************************************
@@ -5847,6 +5847,7 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             // of the PeriodicBndList and PeriodicDomList parallel arrays. For each
             // domain, we copy over into the new DBmultimeshadj object all the 
             // information for each neighbor that is NOT a PBC neighbor.
+
             int nnidx = 0; // index into mmadj_newobj->neighbors
             int onidx = 0; // index into mmadj_obj->neighbors
             int pbcidx = 0; // index into pbc lists
