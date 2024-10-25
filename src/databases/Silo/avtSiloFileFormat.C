@@ -5652,7 +5652,7 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 }
 
 // ****************************************************************************
-//  Function: mmadj_obj->nodelists[idx][12]
+//  Function: copy_mmadj_neighbor_entry
 //
 //  Purpose: Utility function for process_pbcs_for_one_domain to copy a single
 //  neighbor entry from source DBmultieshadj to destination DBmultimeshadj.
