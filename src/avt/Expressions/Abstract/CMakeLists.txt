@@ -16,7 +16,8 @@ set(ABSTRACT_SOURCES
     avtMultipleInputExpressionFilter.C
     avtMultipleInputMathExpression.C
     avtSingleInputExpressionFilter.C
-    avtUnaryMathExpression.C)
+    avtUnaryMathExpression.C
+    avtGhostAwareUnaryMathExpression.C)
 
 target_sources(avtexpressions_ser PRIVATE ${ABSTRACT_SOURCES})
 target_include_directories(avtexpressions_ser PUBLIC .)
