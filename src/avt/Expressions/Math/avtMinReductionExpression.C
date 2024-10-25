@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtMinReductionExpression.C                          //
+//                               avtMinReductionExpression.C                 //
 // ************************************************************************* //
 
 #include <avtMinReductionExpression.h>
@@ -71,7 +71,7 @@ avtMinReductionExpression::~avtMinReductionExpression()
 //  Modifications:
 //
 // ****************************************************************************
- 
+
 void
 avtMinReductionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                           int ncomponents, int ntuples, vtkDataSet *in_ds)

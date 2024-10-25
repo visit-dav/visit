@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtSumReductionExpression.C                          //
+//                               avtSumReductionExpression.C                 //
 // ************************************************************************* //
 
 #include <avtSumReductionExpression.h>

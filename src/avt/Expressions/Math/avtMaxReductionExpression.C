@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               avtMaxReductionExpression.C                          //
+//                               avtMaxReductionExpression.C                 //
 // ************************************************************************* //
 
 #include <avtMaxReductionExpression.h>
