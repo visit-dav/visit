@@ -9,7 +9,7 @@
 #ifndef AVT_MAX_REDUCE_FILTER_H
 #define AVT_MAX_REDUCE_FILTER_H
 
-#include <avtUnaryMathExpression.h>
+#include <avtGhostAwareUnaryMathExpression.h>
 
 class     vtkDataArray;
 
@@ -27,7 +27,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtGlobalMaxExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtGlobalMaxExpression : public avtGhostAwareUnaryMathExpression
 {
   public:
                               avtGlobalMaxExpression();
@@ -38,8 +38,13 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtUnaryMathExpression
                                               { return "Calculating max across mesh"; };
 
   protected:
-    virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
+    virtual void              CalculateWithoutGhosts(vtkDataArray *in, vtkDataArray *out,
+                                                     int ncomponents, int ntuples);
+    virtual void              CalculateWithGhosts(vtkDataArray *in, vtkDataArray *out,
+                                                  int ncomponents, int ntuples,
+                                                  int (getPointValid)(vtkDataArray *, int *, int),
+                                                  vtkDataArray *ghostZones,
+                                                  int *nodeShouldBeIgnoredPtr);
 };
 
 

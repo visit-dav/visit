@@ -67,7 +67,7 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 
 
 // ****************************************************************************
-//  Method: avtUnaryMathExpression::IdentifyGhostedNodes
+//  Method: avtGhostAwareUnaryMathExpression::IdentifyGhostedNodes
 //
 //  Purpose:
 //      TODO
@@ -78,16 +78,18 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 //
 // ****************************************************************************
 
+// TODO delete me!
+
 std::vector<int>
 avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
-                                             vtkDataArray *ghost_zones,
-                                             vtkDataArray *ghost_nodes)
+                                                       vtkDataArray *ghostZones,
+                                                       vtkDataArray *ghostNodes)
 {
     const int nPoints = in_ds->GetNumberOfPoints();
 
     // we create an array to track if this point should be counted
     std::vector<int> nodeShouldBeIgnored(nPoints);
-    if (ghost_zones)
+    if (ghostZones)
     {
         // if there are ghost zones, we want to initialize all points to not being counted
         fill(nodeShouldBeIgnored.begin(), nodeShouldBeIgnored.end(), true);
@@ -102,7 +104,7 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
         fill(nodeShouldBeIgnored.begin(), nodeShouldBeIgnored.end(), false);
     }
 
-    if (ghost_zones)
+    if (ghostZones)
     {
         const int nCells = in_ds->GetNumberOfCells();
         // iterate through the cells and mark points that are touching non-ghosts
@@ -110,7 +112,7 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
         for (int cellId = 0; cellId < nCells; cellId ++)
         {
             // if this zone is not a ghost zone
-            if (0 == ghost_zones->GetComponent(cellId, 0))
+            if (0 == ghostZones->GetComponent(cellId, 0))
             {
                 vtkIdType numCellPoints = 0;
 #if LIB_VERSION_LE(VTK,8,1,0)
@@ -136,14 +138,14 @@ avtUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
         }
     }
 
-    if (ghost_nodes)
+    if (ghostNodes)
     {
         // iterate through all points and make sure points marked as ghost
         // nodes are not counted
         for (int pointId = 0; pointId < nPoints; pointId ++)
         {
             // if this node is a ghost node
-            if (0 != ghost_nodes->GetComponent(pointId, 0))
+            if (0 != ghostNodes->GetComponent(pointId, 0))
             {
                 nodeShouldBeIgnored[pointId] = true;
             }
