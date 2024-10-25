@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="2.0">
+    <Domain>
+        <Grid Name="Curve" GridType="Uniform" GridPurpose="Curve">
+            <Topology TopologyType="2DRectMesh" NumberOfElements="1 12"/>
+            <Geometry Type="VXVY">
+                <DataItem Format="XML" Dimensions="12">
+                0 1 2 3 4 6 8 10 12 15 25 50
+                </DataItem>
+                <DataItem Format="XML" Dimensions="1">
+                0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="1 12">
+                100 200 300 400 500 600 600 700 800 900 1000 1100
+                </DataItem>
+            </Attribute>
+        </Grid>
+    </Domain>
+</Xdmf>

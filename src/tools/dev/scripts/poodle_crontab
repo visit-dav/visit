@@ -4,6 +4,6 @@ SHELL=/bin/sh
 MAILTO=brugger1@llnl.gov
 #
 # run at 10:00 PM, every day
-0 22 * * * $HOME/visit_run_tests/pascal_cron_script >> $HOME/visit_run_tests/out 2>&1
+0 22 * * * $HOME/visit_run_tests/poodle_cron_script >> $HOME/visit_run_tests/out 2>&1
 # run at 6:00 AM, every day
-0 6 * * * $HOME/visit_run_tests/pascal_cron_script2 >> $HOME/visit_run_tests/out 2>&1
+0 6 * * * $HOME/visit_run_tests/poodle_cron_script2 >> $HOME/visit_run_tests/out 2>&1

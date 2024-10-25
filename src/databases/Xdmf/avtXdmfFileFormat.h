@@ -11,6 +11,8 @@
 
 #include <avtMTMDFileFormat.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include <XdmfObject.h>
@@ -82,6 +84,7 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         int Stride[3];
         int numGrids;
         std::vector<double> timesteps;
+        std::map<std::string, std::string> curveToGridMap;
 
         void AddArrayExpressions(avtDatabaseMetaData *, std::string, std::vector<std::string> &);
         void AddTensorExpressions(avtDatabaseMetaData *, std::string, int, int);

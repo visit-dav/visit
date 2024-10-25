@@ -113,7 +113,7 @@ This launches the *Meta Data Server* and causes it to connect back to the *Viewe
   39633:127.0.0.1:5605
   -R
   39838:127.0.0.1:5606
-  pascal.llnl.gov
+  poodle.llnl.gov
   /usr/gapps/visit/bin/visit
   -v
   3.2
@@ -201,7 +201,7 @@ The file ``/tmp/visit.brugger.Mon-Nov-22-11:03:01-2021`` contains. ::
   ulimit -c 0
   srun -n 36 --nodes=1 --tasks-per-node=36 /usr/gapps/visit/3.2.1/linux-x86_64/bin/engine_par
   -forceversion 3.2.1 -dir /usr/gapps/visit -forcestatic -idle-timeout 480 -debug 5
-  -noloopback -sshtunneling -host pascal83 -port 18253 -key 8e602a31f092894eda54
+  -noloopback -sshtunneling -host poodle18 -port 18253 -key 8e602a31f092894eda54
 
-Note that the *Engine* is being told to connect to port 18253  on pascal, which is the bridging port set up in the *VCL* to the tunneled port 14650.
+Note that the *Engine* is being told to connect to port 18253  on poodle18, which is the bridging port set up in the *VCL* to the tunneled port 14650.
 When the *Engine* is eventually launched, the rank 0 MPI process will connect back to the *Viewer* using port 18253.

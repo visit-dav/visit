@@ -4652,6 +4652,9 @@ VisWindow::UpdateParallelAxes()
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
 //   Only update the triad color if the
 //   set manually flag is raised.
+// 
+//   Justin Privitera, Wed Oct  9 14:35:28 PDT 2024
+//   Fix triad line width so it uses linewidth infrastructure.
 //
 // ****************************************************************************
 
@@ -4741,7 +4744,7 @@ VisWindow::UpdateAxes3D()
         }
         triad->SetForegroundColor(scaledColor[0], scaledColor[1], scaledColor[2]);
     }
-    float lineWidth = annotationAtts.GetAxes3D().GetTriadLineWidth();
+    const int lineWidth = LineWidth2Int(Int2LineWidth(axis3D.GetTriadLineWidth()));
     triad->SetLineWidth(lineWidth, lineWidth, lineWidth);
     triad->SetBold(annotationAtts.GetAxes3D().GetTriadBold());
     triad->SetItalic(annotationAtts.GetAxes3D().GetTriadItalic());

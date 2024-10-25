@@ -62,10 +62,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SZoneDumpOperator ${LIBS_SOURCES})
-        IF(WIN32)
-            # This prevents python from #defining snprintf as _snprintf
-            SET_TARGET_PROPERTIES(SZoneDumpOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
-        ENDIF()
         TARGET_LINK_LIBRARIES(SZoneDumpOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SZoneDumpOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

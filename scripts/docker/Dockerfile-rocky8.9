@@ -3,13 +3,13 @@ MAINTAINER Kathleen Biagas<biagas2@llnl.gov>
 
 ENV TZ=America/Phoenix
 
-# the default repos for rockylinux use mirrors. 
+# the default repos for rockylinux use mirrors.
 # if there is difficulty running yum due to the mirrors, then
 # hand-modify /etc/yum.repos.d/* to comment out the mirrors and uncomment
 # the baseurl.
 # then the packages below will have to be installed by hand.
 
-RUN yum update -y && yum install -y yum-utils 
+RUN yum update -y && yum install -y yum-utils
 
 # enable the 'devel' repo, it has some packages we need but is not
 # enabled by default
@@ -71,7 +71,7 @@ RUN yum install -y \
     libxml2 \
     libxml2-devel \
     vim \
-    libffi-devel 
+    libffi-devel
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
@@ -90,7 +90,7 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir /home/visit/third-party
 # Copy build_visit and the script to run it
-COPY --chown=visit:visit build_visit3_4_1 /home/visit
+COPY --chown=visit:visit build_visit3_4_2 /home/visit
 COPY --chown=visit:visit run_build_visit.sh /home/visit
 COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
 # build thirdparty libraries
@@ -99,7 +99,7 @@ RUN /bin/bash run_build_visit.sh
 # build and test visit
 COPY --chown=visit:visit build_test_visit.sh /home/visit
 COPY --chown=visit:visit test_visit.py /home/visit
-COPY --chown=visit:visit visit3.4.1.tar.gz /home/visit
+COPY --chown=visit:visit visit3.4.2.tar.gz /home/visit
 # Build visit, package, install and test.
-RUN /bin/bash build_test_visit.sh -v 3.4.1
+RUN /bin/bash build_test_visit.sh -v 3.4.2
 

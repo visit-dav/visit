@@ -88,7 +88,10 @@ namespace StringHelpers
     std::string UTILITY_API HumanReadableList(const std::vector<std::string>&);
     bool UTILITY_API IsPureASCII(const std::string &txt);
     bool UTILITY_API IsPureASCII(const char *const txt, size_t length);
-    bool UTILITY_API CaseInsenstiveEqual(const std::string &str_a,
+    bool UTILITY_API CaseInsensitiveEqual(char const *str_a,
+                                         char const *str_b,
+                                         size_t n = 0);
+    bool UTILITY_API CaseInsensitiveEqual(const std::string &str_a,
                                          const std::string &str_b);
     std::string UTILITY_API UpperCase(const std::string &src);
 

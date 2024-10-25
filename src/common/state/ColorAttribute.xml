@@ -55,4 +55,7 @@
     <Include file="source" quoted="false">
       cstring 
     </Include>
+    <Include file="source" quoted="false">
+      StringHelpers.h
+    </Include>
   </Attribute>

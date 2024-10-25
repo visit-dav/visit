@@ -63,10 +63,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SMultiresControlOperator ${LIBS_SOURCES})
-        IF(WIN32)
-            # This prevents python from #defining snprintf as _snprintf
-            SET_TARGET_PROPERTIES(SMultiresControlOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
-        ENDIF()
         TARGET_LINK_LIBRARIES(SMultiresControlOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SMultiresControlOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

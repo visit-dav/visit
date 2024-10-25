@@ -52,6 +52,9 @@
 //    Kathleen Biagas, Mon Jun 11 17:15:39 MST 2012 
 //    Have windows follow the APPLE path. 
 //
+//    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
+//    I modified the class to use the APPLE path in all cases.
+//
 // ****************************************************************************
 
 ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw) 
@@ -70,7 +73,6 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     rubberBand       = vtkPolyData::New();
 
     vtkPoints *pts = vtkPoints::New();
-#if defined(__APPLE__) || defined(_WIN32)
     pts->SetNumberOfPoints(4);
     rubberBand->SetPoints(pts);
     pts->Delete();
@@ -80,17 +82,6 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     lines->InsertNextCell(5, ids);
     rubberBand->SetLines(lines);
     lines->Delete();
-#else
-    pts->SetNumberOfPoints(2);
-    rubberBand->SetPoints(pts);
-    pts->Delete();
-
-    vtkCellArray *lines  = vtkCellArray::New();
-    vtkIdType  ids[2] = { 0, 1 };
-    lines->InsertNextCell(2, ids);
-    rubberBand->SetLines(lines);
-    lines->Delete();
-#endif
 
     rubberBandMapper = proxy.CreateRubberbandMapper();
     rubberBandMapper->SetInputData(rubberBand);
@@ -441,55 +432,6 @@ ZoomInteractor::ForceCoordsToViewport(int &x, int &y)
     }
 }
 
-
-// ****************************************************************************
-//  Function: GetSegment
-//
-//  Purpose:
-//      Determines what pixels should be drawn based on the anchor location,
-//      the location of the old pixel and the location of the new pixel.
-//
-//  Note:       This is meant for extending or retracting a segment.  If
-//              both dimensions vary for the new pixel, this should not be 
-//              used.
-//
-//  Arguments:
-//      a       The location of the anchor in one dimension in display coords.
-//      l       The location of the last coord in one dim in display coords.
-//      n       The location of the new coord in one dim in display coords.
-//      outl    Where the last coord portion of the segment should be placed.
-//      newl    Where the new coord portion of the segment should be placed.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 30, 2000
-//
-// ****************************************************************************
-
-#if !defined(__APPLE__) && !defined(__WIN32__)
-static inline void
-GetSegment(int a, int l, int n, int &outl, int &newl)
-{
-    outl = l;
-    newl = n;
-    if (abs(l-a) > abs(n-a))
-    {
-        //
-        // We are moving towards the anchor.
-        //
-        int offset = (l > a ? 1 : -1);
-        newl += offset;
-    }
-    else
-    {
-        //
-        // We are moving away from the anchor.
-        //
-        int offset = (n > a ? 1 : -1);
-        outl += offset;
-    }
-}
-#endif
-
 // ****************************************************************************
 //  Method: ZoomInteractor::UpdateRubberBand
 //
@@ -520,6 +462,9 @@ GetSegment(int a, int l, int n, int &outl, int &newl)
 //    Kathleen Biagas, Mon Jun 11 17:15:39 MST 2012 
 //    Have windows follow the APPLE path. 
 //
+//    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
+//    I modified the class to use the APPLE path in all cases.
+//
 // ****************************************************************************
 
 void
@@ -533,7 +478,6 @@ ZoomInteractor::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
         return;
     }
 
-#if defined(__APPLE__) || defined(_WIN32)
     // This code assumes that the lines will be drawn at the same time
     // in an overlay window that the rubber-band mapper will create.
     vtkViewport *ren = proxy.GetBackground();
@@ -542,120 +486,6 @@ ZoomInteractor::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
     pts->SetPoint(1, (double) nX, (double) aY, 0.);   
     pts->SetPoint(2, (double) nX, (double) nY, 0.);   
     pts->SetPoint(3, (double) aX, (double) nY, 0.);
-    rubberBandMapper->RenderOverlay(ren, rubberBandActor);
-#else
-    // This code assumes that the line segments will be drawn individually
-    // with XOR.
-
-    //
-    // Crossing over the anchor gives us a big problem.  Break up this case.
-    //
-    if ((nX-aX)*(lX-aX) < 0 || (nY-aY)*(lY-aY) < 0)
-    {
-        UpdateRubberBand(aX, aY, lX, lY, aX, aY);
-        UpdateRubberBand(aX, aY, aX, aY, nX, nY);
-        return;
-    }
-
-    //
-    // Handle the line that is vertical and has the new corner as one of its
-    // vertices.
-    //
-    if (nX == lX)
-    {
-        //
-        // The box moved up in the y-direction, so extend what we had there
-        // before.
-        //
-        int  lastY, newY;
-        GetSegment(aY, lY, nY, lastY, newY);
-        DrawRubberBandLine(lX, lastY, lX, newY);
-    }
-    else
-    {
-        //
-        // Add the new line and erase the old one.
-        //
-        DrawRubberBandLine(nX, aY, nX, nY);
-        DrawRubberBandLine(lX, aY, lX, lY);
-    }
-
-    //
-    // Handle the line that is horizontal and has the new corner as one of its
-    // vertices.
-    //
-    if (nY == lY)
-    {
-        //
-        // The box moved over in the x-direction, so extend what we had there
-        // before.
-        //
-        int  lastX, newX;
-        GetSegment(aX, lX, nX, lastX, newX);
-        DrawRubberBandLine(lastX, lY, newX, lY);
-    }
-    else
-    {
-        //
-        // Add the new line and erase the old one.
-        //
-        DrawRubberBandLine(aX, nY, nX, nY);
-        DrawRubberBandLine(aX, lY, lX, lY);
-    }
-
-    //
-    // Handle the line that is vertical and has the anchor as one of its
-    // vertices.
-    //
-    if (nY != lY)
-    {
-        int lastY, newY;
-        GetSegment(aY, lY, nY, lastY, newY);
-        DrawRubberBandLine(aX, lastY, aX, newY);
-    }
-
-    //
-    // Handle the line that is horizontal and has the anchor as one of its
-    // vertices.
-    //
-    if (nX != lX)
-    {
-        int lastX, newX;
-        GetSegment(aX, lX, nX, lastX, newX);
-        DrawRubberBandLine(lastX, aY, newX, aY);
-    }
-#endif
-}
-
-
-// ****************************************************************************
-//  Method: ZoomInteractor::DrawRubberBandLine
-//
-//  Purpose:
-//      Draws a rubber band line.
-//
-//  Arguments:
-//      x1      The x-coordinate of the first endpoint in display coordinates.
-//      y1      The y-coordinate of the first endpoint in display coordinates.
-//      x2      The x-coordinate of the second endpoint in display coordinates.
-//      y2      The y-coordinate of the second endpoint in display coordinates.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 24, 2000
-//
-// ****************************************************************************
-
-void
-ZoomInteractor::DrawRubberBandLine(int x1, int y1, int x2, int y2)
-{
-    //
-    // The rubber band is drawn to the background since it is also in display
-    // coordinates.
-    //
-    vtkViewport *ren = proxy.GetBackground();
-    vtkPoints *pts = rubberBand->GetPoints();
-    pts->SetPoint(0, (double) x1, (double) y1, 0.);   
-    pts->SetPoint(1, (double) x2, (double) y2, 0.);   
     rubberBandMapper->RenderOverlay(ren, rubberBandActor);
 }
 

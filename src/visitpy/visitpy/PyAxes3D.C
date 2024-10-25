@@ -169,7 +169,7 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix, const bool forLogging)
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    snprintf(tmpStr, 1000, "%striadLineWidth = %g\n", prefix, atts->GetTriadLineWidth());
+    snprintf(tmpStr, 1000, "%striadLineWidth = %d\n", prefix, atts->GetTriadLineWidth());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%striadFont = %d\n", prefix, atts->GetTriadFont());
     str += tmpStr;
@@ -1041,19 +1041,19 @@ Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg is not a number type");
     }
 
-    double val = PyFloat_AsDouble(args);
-    float cval = float(val);
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
 
     if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
-    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
     {
         Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -1069,7 +1069,7 @@ Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
 Axes3D_GetTriadLineWidth(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTriadLineWidth()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTriadLineWidth()));
     return retval;
 }
 

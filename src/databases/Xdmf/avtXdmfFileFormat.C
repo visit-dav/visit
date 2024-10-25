@@ -23,6 +23,7 @@
 #include <vtkCellType.h>
 #include <vtkFieldData.h>
 #include <vtkInformation.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
@@ -33,6 +34,7 @@
 #include <avtGhostData.h>
 
 #include <Expression.h>
+#include <StringHelpers.h>
 
 #include <InvalidDBTypeException.h>
 #include <InvalidSourceException.h>
@@ -709,10 +711,17 @@ avtXdmfFileFormat::FirstRealGrid(XdmfGrid *start)
 //    Brad Whitlock, Tue Apr 14 16:36:26 PDT 2015
 //    Handle grids that are collections of collections of real grids.
 //
+//    Mark C. Miller, Sat Oct 12 12:10:16 PDT 2024
+//    Add logic to handle possible curve objects.
 // ****************************************************************************
 
-vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *meshname)
+vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *_meshname)
 {
+    char const *meshname = _meshname;
+
+    if (curveToGridMap.find(_meshname) != curveToGridMap.end())
+        meshname = curveToGridMap[_meshname].c_str();
+
     this->SetCurrentGrid(timestate, meshname);
 
     XdmfGrid * gridToRead = currentGrid;
@@ -734,6 +743,22 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *m
             break;
         case VTK_RECTILINEAR_GRID:
             dataSet = this->ReadRectilinearGrid(gridToRead);
+
+            // If we're here for a curve object, we adjust the rectgrid by ignoring
+            // Y and Z dimensions and then add the curve's "values" as a point data array.
+            // We do this by creating a new rectgrid and copying X coordinates over.
+            if (strcmp(_meshname, meshname))
+            {
+                vtkRectilinearGrid *oldGrid = vtkRectilinearGrid::SafeDownCast(dataSet);
+                vtkRectilinearGrid *newGrid = vtkRectilinearGrid::New();
+                newGrid->SetDimensions(oldGrid->GetDimensions()[0], 1, 1);
+                newGrid->SetXCoordinates(oldGrid->GetXCoordinates());
+                vtkDataArray *yvals = GetVar(timestate, domain, _meshname);
+                yvals->SetName(meshname);
+                newGrid->GetPointData()->SetScalars(yvals);
+                oldGrid->Delete();
+                dataSet = newGrid;
+            }
             break;
         case VTK_UNSTRUCTURED_GRID:
             dataSet = this->ReadUnstructuredGrid(gridToRead);
@@ -1575,6 +1600,10 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
 //    Brad Whitlock, Tue Apr 14 16:36:26 PDT 2015
 //    Handle grids that are collections of collections of real grids.
 //
+//    Mark C. Miller, Sat Oct 12 12:08:14 PDT 2024
+//    Add logic to handle curves in Xdmf files. These are one component
+//    variables defined on 2DRectMesh objects with dimensions in the .xmf file
+//    of the form "1 N" where N is greater than 1.
 // ****************************************************************************
 
 void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
@@ -1594,12 +1623,21 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
 
         int block_origin = 0;
-        int spatial_dimension = this->GetSpatialDimensions(grid->GetGeometry()->GetGeometryType());
-        int topological_dimension = this->GetTopologicalDimensions(grid->GetTopology()->GetTopologyType());
+        XdmfInt64 dimensions[XDMF_MAX_DIMENSION];
+        gridToExamine->GetTopology()->GetShapeDesc()->GetShape(dimensions);
+        int spatial_dimension = this->GetSpatialDimensions(gridToExamine->GetGeometry()->GetGeometryType());
+        int topological_dimension = this->GetTopologicalDimensions(gridToExamine->GetTopology()->GetTopologyType());
         double *extents = NULL;
 
         avtMeshType mt = AVT_UNSTRUCTURED_MESH;
-        if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYVERTEX) {
+        if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DRECTMESH &&
+            gridToExamine->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY &&
+            dimensions[1]>1 && dimensions[0]==1 &&
+            gridToExamine->Get("GridPurpose") &&
+            StringHelpers::CaseInsensitiveEqual(gridToExamine->Get("GridPurpose"), "curve", 5)) {
+            mt = AVT_UNKNOWN_MESH; // temporary placeholder for a curve object
+        }
+        else if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_POLYVERTEX) {
             mt = AVT_POINT_MESH;
         }
         else if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DSMESH ||
@@ -1613,7 +1651,20 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
             mt = AVT_RECTILINEAR_MESH;
         }
 
-        AddMeshToMetaData(md, grid->GetName(), mt, extents, nblocks, block_origin, spatial_dimension, topological_dimension);
+        if (mt == AVT_UNKNOWN_MESH) {
+            // This is really a faux mesh object for an associated curve object
+            int const nblocks = 1, blockOrigin = 0, cellOrigin = 0, groupOrigin = 0;
+            int const spatial_dim = 2, topo_dim = 1;
+            avtMeshType const meshType = AVT_RECTILINEAR_MESH;
+            mt = meshType;
+            avtMeshMetaData *mmd = new avtMeshMetaData(grid->GetName(), nblocks,
+                blockOrigin, cellOrigin, groupOrigin, spatial_dim, topo_dim, meshType);
+            mmd->hideFromGUI = true;
+            md->Add(mmd);
+        }
+        else {
+            AddMeshToMetaData(md, grid->GetName(), mt, extents, nblocks, block_origin, spatial_dimension, topological_dimension);
+        }
  
         md->SetTimes(timesteps);
 
@@ -1642,7 +1693,25 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
                 switch (attribute->GetAttributeType()) {
                     case (XDMF_ATTRIBUTE_TYPE_SCALAR): {
                         if (numComponents <= 1) {
-                            AddScalarVarToMetaData(md, attributeName.str(), grid->GetName(), center);
+                            // This lengthy if conditional is intended to really lock down the
+                            // manner in which an XY curve object is recognized in an Xdmf file.
+                            // It must be 2DRectMesh. The Y dimension must be of size 1 and
+                            // there must be an additional xml attrbute, GridPurpose, defined with
+                            // value "curve". That latter bit is outside Xdmf spec but because
+                            // it is handled as an xml attribute in the <Grid> tag, it should be ok.
+                            grid->GetTopology()->GetShapeDesc()->GetShape(dimensions);
+                            if (gridToExamine->GetTopology()->GetTopologyType() == XDMF_2DRECTMESH &&
+                                grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVY &&
+                                dimensions[1]>1 && dimensions[0]==1 &&
+                                grid->Get("GridPurpose") &&
+                                StringHelpers::CaseInsensitiveEqual(grid->Get("GridPurpose"), "curve", 5)) {
+                                avtCurveMetaData *cmd = new avtCurveMetaData(attributeName.str());
+                                md->Add(cmd);
+                                curveToGridMap[attributeName.str()] = grid->GetName();
+                            }
+                            else {
+                                AddScalarVarToMetaData(md, attributeName.str(), grid->GetName(), center);
+                            }
                         }
                         else {
                             std::vector<std::string> names = this->GetComponentNames(attributeName.str(),
@@ -1804,6 +1873,13 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
             for (int cc = scaled_extents[4]; cc <= scaled_extents[5]; cc++) {
                 zarray->GetPointer(0)[cc - scaled_extents[4]] = origin[2] + (dxdydz[2] * cc * this->Stride[2]);
             }
+            break;
+        }
+        case XDMF_GEOMETRY_XY:
+        {
+            zarray->FillComponent(0, 0);
+            xmfGeometry->GetVectorX()->GetValues(update_extents[2], xarray->GetPointer(0), scaled_dims[1],
+                    this->Stride[1]);
             break;
         }
         case XDMF_GEOMETRY_VXVY:

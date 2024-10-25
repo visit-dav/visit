@@ -64,7 +64,7 @@ class avtWavefrontOBJFileFormat : public avtSTSDFileFormat
 
     bool                  hasGroups;
     std::set<std::string> uniqueGroupNames;
-    bool                  multipleGroupInclusion;
+    std::set<std::string> aggregatedGroupNames;
 };
 
 

@@ -8,6 +8,10 @@ The Python doc strings for most functions in VisIt_'s scripting interface are ge
 This allows us to have a single source for both our scripting interface sphinx docs and the doc strings embedded in VisIt_'s compiled Python module. 
 The ``functions_to_method_doc.py`` helper script generates ``MethodDoc.C`` from the examples embedded in the rst source.
 
+When editing any of these ``.rst`` files, it is important to maintain consistency with existing formatting.
+For each function documented there, it is important to use the same heading levels with the same heading names, the same indentation, etc., etc.
+If there is nothing to include for a particular heading, still including the heading but with a body indicating ``Nothing more`` or something to that effect.
+
 The Python doc strings for Attribute objects and Events are extracted from the scripting interface for use in the Python scripting sphinx docs.
 The ``sphinx_cli_extractor.py`` runs VisIt to generate ``python_scripting/attributes.rst``  and ``python_scripting/events.rst``.
 

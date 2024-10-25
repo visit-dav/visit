@@ -1130,7 +1130,7 @@ StringHelpers::IsPureASCII(const char *const txt, size_t length)
 }
 
 // ****************************************************************************
-// Method:  StringHelpers::CaseInsenstiveEqual
+// Method:  StringHelpers::CaseInsensitiveEqual
 //
 // Purpose:
 //   Check to see two strings compare as equal, after result of ::tolower.
@@ -1141,16 +1141,34 @@ StringHelpers::IsPureASCII(const char *const txt, size_t length)
 // Programmer:  Cyrus Harrison
 // Creation:    Mon Sep 19 16:23:05 PDT 2011
 //
+//    Mark C. Miller, Mon Oct 14 21:24:39 PDT 2024
+//    Modified to use stdlib's strcasecmp and friends for WIN32 and Linux
 // ****************************************************************************
 bool
-StringHelpers::CaseInsenstiveEqual(const std::string &str_a,
+StringHelpers::CaseInsensitiveEqual(const char *str_a, const char *str_b, size_t n)
+{
+    if (n == 0)
+    {
+#if defined(_WIN32)
+        return _stricmp(str_a, str_b) == 0;
+#else
+        return strcasecmp(str_a, str_b) == 0;
+#endif
+    }
+    else
+    {
+#if defined(_WIN32)
+        return _strnicmp(str_a, str_b, n) == 0;
+#else
+        return strncasecmp(str_a, str_b, n) == 0;
+#endif
+    }
+}
+bool
+StringHelpers::CaseInsensitiveEqual(const std::string &str_a,
                                    const std::string &str_b)
 {
-    std::string sa_l = str_a;
-    std::string sb_l = str_b;
-    std::transform(sa_l.begin(),sa_l.end(),sa_l.begin(),::tolower);
-    std::transform(sb_l.begin(),sb_l.end(),sb_l.begin(),::tolower);
-    return sa_l == sb_l;
+    return StringHelpers::CaseInsensitiveEqual(str_a.c_str(), str_b.c_str());
 }
 
 // ****************************************************************************

@@ -390,9 +390,7 @@ ${PY_SOURCES}
 ${METADATA_SOURCES}
 ${GENERATED_PY_SOURCES}
 )
-if(WIN32)
-    set_target_properties(visitpy PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
-endif()
+
 TARGET_LINK_LIBRARIES(visitpy
 avtdbatts
 viewerrpc

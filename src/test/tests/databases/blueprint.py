@@ -61,6 +61,9 @@
 #    Brad Whitlock, Thu Jul 18 18:29:49 PDT 2024
 #    Added mixed_tet_quad_2d test. Moved more tests into functions so it's
 #    easier to select which ones to run while debugging.
+# 
+#    Justin Privitera, Fri Sep 27 12:09:46 PDT 2024
+#    Added tests for specsets.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -82,6 +85,7 @@ bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
 bp_unstructured_points_dir = "blueprint_v0.8.7_unstructured_points"
 bp_unstructured_uniform_dir = "blueprint_v0.9.1_uniform_coords_unstructured_topo"
 bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
+bp_specset_dir = "blueprint_v0.9.2_specset_example"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -115,6 +119,8 @@ mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.roo
 mixed_braid_3d = data_path(pjoin(bp_mixed_topos_dir, "braid_3d_examples_hdf5.root"))
 mixed_tet_quad_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_mesh_tri_quad_2d_hdf5.root"))
 mixed_offsets_2d = data_path(pjoin(bp_mixed_topos_dir, "mixed_topo_with_offsets.root"))
+
+misc_specsets = data_path(pjoin(bp_specset_dir, "misc_specsets.cycle_000100.root"))
 
 #
 # venn test data (multi material)
@@ -887,6 +893,7 @@ def mixed_test(db_name, meshplot_name, pseudocolor_plot_name, label_plot_name, t
     else:
         ResetView()
     Test(test_name)
+    ResetView()
     DeleteAllPlots()
     CloseDatabase(db_name)
 
@@ -900,6 +907,33 @@ def test_blueprint_0_9_2():
     mixed_test(mixed_tet_quad_2d, "mesh_mesh", "mesh_mesh/braid", "", "Mixed_tet_quad_2d")
     DefineScalarExpression("nodeids", "nodeid(mesh_mesh)")
     mixed_test(mixed_offsets_2d, "mesh_mesh", "nodeids", "", "Mixed_offsets_2d")
+
+    TestSection("Blueprint Specsets, 0.9.2")
+    OpenDatabase(misc_specsets)
+    AddPlot("Pseudocolor", "mesh_mesh/radial")
+    DrawPlots()
+    silr = SILRestriction()
+    silr.SuspendCorrectnessChecking()
+    silr.TurnOnAll()
+    for silSet in (5,6):
+        silr.TurnOffSet(silSet)
+    silr.EnableCorrectnessChecking()
+    SetPlotSILRestriction(silr ,1)
+    Test("Misc_radial")
+    silr = SILRestriction()
+    silr.TurnOnAll()
+    SetPlotSILRestriction(silr ,1)
+    DeleteActivePlots()
+    AddPlot("Pseudocolor", "mesh_mesh_mesh_mesh")
+    DrawPlots()
+    silr = SILRestriction()
+    silr.TurnOnAll()
+    silr.TurnOffSet(5)
+    SetPlotSILRestriction(silr ,1)
+    Test("Misc_specset")
+    silr.TurnOnAll()
+    DeleteAllPlots()
+    CloseDatabase(misc_specsets)
 
 def main():
     test_blueprint_json_hdf5()

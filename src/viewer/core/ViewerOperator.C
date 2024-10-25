@@ -570,6 +570,10 @@ ViewerOperator::NeedsRecalculation() const
 //   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
 //   Add operator keyframing.
 //   
+//   Eric Brugger, Wed Oct  2 13:41:53 PDT 2024
+//   Added logic to store the current operator attributes before storing
+//   the keyframed operator attributes.
+//
 // ****************************************************************************
 
 void
@@ -580,6 +584,11 @@ ViewerOperator::CreateNode(DataNode *parentNode)
 
     DataNode *operatorNode = new DataNode("ViewerOperator");
     parentNode->AddNode(operatorNode);
+
+    //
+    // Store the current operator attributes.
+    //
+    curOperatorAtts->CreateNode(operatorNode, true, true);
 
     //
     // Add the keyframed operator attributes.

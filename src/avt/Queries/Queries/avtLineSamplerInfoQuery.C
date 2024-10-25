@@ -266,7 +266,7 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
       std::vector<float> steps;
       vtkIdType nPts; // = 1 for a vertex
       auto verts = vtk::TakeSmartPointer(ds->GetVerts()->NewIterator());
-      for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell());
+      for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell())
       {
         const vtkIdType *vertPtr;
         verts->GetCurrentCell(nPts, vertPtr);
@@ -300,7 +300,7 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     {
       vtkIdType nPts;
       auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
-      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell());
+      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
       {
         const vtkIdType *segPtr;
         lines->GetCurrentCell(nPts, segPtr);
