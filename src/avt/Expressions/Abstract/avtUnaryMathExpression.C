@@ -11,7 +11,6 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkPointData.h>
 
 #include <ImproperUseException.h>
