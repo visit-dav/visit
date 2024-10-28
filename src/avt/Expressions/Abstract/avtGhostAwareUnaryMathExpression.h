@@ -13,14 +13,13 @@
 
 #include <avtUnaryMathExpression.h>
 
-class     vtkDataArray;
-
 
 // ****************************************************************************
 //  Class: avtGhostAwareUnaryMathExpression
 //
 //  Purpose:
-//      A filter that performs a calculation on a single variable.
+//      A filter that performs a calculation on a single variable, taking 
+//      ghost zones/nodes into account.
 //
 //  Programmer: Justin Privitera
 //  Creation:   10/25/24

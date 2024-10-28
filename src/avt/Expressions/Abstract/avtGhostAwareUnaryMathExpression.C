@@ -11,12 +11,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkPointData.h>
-
-#include <ImproperUseException.h>
-#include <ExpressionException.h>
-
 
 // ****************************************************************************
 //  Method: avtGhostAwareUnaryMathExpression constructor
@@ -60,8 +55,15 @@ avtGhostAwareUnaryMathExpression::~avtGhostAwareUnaryMathExpression()
 //  Method: avtGhostAwareUnaryMathExpression::IdentifyGhostedNodes
 //
 //  Purpose:
-//      TODO
-//      this function is for nodal vars
+//      This function determines which nodes ought to be used if we are
+//      taking ghosts into account. We mark all nodes touching non-ghosted 
+//      zones as good to count, and mark all nodes that are ghost nodes
+//      as nodes that should not be counted.
+// 
+//  Returns:
+//      A vector that is number of nodes long containing true when the node
+//      should be ignored in calculations and false when the node should
+//      not be ignored.
 //
 //  Programmer: Justin Privitera
 //  Creation:   10/24/24
@@ -148,7 +150,15 @@ avtGhostAwareUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 //  Method: avtGhostAwareUnaryMathExpression::DoOperation
 //
 //  Purpose:
-//      TODO
+//      All ghost-aware unary expressions have the same underlying logic, which
+//      we provide here. If we are operating on zonal data, we need to check
+//      for ghost zones and only calculate using the non-ghosted zones. If we 
+//      are operating on nodal data, we need to use IdentifyGhostedNodes() to
+//      determine which nodes we can use. We then call CalculateWithGhosts() or
+//      CalculateWithoutGhosts() which are defined in classes that inherit from
+//      avtGhostAwareUnaryMathExpression. CalculateWithoutGhosts() is an 
+//      optimized path that we can use when there are no ghosts we need to 
+//      worry about.
 //
 //  Arguments:
 //      in            The input data array.
@@ -156,6 +166,7 @@ avtGhostAwareUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24

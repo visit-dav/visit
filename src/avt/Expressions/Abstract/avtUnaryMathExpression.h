@@ -47,6 +47,9 @@ class     vtkDataArray;
 //
 //    Hank Childs, Thu Oct  9 09:44:37 PDT 2008
 //    Define method "NullInputIsExpected".
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 

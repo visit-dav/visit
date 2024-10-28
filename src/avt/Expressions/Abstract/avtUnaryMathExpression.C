@@ -128,6 +128,9 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 //
 //    Kathleen Bonnell, Tue Apr  7 07:58:33 PDT 2009
 //    When data == NULL, don't create a new vtkFloatArray twice.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
