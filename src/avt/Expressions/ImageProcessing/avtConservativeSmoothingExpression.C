@@ -95,6 +95,7 @@ avtConservativeSmoothingExpression::PreExecute(void)
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 16, 2005
@@ -109,6 +110,9 @@ avtConservativeSmoothingExpression::PreExecute(void)
 //
 //    Kathleen Biagas, Wed Apr 4 12:34:10 PDT 2012
 //    Use double instead of float.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 

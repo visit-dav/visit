@@ -60,6 +60,7 @@ avtIdentityExpression::~avtIdentityExpression()
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Hank Childs
 //  Creation:   December 9, 2003
@@ -70,6 +71,9 @@ avtIdentityExpression::~avtIdentityExpression()
 //    Do not assume that the input variable is valid.  If someone makes
 //    the expression "d = quadmesh2d", we will end up here with a NULL
 //    input.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
  

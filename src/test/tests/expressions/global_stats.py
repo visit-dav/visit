@@ -19,10 +19,10 @@ def test_stats_for_var(meshname, varname, vartype):
 	# define our expressions
 	if vartype == "zonal":
 		# every zone will have a value of 1
-		DefineScalarExpression("one", "zoneid(" + meshname + ") * 0 + 1")
+		DefineScalarExpression("one", "zoneconstant(1)")
 	else:
 		# every node will have a value of 1
-		DefineScalarExpression("one", "nodeid(" + meshname + ") * 0 + 1")
+		DefineScalarExpression("one", "nodeconstant(1)")
 	DefineScalarExpression("max_" + varname + "_" + vartype,      "global_max(" + varname + ")")
 	DefineScalarExpression("min_" + varname + "_" + vartype,      "global_min(" + varname + ")")
 	DefineScalarExpression("sum_one_" + varname + "_" + vartype,  "global_sum(one)")

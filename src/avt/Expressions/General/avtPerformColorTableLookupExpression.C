@@ -209,6 +209,7 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Gunther H. Weber
 //  Creation:   Tue Jan  8 17:04:08 PST 2008
@@ -216,6 +217,9 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
 //  Modifications:
 //    Jeremy Meredith, Wed Aug  6 17:23:47 EDT 2008
 //    Assumed an "if (a=b)" line should have read "if (a==b)".
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 

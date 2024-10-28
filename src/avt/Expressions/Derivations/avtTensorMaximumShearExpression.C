@@ -76,6 +76,9 @@ avtTensorMaximumShearExpression::~avtTensorMaximumShearExpression()
 //
 //    Eric Brugger, Mon Aug  8 09:32:30 PDT 2011
 //    I reduced the tolerance on invariant1 to be less restrictive.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 

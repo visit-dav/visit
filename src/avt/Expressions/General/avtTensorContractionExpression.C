@@ -59,6 +59,10 @@ avtTensorContractionExpression::~avtTensorContractionExpression()
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   June 1, 2007
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 
