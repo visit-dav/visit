@@ -178,6 +178,10 @@
 //
 //    Kathleen Biagas, Wed Jun 15 2022
 //    Added crack_width to misc submenu.
+// 
+//    Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+//    Added global mesh expressions: global_avg, global_max, global_min, 
+//    global_rms, global_std_dev, global_sum, and global_variance.
 //
 // ****************************************************************************
 
@@ -445,14 +449,13 @@ const char *expr_time_iteration[] = {
 };
 
 const char *expr_global[] = {
+    "global_avg",
     "global_max",
     "global_min",
-    "global_avg",
-    "global_sum",
-    "global_count",
-    "global_std_dev",
-    "global_variance",
     "global_rms",
+    "global_std_dev",
+    "global_sum",
+    "global_variance",
     NULL
 };
 
@@ -481,6 +484,9 @@ ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 //
 //   Hank Childs, Mon Jul  5 11:20:47 PDT 2010
 //   Enable Load and Save buttons.
+// 
+//   Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+//   Added Global category.
 //
 // ****************************************************************************
 
