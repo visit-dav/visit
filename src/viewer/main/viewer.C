@@ -11,10 +11,8 @@
 #include <cstdlib>
 
 #include <qapplication.h>
-#include <QDebug>
 #include <QEvent>
 #include <QMetaEnum>
-#include <QMouseEvent>
 #include <QObject>
 #include <QStringList>
 #include <QSurfaceFormat>
