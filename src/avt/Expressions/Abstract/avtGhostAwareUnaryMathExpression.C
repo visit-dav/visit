@@ -8,9 +8,9 @@
 
 #include <avtGhostAwareUnaryMathExpression.h>
 
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDataArray.h>
+#include <vtkCellData.h>
 #include <vtkPointData.h>
 
 // ****************************************************************************
