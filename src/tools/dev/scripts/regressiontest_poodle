@@ -606,6 +606,7 @@ if test "$post" = "true" ; then
     mv \$newResults ../../old_results
 
     # Send out an e-mail notifying the users of the test suite status.
+    cd $repoDir
     if test "\$hasFailed" = ""; then
         $repoDir/src/tools/dev/scripts/visit-notify-test-failure -pass -host $testHost
     else
