@@ -915,12 +915,12 @@ function build_requests
         return 1
     fi
 
-    download_py_module ${PY_REQUESTS_FILE} ${REQUESTS_URL}
+    download_py_module ${PY_REQUESTS_FILE} ${PY_REQUESTS_URL}
     if test $? -ne 0 ; then
         return 1
     fi
 
-    extract_py_module ${PY_REQUESTS_BUILD_DIR} ${REQUESTS_FILE} "requests"
+    extract_py_module ${PY_REQUESTS_BUILD_DIR} ${PY_REQUESTS_FILE} "requests"
     if test $? -ne 0 ; then
         return 1
     fi
