@@ -162,6 +162,8 @@ protected:
 //    Eric Brugger, Wed Nov 27 14:35:58 PST 2019
 //    Added delete of argv2 and mainApp to clean up memory before exiting.
 //
+//    Mark C. Miller, Mon Oct 28 12:11:33 PDT 2024
+//    Install an event filter to ignore touch events.
 // ****************************************************************************
 int
 ViewerMain(int argc, char *argv[])
