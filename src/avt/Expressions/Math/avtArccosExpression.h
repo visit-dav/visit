@@ -32,6 +32,9 @@ class     vtkDataArray;
 //    Hank Childs, Thu Feb  5 17:11:06 PST 2004
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 

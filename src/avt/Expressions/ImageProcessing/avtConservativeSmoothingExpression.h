@@ -27,6 +27,10 @@ class     vtkDataArray;
 //
 //  Programmer: Hank Childs
 //  Creation:   August 16, 2005
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 

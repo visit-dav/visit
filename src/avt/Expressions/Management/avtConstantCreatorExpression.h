@@ -41,6 +41,9 @@
 //
 //    Kevin Griffin, Wed Aug 17 19:40:04 PDT 2016
 //    Define method "SetFilterCreatesSingleton".
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 

@@ -27,6 +27,8 @@ class     vtkDataArray;
 //  Creation:   Tue Jan  8 16:27:49 PST 2008
 //
 //  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
