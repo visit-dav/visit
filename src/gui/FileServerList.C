@@ -1796,6 +1796,9 @@ FileServerList::QualifiedName(const string &fileName)
 //   If there is a real host profile and it uses a gateway, check the gateway
 //   for validity instead of the remote host.
 //
+//   Eric Brugger, Mon Oct 28 14:47:44 PDT 2024
+//   Skip the check of the validity of the remote host if using a gateway.
+//
 // ****************************************************************************
 
 #include <RemoteProcess.h>
@@ -1849,9 +1852,9 @@ FileServerList::StartServer(const string &host)
         // complexities of the real profile in the viewer.
         MachineProfile profile(MachineProfile::Default(host));
 
-        // Determine which host we'll be connecting to and see if that host is
-        // valid. We might be connecting via a gateway.
-        std::string connectionHost(host);
+        // Determine if the host we'll be connecting to is valid if not
+	// using a gateway.
+	bool usingGateway = false;
         MachineProfile *actualProfile = NULL;
         if(profiles != NULL)
             actualProfile = profiles->GetMachineProfileForHost(host);
@@ -1859,12 +1862,12 @@ FileServerList::StartServer(const string &host)
         {
             if(actualProfile->GetUseGateway() && !actualProfile->GetGatewayHost().empty())
             {
-                connectionHost = actualProfile->GetGatewayHost();
+                usingGateway = true;
             }
         }
-        if(!CheckHostValidity(connectionHost))
+        if(!usingGateway && !CheckHostValidity(host))
         {
-            EXCEPTION1(BadHostException, connectionHost);
+            EXCEPTION1(BadHostException, host);
         }
 
         info->server->Create(profile, connectCallback, connectCallbackData);
