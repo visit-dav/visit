@@ -96,8 +96,8 @@ avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in,
 //
 //  Purpose:
 //      We provide a more complicated calculation that takes ghost data into account.
-//      The way this works is it takes a function called getPointValid() that is 
-//      defined based on if we are working with zonal or nodal data. getPointValid()
+//      The way this works is it takes a function called getNodeOrCellValid() that is 
+//      defined based on if we are working with zonal or nodal data. getNodeOrCellValid()
 //      itself takes two pointers and an index called tuple_id.
 //
 //  Arguments:
@@ -106,6 +106,19 @@ avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in,
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      getNodeOrCellValid A function that takes a vtkDataArray*, and int*, and
+//                    an int, and returns an int. This function is used to test
+//                    if a given zone or node is ghosted out. A value of zero
+//                    means it should be counted, which was chosen because
+//                    a ghost value of zero means no the zone or node is not
+//                    ghosted. For zonal variables, the caller passes a 
+//                    getNodeOrCellValid function that examines the ghost zones
+//                    vtkDataArray array. For nodal variables, the caller 
+//                    passes a getNodeOrCellValid function that examines the
+//                    nodeShouldBeIgnoredPtr, which has an entry for each node.
+//      ghostZones    A pointer to the ghost zones array. Could be null.
+//      nodeShouldBeIgnoredPtr A pointer to an array we constructed that 
+//                    records if each node is ghosted out or not.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24
@@ -119,7 +132,7 @@ avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
                                             vtkDataArray *out,
                                             int ncomponents,
                                             int ntuples,
-                                            int (getPointValid)(vtkDataArray *, int *, int),
+                                            int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                             vtkDataArray *ghostZones,
                                             int *nodeShouldBeIgnoredPtr)
 {
@@ -128,7 +141,7 @@ avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
         double sum = 0;
         for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            if (0 == getPointValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
+            if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
             {
                 const double val = in->GetComponent(tuple_id, comp_id);
                 sum += val;

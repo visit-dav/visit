@@ -42,7 +42,7 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGhostAwareUnaryMath
                                                      int ncomponents, int ntuples);
     virtual void              CalculateWithGhosts(vtkDataArray *in, vtkDataArray *out,
                                                   int ncomponents, int ntuples,
-                                                  int (getPointValid)(vtkDataArray *, int *, int),
+                                                  int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr);
 };

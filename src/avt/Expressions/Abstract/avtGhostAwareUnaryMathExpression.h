@@ -46,7 +46,7 @@ class EXPRESSION_API avtGhostAwareUnaryMathExpression : public avtUnaryMathExpre
                                                      int ncomponents, int ntuples) = 0;
     virtual void              CalculateWithGhosts(vtkDataArray *in, vtkDataArray *out,
                                                   int ncomponents, int ntuples,
-                                                  int (getPointValid)(vtkDataArray *, int *, int),
+                                                  int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr) = 0;
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
