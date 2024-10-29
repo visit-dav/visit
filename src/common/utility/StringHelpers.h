@@ -92,7 +92,8 @@ namespace StringHelpers
                                          char const *str_b,
                                          size_t n = 0);
     bool UTILITY_API CaseInsensitiveEqual(const std::string &str_a,
-                                         const std::string &str_b);
+                                         const std::string &str_b,
+                                         size_t n = 0);
     std::string UTILITY_API UpperCase(const std::string &src);
 
     bool UTILITY_API StringToInt(const std::string &, int &);
