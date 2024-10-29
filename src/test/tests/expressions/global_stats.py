@@ -8,12 +8,16 @@
 #  Programmer: Justin Privitera
 #  Date:       10/25/24
 # ----------------------------------------------------------------------------
-
-
-# TODO need tests for all 7 kinds of stats
-# for both zonal and nodal
-# for a file w/ ghosts and w/o
-#  |--> so we need 28 tests
+#  Description:
+# 
+# global statistics expressions are sensitive to ghost zones/nodes, so we test
+# with two datasets - curv3d.silo which has no ghosts, and curv2d.silo which
+# has ghosts. For each one, we look at the variables d (zonal) and u (nodal),
+# since zonal and nodal variables have slightly different paths for global 
+# stats expressions. For each variable, we look at each of the statistics on 
+# offer.
+# 
+# ----------------------------------------------------------------------------
 
 # no ghosts in curv3d
 curv3d_stats = {}
@@ -38,8 +42,32 @@ curv3d_stats["std_u"] = 0.740144 # standard deviation
 curv3d_stats["var_u"] = 0.547814 # variance
 curv3d_stats["rms_u"] = 0.740148 # root mean square
 
+# yes ghosts in curv2d
+curv2d_stats = {}
+
+# zonal stats
+curv2d_stats["max_d"] = 4.8808
+curv2d_stats["min_d"] = 2.1096
+curv2d_stats["num_d"] = 988 # num zones
+curv2d_stats["sum_d"] = 3453.2609271746946
+curv2d_stats["avg_d"] = 3.4952
+curv2d_stats["std_d"] = 0.821312 # standard deviation
+curv2d_stats["var_d"] = 0.674554 # variance
+curv2d_stats["rms_d"] = 3.5904 # root mean square
+
+# nodal stats
+curv2d_stats["max_u"] = 1
+curv2d_stats["min_u"] = -1
+curv2d_stats["num_u"] = 1053 # num nodes
+curv2d_stats["sum_u"] = 67.70071411132812
+curv2d_stats["avg_u"] = 0.0642932
+curv2d_stats["std_u"] = 0.7122947573661804 # standard deviation
+curv2d_stats["var_u"] = 0.507364 # variance
+curv2d_stats["rms_u"] = 0.715191 # root mean square
+
 baseline_stats = {}
 baseline_stats["curvmesh3d"] = curv3d_stats
+baseline_stats["curvmesh2d"] = curv2d_stats
 
 def test_stat(shortstatname, longstatname, meshname, varname, vartype):
 	AddPlot("Pseudocolor", shortstatname + "_" + varname + "_" + vartype)
@@ -91,10 +119,11 @@ OpenDatabase(silo_data_path("curv3d.silo"))
 test_stats_for_var("curvmesh3d", "d", "zonal") # zonal var
 test_stats_for_var("curvmesh3d", "u", "nodal") # nodal var
 CloseDatabase(silo_data_path("curv3d.silo"))
-# # yes ghosts
-# OpenDatabase(silo_data_path("curv2d.silo"))
-# test_stats_for_var("curvmesh2d", "d", "zonal") # zonal var
-# test_stats_for_var("curvmesh2d", "u", "nodal") # nodal var
-# CloseDatabase(silo_data_path("curv2d.silo"))
+
+# yes ghosts
+OpenDatabase(silo_data_path("curv2d.silo"))
+test_stats_for_var("curvmesh2d", "d", "zonal") # zonal var
+test_stats_for_var("curvmesh2d", "u", "nodal") # nodal var
+CloseDatabase(silo_data_path("curv2d.silo"))
 
 Exit()
