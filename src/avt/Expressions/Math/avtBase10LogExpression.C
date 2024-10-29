@@ -73,6 +73,7 @@ avtBase10LogExpression::~avtBase10LogExpression()
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Sean Ahern          <Header added by Hank Childs>
 //  Creation:   November 15, 2002   <Header creation date>
@@ -85,12 +86,15 @@ avtBase10LogExpression::~avtBase10LogExpression()
 //    Kathleen Bonnell, Fri May  8 13:01:58 PDT 2009
 //    Added support for a default value to be used as a return value for
 //    non-positive values. Upated exception message.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 
 void
 avtBase10LogExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                    int ncomponents, int ntuples)
+                                    int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     for (int i = 0 ; i < ntuples ; i++)
     {
