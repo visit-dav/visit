@@ -18,7 +18,8 @@ class     vtkDataArray;
 //  Class: avtGlobalRMSExpression
 //
 //  Purpose:
-//      TODO
+//      An expression that calculates the root mean square across the entire 
+//      mesh and paints the result on every node or zone.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24

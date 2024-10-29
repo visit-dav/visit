@@ -18,7 +18,8 @@ class     vtkDataArray;
 //  Class: avtGlobalAvgExpression
 //
 //  Purpose:
-//      TODO
+//      An expression that calculates the average across the entire mesh and
+//      paints the result on every node or zone.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24

@@ -18,7 +18,8 @@ class     vtkDataArray;
 //  Class: avtGlobalMinExpression
 //
 //  Purpose:
-//      TODO
+//      An expression that calculates the minimum across the entire mesh and
+//      paints the result on every node or zone.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24

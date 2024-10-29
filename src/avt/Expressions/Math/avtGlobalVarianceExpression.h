@@ -18,7 +18,8 @@ class     vtkDataArray;
 //  Class: avtGlobalVarianceExpression
 //
 //  Purpose:
-//      TODO
+//      An expression that calculates the variance across the entire mesh and
+//      paints the result on every node or zone.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24

@@ -18,7 +18,8 @@ class     vtkDataArray;
 //  Class: avtGlobalStdDevExpression
 //
 //  Purpose:
-//      TODO
+//      An expression that calculates the standard deviation across the entire 
+//      mesh and paints the result on every node or zone.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24
