@@ -403,6 +403,18 @@ def test7(datapath):
     DeleteAllPlots()
     CloseDatabase(pjoin(datapath,"singleWedge18.xmf"))
 
+def test8(datapath):
+    TestSection("Curves")
+    OpenDatabase(pjoin(datapath,"curve.xmf"))
+    AddPlot("Curve", "XYCurve/Node Centered Values")
+    ca = CurveAttributes()
+    ca.showLabels = 0
+    SetPlotOptions(ca)
+    DrawPlots()
+    Test("xdmf_8_01")
+    DeleteAllPlots()
+    CloseDatabase(pjoin(datapath,"curve.xmf"))
+
 def main():
     datapath = data_path("xdmf_test_data")
     test0(datapath)
@@ -414,6 +426,7 @@ def main():
 
     test6(datapath)
     test7(datapath)
+    test8(datapath)
 
 main()
 Exit()

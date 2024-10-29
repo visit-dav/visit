@@ -4501,25 +4501,24 @@ ViewerWindowManager::UpdateColorTable(const std::string &ctName)
 void
 ViewerWindowManager::SetWindowLayout(const int windowLayout)
 {
-
-    // Stop gap to avert blank viewer windows (#18090)
-    // There is associated logic in rpc/ViewerMethods::DrawPlots which will
-    // trigger this logic twice upon **FIRST** draw. This causes window to
-    // repaint and not be blank. Attempts to use SetWindowSize() also fixed
-    // the blank window issue but due to internal inconsistency in what
-    // VisIt thinks the window size actually is failed to return the window
-    // to its original size.
+    // Stop gap to avert blank viewer windows (#18090). There is associated
+    // logic in rpc/ViewerMethods::DrawPlots which will trigger this logic upon
+    // **FIRST** draw. The goal is to cause all windows to repaint and not be
+    // blank.
 #if defined(__APPLE__)
-    static size_t count = 0;
-    if (windowLayout == -5 && count < 2)
+    int const DiddleSizeToFixBlankStartup = -5;
+    if (windowLayout == DiddleSizeToFixBlankStartup)
     {
-        static int origlo = layout;
-        static int tmplo = layout==2?1:2;
-        if (count == 0)
-            SetWindowLayout(tmplo);
-        else if (count == 1)
-            SetWindowLayout(origlo);
-        count++;
+        for (int iWindow = 0; iWindow < maxWindows; iWindow++)
+        {
+            if (windows[iWindow] == 0)
+                continue;
+
+            int origWidth, origHeight;
+            windows[iWindow]->GetWindowSize(origWidth, origHeight);
+            windows[iWindow]->SetSize(origWidth-1, origHeight);
+            windows[iWindow]->SetSize(origWidth, origHeight);
+        }
         return;
     }
 #endif

@@ -45,6 +45,8 @@
 //  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Send QueryAttributes to GetTimeCurveSpecs. Add outputLabel.
 //
 // ****************************************************************************
 
@@ -75,9 +77,10 @@ avtDirectDatabaseQOTFilter::avtDirectDatabaseQOTFilter(const AttributeGroup *a)
             YLabel = qatts.GetName();
         }
 
-        const MapNode &tqs = query->GetTimeCurveSpecs();
+        const MapNode &tqs = query->GetTimeCurveSpecs(&qatts);
         useTimeForXAxis    = tqs.GetEntry("useTimeForXAxis")->AsBool();
         useVarForYAxis     = tqs.GetEntry("useVarForYAxis")->AsBool();
+        outputLabel        = tqs.GetEntry("outputCurveLabel")->AsString();
         delete query;
     }
     CATCHALL
@@ -795,6 +798,10 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
 //    When creating a multi-curve dataset, make sure that we are
 //    adding the variables in the order requested by the query.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Use variableName, if appropriate, for the single-curve
+//    new avtDataTree label.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -859,7 +866,13 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
         scalars->ShallowCopy(curve);
         rgrid->GetPointData()->SetScalars(scalars);
 
-        avtDataTree_p tree = new avtDataTree(rgrid, 0);
+        std::string label = YLabel;
+        if(!outputLabel.empty())
+            label = outputLabel;
+        else if(useVarForYAxis)
+            label = GetOutput()->GetInfo().GetAttributes().GetVariableName();
+        std::replace(label.begin(), label.end(), ' ', '_');
+        avtDataTree_p tree = new avtDataTree(rgrid, 0, label);
 
         if (rgrid != NULL)
         {

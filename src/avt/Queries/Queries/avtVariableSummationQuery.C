@@ -23,8 +23,8 @@ using     std::string;
 // ****************************************************************************
 //  Method: avtVariableSummationQuery constructor
 //
-//  Programmer: Hank Childs 
-//  Creation:   February 3, 2004 
+//  Programmer: Hank Childs
+//  Creation:   February 3, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
@@ -43,8 +43,8 @@ avtVariableSummationQuery::avtVariableSummationQuery() : avtSummationQuery()
 // ****************************************************************************
 //  Method: avtVariableSummationQuery destructor
 //
-//  Programmer: Hank Childs 
-//  Creation:   February 3, 2004 
+//  Programmer: Hank Childs
+//  Creation:   February 3, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
@@ -76,13 +76,13 @@ avtVariableSummationQuery::~avtVariableSummationQuery()
 //    Kathleen Bonnell, Wed Jul 28 08:26:05 PDT 2004
 //    Retrieve variable's units, if available.
 //
-//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
 //    Remove TRY-CATCH block in favor of testing for ValidVariable.
 //
-//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008 
+//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008
 //    Retrieve the varname from the dataAtts instead of DataRequest, as
 //    DataRequest may have the wrong value based on other pipelines sharing
-//    the same source. 
+//    the same source.
 //
 //    Kathleen Bonnell, Tue Jul 29 10:05:39 PDT 2008
 //    Check for ValidActiveVariable before retrieving from DatAtts.  Revert
@@ -133,7 +133,7 @@ avtVariableSummationQuery::VerifyInput(void)
 //  Purpose:
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   February 24, 2006 
+//  Creation:   February 24, 2006
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu May 11 10:32:54 PDT 2006
@@ -154,19 +154,19 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         cent = datts.GetCentering(variableName.c_str());
         cellData = (cent != AVT_NODECENT);
     }
-    else 
+    else
     {
         // we can't determine the centering, assume zone-centered
         cellData = true;
     }
 
-    int bDoCustomFiltering = dval.SubdivisionOccurred() || 
+    int bDoCustomFiltering = dval.SubdivisionOccurred() ||
                              ( cellData && !dval.GetOriginalZonesIntact()) ||
                              (!cellData && !dval.GetZonesPreserved());
-#ifdef PARALLEL    
+#ifdef PARALLEL
     int bAnyDoCustomFiltering;
-    
-    MPI_Allreduce(&bDoCustomFiltering, &bAnyDoCustomFiltering, 1, 
+
+    MPI_Allreduce(&bDoCustomFiltering, &bAnyDoCustomFiltering, 1,
                   MPI_INT, MPI_LOR, VISIT_MPI_COMM);
     bDoCustomFiltering = bAnyDoCustomFiltering;
 #endif
@@ -183,7 +183,7 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         avtDataRequest_p oldSpec = inData->GetOriginatingSource()->
             GetGeneralContract()->GetDataRequest();
 
-        avtDataRequest_p newDS = new 
+        avtDataRequest_p newDS = new
             avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
@@ -195,13 +195,13 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         {
             newDS->TurnNodeNumbersOn();
         }
-        else 
+        else
         {
             newDS->TurnZoneNumbersOn();
             newDS->TurnNodeNumbersOn();
         }
 
-        avtContract_p contract = 
+        avtContract_p contract =
             new avtContract(newDS, queryAtts.GetPipeIndex());
 
         avtDataObject_p temp;
@@ -211,8 +211,30 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         rv->Update(contract);
         return rv;
     }
-    else 
+    else
     {
         return avtSummationQuery::ApplyFilters(inData);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtVariableSummationQuery::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Override default TimeCurveSpecs
+//
+//  Programmer:  Kathleen Bigags
+//  Creation:    Sep 11, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtVariableSummationQuery::GetTimeCurveSpecs(const QueryAttributes *qa)
+{
+    timeCurveSpecs["outputCurveLabel"] = "Sum_" + qa->GetVariables()[0];
+    return timeCurveSpecs;
+}
+

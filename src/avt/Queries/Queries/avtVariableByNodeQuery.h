@@ -22,7 +22,7 @@ class vtkDataSet;
 //  Class: avtVariableByNodeQuery
 //
 //  Purpose:
-//    A query that retrieves var information about a mesh given a 
+//    A query that retrieves var information about a mesh given a
 //    particular domain and node number.
 //
 //  Programmer: Kathleen Bonnell
@@ -41,6 +41,9 @@ class vtkDataSet;
 //    Kathleen Biagas, Mon Jun 20 10:32:53 PDT 2011
 //    Added SetInputParams, removed SetNumVars, added node, domain.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Added QueryAttributes argument to GetTimeCurveSpecs.
+//
 // ****************************************************************************
 
 class QUERY_API avtVariableByNodeQuery : public avtPickByNodeQuery
@@ -50,17 +53,17 @@ class QUERY_API avtVariableByNodeQuery : public avtPickByNodeQuery
     virtual                  ~avtVariableByNodeQuery();
 
 
-    virtual const char       *GetType(void)   
+    virtual const char       *GetType(void)
                               { return "avtVariableByNodeQuery"; }
     virtual const char       *GetDescription(void)
                               { return "Retrieving var information on mesh."; }
 
     virtual void              SetInputParams(const MapNode &);
 
-    virtual const MapNode    &GetTimeCurveSpecs(); 
+    const MapNode            &GetTimeCurveSpecs(const QueryAttributes *) override;
 
   protected:
-    virtual void              Preparation(const avtDataAttributes &); 
+    virtual void              Preparation(const avtDataAttributes &);
     virtual void              PostExecute(void);
 
     int node;

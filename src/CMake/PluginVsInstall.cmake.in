@@ -123,6 +123,9 @@
 #   Add separate RUNTIME_OUTPUT_DIRECTORY entries for each Configuration
 #   type on Windows (VISIT_INSTALL_PLUGINS).
 #
+#   Kathleen Biagas, Wed Sep 18, 2024
+#   Added HAVE_LIBVTKM.
+# 
 #****************************************************************************/
 
 ##
@@ -360,6 +363,7 @@ set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr/OpenEXR)
 set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 
+set(HAVE_LIBVTKM                 @HAVE_LIBVTKM@)
 set(VTKm_INCLUDE_DIRS  @filtered_VTKm_INCLUDE_DIRS@)
 
 include(${VISIT_ROOT_INCLUDE_DIR}/VisItMacros.cmake)

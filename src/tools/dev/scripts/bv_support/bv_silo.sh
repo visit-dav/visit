@@ -47,7 +47,6 @@ function bv_silo_info
     export SILO_VERSION=${SILO_VERSION:-"4.10.2"}
     export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
-    export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
     export SILO_SHA256_CHECKSUM="3af87e5f0608a69849c00eb7c73b11f8422fa36903dd14610584506e7f68e638"
 }

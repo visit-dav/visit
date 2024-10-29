@@ -16,7 +16,15 @@ Examples of *config site* files for a variety of machines VisIt_ developers dire
 
 .. code:: bash
 
-  /path/to/cmake ../src/ -DVISIT_CONFIG_SITE="/path/to/your_computer.cmake"
+  /path/to/cmake -DVISIT_CONFIG_SITE="/path/to/your_computer.cmake" ../src
+  make -j
+
+For cases where a *config-site* file will not be used, this must be explicitly indicated by passing ``-DVISIT_CONFIG_SITE=NONE``.
+This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command-line to CMake itself instead of a *config-site* file.
+
+.. code:: bash
+
+  /path/to/cmake -C /path/to/CMakeCache.txt -DVISIT_CONFIG_SITE=NONE ../src
   make -j
 
 .. _CMake Variables:

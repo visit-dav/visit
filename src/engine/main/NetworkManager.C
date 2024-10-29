@@ -6731,6 +6731,10 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Alister Maguire, Mon May 18 16:06:51 PDT 2020
 //    If OSPRay is enabled, pass the ospray settings to the render window.
 //
+//    Eric Brugger, Mon Sep  2 16:59:47 PDT 2024
+//    Disable ordered compositing since it doesn't work with VTK9 because
+//    the alpha values left in the frame buffer are incorrect.
+//
 // ****************************************************************************
 
 void
@@ -6939,9 +6943,13 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
         // which we need to get from it's output are valid
         tact->SetUpActor();
 
+	// We just leave ordered compositing false since the alpha
+	// values left in the frame buffer are not correct with VTK9.
+#if 0
         renderState.orderComposite = viswin->GetOrderComposite() &&
                 tact->ComputeCompositingOrder(viswin->GetCamera(),
                     renderState.compositeOrder);
+#endif
     }
 
     // do all procs need the composited image

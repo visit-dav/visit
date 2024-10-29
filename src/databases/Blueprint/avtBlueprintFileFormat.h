@@ -25,6 +25,7 @@
 #include <map>
 
 class     avtMaterial;
+class     avtSpecies;
 class     DBOptionsAttributes;
 
 // ****************************************************************************
@@ -53,6 +54,9 @@ class     DBOptionsAttributes;
 //
 //    Cyrus Harrison, Thu Nov  2 11:25:15 PDT 2023
 //    Added AugmentBlueprintIndex helper.
+// 
+//    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
+//    Added support for species sets.
 // ****************************************************************************
 
 class avtBlueprintTreeCache;
@@ -114,6 +118,10 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                                          std::string const &mesh_name,
                                                          const conduit::Node &n_mesh_info);
 
+    void                   AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
+                                                       std::string const &mesh_name,
+                                                       const conduit::Node &n_mesh_info);
+
     void                   ReadRootFile();
 
     void                   ReadRootIndexItems(const std::string &root_fname,
@@ -140,11 +148,17 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                                const std::string &abs_matsetname,
                                                conduit::Node &out);
 
+    void                   ReadBlueprintSpecset(int domain,
+                                                const std::string &abs_matsetname,
+                                                conduit::Node &out);
+
     void                   FetchMeshAndTopoNames(const std::string &name_name_full,
                                                  std::string &mesh_name,
                                                  std::string &topo_name);
 
     avtMaterial           *GetMaterial(int domain, const char *mat_name);
+
+    avtSpecies            *GetSpecies(int domain, const char *spec_name);
 
     const conduit::Node   *GetBlueprintIndexForField(const conduit::Node &fields,
                                                      const std::string &abs_varname) const;
@@ -159,6 +173,7 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
     conduit::Node          m_mesh_and_topo_info;
     conduit::Node          m_matset_info;
+    conduit::Node          m_specset_info;
 
     std::map<std::string,bool> m_mfem_mesh_map;
     std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;

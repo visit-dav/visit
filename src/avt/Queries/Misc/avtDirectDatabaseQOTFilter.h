@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtDirectDatabaseQOTFilter.h                            //
+//                   avtDirectDatabaseQOTFilter.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_DIRECT_DATABASE_QOT_FILTER_H
@@ -47,10 +47,12 @@ class vtkUnstructuredGrid;
 //  Creation:   Tue Sep 24 13:46:56 MST 2019
 //
 //  Modifications:
-//
 //    Alister Maguire, Thu Nov  5 10:00:31 PST 2020
-//    Changed VerifyAndRefineTimesteps to VerifyAndRefinePointTimesteps
+//    Changed VerifyAndRefineTimesteps to VerifyAndRefinePointTimestep
 //    and added VerifyAndRefineArrayTimesteps.
+//
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add outputLabel.
 //
 // ****************************************************************************
 
@@ -63,9 +65,9 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
     static avtFilter        *Create(const AttributeGroup*);
 
     virtual const char      *GetType(void)
-                               { return "avtDirectDatabaseQOTFilter"; };
+                               { return "avtDirectDatabaseQOTFilter"; }
     virtual const char      *GetDescription(void)
-                               { return "Querying over Time"; };
+                               { return "Querying over Time"; }
 
   protected:
     bool                     success;
@@ -73,12 +75,13 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
     bool                     useTimeForXAxis;
     bool                     useVarForYAxis;
     std::string              YLabel;
+    std::string              outputLabel;
 
     virtual void             Execute(void);
     virtual void             UpdateDataObjectInfo(void);
 
     virtual bool             ExecutionSuccessful(void)
-                               { return success; };
+                               { return success; }
 
     vtkUnstructuredGrid     *VerifyAndRefinePointTimesteps(
                                  vtkUnstructuredGrid *);

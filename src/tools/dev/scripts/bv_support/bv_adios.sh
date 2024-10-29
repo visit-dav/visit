@@ -1,6 +1,5 @@
 function bv_adios_initialize
 {
-    export FORCE_ADIOS="no"
     export DO_ADIOS="no"
     export USE_SYSTEM_ADIOS="no"
     add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
@@ -9,10 +8,6 @@ function bv_adios_initialize
 
 function bv_adios_enable
 {
-    if [[ "$1" == "force" ]]; then
-        FORCE_ADIOS="yes"
-    fi
-
     DO_ADIOS="yes"
 }
 
@@ -58,7 +53,7 @@ function bv_adios_depends_on
 
 function bv_adios_initialize_vars
 {
-    if [[ "$FORCE_ADIOS" == "no" && "$parallel" == "no" ]]; then
+    if [[ "$parallel" == "no" ]]; then
         bv_adios_disable
         warn "Adios requested by default but the parallel flag has not been set. Adios will not be built."
         return
@@ -74,7 +69,6 @@ function bv_adios_info
     export ADIOS_VERSION=${ADIOS_VERSION:-"1.13.1"}
     export ADIOS_FILE=${ADIOS_FILE:-"adios-${ADIOS_VERSION}.tar.gz"}
     export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"${ADIOS_VERSION}"}
-    export ADIOS_URL=${ADIOS_URL:-"http://users.nccs.gov/~pnorbert"}
     export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-${ADIOS_VERSION}"}
     export ADIOS_SHA256_CHECKSUM="684096cd7e5a7f6b8859601d4daeb1dfaa416dfc2d9d529158a62df6c5bcd7a0"
 }

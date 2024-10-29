@@ -4,6 +4,8 @@
 
 #*****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Wed Sep 11, 2024
+#   Modified location of p7zip.
 #
 #****************************************************************************
 
@@ -25,7 +27,7 @@ function(visit_create_windows_installer)
                set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
             endif()
             add_custom_command(OUTPUT visit${VISIT_VERSION}.exe
-                COMMAND "${VISIT_WINDOWS_DIR}/MSVC2017/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
+                COMMAND "${VISIT_WINDOWS_DIR}/MSVC2022/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
                 COMMAND ${MAKENSIS}
                         /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                         /DVISIT_WINDOWS_DIR=${VWD_NATIVE}

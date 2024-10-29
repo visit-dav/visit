@@ -17,11 +17,11 @@
 //  Class: avtTrajectoryByNode
 //
 //  Purpose:
-//    A time query that retrieves var information about a mesh given a 
+//    A time query that retrieves var information about a mesh given a
 //    particular domain and node number.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 8, 2005 
+//  Creation:   November 8, 2005
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Jul  8 15:43:15 PDT 2008
@@ -29,6 +29,10 @@
 //
 //    Kathleen Biagas, Tue Jul 26 10:03:11 PDT 2011
 //    Add GetDefaultInputParams.
+//
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Add QueryAttributes argument to GetTimeCurveSpecs.
+//    Addd GetShortDescription.
 //
 // ****************************************************************************
 
@@ -42,13 +46,16 @@ class QUERY_API avtTrajectoryByNode : public avtVariableByNodeQuery
     virtual const char       *GetType(void)   { return "avtTrajectoryByNode"; }
     virtual const char       *GetDescription(void)
                                { return "Retrieving var information on mesh.";}
+    virtual const char       *GetShortDescription(void)
+                              { return "Trajectory"; }
 
-    virtual const MapNode    &GetTimeCurveSpecs(); 
+
+    const MapNode    &GetTimeCurveSpecs(const QueryAttributes *) override;
 
     static void               GetDefaultInputParams(MapNode &);
 
   protected:
-    virtual void              Preparation(const avtDataAttributes &); 
+    virtual void              Preparation(const avtDataAttributes &);
     virtual void              PostExecute(void);
 };
 

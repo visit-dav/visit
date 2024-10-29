@@ -386,6 +386,10 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Replace avtPseudocolorGeometryFilter with avtVertexExtractor and
 //    avtLineGlypher.
 //
+//    Kathleen Biagas, Wed Aug 28, 2024
+//    Apply avtVertexExtractor filter if topologicalDim is 0 and Sphere
+//    imposter glyph type has been requested.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -440,7 +444,8 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
       lineGlypher = NULL;
     }
 
-    if (topoDim != 0 && atts.GetPointType() != Point)
+    if ((topoDim != 0 && atts.GetPointType() != Point) ||
+        (topoDim == 0 && atts.GetPointType() == Sphere))
     {
         vertexExtractor = new avtVertexExtractor();
         vertexExtractor->SetInput(dob);

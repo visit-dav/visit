@@ -27,6 +27,9 @@
 #
 #    Alister Maguire, Fri Mar 26 10:25:08 PDT 2021
 #    Added more tests for derived variables (stress, strain, sand mesh).
+# 
+#    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
+#    Add test for hiding material edge lines.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
@@ -449,6 +452,52 @@ def TestGlobalIntegrationPoint():
     DeleteAllPlots()
     CloseDatabase(db_path)
 
+def TestMaterialEdgeLines():
+    TestSection("Material edge lines")
+
+    db_path = multi_domain_path + "/d3samp6.plt.mili"
+    OpenDatabase(db_path)
+
+    AddPlot("FilledBoundary", "materials1")
+    DrawPlots()
+
+    AddPlot("FilledBoundary", "materials1")
+
+    silr = SILRestriction()
+    silr.SuspendCorrectnessChecking()
+    silr.TurnOffAll()
+    for silSet in (24,29,34,39,44,49,54,59):
+        silr.TurnOnSet(silSet)
+    silr.EnableCorrectnessChecking()
+    SetPlotSILRestriction(silr ,1)
+
+    SetActivePlots(1)
+    FilledBoundaryAtts = FilledBoundaryAttributes()
+    FilledBoundaryAtts.colorType = FilledBoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+    FilledBoundaryAtts.singleColor = (0, 0, 0, 255)
+    FilledBoundaryAtts.wireframe = 1
+    SetPlotOptions(FilledBoundaryAtts)
+
+    SetViewExtentsType(1)
+
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.673534, 0.187326, -0.715025)
+    View3DAtts.focus = (0.75, 0.75, 2.6)
+    View3DAtts.viewUp = (-0.667323, 0.570092, -0.479244)
+    View3DAtts.parallelScale = 1.13358
+    View3DAtts.nearPlane = -2.26716
+    View3DAtts.farPlane = 2.26716
+    View3DAtts.imageZoom = 0.826446
+    SetView3D(View3DAtts)
+
+    DrawPlots()
+
+    Test("mili_hidden_material_edge_lines")
+
+    SetViewExtentsType(0)
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase(db_path)
 
 def Main():
     TestComponentVis()
@@ -467,6 +516,7 @@ def Main():
     TestMultiSubrecRead()
     TestDerivedVariables()
     TestGlobalIntegrationPoint()
+    TestMaterialEdgeLines()
 
 Main()
 Exit()

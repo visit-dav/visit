@@ -18,6 +18,7 @@
 #endif
 
 #include <DebugStream.h>
+#include <StringHelpers.h>
 #include <TimingsManager.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
@@ -40,14 +41,6 @@
 
 using std::string;
 using std::vector; 
-
-#ifndef STREQUAL
-#if defined(_WIN32) 
-#  define STREQUAL(a,b)              stricmp(a,b)
-#else
-#  define STREQUAL(a,b)              strcasecmp(a,b)
-#endif
-#endif
 
 #define DOTIMING 0
 #if DOTIMING
@@ -259,51 +252,51 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, const DBOptions
         {
           SkipToEndOfLine( f, false );
         }
-      else if (STREQUAL("gridfiles:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("gridfiles:", tag.c_str()))
         {
           f >> gridTemplate;
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("datafiles:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("datafiles:", tag.c_str()))
         {
           f >> fileTemplate;
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("domainsize:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("domainsize:", tag.c_str()))
         {
           f >> iGlobalDim[0] >> iGlobalDim[1] >> iGlobalDim[2];
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("blocksize:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("blocksize:", tag.c_str()))
         {
           f >> iBlockSize[0] >> iBlockSize[1] >> iBlockSize[2];
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("interiorsize:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("interiorsize:", tag.c_str()))
         {
           f >> iInteriorSize[0] >> iInteriorSize[1] >> iInteriorSize[2];
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("bndrysize:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("bndrysize:", tag.c_str()))
         {
           f >> iBoundarySize[0] >> iBoundarySize[1] >> iBoundarySize[2];
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("origin:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("origin:", tag.c_str()))
         {
           fOrigin[0] = GetFortranDouble(f);
           fOrigin[1] = GetFortranDouble(f);
           fOrigin[2] = GetFortranDouble(f);
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("spacing:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("spacing:", tag.c_str()))
         {
           fStride[0] = GetFortranDouble(f);
           fStride[1] = GetFortranDouble(f);
           fStride[2] = GetFortranDouble(f);
           SkipToEndOfLine( f );
         }
-      else if (STREQUAL("variables:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("variables:", tag.c_str()))
         {
           int nVars = 0;
           f >> nVars;
@@ -326,7 +319,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, const DBOptions
               SkipToEndOfLine( f );
             }
         }
-      else if (STREQUAL("materials:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("materials:", tag.c_str()))
         {
           int nMats = 0;
           f >> nMats;
@@ -339,7 +332,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, const DBOptions
               SkipToEndOfLine( f, false );
             }
         }
-      else if (STREQUAL("timesteps:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("timesteps:", tag.c_str()))
         {
           int nDumps = 0;
           f >> nDumps;
@@ -355,7 +348,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, const DBOptions
               SkipToEndOfLine( f );
             }
         }
-      else if (STREQUAL("fileorder:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("fileorder:", tag.c_str()))
         {
           //order will be some permutation of xyz or XYZ, or YZ, xy, etc.
           string  order;
@@ -377,7 +370,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, const DBOptions
           if (order.size()==2)
             iFileOrder[2] = 3 - (iFileOrder[0]+iFileOrder[1]);
         }
-      else if (STREQUAL("curvilinear:", tag.c_str())==0)
+      else if (StringHelpers::CaseInsensitiveEqual("curvilinear:", tag.c_str()))
         {
           string  isCurved;
           f >> isCurved;

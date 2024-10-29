@@ -45,6 +45,11 @@
 #   QWT is now optional, so make StripChart classes dependent upon
 #   it being found.
 #
+#   Kathleen Biagas, Tue Sep 17, 2024
+#   Add QvisStripChartMgr.C QvisStripChartTabWidget.C back to the build
+#   even if QWT isn't found. This will preserve the ability for simulations
+#   to use the StripChart callbacks and not crash.
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -185,6 +190,8 @@ QvisSimulationMessageWindow.C
 QvisSimulationWindow.C
 QvisSourceManagerWidget.C
 QvisSpectrumBar.C
+QvisStripChartMgr.C
+QvisStripChartTabWidget.C
 QvisSubsetPanelItem.C
 QvisSubsetPanelWidget.C
 QvisSubsetWindow.C
@@ -211,9 +218,7 @@ mini3D.C
 
 if(QWT_FOUND)
     list(APPEND GUILIB_SOURCES
-        QvisStripChart.C
-        QvisStripChartMgr.C
-        QvisStripChartTabWidget.C)
+        QvisStripChart.C)
 endif()
 
 IF (NOT WIN32)

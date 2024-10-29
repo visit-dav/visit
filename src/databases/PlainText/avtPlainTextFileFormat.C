@@ -34,22 +34,6 @@
 using     std::string;
 using     std::vector;
 
-string
-TrimLeadingandTrailingWhitespace(string str)
-{
-    size_t start = str.find_first_not_of(" \t");
-    size_t end = str.find_last_not_of(" \t");
-    size_t range = end - start + 1;
-    if (start == string::npos || range <= 1)
-    {
-        static size_t cnt = 0;
-        char tmp[16];
-        snprintf(tmp, sizeof(tmp), "unknown_%zu", cnt ++);
-        return tmp;
-    }
-    return str.substr(start, range);
-}
-
 // ****************************************************************************
 //  Method: avtPlainTextFileFormat constructor
 //
@@ -479,6 +463,11 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //    to remove whitespace from variable names
 //    as they are read.
 // 
+//    Justin Privitera, Fri Sep 27 15:03:48 PDT 2024
+//    Made TrimLeadingandTrailingWhitespace a lambda and moved it to this 
+//    function, cleaned it up and fixed a bug it had where it didn't accept
+//    variables with a single character name.
+// 
 // ****************************************************************************
 
 void
@@ -516,6 +505,21 @@ avtPlainTextFileFormat::ReadFile()
         if (*p == ',')
             comma = true;
 
+    auto trimLeadingandTrailingWhitespace = [](std::string str) -> std::string
+    {
+        const size_t start = str.find_first_not_of(" \t");
+        const size_t end = str.find_last_not_of(" \t");
+        const size_t range = end - start + 1;
+        if (start == string::npos || range < 1)
+        {
+            static int count = 0;
+            std::stringstream tmp;
+            tmp << "unknown_" << count;
+            return tmp.str();
+        }
+        return str.substr(start, range);
+    };
+
     while (in())
     {
         int len = (int)strlen(buff);
@@ -536,7 +540,7 @@ avtPlainTextFileFormat::ReadFile()
                 if (firstRowIsHeader && firstRow)
                 {
                     variableNames.push_back(
-                        TrimLeadingandTrailingWhitespace(start));
+                        trimLeadingandTrailingWhitespace(start));
                 }
                 else
                 {
@@ -573,7 +577,7 @@ avtPlainTextFileFormat::ReadFile()
                     if (firstRowIsHeader && firstRow)
                     {
                         variableNames.push_back(
-                            TrimLeadingandTrailingWhitespace(start));
+                            trimLeadingandTrailingWhitespace(start));
                     }
                     else
                     {

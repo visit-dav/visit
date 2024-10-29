@@ -1,0 +1,491 @@
+#!/bin/sh
+set -e
+#-----------------------------------------------------------------------
+#
+# VISIT-INSTALL-RUN - Install the visit distributions.
+#
+# Author: Eric Brugger
+# Date:   October 27, 2000
+#
+# Usage:
+#    visit-install-run [-<machine name>] -v <version>
+#
+# Modifications from visit-install-open:
+#   Brad Whitlock, Tue Mar 7 14:08:59 PST 2006
+#   Added -b bank to the visit-install invokations.
+#
+#   Hank Childs, Wed Oct 17 16:25:14 PDT 2007
+#   Add a subject line to the status e-mail.
+#
+#   Hank Childs, Sat May  2 13:26:51 CDT 2009
+#   Change config file to "llnl_open".
+#
+#   Eric Brugger, Fri Nov  5 15:22:54 PDT 2010
+#   I replaced yana with aztec.
+#
+#   Eric Brugger, Mon May 16 14:53:23 PDT 2011
+#   I added glory and redsky.
+#
+#   Eric Brugger, Fri Aug  5 09:53:51 PDT 2011
+#   I added kickit.
+#
+#   Eric Brugger, Tue Sep  6 14:13:59 PDT 2011
+#   I added rzzeus.
+#
+#   Brad Whitlock, Wed Oct 12 10:01:07 PDT 2011
+#   Install as llnl_open_cz or llnl_open_rz depending on machine.
+#
+#   Eric Brugger, Mon Jan 23 13:52:00 PST 2012
+#   I added sidious.
+#
+#   Eric Brugger, Thu Mar  1 12:56:56 PST 2012
+#   I added ubuntu1104_64.
+#
+#   Eric Brugger, Thu May  3 08:30:22 PDT 2012
+#   I removed ellipse and xchem.  I modified hoth, kickit, sidious and
+#   aztec for various reasons.  I updated the e-mail addresses.
+#
+#   Eric Brugger, Tue May 15 11:08:05 PDT 2012
+#   I changed the name of the ubuntu 11 executable.
+#
+#   Eric Brugger, Wed Jun 13 08:40:31 PDT 2012
+#   I added atlas and rzthriller.
+#
+#   Eric Brugger, Mon Jul 30 10:21:57 PDT 2012
+#   I replaced atlas with prism.
+#
+#   Eric Brugger, Wed Sep 26 17:11:04 PDT 2012
+#   I deleted prism.
+#
+#   Eric Brugger, Wed Nov 14 10:45:59 PST 2012
+#   I deleted hoth. I made the sidious install off by default. I modified
+#   the kickit installation since it is now a linux-x86_64 system instead
+#   of a linux-intel system.
+#
+#   Eric Brugger, Tue Oct 22 11:11:01 PDT 2013
+#   I removed rzthriller.
+#
+#   Eric Brugger, Wed Dec 10 13:32:49 PST 2014
+#   I added ubuntu1404_64.
+#
+#   Eric Brugger, Thu Feb 19 09:14:29 PST 2015
+#   I removed redsky.
+#
+#   Kathleen Biagas, Thu May  7 09:35:34 PDT 2015
+#   Added vulcan, changed rzuseq bank to wbronze.
+#
+#   Eric Brugger, Thu Sep 24 09:17:41 PDT 2015
+#   I removed sidious.
+#
+#   Eric Brugger, Tue Nov 22 16:23:56 PST 2016
+#   I added quartz.
+#
+#   Eric Brugger, Mon Jan  9 13:50:10 PST 2017
+#   I replaced aztec with surface.
+#
+#   Eric Brugger, Tue Feb  7 10:42:05 PST 2017
+#   I added rztrona.
+#
+#   Eric Brugger, Fri Feb 17 12:16:04 PST 2017
+#   I changed the bank for all the LLNL systems from bdivp to wbronze.
+#
+#   Eric Brugger, Wed Jun 21 11:23:41 PDT 2017
+#   I replaced surface with cab.
+#
+#   Eric Brugger, Fri Sep 22 11:39:17 PDT 2017
+#   I replaced rzzeus with rzalastor.
+#
+#   Eric Brugger, Mon Mar 19 14:21:54 PDT 2018
+#   I removed the modifications to the internallauncher for toss3
+#   systems. I made a change in internallauncher and customlauncher
+#   that made this unnecessary.
+#
+#   Eric Brugger, Tue Apr  3 11:09:51 PDT 2018
+#   I deleted ubuntu1104_64 and added ifyou (Fedora Core 27).
+#
+#   Eric Brugger, Wed Oct 17 16:56:58 PDT 2018
+#   I deleted cab.
+#
+#   Eric Brugger, Fri Nov 30 11:11:41 PST 2018
+#   I added lassen.
+#
+#   Eric Brugger, Fri Dec 14 11:52:47 PST 2018
+#   I updated quartz for 3.0.0b.
+#
+#   Eric Brugger, Mon Feb 25 12:31:14 PST 2019
+#   I updated rztrona for 3.0.0b and removed rzalastor.
+#
+#   Eric Brugger, Mon Mar  4 08:28:54 PST 2019
+#   I added cooley.
+#
+#   Eric Brugger, Tue Mar  5 12:35:11 PST 2019
+#   I added rzansel. I deleted carver and glory.
+#
+#   Eric Brugger, Thu Sep 26 17:28:15 PDT 2019
+#   I removed special logic for installing on toss3 systems. I removed
+#   ifyou and ubuntu1404_64.
+#
+#   Eric Brugger, Mon Jan 13 15:34:55 PST 2020
+#   I removed rzuseq and vulcan.
+#
+#   Eric Brugger, Wed Jun  8 10:42:23 PDT 2022
+#   I added logic to the quartz and rztrona installs to copy libraries
+#   needed to run on toss4 systems.
+#
+#   Eric Brugger, Tue Jun 14 11:55:03 PDT 2022
+#   I removed the logic on the quartz and rztrona installs that copies
+#   the libraries needed by Qt, since those now get included by default.
+#
+#   Eric Brugger, Thu Feb  9 09:53:52 PST 2023
+#   I modified the rztrona and rzansel installs to install versions
+#   built on quartz and lassen. I modified the rztrona install to
+#   copy the darshan library into the VisIt lib directory so that it
+#   would run on toss4.
+#
+#   Eric Brugger, Fri Feb 17 09:36:29 PST 2023
+#   I added poodle and rzalastor.
+#
+#   Eric Brugger, Mon Oct 16 14:58:42 PDT 2023
+#   I removed quartz and renamed rzalastor with rzgenie. I removed
+#   the "-none" option since all the machines are now off by default.
+#   Turning on a machine is now done with -<machine_name> instead of
+#   +<machine_name>.
+#
+#   Cyrus Harrison, Mon Mar 11 12:57:17 PDT 2024
+#   I removed rzgenie, replaced with rzwhippet. Removed rzansel.
+# 
+##################################################################
+# Modifications from visit-install-closed:
+#   Brad Whitlock, Tue Mar 7 14:10:26 PST 2006
+#   I added -b bdivp to the visit-install invokations.
+#
+#   Eric Brugger, Mon Apr  7 13:52:50 PDT 2008
+#   Removed sc install.
+#
+#   Hank Childs, Sat May  2 13:26:51 CDT 2009
+#   Renamed config file to llnl_closed.
+#
+#   Eric Brugger, Fri Nov  5 15:40:02 PDT 2010
+#   Replaced hopi with inca and removed pruple.
+#
+#   Eric Brugger, Wed Jan  5 09:40:00 PST 2011
+#   Added terminator.
+#
+#   Eric Brugger, Fri Mar 25 10:20:49 PDT 2011
+#   Added cielo.
+#
+#   Eric Brugger, Mon Jul 30 10:31:10 PDT 2012
+#   Added gremlin.
+#
+#   Eric Brugger, Wed Mar 20 11:49:58 PDT 2013
+#   Deleted gremlin. Deleted terminator. Replaced termite with hitit.
+#
+#   Eric Brugger, Thu Jun 20 10:37:05 PDT 2013
+#   I modified the hitit install since it is now an x86_64 system instead
+#   of an i686 system.
+#
+#   Eric Brugger, Tue Jul  9 11:23:43 PDT 2013
+#   I changed the gateway node to login to cielo.
+#
+#   Eric Brugger, Mon Nov 21 11:53:53 PST 2016
+#   Deleted cielo. Added trinity.
+#
+#   Eric Brugger, Mon Nov 21 16:43:04 PST 2016
+#   Added jade.
+#
+#   Eric Brugger, Mon Jan  9 13:52:57 PST 2017
+#   I replaced inca with zin.
+#
+#   Eric Brugger, Tue Jan 17 17:12:11 PST 2017
+#   I replaced hitit with winnipeg.
+#
+#   Eric Brugger, Fri Feb 17 12:17:29 PST 2017
+#   I changed the bank for all the LLNL systems from bdivp to wbronze.
+#
+#   Eric Brugger, Mon Mar 19 14:23:59 PDT 2018
+#   I removed the modifications to the internallauncher for toss3 
+#   systems. I made a change in internallauncher and customlauncher
+#   that made this unnecessary.
+#
+#   Eric Brugger, Mon Nov 19 15:54:23 PST 2018
+#   I added shark.
+#
+#   Eric Brugger, Wed Mar 20 10:31:35 PDT 2019
+#   I deleted zin. I added sierra. I updated jade for 3.0.0b.
+#
+#   Eric Brugger, Thu Sep 26 17:32:41 PDT 2019
+#   I removed special logic for installing on toss3 systems.
+#
+#   Eric Brugger, Mon Jan 13 15:24:51 PST 2020
+#   I removed shark.
+#
+#   Eric Brugger, Wed Jun  8 15:19:01 PDT 2022
+#   I added logic to the jade install to copy libraries needed to run
+#   on toss4 systems.
+#
+#   Eric Brugger, Tue Jun 14 11:57:11 PDT 2022
+#   I removed the logic on the jade install that copies the libraries
+#   needed by Qt, since those now get included by default.
+#
+#   Eric Brugger, Wed Nov 29 11:16:25 PST 2023
+#   I removed the "-none" option since all the machines are now off by
+#   default. Turning on a machine is now done with -<machine_name>
+#   instead of +<machine_name>.
+# 
+#   Justin Privitera, Tue Mar 26 13:07:18 PDT 2024
+#   Removed winnipeg, jade, trinity
+#   Added magma and updated sierra.
+# 
+########################################################################
+# Modifications:
+#   Justin Privitera, Wed Sep  4 13:29:51 PDT 2024
+#   The scripts visit-install-open and visit-install-closed have been
+#   combined into a single script called visit-install-run. This script
+#   calls the visit-install script as before.
+# 
+#   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
+#   Completely reworked this script to have no more duplication.
+#
+#-----------------------------------------------------------------------
+
+test=no
+
+user=`whoami`
+result_dir=/usr/workspace/visit/visit/_release_builds/
+
+#
+# Set the user e-mail address.
+#
+emailName=brugger1@llnl.gov
+case $user in
+   biagas2)
+      emailName=biagas2@llnl.gov
+      ;;
+   kbonnell)
+      emailName=biagas2@llnl.gov
+      ;;
+   brugger1)
+      emailName=brugger1@llnl.gov
+      ;;
+   brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   harrison37)
+      emailName=cyrush@llnl.gov
+      ;;
+   cyrush)
+      emailName=cyrush@llnl.gov
+      ;;
+   mcmiller)
+      emailName=miller86@llnl.gov
+      ;;
+   miller)
+      emailName=miller86@llnl.gov
+      ;;
+   justin)
+      emailName=privitera1@llnl.gov
+      ;;
+esac
+
+#
+# Parse the execute line, providing default values for error checking.
+#
+kickit=false
+poodle=false
+lassen=false
+rzwhippet=false
+magma=false
+sierra=false
+
+ver=undefined
+machine_name="unknown"
+architecture="unknown"
+
+#
+# The loop is executed once for each symbol on the execute line.  This means
+# that $1 may be blank for later executions of the loop if any "shift 2"
+# commands are executed.  The variable abc is not used in the loop.
+#
+for abc
+do
+   case $1 in
+      -kickit)
+         kickit=true
+         machine_name="kickit"
+         architecture="linux-x86_64"
+         network="llnl_open"
+         shift
+         ;;
+      -poodle)
+         poodle=true
+         machine_name="poodle"
+         architecture="linux-x86_64"
+         network="llnl_open_cz"
+         shift
+         ;;
+      -lassen)
+         lassen=true
+         machine_name="lassen"
+         architecture="linux-intel"
+         network="llnl_open_cz"
+         shift
+         ;;
+      -rzwhippet)
+         rzwhippet=true
+         machine_name="rzwhippet"
+         architecture="linux-x86_64"
+         network="llnl_open_rz"
+         shift
+         ;;
+      -magma)
+         magma=true
+         machine_name="magma"
+         architecture="linux-x86_64"
+         network="llnl_closed"
+         shift
+         ;;
+      -sierra)
+         sierra=true
+         machine_name="sierra"
+         architecture="linux-intel"
+         network="llnl_closed"
+         shift
+         ;;
+      -v)
+         ver=$2
+         shift 2
+         ;;
+   esac
+done
+
+#
+# Check that the version was provided.
+#
+if [ "$ver" = "undefined" ]
+then
+   echo "Usage: [-<machine name>] -v <version>"
+   echo "Valid machine names:"
+   echo "    kickit poodle lassen rzwhippet magma sierra"
+   exit
+fi
+
+#
+# Check that the visit install script is present.
+#
+if [ ! -e visit-install ]
+then
+   echo "visit-install is missing."
+   exit
+fi
+
+ver2=`echo $ver | tr "." "_"`
+ver=`echo $ver2 | tr "_" "."`
+
+#######################################################
+############ MACHINE SPECIFIC INSTRUCTIONS ############
+#######################################################
+
+#
+# create the install script
+#
+if [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$lassen" = true ] || \
+   [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ]; then
+   rm -f machine_specific_install_script
+   cat <<EOF > machine_specific_install_script
+#!/bin/sh
+set -e
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+
+#
+# Call visit-install
+#
+if [ "$kickit" = true ]; then
+   cat <<EOF >> machine_specific_install_script
+./visit-install -private -c $network -g visit -b wbronze -gw -l \
+$ver ${architecture}-rhel7 /usr/gapps/visit > installlog 2>&1
+EOF
+elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+     [ "$magma" = true ] || [ "$sierra" = true ]; then
+   cat <<EOF >> machine_specific_install_script
+./visit-install -private -c $network -g visit -b wbronze -gw -l \
+$ver ${architecture}-${machine_name} /usr/gapps/visit > installlog 2>&1
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# resultlog
+#
+if [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$magma" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
+   cat <<EOF >> machine_specific_install_script
+rm -f resultlog
+echo ""                                              > resultlog 2>&1
+echo "        install of visit on $machine_name"     >> resultlog 2>&1
+echo "       ----------------------------"           >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+df -k /usr/gapps/visit                               >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/$architecture/bin       >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "The database plugins:"                         >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/$architecture\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.$machine_name
+mv resultlog resultlog.$machine_name
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# email
+#
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ]; then
+   cat <<EOF >> machine_specific_install_script
+mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
+EOF
+elif  [ "$kickit" = true ] || [ "$magma" = true ] || [ "$sierra" = true ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_install_script
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#########################################################################
+
+#
+# Call our machine-specific install script
+#
+if [ "$test" = "no" ]; then
+   if [ "$kickit" = true ]; then
+      cp machine_specific_install_script ${machine_name}_install
+      cp /home/$user/${machine_name}/visitbuild/visit$ver2.${architecture}.tar.gz visit$ver2.${architecture}-rhel7.tar.gz
+      cp /home/$user/${machine_name}/visitbuild/visit$ver2.${architecture}-wmesa.tar.gz visit$ver2.${architecture}-rhel7-wmesa.tar.gz
+      chmod 750 ${machine_name}_install;./${machine_name}_install
+   elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+        [ "$magma" = true ] || [ "$sierra" = true ]; then
+      cp machine_specific_install_script ${machine_name}_install
+      cp $result_dir/visit$ver2.${architecture}-${machine_name}.tar.gz .
+      chmod 750 ${machine_name}_install;./${machine_name}_install
+   else
+      echo "case for $machine_name not implemented. Bailing out."
+      exit
+   fi
+
+   # Clean up
+   rm -f machine_specific_install_script
+fi
