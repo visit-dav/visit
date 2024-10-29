@@ -341,6 +341,7 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //
 //  Arguments:
 //    mesh:        MFEM mesh to be refined
+//    domain:      domain id
 //    lod:         number of refinement steps
 //    new_refine:  switch for using the new LOR or legacy LOR
 //
@@ -379,26 +380,15 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
-    // This logic avoids segfaults
-    if (mesh)
+    if (mesh && 
+        mesh->GetNodes() && 
+        mesh->GetNodes()->FESpace() &&
+        mesh->GetNodes()->FESpace()->FEColl() &&
+        dynamic_cast<const L2_FECollection *>(mesh->GetNodes()->FESpace()->FEColl()))
     {
-        if (mesh->GetNodes())
-        {
-            if (mesh->GetNodes()->FESpace())
-            {
-                if (mesh->GetNodes()->FESpace()->FEColl())
-                {
-                    // Check if the mesh is periodic.
-                    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                                     (mesh->GetNodes()->FESpace()->FEColl());
-                    if (L2_coll)
-                    {
-                        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-                        return LegacyRefineMeshToVTK(mesh, domain, lod);
-                    }
-                }
-            }
-        }
+        // Check if the mesh is periodic.
+        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
