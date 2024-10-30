@@ -380,14 +380,23 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
-    if (mesh && 
-        mesh->GetNodes() && 
-        mesh->GetNodes()->FESpace() &&
-        mesh->GetNodes()->FESpace()->FEColl() &&
-        dynamic_cast<const L2_FECollection *>(mesh->GetNodes()->FESpace()->FEColl()))
+    if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
     {
-        // Check if the mesh is periodic.
-        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        // This if-test condition was taken from here:
+        // https://github.com/orgs/mfem/discussions/4556#discussioncomment-11093211
+
+        // Periodic meshes don't play nicely with the new mesh refinement method.
+        // They actually refine just fine, but what is produced is also periodic.
+        // We need to disconnect the mesh to view it. In lieu of some algorithm
+        // that disconnects the result for us, we choose to fall back to legacy
+        // LOR.
+
+        // The problem is, there is no easy way to tell if a mesh is periodic.
+        // We know that all periodic meshes are L2, but not all L2 meshes are
+        // periodic. So our best bet is to catch all L2 meshes and fall back
+        // to legacy LOR.
+
+        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
@@ -870,26 +879,24 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
-    // This logic avoids segfaults
-    if (mesh)
+    if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
     {
-        if (mesh->GetNodes())
-        {
-            if (mesh->GetNodes()->FESpace())
-            {
-                if (mesh->GetNodes()->FESpace()->FEColl())
-                {
-                    // Check if the mesh is periodic.
-                    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                                     (mesh->GetNodes()->FESpace()->FEColl());
-                    if (L2_coll)
-                    {
-                        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-                        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
-                    }
-                }
-            }
-        }
+        // This if-test condition was taken from here:
+        // https://github.com/orgs/mfem/discussions/4556#discussioncomment-11093211
+
+        // Periodic meshes don't play nicely with the new mesh refinement method.
+        // They actually refine just fine, but what is produced is also periodic.
+        // We need to disconnect the mesh to view it. In lieu of some algorithm
+        // that disconnects the result for us, we choose to fall back to legacy
+        // LOR.
+
+        // The problem is, there is no easy way to tell if a mesh is periodic.
+        // We know that all periodic meshes are L2, but not all L2 meshes are
+        // periodic. So our best bet is to catch all L2 meshes and fall back
+        // to legacy LOR.
+
+        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");

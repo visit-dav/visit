@@ -1196,6 +1196,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
     if(n_mesh_info.has_child("fields"))
     {
+        // This is a set of topology names that MAY BE periodic.
+        // There is no way to check directly, so we are forced to
+        // filter all L2 meshes.
         std::set<std::string> periodic_topos;
 
         // examine mfem basis functions to filter periodic meshes
@@ -1211,7 +1214,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     const std::string basis = n_field["basis"].as_string();
                     if (basis.find("L2_") != std::string::npos)
                     {
-                        // periodic
+                        // COULD BE periodic
                         periodic_topos.insert(topo_name);
                     }
                 }
@@ -1267,8 +1270,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
                 if (periodic_topos.count(var_topo_name) > 0)
                 {
-                    // if this field belongs to a topology that is a periodic mfem mesh
-                    // then we are always nodal
+                    // if this field belongs to a topology that might be a periodic 
+                    // mfem mesh then we are always nodal because we are going to
+                    // fall back to legacy LOR.
                     cent = AVT_NODECENT;
                 }
                 else if (m_new_refine) // if new LOR is turned on
