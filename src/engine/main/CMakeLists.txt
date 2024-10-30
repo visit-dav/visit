@@ -175,15 +175,18 @@ if(VISIT_PARALLEL)
 
     if(WIN32)
         visit_patch_target(NAME engine_par OUTPUT_NAME enginelib_par)
+    else()
+        # This keeps comm's exceptions visible when using -fvisibility=hidden
+        visit_patch_target(NAME engine_par DEFINES COMM_EXPORTS)
     endif()
 
     if(ICET_FOUND)
         visit_patch_target(
             NAME        engine_par
+            LINKDIR     ${ICET_LIBRARY_DIR}
             INCLUDES    $<BUILD_INTERFACE:${ICET_INCLUDE_DIR}>
                         $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/icet>
-            DEFINES     HAVE_ICET
-            LINKDIR     ${ICET_LIBRARY_DIR})
+            DEFINES     HAVE_ICET)
         if(VISIT_MESAGL_DIR)
             visit_patch_target(
                 NAME engine_par
@@ -283,6 +286,9 @@ if(VISIT_PARALLEL)
         ${ZLIB_LIBRARY}
     )
 
+    if(ICET_FOUND)
+        target_link_directories(engine_par_exe PRIVATE ${ICET_LIBRARY_DIR})
+    endif()
     # If we're building statically then the engine can't be linked until the plugin
     # sources are built
     if(VISIT_STATIC)

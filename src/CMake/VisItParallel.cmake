@@ -3,7 +3,7 @@
 # details.  No copyright assignment is required to contribute to VisIt.
 
 
-function(DETECT_MPI_SETTINGS COMP mlibs mdefs mflags mlflags mrpath)
+function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
     # Unset any variables that may have been set before by FindMPI
     unset(MPI_FOUND CACHE)
     unset(MPI_INCLUDE_PATH CACHE)
@@ -31,7 +31,6 @@ function(DETECT_MPI_SETTINGS COMP mlibs mdefs mflags mlflags mrpath)
         endforeach()
 
         set(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-        set(${mdefs}  "PARALLEL MPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel compiler defines")
         set(${mflags}  "${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
         set(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
 
@@ -60,41 +59,28 @@ function(ADD_PARALLEL_EXECUTABLE target)
 
     if(UNIX)
       if(VISIT_PARALLEL_CXXFLAGS)
-        set(PAR_COMPILE_FLAGS "")
-        foreach(X ${VISIT_PARALLEL_CXXFLAGS})
-            set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        endforeach()
         set_target_properties(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
+            COMPILE_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
+      endif()
+      target_compile_definitions(${target} PRIVATE ${VISIT_PARALLEL_DEFINES})
 
-        if(VISIT_PARALLEL_LINKER_FLAGS)
-            set(PAR_LINK_FLAGS "")
-            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                set(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            endforeach()
-            set_target_properties(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
-        endif()
+      if(VISIT_PARALLEL_LINK_FLAGS)
+          set_target_properties(${target} PROPERTIES
+                LINK_FLAGS ${VISIT_PARALLEL_LINK_FLAGS})
+      endif()
+      if(VISIT_PARALLEL_LINK_DIRS)
+          set_target_properties(${target} PROPERTIES
+                LINK_DIRECTORIES ${VISIT_PARALLEL_LINK_DIRS})
+      endif()
 
-        if(VISIT_PARALLEL_RPATH)
-            set(PAR_RPATHS "")
-            foreach(X ${CMAKE_INSTALL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            endforeach()
-            foreach(X ${VISIT_PARALLEL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            endforeach()
-            set_target_properties(${target} PROPERTIES
-                INSTALL_RPATH ${PAR_RPATHS}
-            )
-        endif()
+      if(VISIT_PARALLEL_RPATH)
+          set_target_properties(${target} PROPERTIES
+              INSTALL_RPATH "${VISIT_PARALLEL_RPATH};${CMAKE_INSTALL_RPATH}") 
       endif()
     else()
-          ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-          ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
-          target_link_libraries(${target} ${VISIT_PARALLEL_LIBS})
+        target_include_directories(${target} PRIVATE ${VISIT_PARALLEL_INCLUDE})
+        target_compile_definitions(${target} PRIVATE ${VISIT_PARALLEL_DEFINES})
+        target_link_libraries(${target} PRIVATE ${VISIT_PARALLEL_LINK_LIBS})
     endif()
 
     # If we're on doing this "nolink mpi" option, we rely on the
@@ -113,8 +99,8 @@ function(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
             set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
         endforeach()
         set_target_properties(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
+            COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
+        target_compile_definitions(${target} PRIVATE ${VISIT_PARALLEL_DEFINES})
 
         if(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
             set(PAR_LINK_FLAGS "")
@@ -154,7 +140,7 @@ function(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
 endfunction()
 
 
-set(VPDEFS "PARALLEL MPICH_IGNORE_CXX_SEEK MPICH_SKIP_MPICXX OMPI_SKIP_MPICXX MPI_NO_CPPBIND")
+set(VISIT_PARALLEL_DEFINES "PARALLEL;MPICH_IGNORE_CXX_SEEK;MPICH_SKIP_MPICXX;OMPI_SKIP_MPICXX;MPI_NO_CPPBIND" CACHE STRING "Parallel compiler defines")
 
 if(VISIT_MPI_COMPILER)
     message(STATUS "Setting up MPI using compiler wrapper")
@@ -162,7 +148,6 @@ if(VISIT_MPI_COMPILER)
     # Detect the MPI settings that C++ wants
     DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER}
         VISIT_PARALLEL_LIBS
-        VISIT_PARALLEL_DEFS
         VISIT_PARALLEL_CFLAGS
         VISIT_PARALLEL_LINKER_FLAGS
         VISIT_PARALLEL_RPATH)
@@ -228,7 +213,6 @@ else()
           if(NOT MPI_FOUND)
             include(${CMAKE_ROOT}/Modules/FindMPI.cmake)
             if(MPI_FOUND)
-              string(REPLACE " " ";" VISIT_PARALLEL_DEFS ${VPDEFS})
               set(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
                   CACHE STRING "MPI libraries")
               set(VISIT_PARALLEL_INCLUDE "${MPI_INCLUDE_PATH}"
@@ -263,17 +247,32 @@ else()
         endif()
 
     endif()
-    unset(VPFLAGS)
 endif()
+
+string(REPLACE " " ";" VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CXXFLAGS})
+string(REPLACE " " ";" VISIT_PARALLEL_LINKER_FLAGS ${VISIT_PARALLEL_LINKER_FLAGS})
+string(REPLACE " " ";" VISIT_PARALLEL_RPATH ${VISIT_PARALLEL_RPATH})
+
+# Separate link dirs from other flags
+foreach(plf ${VISIT_PARALLEL_LINKER_FLAGS})
+    string(SUBSTRING ${plf} 0 2 lf_type)
+    if(lf_type STREQUAL "-L")
+        string(SUBSTRING ${plf} 2 -1 lf_dir)
+        list(APPEND VISIT_PARALLEL_LINK_DIRS ${lf_dir})
+    else()
+        list(APPEND VISIT_PARALLEL_LINK_FLAGS ${plf})
+    endif()
+endforeach()
 
 
 message(STATUS "Parallel version of VisIt")
 message(STATUS "    VISIT_PARALLEL_CFLAGS = ${VISIT_PARALLEL_CFLAGS}")
 message(STATUS "    VISIT_PARALLEL_CXXFLAGS = ${VISIT_PARALLEL_CXXFLAGS}")
-message(STATUS "    VISIT_PARALLEL_LINKER_FLAGS = ${VISIT_PARALLEL_LINKER_FLAGS}")
+message(STATUS "    VISIT_PARALLEL_LINK_FLAGS = ${VISIT_PARALLEL_LINK_FLAGS}")
+message(STATUS "    VISIT_PARALLEL_LINK_DIRS = ${VISIT_PARALLEL_LINK_DIRS}")
 message(STATUS "    VISIT_PARALLEL_LIBS = ${VISIT_PARALLEL_LIBS}")
 message(STATUS "    VISIT_PARALLEL_RPATH = ${VISIT_PARALLEL_RPATH}")
-message(STATUS "    VISIT_PARALLEL_DEFS = ${VISIT_PARALLEL_DEFS}")
+message(STATUS "    VISIT_PARALLEL_DEFINES = ${VISIT_PARALLEL_DEFINES}")
 message(STATUS "    VISIT_PARALLEL_INCLUDE = ${VISIT_PARALLEL_INCLUDE}")
 
 if(VISIT_FORTRAN AND VISIT_PARALLEL_FORTRAN_LIBS)

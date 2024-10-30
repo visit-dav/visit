@@ -77,7 +77,7 @@ function(ADD_PARALLEL_LIBRARY target)
 
     else()
       ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
+      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFINES})
     endif()
     if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
         target_link_libraries(${target} ${VISIT_PARALLEL_LIBS})
@@ -256,7 +256,16 @@ endmacro()
 
 ##############################################################################
 # patch a target with new sources, headers, etc:
+#
 # Any non-visit-specific args are passed directly to blt_patch_target.
+#
+# The visit-specific args must appear first in the caller argument list
+# before blt-specific, otherwise blt swallows them up with one of the args it
+# does understand, causing issues.
+#
+# I tried to parse only the args visit needs, then use the _UNPARSED_ARGUMENTS
+# feature to pass the rest to blt, but _UNPARSED_ARGUMENTS never contained
+# the correct arguments, possibly due to the parsing order ?
 #
 # ARGUMENTS:
 #    NAME         target name                REQUIRED
@@ -272,36 +281,30 @@ endmacro()
 #    INCLUDES       [dir1 [dir2 ...]]          OPTIONAL
 #    DEFINES        [define1 [define2 ...]]    OPTIONAL
 #    DEPENDS_ON     [dep1 ...]                 OPTIONAL
-#    LIBRARIES      [lib1 [lib2 ...]]          OPTIONAL
-#    COMPILE_FLAGS  [flag1 [flag2 ..]]         OPTIONAL
-#    LINK_FLAGS     [flag1 [flag2 ..]]         OPTIONAL
 #
 ##############################################################################
 
 macro(visit_patch_target)
+    # need to parse everything that VisIt recognizes and everything that
+    # BLT recognizes, otherwise there ends up being issues.
     set(singleValueArgs NAME)
-    set(multiValueArgs SOURCES HEADERS LINKDIR)
-
+    set(multiValueArgs SOURCES HEADERS LINKDIR INCLUDES DEFINES DEPENDS_ON)
     # parse the arguments
     cmake_parse_arguments(vpt "" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT vpt_NAME)
         message(FATAL_ERROR "visit_patch_target() must be called with argument NAME <name>")
     endif()
-
-    if (vpt_SOURCES)
-        target_sources(${vpt_NAME} PRIVATE ${vpt_SOURCES})
+    if(NOT TARGET ${vpt_NAME})
+        message(FATAL_ERROR " attempting to patch ${vpt_NAME} but it is NOT a target!")
     endif()
-    if (vpt_HEADERS)
-        target_sources(${vpt_NAME} PRIVATE ${vpt_HEADERS})
+    if (vpt_SOURCES OR vpt_HEADERS)
+        target_sources(${vpt_NAME} PRIVATE ${vpt_SOURCES} ${vpt_HEADERS})
     endif()
-    if (vpt_lINKDIR)
+    if (vpt_LINKDIR)
         target_link_directories(${vpt_NAME} PRIVATE ${vpt_LINKDIR})
     endif()
- 
-    if(vpt_UNUSED_ARUGMENTS)
-       blt_patch_target(NAME ${vpt_NAME} ${vpt_UNUSED_ARGUMENTS})
-    endif()
+    blt_patch_target(${ARGV})
 endmacro()
 
 
@@ -314,7 +317,7 @@ endmacro()
 #
 ##############################################################################
 
-function(visit_patch_parallel_target)
+macro(visit_patch_parallel_target)
 
     cmake_parse_arguments(vppt "" "NAME" "" ${ARGN})
     if(NOT vppt_NAME)
@@ -323,14 +326,12 @@ function(visit_patch_parallel_target)
 
     if(UNIX)
         if(VISIT_PARALLEL_CXXFLAGS)
-            string(REPLACE " " ";" PAR_COMPILE_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
             set_property(TARGET ${vppt_NAME} APPEND
-                         PROPERTY COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
+                         PROPERTY COMPILE_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
         endif()
-        if(VISIT_PARALLEL_LINKER_FLAGS)
-            string(REPLACE " " ";" PAR_LINK_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
+        if(VISIT_PARALLEL_LINK_FLAGS)
             set_property(TARGET ${vppt_NAME} APPEND
-                         PROPERTY LINK_FLAGS ${PAR_LINK_FLAGS})
+                         PROPERTY LINK_FLAGS ${VISIT_PARALLEL_LINK_FLAGS})
         endif()
 
         if(${CMAKE_INSTALL_RPATH})
@@ -340,29 +341,32 @@ function(visit_patch_parallel_target)
         endif()
 
         if(VISIT_PARALLEL_RPATH)
-            string(REPLACE " " ";" VPAR_RPATHS ${VISIT_PARALLEL_RPATH})
             set_property(TARGET ${vppt_NAME} APPEND PROPERTY
-                         INSTALL_RPATH ${VPAR_RPATHS})
+                         INSTALL_RPATH ${VISIT_PARALLEL_RPATH})
         endif()
-        visit_patch_target(
-            NAME      ${vppt_NAME}
-            DEFINES   ${VISIT_PARALLEL_DEFS})
+        if(VISIT_PARALLEL_DEFINES)
+            visit_patch_target(
+                NAME      ${vppt_NAME}
+                DEFINES   ${VISIT_PARALLEL_DEFINES})
+
+        endif()
     else()
         visit_patch_target(
             NAME      ${vppt_NAME}
             INCLUDES  ${VISIT_PARALLEL_INCLUDE}
-            DEFINES   ${VISIT_PARALLEL_DEFS})
+            DEFINES   ${VISIT_PARALLEL_DEFINES})
     endif()
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
+    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND VISIT_PARALLEL_LIBS)
         visit_patch_target(
             NAME       ${vppt_NAME}
+            LINKDIR    ${VISIT_PARALLEL_LINK_DIRS}
             DEPENDS_ON ${VISIT_PARALLEL_LIBS})
     endif()
-endfunction()
+endmacro()
 
 ##############################################################################
 # Adds a library target.
-# calls blt_add_library 
+# calls blt_add_library
 # handles parallel
 # clears cache vars.
 #
@@ -399,7 +403,6 @@ macro(visit_add_library)
     if(NOT val_NAME)
         message(FATAL_ERROR "visit_add_library() must be called with argument NAME <name>")
     endif()
-
     if (NOT val_SOURCES AND NOT val_HEADERS)
         message(FATAL_ERROR "visit_add_library(NAME ${val_NAME} ...) called with no given sources or headers (at least one is required).")
     endif()
