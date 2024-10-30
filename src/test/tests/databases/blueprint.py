@@ -64,6 +64,10 @@
 # 
 #    Justin Privitera, Fri Sep 27 12:09:46 PDT 2024
 #    Added tests for specsets.
+# 
+#    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+#    Added tests that ensure periodic meshes fall back to legacy LOR when
+#    new LOR is requested.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")

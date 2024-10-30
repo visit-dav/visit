@@ -1021,8 +1021,13 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle 1D curve case.
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
+// 
+//    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+//    Determine if MFEM meshes could be periodic (all periodic are L2 but not 
+//    all L2 are periodic) and mark fields for those meshes as nodal because
+//    they will use legacy LOR down the line which makes all fields nodal.
 //
 // ****************************************************************************
 void
@@ -1277,7 +1282,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 }
                 else if (m_new_refine) // if new LOR is turned on
                 {
-                    const std::string basis = n_field["basis"].as_string();                    
+                    const std::string basis = n_field["basis"].as_string();
                     // H1 is nodal
                     // L2 is zonal
                     const bool l2 = basis.find("L2_") != std::string::npos;

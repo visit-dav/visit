@@ -364,6 +364,9 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Cyrus Harrison, Fri Mar 10 11:58:33 PST 2023
 //    Add original cell ids, so mesh plots render outlines of the
 //    high order elements.
+// 
+//    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+//    Simplified test for periodic meshes and added comments.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -862,6 +865,9 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 // 
 //    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
 //    Cleaned up nodal/zonal logic to match blueprint plugin.
+// 
+//    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+//    Simplified test for periodic meshes and added comments.
 //
 // ****************************************************************************
 vtkDataArray *
