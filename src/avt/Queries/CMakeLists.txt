@@ -81,8 +81,7 @@ visit_add_library(
 
 
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtquery_par
         SOURCES    ${avtquery_par_SOURCES}
         HEADERS    ${avtquery_par_HEADERS}

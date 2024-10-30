@@ -57,8 +57,7 @@ visit_patch_target(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtpythonfilters_par
         SOURCES    ${avtpythonfilters_SOURCES}
         HEADERS    ${avtpythonfilters_HEADERS}

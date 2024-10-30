@@ -143,8 +143,7 @@ set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
 # We build a _par version of viewercore because we can't allow it to have any _ser
 # library dependencies when we use it in the simV2 parallel runtime.
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME        viewercore_par
         SOURCES     ${VIEWERCORE_SOURCES}
         HEADERS     ${VIEWERCORE_HEADERS}

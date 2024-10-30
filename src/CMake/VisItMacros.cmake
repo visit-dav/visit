@@ -381,17 +381,15 @@ endmacro()
 #    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
 #    FOLDER       [name]                     OPTIONAL
 #    SKIP_INSTALL                            OPTIONAL (visit only)
-#    DO_PARALLEL                             OPTIONAL (visit only)
 #
 # Modifications:
 #    Kathleen Biags, Thu Oct 24, 2024
-#    Added DO_PARALLEL so that we can use 1 macro for adding libraries
 #    Added SKIP_INSTALL to indicate the target should not be installed.
 #
 ##############################################################################
 
 macro(visit_add_library)
-    set(options SKIP_INSTALL DO_PARALLEL)
+    set(options SKIP_INSTALL)
     set(singleValueArgs NAME OUTPUT_NAME FOLDER)
     set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
 
@@ -426,10 +424,6 @@ macro(visit_add_library)
         visit_install_export_targets(${val_NAME})
     endif()
 
-    if(${val_DO_PARALLEL})
-        visit_patch_parallel_target(NAME ${val_NAME})
-    endif()
-
     # vars that may have been created by calls to visit_append_list
     unset(${val_NAME}_SOURCES CACHE)
     unset(${val_NAME}_HEADERS CACHE)
@@ -437,5 +431,13 @@ macro(visit_add_library)
     unset(${val_NAME}_DEFINES CACHE)
     unset(${val_NAME}_DEPENDS CACHE)
     unset(${val_NAME}_FEATURES CACHE)
+endmacro()
+
+macro(visit_add_parallel_library)
+
+    visit_add_library(${ARGV})
+    cmake_parse_arguments(vapl "" "NAME" "" ${ARGN})
+    visit_patch_parallel_target(NAME ${vapl_NAME})
+
 endmacro()
 

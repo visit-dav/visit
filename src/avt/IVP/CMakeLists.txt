@@ -143,8 +143,7 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtivp_par
         SOURCES    ${avtivp_SOURCES}
         HEADERS    ${avtivp_HEADERS}

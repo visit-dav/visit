@@ -18,8 +18,7 @@ else()
     set(is_shared ${BUILD_SHARED_LIBS})
 endif()
 
-visit_add_library(
-    DO_PARALLEL
+visit_add_parallel_library(
     NAME        cognomen
     SOURCES     ${CMAKE_CURRENT_SOURCE_DIR}/src/cognomen.c
     HEADERS     ${CMAKE_CURRENT_SOURCE_DIR}/src/cognomen.h

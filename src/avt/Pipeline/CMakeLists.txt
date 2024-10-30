@@ -117,8 +117,7 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtpipeline_par
         SOURCES    ${avtpipeline_par_SOURCES}
         HEADERS    ${avtpipeline_par_HEADERS}

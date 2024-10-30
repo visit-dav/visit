@@ -127,8 +127,7 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtexpressions_par
         SOURCES    ${avtexpressions_par_SOURCES}
         HEADERS    ${avtexpressions_par_HEADERS}

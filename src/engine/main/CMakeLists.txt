@@ -154,8 +154,7 @@ if(VISIT_PARALLEL)
         endif()
     endif()
 
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME        engine_par
         SOURCES     ${LIBENGINE_SOURCES}
                     ${ICET_SOURCES}

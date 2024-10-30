@@ -200,9 +200,7 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-message("adding avtplotter_par")
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtplotter_par
         SOURCES    ${avtplotter_par_SOURCES}
         HEADERS    ${avtplotter_par_HEADERS}

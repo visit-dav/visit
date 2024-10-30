@@ -64,8 +64,7 @@ visit_add_library(
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    visit_add_library(
-        DO_PARALLEL
+    visit_add_parallel_library(
         NAME       avtdbin_par
         SOURCES    ${avtdbin_SOURCES}
         HEADERS    ${avtdbin_HEADERS}
