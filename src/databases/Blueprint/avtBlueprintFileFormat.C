@@ -1041,8 +1041,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         return;
     }
 
-    std::cout << n_mesh_info.to_yaml() << std::endl;
-
     BP_PLUGIN_INFO("Adding mesh named \"" << mesh_name << "\"");
 
     const Node &n_topos = n_mesh_info["topologies"];
@@ -1210,8 +1208,8 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 const Node &n_field = n_mesh_info["fields"][gf_name];
                 if (n_field.has_child("basis"))
                 {
-                    const std::string basis = n_mesh_info["basis"].as_string();
-                    if (basis.find("T1") != std::string::npos)
+                    const std::string basis = n_field["basis"].as_string();
+                    if (basis.find("L2_") != std::string::npos)
                     {
                         // periodic
                         periodic_topos.insert(topo_name);
@@ -1219,11 +1217,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 }
             }
         }
-
-        // TODO mark fields belonging to periodidic topos as nodal
-        // do we mark all fields or just this with a basis?
-        // waiting on the answer to this question:
-        // https://github.com/orgs/mfem/discussions/4556
 
         NodeConstIterator fields_itr = n_mesh_info["fields"].children();
 
@@ -1255,58 +1248,56 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
             int ncomps = n_field["number_of_components"].to_int();
             int ndims = topo_dims[var_topo_name];
-
-            // note: this logic is ok b/c the mfem case
-            // (w/ basis instead of assoc) will always be nodal
-            avtCentering cent = AVT_NODECENT;
-
+            
+            // 
+            // handle centering
+            // 
+            avtCentering cent = AVT_NODECENT; // default
             if (n_field.has_child("association") &&
-                n_field["association"].as_string() == "element")
+                     n_field["association"].as_string() == "element")
             {
                 cent = AVT_ZONECENT;
             }
-            else if(n_field.has_child("basis"))
+            else if (n_field.has_child("basis"))
             {
                 // if any of the fields are mfem grid funcs, we may have to
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
 
                 m_mfem_mesh_map[var_topo_name] = true;
 
-                // if new LOR is turned on
-                if (m_new_refine)
+                if (periodic_topos.count(var_topo_name) > 0)
                 {
-                    const std::string basis = n_field["basis"].as_string();
-                    if (basis.find("T1") == std::string::npos)
+                    // if this field belongs to a topology that is a periodic mfem mesh
+                    // then we are always nodal
+                    cent = AVT_NODECENT;
+                }
+                else if (m_new_refine) // if new LOR is turned on
+                {
+                    const std::string basis = n_field["basis"].as_string();                    
+                    // H1 is nodal
+                    // L2 is zonal
+                    const bool l2 = basis.find("L2_") != std::string::npos;
+                    const bool h1 = basis.find("H1_") != std::string::npos;
+                    bool node_centered;
+                    if (h1 && l2)
                     {
-                        // we assume not periodic
-                        // If we did find T1, then we are periodic, and centering
-                        // is already set to AVT_NODECENT
-                        
-                        // H1 is nodal
-                        // L2 is zonal
-                        const bool l2 = basis.find("L2_") != std::string::npos;
-                        const bool h1 = basis.find("H1_") != std::string::npos;
-                        bool node_centered;
-                        if (h1 && l2)
-                        {
-                            BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
-                                "AddBlueprintMeshAndFieldMetadata: grid function cannot be both H1 and L2");
-                        }
-                        else if (!h1 && !l2) // guess
-                        {
-                            BP_PLUGIN_INFO("WARNING: AddBlueprintMeshAndFieldMetadata: Grid Function is "
-                                          "neither H1 nor L2. Guessing nodal association.");
-                            node_centered = true; 
-                        }
-                        else
-                        {
-                            node_centered = h1 && !l2;
-                        }
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                            "AddBlueprintMeshAndFieldMetadata: grid function cannot be both H1 and L2");
+                    }
+                    else if (!h1 && !l2) // guess
+                    {
+                        BP_PLUGIN_INFO("WARNING: AddBlueprintMeshAndFieldMetadata: Grid Function is "
+                                      "neither H1 nor L2. Guessing nodal association.");
+                        node_centered = true; 
+                    }
+                    else
+                    {
+                        node_centered = h1 && !l2;
+                    }
 
-                        if (!node_centered)
-                        {
-                            cent = AVT_ZONECENT;
-                        }
+                    if (!node_centered)
+                    {
+                        cent = AVT_ZONECENT;
                     }
                 }
             }
