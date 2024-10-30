@@ -1226,15 +1226,17 @@ if(NOT VISIT_DBIO_ONLY)
     endif()
 endif()
 
+# Configure python CLI extensions
+if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
+    if(NOT VISIT_STATIC)
+        add_subdirectory(visitpy)
+    endif()
+endif()
+
 if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     add_subdirectory(vtkqt)
     add_subdirectory(winutil)
     add_subdirectory(gui)
-    if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-        if(NOT VISIT_STATIC)
-            add_subdirectory(visitpy)
-        endif()
-    endif()
     # always add java subdir, so code gen targets can be active even
     # if java is not enabled
     add_subdirectory(java)
