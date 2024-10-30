@@ -29,6 +29,9 @@ pr:
     - '**/*.in'
     - '**/*.C'
     - '**/*.h'
+    - 'data/silo*'
+    - 'data/blueprint*'
+    - '**/*.py'
 
 # fast fail sanity checks
 stages:
