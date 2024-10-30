@@ -66,6 +66,7 @@ avtTimeExpression::~avtTimeExpression()
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2006
@@ -73,12 +74,15 @@ avtTimeExpression::~avtTimeExpression()
 //  Modifications:
 //    Jeremy Meredith, Wed Mar 11 12:35:29 EDT 2009
 //    Added support for cycle and timestep values.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
  
 void
 avtTimeExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
-                               int /*ncomponents*/, int ntuples)
+                               int /*ncomponents*/, int ntuples, vtkDataSet *in_ds)
 {
     double val = 0;
     switch (mode)

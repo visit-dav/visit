@@ -52,19 +52,23 @@ avtTransposeExpression::~avtTransposeExpression()
 
 
 // ****************************************************************************
-//  Method: avtPrincipalTensorExpression::DoOperation
+//  Method: avtTransposeExpression::DoOperation
 //
 //  Purpose:
-//      Calculates the contraction of a tensor
+//      Calculates the transpose of a tensor
 //
 //  Programmer: Hank Childs
 //  Creation:   February 21, 2008
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 
 void
 avtTransposeExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                        int ncomps, int ntuples)
+                                        int ncomps, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomps == 9)
     {

@@ -76,6 +76,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Silo plugin properly removes periodic boundary domain neighbors which can wholly enshroud a mesh rendering it invisible. This capability is restricted to rectangular arrangements of rectangular domains using the combination of a DBmultimeshadj object and auxiliary data structures to identify periodic domain neighbors.</li>
   <li>The OnionPeel and IndexSelect operator Windows now allow typing into the 'Set' option as well as selecting from the dropwdown box. Typing will filter the available entries to match what has been typed so far, allowing easier selection than the pulldown if there is a large number of sets. If typing is completed with text that doesn't match an available entry a Warning message will pop up.<li>
   <li>Support has been added for using the <code>jsrun</code> parallel job launcher.</li>
+  <li>Added new global mesh expressions: global_avg(), global_max(), global_min(), global_rms(), global_std_dev(), global_sum(), and global_variance(). These are expressions that calculate statistics across the mesh and the result is a constant variable that contains the result. So, global_max(d) produces a new variable that is the maximum of d at every zone or node across the mesh.</li>
 </ul>
 
 <a name="Dev_changes"></a>
