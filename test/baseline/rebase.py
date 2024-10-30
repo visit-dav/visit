@@ -197,21 +197,21 @@ def copy_currents_from_html_pages(prefix, filelist, datetag, prompt, test_type):
         cursize = os.stat(target_file).st_size
         if (sys.version_info > (3, 0)):
             try:
-                g = urllib.request.urlopen("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f))
+                g = urllib.request.urlopen("%s/%s/poodle_trunk_%s/c_%s"%(prefix,datetag,mode,f))
             except:
                 print("*** Current \"%s\" not found or HTTP request failed in some way. Skipping."%f)
                 continue
         else:
-            g = urllib.urlopen("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f))
+            g = urllib.urlopen("%s/%s/poodle_trunk_%s/c_%s"%(prefix,datetag,mode,f))
             if 'Not Found' in g.read():
                 print("*** Current \"%s\" not found. Skipping."%f)
                 continue
         print("Copying file \"%s\""%f)
         if (sys.version_info > (3, 0)):
-            urllib.request.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
+            urllib.request.urlretrieve("%s/%s/poodle_trunk_%s/c_%s"%(prefix,datetag,mode,f),
                                        filename=target_file)
         else:
-            urllib.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
+            urllib.urlretrieve("%s/%s/poodle_trunk_%s/c_%s"%(prefix,datetag,mode,f),
                                filename=target_file)
         # Do some simple sanity checks on the resulting file
         isLFS = False
