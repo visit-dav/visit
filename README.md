@@ -35,5 +35,3 @@ All new contributions must be made under the [BSD-3 License](LICENSE)
 See [LICENSE](LICENSE) and [NOTICE](NOTICE) for details.
 
 LLNL-CODE-793424
-
-
