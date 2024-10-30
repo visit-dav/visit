@@ -32,6 +32,9 @@ class ExprPipelineState;
 //
 //    Kathleen Bonnell, Fri May  8 13:21:18 PDT 2009
 //    Added defaultErrorValue, useDefaultOnError, and ProcessArguments.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -48,7 +51,7 @@ class EXPRESSION_API avtNaturalLogExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
     double                    defaultErrorValue;
     bool                      useDefaultOnError;
 };

@@ -27,6 +27,8 @@ class     vtkDataArray;
 //  Creation:   Tue Jan  8 16:27:49 PST 2008
 //
 //  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -49,7 +51,7 @@ class EXPRESSION_API avtPerformColorTableLookupExpression : public avtUnaryMathE
     virtual int               GetNumberOfComponentsInOutput(int numInInput)
                                   { return 3; }
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
   private:
     enum LookupMapping         { Identity = 0, Log = 1, Skew = 2 } ;
     std::string                mLUTName;

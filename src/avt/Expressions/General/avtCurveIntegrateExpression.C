@@ -58,6 +58,7 @@ avtCurveIntegrateExpression::~avtCurveIntegrateExpression()
 //      out       The output data array.
 //      <unused>  The number of components.
 //      ntuples   The number of tuples in the data arrays.
+//      in_ds     The input dataset.
 //
 //  Returns:      The output dataset.
 //
@@ -65,12 +66,14 @@ avtCurveIntegrateExpression::~avtCurveIntegrateExpression()
 //  Creation:   August 17, 2012
 //
 //  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 
 void
 avtCurveIntegrateExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples)
+                                         int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     vtkRectilinearGrid *curve = vtkRectilinearGrid::SafeDownCast(cur_mesh);
     vtkDataArray *xcoords = curve->GetXCoordinates();
