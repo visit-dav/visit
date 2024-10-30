@@ -35,4 +35,3 @@ to go from here...
 
 .. _discussion: https://github.com/visit-dav/visit/discussions
 .. _issue: https://github.com/visit-dav/visit/issues/new?assignees=&labels=docs&template=documentation-request.md&title=Bad%20Link
-
