@@ -96,10 +96,17 @@ function bv_qt6_ensure
 function apply_qt6_base_patch
 {
      if [[ "$OPSYS" == "Darwin" ]]; then
-        qt6_macos_13_cpp_stdlib_issue_patch 
+
+        qt6_macos_13_cpp_stdlib_issue_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        qt6_macos_14_xcode_15_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
     fi
     qt6_xkbcommon_patch
     if [[ $? != 0 ]] ; then
@@ -234,6 +241,48 @@ EOF
         return 1
     fi
 }
+
+function qt6_macos_14_xcode_15_patch
+{
+    info "Patching qt 6 for macOS xcode 15 with toolchain fix"
+
+    patch -p0 <<EOF
+diff --git a/mkspecs/features/toolchain.prf b/mkspecs/features/toolchain.prf
+index 0040b6c..bfad10d 100644
+--- a/mkspecs/features/toolchain.prf
++++ b/mkspecs/features/toolchain.prf
+@@ -288,9 +288,12 @@
+                 }
+             }
+         }
+-        isEmpty(QMAKE_DEFAULT_LIBDIRS)|isEmpty(QMAKE_DEFAULT_INCDIRS): \
++        isEmpty(QMAKE_DEFAULT_INCDIRS): \
+             !integrity: \
+-                error("failed to parse default search paths from compiler output")
++                error("failed to parse default include paths from compiler output")
++        isEmpty(QMAKE_DEFAULT_LIBDIRS): \
++            !integrity:!darwin: \
++                error("failed to parse default library paths from compiler output")
+         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
+     } else: ghs {
+         cmd = $$QMAKE_CXX $$QMAKE_CXXFLAGS -$${LITERAL_HASH} -o /tmp/fake_output /tmp/fake_input.cpp
+@@ -411,7 +414,7 @@
+         QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
+     }
+
+-    unix:if(!cross_compile|host_build) {
++    unix:!darwin:if(!cross_compile|host_build) {
+         isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
+         isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
+     }
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 6 for macOS xcode 15 with toolchain fix failed"
+        return 1
+    fi
+}
+
 
 function build_qt6_base
 {
