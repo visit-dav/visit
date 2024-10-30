@@ -349,6 +349,35 @@ def test_mfem(tag_name, example_name, protocol):
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
+    # check periodic results fall back to old LOR
+    if "periodic" in example_name:
+        dbfile = mfem_test_file(example_name,protocol)
+        OpenDatabase(dbfile)
+        #
+        AddPlot("Pseudocolor", "mesh_main/solution")
+        set_test_view(tag_name)
+        DrawPlots()
+        Test(tag_name + "_" +  example_name + "_" + protocol + "_fall_back_to_old_LOR_sol")
+        #
+        DeleteAllPlots()
+        ResetView()
+        AddPlot("Pseudocolor", "mesh_main/element_coloring")
+        set_test_view(tag_name)
+        DrawPlots()
+        Test(tag_name + "_" +  example_name + "_" + protocol + "_fall_back_to_old_LOR_ele_coloring")
+        #
+        DeleteAllPlots()
+        ResetView()
+        AddPlot("Pseudocolor", "mesh_main/element_attribute")
+        set_test_view(tag_name)
+        DrawPlots()
+        Test(tag_name + "_" +  example_name + "_" + protocol + "_fall_back_to_old_LOR_ele_att")
+        #
+        DeleteAllPlots()
+        ResetView()
+
+        CloseDatabase(dbfile)
+
 def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, number = "000000"):
     dbfile = ""
     if (devilray):
