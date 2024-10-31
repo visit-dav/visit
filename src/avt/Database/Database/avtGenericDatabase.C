@@ -7988,6 +7988,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Exchange extra ghost zone/node arrays.
 //
+//    Kathleen Biagas, Thu Oct 31, 2024
+//    Don't attempt to Exchange extra ghost zone/node arrays if no process
+//    has extra ghost information.
+//
 // ****************************************************************************
 
 bool
@@ -8630,16 +8634,25 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         }
     }
 
-    vector<vtkDataArray *> extraGhostZonesOut;
-    extraGhostZonesOut = dbi->ExchangeScalar(doms,false,extraGhostZones);
-    for (int j = 0 ; j < (int)doms.size() ; j++)
+    int canDoExchange = (extraGhostZones.size() > 0);
+#ifdef PARALLEL
+    int myCanDoExchange = canDoExchange;
+    MPI_Allreduce(&myCanDoExchange, &canDoExchange, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+#endif
+
+    if(canDoExchange)
     {
-        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-        if (ds1 == NULL ||
-            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            continue;
-        ds1->GetCellData()->AddArray(extraGhostZonesOut[j]);
-        extraGhostZonesOut[j]->Delete();
+        vector<vtkDataArray *> extraGhostZonesOut;
+        extraGhostZonesOut = dbi->ExchangeScalar(doms,false,extraGhostZones);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                continue;
+            ds1->GetCellData()->AddArray(extraGhostZonesOut[j]);
+            extraGhostZonesOut[j]->Delete();
+        }
     }
 
     //
@@ -8664,16 +8677,24 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         }
     }
 
-    vector<vtkDataArray *> extraGhostNodesOut;
-    extraGhostNodesOut = dbi->ExchangeScalar(doms,true,extraGhostNodes);
-    for (int j = 0 ; j < (int)doms.size() ; j++)
+    canDoExchange = (extraGhostNodes.size() > 0);
+#ifdef PARALLEL
+    myCanDoExchange = canDoExchange;
+    MPI_Allreduce(&myCanDoExchange, &canDoExchange, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+#endif
+    if(canDoExchange)
     {
-        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-        if (ds1 == NULL ||
-            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            continue;
-        ds1->GetPointData()->AddArray(extraGhostNodesOut[j]);
-        extraGhostNodesOut[j]->Delete();
+        vector<vtkDataArray *> extraGhostNodesOut;
+        extraGhostNodesOut = dbi->ExchangeScalar(doms,true,extraGhostNodes);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                continue;
+            ds1->GetPointData()->AddArray(extraGhostNodesOut[j]);
+            extraGhostNodesOut[j]->Delete();
+        }
     }
 
     //
