@@ -53,9 +53,9 @@ pr:
     - 'src/test/tests/unit/atts_assign.py'
     - 'src/test/tests/unit/test_value_simple.py'
 
-# fast fail sanity checks
+# fast fail consistency checks
 stages:
-- stage: Sanity
+- stage: Consistency
   jobs:
   - job: BLT_Time_Travel_Check
     pool:
@@ -67,7 +67,7 @@ stages:
 
       - script: |
           #######################################
-          # run our sanity check script
+          # run our consistency check script
           #######################################
           git fetch
           python scripts/ci/check_blt_time_travel.py
