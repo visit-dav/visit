@@ -631,7 +631,7 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     if (maxDataType < 0)
         return scalars;
 
-    if(dataType != maxDataType)
+    if((dataType >= 0) && (dataType != maxDataType))
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
@@ -714,7 +714,7 @@ avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPo
     if (maxDataType < 0)
         return vectors;
 
-    if(dataType != maxDataType)
+    if((dataType >= 0) && (dataType != maxDataType))
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,

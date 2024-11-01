@@ -1823,11 +1823,10 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
     // Let's get them all to agree on one data type.
     MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
 #endif
-
     if (maxDataType < 0)
         return scalars;
 
-    if(dataType != maxDataType)
+    if((dataType >= 0) && (dataType != maxDataType))
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
@@ -2333,7 +2332,7 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
     if (maxDataType < 0)
         return vectors;
 
-    if(dataType != maxDataType)
+    if((dataType >= 0) && (dataType != maxDataType))
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
