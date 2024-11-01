@@ -1797,7 +1797,8 @@ FileServerList::QualifiedName(const string &fileName)
 //   for validity instead of the remote host.
 //
 //   Eric Brugger, Mon Oct 28 14:47:44 PDT 2024
-//   Skip the check of the validity of the remote host if using a gateway.
+//   Skip the check of the validity of the remote host if using a gateway
+//   and the gateway host is blank.
 //
 // ****************************************************************************
 
@@ -1852,22 +1853,30 @@ FileServerList::StartServer(const string &host)
         // complexities of the real profile in the viewer.
         MachineProfile profile(MachineProfile::Default(host));
 
-        // Determine if the host we'll be connecting to is valid if not
-	// using a gateway.
-	bool usingGateway = false;
+        // Determine which host we'll be connecting to and see if that host is
+        // valid. We might be connecting via a gateway. Skip the test if using
+        // a gateway and the gateway host is blank.
+        bool skipHostCheck = false;
         MachineProfile *actualProfile = NULL;
         if(profiles != NULL)
             actualProfile = profiles->GetMachineProfileForHost(host);
         if(actualProfile != NULL)
         {
-            if(actualProfile->GetUseGateway() && !actualProfile->GetGatewayHost().empty())
+            if(actualProfile->GetUseGateway())
             {
-                usingGateway = true;
+                if(actualProfile->GetGatewayHost().empty())
+                {
+                    skipHostCheck = true;
+                }
+                else
+                {
+                    connectionHost = actualProfile->GetGatewayHost();
+                }
             }
         }
-        if(!usingGateway && !CheckHostValidity(host))
+        if(!skipHostCheck && !CheckHostValidity(connectionHost))
         {
-            EXCEPTION1(BadHostException, host);
+            EXCEPTION1(BadHostException, connectionHost);
         }
 
         info->server->Create(profile, connectCallback, connectCallbackData);
