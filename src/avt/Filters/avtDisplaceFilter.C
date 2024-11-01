@@ -289,6 +289,10 @@ avtDisplaceFilter::PreExecute(void)
     {
         if (inAtts.GetVariableDimension(displace_var) != 3)
         {
+
+            std::cout << "inAtts.GetVariableDimension(displace_var) " << inAtts.GetVariableDimension(displace_var) << std::endl;
+            std::cout << "inAtts.GetSpatialDimension() " << inAtts.GetSpatialDimension() << std::endl;
+
             bool valid2D = false;
             if (inAtts.GetVariableDimension(displace_var) == 2 &&
                 inAtts.GetSpatialDimension() == 2)

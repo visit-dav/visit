@@ -2104,10 +2104,23 @@ avtDataAttributes::SetSpatialDimension(int td)
 //  Modifications:
 //
 // ****************************************************************************
+#include <Utility.h>
 
 void
 avtDataAttributes::SetVariableDimension(int vd, int index)
 {
+    static int bungus = 0;
+    if (std::string(variables[index]->varname) == "Derived/node/displacement")
+    {
+        bungus ++;
+    }
+
+    if (bungus == 2)
+    {
+        std::cout << "SetVariableDimension(varname=" << variables[index]->varname << ", dim=" << vd << ")" << std::endl;
+        PrintCallStack(std::cout, __FILE__, __LINE__);
+    }
+
     if (vd == variables[index]->dimension)
     {
         return;
@@ -3461,6 +3474,7 @@ avtDataAttributes::Read(char *input)
             SetVariableBinRanges(br, varname.c_str());
         }
         SetCentering(centerings[i], varname.c_str());
+        
         SetVariableDimension(varDims[i], varname.c_str());
         SetTreatAsASCII(ascii[i], varname.c_str());
         SetUseForAxis(useForAxis[i], varname.c_str());
@@ -4113,9 +4127,13 @@ avtDataAttributes::AddVariable(const std::string &s)
     AddVariable(s, "");
 }
 
+#include <Utility.h>
+
 void
 avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
 {
+    std::cout << "AddVariable(name=" << s << ")" << std::endl;
+    // PrintCallStack(std::cout, __FILE__, __LINE__);
     int size = variables.size();
     for (int i = 0 ; i < size ; i++)
     {
@@ -4180,6 +4198,10 @@ avtDataAttributes::ValidVariable(const std::string &vname) const
 bool
 avtDataAttributes::ValidActiveVariable(void) const
 {
+    // std::cout << "ValidActiveVariable(): "
+    //           << "activeVariable " << activeVariable << " "
+    //           << "variables.size() " << variables.size() << std::endl;
+
     if ((activeVariable >= 0) && ((size_t)activeVariable < variables.size()))
         return true;
 

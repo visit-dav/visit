@@ -624,14 +624,22 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
            // yet, preserve the units of the active variable even though that's
            // not really the correct thing to do.
            //
+        std::cout << "valid input var " << outputVariableName << std::endl;
            outAtts.AddVariable(outputVariableName,
                                inputAtts.GetVariableUnits());
        }
        else
+       {
+        std::cout << "invalid input var " << outputVariableName << std::endl;
            outAtts.AddVariable(outputVariableName);
+       }
     }
     outAtts.SetActiveVariable(outputVariableName);
+
     int dim = GetVariableDimension();
+
+    std::cout << "dim " << dim << std::endl;
+
     outAtts.SetVariableDimension(dim);
     if (GetVariableType() != AVT_UNKNOWN_TYPE)
     {
@@ -755,6 +763,7 @@ avtExpressionFilter::GetVariableDimension(void)
     if (atts.ValidActiveVariable())
         return atts.GetVariableDimension();
 
+    std::cout << "I'm returning 1 because I FAILED" << std::endl;
     return 1;
 }
 
