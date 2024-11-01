@@ -2725,12 +2725,20 @@ class MainLauncher(object):
                  "/opt/rocm-6.1.0/lib/llvm/bin/offload-arch"]
 
         gpu_arch = None
-        for file in files:
-            if os.path.exists(file):
-                p = subprocess.run(file, capture_output=True, text=True)
-                if p.stdout != "":
-                    gpu_arch = p.stdout.rstrip()
-                break
+
+        have_amd = False
+        if os.path.exists("/usr/sbin/lspci"):
+            p = subprocess.run("/usr/sbin/lspci", capture_output=True, text=True)
+            if "amd" in p.stdout.lower():
+                have_amd =  True
+
+        if have_amd:
+            for file in files:
+                if os.path.exists(file):
+                    p = subprocess.run(file, capture_output=True, text=True)
+                    if p.stdout != "":
+                        gpu_arch = p.stdout.rstrip()
+                    break
 
         return gpu_arch
 
