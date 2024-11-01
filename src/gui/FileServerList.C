@@ -1856,6 +1856,7 @@ FileServerList::StartServer(const string &host)
         // Determine which host we'll be connecting to and see if that host is
         // valid. We might be connecting via a gateway. Skip the test if using
         // a gateway and the gateway host is blank.
+        std::string connectionHost(host);
         bool skipHostCheck = false;
         MachineProfile *actualProfile = NULL;
         if(profiles != NULL)
