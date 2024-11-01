@@ -1822,17 +1822,21 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
     MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
-    if (maxDataType < 0)
-        return scalars;
 
-    if((dataType >= 0) && (dataType != maxDataType))
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries:ExchangeScalar "
-                   "vtkDatArray data types do not match.");
+                   "vtkDataArray data types do not match.");
     }
+#endif
+
+    if (maxDataType < 0)
+        return scalars;
 
     switch (maxDataType)
     {
@@ -2327,18 +2331,22 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
     MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
 
-    if (maxDataType < 0)
-        return vectors;
-
-    if((dataType >= 0) && (dataType != maxDataType))
+    // Now verify if there is a dataType mismatch.
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries:ExchangeVector "
-                   "vtkDatArray data types do not match.");
+                   "vtkDataArray data types do not match.");
     }
+#endif
+
+    if (maxDataType < 0)
+        return vectors;
 
     switch (maxDataType)
     {

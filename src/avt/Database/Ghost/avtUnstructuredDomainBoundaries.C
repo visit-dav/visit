@@ -626,18 +626,21 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
     MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
 
-    if (maxDataType < 0)
-        return scalars;
-
-    if((dataType >= 0) && (dataType != maxDataType))
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
                    "avtUnstructuredDomainBoundaries:ExchangeScalar "
-                   "vtkDatArray data types do not match.");
+                   "vtkDataArray data types do not match.");
     }
+#endif
+
+    if (maxDataType < 0)
+        return scalars;
 
     // This one's a little more complicated because there are different
     // types of scalars we might encounter. If more cases arise,
@@ -709,18 +712,21 @@ avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPo
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
     MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
 
-    if (maxDataType < 0)
-        return vectors;
-
-    if((dataType >= 0) && (dataType != maxDataType))
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
                    "avtUnstructuredDomainBoundaries:ExchangeVector "
-                   "vtkDatArray data types do not match.");
+                   "vtkDataArray data types do not match.");
     }
+#endif
+
+    if (maxDataType < 0)
+        return vectors;
 
     // This one's a little more complicated because there are different
     // types of vectors we might encounter. If more cases arise,
