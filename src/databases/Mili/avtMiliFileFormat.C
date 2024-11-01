@@ -3302,7 +3302,6 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        return NULL;
         const char *mesh = varName;
         //
         // The valid meshnames are meshX or sand_meshX, where X is an int > 0.

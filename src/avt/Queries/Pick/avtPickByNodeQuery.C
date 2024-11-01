@@ -191,7 +191,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     } 
 
     bool DBsuppliedNodeId = true;
-    if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
+    if (!pickAtts.GetMatSelected() && (ghostType != AVT_CREATED_GHOSTS || pickByLabel))
     {
         if (pickAtts.GetElementIsGlobal() && !pickByLabel)
         {
