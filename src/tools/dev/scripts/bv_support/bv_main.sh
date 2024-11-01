@@ -394,13 +394,9 @@ function initialize_build_visit()
         if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -m64 -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         elif [[ "$(uname -m)" == "ppc64" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
                 CFLAGS="$CFLAGS -qpic"
@@ -412,13 +408,9 @@ function initialize_build_visit()
             else
                 CFLAGS="$CFLAGS -fPIC"
                 FCFLAGS="$FCFLAGS -fPIC"
-                if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                    C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-                fi
+                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
                 CXXFLAGS="$CXXFLAGS -fPIC"
-                if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                    CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-                fi
+                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
         elif [[ "$(uname -m)" == "ppc64le" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
@@ -430,34 +422,25 @@ function initialize_build_visit()
             else
                 CFLAGS="$CFLAGS -fPIC"
                 FCFLAGS="$FCFLAGS -fPIC"
-                if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                    C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-                fi
+                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
                 CXXFLAGS="$CXXFLAGS -fPIC"
-                if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                    CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-                fi
+                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 QT_PLATFORM="linux-g++"
             fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
         elif [[ "$(uname -m)" == "aarch64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             fi
             CXXFLAGS="$CXXFLAGS -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
             QT_PLATFORM="linux-aarch64-gnu-g++"
         fi
@@ -499,24 +482,16 @@ function initialize_build_visit()
         if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -m64 -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         fi
         if [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}

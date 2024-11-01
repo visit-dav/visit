@@ -10,9 +10,21 @@
 
 #####
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
+# Be sure to keep the list of files in python_test_files variable
+# consistent with those same files listed in the paths trigger
 #####
 variables:
   container_tag: visitdav/visit-ci-develop:2024-10-15-shac4fd59
+  python_test_files: >
+    ../../src/test/tests/databases/silo.py
+    ../../src/test/tests/databases/blueprint.py
+    ../../src/test/tests/databases/blueprint_export.py
+    ../../src/test/tests/hybrid/ddf.py
+    ../../src/test/tests/unit/assert_simple.py
+    ../../src/test/tests/unit/default_methods.py
+    ../../src/test/tests/unit/convert2to3.py
+    ../../src/test/tests/unit/atts_assign.py
+    ../../src/test/tests/unit/test_value_simple.py
 
 # only build merge target pr to develop
 trigger: none
@@ -20,11 +32,30 @@ pr:
   branches:
     include:
     - develop
-    - 3.4RC
+    - '[0-9].[0-9]RC'
+    - '[0-9].[0-9][0-9]RC'
+  paths:
+    include:
+    - '**/CMakeLists.txt'
+    - '**/*.cmake'
+    - '**/*.in'
+    - '**/*.C'
+    - '**/*.h'
+    - 'data/silo*'
+    - 'data/blueprint*'
+    - 'src/test/tests/databases/silo.py'
+    - 'src/test/tests/databases/blueprint.py'
+    - 'src/test/tests/databases/blueprint_export.py'
+    - 'src/test/tests/hybrid/ddf.py'
+    - 'src/test/tests/unit/assert_simple.py'
+    - 'src/test/tests/unit/default_methods.py'
+    - 'src/test/tests/unit/convert2to3.py'
+    - 'src/test/tests/unit/atts_assign.py'
+    - 'src/test/tests/unit/test_value_simple.py'
 
-# fast fail sanity checks
+# fast fail consistency checks
 stages:
-- stage: Sanity
+- stage: Consistency
   jobs:
   - job: BLT_Time_Travel_Check
     pool:
@@ -36,7 +67,7 @@ stages:
 
       - script: |
           #######################################
-          # run our sanity check script
+          # run our consistency check script
           #######################################
           git fetch
           python scripts/ci/check_blt_time_travel.py
@@ -142,14 +173,7 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
-           export TESTS=../../src/test/tests/databases/silo.py
-           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
-           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint_export.py"
-           export TESTS="${TESTS} ../../src/test/tests/hybrid/ddf.py"
-           # also run a few of our unit tests
-           export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
-           export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
-           export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
+           export TESTS=$(python_test_files)
            ./run_visit_test_suite.sh  -v ${TESTS}
         displayName: 'Run Tests'
 
