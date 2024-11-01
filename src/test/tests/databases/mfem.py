@@ -18,6 +18,9 @@
 #    Added new tests for the new LOR settings. All prior tests use the legacy
 #    LOR setting, while new tests use a mix of both.
 #
+#    Cyrus Harrison, Tue Oct 29 10:52:33 PDT 2024
+#    Added wedge example mesh.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")
 
@@ -26,10 +29,12 @@ readOptions["MFEM LOR Setting"] = "Legacy LOR"
 SetDefaultFileOpenOptions("MFEM", readOptions)
 
 mfem_roots  = glob.glob(data_path("mfem_test_data/*.mfem_root"))
+mfem_roots.extend(glob.glob(data_path("mfem_wedge_and_pyramid_examples/wedge_*.mfem_root")))
 input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]
 ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
 mfem_mesh_files = glob.glob(data_path("mfem_test_data/*.mesh"))
+
 
 def set_test_view():
     v = View3DAttributes()
