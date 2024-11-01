@@ -603,6 +603,9 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
 //    Kathleen Biagas, Thu Oct 31, 2024
 //    Ensure all procs are calling the same Exchange function.
 //
+//    Kathleen Biagas, Fri Nov 1, 2024
+//    Added consistency check for dataTypes.
+///
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -619,19 +622,27 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
         dataType = scalars[nonNullDomain]->GetDataType();
     }
 
+    int maxDataType = dataType;
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
-    int myDataType = dataType;
-    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
 #endif
 
-    if (dataType < 0)
+    if (maxDataType < 0)
         return scalars;
+
+    if(dataType != maxDataType)
+    {
+        // This should never happen, so throw the exception.
+        EXCEPTION1(VisItException,
+                   "avtUnstructuredDomainBoundaries:ExchangeScalar "
+                   "vtkDatArray data types do not match.");
+    }
 
     // This one's a little more complicated because there are different
     // types of scalars we might encounter. If more cases arise,
     // expand this function.
-    switch (dataType)
+    switch (maxDataType)
     {
         case VTK_INT:
             return ExchangeData_int(domainNum, isPointData, scalars);
@@ -677,6 +688,9 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
 //    Kathleen Biagas, Thu Oct 31, 2024
 //    Ensure all procs are calling the same Exchange function.
 //
+//    Kathleen Biagas, Fri Nov 1, 2024
+//    Added consistency check for dataTypes.
+///
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -691,19 +705,27 @@ avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPo
         dataType = vectors[nonNullDomain]->GetDataType();
     }
 
+    int maxDataType = dataType;
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
-    int myDataType = dataType;
-    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
 #endif
 
-    if (dataType < 0)
+    if (maxDataType < 0)
         return vectors;
+
+    if(dataType != maxDataType)
+    {
+        // This should never happen, so throw the exception.
+        EXCEPTION1(VisItException,
+                   "avtUnstructuredDomainBoundaries:ExchangeVector "
+                   "vtkDatArray data types do not match.");
+    }
 
     // This one's a little more complicated because there are different
     // types of vectors we might encounter. If more cases arise,
     // expand this function.
-    switch (dataType)
+    switch (maxDataType)
     {
         case VTK_FLOAT:
             return ExchangeFloatVector(domainNum, isPointData, vectors);
