@@ -280,6 +280,13 @@ if(PYTHONINTERP_FOUND)
         endif()
     endif()
 
+    # Ensure pip module is avaiable
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" "import sys; import pip; sys.stdout.write(pip.__version__)"
+                    OUTPUT_VARIABLE PYTHON_PIP_VERSION
+                    ERROR_VARIABLE  ERROR_FINDING_PYTHON_PIP_MODULE
+                    COMMAND_ERROR_IS_FATAL ANY)
+    message(STATUS "PYTHON_PIP_VERSION:       ${PYTHON_PIP_VERSION}")
+
     if(NOT EXISTS ${PYTHON_LIBRARY})
         message(FATAL_ERROR "Failed to find main library using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
     endif()

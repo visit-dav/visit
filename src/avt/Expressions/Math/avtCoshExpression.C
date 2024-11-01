@@ -60,17 +60,20 @@ avtCoshExpression::~avtCoshExpression()
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 27, 2009
 //
 //  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
  
 void
 avtCoshExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                          int ncomponents, int ntuples)
+                          int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     for (int i = 0 ; i < ntuples ; i++)
     {

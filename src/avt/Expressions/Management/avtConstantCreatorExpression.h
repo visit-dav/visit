@@ -41,6 +41,9 @@
 //
 //    Kevin Griffin, Wed Aug 17 19:40:04 PDT 2016
 //    Define method "SetFilterCreatesSingleton".
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -62,7 +65,7 @@ class EXPRESSION_API avtConstantCreatorExpression
 
   protected:
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples);
+                                         int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
     virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);

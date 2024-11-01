@@ -21,6 +21,10 @@
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   June 1, 2007
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -37,7 +41,7 @@ class EXPRESSION_API avtTensorContractionExpression : public avtUnaryMathExpress
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual int               GetNumberOfComponentsInOutput(int) { return 1; };
 };
 
