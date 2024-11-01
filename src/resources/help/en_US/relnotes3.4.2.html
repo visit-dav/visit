@@ -76,7 +76,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Silo plugin properly removes periodic boundary domain neighbors which can wholly enshroud a mesh rendering it invisible. This capability is restricted to rectangular arrangements of rectangular domains using the combination of a DBmultimeshadj object and auxiliary data structures to identify periodic domain neighbors.</li>
   <li>The OnionPeel and IndexSelect operator Windows now allow typing into the 'Set' option as well as selecting from the dropwdown box. Typing will filter the available entries to match what has been typed so far, allowing easier selection than the pulldown if there is a large number of sets. If typing is completed with text that doesn't match an available entry a Warning message will pop up.<li>
   <li>Support has been added for using the <code>jsrun</code> parallel job launcher.</li>
-  <li>Support has been added to enable connecting to remote systems that transparently use a gateway with <code>ssh</code>. Previously, VisIt would always check the validity of the remote host before connecting to it. Since the gateway was handled transparently and the remote host wasn't visible the validity check would fail and VisIt wouldn't connect to the remote host. This check can now be bypassed by checking "Use gateway" and leaving the gateway name is blank in the host profile for the remote system.</li>
+  <li>Added the ability to skip the remote host validity check when using a gateway. This allows VisIt to work with gateways that are transparently handled by <code>ssh</code>. The check can now be bypassed by checking "Use gateway" and leaving the gateway name blank in the host profile for the remote system.</li>
 </ul>
 
 <a name="Dev_changes"></a>
