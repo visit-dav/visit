@@ -2726,12 +2726,15 @@ class MainLauncher(object):
 
         gpu_arch = None
 
+        # Assume we are on an AMD system if lspci displays any AMD devices.
         have_amd = False
         if os.path.exists("/usr/sbin/lspci"):
             p = subprocess.run("/usr/sbin/lspci", capture_output=True, text=True)
             if "amd" in p.stdout.lower():
                 have_amd =  True
 
+        # If we are on an AMD system, use offload-arch to determine the
+        # GPU architecture.
         if have_amd:
             for file in files:
                 if os.path.exists(file):
