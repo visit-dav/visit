@@ -1262,7 +1262,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             // 
             avtCentering cent = AVT_NODECENT; // default
             if (n_field.has_child("association") &&
-                     n_field["association"].as_string() == "element")
+                n_field["association"].as_string() == "element")
             {
                 cent = AVT_ZONECENT;
             }
