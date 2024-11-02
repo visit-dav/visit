@@ -52,6 +52,7 @@ pr:
     - 'src/test/tests/unit/convert2to3.py'
     - 'src/test/tests/unit/atts_assign.py'
     - 'src/test/tests/unit/test_value_simple.py'
+    - 'azure-pipelines.yml'
 
 # fast fail consistency checks
 stages:
