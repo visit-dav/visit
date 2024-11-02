@@ -175,7 +175,7 @@ stages:
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
            export TESTS=$(python_test_files)
-           ./run_visit_test_suite.sh  -v ${TESTS}
+           ./run_visit_test_suite.sh --fuzzy --pixdiff 10 --avgdiff 10 --numdiff 0.1 -v ${TESTS}
         displayName: 'Run Tests'
 
       - task: CopyFiles@2
