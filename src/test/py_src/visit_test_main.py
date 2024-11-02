@@ -818,7 +818,10 @@ def JSONImageTestResult(case_name, status,
 # ----------------------------------------------------------------------------
 def Save_Validate_Perturb_Restore_Session(cur):
     retval = 0
-    trans = string.maketrans("():; #","______")
+    if (sys.version_info > (3, 0)):
+        trans = str.maketrans("():; #","______")
+    else:
+        trans = string.maketrans("():; #","______")
     sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
     ofile = "%s.xmlized.session"%string.translate(string.rstrip(cur,".png"),trans)
     RemoveFile(sfile)
@@ -1724,7 +1727,10 @@ def FilterTestText(inText, baseText, numdifftol):
         baseWords = baseText.split()
         inWords = tmpText.split()
         outText=""
-        transTab = string.maketrans(string.digits, string.digits)
+        if (sys.version_info > (3, 0)):
+            transTab = str.maketrans(string.digits, string.digits)
+        else:
+            transTab = string.maketrans(string.digits, string.digits)
         inStart = 0
         for w in range(len(baseWords)):
             try:
