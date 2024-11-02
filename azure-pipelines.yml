@@ -125,8 +125,7 @@ stages:
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
            cd build/testdata/
-           tar xvf ../../data/silo*.tar.xz
-           tar xvf ../../data/blueprint*.tar.xz
+           for f in silo*.tar.xz blueprint*.tar.xz; do tar xvf "$f"; done
         displayName: 'Prep Test Data'
 
       - script: |
