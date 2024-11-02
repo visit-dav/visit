@@ -25,6 +25,13 @@ variables:
     ../../src/test/tests/unit/convert2to3.py
     ../../src/test/tests/unit/atts_assign.py
     ../../src/test/tests/unit/test_value_simple.py
+    ../../src/test/tests/unit/annotation_objects.py
+    ../../src/test/tests/unit/protocol.py
+    ../../src/test/tests/unit/utility.py
+    ../../src/test/tests/expressions/ghost_zoneid_expr.py
+    ../../src/test/tests/expressions/global_stats.py
+    ../../src/test/tests/expressions/math_expr.py
+    ../../src/test/tests/expressions/tensor_expr.py
 
 # only build merge target pr to develop
 trigger: none
@@ -52,6 +59,13 @@ pr:
     - 'src/test/tests/unit/convert2to3.py'
     - 'src/test/tests/unit/atts_assign.py'
     - 'src/test/tests/unit/test_value_simple.py'
+    - 'src/test/tests/unit/annotation_objects.py'
+    - 'src/test/tests/unit/protocol.py'
+    - 'src/test/tests/unit/utility.py'
+    - 'src/test/tests/expressions/ghost_zoneid_expr.py'
+    - 'src/test/tests/expressions/global_stats.py'
+    - 'src/test/tests/expressions/math_expr.py'
+    - 'src/test/tests/expressions/tensor_expr.py'
 
 # fast fail consistency checks
 stages:
