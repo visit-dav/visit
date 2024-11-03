@@ -287,11 +287,13 @@ elif [ "$lassen" = true ]; then
        --no-ospray --parallel --qt --qwt --vtk9 --no-pyside --no-visit --no-boost --makeflags -j16 \
        --thirdparty-path ${dest_dir}
 elif [ "$rzvernal" = true ]; then
-   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-cce-18.0.0-magic/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-cce-18.0.0-magic/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-cce-18.0.0-magic/include \
+   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-rocmcc-6.1.2-magic/bin/mpiamdclang \
+       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-rocmcc-6.1.2-magic/bin/mpiamdclang++ \
+       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-rocmcc-6.1.2-magic/include \
+       C_COMPILER=/usr/tce/packages/rocmcc/rocmcc-6.1.2-magic/bin/amdclang \
+       CXX_COMPILER=/usr/tce/packages/rocmcc/rocmcc-6.1.2-magic/bin/amdclang++ \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
-       --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
+       --qt6 --qwt --no-pyside --no-gdal --no-pidx --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 elif [ "$trinity" = true ]; then
    module swap PrgEnv-intel/6.0.10 PrgEnv-gnu/6.0.10
    module swap gcc/11.2.0 gcc/8.2.0
