@@ -1733,15 +1733,15 @@ def FilterTestText(inText, baseText, numdifftol):
         inWords = tmpText.split()
         outText=""
         if (sys.version_info > (3, 0)):
-            transTab = str.maketrans(string.digits, string.digits)
+            transTab = str.maketrans(string.digits, string.digits, '><,()')
         else:
             transTab = string.maketrans(string.digits, string.digits)
         inStart = 0
         for w in range(len(baseWords)):
             try:
                 if (sys.version_info > (3, 0)):
-                    inWordT = inWords[w].translate(transTab, '><,()')
-                    baseWordT = baseWords[w].translate(transTab, '><,()')
+                    inWordT = inWords[w].translate(transTab)
+                    baseWordT = baseWords[w].translate(transTab)
                 else:
                     inWordT = string.translate(inWords[w], transTab, '><,()')
                     baseWordT = string.translate(baseWords[w], transTab, '><,()')
