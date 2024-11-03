@@ -20,7 +20,6 @@ variables:
     ../../src/test/tests/databases/blueprint.py
     ../../src/test/tests/databases/blueprint_export.py
     ../../src/test/tests/hybrid/ddf.py
-    ../../src/test/tests/unit/assert_simple.py
     ../../src/test/tests/unit/default_methods.py
     ../../src/test/tests/unit/convert2to3.py
     ../../src/test/tests/unit/atts_assign.py
@@ -55,7 +54,6 @@ pr:
     - 'src/test/tests/databases/blueprint.py'
     - 'src/test/tests/databases/blueprint_export.py'
     - 'src/test/tests/hybrid/ddf.py'
-    - 'src/test/tests/unit/assert_simple.py'
     - 'src/test/tests/unit/default_methods.py'
     - 'src/test/tests/unit/convert2to3.py'
     - 'src/test/tests/unit/atts_assign.py'
@@ -138,6 +136,7 @@ stages:
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
+           git lfs pull  --include test/baseline/hybrid/ddf
            cd build/testdata/
            for f in silo*.tar.xz blueprint*.tar.xz; do tar xvf "$f"; done
         displayName: 'Prep Test Data'
