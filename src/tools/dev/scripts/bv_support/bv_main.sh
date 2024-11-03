@@ -433,15 +433,12 @@ function initialize_build_visit()
             C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -fPIC"
             CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
         elif [[ "$(uname -m)" == "aarch64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
             C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
             CXXFLAGS="$CXXFLAGS -fPIC"
             CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
             QT_PLATFORM="linux-aarch64-gnu-g++"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
