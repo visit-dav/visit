@@ -287,9 +287,9 @@ elif [ "$lassen" = true ]; then
        --no-ospray --parallel --qt --qwt --vtk9 --no-pyside --no-visit --no-boost --makeflags -j16 \
        --thirdparty-path ${dest_dir}
 elif [ "$rzvernal" = true ]; then
-   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
+   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-cce-18.0.0-magic/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-cce-18.0.0-magic/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-cce-18.0.0-magic/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 elif [ "$trinity" = true ]; then
