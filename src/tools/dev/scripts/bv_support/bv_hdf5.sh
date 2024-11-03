@@ -463,7 +463,6 @@ EOF
     return 0;
 }
 
-
 function apply_hdf5_1814_isatty_patch
 {
     info "Patching hdf5 1.8.14 for isatty"
@@ -486,6 +485,39 @@ EOF
     return 0;
 }
 
+function apply_hdf5_1814_int_conversion_patch
+{
+    info "Patching hdf5 1.8.14 for pointer to integer conversion"
+    patch -p0 << EOF
+--- test/tmisc.c.orig   2024-11-03 08:34:15.921748000 -0800
++++ test/tmisc.c        2024-11-03 08:35:48.908466000 -0800
+@@ -2710,7 +2710,7 @@
+     hid_t file;         /* File ID */
+     herr_t ret;         /* Generic return value */
+     const char wdata[MISC16_SPACE_DIM][MISC16_STR_SIZE] =
+-                        {"1234567", "1234567\0", "12345678", {NULL}};
++                        {"1234567", "1234567\0", "12345678", 0};
+     char rdata[MISC16_SPACE_DIM][MISC16_STR_SIZE];  /* Information read in */
+     hid_t              dataset;        /* Dataset ID                   */
+     hid_t              sid;       /* Dataspace ID                      */
+@@ -2789,7 +2789,7 @@
+     hid_t file;         /* File ID */
+     herr_t ret;         /* Generic return value */
+     const char wdata[MISC17_SPACE_DIM1][MISC17_SPACE_DIM2] =
+-                        {"1234567", "1234567\0", "12345678", {NULL}};
++                        {"1234567", "1234567\0", "12345678", 0};
+     char rdata[MISC17_SPACE_DIM1][MISC17_SPACE_DIM2];  /* Information read in */
+     hid_t              dataset;        /* Dataset ID                   */
+     hid_t              sid;       /* Dataspace ID
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "HDF5 1.8.14 int conversion patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_hdf5_patch
 {
     # Apply a patch for static if we build statically.
@@ -497,6 +529,11 @@ function apply_hdf5_patch
     fi
 
     apply_hdf5_1814_isatty_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    apply_hdf5_1814_int_conversion_patch
     if [[ $? != 0 ]]; then
         return 1
     fi
