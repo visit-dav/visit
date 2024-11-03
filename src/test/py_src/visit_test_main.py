@@ -822,8 +822,13 @@ def Save_Validate_Perturb_Restore_Session(cur):
         trans = str.maketrans("():; #","______")
     else:
         trans = string.maketrans("():; #","______")
-    sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
-    ofile = "%s.xmlized.session"%string.translate(string.rstrip(cur,".png"),trans)
+    if (sys.version_info > (3, 0)):
+        tmp = string.rstrip(cur,".png")
+        sfile = "%s.session"%tmp.translate(trans)
+        ofile = "%s.xmlized.session"%tmp.translate(trans)
+    else:
+        sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
+        ofile = "%s.xmlized.session"%string.translate(string.rstrip(cur,".png"),trans)
     RemoveFile(sfile)
     SaveSession(sfile)
 
@@ -1734,8 +1739,12 @@ def FilterTestText(inText, baseText, numdifftol):
         inStart = 0
         for w in range(len(baseWords)):
             try:
-                inWordT = string.translate(inWords[w], transTab, '><,()')
-                baseWordT = string.translate(baseWords[w], transTab, '><,()')
+                if (sys.version_info > (3, 0)):
+                    inWordT = inWords[w].translate(transTab, '><,()')
+                    baseWordT = baseWords[w].translate(transTab, '><,()')
+                else:
+                    inWordT = string.translate(inWords[w], transTab, '><,()')
+                    baseWordT = string.translate(baseWords[w], transTab, '><,()')
                 if inWordT.count(".") == 2 and inWordT.endswith(".") or \
                    baseWordT.count(".") == 2 and baseWordT.endswith("."):
                     inWordT = inWordT.rstrip(".")
