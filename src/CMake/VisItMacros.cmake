@@ -257,15 +257,12 @@ endmacro()
 ##############################################################################
 # patch a target with new sources, headers, etc:
 #
-# Any non-visit-specific args are passed directly to blt_patch_target.
+# After visit-specific args are parsed and handled,
+# all args are passed directly to blt_patch_target.
 #
 # The visit-specific args must appear first in the caller argument list
 # before blt-specific, otherwise blt swallows them up with one of the args it
 # does understand, causing issues.
-#
-# I tried to parse only the args visit needs, then use the _UNPARSED_ARGUMENTS
-# feature to pass the rest to blt, but _UNPARSED_ARGUMENTS never contained
-# the correct arguments, possibly due to the parsing order ?
 #
 # ARGUMENTS:
 #    NAME         target name                REQUIRED
