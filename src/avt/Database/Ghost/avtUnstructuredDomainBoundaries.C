@@ -225,9 +225,9 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
     else
     {
         int sIndex = GetGivenIndex(fromDom, toDom);
-        
+
         map<int, int> &smap = sharedPointsMap[sIndex];
-        
+
         // Go through and manually insert the points that are not shared.
 
         for (size_t i = 0; i < points.size(); ++i)
@@ -299,7 +299,7 @@ CopyPointer(T *src, T *dest, int components,
     for (i = 1; i < nIter; ++i)
         *(++dest) = *(++src);
 }
- 
+
 // ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeMesh
 //
@@ -408,9 +408,9 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
         int i;
         for (i = 0; i < nTotalDomains; ++i)
             nGivenPoints += nGainedPoints[i][recvDom];
-        
+
         // Create the VTK objects
-        vtkUnstructuredGrid    *outm  = vtkUnstructuredGrid::New(); 
+        vtkUnstructuredGrid    *outm  = vtkUnstructuredGrid::New();
         vtkPoints *outp  = vtkPoints::New(mesh->GetPoints()->GetDataType());
 
         outm->DeepCopy(meshes[d]);
@@ -433,15 +433,15 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
         {
             if (sendDom == recvDom)
                 continue;
-            
+
             int nGivenPointsThisDomain = nGainedPoints[sendDom][recvDom];
             if (nGivenPointsThisDomain == 0)
                 continue;
-            
+
             // We need to remember what the point id for this exchange
             // of points is.
             startingPoint[pair<int,int>(sendDom, recvDom)] = newId;
-            
+
             T *pts = gainedPoints[sendDom][recvDom];
             int *origPointIdsThisDomain = origPointIds[sendDom][recvDom];
 
@@ -450,14 +450,14 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
                 *(newcoord++) = *(pts++);
                 *(newcoord++) = *(pts++);
                 *(newcoord++) = *(pts++);
-                translatedPointsMap[sendDom][origPointIdsThisDomain[i]] = 
+                translatedPointsMap[sendDom][origPointIdsThisDomain[i]] =
                                                                         newId++;
             }
         }
-        
+
         int nOldCells = outm->GetNumberOfCells();
 
-        
+
         vtkIdList *idList = vtkIdList::New();
         // Put in the new cells
         for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
@@ -469,19 +469,19 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
 
             if (nGainedCellsThisDomain == 0)
                 continue;
-            
+
             // We're going to be be giving cells from sendDom to recvDom.
             // The id that the cells will be inserted at is
             // important, and we need to remember.
             startingCell[pair<int,int>(sendDom, recvDom)] = outm->
                                                             GetNumberOfCells();
-            
+
             // We want the map that indexes the ptIds from sendDom into
             // the ptIds of recvDom.
             int index = GetGivenIndex(sendDom, recvDom);
             map<int, int> &smap = sharedPointsMap[index];
             map<int, int> &tmap = translatedPointsMap[sendDom];
-            
+
             for (i = 0; i < nGainedCellsThisDomain; ++i)
             {
                 int nPointsThisCell = nPointsPerCell[sendDom][recvDom][i];
@@ -493,7 +493,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
                     if (smap.find(id) != smap.end())
                         idList->SetId(k, smap[id]);
                     else
-                       idList->SetId(k, tmap[id]); 
+                       idList->SetId(k, tmap[id]);
                 }
                 outm->InsertNextCell(cellTypes[sendDom][recvDom][i], idList);
             }
@@ -518,7 +518,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
         }
         outm->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete();
-        outm->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0); 
+        outm->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 
         // Rebuild the links now that we've added ghost cells.
         outm->BuildLinks();
@@ -560,7 +560,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
         delete [] nGainedCells[a];
         delete [] nPointsPerCell[a];
     }
-    
+
     delete [] gainedPoints;
     delete [] cellTypes;
     delete [] cellPoints;
@@ -600,6 +600,12 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Kathleen Biagas, Thu Oct 31, 2024
+//    Ensure all procs are calling the same Exchange function.
+//
+//    Kathleen Biagas, Fri Nov 1, 2024
+//    Added consistency check for dataTypes.
+///
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -607,22 +613,39 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
                                               bool                isPointData,
                                               vector<vtkDataArray*> scalars)
 {
-    // We're in a bit of a sticky situation if we don't have any actual data.
-    // Without a valid vtkDataArray, we don't know which ExchangeData to
-    // call. But if there's no data, nothing will actually be exchanged
-    // aside from basic communications (eg: domain2proc, MPI_Barrier),
-    // so we'll choose to call one. 
-    if (!scalars.size())
+    int nonNullDomain = 0;
+    int dataType = -1;
+    if(!scalars.empty())
     {
-        return ExchangeData_float(domainNum, isPointData, scalars);
+        while (nonNullDomain < domainNum.size() && scalars[nonNullDomain] == NULL)
+            nonNullDomain++;
+        dataType = scalars[nonNullDomain]->GetDataType();
     }
+
+    int maxDataType = dataType;
+#ifdef PARALLEL
+    // Let's get them all to agree on one data type.
+    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
+    {
+        // This should never happen, so throw the exception.
+        EXCEPTION1(VisItException,
+                   "avtUnstructuredDomainBoundaries:ExchangeScalar "
+                   "vtkDataArray data types do not match.");
+    }
+#endif
+
+    if (maxDataType < 0)
+        return scalars;
+
     // This one's a little more complicated because there are different
     // types of scalars we might encounter. If more cases arise,
     // expand this function.
-    int nonNullDomain = 0;
-    while (nonNullDomain < domainNum.size() && scalars[nonNullDomain] == NULL)
-        nonNullDomain++;
-    switch (scalars[nonNullDomain]->GetDataType())
+    switch (maxDataType)
     {
         case VTK_INT:
             return ExchangeData_int(domainNum, isPointData, scalars);
@@ -665,27 +688,50 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Kathleen Biagas, Thu Oct 31, 2024
+//    Ensure all procs are calling the same Exchange function.
+//
+//    Kathleen Biagas, Fri Nov 1, 2024
+//    Added consistency check for dataTypes.
+///
 // ****************************************************************************
 
 vector<vtkDataArray*>
 avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPointData, vector<vtkDataArray*> vectors)
 {
-    // We're in a bit of a sticky situation if we don't have any actual data.
-    // Without a valid vtkDataArray, we don't know which ExchangeData to
-    // call. But if there's no data, nothing will actually be exchanged
-    // aside from basic communications (eg: domain2proc, MPI_Barrier),
-    // so we'll choose to call one. 
-    if (!vectors.size())
+    int nonNullDomain = 0;
+    int dataType = -1;
+    if(!vectors.empty())
     {
-        return ExchangeFloatVector(domainNum, isPointData, vectors);
+        while (nonNullDomain < domainNum.size() && vectors[nonNullDomain] == NULL)
+            nonNullDomain++;
+        dataType = vectors[nonNullDomain]->GetDataType();
     }
+
+    int maxDataType = dataType;
+#ifdef PARALLEL
+    // Let's get them all to agree on one data type.
+    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
+    {
+        // This should never happen, so throw the exception.
+        EXCEPTION1(VisItException,
+                   "avtUnstructuredDomainBoundaries:ExchangeVector "
+                   "vtkDataArray data types do not match.");
+    }
+#endif
+
+    if (maxDataType < 0)
+        return vectors;
+
     // This one's a little more complicated because there are different
     // types of vectors we might encounter. If more cases arise,
     // expand this function.
-    int nonNullDomain = 0;
-    while (nonNullDomain < domainNum.size() && vectors[nonNullDomain] == NULL)
-        nonNullDomain++;
-    switch (vectors[nonNullDomain]->GetDataType())
+    switch (maxDataType)
     {
         case VTK_FLOAT:
             return ExchangeFloatVector(domainNum, isPointData, vectors);
@@ -803,7 +849,7 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //
 //  Purpose:
 //    Exchange the ghost zone information for some materials,
-//    returning the new ones. 
+//    returning the new ones.
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
@@ -845,7 +891,7 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //
 //  Purpose:
 //    Exchange the ghost zone information for some materials,
-//    returning the new ones. 
+//    returning the new ones.
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
@@ -888,10 +934,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         avtMaterial *oldMat = mats[i];
         if (oldMat == NULL)
             continue;
- 
+
         //
         // Estimate the sizes we will need for the new object.
-        // 
+        //
         int oldNCells = oldMat->GetNZones();
         int oldMixlen = oldMat->GetMixlen();
         int newNCells  = oldNCells;
@@ -962,9 +1008,9 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
             }
         }
 
-        out[i] = new avtMaterial(oldMat->GetNMaterials(), 
-                                 oldMat->GetMaterials(), newNCells, 
-                                 new_matlist, newMixlen, new_mix_mat, 
+        out[i] = new avtMaterial(oldMat->GetNMaterials(),
+                                 oldMat->GetMaterials(), newNCells,
+                                 new_matlist, newMixlen, new_mix_mat,
                                  new_mix_next, new_mix_zone, new_mix_vf);
 
         delete [] new_matlist;
@@ -973,7 +1019,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         delete [] new_mix_zone;
         delete [] new_mix_vf;
     }
-    
+
     // Cleanup memory ... a bit of work.
     if (nGainedCells != NULL)
     {
@@ -1035,7 +1081,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 //
 //  Purpose:
 //    Exchange the ghost zone information for some materials,
-//    returning the new ones. 
+//    returning the new ones.
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
@@ -1072,7 +1118,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
     {
         if (mats[i] == NULL)
             continue;
- 
+
         // This should never happen, but it doesn't hurt to check.
         if (mats[i]->GetMixlen() != 0)
         {
@@ -1102,11 +1148,11 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
     {
         if (mats[i] == NULL)
             continue;
- 
+
         int nMaterials = mats[i]->GetNMaterials();
         int nZones = result[i]->GetNumberOfTuples();
         int *matPtr = (int *)(result[i]->GetVoidPointer(0));
-        
+
         out[i] = new avtMaterial(nMaterials, mats[i]->GetMaterials(),
                                  nZones, matPtr, 0,
                                  NULL, NULL, NULL, NULL);
@@ -1114,7 +1160,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
         materialArrays[i]->Delete();
         result[i]->Delete();
     }
-    
+
     return out;
 }
 
@@ -1124,7 +1170,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 //
 //  Purpose:
 //    Exchange the ghost zone information for some mixvars,
-//    returning the new ones. 
+//    returning the new ones.
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
@@ -1139,7 +1185,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 //    Hank Childs, Tue Mar  4 13:29:48 PST 2008
 //    Account for domains that do not have mixed variables.
 //
-//    Kathleen Bonnell, Thu Apr 10 17:56:33 PDT 2008 
+//    Kathleen Bonnell, Thu Apr 10 17:56:33 PDT 2008
 //    Removed redefinition of 'i'.
 //
 // ****************************************************************************
@@ -1232,10 +1278,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
         //
         for (int j = 0 ; j < nTotalDomains ; j++)
         {
-            memcpy(new_buff+mixlen_cnt, vals[j][domainNum[i]], 
+            memcpy(new_buff+mixlen_cnt, vals[j][domainNum[i]],
                    sizeof(float)*nGainedMixlen[j][domainNum[i]]);
             mixlen_cnt += nGainedMixlen[j][domainNum[i]];
-        }          
+        }
 
         out[i] = new avtMixedVariable(new_buff, newMixlen,mixvarname);
         delete [] new_buff;
@@ -1349,19 +1395,19 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
             meshes[j]->GetPoint(d2ptId, pt2);
 
             const double epsilon = 1e-12;
-            
+
             // If these points are too dis-similar, it has to be
             // referring another mesh.
             if (fabs(pt1[0] - pt2[0]) + fabs(pt1[1] - pt2[1])
                                       + fabs(pt1[2] - pt2[2]) > epsilon)
                 return false;
-            
+
             // If we reached this point, then we've tested this pair of
             // domains.
             break;
         }
     }
-    
+
     return true;
 }
 
@@ -1387,7 +1433,7 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //    Brad Whitlock, Thu Sep 16 12:58:27 PDT 2004
 //    I added conditionally compiled code to work around an apparent template
 //    instantiation bug that in the MSVC6.0 compiler that prevented VisIt
-//    from building on Windows. I added an argument to contribute to the 
+//    from building on Windows. I added an argument to contribute to the
 //    method signature and the contents of CommunicateDataInformation,
 //    which had to be inlined to get it to compile on Windows.
 //
@@ -1434,7 +1480,7 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 
         out[i]->DeepCopy(data[i]);
         out[i]->SetName(data[i]->GetName());
-        
+
         int sendDom;
 
         int nGivenTuples = 0;
@@ -1445,7 +1491,7 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 
             nGivenTuples += nGainedTuples[sendDom][recvDom];
         }
-        
+
         if (nGivenTuples > 0)
         {
             out[i]->Resize(nGivenTuples + out[i]->GetNumberOfTuples());
@@ -1628,7 +1674,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     nPointsPerCell = new int **[nTotalDomains];
 
     vtkIdList *idList = vtkIdList::New();
-    
+
     for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
     {
         gainedPoints[sendDom] = new T*[nTotalDomains];
@@ -1650,7 +1696,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
             nGainedPoints[sendDom][recvDom] = 0;
             nGainedCells[sendDom][recvDom] = 0;
-            
+
             // Cases where no computation is required.
             if (sendDom == recvDom)
                 continue;
@@ -1665,9 +1711,9 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
-                
+
                 vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[i];
-                
+
                 int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, then there's no work to do.
@@ -1676,7 +1722,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
                 size_t nPts = givenPoints[index].size();
                 nGainedPoints[sendDom][recvDom] += (int) nPts;
-                
+
                 gainedPoints[sendDom][recvDom] = new T[nPts * 3];
                 origPointIds[sendDom][recvDom] = new int[nPts];
 
@@ -1687,7 +1733,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 for (i = 0; i < nPts; ++i)
                 {
                     *(origIdPtr++) = givenPoints[index][i];
-                    
+
                     T *ptPtr = fromPtr + 3 * givenPoints[index][i];
                     *(gainedPtr++) = *(ptPtr++);
                     *(gainedPtr++) = *(ptPtr++);
@@ -1702,8 +1748,8 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 nPointsPerCell[sendDom][recvDom] = new int[nCells];
 
                 int *cellPtr = cellTypes[sendDom][recvDom];
-                int **cellPtsPtr = cellPoints[sendDom][recvDom]; 
-                int *nPtsPerCellPtr = nPointsPerCell[sendDom][recvDom]; 
+                int **cellPtsPtr = cellPoints[sendDom][recvDom];
+                int *nPtsPerCellPtr = nPointsPerCell[sendDom][recvDom];
 
                 for (i = 0; i < nCells; ++i)
                 {
@@ -1734,7 +1780,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
                 if (nPts == 0)
                     continue;
-                
+
                 nGainedPoints[sendDom][recvDom] += nPts;
                 gainedPoints[sendDom][recvDom] = new T[nPts * 3];
                 origPointIds[sendDom][recvDom] = new int[nPts];
@@ -1751,9 +1797,9 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 int nCells;
                 MPI_Recv(&nCells, 1, MPI_INT, fRank,
                          mpiNumGivenCellsTag, VISIT_MPI_COMM, &stat);
-                
+
                 nGainedCells[sendDom][recvDom] += nCells;
-                
+
                 cellTypes[sendDom][recvDom] = new int[nCells];
                 cellPoints[sendDom][recvDom] = new int *[nCells];
                 nPointsPerCell[sendDom][recvDom] = new int[nCells];
@@ -1771,7 +1817,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 int pntArrSize = 0;
                 for (k = 0; k < nCells; ++k)
                 {
-                    cellPoints[sendDom][recvDom][k] = 
+                    cellPoints[sendDom][recvDom][k] =
                                 new int [nPointsPerCell[sendDom][recvDom][k]];
                     pntArrSize += nPointsPerCell[sendDom][recvDom][k];
                 }
@@ -1797,8 +1843,8 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 MPI_Datatype type = GetMPIDataType<T>();
                 int tRank = domain2proc[recvDom];
 
-                int index = GetGivenIndex(sendDom, recvDom); 
-                
+                int index = GetGivenIndex(sendDom, recvDom);
+
                 // If no domain boundary, send 0 for nPts, and continue
                 // Also continue if there are no given points.
                 if (index < 0 || givenPoints[index].size() == 0)
@@ -1830,7 +1876,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 for (k = 0; k < nPts; ++k)
                 {
                     *(origIdPtr++) = givenPoints[index][k];
-                    
+
                     T *ptPtr = fromPtr + 3 * givenPoints[index][k];
                     *(gainedPtr++) = *(ptPtr++);
                     *(gainedPtr++) = *(ptPtr++);
@@ -1838,21 +1884,21 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 }
 
                 // Send the number of points given
-                MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM); 
-                
+                MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM);
+
                 // Send the gained points
-                MPI_Send(gainedPtrStart, nPts * 3, type, tRank, 
+                MPI_Send(gainedPtrStart, nPts * 3, type, tRank,
                          mpiGainedPointsTag, VISIT_MPI_COMM);
-                
+
                 // Send the original ids for the gained points
-                MPI_Send(origIdPtrStart, nPts, MPI_INT, tRank, 
+                MPI_Send(origIdPtrStart, nPts, MPI_INT, tRank,
                          mpiOriginalIdsTag, VISIT_MPI_COMM);
 
                 // Send the number of given cells
                 int nCells = (int)givenCells[index].size();
-                MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag, 
+                MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag,
                          VISIT_MPI_COMM);
-                
+
                 // Prepare for sending the cell info
                 int *cellPtr = new int[nCells];
                 vector<int> cellPtsVector;
@@ -1869,8 +1915,8 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     for (int k = 0; k < nPts; ++k)
                         cellPtsVector.push_back(idList->GetId(k));
                 }
-                
-                
+
+
                 // Send the cell types
                 MPI_Send(cellPtr, nCells, MPI_INT, tRank, mpiCellTypesTag,
                     VISIT_MPI_COMM);
@@ -1905,7 +1951,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 //  Method:  avtUnstructuredDomainBoundaries::CommunicateMixvarInformation
 //
 //  Purpose:
-//    Send and collect information needed to exchange mixed variables. 
+//    Send and collect information needed to exchange mixed variables.
 //
 //  Notes:
 //    Returned arguments should be passed in as uninitialized pointers.
@@ -1979,7 +2025,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 for (i = 0 ; i < domainNum.size() ; i++)
                     if (domainNum[i] == sendDom)
                         break;
-                
+
                 int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, then there's no work to do.
@@ -1987,7 +2033,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     continue;
 
                 avtMixedVariable *givingVar = mixvars[i];
-                
+
                 size_t nCells = givenCells[index].size();
 
                 // Assess the amount of mix in cells along the boundary.
@@ -2017,7 +2063,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        snprintf(str, 1024, 
+                        snprintf(str, 1024,
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2063,7 +2109,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
 
                 if (amt == 0)
                     continue;
-                
+
                 mixGained[sendDom][recvDom] = amt;
                 vals[sendDom][recvDom] = new float[amt];
                 // Get the gained materials
@@ -2073,11 +2119,11 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
-                
+
                 int tRank = domain2proc[recvDom];
 
-                int index = GetGivenIndex(sendDom, recvDom); 
-                
+                int index = GetGivenIndex(sendDom, recvDom);
+
                 // If no domain boundary, send 0 for nPts, and continue
                 // Also continue if there are no given points.
                 int amt = 0;
@@ -2092,7 +2138,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                         break;
 
                 avtMixedVariable *givingVar = mixvars[i];
-                
+
                 size_t nCells = givenCells[index].size();
 
                 // Assess the amount of mix in cells along the boundary.
@@ -2122,7 +2168,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        snprintf(str, 1024, 
+                        snprintf(str, 1024,
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2212,7 +2258,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                                  const vector<int> &domainNum,
                                  const vector<avtMaterial *> &mats,
                                  int **&nGainedCells, int **&nGainedMixlen,
-                                 int ***&gainedMatlist, int ***&gainedMixmat, 
+                                 int ***&gainedMatlist, int ***&gainedMixmat,
                                  float ***&gainedMixvf)
 {
     // Get the processor rank
@@ -2247,7 +2293,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
             gainedMatlist[sendDom][recvDom] = NULL;
             gainedMixmat[sendDom][recvDom]  = NULL;
             gainedMixvf[sendDom][recvDom] = NULL;
-            
+
             nGainedCells[sendDom][recvDom]  = 0;
             nGainedMixlen[sendDom][recvDom] = 0;
 
@@ -2266,7 +2312,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                 for (i = 0 ; i < domainNum.size() ; i++)
                     if (domainNum[i] == sendDom)
                         break;
-                
+
                 int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, then there's no work to do.
@@ -2274,7 +2320,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     continue;
 
                 avtMaterial *givingMat = mats[i];
-                
+
                 size_t nCells = givenCells[index].size();
                 nGainedCells[sendDom][recvDom] = (int)nCells;
 
@@ -2299,7 +2345,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        snprintf(str, 1024, 
+                        snprintf(str, 1024,
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2307,7 +2353,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     }
                 }
                 nGainedMixlen[sendDom][recvDom] = nMixlen;
-                
+
                 gainedMatlist[sendDom][recvDom] = new int[nCells];
                 gainedMixmat[sendDom][recvDom]  = new int[nMixlen];
                 gainedMixvf[sendDom][recvDom]   = new float[nMixlen];
@@ -2362,7 +2408,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 
                 if (amt[0] == 0 && amt[1] == 0)
                     continue;
-                
+
                 nGainedCells[sendDom][recvDom]  += amt[0];
                 nGainedMixlen[sendDom][recvDom] += amt[1];
 
@@ -2388,8 +2434,8 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 
                 int tRank = domain2proc[recvDom];
 
-                int index = GetGivenIndex(sendDom, recvDom); 
-                
+                int index = GetGivenIndex(sendDom, recvDom);
+
                 // If no domain boundary, send 0 for nPts, and continue
                 // Also continue if there are no given points.
                 int amt[2] = { 0, 0 };
@@ -2398,15 +2444,15 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     MPI_Send(amt, 2, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
                     continue;
                 }
-                
+
                 int i = 0;
-                
+
                 for (i = 0; i < (int)domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
 
                 avtMaterial *givingMat = mats[i];
-                
+
                 int nCells = (int)givenCells[index].size();
                 nGainedCells[sendDom][recvDom] = nCells;
 
@@ -2431,7 +2477,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        snprintf(str, 1024, 
+                        snprintf(str, 1024,
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2439,11 +2485,11 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     }
                 }
                 nGainedMixlen[sendDom][recvDom] = nMixlen;
-                
+
                 amt[0] = nCells;
                 amt[1] = nMixlen;
                 MPI_Send(amt, 2, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
-              
+
                 int   *givenMatlist = new int[nCells];
                 int   *givenMixmat  = new int[nMixlen];
                 float *givenMixvf   = new float[nMixlen];
@@ -2599,7 +2645,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
-                size_t i = 0; 
+                size_t i = 0;
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2610,14 +2656,14 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 if (index < 0)
                     continue;
 
-                vector<int> &mapRef = isPointData ? givenPoints[index] 
+                vector<int> &mapRef = isPointData ? givenPoints[index]
                                                   : givenCells[index];
-                
+
                 int nTuples =(int) mapRef.size();
                 nGainedTuples[sendDom][recvDom] = nTuples;
 
                 gainedData[sendDom][recvDom] = new T[nTuples * nComponents];
-                
+
                 T * origPtr = (T*)(data[i]->GetVoidPointer(0));
                 T * dataPtr = gainedData[sendDom][recvDom];
 
@@ -2645,7 +2691,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 int nTup;
                 MPI_Recv(&nTup, 1, MPI_INT, fRank, mpiNumTuplesTag,
                          VISIT_MPI_COMM, &stat);
-                
+
                 if (nTup == 0)
                     continue;
 
@@ -2711,7 +2757,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 
                 delete [] dataArr;
             }
-#endif 
+#endif
         }
     }
 
