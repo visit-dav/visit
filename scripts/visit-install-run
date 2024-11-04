@@ -296,6 +296,7 @@ lassen=false
 rzwhippet=false
 magma=false
 sierra=false
+tuolumne=false
 
 ver=undefined
 machine_name="unknown"
@@ -320,6 +321,13 @@ do
          poodle=true
          machine_name="poodle"
          architecture="linux-x86_64"
+         network="llnl_open_cz"
+         shift
+         ;;
+      -tuolumne)
+         tuolumne=true
+         machine_name="tuolumne"
+         architecture="linux-x86_64-gfx942"
          network="llnl_open_cz"
          shift
          ;;
@@ -365,7 +373,7 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rzwhippet magma sierra"
+   echo "    kickit poodle lassen rzwhippet magma sierra tuolumne"
    exit
 fi
 
@@ -389,7 +397,8 @@ ver=`echo $ver2 | tr "_" "."`
 # create the install script
 #
 if [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$lassen" = true ] || \
-   [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ]; then
+   [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    rm -f machine_specific_install_script
    cat <<EOF > machine_specific_install_script
 #!/bin/sh
@@ -410,7 +419,7 @@ if [ "$kickit" = true ]; then
 $ver ${architecture}-rhel7 /usr/gapps/visit > installlog 2>&1
 EOF
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$magma" = true ] || [ "$sierra" = true ]; then
+     [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
 $ver ${architecture}-${machine_name} /usr/gapps/visit > installlog 2>&1
@@ -424,7 +433,8 @@ fi
 # resultlog
 #
 if [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$magma" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
+   [ "$magma" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
@@ -452,7 +462,8 @@ fi
 #
 # email
 #
-if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
 EOF
@@ -477,7 +488,7 @@ if [ "$test" = "no" ]; then
       cp /home/$user/${machine_name}/visitbuild/visit$ver2.${architecture}-wmesa.tar.gz visit$ver2.${architecture}-rhel7-wmesa.tar.gz
       chmod 750 ${machine_name}_install;./${machine_name}_install
    elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-        [ "$magma" = true ] || [ "$sierra" = true ]; then
+        [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
       cp machine_specific_install_script ${machine_name}_install
       cp $result_dir/visit$ver2.${architecture}-${machine_name}.tar.gz .
       chmod 750 ${machine_name}_install;./${machine_name}_install
