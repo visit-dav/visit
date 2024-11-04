@@ -671,6 +671,9 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Call augment ghost data unconditionally.
 //
+//    Kathleen Biagas, Mon Nov 4, 2024
+//    Only call AugmengGhostData if avtMeshMetaData:hasExtraGhostInfo is true.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1016,8 +1019,12 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                                       spec, src, allDomains,
                                       canDoCollectiveCommunication);
     }
-    // unconditionally add ghost data if the database provided extra ghost information
-    AugmentGhostData(datasetCollection, spec, src);
+
+    if (md->GetMesh(meshname) != NULL && md->GetMesh(meshname)->hasExtraGhostInfo)
+    {
+        // unconditionally add ghost data if the database provided extra ghost information
+        AugmentGhostData(datasetCollection, spec, src);
+    }
 
     //
     // Finally, do the material selection.
@@ -7992,6 +7999,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Don't attempt to Exchange extra ghost zone/node arrays if no process
 //    has extra ghost information.
 //
+//    Kathleen Biagas, Mon Nov 4, 2024
+//    Use avtMeshMetaData field 'hasExtraGhostInfo' to determine whether or
+//    not to handle extra ghost information.
+//
 // ****************************************************************************
 
 bool
@@ -8612,36 +8623,30 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         }
     }
 
-    //
-    // Exchange ExtraGhostZone Arrays.
-    //
-    // this logic was added to support the functionality in the
-    // AugmentGhostData() function.
-    vector<vtkDataArray *> extraGhostZones;
-    for (size_t j = 0 ; j < doms.size() ; j++)
+    if(md->GetMesh(meshname)->hasExtraGhostInfo)
     {
-        vtkDataSet *ds1 = list[j];
-        if (ds1 == NULL ||
-            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+        //
+        // Exchange ExtraGhostZone Arrays.
+        //
+        // this logic was added to support the functionality in the
+        // AugmentGhostData() function.
+        vector<vtkDataArray *> extraGhostZones;
+        for (size_t j = 0 ; j < doms.size() ; j++)
         {
-            extraGhostZones.push_back(NULL);
-            continue;
-        }
-        if (ds1->GetCellData()->GetArray("avtExtraGhostZones"))
-        {
-            extraGhostZones.push_back(ds1->GetCellData()->GetArray(
+            vtkDataSet *ds1 = list[j];
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+            {
+                extraGhostZones.push_back(NULL);
+                continue;
+            }
+            if (ds1->GetCellData()->GetArray("avtExtraGhostZones"))
+            {
+                extraGhostZones.push_back(ds1->GetCellData()->GetArray(
                                                 "avtExtraGhostZones"));
+            }
         }
-    }
 
-    int canDoExchange = (extraGhostZones.size() > 0);
-#ifdef PARALLEL
-    int myCanDoExchange = canDoExchange;
-    MPI_Allreduce(&myCanDoExchange, &canDoExchange, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
-
-    if(canDoExchange)
-    {
         vector<vtkDataArray *> extraGhostZonesOut;
         extraGhostZonesOut = dbi->ExchangeScalar(doms,false,extraGhostZones);
         for (int j = 0 ; j < (int)doms.size() ; j++)
@@ -8653,37 +8658,29 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             ds1->GetCellData()->AddArray(extraGhostZonesOut[j]);
             extraGhostZonesOut[j]->Delete();
         }
-    }
 
-    //
-    // Exchange ExtraGhostNode Arrays.
-    //
-    // this logic was added to support the functionality in the
-    // AugmentGhostData() function.
-    vector<vtkDataArray *> extraGhostNodes;
-    for (size_t j = 0 ; j < doms.size() ; j++)
-    {
-        vtkDataSet *ds1 = list[j];
-        if (ds1 == NULL ||
-            ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+        //
+        // Exchange ExtraGhostNode Arrays.
+        //
+        // this logic was added to support the functionality in the
+        // AugmentGhostData() function.
+        vector<vtkDataArray *> extraGhostNodes;
+        for (size_t j = 0 ; j < doms.size() ; j++)
         {
-            extraGhostNodes.push_back(NULL);
-            continue;
-        }
-        if (ds1->GetPointData()->GetArray("avtExtraGhostNodes"))
-        {
-            extraGhostNodes.push_back(ds1->GetPointData()->GetArray(
+            vtkDataSet *ds1 = list[j];
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+            {
+                extraGhostNodes.push_back(NULL);
+                continue;
+            }
+            if (ds1->GetPointData()->GetArray("avtExtraGhostNodes"))
+            {
+                extraGhostNodes.push_back(ds1->GetPointData()->GetArray(
                                                 "avtExtraGhostNodes"));
+            }
         }
-    }
 
-    canDoExchange = (extraGhostNodes.size() > 0);
-#ifdef PARALLEL
-    myCanDoExchange = canDoExchange;
-    MPI_Allreduce(&myCanDoExchange, &canDoExchange, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
-    if(canDoExchange)
-    {
         vector<vtkDataArray *> extraGhostNodesOut;
         extraGhostNodesOut = dbi->ExchangeScalar(doms,true,extraGhostNodes);
         for (int j = 0 ; j < (int)doms.size() ; j++)
