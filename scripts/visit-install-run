@@ -251,7 +251,7 @@ set -e
 test=no
 
 user=`whoami`
-result_dir=/usr/workspace/visit/visit/_release_builds/
+result_dir=/usr/workspace/visit/visit/_release_builds
 
 #
 # Set the user e-mail address.

@@ -346,7 +346,7 @@ set -e
 test=no
 
 user=`whoami`
-result_dir=/usr/workspace/visit/visit/_release_builds/
+result_dir=/usr/workspace/visit/visit/_release_builds
 
 
 #
@@ -542,6 +542,7 @@ export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/
 EOF
 elif [ "$tuolumne" = true ]; then
 cat <<EOF >> machine_specific_build_script
+module load gcc
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray-gfx942/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
@@ -631,12 +632,19 @@ if [ "$kickit" = true ]; then
    cat <<EOF >> machine_specific_build_script
 EOF
 elif [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
-     [ "$magma" = true ] || [ "$tuolumne" = true ]; then
+     [ "$magma" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f $result_dir/buildlog.$machine_name
 cp buildlog $result_dir/buildlog.$machine_name
 rm -f $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
+EOF
+elif [ "$tuolumne" = true ]; then
+   cat <<EOF >> machine_specific_build_script
+rm -f $result_dir/buildlog.$machine_name
+cp buildlog $result_dir/buildlog.$machine_name
+rm -f $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
+cp build/visit\$ver2.linux-x86_64-gfx942.tar.gz $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
 EOF
 elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
    cat <<EOF >> machine_specific_build_script
