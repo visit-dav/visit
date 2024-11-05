@@ -157,13 +157,19 @@ stages:
            # run test suite on silo + blueprint tests
            export TESTS="$(python_test_files)"
            ./run_visit_test_suite.sh --fuzzy --pixdiff 10 --avgdiff 10 --numdiff 0.1 -v ${TESTS}
+           hasFailed="$(grep Failed\\\|Unacceptable\\\|OS-Killed output/html/index.html)"
+           if [[ -n "$hasFailed" ]]; then
+             exit 1 # tests failed
+           else
+             exit 0 # tests passed
+           fi
         displayName: 'Run Tests'
 
       - task: CopyFiles@2
         inputs:
           contents: 'build/test/output/html/**'
           targetFolder: $(Build.ArtifactStagingDirectory)
-        condition: always()
+        condition: succeededOrFailed()
 
       - script: |
            #################################
@@ -178,13 +184,13 @@ stages:
         inputs:
           contents: 'build/resources/help/en_US/manual/**'
           targetFolder: $(Build.ArtifactStagingDirectory)
-        condition: always()
+        condition: succeededOrFailed()
 
       - task: PublishBuildArtifacts@1
         inputs:
           pathToPublish: $(Build.ArtifactStagingDirectory)
           artifactName: VisIt_Test_Outputs
-        condition: always()
+        condition: succeededOrFailed()
 
       # - script: |
       #      #################################
