@@ -219,7 +219,7 @@ ReadMiliResults(Famid  &dbid,
 //      Added DBOptionsAttribtues and added checks for setting the
 //      globalIntegrationPoint value. Options are "Inner", "Middle",
 //      and "Outer".
-// 
+//
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Clear nodeLabelsExistForMesh vector.
 //
@@ -390,9 +390,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
         delete [] fampath;
     }
 
-    // 
+    //
     // don't need to track the node label existence anymore
-    // 
+    //
     nodeLabelsExistForMesh.clear();
 }
 
@@ -645,10 +645,10 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 //
 //    Alister Maguire, Fri Mar  6 10:55:34 PST 2020
 //    Adding ghost zones to aid the pick operator.
-// 
+//
 //    Justin Privitera, Wed Aug 28 14:57:42 PDT 2024
 //    Remove duplicated loop for ghost nodes.
-// 
+//
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Make ghost zones and nodes "extra", which means they are handled later.
 //
@@ -920,9 +920,9 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 //    Alister Maguire, Thu Aug 13 08:41:53 PDT 2020
 //    Fixed a bug preventing numClassesPerCellType to be adjusted
 //    correctly.
-// 
+//
 //    Justin Privitera, Tue Jun 27 15:15:14 PDT 2023
-//    Throw an exception to prevent crashing mysteriously when 
+//    Throw an exception to prevent crashing mysteriously when
 //    GetClassMDByShortName returns NULL.
 //
 // ****************************************************************************
@@ -1033,7 +1033,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                              "missing from the top level mili file.", shortName);
                     EXCEPTION1(ImproperUseException, msg);
                 }
-                
+
                 offset += nCells;
             }
             numClassesPerCellType[i] = adjustedNumClassesPerCellType;
@@ -2647,7 +2647,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
 //      Only add pressure for stress.
-// 
+//
 //      Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
 //      Added derived variables volumetric strain and relative volume.
 //
@@ -2944,6 +2944,9 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //      Eric Brugger, Fri May  7 15:54:32 PDT 2021
 //      Don't add any material colors if no material colors were specified.
 //
+//      Kathleen Biagas, Mon Nov 4, 2024
+//      Set hasExtraGhostInfo to true for a mesh if ContainsSand is true.
+//
 // ****************************************************************************
 
 void
@@ -2977,6 +2980,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         mesh->blockTitle           = "processors";
         mesh->blockPieceName       = "processor";
         mesh->hasSpatialExtents    = false;
+        mesh->hasExtraGhostInfo    = miliMetaData[meshId]->ContainsSand();
         md->Add(mesh);
 
         //
@@ -3214,7 +3218,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Modifications
 //    Justin Privitera, Tue Aug 27 11:40:54 PDT 2024
 //    Took quotes off of AUXILIARY_DATA_IDENTIFIERS.
-// 
+//
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Support Global Node Ids.
 //
@@ -3328,7 +3332,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
             EXCEPTION1(InvalidVariableException, mesh)
         }
         --meshId;
-        
+
         if (!nodeLabelsExistForMesh[meshId])
         {
             return NULL;
@@ -3862,7 +3866,7 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //      Eric Brugger, Fri May  7 15:54:32 PDT 2021
 //      Remove the code that assigns a random color to a material if no
 //      material color is specified.
-// 
+//
 //      Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //      Pad out nodeLabelsExistForMesh vector with all true.
 //
@@ -4210,7 +4214,7 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
 //
 //  Modifications:
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
-//    Record that node labels do not exist and have a stricter check for 
+//    Record that node labels do not exist and have a stricter check for
 //    failure to read node labels.
 //
 // ****************************************************************************
