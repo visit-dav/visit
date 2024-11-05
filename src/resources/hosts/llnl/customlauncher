@@ -325,6 +325,10 @@ class LLNLLauncher(MainLauncher):
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-gcc-10.3.1/lib"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
 
+        if sys_type == "toss_4_x86_64_ib_cray":
+            gcc_ld_library_paths = ["/opt/cray/pe/gcc/12.2.0/snos/lib64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(gcc_ld_library_paths))
+
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
 
