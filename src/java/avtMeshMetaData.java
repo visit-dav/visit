@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
-    private static int avtMeshMetaData_numAdditionalAtts = 52;
+    private static int avtMeshMetaData_numAdditionalAtts = 53;
 
     public avtMeshMetaData()
     {
@@ -119,6 +119,7 @@ public class avtMeshMetaData extends AttributeSubject
         LODs = 1;
         presentGhostZoneTypes = 0;
         zonesWereSplit = false;
+        hasExtraGhostInfo = false;
     }
 
     public avtMeshMetaData(int nMoreFields)
@@ -214,6 +215,7 @@ public class avtMeshMetaData extends AttributeSubject
         LODs = 1;
         presentGhostZoneTypes = 0;
         zonesWereSplit = false;
+        hasExtraGhostInfo = false;
     }
 
     public avtMeshMetaData(avtMeshMetaData obj)
@@ -312,6 +314,7 @@ public class avtMeshMetaData extends AttributeSubject
         LODs = obj.LODs;
         presentGhostZoneTypes = obj.presentGhostZoneTypes;
         zonesWereSplit = obj.zonesWereSplit;
+        hasExtraGhostInfo = obj.hasExtraGhostInfo;
 
         SelectAll();
     }
@@ -448,7 +451,8 @@ public class avtMeshMetaData extends AttributeSubject
                 (hideFromGUI == obj.hideFromGUI) &&
                 (LODs == obj.LODs) &&
                 (presentGhostZoneTypes == obj.presentGhostZoneTypes) &&
-                (zonesWereSplit == obj.zonesWereSplit));
+                (zonesWereSplit == obj.zonesWereSplit) &&
+                (hasExtraGhostInfo == obj.hasExtraGhostInfo));
     }
 
     // Property setting methods
@@ -806,6 +810,12 @@ public class avtMeshMetaData extends AttributeSubject
         Select(51);
     }
 
+    public void SetHasExtraGhostInfo(boolean hasExtraGhostInfo_)
+    {
+        hasExtraGhostInfo = hasExtraGhostInfo_;
+        Select(52);
+    }
+
     // Property getting methods
     public String               GetName() { return name; }
     public String               GetOriginalName() { return originalName; }
@@ -859,6 +869,7 @@ public class avtMeshMetaData extends AttributeSubject
     public int                  GetLODs() { return LODs; }
     public int                  GetPresentGhostZoneTypes() { return presentGhostZoneTypes; }
     public boolean              GetZonesWereSplit() { return zonesWereSplit; }
+    public boolean              GetHasExtraGhostInfo() { return hasExtraGhostInfo; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -967,6 +978,8 @@ public class avtMeshMetaData extends AttributeSubject
             buf.WriteInt(presentGhostZoneTypes);
         if(WriteSelect(51, buf))
             buf.WriteBool(zonesWereSplit);
+        if(WriteSelect(52, buf))
+            buf.WriteBool(hasExtraGhostInfo);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1130,6 +1143,9 @@ public class avtMeshMetaData extends AttributeSubject
         case 51:
             SetZonesWereSplit(buf.ReadBool());
             break;
+        case 52:
+            SetHasExtraGhostInfo(buf.ReadBool());
+            break;
         }
     }
 
@@ -1188,6 +1204,7 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + intToString("LODs", LODs, indent) + "\n";
         str = str + intToString("presentGhostZoneTypes", presentGhostZoneTypes, indent) + "\n";
         str = str + boolToString("zonesWereSplit", zonesWereSplit, indent) + "\n";
+        str = str + boolToString("hasExtraGhostInfo", hasExtraGhostInfo, indent) + "\n";
         return str;
     }
 
@@ -1245,5 +1262,6 @@ public class avtMeshMetaData extends AttributeSubject
     private int                  LODs;
     private int                  presentGhostZoneTypes;
     private boolean              zonesWereSplit;
+    private boolean              hasExtraGhostInfo;
 }
 
