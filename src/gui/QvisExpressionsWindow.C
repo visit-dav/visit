@@ -295,6 +295,7 @@ const char *expr_vector[] = {
     "colorlookup",
     "cross",
     "curl",
+    "displacement",
     "divergence",
     "dot",
     "gradient",

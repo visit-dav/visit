@@ -285,21 +285,7 @@ avtDisplaceFilter::PreExecute(void)
         displace_var = pipelineVariable;
 
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-    if (inAtts.ValidVariable(displace_var))
-    {
-        if (inAtts.GetVariableDimension(displace_var) != 3)
-        {
-            bool valid2D = false;
-            if (inAtts.GetVariableDimension(displace_var) == 2 &&
-                inAtts.GetSpatialDimension() == 2)
-                valid2D = true;
-
-            if (!valid2D)
-                EXCEPTION2(InvalidDimensionsException, "The displace operator",
-                        "vector");
-        }
-    }
-    else
+    if (! inAtts.ValidVariable(displace_var))
     {
         // let it pass through and see what happens
         debug1 << "The displace operator was checking to see if the input "
