@@ -341,6 +341,9 @@ set -e
 # 
 #   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
 #   Completely reworked this script to have no more duplication.
+# 
+#   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
+#   Added support for building on tuolumne.
 #-----------------------------------------------------------------------
 
 test=no
@@ -542,7 +545,7 @@ export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/
 EOF
 elif [ "$tuolumne" = true ]; then
 cat <<EOF >> machine_specific_build_script
-module load gcc
+module load gcc/12.2.1-magic
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray-gfx942/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH

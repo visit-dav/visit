@@ -246,6 +246,8 @@ set -e
 #   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
 #   Completely reworked this script to have no more duplication.
 #
+#   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
+#   Added support for installing on tuolumne.
 #-----------------------------------------------------------------------
 
 test=no

@@ -264,6 +264,9 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
 #
 #   Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
 #   Added an LLNL specific job launcher for jsrun.
+# 
+#   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
+#   Added special LD_LIBRARY_PATH logic for cray systems.
 #
 ###############################################################################
 
