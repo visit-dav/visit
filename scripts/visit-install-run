@@ -416,13 +416,13 @@ fi
 if [ "$kickit" = true ]; then
    cat <<EOF >> machine_specific_install_script
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
-$ver ${architecture}-rhel7 /usr/gapps/visit > installlog 2>&1
+$ver ${architecture}-rhel7 /usr/gapps/visit/beta > installlog 2>&1
 EOF
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
      [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
-$ver ${architecture}-${machine_name} /usr/gapps/visit > installlog 2>&1
+$ver ${architecture}-${machine_name} /usr/gapps/visit/beta > installlog 2>&1
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -441,16 +441,16 @@ echo ""                                              > resultlog 2>&1
 echo "        install of visit on $machine_name"     >> resultlog 2>&1
 echo "       ----------------------------"           >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-df -k /usr/gapps/visit                               >> resultlog 2>&1
+df -k /usr/gapps/visit/beta                               >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/$architecture/bin       >> resultlog 2>&1
+ls -l /usr/gapps/visit/beta/$ver+/$architecture/bin       >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/beta/$ver+/$architecture/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/beta/$ver+/$architecture/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/beta/$ver+/$architecture/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/$architecture\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/beta/$ver+/$architecture/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/$architecture\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 rm -f resultlog.$machine_name
 mv resultlog resultlog.$machine_name
 EOF
