@@ -335,11 +335,11 @@ elif [ "$trinity" = true ]; then
        --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    module load gcc/12.2.1-magic
-   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/include \
-       PAR_INCLUDE_PATH=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab \
+   env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.31-gcc-12.2.1-magic/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.31-gcc-12.2.1-magic/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.31-gcc-12.2.1-magic/include \
+       PAR_INCLUDE_PATH=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.31-gcc-12.2.1-magic/include \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab --no-adios --no-adios2 \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 else
    echo "case for $machine_name not implemented. Bailing out."

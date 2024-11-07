@@ -103,7 +103,7 @@ function bv_silo_ensure
 
 function apply_silo_4102_fpzip_patch_windows_line_endings
 {
-    info "Patching silo for fpzip DOMAIN and RANGE symbols"
+    info "Patching silo for fpzip DOMAIN and RANGE symbols using windows line endings"
     patch --verbose -p0 <<EOF
 Index: src/fpzip/codec.h
 ===================================================================

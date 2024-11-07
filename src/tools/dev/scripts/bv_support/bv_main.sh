@@ -328,6 +328,9 @@ function initialize_build_visit()
         export GFORTRAN=""
     fi
 
+    # used to see if we are a cray system
+    export SYSTEM_TYPE=$(printenv SYS_TYPE)
+
     export OPSYS=${OPSYS:-$(uname -s)}
     export PROC=${PROC:-$(uname -p)}
     export REL=${REL:-$(uname -r)}
@@ -344,9 +347,6 @@ function initialize_build_visit()
         # work See issue https://github.com/visit-dav/visit/issues/1506
 
 	VER_MAJOR=${VER%%.*}
-
-    # used to see if we are a cray system
-    export SYSTEM_TYPE=$(printenv SYS_TYPE)
 
 	# bash script educational note:
 	# The less than sign "<" is an arithmetic expression and
