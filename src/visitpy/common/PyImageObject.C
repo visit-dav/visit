@@ -554,91 +554,48 @@ ImageObject_setattr(PyObject *self, char *name, PyObject *args)
     return retval ? 0 : -1;
 }
 
-static int
-ImageObject_print(PyObject *v, FILE *fp, int flags)
-{
-    ImageObjectObject *obj = (ImageObjectObject *)v;
-
-    if(obj->data->GetVisible())
-        fprintf(fp, "visible = 1\n");
-    else
-        fprintf(fp, "visible = 0\n");
-    if(obj->data->GetActive())
-        fprintf(fp, "active = 1\n");
-    else
-        fprintf(fp, "active = 0\n");
-    {   const double *position = obj->data->GetPosition();
-        fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
-    }
-
-/* CUSTOM - Made various changes to where things are. */
-    const unsigned char *transparencyColor = obj->data->GetColor1().GetColor();
-    fprintf(fp, "transparencyColor = (%d, %d, %d, %d)\n", int(transparencyColor[0]), int(transparencyColor[1]), int(transparencyColor[2]), int(transparencyColor[3]));
-    if(obj->data->GetIntAttribute1())
-        fprintf(fp, "useTransparencyColor = 1\n");
-    else
-        fprintf(fp, "useTransparencyColor = 0\n");
-    fprintf(fp, "width = %lf\n", obj->data->GetPosition2()[0]);
-    fprintf(fp, "height = %lf\n", obj->data->GetPosition2()[1]);
-    if(obj->data->GetFontShadow())
-        fprintf(fp, "maintainAspectRatio = 1\n");
-    else
-        fprintf(fp, "maintainAspectRatio = 0\n");
-    {   const stringVector &image = obj->data->GetText();
-        fprintf(fp, "image = (");
-        for(size_t i = 0; i < image.size(); ++i)
-        {
-            fprintf(fp, "\"%s\"", image[i].c_str());
-            if(i < image.size() - 1)
-                fprintf(fp, ", ");
-        }
-        fprintf(fp, ")\n");
-    }
-
-    return 0;
-}
-
-PyObject *
-PyImageObject_StringRepresentation(const AnnotationObject *atts)
+std::string
+PyImageObject_ToString(const AnnotationObject *atts, const char *prefix)
 {
     std::string str;
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        snprintf(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetActive())
-        snprintf(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
     str += tmpStr;
     {   const double *position = atts->GetPosition();
-        snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+        snprintf(tmpStr, 1000, "%sposition = (%g, %g)\n", prefix, position[0], position[1]);
         str += tmpStr;
     }
 
 /* CUSTOM - Made various changes to where things are. */
     const unsigned char *transparencyColor = atts->GetColor1().GetColor();
-    snprintf(tmpStr, 1000, "transparencyColor = (%d, %d, %d, %d)\n", int(transparencyColor[0]), int(transparencyColor[1]), int(transparencyColor[2]), int(transparencyColor[3]));
+    snprintf(tmpStr, 1000, "%stransparencyColor = (%d, %d, %d, %d)\n", prefix,
+        int(transparencyColor[0]), int(transparencyColor[1]),
+        int(transparencyColor[2]), int(transparencyColor[3]));
     str += tmpStr;
-    if(atts->GetIntAttribute1())
-        snprintf(tmpStr, 1000, "useTransparencyColor = 1\n");
-    else
-        snprintf(tmpStr, 1000, "useTransparencyColor = 0\n");
+
+    snprintf(tmpStr, 1000, "%suseTransparencyColor = %d\n", prefix, atts->GetIntAttribute1());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "width = %lf\n", atts->GetPosition2()[0]);
+
+    snprintf(tmpStr, 1000, "%swidth = %lf\n", prefix, atts->GetPosition2()[0]);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "height = %lf\n", atts->GetPosition2()[1]);
+
+    snprintf(tmpStr, 1000, "%sheight = %lf\n", prefix, atts->GetPosition2()[1]);
     str += tmpStr;
-    if(atts->GetFontShadow())
-        snprintf(tmpStr, 1000, "maintainAspectRatio = 1\n");
-    else
-        snprintf(tmpStr, 1000, "maintainAspectRatio = 0\n");
+
+    snprintf(tmpStr, 1000, "%smaintainAspectRatio = %d\n", prefix, atts->GetFontShadow());
     str += tmpStr;
+
     {   const stringVector &image = atts->GetText();
-        snprintf(tmpStr, 1000, "image = (");
+        snprintf(tmpStr, 1000, "%simage = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < image.size(); ++i)
         {
@@ -653,14 +610,22 @@ PyImageObject_StringRepresentation(const AnnotationObject *atts)
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    return PyString_FromString(str.c_str());
+    return str;
+}
+
+static int
+ImageObject_print(PyObject *v, FILE *fp, int flags)
+{
+    ImageObjectObject *obj = (ImageObjectObject *)v;
+    fprintf(fp, "%s", PyImageObject_ToString(obj->data, "").c_str());
+    return 0;
 }
 
 static PyObject *
 ImageObject_str(PyObject *v)
 {
     ImageObjectObject *obj = (ImageObjectObject *)v;
-    return PyImageObject_StringRepresentation(obj->data);
+    return PyString_FromString(PyImageObject_ToString(obj->data,"").c_str());
 }
 
 

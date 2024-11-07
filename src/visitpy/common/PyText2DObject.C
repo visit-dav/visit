@@ -566,123 +566,81 @@ Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
     return retval ? 0 : -1;
 }
 
-static int
-Text2DObject_print(PyObject *v, FILE *fp, int flags)
-{
-    Text2DObjectObject *obj = (Text2DObjectObject *)v;
 
-    if(obj->data->GetVisible())
-        fprintf(fp, "visible = 1\n");
-    else
-        fprintf(fp, "visible = 0\n");
-    if(obj->data->GetActive())
-        fprintf(fp, "active = 1\n");
-    else
-        fprintf(fp, "active = 0\n");
-/*CUSTOM*/
-    {   const double *position = obj->data->GetPosition();
-        fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
-    }
-    const double *position2 = obj->data->GetPosition2();
-    fprintf(fp, "height = %g\n", position2[0]);
-    const unsigned char *textColor = obj->data->GetTextColor().GetColor();
-    fprintf(fp, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
-    if(obj->data->GetUseForegroundForTextColor())
-        fprintf(fp, "useForegroundForTextColor = 1\n");
-    else
-        fprintf(fp, "useForegroundForTextColor = 0\n");
-    const stringVector &s = obj->data->GetText();
-    fprintf(fp, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
-    const char *fontFamily_names = "Arial, Courier, Times";
-    if(obj->data->GetFontFamily() == AnnotationObject::Arial)
-        fprintf(fp, "fontFamily = Arial  # %s\n", fontFamily_names);
-    else if(obj->data->GetFontFamily() == AnnotationObject::Courier)
-        fprintf(fp, "fontFamily = Courier  # %s\n", fontFamily_names);
-    else
-        fprintf(fp, "fontFamily = Times  # %s\n", fontFamily_names);
-
-    if(obj->data->GetFontBold())
-        fprintf(fp, "fontBold = 1\n");
-    else
-        fprintf(fp, "fontBold = 0\n");
-    if(obj->data->GetFontItalic())
-        fprintf(fp, "fontItalic = 1\n");
-    else
-        fprintf(fp, "fontItalic = 0\n");
-    if(obj->data->GetFontShadow())
-        fprintf(fp, "fontShadow = 1\n");
-    else
-        fprintf(fp, "fontShadow = 0\n");
-
-    return 0;
-}
-
-static PyObject *
-PyText2DObject_StringRepresentation(const AnnotationObject *atts)
+std::string
+PyText2DObject_ToString(const AnnotationObject *atts, const char *prefix)
 {
     std::string str;
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        snprintf(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetActive())
-        snprintf(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "active = 0\n");
-/*CUSTOM*/
-    {   const double *position = atts->GetPosition();
-        snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
-    }
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
+
+    const double *position = atts->GetPosition();
+    snprintf(tmpStr, 1000, "%sposition = (%g, %g)\n", prefix, position[0], position[1]);
+
     str += tmpStr;
     const double *position2 = atts->GetPosition2();
-    snprintf(tmpStr, 1000, "height = %g\n", position2[0]);
+    snprintf(tmpStr, 1000, "%sheight = %g\n", prefix, position2[0]);
     str += tmpStr;
     const unsigned char *textColor = atts->GetTextColor().GetColor();
-    snprintf(tmpStr, 1000, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    snprintf(tmpStr, 1000, "%stextColor = (%d, %d, %d, %d)\n", prefix, int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
-        snprintf(tmpStr, 1000, "useForegroundForTextColor = 1\n");
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "useForegroundForTextColor = 0\n");
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 0\n", prefix);
     str += tmpStr;
     const stringVector &s = atts->GetText();
-    snprintf(tmpStr, 1000, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
+    snprintf(tmpStr, 1000, "%stext = \"%s\"\n", prefix, s.size() > 0 ? s[0].c_str() : "");
     str += tmpStr;
     const char *fontFamily_names = "Arial, Courier, Times";
     if(atts->GetFontFamily() == AnnotationObject::Arial)
-        snprintf(tmpStr, 1000, "fontFamily = Arial  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "%sfontFamily = %sArial  # %s\n", prefix, prefix, fontFamily_names);
     else if(atts->GetFontFamily() == AnnotationObject::Courier)
-        snprintf(tmpStr, 1000, "fontFamily = Courier  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "%sfontFamily = %sCourier  # %s\n", prefix, prefix, fontFamily_names);
     else
-        snprintf(tmpStr, 1000, "fontFamily = Times  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "%sfontFamily = %sTimes  # %s\n", prefix, prefix, fontFamily_names);
     str += tmpStr;
 
     if(atts->GetFontBold())
-        snprintf(tmpStr, 1000, "fontBold = 1\n");
+        snprintf(tmpStr, 1000, "%sfontBold = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "fontBold = 0\n");
+        snprintf(tmpStr, 1000, "%sfontBold = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFontItalic())
-        snprintf(tmpStr, 1000, "fontItalic = 1\n");
+        snprintf(tmpStr, 1000, "%sfontItalic = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "fontItalic = 0\n");
+        snprintf(tmpStr, 1000, "%sfontItalic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFontShadow())
-        snprintf(tmpStr, 1000, "fontShadow = 1\n");
+        snprintf(tmpStr, 1000, "%sfontShadow = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "fontShadow = 0\n");
+        snprintf(tmpStr, 1000, "%sfontShadow = 0\n", prefix);
     str += tmpStr;
-    return PyString_FromString(str.c_str());
+    return str;
+}
+
+static int
+Text2DObject_print(PyObject *v, FILE *fp, int flags)
+{
+    Text2DObjectObject *obj = (Text2DObjectObject *)v;
+    fprintf(fp, "%s", PyText2DObject_ToString(obj->data, "").c_str());
+    return 0;
 }
 
 static PyObject *
 Text2DObject_str(PyObject *v)
 {
     Text2DObjectObject *obj = (Text2DObjectObject *)v;
-    return PyText2DObject_StringRepresentation(obj->data);
+    return PyString_FromString(PyText2DObject_ToString(obj->data,"").c_str());
 }
 
 //
