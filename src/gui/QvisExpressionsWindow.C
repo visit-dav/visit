@@ -182,6 +182,9 @@
 //    Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
 //    Added global mesh expressions: global_avg, global_max, global_min, 
 //    global_rms, global_std_dev, global_sum, and global_variance.
+// 
+//    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
+//    Added displacement to vector expressions.
 //
 // ****************************************************************************
 
@@ -295,6 +298,7 @@ const char *expr_vector[] = {
     "colorlookup",
     "cross",
     "curl",
+    "displacement",
     "divergence",
     "dot",
     "gradient",
