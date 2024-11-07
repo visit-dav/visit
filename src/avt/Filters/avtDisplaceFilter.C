@@ -274,7 +274,8 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
 //    Allow for 2D vectors.
 // 
 //    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
-//    Remove the requirement 
+//    Remove the requirement variable dimension requirement since we cannot
+//    know the dimension of expressions until we have used them.
 //
 // ****************************************************************************
 
