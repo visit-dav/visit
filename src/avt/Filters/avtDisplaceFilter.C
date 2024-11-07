@@ -133,6 +133,9 @@ avtDisplaceFilter::SetVariable(const std::string &v)
 //
 //    Eric Brugger, Mon Jul 21 10:38:19 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+// 
+//    Justin Privitera, Thu Nov  7 11:16:13 PST 2024
+//    Added dimension check from preexecute to this function instead.
 //
 // ****************************************************************************
 
@@ -183,6 +186,15 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
         in_ds = tmp_ds;
         cd2pd->Delete();
         one_var_ds->Delete();
+    }
+
+    const int num_comps = vecs->GetNumberOfComponents();
+    if (num_comps != 3 && 
+        !(num_comps == 2 &&
+          GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2))
+    {
+        EXCEPTION2(InvalidDimensionsException, "The displace operator",
+                   "vector");
     }
 
     vtkDataSet *rv = NULL;
