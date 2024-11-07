@@ -30,7 +30,7 @@
 # 
 #    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 #    Add test for hiding material edge lines.
-# 
+#
 #    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
 #    Add test for displacement.
 #
