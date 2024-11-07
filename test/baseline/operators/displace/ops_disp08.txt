@@ -1,2 +1,1 @@
-FilledBoundary:  ()
-viewer: The displace operator requires vector plot data.
+FilledBoundary (BadIndexException):  Tried to access an invalid index -1 (Maximum = 4).

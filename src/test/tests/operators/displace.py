@@ -29,6 +29,9 @@
 #
 #    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
 #    Use FilledBoundary plot for materials instead of Subset.
+# 
+#    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
+#    Add test for displacement.
 #
 # ----------------------------------------------------------------------------
 
