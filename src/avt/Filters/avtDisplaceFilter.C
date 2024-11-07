@@ -272,6 +272,9 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
 //
 //    Hank Childs, Fri Sep 28 07:14:14 PDT 2007
 //    Allow for 2D vectors.
+// 
+//    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
+//    Remove the requirement 
 //
 // ****************************************************************************
 
