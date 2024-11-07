@@ -345,6 +345,9 @@ function initialize_build_visit()
 
 	VER_MAJOR=${VER%%.*}
 
+    # used to see if we are a cray system
+    export SYSTEM_TYPE=$(printenv SYS_TYPE)
+
 	# bash script educational note:
 	# The less than sign "<" is an arithmetic expression and
 	# as such one must use parenthesis (( .. )) and not square brackets.
