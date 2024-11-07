@@ -339,7 +339,7 @@ elif [ "$tuolumne" = true ]; then
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/include \
        PAR_INCLUDE_PATH=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.30-gcc-12.2.1-magic/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 else
    echo "case for $machine_name not implemented. Bailing out."
