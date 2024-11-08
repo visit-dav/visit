@@ -264,7 +264,7 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
 #
 #   Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
 #   Added an LLNL specific job launcher for jsrun.
-# 
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
