@@ -58,6 +58,7 @@ def multimacro():
     text.text = "Time,Cycle,Index=($time,$cycle,$index)"
     TestAutoName()
     text.text = "Cycle,Cycle,Cycle=($cycle,$cycle,$cycle)"
+    TestAutoName()
     text.Delete()
 
 def printf():
