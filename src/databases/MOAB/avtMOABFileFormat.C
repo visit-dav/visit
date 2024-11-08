@@ -260,12 +260,14 @@ avtMOABFileFormat::gatherMhdfInformation()
                 tag1.defValue = tagStr.default_value;
             }
 
-            debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag << "\n";
             elemTags.insert(tag1);
+            debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag;
+            debug2 << "  num tags so far:  " << elemTags.size() << "\n";
+
         }
     }
 
-    debug2 << "  mesh1d: " << meshd[1] << "  mesh2d:"<< meshd[2] << "  mesh3d:" << meshd[3] << "\n";
+    debug2 << "  mesh1d: "<< meshd[1] << "  mesh2d:"<< meshd[2] << "  mesh3d:" << meshd[3] << "\n";
     num_parts = file_descriptor->numEntSets[0];
     num_mats  = file_descriptor->numEntSets[1];
     num_neumann = file_descriptor->numEntSets[2];
@@ -373,12 +375,13 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             struct tagBasic tag = *setIter;
             string nameDisplay;
 
-            nameDisplay = tag.nameTag;
+            nameDisplay = meshname[tag.dim] + "/" + tag.nameTag ;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
-                smd->name = nameDisplay.c_str();
+
                 smd->meshName = meshname[tag.dim];
+                smd->name = nameDisplay.c_str();
                 smd->centering = AVT_ZONECENT;
                 double defValDouble = 0;
                 if (tag.defValue && tag.type == 1) // integer
@@ -395,15 +398,19 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 md->Add(smd);
             }
             else if (tag.size == 2 || tag.size == 3)
-              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname[tag.dim], AVT_ZONECENT, tag.size);
+            {
+                AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname[tag.dim], AVT_ZONECENT, tag.size);
+            }
             else
-              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname[tag.dim], AVT_ZONECENT);
+            {
+                AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname[tag.dim], AVT_ZONECENT);
+            }
         }
         for (int i=0; i<nodeTags.size(); i++)
         {
             string nameDisplay;
             struct tagBasic tag = nodeTags[i];
-            nameDisplay =tag.nameTag;
+            nameDisplay =meshname[0] + "/" + tag.nameTag;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
