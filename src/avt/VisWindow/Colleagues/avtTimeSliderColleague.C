@@ -730,8 +730,8 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
 
     // 
     // We first check for possible printf-style format string within the
-    // textFormatString itself. If we find something string there, we just
-    // allow it to proceed. If we do not find a format string there but do
+    // textFormatString itself. If we find something there, we just allow
+    // it to proceed. If we do not find a format string there but do
     // find a non-empty, non-default value in timeFormatString, then we
     // temporarily create a textFormatString with the timeFormatString
     // appended to it to pass on to create the annotation string.
