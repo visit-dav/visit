@@ -334,7 +334,6 @@ elif [ "$trinity" = true ]; then
        --no-adios --no-adios2 --no-mili --no-pyside --qt510 --qwt --no-visit \
        --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
-   # module load gcc/12.2.1-magic
    env CC=gcc \
        CXX=g++ \
        PAR_COMPILER=cc \
