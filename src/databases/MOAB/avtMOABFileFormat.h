@@ -69,6 +69,7 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     struct tagBasic {
       std::string nameTag;
       int size;
+      int dim; // 0 , 1, 2, 3 for mesh dimension associated with it; 4 for sets ?
       void * defValue; // size 4 or 8 usually
       int type; // mhdf_INTEGER = 1,    /**< Integer type */
                 // mhdf_FLOAT = 2,      /**< Floating point value */ (double)
@@ -101,6 +102,7 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     std::set<int>          dirichsets;
 
     bool opt1d, opt2d, opt3d;
+    bool meshd[4];
     moab::Range           *edges;
     moab::Range           *faces;
     moab::Range           *solids;

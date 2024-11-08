@@ -75,6 +75,8 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
     faces = new moab::Range;
     solids = new moab::Range;
     select = new moab::Range;
+    meshd[0] = true;
+    meshd[1] = meshd[2] = meshd[3] = false;
 }
 
 
@@ -197,7 +199,7 @@ avtMOABFileFormat::gatherMhdfInformation()
             tag1.defValue = tagStr.default_value;
             tag1.type = tagStr.type;
         }
-
+        tag1.dim = 0;
         debug2 << "  node     tag "<< i << " "  << tag_name <<" size:" << sizeTag << "\n";
         nodeTags.push_back(tag1);
     }
@@ -207,10 +209,39 @@ avtMOABFileFormat::gatherMhdfInformation()
     for (int i=0; i< file_descriptor->num_elem_desc; i++)
     {
         const char * etype = file_descriptor->elems[i].type;
+        const char * ehandle = file_descriptor->elems[i].handle;
+        int local_dim = 0;
+        if ( strcmp(etype, mhdf_EDGE_TYPE_NAME) == 0 )
+        {
+            meshd[1] = true;
+            local_dim = 1;
+        }
+        else if ( strcmp(etype, mhdf_TRI_TYPE_NAME) == 0
+              || strcmp(etype, mhdf_QUAD_TYPE_NAME) == 0
+              || strcmp(etype, mhdf_POLYGON_TYPE_NAME) == 0 )
+        {
+            meshd[2] = true;
+            local_dim = 2;
+        }
+        else if ( strcmp(etype, mhdf_TET_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_PYRAMID_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_PRISM_TYPE_NAME) == 0
+                || strcmp(etype, mdhf_KNIFE_TYPE_NAME) == 0
+                || strcmp(etype, mdhf_HEX_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_POLYHEDRON_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_SEPTAHEDRON_TYPE_NAME) == 0 )
+        {
+            meshd[3] = true;
+            local_dim = 3;
+        }
+        else
+            debug2 << " etype: " << etype << "\n";
+
+
 
         MHDF_EntDesc & edesc = file_descriptor->elems[i].desc;
         int number_elem_tags = edesc.num_dense_tags;
-        debug2 << "   elem type  "<< i << " "  << etype << " num dense tags: "
+        debug2 << "   elem type  "<< i << " type:"  << etype << " handle:" << ehandle << " num dense tags: "
             << number_elem_tags <<"\n";
         for (int j=0; j<number_elem_tags; j++)
         {
@@ -221,11 +252,12 @@ avtMOABFileFormat::gatherMhdfInformation()
 
             tag1.nameTag=string(tag_name);
             tag1.size=sizeTag;
+            tag1.dim = local_dim;
+            tag1.type = tagStr.type;
             if (tagStr.default_value && ( sizeTag == 1 ) &&
                             ( (tagStr.type == mhdf_INTEGER) || (tagStr.type == mhdf_FLOAT )) )
             {
                 tag1.defValue = tagStr.default_value;
-                tag1.type = tagStr.type;
             }
 
             debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag << "\n";
@@ -233,6 +265,7 @@ avtMOABFileFormat::gatherMhdfInformation()
         }
     }
 
+    debug2 << "  mesh1d: " << meshd[1] << "  mesh2d:"<< meshd[2] << "  mesh3d:" << meshd[3] << "\n";
     num_parts = file_descriptor->numEntSets[0];
     num_mats  = file_descriptor->numEntSets[1];
     num_neumann = file_descriptor->numEntSets[2];
@@ -290,9 +323,9 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         // Define the mesh
         //
-        string meshname = "mesh";
+        string meshnameAll = "Mesh";
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = meshname;
+        mesh->name = meshnameAll;
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
         // we are calling later md->SetFormatCanDoDomainDecomposition(true)
         //  because of that,
@@ -312,16 +345,40 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (md != NULL)
             md->Add(mesh);
 
+        // add vertex mesh always
+        string meshname[4] = { "Vertices", "Edges", "Faces", "Solids"};
+        for (int iDim = 0; iDim < 4; iDim++)
+        {
+            if(meshd[iDim])
+            {
+                avtMeshMetaData *mesh0 = new avtMeshMetaData;
+                mesh0->name = meshname[iDim];
+                mesh0->meshType = AVT_UNSTRUCTURED_MESH;
+                // we are calling later md->SetFormatCanDoDomainDecomposition(true)
+                //  because of that,
+                mesh0->numBlocks = 1; // nProcs;
+                mesh0->blockOrigin = 1;
+                mesh0->spatialDimension = file_descriptor->nodes.vals_per_ent; // usually 3, but some files might have 2
+                mesh0->topologicalDimension = iDim; // we need to look at element types
+                mesh0->blockTitle = "Blocks";
+                mesh0->blockPieceName = domainSetClassName; // "Block%012d";
+                mesh0->hasSpatialExtents = false;
+                if (md != NULL)
+                    md->Add(mesh0);
+            }
+        }
+
         for (std::set<struct tagBasic>::iterator setIter = elemTags.begin(); setIter!=elemTags.end(); setIter++)
         {
-            string nameDisplay("ELEM_");
             struct tagBasic tag = *setIter;
-            nameDisplay += tag.nameTag;
+            string nameDisplay;
+
+            nameDisplay = tag.nameTag;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
                 smd->name = nameDisplay.c_str();
-                smd->meshName = meshname;
+                smd->meshName = meshname[tag.dim];
                 smd->centering = AVT_ZONECENT;
                 double defValDouble = 0;
                 if (tag.defValue && tag.type == 1) // integer
@@ -338,20 +395,20 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 md->Add(smd);
             }
             else if (tag.size == 2 || tag.size == 3)
-              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_ZONECENT, tag.size);
+              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname[tag.dim], AVT_ZONECENT, tag.size);
             else
-              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname, AVT_ZONECENT);
+              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname[tag.dim], AVT_ZONECENT);
         }
         for (int i=0; i<nodeTags.size(); i++)
         {
-            string nameDisplay("NODE_");
+            string nameDisplay;
             struct tagBasic tag = nodeTags[i];
-            nameDisplay +=tag.nameTag;
+            nameDisplay =tag.nameTag;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
                 smd->name = nameDisplay.c_str();
-                smd->meshName = meshname;
+                smd->meshName = meshname[0];
                 smd->centering = AVT_NODECENT;
                 double defValDouble = 0;
                 if (tag.defValue && tag.type == 1) // integer
@@ -369,9 +426,9 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
               // AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
             else if (tag.size == 2 || tag.size == 3)
-              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT, tag.size);
+              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname[0], AVT_NODECENT, tag.size);
             else
-              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname, AVT_NODECENT);
+              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname[0], AVT_NODECENT);
         }
 
         //  So, here, we handle the parallel partition
@@ -379,7 +436,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //  assume that parallel partitions numbers start at 0 and end at num_parts -1
         if (num_parts>0)
         {
-            avtScalarMetaData *ppsmd = new avtScalarMetaData("ParallelPartition", meshname, AVT_ZONECENT);
+            avtScalarMetaData *ppsmd = new avtScalarMetaData("ParallelPartition", meshnameAll, AVT_ZONECENT);
             ppsmd->SetEnumerationType(avtScalarMetaData::ByValue);
             for (int i = 0 ; i < num_parts ; i++)
             {
@@ -393,7 +450,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (materials.size()>0)
         {
-            avtScalarMetaData *msmd = new avtScalarMetaData("Materials", meshname, AVT_ZONECENT);
+            avtScalarMetaData *msmd = new avtScalarMetaData("Materials", meshnameAll, AVT_ZONECENT);
             msmd->SetEnumerationType(avtScalarMetaData::ByValue);
             int i=1;
             msmd->AddEnumNameValue("NOT_SPECIFIED", 0);
@@ -409,7 +466,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (num_neumann>0)
         {
-            avtScalarMetaData *nsmd = new avtScalarMetaData("NeumannSets", meshname, AVT_ZONECENT);
+            avtScalarMetaData *nsmd = new avtScalarMetaData("NeumannSets", meshnameAll, AVT_ZONECENT);
             nsmd->SetEnumerationType(avtScalarMetaData::ByBitMask);
             for(int j=0; j<num_neumann; j++)
                 neumannsets.insert(file_descriptor->defTagsVals[2][j] );
@@ -430,7 +487,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (num_diri>0)
         {
-            avtScalarMetaData *dsmd = new avtScalarMetaData("DirichletSets", meshname, AVT_NODECENT);
+            avtScalarMetaData *dsmd = new avtScalarMetaData("DirichletSets", meshnameAll, AVT_NODECENT);
             dsmd->SetEnumerationType(avtScalarMetaData::ByBitMask);
             for(int j=0; j<num_diri; j++)
                 dirichsets.insert(file_descriptor->defTagsVals[3][j] );
@@ -452,7 +509,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if (num_geom>0)
         {
-            avtScalarMetaData *dsmd = new avtScalarMetaData("GeometrySets", meshname, AVT_ZONECENT);
+            avtScalarMetaData *dsmd = new avtScalarMetaData("GeometrySets", meshnameAll, AVT_ZONECENT);
             dsmd->SetEnumerationType(avtScalarMetaData::ByBitMask);
             for(int i=0; i<num_geom; i++)
 
@@ -633,20 +690,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         if (NULL==mbCore)
         {
             mbCore = new moab::Core();
-            if (readOptions->FindIndex("edge") >= 0)
-            {
-                opt1d = readOptions->GetBool("edge");
-            }
-            if (readOptions->FindIndex("face") >= 0)
-            {
-                opt2d = readOptions->GetBool("face");
-            }
-            if (readOptions->FindIndex("solid") >= 0)
-            {
-                opt3d = readOptions->GetBool("solid");
-            }
-            debug1 << "avtMOABFileFormat dim options: 1d:" << (int)opt1d << " 2d:" << (int)opt2d
-                    << " 3d:" << (int)opt3d <<"\n";
+
 #ifdef PARALLEL
             string partitionMethod = readOptions->GetString("Partition:");
             string ropts="STORE_SETS_FILEIDS;PARALLEL=READ_PART;PARTITION="+partitionMethod+";";
@@ -669,7 +713,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         // Create the unstructured mesh
         //
         vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-
+        string meshnameArr[4] = { "Vertices", "Edges", "Faces", "Solids"};
         {
             // Get the list of vertices
             merr = mbCore->get_entities_by_dimension(0, 0, verts, true);MBVIS_CHK_ERR(merr);
@@ -715,12 +759,23 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         ents = subtract(ents, vts);
         debug1 << "avtMOABFileFormat::GetMesh: strip: ents:" <<  ents.size() << "\n";
         // filter by dimension
-        if (opt1d) *edges = ents.subset_by_dimension(1); // edges
-        if (opt2d) *faces = ents.subset_by_dimension(2); // faces
-        if (opt3d) *solids = ents.subset_by_dimension(3); // solids
+        /*if (meshd[1]) *edges = ents.subset_by_dimension(1); // edges
+        if (meshd[2]) *faces = ents.subset_by_dimension(2); // faces
+        if (meshd[3]) *solids = ents.subset_by_dimension(3); // solids
         *select = *edges;
         select->merge(*faces);
-        select->merge(*solids);
+        select->merge(*solids);*/
+        int dim = -1;
+        string meshnameStr(meshname);
+        for ( dim = 0; dim < 4; dim ++)
+        {
+            if (meshnameStr == meshnameArr[dim] )
+                break;
+        }
+        debug1 << " dimension of mesh: " << dim << "\n";
+
+        *select = ents.subset_by_dimension(dim);
+
         debug1 << "avtMOABFileFormat::GetMesh: strip: selected ents:" <<  select->size() << " psize:" << select->psize() << "\n";
         for (size_t  i = 0; i < select->size(); i++)
         {
