@@ -31,6 +31,9 @@
 #    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 #    Add test for hiding material edge lines.
 #
+#    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
+#    Add test for displacement.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
 single_domain_path = data_path("mili_test_data/single_proc/")
@@ -499,6 +502,51 @@ def TestMaterialEdgeLines():
     DeleteAllPlots()
     CloseDatabase(db_path)
 
+def TestDisplacement():
+    TestSection("Displacement")
+
+    db_path = single_domain_path + "/d3samp6.plt.mili"
+    OpenDatabase(db_path)
+
+    SetTimeSliderState(100)
+    
+    AddPlot("Mesh", "mesh1")
+    MeshAtts = MeshAttributes()
+    MeshAtts.opaqueMode = MeshAtts.On  # Auto, On, Off
+    SetPlotOptions(MeshAtts)
+    
+    AddPlot("Vector", "Derived/node/displacement")
+
+    SetActivePlots(0)
+    AddOperator("Displace", 1)
+    DisplaceAtts = DisplaceAttributes()
+    DisplaceAtts.factor = 1
+    DisplaceAtts.variable = "Derived/node/displacement"
+    SetOperatorOptions(DisplaceAtts, 0, 1)
+
+    DrawPlots()
+    SetViewExtentsType(1)
+
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.709435, 0.445393, -0.546193)
+    View3DAtts.focus = (0.750029, 0.750029, 1.28125)
+    View3DAtts.viewUp = (-0.422366, 0.889093, 0.176411)
+    View3DAtts.parallelScale = 1.66334
+    View3DAtts.nearPlane = -3.32667
+    View3DAtts.farPlane = 3.32667
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 0.564474
+    SetView3D(View3DAtts)
+
+    DrawPlots()
+
+    Test("mili_displacement")
+
+    SetViewExtentsType(0)
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase(db_path)
+
 def Main():
     TestComponentVis()
     TestNonSharedElementSets()
@@ -517,6 +565,7 @@ def Main():
     TestDerivedVariables()
     TestGlobalIntegrationPoint()
     TestMaterialEdgeLines()
+    TestDisplacement()
 
 Main()
 Exit()
