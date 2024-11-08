@@ -678,6 +678,12 @@ Note that this approach can also be used to insert images of graphs, plots, port
 
    Image annotation used to incorporate LLNL logo
 
+Deleting an Annotation Object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To delete any annotation object created via ``CreateAnnotationObject(...)``, just use the returned object's ``Delete()`` method.
+For example, in the preceding code to create an ``"Image"`` annotation object, the returned object is stored in the ``image`` python variable.
+To later delete that object, use ``image.Delete()``.
+
 Modifying a legend 
 ~~~~~~~~~~~~~~~~~~
 
