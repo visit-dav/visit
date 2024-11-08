@@ -532,9 +532,9 @@ The list of named values currently supported along with their *default* formats 
     +--------------------+----------+-------------------------------------+
     | numvar             |    %d    |  number of variables                |
     +--------------------+----------+-------------------------------------+
-    | topodim            |    %d    |  topological dim. of assoc. mesh    |
+    | topodim            |    %d    |  topological dimension of plot      |
     +--------------------+----------+-------------------------------------+
-    | spatialdim         |    %d    |  spatial dim. of assoc. mesh        |
+    | spatialdim         |    %d    |  spatial dimension of plot          |
     +--------------------+----------+-------------------------------------+
     | varname            |    %s    |  variable name                      |
     +--------------------+----------+-------------------------------------+
