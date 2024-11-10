@@ -61,6 +61,8 @@ using     std::string;
 //
 // ****************************************************************************
 
+string meshnameArr[4] = { "0_Vertices", "1_Edges", "2_Faces", "3_Solids"};
+
 avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1), readOptions(readOpts),  file_descriptor(NULL), pcomm(NULL), mbCore(NULL)
 {
@@ -325,7 +327,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         // Define the mesh
         //
-        string meshnameAll = "Mesh";
+        string meshnameAll = "4 Mesh";
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = meshnameAll;
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
@@ -348,13 +350,13 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             md->Add(mesh);
 
         // add vertex mesh always
-        string meshname[4] = { "Vertices", "Edges", "Faces", "Solids"};
+
         for (int iDim = 0; iDim < 4; iDim++)
         {
             if(meshd[iDim])
             {
                 avtMeshMetaData *mesh0 = new avtMeshMetaData;
-                mesh0->name = meshname[iDim];
+                mesh0->name = meshnameArr[iDim];
                 mesh0->meshType = AVT_UNSTRUCTURED_MESH;
                 // we are calling later md->SetFormatCanDoDomainDecomposition(true)
                 //  because of that,
@@ -375,12 +377,12 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             struct tagBasic tag = *setIter;
             string nameDisplay;
 
-            nameDisplay = meshname[tag.dim] + "/" + tag.nameTag ;
+            nameDisplay = meshnameArr[tag.dim] + "/" + tag.nameTag ;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
 
-                smd->meshName = meshname[tag.dim];
+                smd->meshName = meshnameArr[tag.dim];
                 smd->name = nameDisplay.c_str();
                 smd->centering = AVT_ZONECENT;
                 double defValDouble = 0;
@@ -399,23 +401,23 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
             else if (tag.size == 2 || tag.size == 3)
             {
-                AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname[tag.dim], AVT_ZONECENT, tag.size);
+                AddVectorVarToMetaData(md, nameDisplay.c_str(), meshnameArr[tag.dim], AVT_ZONECENT, tag.size);
             }
             else
             {
-                AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname[tag.dim], AVT_ZONECENT);
+                AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshnameArr[tag.dim], AVT_ZONECENT);
             }
         }
         for (int i=0; i<nodeTags.size(); i++)
         {
             string nameDisplay;
             struct tagBasic tag = nodeTags[i];
-            nameDisplay =meshname[0] + "/" + tag.nameTag;
+            nameDisplay =meshnameArr[0] + "/" + tag.nameTag;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
                 smd->name = nameDisplay.c_str();
-                smd->meshName = meshname[0];
+                smd->meshName = meshnameArr[0];
                 smd->centering = AVT_NODECENT;
                 double defValDouble = 0;
                 if (tag.defValue && tag.type == 1) // integer
@@ -433,9 +435,9 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
               // AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
             else if (tag.size == 2 || tag.size == 3)
-              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname[0], AVT_NODECENT, tag.size);
+              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshnameArr[0], AVT_NODECENT, tag.size);
             else
-              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname[0], AVT_NODECENT);
+              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshnameArr[0], AVT_NODECENT);
         }
 
         //  So, here, we handle the parallel partition
@@ -720,7 +722,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         // Create the unstructured mesh
         //
         vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-        string meshnameArr[4] = { "Vertices", "Edges", "Faces", "Solids"};
+
         {
             // Get the list of vertices
             merr = mbCore->get_entities_by_dimension(0, 0, verts, true);MBVIS_CHK_ERR(merr);
@@ -762,8 +764,8 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
         ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        moab::Range sets = ents.subset_by_type(moab::MBENTITYSET);
+        ents = subtract(ents, sets);
         debug1 << "avtMOABFileFormat::GetMesh: strip: ents:" <<  ents.size() << "\n";
         // filter by dimension
         /*if (meshd[1]) *edges = ents.subset_by_dimension(1); // edges
@@ -781,7 +783,10 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         }
         debug1 << " dimension of mesh: " << dim << "\n";
 
-        *select = ents.subset_by_dimension(dim);
+        if (dim <= 3)
+            *select = ents.subset_by_dimension(dim);
+        else
+            *select = ents; // all of them for the full mesh
 
         debug1 << "avtMOABFileFormat::GetMesh: strip: selected ents:" <<  select->size() << " psize:" << select->psize() << "\n";
         for (size_t  i = 0; i < select->size(); i++)
@@ -866,6 +871,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
             }
 
         }
+        if (dim == 0) *select = vts; // it will be used to set var on vertices
 
         return ugrid;
     }
@@ -927,19 +933,19 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         if (string(varname) == "GeometrySets")
             return GetGeometrySetsVar();
 
-        bool nodeTag = (strncmp("NODE_", varname, 5 )==0);
-        bool elemTag = (strncmp("ELEM_", varname, 5 )==0);
+        int dimMesh = -1;
+        for (dimMesh = 0; dimMesh < 4; dimMesh++)
+            if (strcmp(meshName.c_str(), meshnameArr[dimMesh].c_str()) == 0)
+                break;
+        bool nodeTag = (dimMesh == 0);
+        bool elemTag = !nodeTag;
 
-        debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " is elem tag? : " << elemTag << "\n";
+        debug1 << "avtMOABFileFormat::GetVar dimMesh: " << dimMesh << "\n";
+        debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " elem_tag "
+                << elemTag << " node_tag: " << nodeTag << "\n";
         string tagName;
-        if (nodeTag)
-        {
-            tagName = string(varname+5);
-        }
-        else if (elemTag)
-        {
-            tagName = string(varname+5);
-        }
+        tagName = string( varname + meshName.length() + 1) ; // meshName length + 1 for "/"
+
 
         debug1 << "moab tag name:" <<tagName << "\n";
         vtkDataArray * result = 0;
