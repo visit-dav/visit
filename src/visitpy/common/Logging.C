@@ -1685,8 +1685,21 @@ static std::string log_HideActiveAnnotationObjectsRPC(ViewerRPC *rpc)
         const AnnotationObject &annot = aol->GetAnnotation(i);
         if(annot.GetActive())
         {
-            std::string typeName(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
-            std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+            std::string typeName;
+            if (annot.GetObjectType() == AnnotationObject::LegendAttributes)
+            {
+                // since legends are associated with a plot,  the object
+                // name will be something like 'Plot0000'.  So, use the
+                // object name, replacing 'Plot' with 'legend' to better
+                // better associate it with the correct plot.
+                typeName=annot.GetObjectName();
+                typeName.replace(0,4, "legend");
+            }
+            else
+            {
+                typeName=(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
+                std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+            }
             std::string s = typeName +
                             " = GetAnnotationObject(\"" +
                             annot.GetObjectName() +
@@ -1713,8 +1726,21 @@ static std::string log_DeleteActiveAnnotationObjectsRPC(ViewerRPC *rpc)
         const AnnotationObject &annot = aol->GetAnnotation(i);
         if(annot.GetActive())
         {
-            std::string typeName(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
-            std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+            std::string typeName;
+            if (annot.GetObjectType() == AnnotationObject::LegendAttributes)
+            {
+                // since legends are associated with a plot,  the object
+                // name will be something like 'Plot0000'.  So, use the
+                // object name, replacing 'Plot' with 'legend' to better
+                // better associate it with the correct plot.
+                typeName=annot.GetObjectName();
+                typeName.replace(0,4, "legend");
+            }
+            else
+            {
+                typeName=(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
+                std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+            }
             std::string s = typeName +
                            " = GetAnnotationObject(\"" +
                            annot.GetObjectName() +
@@ -1775,6 +1801,12 @@ static std::string log_SetAnnotationObjectOptionsRPC(ViewerRPC *rpc)
                     s = PyImageObject_ToString(&annot, (type + ".") .c_str());
                      break;
                 case AnnotationObject::LegendAttributes:
+                    // since legends are associated with a plot,  the object
+                    // name will be something like 'Plot0000'.  So, use the
+                    // object name, replacing 'Plot' with 'legend' to better
+                    // better associate it with the correct plot.
+                    type=annot.GetObjectName();
+                    type.replace(0,4, "legend");
                     s = PyLegendAttributesObject_ToString(&annot, (type + ".") .c_str());
                      break;
                 default:
