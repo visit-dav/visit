@@ -381,6 +381,8 @@ rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
 
+echo "Test run started at: \`date\`"
+
 # So the script uses the correct git.
 export PATH=/usr/tce/bin:$PATH
 
