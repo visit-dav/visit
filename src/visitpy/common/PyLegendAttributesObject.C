@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <ColorAttribute.h>
 #include <legend_defines.h>
+#include <DebugStream.h>
 
 // CUSTOM:
 #include <Py2and3Support.h>
@@ -1171,11 +1172,11 @@ PyLegendAttributesObject_ToString(const AnnotationObject *atts, const char *pref
         GetBool(atts, LEGEND_MANAGE_POSITION)?1:0);
     str += tmpStr;
 
-/*CUSTOM*/
-    {   const double *position = atts->GetPosition();
-        snprintf(tmpStr, 1000, "%sposition = (%g, %g)\n", prefix, position[0], position[1]);
-        str += tmpStr;
-    }
+    const double *position = atts->GetPosition();
+    snprintf(tmpStr, 1000, "%sposition = (%g, %g)\n", prefix,
+        position[0], position[1]);
+    str += tmpStr;
+
     const double *position2 = atts->GetPosition2();
     snprintf(tmpStr, 1000, "%sxScale = %g\n", prefix, position2[0]);
     str += tmpStr;
@@ -1283,25 +1284,49 @@ PyLegendAttributesObject_ToString(const AnnotationObject *atts, const char *pref
 
     if (atts->GetOptions().GetEntry("legendType")->AsInt() == LEGEND_TYPE_VARIABLE)
     {
-        const doubleVector & sv = atts->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
         snprintf(tmpStr, 1000, "%ssuppliedValues = (", prefix);
         str += tmpStr;
-        for (size_t i = 0; i < sv.size(); ++i)
+        if(atts->GetOptions().HasEntry("suppliedValues"))
         {
-            if (i < sv.size() -1)
-                snprintf(tmpStr, 1000, "%g, ", sv[i]);
-            else
-                snprintf(tmpStr, 1000, "%g", sv[i]);
-            str += tmpStr;
+            const doubleVector & sv = atts->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
+            for (size_t i = 0; i < sv.size(); ++i)
+            {
+                if (i < sv.size() -1)
+                    snprintf(tmpStr, 1000, "%g, ", sv[i]);
+                else
+                    snprintf(tmpStr, 1000, "%g", sv[i]);
+                str += tmpStr;
+            }
         }
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     else
     {
-        const stringVector & sl = atts->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
         snprintf(tmpStr, 1000, "%ssuppliedValues = (", prefix);
         str += tmpStr;
+
+        if(atts->GetOptions().HasEntry("suppliedValuesStrings"))
+        {
+            const stringVector & sl = atts->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
+            for (size_t i = 0; i < sl.size(); ++i)
+            {
+                if (i < sl.size() -1)
+                    snprintf(tmpStr, 1000, "\"%s\", ", sl[i].c_str());
+                else
+                    snprintf(tmpStr, 1000, "\"%s\"", sl[i].c_str());
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+
+    snprintf(tmpStr, 1000, "%ssuppliedLabels = (", prefix);
+    str += tmpStr;
+    if(atts->GetOptions().HasEntry("suppliedLabels"))
+    {
+        const stringVector &sl = atts->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
         for (size_t i = 0; i < sl.size(); ++i)
         {
             if (i < sl.size() -1)
@@ -1310,20 +1335,6 @@ PyLegendAttributesObject_ToString(const AnnotationObject *atts, const char *pref
                 snprintf(tmpStr, 1000, "\"%s\"", sl[i].c_str());
             str += tmpStr;
         }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-
-    const stringVector &sl = atts->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
-    snprintf(tmpStr, 1000, "%ssuppliedLabels = (", prefix);
-    str += tmpStr;
-    for (size_t i = 0; i < sl.size(); ++i)
-    {
-        if (i < sl.size() -1)
-            snprintf(tmpStr, 1000, "\"%s\", ", sl[i].c_str());
-        else
-            snprintf(tmpStr, 1000, "\"%s\"", sl[i].c_str());
-        str += tmpStr;
     }
     snprintf(tmpStr, 1000, ")\n");
     str += tmpStr;
