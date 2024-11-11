@@ -4,7 +4,7 @@
     <Field name="host" type="string">rzadams.llnl.gov</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">rzadams#.llnl.gov rzadams##.llnl.gov rzadams###.llnl.gov rzadams####.llnl.gov rzadams# rzadams## rzadams### rzadams####</Field>
-    <Field name="directory" type="string">/usr/gapps/visit/beta</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
