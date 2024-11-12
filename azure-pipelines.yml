@@ -50,6 +50,7 @@ pr:
     - '**/*.h'
     - 'data/silo*'
     - 'data/blueprint*'
+    - 'src/test/py_src/*.py'
     - 'src/test/tests/databases/silo.py'
     - 'src/test/tests/databases/blueprint.py'
     - 'src/test/tests/databases/blueprint_export.py'
