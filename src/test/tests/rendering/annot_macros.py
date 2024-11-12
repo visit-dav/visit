@@ -122,14 +122,11 @@ def tafile():
         # block to ensure the created files are then later removed from
         # the silo data dir where they are created.
         #
-        fname = silo_data_path("stafile1.txt")
-        with open(fname, 'w') as file:
-            for val in svals:
-                file.write(val + "\n")
-        fname = silo_data_path("ftafile1.txt")
-        with open(fname, 'w') as file:
-            for val in fvals:
-                file.write(f"{val:.8f}" + "\n")
+        with open(silo_data_path("stafile1.txt"), 'w') as file1, \
+             open(silo_data_path("ftafile1.txt"), 'w') as file2:
+             for val1, val2 in zip(svals, fvals):
+                 file1.write(val1 + "\n")
+                 file2.write(f"{val2:.8f}" + "\n")
 
         #
         # Ok, now produce annotation text using $stafile1 and $ftafile1.
