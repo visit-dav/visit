@@ -1749,14 +1749,21 @@ def FilterTestText(inText, baseText, numdifftol):
                    baseWordT.count(".") == 2 and baseWordT.endswith("."):
                     inWordT = inWordT.rstrip(".")
                     baseWordT = baseWordT.rstrip(".")
-                inStart = tmpText.find(inWords[w], inStart)
+                if (sys.version_info > (3, 0)):
+                    inStart = tmpText.find(inWords[w], inStart)
+                else:
+                    inStart = string.find(tmpText, inWords[w], inStart)
 
                 #
                 # Attempt to convert this word to a number. Exception indicates
                 # it wasn't a number and we can move on to next word
                 #
-                inVal = float(inWordT)
-                baseVal = float(baseWordT)
+                if (sys.version_info > (3, 0)):
+                    inVal = float(inWordT)
+                    baseVal = float(baseWordT)
+                else:
+                    inVal = string.atof(inWordT)
+                    baseVal = string.atof(baseWordT)
 
                 #
                 # Compute a relative difference measure for these two numbers

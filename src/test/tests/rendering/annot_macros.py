@@ -112,54 +112,54 @@ def tafile():
         svals.append("VisIt_%03d"%i)
     fvals[13] = -13.333678
 
-    #
-    # Create a directory, /$TMPDIR/$USER, to put the files into
-    #
-    tmp_dir = os.getenv('TMPDIR', '/tmp')  # Using TMPDIR as a fallback to TMP
-    user = os.getenv('USER')
-    directory_path = os.path.join(tmp_dir, user)
-    os.makedirs(directory_path, exist_ok=True)
+    try:
+        #
+        # Write the two lists to their repsective tafile files.
+        # Note this is relying up on the tafile being peer to database file
+        # method to locate these files. The other options are via ~/.visit
+        # and via TMP both of which involve different paths for py code
+        # on Windows and so are less attractive. This is inside a try...finally
+        # block to ensure the created files are then later removed from
+        # the silo data dir where they are created.
+        #
+        with open(silo_data_path("stafile1.txt"), 'w') as file1, \
+             open(silo_data_path("ftafile1.txt"), 'w') as file2:
+             for val1, val2 in zip(svals, fvals):
+                 file1.write(val1 + "\n")
+                 file2.write(f"{val2:.8f}" + "\n")
 
-    #
-    # Write the two lists to their repsective files.
-    #
-    fname = os.path.join(directory_path, "stafile1.txt")
-    with open(fname, 'w') as file:
-        for val in svals:
-            file.write(val + "\n")
-    fname = os.path.join(directory_path, "ftafile1.txt")
-    with open(fname, 'w') as file:
-        for val in fvals:
-            file.write(f"{val:.8f}" + "\n")
+        #
+        # Ok, now produce annotation text using $stafile1 and $ftafile1.
+        # Move around in time steps a bit also.
+        #
+        text = create_text2d_annot()
+        text.text = "stafile=$stafile1, ftafile=$ftafile1"
+        TestAutoName()
+        TimeSliderNextState()
+        TestAutoName()
+        TimeSliderNextState()
+        TestAutoName()
+        TimeSliderSetState(5)
+        TestAutoName()
+        TimeSliderSetState(13)
 
-    #
-    # Ok, now produce annotation text using $stafile1 and $ftafile1.
-    # Move around in time steps a bit also.
-    #
-    text = create_text2d_annot()
-    text.text = "stafile=$stafile1, ftafile=$ftafile1"
-    TestAutoName()
-    TimeSliderNextState()
-    TestAutoName()
-    TimeSliderNextState()
-    TestAutoName()
-    TimeSliderSetState(5)
-    TestAutoName()
-    TimeSliderSetState(13)
+        #
+        # tafiles macros combined with printf formats
+        #
+        text.text = "stafile=$stafile1%.3s$, ftafile=$ftafile1%8.3f$"
+        TestAutoName()
+        TimeSliderNextState()
+        TestAutoName()
+        TimeSliderNextState()
+        TestAutoName()
+        TimeSliderSetState(5)
+        TestAutoName()
+        text.Delete()
+        TimeSliderSetState(13)
 
-    #
-    # tafiles macros combined with printf formats
-    #
-    text.text = "stafile=$stafile1%.3s$, ftafile=$ftafile1%8.3f$"
-    TestAutoName()
-    TimeSliderNextState()
-    TestAutoName()
-    TimeSliderNextState()
-    TestAutoName()
-    TimeSliderSetState(5)
-    TestAutoName()
-    text.Delete()
-    TimeSliderSetState(13)
+    finally:
+        os.remove(silo_data_path("stafile1.txt"))
+        os.remove(silo_data_path("ftafile1.txt"))
 
 def tsprintf():
     """Timeslider printf format handling"""
@@ -196,6 +196,10 @@ def init():
     DrawPlots()
     TimeSliderSetState(13)
 
+def finalize():
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("wave.visit"))
+
 def main():
 
     init()
@@ -204,6 +208,7 @@ def main():
     printf()
     tafile()
     tsprintf()
+    finalize()
 
 main()
 
