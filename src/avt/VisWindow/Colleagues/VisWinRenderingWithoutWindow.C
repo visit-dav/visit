@@ -17,7 +17,11 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkOpenGLRenderWindow.h>
+#if LIB_VERSION_GE(VTK,9,4,0)
+#include <vtk_glad.h>
+#else
 #include <vtk_glew.h>
+#endif
 #include <vtkRenderer.h>
 
 #define DS_NOT_CHECKED    0

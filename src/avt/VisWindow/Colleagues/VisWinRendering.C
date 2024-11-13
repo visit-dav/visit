@@ -35,7 +35,6 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#include <vtk_glew.h>
 
 // PRE_VTK8 way re-enabled KSB 4-13-2021.
 // We'd do it another way in VTK8

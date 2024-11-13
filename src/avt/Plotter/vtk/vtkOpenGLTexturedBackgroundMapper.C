@@ -10,7 +10,12 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkMatrix4x4.h>
+
+#if LIB_VERSION_GE(VTK, 9,4,0)
+#include <vtk_glad.h>
+#else
 #include <vtk_glew.h>
+#endif
 
 #include <math.h>
 

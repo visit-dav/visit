@@ -12,8 +12,10 @@
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
 #include <vtkVisItCellDataToPointData.h>
+#if LIB_VERSION_LE(VTK,9,2,6)
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>
+#endif
 
 
 //
@@ -37,8 +39,10 @@ class vtkVisItObjectFactory : public vtkObjectFactory
 // Necessary for each object that will override a vtkObject.
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
+#if LIB_VERSION_LE(VTK,9,2,6) 
 VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
+#endif
 
 
 
@@ -74,6 +78,7 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
                          "vtkVisItCellDataToPointData override vtkCellDataToPointData",
                          1,
                          vtkObjectFactoryCreatevtkVisItCellDataToPointData);
+#if LIB_VERSION_LE(VTK,9,2,6)
   this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
                          "vtkVisItRectilinearGrid override vtkRectilinearGrid",
                          1,
@@ -82,6 +87,7 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
                          "vtkVisItStructuredGrid override vtkStructuredGrid",
                          1,
                          vtkObjectFactoryCreatevtkVisItStructuredGrid);
+#endif
 
 }
 

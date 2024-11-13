@@ -90,11 +90,9 @@ vtkVisItPolyDataNormals.C
 vtkVisItPolyDataNormals2D.C
 vtkVisItStructuredGridNormals.C
 vtkVisItProbeFilter.C
-vtkVisItRectilinearGrid.C
 vtkVisItSTLWriter.C
 vtkVisItScalarTree.C
 vtkVisItSplitter.C
-vtkVisItStructuredGrid.C
 vtkVisItTubeFilter.C
 vtkVisItTensorGlyph.C
 vtkVolumeFromCSGVolume.C
@@ -102,6 +100,11 @@ vtkVolumeFromVolume.C
 ${OPENEXR_SRC}
 )
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
+list(APPEND VISIT_VTK_SOURCES
+     vtkVisItRectilinearGrid.C
+     vtkVisItStructuredGrid.C)
+endif()
 
 INCLUDE_DIRECTORIES(
 ${VISIT_BINARY_DIR}/include
