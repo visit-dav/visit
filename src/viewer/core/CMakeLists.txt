@@ -146,8 +146,10 @@ avtwriter_ser
 Threads::Threads
 )
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
     target_link_libraries(viewercore_ser visit_vtk_offscreen)
+endif()
 endif()
 
 #******************** The viewercore_par library ******************************
@@ -171,9 +173,11 @@ if(VISIT_PARALLEL)
     Threads::Threads
     )
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
     if(HAVE_OSMESA)
         target_link_libraries(viewercore_par visit_vtk_offscreen)
     endif()
+endif()
 
     set(VIEWERCORE_PAR viewercore_par)
 endif(VISIT_PARALLEL)

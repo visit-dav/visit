@@ -166,8 +166,10 @@ static int nConfigArgs = 1;
 #include <sstream>
 
 #include <visit-config.h>
+#if LIB_VERSION_LE(VTK,9,2,6)
 #ifdef HAVE_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
+#endif
 #endif
 
 // We do this so that the strings command on the .o file
@@ -2607,8 +2609,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
+#if LIB_VERSION_LE(VTK,9,2,6)
 #ifdef HAVE_OSMESA
             vtkOffScreenRenderingFactory::ForceOffScreen();
+#endif
 #endif
             RemoteProcess::DisablePTY();
             SetNowinMode(true);

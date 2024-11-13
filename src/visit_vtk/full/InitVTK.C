@@ -12,6 +12,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
 #include <vtkVisItCellDataToPointData.h>
+#include <visit-config.h>
 #if LIB_VERSION_LE(VTK,9,2,6)
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>

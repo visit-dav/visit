@@ -11,6 +11,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkMatrix4x4.h>
 
+#include <visit-config.h>
 #if LIB_VERSION_GE(VTK, 9,4,0)
 #include <vtk_glad.h>
 #else

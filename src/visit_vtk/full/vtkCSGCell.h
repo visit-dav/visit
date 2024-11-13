@@ -16,6 +16,7 @@
 #include <visit_vtk_exports.h>
 
 #include <vtkCell.h>
+#include <visit-config.h>
 
 class vtkPointLocator;
 
