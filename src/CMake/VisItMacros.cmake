@@ -364,7 +364,6 @@ endmacro()
 ##############################################################################
 # Adds a library target.
 # calls blt_add_library
-# handles parallel
 # clears cache vars.
 #
 # ARGUMENTS:
@@ -430,11 +429,19 @@ macro(visit_add_library)
     unset(${val_NAME}_FEATURES CACHE)
 endmacro()
 
-macro(visit_add_parallel_library)
+##############################################################################
+# Adds a parallel library target.
+# calls visit_add_library
+# calls visit_patch_parallel_target to set all the parallel options for the
+# target
+#
+# See visit_add_library for arguments.
+#
+##############################################################################
 
+macro(visit_add_parallel_library)
     visit_add_library(${ARGV})
     cmake_parse_arguments(vapl "" "NAME" "" ${ARGN})
     visit_patch_parallel_target(NAME ${vapl_NAME})
-
 endmacro()
 
