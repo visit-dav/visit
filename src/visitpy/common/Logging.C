@@ -1650,11 +1650,17 @@ static std::string log_ResetPickAttributesRPC(ViewerRPC *rpc)
 static std::string log_AddAnnotationObjectRPC(ViewerRPC *rpc)
 {
     int annotType = rpc->GetIntArg1();
-    // annotType may have a 'visible/not visible' bit.
-    // this next is taken from VisWinAnnotations::AddAnnotationObject
-    // in order to remove the visible bit and get at just the annotType
+    // IntArg1 may have been constructed from the 'annotType' and
+    // a 'visible' flag.
+    // This logic to separate 'annotType' from the 'visible' bit
+    // is taken from VisWinAnnotations::AddAnnotationObject
     int const static CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE = 0x00010000;
     std::string visible("1");
+    // Check that annotType is between 0 and 8 inclusive.
+    // These numbers represent the annotationTypes that are available
+    // for user to 'Add'. Legend is currently the only annotation type
+    // not part of the user-addable set.
+    // See AnnotationObject.h for the enums available for Annotation type.
     if (!(0 <= annotType && annotType <= 8))
     {
         if (annotType & CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE)
