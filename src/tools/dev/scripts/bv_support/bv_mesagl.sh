@@ -200,29 +200,30 @@ EOF
 
     #
     # Patch to increase the maximum image size in the llvmpipe
-    # driver to 16K x 16K.
+    # driver to 32K x 32K. There are 2 changes. The first is to
+    # the number of 2D levels to 16 (2^(16-1)) = 32K. The second is
+    # to the maximum texture size - 32768 x 32768 is the maximum
+    # number of pixels, the 4 is 4 bytes per pixel, and the 2 is from
+    # the fact that a texture can actually store a multi-resolution
+    # representation of the image. For example if the image size
+    # is 256x256, it has storage for textures of size 256x256,
+    # 128x128, 64x64, 32x32, 16x16, 8x8, 4x4, 2x2 and 1x1.
     #
     patch -p0 << \EOF
-diff -c src/gallium/drivers/llvmpipe/lp_limits.h.orig src/gallium/drivers/llvmpipe/lp_limits.h
-*** src/gallium/drivers/llvmpipe/lp_limits.h.orig       Fri Jul 30 10:03:06 2021
---- src/gallium/drivers/llvmpipe/lp_limits.h    Fri Jul 30 10:04:41 2021
-***************
-*** 44,50 ****
-   * Max texture sizes
-   */
-  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
-! #define LP_MAX_TEXTURE_2D_LEVELS 14  /* 8K x 8K for now */
-  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
-  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
-  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
---- 44,50 ----
-   * Max texture sizes
-   */
-  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
-! #define LP_MAX_TEXTURE_2D_LEVELS 15  /* 16K x 16K for now */
-  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
-  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
-  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+diff -u src/gallium/drivers/llvmpipe/lp_limits.h.orig src/gallium/drivers/llvmpipe/lp_limits.h
+--- src/gallium/drivers/llvmpipe/lp_limits.h.orig	2018-04-18 01:44:00.000000000 -0700
++++ src/gallium/drivers/llvmpipe/lp_limits.h	2024-11-13 13:47:04.388202316 -0800
+@@ -43,8 +43,8 @@
+ /**
+  * Max texture sizes
+  */
+-#define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+-#define LP_MAX_TEXTURE_2D_LEVELS 14  /* 8K x 8K for now */
++#define LP_MAX_TEXTURE_SIZE (2 * 4 * 32768 * 32768ULL)  /* 8GB for now */
++#define LP_MAX_TEXTURE_2D_LEVELS 16  /* 32K x 32K for now */
+ #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+ #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+ #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
 EOF
     if [[ $? != 0 ]] ; then
         warn "MesaGL patch 4 failed."
@@ -234,26 +235,24 @@ EOF
     # driver. This is required for large image sizes.
     #
     patch -p0 << \EOF
-diff -c src/gallium/drivers/llvmpipe/lp_scene.h.orig src/gallium/drivers/llvmpipe/lp_scene.h
-*** src/gallium/drivers/llvmpipe/lp_scene.h.orig        Fri Jul 30 12:11:39 2021
---- src/gallium/drivers/llvmpipe/lp_scene.h     Fri Jul 30 12:11:49 2021
-***************
-*** 60,66 ****
-  
-  /* Scene temporary storage is clamped to this size:
-   */
-! #define LP_SCENE_MAX_SIZE (9*1024*1024)
-  
-  /* The maximum amount of texture storage referenced by a scene is
-   * clamped to this size:
---- 60,66 ----
-  
-  /* Scene temporary storage is clamped to this size:
-   */
-! #define LP_SCENE_MAX_SIZE (64*1024*1024)
-  
-  /* The maximum amount of texture storage referenced by a scene is
-   * clamped to this size:
+diff -u src/gallium/drivers/llvmpipe/lp_scene.h.orig src/gallium/drivers/llvmpipe/lp_scene.h
+--- src/gallium/drivers/llvmpipe/lp_scene.h.orig	2018-04-18 01:44:00.000000000 -0700
++++ src/gallium/drivers/llvmpipe/lp_scene.h	2024-11-13 13:57:33.700075750 -0800
+@@ -60,12 +60,12 @@
+
+ /* Scene temporary storage is clamped to this size:
+  */
+-#define LP_SCENE_MAX_SIZE (9*1024*1024)
++#define LP_SCENE_MAX_SIZE (256*1024*1024)
+
+ /* The maximum amount of texture storage referenced by a scene is
+  * clamped to this size:
+  */
+-#define LP_SCENE_MAX_RESOURCE_SIZE (64*1024*1024)
++#define LP_SCENE_MAX_RESOURCE_SIZE (256*1024*1024)
+
+
+ /* switch to a non-pointer value for this:
 EOF
     if [[ $? != 0 ]] ; then
         warn "MesaGL patch 5 failed."
@@ -261,6 +260,66 @@ EOF
     fi
 
     #
+    # Patch to increase the maximum image size in mesa to 32K x 32K.
+    #
+    patch -p0 << \EOF
+diff -u src/mesa/main/config.h.orig src/mesa/main/config.h
+--- src/mesa/main/config.h.orig	2018-04-18 01:44:00.000000000 -0700
++++ src/mesa/main/config.h	2024-11-13 14:00:35.358860569 -0800
+@@ -91,19 +91,19 @@
+ #define LINE_WIDTH_GRANULARITY 0.1
+
+ /** Max memory to allow for a single texture image (in megabytes) */
+-#define MAX_TEXTURE_MBYTES 1024
++#define MAX_TEXTURE_MBYTES 8196
+
+ /** Number of 1D/2D texture mipmap levels */
+-#define MAX_TEXTURE_LEVELS 15
++#define MAX_TEXTURE_LEVELS 16
+
+ /** Number of 3D texture mipmap levels */
+-#define MAX_3D_TEXTURE_LEVELS 15
++#define MAX_3D_TEXTURE_LEVELS 16
+
+ /** Number of cube texture mipmap levels - GL_ARB_texture_cube_map */
+-#define MAX_CUBE_TEXTURE_LEVELS 15
++#define MAX_CUBE_TEXTURE_LEVELS 16
+
+ /** Maximum rectangular texture size - GL_NV_texture_rectangle */
+-#define MAX_TEXTURE_RECT_SIZE 16384
++#define MAX_TEXTURE_RECT_SIZE 32768
+
+ /**
+  * Maximum number of layers in a 1D or 2D array texture - GL_MESA_texture_array
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 6 failed."
+        return 1
+    fi
+
+    #
+    # Patch to fix an arithmetic overflow error calculating the size
+    # of a texture.
+    #
+    patch -p0 << \EOF
+diff -u src/gallium/drivers/llvmpipe/lp_texture.c.orig src/gallium/drivers/llvmpipe/lp_texture.c
+--- src/gallium/drivers/llvmpipe/lp_texture.c.orig	2018-04-18 01:44:00.000000000 -0700
++++ src/gallium/drivers/llvmpipe/lp_texture.c	2024-11-13 14:17:18.979693408 -0800
+@@ -155,7 +155,7 @@
+
+       lpr->mip_offsets[level] = total_size;
+
+-      total_size += align((unsigned)mipsize, mip_align);
++      total_size += align64(mipsize, mip_align);
+       if (total_size > LP_MAX_TEXTURE_SIZE) {
+          goto fail;
+       }
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 7 failed."
+        return 1
+    fi
+
     # Patch to address VTK texture buffer error.
     # Taken from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/9750
     #
@@ -287,7 +346,7 @@ diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpi
      case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
 EOF
     if [[ $? != 0 ]] ; then
-        warn "MesaGL patch 6 failed."
+        warn "MesaGL patch 8 failed."
         return 1
     fi
 
