@@ -201,7 +201,7 @@ EOF
     #
     # Patch to increase the maximum image size in the llvmpipe
     # driver to 32K x 32K. There are 2 changes. The first is to
-    # the number of 2D levels to 16 (2^(16-1) = 32K. The second is
+    # the number of 2D levels to 16 (2^(16-1)) = 32K. The second is
     # to the maximum texture size - 32768 x 32768 is the maximum
     # number of pixels, the 4 is 4 bytes per pixel, and the 2 is from
     # the fact that a texture can actually store a multi-resolution
