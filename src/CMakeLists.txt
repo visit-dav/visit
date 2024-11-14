@@ -144,6 +144,9 @@
 #    Kathleen Biagas, Mon Sep 30, 2024
 #    Add build/install scripts from scripts directory to visit-dist target.
 #
+#    Eric Brugger, Wed Nov 13 13:39:08 PST 2024
+#    Increase the rendering size limit from 16384 to 32768.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -690,13 +693,13 @@ else()
     endif()
 endif()
 
-# Set the rendering size limit to 16384 so that we are not unnecessarily
+# Set the rendering size limit to 32768 so that we are not unnecessarily
 # constraining the user. There is no way to set this properly since this
 # is used in the viewer and the limit really comes from the engine, which
 # may have a different size if running client/server. This setting should
 # be removed and a runtime check should be added to the engine.
-message(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
-set(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
+message(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 32768")
+set(VISIT_RENDERING_SIZE_LIMIT 32768 CACHE INTERNAL "rendering size limit")
 
 configure_file(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-config.h @ONLY IMMEDIATE)
