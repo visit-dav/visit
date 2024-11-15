@@ -82,6 +82,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added the ability to skip the remote host validity check when using a gateway. This allows VisIt to work with gateways that are transparently handled by <code>ssh</code>. The check can now be bypassed by checking "Use gateway" and leaving the gateway name blank in the host profile for the remote system.</li>
   <li>Added support for MFEM Wedge (aka Prism) Meshes.</li>
   <li>Added new global mesh expressions: global_avg(), global_max(), global_min(), global_rms(), global_std_dev(), global_sum(), and global_variance(). These are expressions that calculate statistics across the mesh and the result is a constant variable that contains the result. So, global_max(d) produces a new variable that is the maximum of d at every zone or node across the mesh.</li>
+  <li>The maximum image size that can be saved has been increased to a maximum of 32,768 for either the width or height with a total pixel count not to exceed 536,756,224 pixels. For a square image that corresponds to an image size of 23,170 by 23,168 or less. For a rectangular image that corresponds to an image size of 32,768 by 16,380 or less.</li>
 </ul>
 
 <a name="Dev_changes"></a>
