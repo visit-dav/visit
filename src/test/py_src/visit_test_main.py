@@ -721,6 +721,8 @@ def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
 #   * added an option to display the current, baseline and diff in
 #     a popup window during the test
 #
+#   Mark C. Miller, Thu Nov 14 18:50:14 PST 2024
+#   Pass pixdiff and avgdiff to HTMLImageTestResult
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
@@ -940,6 +942,9 @@ def Save_Validate_Perturb_Restore_Session(cur):
 #
 #   Mark C. Miller, Fri Sep 11 19:26:34 PDT 2020
 #   Added pixdiff, avgdiff optional args
+#
+#   Mark C. Miller, Thu Nov 14 18:52:30 PST 2024
+#   Pass pixdiff and avgdiff on to LogImageTestResult
 # ----------------------------------------------------------------------------
 def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     CheckInteractive(case_name)
@@ -1107,6 +1112,9 @@ def TestTextAutoName(inText, baseText=None, numdifftol=None):
 #   relative to the where it was when it was called. This caused it
 #   and several other arguments to be incorrect.
 #
+#   Mark C. Miller, Thu Nov 14 18:50:56 PST 2024
+#   Add pixdiff, avgdiff args. Adjust output of diff metrics to vary color
+#   based on status and indicate the thresholds in the output.
 # ----------------------------------------------------------------------------
 
 def HTMLImageTestResult(case_name,status,

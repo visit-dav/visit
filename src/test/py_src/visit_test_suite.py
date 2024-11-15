@@ -551,6 +551,8 @@ def finalize_options(opts):
 #    For windows, move the glob of '*.py' tests name to after full-path
 #    expansion in main.
 #
+#    Mark C. Miller, Thu Nov 14 18:54:01 PST 2024
+#    Improve usage info for --fuzzy, --pixdiff and --avgdiff.
 # ----------------------------------------------------------------------------
 def parse_args():
     """
