@@ -247,7 +247,8 @@ set -e
 #   Completely reworked this script to have no more duplication.
 #
 #   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
-#   Added support for installing on tuolumne.
+#   Added support for installing on tuolumne, and rzadams. Added 
+#   rzvernal symlink so it uses the rzadams build.
 #-----------------------------------------------------------------------
 
 test=no
@@ -299,6 +300,7 @@ rzwhippet=false
 magma=false
 sierra=false
 tuolumne=false
+rzadams=false # rzadams will piggyback off of tuolumne for the most part
 
 ver=undefined
 machine_name="unknown"
@@ -335,6 +337,7 @@ do
          ;;
       -rzadams)
          tuolumne=true
+         rzadams=true
          machine_name="rzadams"
          architecture="linux-x86_64-gfx942"
          network="llnl_open_rz"
@@ -462,6 +465,25 @@ echo "The database plugins:"                         >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/$architecture\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 rm -f resultlog.$machine_name
 mv resultlog resultlog.$machine_name
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
+# symlink for rzvernal
+#
+if [ "$rzadams" = true ]; then
+   # rzvernal can use the rzadams build via a symlink
+   cat <<EOF >> machine_specific_install_script
+ln -s /usr/gapps/visit/$ver+/$architecture /usr/gapps/visit/$ver+/linux-x86_64-gfx90a
+EOF
+elif [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$lassen" = true ] || \
+     [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
+     [ "$tuolumne" = true ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_install_script
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
