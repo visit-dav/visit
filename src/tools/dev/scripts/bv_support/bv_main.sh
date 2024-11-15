@@ -328,6 +328,9 @@ function initialize_build_visit()
         export GFORTRAN=""
     fi
 
+    # used to see if we are a cray system
+    export SYSTEM_TYPE=$(printenv SYS_TYPE)
+
     export OPSYS=${OPSYS:-$(uname -s)}
     export PROC=${PROC:-$(uname -p)}
     export REL=${REL:-$(uname -r)}
@@ -337,23 +340,23 @@ function initialize_build_visit()
         #  export VISITARCH=${VISITARCH-${ARCH}}
         export SO_EXT="dylib"
         VER=$(uname -r)
-	
+    
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
         # work See issue https://github.com/visit-dav/visit/issues/1506
 
-	VER_MAJOR=${VER%%.*}
+    VER_MAJOR=${VER%%.*}
 
-	# bash script educational note:
-	# The less than sign "<" is an arithmetic expression and
-	# as such one must use parenthesis (( .. )) and not square brackets.
-	# i.e. if (( ${VER_MAJOR} < 8 )) ; then
+    # bash script educational note:
+    # The less than sign "<" is an arithmetic expression and
+    # as such one must use parenthesis (( .. )) and not square brackets.
+    # i.e. if (( ${VER_MAJOR} < 8 )) ; then
 
-	# Square brackets are for conditionals only. To make it a
-	# conditional one must use "-lt"
+    # Square brackets are for conditionals only. To make it a
+    # conditional one must use "-lt"
         # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
-	    
+        
         if [[ ${VER_MAJOR} -lt 18 ]] ; then
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             exit 1
@@ -387,7 +390,7 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
-	
+    
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
@@ -575,6 +578,7 @@ function initialize_build_visit()
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     export DO_QT510="no"
+    export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
 
@@ -616,6 +620,9 @@ function initialize_build_visit()
         esac
         case $arg in
             --qt) DO_QT6="no"; DO_QT="yes";;
+        esac
+        case $arg in
+            --vtk9) DO_VTK9="yes";;
         esac
         case $arg in
             --qt6) DO_QT6="yes"; DO_QT="no";;
@@ -1223,6 +1230,9 @@ function run_build_visit()
             # "--qt510" is actually handled elsewhere, but it is also here
             # to prevent it triggering an "Urecognized option" error.
             --qt510) ;;
+            # "--vtk9" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --vtk9) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
