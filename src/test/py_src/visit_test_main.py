@@ -725,7 +725,8 @@ def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
                        tPixs, pPixs, dPixs, dpix, davg,
-                       cur, diff, base, thrErr):
+                       cur, diff, base, thrErr,
+                       pixdiff, avgdiff):
     """
     Log the result of an image based test.
     """
@@ -766,7 +767,8 @@ def LogImageTestResult(case_name,
     # write html result
     HTMLImageTestResult(case_name, status,
                         diffState,modeSpecific,
-                        tPixs, pPixs,dPixs, dpix, davg)
+                        tPixs, pPixs,dPixs, dpix, davg,
+                        pixdiff, avgdiff)
 
 # ----------------------------------------------------------------------------
 #  Method: JSONImageTestResult
@@ -1012,7 +1014,8 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 
     LogImageTestResult(case_name, diffState, modeSpecific,
                        tPixs, pPixs, dPixs, dpix, davg,
-                       cur, diff, base, thrErr)
+                       cur, diff, base, thrErr,
+                       pixdiff, avgdiff)
 
     # update maxmimum diff state
     diffVals = {
@@ -1108,7 +1111,8 @@ def TestTextAutoName(inText, baseText=None, numdifftol=None):
 
 def HTMLImageTestResult(case_name,status,
                         diffState, modeSpecific,
-                        tPixs, pPixs, dPixs, dpix, davg):
+                        tPixs, pPixs, dPixs, dpix, davg,
+                        pixdiff, avgdiff):
     """
     Writes HTML entry for a single test image.
     """
@@ -1188,14 +1192,19 @@ def HTMLImageTestResult(case_name,status,
         testcase.write("    <td rowspan=7>Skipped</td>\n")
     else:
         testcase.write("""    <td><a href="" onMouseOver="document.d.src='b_%s.png'" onMouseOut="document.d.src='d_%s.png'"><img name="d" border=0 src="d_%s.png"></img></a></td>\n"""%(case_name,case_name,case_name))
-    testcase.write("    <td align=center><i>Error Metric</i></td>\n")
-    testcase.write("    <td align=center><i>Value</i></td>\n")
     testcase.write("  </tr>\n")
+    testcase.write("      <tr><td align=center><i>Error Metric</i></td><td align=center><i>Value</i></td></tr>\n")
     testcase.write("      <tr><td>Total Pixels</td>  <td align=right>%06d</td></tr>\n"%tPixs)
     testcase.write("      <tr><td>Non-Background</td><td align=right>%06d</td></tr>\n"%pPixs)
     testcase.write("      <tr><td>Different</td>     <td align=right>%06d</td></tr>\n"%dPixs)
-    testcase.write("      <tr><td>%% Diff. Pixels</td><td align=right>%f</td></tr>\n"%dpix)
-    testcase.write("      <tr><td>Avg. Diff</td><td align=right>%f</td></tr>\n"%davg)
+    if dpix > pixdiff:
+        testcase.write("      <tr bgcolor=#ff0000><td>%% Diff. Pixels exceeds %f</td><td align=right>%f</td></tr>\n"%(pixdiff,dpix))
+    else:
+        testcase.write("      <tr bgcolor=#ffff00><td>%% Diff. Pixels within %f</td><td align=right>%f</td></tr>\n"%(pixdiff,dpix))
+    if davg > avgdiff:
+        testcase.write("      <tr bgcolor=#ff0000><td>Avg. Diff exceeds %f</td><td align=right>%f</td></tr>\n"%(avgdiff,davg))
+    else:
+        testcase.write("      <tr bgcolor=#ffff00><td>Avg. Diff within %f</td><td align=right>%f</td></tr>\n"%(avgdiff,davg))
     testcase.write("      <tr></tr>\n")
     testcase.write("  </tr>\n")
     testcase.write("</table>\n")
