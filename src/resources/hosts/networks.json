@@ -165,6 +165,9 @@
           "name": "host_llnl_ruby.xml"
         },
         {
+          "name": "host_llnl_rzadams.xml"
+        },
+        {
           "name": "host_llnl_rzansel.xml"
         },
         {
@@ -184,6 +187,9 @@
         },
         {
           "name": "host_llnl_syrah.xml"
+        },
+        {
+          "name": "host_llnl_tuolumne.xml"
         },
         {
           "name": "host_slac_red.xml"

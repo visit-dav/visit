@@ -246,12 +246,15 @@ set -e
 #   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
 #   Completely reworked this script to have no more duplication.
 #
+#   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
+#   Added support for installing on tuolumne, and rzadams. Added 
+#   rzvernal symlink so it uses the rzadams build.
 #-----------------------------------------------------------------------
 
 test=no
 
 user=`whoami`
-result_dir=/usr/workspace/visit/visit/_release_builds/
+result_dir=/usr/workspace/visit/visit/_release_builds
 
 #
 # Set the user e-mail address.
@@ -296,6 +299,8 @@ lassen=false
 rzwhippet=false
 magma=false
 sierra=false
+tuolumne=false
+rzadams=false # rzadams will piggyback off of tuolumne for the most part
 
 ver=undefined
 machine_name="unknown"
@@ -321,6 +326,21 @@ do
          machine_name="poodle"
          architecture="linux-x86_64"
          network="llnl_open_cz"
+         shift
+         ;;
+      -tuolumne)
+         tuolumne=true
+         machine_name="tuolumne"
+         architecture="linux-x86_64-gfx942"
+         network="llnl_open_cz"
+         shift
+         ;;
+      -rzadams)
+         tuolumne=true
+         rzadams=true
+         machine_name="rzadams"
+         architecture="linux-x86_64-gfx942"
+         network="llnl_open_rz"
          shift
          ;;
       -lassen)
@@ -365,7 +385,7 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rzwhippet magma sierra"
+   echo "    kickit poodle lassen rzwhippet magma sierra tuolumne rzadams"
    exit
 fi
 
@@ -389,7 +409,8 @@ ver=`echo $ver2 | tr "_" "."`
 # create the install script
 #
 if [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$lassen" = true ] || \
-   [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ]; then
+   [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    rm -f machine_specific_install_script
    cat <<EOF > machine_specific_install_script
 #!/bin/sh
@@ -410,7 +431,7 @@ if [ "$kickit" = true ]; then
 $ver ${architecture}-rhel7 /usr/gapps/visit > installlog 2>&1
 EOF
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$magma" = true ] || [ "$sierra" = true ]; then
+     [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
 $ver ${architecture}-${machine_name} /usr/gapps/visit > installlog 2>&1
@@ -424,7 +445,8 @@ fi
 # resultlog
 #
 if [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$magma" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
+   [ "$magma" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
@@ -450,9 +472,29 @@ else
 fi
 
 #
+# symlink for rzvernal
+#
+if [ "$rzadams" = true ]; then
+   # rzvernal can use the rzadams build via a symlink
+   cat <<EOF >> machine_specific_install_script
+ln -s /usr/gapps/visit/$ver+/$architecture /usr/gapps/visit/$ver+/linux-x86_64-gfx90a
+EOF
+elif [ "$kickit" = true ] || [ "$poodle" = true ] || [ "$lassen" = true ] || \
+     [ "$rzwhippet" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
+     [ "$tuolumne" = true ]; then
+   # nothing to do for this case
+   cat <<EOF >> machine_specific_install_script
+EOF
+else
+   echo "case for $machine_name not implemented. Bailing out."
+   exit
+fi
+
+#
 # email
 #
-if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
 EOF
@@ -477,7 +519,7 @@ if [ "$test" = "no" ]; then
       cp /home/$user/${machine_name}/visitbuild/visit$ver2.${architecture}-wmesa.tar.gz visit$ver2.${architecture}-rhel7-wmesa.tar.gz
       chmod 750 ${machine_name}_install;./${machine_name}_install
    elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-        [ "$magma" = true ] || [ "$sierra" = true ]; then
+        [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
       cp machine_specific_install_script ${machine_name}_install
       cp $result_dir/visit$ver2.${architecture}-${machine_name}.tar.gz .
       chmod 750 ${machine_name}_install;./${machine_name}_install

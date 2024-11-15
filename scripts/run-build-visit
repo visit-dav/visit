@@ -16,6 +16,8 @@
 #       rzwhippet (LC, Linux, x86_64, toss4),
 #       rzvernal  (LC, Linux, x86_64, toss4-cray),
 #       trinity   (LANL, x86_64)
+#       tuolumne  (LC, Linux, x86_64, toss4-cray),
+#       rzadams   (LC, Linux, x86_64, toss4-cray)
 #
 # Modifications:
 #    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
@@ -61,6 +63,13 @@
 #    Justin Privitera, Tue Sep 10 16:23:34 PDT 2024
 #    Removed rztopaz.
 #
+#    Eric Brugger, Mon Oct  7 09:03:43 PDT 2024
+#    Added support for building on tuolumne.
+# 
+#    Justin Privitera, Wed Nov  6 16:11:16 PST 2024
+#    Added support for building on rzadams (secretly the same as 
+#    tuolumne).
+#
 #-----------------------------------------------------------------------
 
 #
@@ -73,6 +82,7 @@ lassen=false
 rzgenie=false
 rzvernal=false
 trinity=false
+tuolumne=false
 
 machine_name="unknown"
 
@@ -124,6 +134,16 @@ do
          machine_name="trinity"
          shift
          ;;
+      -tuolumne)
+         tuolumne=true
+         machine_name="tuolumne"
+         shift
+         ;;
+      -rzadams)
+         tuolumne=true
+         machine_name="rzadams"
+         shift
+         ;;
       -v)
          version=$2
          shift 2
@@ -149,6 +169,8 @@ then
    echo "    rzwhippet (LC, Linux, x86_64, toss4),"
    echo "    rzvernal  (LC, Linux, x86_64, toss4-cray),"
    echo "    trinity   (LANL, Linux, x86_64)"
+   echo "    tuolumne  (LC, Linux, x86_64, toss4-cray),"
+   echo "    rzadams   (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -173,7 +195,8 @@ if [ "$kickit_mesagl" = true ]; then
 elif [ "$kickit_opengl" = true ]; then
    echo "Building using opengl on $machine_name"
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+     [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+     [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -185,7 +208,8 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+   [ "$tuolumne" = true ]; then
    ran_build_visit=true
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -204,7 +228,9 @@ elif [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
 elif [ "$lassen" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
 elif [ "$rzvernal" = true ]; then
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
+elif [ "$tuolumne" = true ]; then
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx942
 elif [ "$trinity" = true ]; then
    dest_dir=/usr/projects/views/visit/thirdparty_shared/$version
 else
@@ -217,7 +243,7 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ]; then
+   [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
 elif [ "$trinity" = true ]; then
    dest_group=viz
@@ -231,7 +257,8 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+   [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
       mv ${build_visit_script}_log.${machine_name} ${build_visit_script}_log
    fi
@@ -306,6 +333,13 @@ elif [ "$trinity" = true ]; then
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --no-adios --no-adios2 --no-mili --no-pyside --qt510 --qwt --no-visit \
        --makeflags -j16 --thirdparty-path ${dest_dir}
+elif [ "$tuolumne" = true ]; then
+   env CC=gcc \
+       CXX=g++ \
+       PAR_COMPILER=cc \
+       PAR_COMPILER_CXX=CC \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab --no-icet \
+       --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-pidx --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -316,7 +350,8 @@ fi
 #
 if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
    [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+   [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
    # just in case perms
    echo "changing permissions of ${dest_dir}"
@@ -342,5 +377,7 @@ then
    echo "    rzgenie  (LC, Linux, x86_64, toss3),"
    echo "    rzvernal (LC, Linux, x86_64, toss4-cray),"
    echo "    trinity  (LANL, Linux, x86_64)"
+   echo "    tuolumne (LC, Linux, x86_64, toss4-cray),"
+   echo "    rzadams  (LC, Linux, x86_64, toss4-cray),"
    exit
 fi
