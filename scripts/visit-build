@@ -343,7 +343,7 @@ set -e
 #   Completely reworked this script to have no more duplication.
 # 
 #   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
-#   Added support for building on tuolumne.
+#   Added support for building on tuolumne and rzadams.
 #-----------------------------------------------------------------------
 
 test=no
@@ -393,6 +393,7 @@ kickit=false
 poodle=false
 lassen=false
 rzwhippet=false
+rzvernal=false
 tuolumne=false
 magma=false
 sierra=false
