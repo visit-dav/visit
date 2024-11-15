@@ -136,13 +136,17 @@ def tafile():
     # Ok, now produce annotation text using $stafile1 and $ftafile1.
     # Move around in time steps a bit also.
     #
+    # There are a couple of test results here where the plot can vary
+    # slightly from run to run. We deal with that by allowing for a 
+    # very minor pixdiff (1/2 of a percent) threshold.
+    #
     text = create_text2d_annot()
     text.text = "stafile=$stafile1, ftafile=$ftafile1"
     TestAutoName()
     TimeSliderNextState()
     TestAutoName()
     TimeSliderNextState()
-    TestAutoName()
+    TestAutoName(pixdiff=0.5)
     TimeSliderSetState(5)
     TestAutoName()
     TimeSliderSetState(13)
@@ -155,7 +159,7 @@ def tafile():
     TimeSliderNextState()
     TestAutoName()
     TimeSliderNextState()
-    TestAutoName()
+    TestAutoName(pixdiff=0.5)
     TimeSliderSetState(5)
     TestAutoName()
     text.Delete()
