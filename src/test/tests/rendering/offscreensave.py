@@ -144,8 +144,6 @@ def GeneralTests():
 
 def TestLargeImage(width, height, md5sum):
     # Test saving a large image
-    OpenDatabase(silo_data_path("curv2d.silo"))
-    DeleteAllPlots()
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -164,6 +162,8 @@ def TestLargeImage(width, height, md5sum):
     SetSaveWindowAttributes(swa)
     SaveWindow()
 
+    DeleteAllPlots()
+
     # Comparing md5 sum instead of image, since the image is large.
     md5_hash = hashlib.md5()
     with open(imgOutName, "rb") as f:
@@ -176,13 +176,18 @@ GeneralTests()
 
 if not sys.platform.startswith("win"):
     # Cannot perform this test on Windows as image size is limited
+    OpenDatabase(silo_data_path("curv2d.silo"))
+
     TestLargeImage(16384, 16384, "19d173a8af27d8b552a58bf7b99fa771")
     TestLargeImage(23168, 23168, "e76139eb88920334c6f931b5fec9c09d")
     TestLargeImage(32768, 16380, "5a6315eae4bf7912a0ab6bd15f62d624")
+
     # The images sizes for the last 2 tests are too large so they
     # will get scaled to be within the size allowed. The 32768x32768
     # image will be 23168x23168 and the 32768x24000 will be 27071x19827.
     TestLargeImage(32768, 32768, "e76139eb88920334c6f931b5fec9c09d")
     TestLargeImage(32768, 24000, "8c9c5ba01ab8132a42b7d0fa457cabba")
+
+    CloseDatabase(silo_data_path("curv2d.silo"))
 
 Exit()
