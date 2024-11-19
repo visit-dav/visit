@@ -314,6 +314,12 @@ def copy_results(cur_dir):
             # This is a current or difference image.
             #
             shutil.copy(os.path.join(mode_dir, file), out_mode_dir)
+        elif (file.startswith("c_") and file.endswith(".txt")):
+            #
+            # This is a current text file. This isn't needed for the
+            # web pages, but is there for use with the rebaseline script.
+            #
+            shutil.copy(os.path.join(mode_dir, file), out_mode_dir)
         elif (file.endswith(".html")):
             #
             # This is a generic html file. Unfortunately, we have to open it
