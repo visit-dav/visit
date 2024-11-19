@@ -5669,7 +5669,9 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //  Note that for the nodelist (and zonelist if present) data, we're copying a
 //  POINTER. So, we null out the entry in the source DBmultimeshadj so that
 //  later on when that object is freed, we won't loose the copied data the
-//  POINTER points at.
+//  POINTER points at. Finally, its way too complicated to try to deal with
+//  back member data here. So, we ignore that here and re-build it after we're
+//  done building the new mmadj object.
 //
 //  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
 // ****************************************************************************
@@ -5677,7 +5679,8 @@ static void copy_mmadj_neighbor_entry(DBmultimeshadj *dst, int dstidx,
     DBmultimeshadj const *src, int srcidx)
 {
     dst->neighbors[dstidx] = src->neighbors[srcidx];
-    dst->back[dstidx] = src->back[srcidx];
+    // We don't deal with dst->back here. We re-build it later after we're
+    // done building the new mmadj object.
     if (src->nodelists)
     {
         dst->lnodelists[dstidx] = src->lnodelists[srcidx];
@@ -5704,14 +5707,14 @@ static void copy_mmadj_neighbor_entry(DBmultimeshadj *dst, int dstidx,
 //  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
 // ****************************************************************************
 static bool 
-process_pbcs_for_one_domain(int dom,
+process_pbcs_for_one_domain(int dom, int const nBndEntries,
     int &pbcidx, int const *pbcBndList, int const *pbcDomList,
     int &onidx, DBmultimeshadj const *old_mmadj,
     int &nnidx, DBmultimeshadj *new_mmadj)
 {
     int ncopied = 0;
 
-    if (pbcDomList[pbcidx] > dom) // copy all neighbor info for this dom
+    if (pbcDomList[pbcidx] > dom)       // copy all neighbor info for this dom
     {
         int nneighbors = old_mmadj->nneighbors[dom];
         for (int i = 0; i < nneighbors; nnidx++, onidx++, ncopied++, i++)
@@ -5721,7 +5724,9 @@ process_pbcs_for_one_domain(int dom,
     {
         int i;
         int nneighbors = old_mmadj->nneighbors[dom];
-        for (i = 0; (i < nneighbors) && (pbcDomList[pbcidx] == dom); i++)
+        for (i = 0; (i < nneighbors) &&
+                    (pbcidx < nBndEntries) &&
+                    (pbcDomList[pbcidx] == dom); i++)
         {
             if (i < pbcBndList[pbcidx])
             {
@@ -5730,15 +5735,23 @@ process_pbcs_for_one_domain(int dom,
                 onidx++;
                 ncopied++;    
             }
-            else
+            else if (i == pbcBndList[pbcidx])
             {
                 onidx++;
                 pbcidx++;
+            }
+            else
+            {
+                return false; // should never happen
             }
         }
         // Copy any entries that still remain
         for (int j = i; j < nneighbors; nnidx++, onidx++, ncopied++, j++)
             copy_mmadj_neighbor_entry(new_mmadj, nnidx, old_mmadj, onidx);
+    }
+    else
+    {
+        return false; // should never happen
     }
 
     new_mmadj->nneighbors[dom] = ncopied;
@@ -5749,6 +5762,71 @@ process_pbcs_for_one_domain(int dom,
     return ncopied == 7 || ncopied == 11 ||
           ncopied == 17 || ncopied == 26;
 }
+
+// ****************************************************************************
+//  Function: get_mmadj_offset, PrintNeighborConfigForDomain
+//
+//  Mark C. Miller, Mon Nov 18 16:01:26 PST 2024
+//  Two functions useful for traversing mmadj data and checking its validity.
+//
+// ****************************************************************************
+#ifndef NDEBUG
+static int
+get_mmadj_offset(DBmultimeshadj* const mmadj, int k)
+{
+    int noff = 0;
+    for (int i = 0; i < k; i++)
+        noff += mmadj->nneighbors[i];
+    return noff;
+}
+
+static void
+PrintNeighborConfigForDomain(DBmultimeshadj* const mmadj, int dom)
+{
+    int nneighbors = mmadj->nneighbors[dom];
+    int noff = get_mmadj_offset(mmadj, dom);
+
+    printf("Domain %04d has %02d neighbors...\n", dom, nneighbors);
+    for (int i = 0; i < nneighbors; i++)
+    {
+        int neighbor = mmadj->neighbors[noff+i];
+        printf("    neighbor %02d: %04d\n", i, neighbor);
+        int back = mmadj->back?mmadj->back[noff+i]:-1;
+        if (back >= 0)
+        {
+            printf("        this domain is locally indexed as %02d in this neighbor", back);
+            int bnoff = get_mmadj_offset(mmadj, neighbor);
+            if (mmadj->neighbors[bnoff+back] == dom)
+                printf(" (confirmed)\n");
+            else
+                printf(" (FAILED!)\n");
+
+        }
+        if (mmadj->nodelists)
+        {
+            printf("        shared nodes config %d:", mmadj->lnodelists[noff+i]);
+            for (int j = 0; j < mmadj->lnodelists[noff+i]; j++)
+            {
+                printf(" %04d", mmadj->nodelists[noff+i][j]);
+                if ((j+1)%8==0)
+                    printf("\n                               ");
+            }
+            printf("\n");
+        }
+        if (mmadj->zonelists)
+        {
+            printf("        shares zones config %d:", mmadj->lzonelists[noff+i]);
+            for (int j = 0; j < mmadj->lzonelists[noff+i]; j++)
+            {
+                printf(" %04d", mmadj->zonelists[noff+i][j]);
+                if ((j+1)%8==0)
+                    printf("\n                               ");
+            }
+            printf("\n");
+        }
+    }
+}
+#endif
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::FindMultiMeshAdjConnectivity
@@ -5774,6 +5852,14 @@ process_pbcs_for_one_domain(int dom,
 //
 //    Mark C. Miller, Wed Nov 11 12:28:25 PST 2009
 //    Added guard against case where some mmadj->nodelists arrays are null.
+//
+//    Mark C. Miller, Mon Nov 11 16:20:29 PST 2024
+//    Add logic to remove PBC neighbors from mmadj using PeriodicBndList and
+//    PeriodicDomList if present.
+//
+//    Mark C. Miller, Mon Nov 18 16:21:38 PST 2024
+//    Add logic to properly rebuild the `back` member of the new mmadj object
+//    when PBC removal is performed.
 // ****************************************************************************
 void
 avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
@@ -5837,11 +5923,14 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int *pbcDomList = (int*) DBGetVar(dbfile, "PeriodicDomList");
 
             // Build a new DBmultimeshadj object
+            // We don't bother to populate meshtypes member here. Its not needed
+            // for any of the logic that follows.
             int new_lneighbors = mmadj_obj->lneighbors - nBndEntries;
             DBmultimeshadj *mmadj_newobj = DBAllocMultimeshadj(ndomains);
             mmadj_newobj->lneighbors = new_lneighbors;
             mmadj_newobj->neighbors = (int *) malloc(new_lneighbors*sizeof(int));
-            mmadj_newobj->back = (int *) malloc(new_lneighbors*sizeof(int));
+            if (mmadj_obj->back)
+                mmadj_newobj->back = (int *) malloc(new_lneighbors*sizeof(int));
             if (mmadj_obj->nodelists)
             {
                 mmadj_newobj->lnodelists = (int *) malloc(new_lneighbors*sizeof(int));
@@ -5864,10 +5953,14 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             int failed_dom = -1;
             for (int i = 0; i < ndomains; i++)
             {
-                bool ok = process_pbcs_for_one_domain(i,
+                bool ok = process_pbcs_for_one_domain(i, nBndEntries,
                              pbcidx, pbcBndList, pbcDomList,
                              onidx, mmadj_obj,
                              nnidx, mmadj_newobj);
+
+                if (i < (ndomains-1) && pbcidx >= nBndEntries)
+                    ok = false;
+
                 if (!ok)
                 {
                     failed_dom = i;
@@ -5882,7 +5975,9 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
             free(pbcBndList);
             free(pbcDomList);
 
-            if (failed_dom != -1 || new_lneighbors != nnidx)
+            if (failed_dom != -1 ||
+                new_lneighbors != nnidx ||
+                pbcidx != nBndEntries)
             {
                 char msg[128];
                 snprintf(msg, sizeof(msg), "Problem removing periodic boundary "
@@ -5891,6 +5986,57 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
                 DBFreeMultimeshadj(mmadj_newobj);
                 EXCEPTION1(InvalidFilesException, msg);
             }
+
+            //
+            // Up until here, we've completely ignored the mmadj `back` member
+            // That member parallels the neighbors member but instead holds the
+            // local domain index (0...num neighbors) of a given domain in each
+            // of its neighbor's lists of domains. We can just rebuild that
+            // information now.
+            //
+
+            // Build temporary offset index into neighbors list
+            int *noffs = new int[ndomains];
+            for (int i = 0, noff = 0; i < ndomains; i++)
+            {
+                noffs[i] = noff;
+                noff += mmadj_newobj->nneighbors[i];
+            }
+            
+            // Build the new mmadj's back data
+            for (int i = 0; i < ndomains; i++)
+            {
+                int nneighbors = mmadj_newobj->nneighbors[i];
+                int const *neighbors = &mmadj_newobj->neighbors[noffs[i]];
+                int *back = &mmadj_newobj->back[noffs[i]];
+
+                // Visit each neighbor dom and find this domain's local index in
+                // that neighbor's list of neighbors
+                for (int j = 0; j < nneighbors; j++)
+                {
+                    int n = neighbors[j];
+                    int nn = mmadj_newobj->nneighbors[n];
+                    int const *ns = &mmadj_newobj->neighbors[noffs[n]];
+                    bool found = false;
+                    for (int k = 0; (k < nn) && !found; k++)
+                    {
+                        if (ns[k] == i)
+                        {
+                            back[j] = k;
+                            found = true;
+                        }
+                    }
+                    if (!found)
+                    {
+                        char msg[128];
+                        snprintf(msg, sizeof(msg), "Problem rebuilding back pointers "
+                            "for domain %d after PBC removal.\n", i);
+                        DBFreeMultimeshadj(mmadj_newobj);
+                        EXCEPTION1(InvalidFilesException, msg);
+                    }
+                }
+            }
+            delete [] noffs;
 
             // Replace original multimeshadj with the new one
             mmadj_obj = mmadj_newobj;
