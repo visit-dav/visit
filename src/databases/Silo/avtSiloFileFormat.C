@@ -5949,10 +5949,7 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
                              nnidx, mmadj_newobj);
 
                 if (i < (ndomains-1) && pbcidx >= nBndEntries)
-                {
                     ok = false;
-                    printf("pbcidx=%d, nBndEntries=%d\n", pbcidx, nBndEntries);
-                }
 
                 if (!ok)
                 {
