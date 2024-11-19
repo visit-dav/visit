@@ -176,8 +176,6 @@ VisItViewer::VisItViewer() : visitHome()
 
 VisItViewer::~VisItViewer()
 {
-    InitVTK::UnInitialize();
-    InitVTKRendering::UnInitialize();
     delete viewer;
 }
 
