@@ -177,6 +177,8 @@ def launch_visit_test(args):
     opts =  args[2]
     top_dir     = visit_root()
     test_script = abs_path(test_path(),"visit_test_main.py")
+    if test.split('/')[-2] == 'azure':
+        test = abs_path('/'.join(test.split('/')[:-1]),os.readlink(test))
     test_dir, test_file = os.path.split(test)
     test_cat  = os.path.split(test_dir)[1]
     test_base = os.path.splitext(test_file)[0]
@@ -974,6 +976,8 @@ def launch_tests(opts,tests):
     if len(results) != len(test_list):
         for t in test_args:
             if not t[0] in [ r.index for r in results]:
+                if t[1].split('/')[-2] == 'azure':
+                    t[1] = abs_path('/'.join(t[1].split('/')[:-1]),os.readlink(t[1]))
                 test_dir, test_file = os.path.split(t[1])
                 test_cat  = os.path.split(test_dir)[1]
                 test_base = os.path.splitext(test_file)[0]
