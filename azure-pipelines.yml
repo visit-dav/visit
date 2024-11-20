@@ -10,27 +10,9 @@
 
 #####
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
-# Be sure to keep the list of files in python_test_files variable
-# consistent with those same files listed in the paths trigger
 #####
 variables:
   container_tag: visitdav/visit-ci-develop:2024-10-15-shac4fd59
-  python_test_files: >
-    ../../src/test/tests/databases/silo.py
-    ../../src/test/tests/databases/blueprint.py
-    ../../src/test/tests/databases/blueprint_export.py
-    ../../src/test/tests/hybrid/ddf.py
-    ../../src/test/tests/unit/default_methods.py
-    ../../src/test/tests/unit/convert2to3.py
-    ../../src/test/tests/unit/atts_assign.py
-    ../../src/test/tests/unit/test_value_simple.py
-    ../../src/test/tests/unit/annotation_objects.py
-    ../../src/test/tests/unit/protocol.py
-    ../../src/test/tests/unit/utility.py
-    ../../src/test/tests/expressions/ghost_zoneid_expr.py
-    ../../src/test/tests/expressions/global_stats.py
-    ../../src/test/tests/expressions/math_expr.py
-    ../../src/test/tests/expressions/tensor_expr.py
 
 # only build merge target pr to develop
 trigger: none
@@ -51,21 +33,7 @@ pr:
     - 'data/silo*'
     - 'data/blueprint*'
     - 'src/test/py_src/*.py'
-    - 'src/test/tests/databases/silo.py'
-    - 'src/test/tests/databases/blueprint.py'
-    - 'src/test/tests/databases/blueprint_export.py'
-    - 'src/test/tests/hybrid/ddf.py'
-    - 'src/test/tests/unit/default_methods.py'
-    - 'src/test/tests/unit/convert2to3.py'
-    - 'src/test/tests/unit/atts_assign.py'
-    - 'src/test/tests/unit/test_value_simple.py'
-    - 'src/test/tests/unit/annotation_objects.py'
-    - 'src/test/tests/unit/protocol.py'
-    - 'src/test/tests/unit/utility.py'
-    - 'src/test/tests/expressions/ghost_zoneid_expr.py'
-    - 'src/test/tests/expressions/global_stats.py'
-    - 'src/test/tests/expressions/math_expr.py'
-    - 'src/test/tests/expressions/tensor_expr.py'
+    - 'src/test/tests/azure/*.py'
 
 # fast fail consistency checks
 stages:
@@ -158,7 +126,7 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
-           export TESTS="$(python_test_files)"
+           export TESTS="$(ls ../../src/test/tests/azure/*.py)"
            ./run_visit_test_suite.sh --fuzzy --pixdiff 10 --avgdiff 10 --numdiff 0.1 -v ${TESTS}
            hasFailed="$(grep Failed\\\|Unacceptable\\\|OS-Killed output/html/index.html)"
            if [[ -n "$hasFailed" ]]; then
