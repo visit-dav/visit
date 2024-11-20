@@ -320,8 +320,7 @@ function build_ospray
             mkdir $OSPRAY_BUILD_DIR
             if [[ -f $OSPRAY_LIBS_FILE ]] ; then
 	        tar zxf $OSPRAY_LIBS_FILE
-	        mkdir $OSPRAY_BUILD_DIR/ispc
-	        mkdir $OSPRAY_BUILD_DIR/ispc/src
+	        mkdir -p $OSPRAY_BUILD_DIR/ispc/src
 	        cp $OSPRAY_LIBS_DIR/ispc-v1.21.1-linux-oneapi.tar.gz $OSPRAY_BUILD_DIR/ispc/src
                 mkdir $OSPRAY_BUILD_DIR/tbb
 	        cp $OSPRAY_LIBS_DIR/oneapi-tbb-2021.10.0-lin.tgz $OSPRAY_BUILD_DIR/tbb
