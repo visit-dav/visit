@@ -58,6 +58,9 @@ function bv_ospray_info
     export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
     export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
     export OSPRAY_SHA256_CHECKSUM="d8d8e632d77171c810c0f38f8d5c8387470ca19b75f5b80ad4d3d12007280288"
+    export OSPRAY_LIBS_FILE=${OSPRAY_LIBS_FILE:-"ospray-libs-${OSPRAY_VERSION}.tar.gz"}
+    export OSPRAY_LIBS_DIR=${OSPRAY_LIBS_DIR:-"${OSPRAY_LIBS_FILE%.tar*}"}
+    export OSPRAY_LIBS_SHA256_CHECKSUM="8ab33df7ea88d7eb3b9170fc3b6342e77cd105d9549db8bce31cddd5a0336f2f"
 }
 
 function bv_ospray_print
@@ -106,6 +109,7 @@ function bv_ospray_is_enabled
 function bv_ospray_ensure
 {
     if [[ "$DO_OSPRAY" == "yes" && "$USE_SYSTEM_OSPRAY" == "no" ]]; then
+        download_file ${OSPRAY_LIBS_FILE}
         ensure_built_or_ready "ospray" $OSPRAY_VERSION $OSPRAY_BUILD_DIR $OSPRAY_FILE $OSPRAY_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -212,6 +216,21 @@ function build_ospray
     if [[ ! -d $OSPRAY_BUILD_DIR ]] ; then
         echo "Making build directory $OSPRAY_BUILD_DIR"
         mkdir $OSPRAY_BUILD_DIR
+        if [[ -f $OSPRAY_LIBS_FILE ]] ; then
+            tar zxf $OSPRAY_LIBS_FILE
+            mkdir -p $OSPRAY_BUILD_DIR/ispc/src
+            cp $OSPRAY_LIBS_DIR/ispc-v1.21.1-linux-oneapi.tar.gz $OSPRAY_BUILD_DIR/ispc/src
+            mkdir $OSPRAY_BUILD_DIR/tbb
+            cp $OSPRAY_LIBS_DIR/oneapi-tbb-2021.10.0-lin.tgz $OSPRAY_BUILD_DIR/tbb
+            mkdir $OSPRAY_BUILD_DIR/rkcommon
+            cp $OSPRAY_LIBS_DIR/v1.12.0.zip $OSPRAY_BUILD_DIR/rkcommon
+            mkdir $OSPRAY_BUILD_DIR/embree
+            cp $OSPRAY_LIBS_DIR/embree-4.3.0.x86_64.linux.tar.gz $OSPRAY_BUILD_DIR/embree
+            mkdir $OSPRAY_BUILD_DIR/glm
+            cp $OSPRAY_LIBS_DIR/glm-0.9.9.8.zip $OSPRAY_BUILD_DIR/glm
+            mkdir $OSPRAY_BUILD_DIR/openvkl
+            cp $OSPRAY_LIBS_DIR/v2.0.0.zip $OSPRAY_BUILD_DIR/openvkl
+        fi
     else
         #
         # Remove the CMakeCache.txt files ... existing files sometimes
