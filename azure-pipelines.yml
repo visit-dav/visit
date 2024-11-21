@@ -33,7 +33,7 @@ pr:
     - 'data/silo*'
     - 'data/blueprint*'
     - 'src/test/py_src/*.py'
-    - 'src/test/tests/azure/*.py'
+    - 'src/test/prci_checksum.txt
 
 # fast fail consistency checks
 stages:
@@ -126,8 +126,8 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
-           export TESTS="$(ls ../../src/test/tests/azure/*.py)"
-           ./run_visit_test_suite.sh --fuzzy --pixdiff 10 --avgdiff 10 --numdiff 0.1 -v ${TESTS}
+           export TESTS="$(find ../../src/test/tests -name '*.py' -exec grep -H -m 1 CLASSES {} \; | grep prci | cut -d':' -f1)"
+           ./run_visit_test_suite.sh --pixdiff 10 --avgdiff 10 --numdiff 0.1 -v ${TESTS}
            hasFailed="$(grep Failed\\\|Unacceptable\\\|OS-Killed output/html/index.html)"
            if [[ -n "$hasFailed" ]]; then
              exit 1 # tests failed
