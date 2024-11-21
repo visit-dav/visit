@@ -1,0 +1,29 @@
+name: Keep latest 60 results
+
+on:
+  pull_request:
+
+jobs:
+  compute-prci-checksum:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Compute checksum
+      run: |
+        cd src/test
+
+        # Compute the checksum of all prci .py source code
+        cksum=$(find tests -name '*.py' -exec grep -H -m 1 CLASSES {} \; | grep prci | cut -d':' -f1 | sort | xargs -n 1 cat | shasum -a 256 | cut -d' ' -f1)
+
+        # Update checksum in prci_checksum.txt
+        sed -i '' -e '/^# Checksum:/{' -e 'n' -e "s/.*/$cksum/" -e '}' prci_checksum.txt
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git add -A
+        git commit -m "Update prci checksum" || echo "No changes to commit"
+        git push
