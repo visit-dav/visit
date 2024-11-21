@@ -200,6 +200,9 @@
       "network": "llnl_closed",
       "files": [
         {
+          "name": "host_lanl_closed_crossroads.xml"
+        },
+        {
           "name": "host_llnl_closed_agate.xml"
         },
         {
