@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#  CLASSES: nightly
+#  CLASSES: nightly, prci
 #
 #  Test Case:  global_stats.py
 #

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#  CLASSES: nightly
+#  CLASSES: nightly, prci
 #
 #  Test Case:  convert2to3.py
 #

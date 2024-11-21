@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#  CLASSES: nightly
+#  CLASSES: nightly, prci
 #
 #  Test Case:  annotation_objects.py
 #

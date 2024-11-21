@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#  CLASSES: nightly
+#  CLASSES: nightly, prci
 #
 #  Test Case:  test_value_simple.py
 #

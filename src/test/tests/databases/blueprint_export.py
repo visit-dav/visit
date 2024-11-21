@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
 #  MODES: serial parallel
-#  CLASSES: nightly
+#  CLASSES: nightly, prci
 #
 #  Test Case:  blueprint_export.py
 #
