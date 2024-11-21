@@ -1,0 +1,33 @@
+# This file holds a checksum of all the .py source code that is run
+# during pull request CI. That is, any .py source file which includes
+# the 'prci' string in the 'CLASSES' entry in the header of the file.
+#
+# This file is then used by Azure CI as one of the paths it checks to
+# decide if it needs to trigger a new main build and run of tests.
+#
+# The string 'prci' stands for Pull Request Continuous Integration.
+#
+# To include any .py test script in pull request CI, just add the
+# 'prci' string to the 'CLASSES' entry in the header of the file.
+#
+# New tests should be added only if they meet the following conditions...
+#
+# 1) The test typically takes less than 20 seconds to run "normally".
+# 2) The test uses only Silo or Blueprint data or no data at all.
+# 3) The test tests something significantly different from all the
+#    other .py files already included in prci.
+#
+# The command to produce the checksum is...
+#
+# find . -name '*.py' -exec grep -H -m 1 CLASSES {} \; | grep prci | \
+#     cut -d':' -f1 | sort | xargs -n 1 cat | shasum -a 256
+#
+# A GitHub Action maintains this checksum automatically.
+#
+# Because GitHub Actions and Azure CI are completely asyncronous to
+# each other, its possible an Azure CI run can begin before the action
+# that updates this checksum has completed. But, because any commit/push
+# to a PR will cancel existing Azure runs and start new ones, this is ok.
+#
+# Checksum:
+c5d80acd8b84f8924d62b6c84084c632bcc82e31796bc25c238e63bc8e89556b  -
