@@ -33,7 +33,7 @@ pr:
     - 'data/silo*'
     - 'data/blueprint*'
     - 'src/test/py_src/*.py'
-    - 'src/test/prci_checksum.txt
+    - 'src/test/prci_checksum.txt'
 
 # fast fail consistency checks
 stages:
