@@ -15,8 +15,6 @@ jobs:
     - name: Compute checksum
       run: |
         cd src/test
-        pwd
-        ls
 
         # Compute the checksum of all prci .py source code
         cksum=$(find tests -name '*.py' -exec grep -H -m 1 CLASSES {} \; | grep prci | cut -d':' -f1 | sort | xargs -n 1 cat | shasum -a 256 | cut -d' ' -f1)
