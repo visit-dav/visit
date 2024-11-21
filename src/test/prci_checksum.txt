@@ -30,4 +30,4 @@
 # to a PR will cancel existing Azure runs and start new ones, this is ok.
 #
 # Checksum:
-c5d80acd8b84f8924d62b6c84084c632bcc82e31796bc25c238e63bc8e89556b
+ddef973252f8007b8c8064779662ec0979cf68ce7f6b452fc83c4a4ad6eb4079
