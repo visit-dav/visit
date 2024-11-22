@@ -328,9 +328,6 @@ function initialize_build_visit()
         export GFORTRAN=""
     fi
 
-    # used to see if we are a cray system
-    export SYSTEM_TYPE=$(printenv SYS_TYPE)
-
     export OPSYS=${OPSYS:-$(uname -s)}
     export PROC=${PROC:-$(uname -p)}
     export REL=${REL:-$(uname -r)}
