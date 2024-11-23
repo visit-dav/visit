@@ -9,8 +9,6 @@
 # Usage:
 #    run-build-visit -<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
-#       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
-#       kickit_opengl (B-Div, Linux, x86_64, opengl),
 #       poodle    (LC, Linux, x86_64, toss4),
 #       lassen    (LC, Linux, power9),
 #       rzwhippet (LC, Linux, x86_64, toss4),
@@ -69,14 +67,15 @@
 #    Justin Privitera, Wed Nov  6 16:11:16 PST 2024
 #    Added support for building on rzadams (secretly the same as 
 #    tuolumne).
+# 
+#    Justin Privitera, Fri Nov 22 16:40:46 PST 2024
+#    Removed kickit with extreme prejudice.
 #
 #-----------------------------------------------------------------------
 
 #
 # Parse the execute line, providing default values for error checking.
 #
-kickit_mesagl=false
-kickit_opengl=false
 poodle=false
 lassen=false
 rzgenie=false
@@ -99,16 +98,6 @@ ran_build_visit=false
 for abc
 do
    case $1 in
-      -kickit_mesagl)
-         kickit_mesagl=true
-         machine_name="kickit_mesagl"
-         shift
-         ;;
-      -kickit_opengl)
-         kickit_opengl=true
-         machine_name="kickit_opengl"
-         shift
-         ;;
       -poodle)
          poodle=true
          machine_name="poodle"
@@ -162,8 +151,6 @@ if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
-   echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
    echo "    poodle    (LC, Linux, x86_64, toss4),"
    echo "    lassen    (LC, Linux, power9),"
    echo "    rzwhippet (LC, Linux, x86_64, toss4),"
@@ -188,28 +175,12 @@ fi
 #######################################################
 
 #
-# Info line
+# Info and set ran_build_visit
 #
-if [ "$kickit_mesagl" = true ]; then
-   echo "Building using mesagl on $machine_name"
-elif [ "$kickit_opengl" = true ]; then
-   echo "Building using opengl on $machine_name"
-elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
-     [ "$tuolumne" = true ]; then
-   echo "Building on $machine_name"
-else
-   echo "case for $machine_name not implemented. Bailing out."
-   exit
-fi
-
-#
-# Set ran_build_visit
-#
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
    [ "$tuolumne" = true ]; then
+   echo "Building on $machine_name"
    ran_build_visit=true
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -219,11 +190,7 @@ fi
 #
 # Set destination directory
 #
-if [ "$kickit_mesagl" = true ]; then
-   dest_dir=/usr/gapps/visit/thirdparty_shared/$version/mesagl
-elif [ "$kickit_opengl" = true ]; then
-   dest_dir=/usr/gapps/visit/thirdparty_shared/$version/opengl
-elif [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$lassen" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
@@ -241,8 +208,7 @@ fi
 #
 # Set destination group
 #
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
 elif [ "$trinity" = true ]; then
@@ -255,8 +221,7 @@ fi
 #
 # housekeeping
 #
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
    [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
@@ -273,25 +238,7 @@ fi
 #
 # Call build_visit
 #
-if [ "$kickit_mesagl" = true ]; then
-   export CC=/usr/gapps/gcc/gcc-9.1/bin/gcc
-   export CXX=/usr/gapps/gcc/gcc-9.1/bin/g++
-   export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
-   export PATH=/usr/gapps/gcc/gcc-9.1/bin:$PATH
-   env CC=/usr/gapps/gcc/gcc-9.1/bin/gcc CXX=/usr/gapps/gcc/gcc-9.1/bin/g++ \
-   ./$build_visit_script --group ${dest_group} --required --optional --parallel \
-    --mpich --mesagl --uintah --qwt --no-adios2 --no-moab --no-visit --makeflags -j4 \
-    --thirdparty-path ${dest_dir}
-elif [ "$kickit_opengl" = true ]; then
-   export CC=/usr/gapps/gcc/gcc-9.1/bin/gcc
-   export CXX=/usr/gapps/gcc/gcc-9.1/bin/g++
-   export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
-   export PATH=/usr/gapps/gcc/gcc-9.1/bin:$PATH
-   env CC=/usr/gapps/gcc/gcc-9.1/bin/gcc CXX=/usr/gapps/gcc/gcc-9.1/bin/g++ \
-   ./$build_visit_script --group ${dest_group} --skip-opengl-context-check --required --optional \
-    --parallel --mpich --osmesa --uintah --qwt --no-adios2 --no-moab --no-visit --makeflags -j4 \
-    --thirdparty-path ${dest_dir}
-elif [ "$poodle" = true ]; then
+if [ "$poodle" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
@@ -348,8 +295,7 @@ fi
 #
 # Final housekeeping and permissions
 #
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
    [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
@@ -370,8 +316,6 @@ then
    echo "Invalid or missing machine name."
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
-   echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
    echo "    poodle   (LC, Linux, x86_64, toss4),"
    echo "    lassen   (LC, Linux, power9),"
    echo "    rzgenie  (LC, Linux, x86_64, toss3),"
