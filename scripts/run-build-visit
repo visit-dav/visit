@@ -175,23 +175,12 @@ fi
 #######################################################
 
 #
-# Info line
+# Info and set ran_build_visit
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
    [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
-else
-   echo "case for $machine_name not implemented. Bailing out."
-   exit
-fi
-
-#
-# Set ran_build_visit
-#
-if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
-   [ "$tuolumne" = true ]; then
    ran_build_visit=true
 else
    echo "case for $machine_name not implemented. Bailing out."

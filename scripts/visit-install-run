@@ -401,7 +401,7 @@ ver=`echo $ver2 | tr "_" "."`
 #######################################################
 
 #
-# create the install script
+# create the install script and call visit-install
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
@@ -409,19 +409,6 @@ if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    cat <<EOF > machine_specific_install_script
 #!/bin/sh
 set -e
-EOF
-else
-   echo "case for $machine_name not implemented. Bailing out."
-   exit
-fi
-
-
-#
-# Call visit-install
-#
-if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
-   cat <<EOF >> machine_specific_install_script
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
 $ver ${architecture}-${machine_name} /usr/gapps/visit > installlog 2>&1
 EOF
