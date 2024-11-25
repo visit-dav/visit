@@ -48,7 +48,7 @@ function bv_silo_info
     export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}-w-unix-line-endings.tar.gz"}
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
-    export SILO_SHA256_CHECKSUM="3af87e5f0608a69849c00eb7c73b11f8422fa36903dd14610584506e7f68e638"
+    export SILO_SHA256_CHECKSUM="db5e4fb6a4c313b9c596f09df307659079d51c36f013933dd957fe9412d37761"
 }
 
 function bv_silo_print
