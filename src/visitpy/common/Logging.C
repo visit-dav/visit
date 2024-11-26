@@ -20,10 +20,14 @@
 #include <PyExportDBAttributes.h>
 #include <PyDBOptionsAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
+#include <PyImageObject.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
 #include <PyLaunchProfile.h>
+#include <PyLegendAttributesObject.h>
 #include <PyLightAttributes.h>
+#include <PyLineObject.h>
+#include <PyLine3DObject.h>
 #include <PyMachineProfile.h>
 #include <PyMaterialAttributes.h>
 #include <PyMeshManagementAttributes.h>
@@ -33,6 +37,9 @@
 #include <PyRenderingAttributes.h>
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
+#include <PyText2DObject.h>
+#include <PyText3DObject.h>
+#include <PyTimeSliderObject.h>
 #include <PyQueryOverTimeAttributes.h>
 #include <PyViewAxisArrayAttributes.h>
 #include <PyViewCurveAttributes.h>
@@ -44,6 +51,8 @@
 #include <avtSILRestrictionTraverser.h>
 
 #include <AnimationAttributes.h>
+#include <AnnotationObject.h>
+#include <AnnotationObjectList.h>
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <GlobalAttributes.h>
@@ -328,7 +337,7 @@ static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
             s += ", ";
     }
     snprintf(str, SLEN, "%s), %d)\n", s.c_str(), rpc->GetIntArg1());
-    return visitmodule() + std::string(str);     
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc)
@@ -351,7 +360,7 @@ static std::string log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc)
 static std::string log_DeleteDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "DeleteDatabaseCorrelation(\"%s\")\n", 
+    snprintf(str, SLEN, "DeleteDatabaseCorrelation(\"%s\")\n",
              EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
@@ -377,7 +386,7 @@ static std::string log_ReplaceDatabaseRPC(ViewerRPC *rpc)
 static std::string log_OverlayDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "OverlayDatabase(\"%s\")\n", 
+    snprintf(str, SLEN, "OverlayDatabase(\"%s\")\n",
              EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
@@ -491,7 +500,7 @@ static std::string log_AddPlotRPC(ViewerRPC *rpc)
         GetScriptingPluginInfo(id);
     if(info != 0)
         plotName = info->GetName();
- 
+
     int  inheritSILRestriction = viewer->GetViewerState()->GetGlobalAttributes()->GetNewPlotsInheritSILRestriction();
     int  applyOperator = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1: 0;
     snprintf(str, SLEN, "AddPlot(\"%s\", \"%s\", %d, %d)\n",
@@ -505,7 +514,7 @@ static std::string log_AddPlotRPC(ViewerRPC *rpc)
 static std::string log_SetPlotFrameRangeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "SetPlotFrameRange(%d, %d, %d)\n", 
+    snprintf(str, SLEN, "SetPlotFrameRange(%d, %d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
     return visitmodule() + std::string(str);
 }
@@ -513,7 +522,7 @@ static std::string log_SetPlotFrameRangeRPC(ViewerRPC *rpc)
 static std::string log_DeletePlotKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "DeletePlotKeyframe(%d, %d)\n", 
+    snprintf(str, SLEN, "DeletePlotKeyframe(%d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2());
     return visitmodule() + std::string(str);
 }
@@ -521,7 +530,7 @@ static std::string log_DeletePlotKeyframeRPC(ViewerRPC *rpc)
 static std::string log_MovePlotKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "MovePlotKeyframe(%d, %d, %d)\n", 
+    snprintf(str, SLEN, "MovePlotKeyframe(%d, %d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
     return visitmodule() + std::string(str);
 }
@@ -601,7 +610,7 @@ static std::string log_AddOperatorRPC(ViewerRPC *rpc)
         GetScriptingPluginInfo(id);
     if(info != 0)
         operatorName = info->GetName();
- 
+
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     snprintf(str, SLEN, "AddOperator(\"%s\", %d)\n",
              operatorName.c_str(),
@@ -612,7 +621,7 @@ static std::string log_AddOperatorRPC(ViewerRPC *rpc)
 static std::string log_DeleteOperatorKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "DeleteOperatorKeyframe(%d, %d, %d)\n", 
+    snprintf(str, SLEN, "DeleteOperatorKeyframe(%d, %d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
     return visitmodule() + std::string(str);
 }
@@ -620,7 +629,7 @@ static std::string log_DeleteOperatorKeyframeRPC(ViewerRPC *rpc)
 static std::string log_MoveOperatorKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "MoveOperatorKeyframe(%d, %d, %d, %d)\n", 
+    snprintf(str, SLEN, "MoveOperatorKeyframe(%d, %d, %d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3(), rpc->GetIntArg4());
     return visitmodule() + std::string(str);
 }
@@ -676,7 +685,7 @@ static std::string log_SaveWindowRPC(ViewerRPC *rpc)
     return s;
 }
 
-static void log_SetPlotOptionsHelper(ViewerRPC *rpc, std::string &atts, 
+static void log_SetPlotOptionsHelper(ViewerRPC *rpc, std::string &atts,
     std::string &plotName)
 {
     PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
@@ -713,7 +722,7 @@ static std::string log_SetPlotOptionsRPC(ViewerRPC *rpc)
     return atts;
 }
 
-static void log_SetOperatorOptionsHelper(ViewerRPC *rpc, std::string &atts, 
+static void log_SetOperatorOptionsHelper(ViewerRPC *rpc, std::string &atts,
     std::string &operatorName)
 {
     OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
@@ -835,7 +844,7 @@ static std::string log_SetKeyframeAttributesRPC(ViewerRPC *rpc)
 // ****************************************************************************
 // Method: log_SetPlotSILRestrictionRPC
 //
-// Purpose: 
+// Purpose:
 //   Logs changes to the SIL restriction.
 //
 // Programmer: Brad Whitlock
@@ -1003,7 +1012,7 @@ static std::string log_ResetPlotOptionsRPC(ViewerRPC *rpc)
         GetScriptingPluginInfo(id);
     if(info != 0)
         plotName = info->GetName();
- 
+
     return visitmodule() + std::string("ResetPlotOptions(\"") + plotName + std::string("\")\n");
 }
 
@@ -1016,7 +1025,7 @@ static std::string log_ResetOperatorOptionsRPC(ViewerRPC *rpc)
         GetScriptingPluginInfo(id);
     if(info != 0)
         operatorName = info->GetName();
- 
+
     int  applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1: 0;
     char tmp[20];
     snprintf(tmp, 20, "\", %d)\n", applyAll);
@@ -1032,7 +1041,7 @@ static std::string log_SetAppearanceRPC(ViewerRPC *rpc)
 //  Modifications:
 //    Kathleen Bonnell, Thu Aug  3 09:25:00 PDT 2006
 //    Added CurveMeshVar
-// 
+//
 //*****************************************************************************
 
 static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
@@ -1064,7 +1073,7 @@ static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
             fx = "DefineMaterialExpression";
         else if(expr.GetType() == Expression::Species)
             fx = "DefineSpeciesExpression";
-       
+
         if(fx != 0)
         {
             std::string def(expr.GetDefinition());
@@ -1083,7 +1092,7 @@ static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
 //  Modifications:
 //    Brad Whitlock, Tue May 8 10:52:04 PDT 2007
 //    Fixed so the prefixes have dots.
-// 
+//
 //*****************************************************************************
 
 
@@ -1227,7 +1236,7 @@ static std::string log_RemovePicksRPC(ViewerRPC *rpc)
 
 static std::string log_SetWindowModeRPC(ViewerRPC *rpc)
 {
-    const char *wmodes[] = {"navigate", "zoom", "zone pick", "node pick", 
+    const char *wmodes[] = {"navigate", "zoom", "zone pick", "node pick",
                             "spreadsheet pick", "lineout"};
     return visitmodule() + (std::string("SetWindowMode(\"") + wmodes[rpc->GetWindowMode()]) + "\")\n";
 }
@@ -1309,8 +1318,8 @@ static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
 //*****************************************************************************
 //  Modifications:
 //    Kathleen Biagas, Wed Sep  7 12:53:16 PDT 2011
-//    Fix pick logging, vars logging. 
-// 
+//    Fix pick logging, vars logging.
+//
 //    Kathleen Biagas, Thu Jan 10 09:06:08 PST 2013
 //    Added some type checking.
 //
@@ -1352,7 +1361,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                 global = queryParams.GetEntry("use_global_id")->ToBool();
             if (global)
                 qn = "PickByGlobalZone";
-            else 
+            else
                 qn = "PickByZone";
         }
         else if (pt == "DomainNode")
@@ -1362,10 +1371,10 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                 global = queryParams.GetEntry("use_global_id")->AsBool();
             if (global)
                 qn = "PickByGlobalNode";
-            else 
+            else
                 qn = "PickByNode";
         }
-        else 
+        else
            return MESSAGE_COMMENT("Pick with no type", MSG_UNSUPPORTED);
         s = qn + "(";
         int numPrinted = 0;
@@ -1396,7 +1405,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
             else if (paramNames[i] != "query_name" &&
                 paramNames[i] != "query_type" &&
                 paramNames[i] != "pick_type" &&
-                paramNames[i] != "use_global_id" && 
+                paramNames[i] != "use_global_id" &&
                 paramNames[i] != "vars")
             {
                 if (numPrinted > 0)
@@ -1421,7 +1430,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
     }
     else
     {
-        if (queryParams.HasNumericEntry("do_time") && 
+        if (queryParams.HasNumericEntry("do_time") &&
             queryParams.GetEntry("do_time")->ToBool())
             s = "QueryOverTime(\"" + qName + "\"";
         else
@@ -1429,7 +1438,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
 
         for (size_t i = 0; i < paramNames.size(); ++i)
         {
-            if (paramNames[i] == "use_actual_data") 
+            if (paramNames[i] == "use_actual_data")
             {
                 if (queryParams.GetEntry(paramNames[i])->ToBool())
                 {
@@ -1439,7 +1448,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                     s += queryParams.GetEntry(paramNames[i])->ConvertToString();
                 }
             }
-            else if (paramNames[i] != "query_name" && 
+            else if (paramNames[i] != "query_name" &&
                      paramNames[i] != "query_type" &&
                      paramNames[i] != "do_time" &&
                      paramNames[i] != "vars")
@@ -1497,7 +1506,7 @@ static std::string log_ResetMaterialAttributesRPC(ViewerRPC *rpc)
 static std::string log_SetPlotDatabaseStateRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "SetPlotDatabaseState(%d, %d, %d)\n", 
+    snprintf(str, SLEN, "SetPlotDatabaseState(%d, %d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
     return visitmodule() + std::string(str);
 }
@@ -1505,7 +1514,7 @@ static std::string log_SetPlotDatabaseStateRPC(ViewerRPC *rpc)
 static std::string log_DeletePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "DeletePlotDatabaseKeyframe(%d, %d)\n", 
+    snprintf(str, SLEN, "DeletePlotDatabaseKeyframe(%d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2());
     return visitmodule() + std::string(str);
 }
@@ -1513,7 +1522,7 @@ static std::string log_DeletePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
 static std::string log_MovePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "MovePlotDatabaseKeyframe(%d, %d, %d)\n", 
+    snprintf(str, SLEN, "MovePlotDatabaseKeyframe(%d, %d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
     return visitmodule() + std::string(str);
 }
@@ -1533,7 +1542,7 @@ static std::string log_DeleteViewKeyframeRPC(ViewerRPC *rpc)
 static std::string log_MoveViewKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "MoveViewKeyframe(%d, %d)\n", 
+    snprintf(str, SLEN, "MoveViewKeyframe(%d, %d)\n",
              rpc->GetIntArg1(), rpc->GetIntArg2());
     return visitmodule() + std::string(str);
 }
@@ -1640,19 +1649,118 @@ static std::string log_ResetPickAttributesRPC(ViewerRPC *rpc)
 
 static std::string log_AddAnnotationObjectRPC(ViewerRPC *rpc)
 {
-    return MESSAGE_COMMENT("AddAnnotationObject", MSG_NOT_IMPLEMENTED);
+    int annotType = rpc->GetIntArg1();
+    // IntArg1 may have been constructed from the 'annotType' and
+    // a 'visible' flag.
+    // This logic to separate 'annotType' from the 'visible' bit
+    // is taken from VisWinAnnotations::AddAnnotationObject
+    int const static CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE = 0x00010000;
+    std::string visible("1");
+    // Check that annotType is between 0 and 8 inclusive.
+    // These numbers represent the annotationTypes that are available
+    // for user to 'Add'. Legend is currently the only annotation type
+    // not part of the user-addable set.
+    // See AnnotationObject.h for the enums available for Annotation type.
+    if (!(0 <= annotType && annotType <= 8))
+    {
+        if (annotType & CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE)
+            visible = "0";
+        annotType &= ~CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE;
+    }
+
+    std::string annotTypeName =
+      AnnotationObject::AnnotationType_ToString(AnnotationObject::AnnotationType(annotType));
+    std::string annotName =rpc->GetStringArg1();
+
+    std::string annotTypeLower(annotTypeName);
+    std::transform(annotTypeLower.begin(), annotTypeLower.end(), annotTypeLower.begin(), ::tolower);
+    return visitmodule() + annotTypeLower + std::string(" = CreateAnnotationObject(\"") +
+           annotTypeName + std::string("\", \"") +
+           annotName     + std::string("\", \"") +
+           visible       + std::string("\")\n\n");
 }
 
 static std::string log_HideActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
-    return MESSAGE_COMMENT("HideActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
+    AnnotationObjectList *aol =
+        viewer->GetViewerState()->GetAnnotationObjectList();
+
+    std::string all;
+    for(size_t i = 0; i < size_t(aol->GetNumAnnotations()); ++i)
+    {
+        const AnnotationObject &annot = aol->GetAnnotation(i);
+        if(annot.GetActive())
+        {
+            std::string typeName;
+            if (annot.GetObjectType() == AnnotationObject::LegendAttributes)
+            {
+                // since legends are associated with a plot,  the object
+                // name will be something like 'Plot0000'.  So, use the
+                // object name, replacing 'Plot' with 'legend' to better
+                // better associate it with the correct plot.
+                typeName=annot.GetObjectName();
+                typeName.replace(0,4, "legend");
+            }
+            else
+            {
+                typeName=(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
+                std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+            }
+            std::string s = typeName +
+                            " = GetAnnotationObject(\"" +
+                            annot.GetObjectName() +
+                            "\")\n";
+            if(annot.GetVisible())
+                s += typeName + ".visible = 0\n";
+            else
+                s += typeName + ".visible = 1\n";
+            all += s + "\n";
+        }
+    }
+
+    return all;
 }
 
 static std::string log_DeleteActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
-    return MESSAGE_COMMENT("DeleteActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
+    AnnotationObjectList *aol =
+        viewer->GetViewerState()->GetAnnotationObjectList();
+
+    std::string all;
+    for(size_t i = 0; i < size_t(aol->GetNumAnnotations()); ++i)
+    {
+        const AnnotationObject &annot = aol->GetAnnotation(i);
+        if(annot.GetActive())
+        {
+            std::string typeName;
+            if (annot.GetObjectType() == AnnotationObject::LegendAttributes)
+            {
+                // since legends are associated with a plot,  the object
+                // name will be something like 'Plot0000'.  So, use the
+                // object name, replacing 'Plot' with 'legend' to better
+                // better associate it with the correct plot.
+                typeName=annot.GetObjectName();
+                typeName.replace(0,4, "legend");
+            }
+            else
+            {
+                typeName=(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
+                std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+            }
+            std::string s = typeName +
+                           " = GetAnnotationObject(\"" +
+                           annot.GetObjectName() +
+                           "\")\n";
+             s += typeName + ".Delete()\n";
+            all += s + "\n";
+        }
+    }
+
+    return all;
 }
 
+// this isn't relevant in the cli.
+#if 0
 static std::string log_RaiseActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
     return MESSAGE_COMMENT("RaiseActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
@@ -1662,10 +1770,65 @@ static std::string log_LowerActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
     return MESSAGE_COMMENT("LowerActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
 }
+#endif
 
 static std::string log_SetAnnotationObjectOptionsRPC(ViewerRPC *rpc)
 {
-    return MESSAGE_COMMENT("SetAnnotationObjectOptions", MSG_NOT_IMPLEMENTED);
+    AnnotationObjectList *aol =
+        viewer->GetViewerState()->GetAnnotationObjectList();
+
+    std::string all;
+    for(size_t i = 0; i < size_t(aol->GetNumAnnotations()); ++i)
+    {
+        const AnnotationObject &annot = aol->GetAnnotation(i);
+        if(annot.GetActive())
+        {
+            std::string s;
+            std::string type(AnnotationObject::AnnotationType_ToString(annot.GetObjectType()));
+            std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+            switch(annot.GetObjectType())
+            {
+                case AnnotationObject::Text2D:
+                    s = PyText2DObject_ToString(&annot, (type + ".").c_str());
+                    break;
+                case AnnotationObject::Text3D:
+                    s = PyText3DObject_ToString(&annot, (type + ".").c_str());
+                     break;
+                case AnnotationObject::TimeSlider:
+                    s = PyTimeSliderObject_ToString(&annot, (type + ".").c_str());
+                     break;
+                case AnnotationObject::Line2D:
+                    s = PyLineObject_ToString(&annot, (type + ".").c_str());
+                     break;
+                case AnnotationObject::Line3D:
+                    s = PyLine3DObject_ToString(&annot, (type + ".") .c_str());
+                     break;
+                case AnnotationObject::Image:
+                    s = PyImageObject_ToString(&annot, (type + ".") .c_str());
+                     break;
+                case AnnotationObject::LegendAttributes:
+                    // since legends are associated with a plot,  the object
+                    // name will be something like 'Plot0000'.  So, use the
+                    // object name, replacing 'Plot' with 'legend' to better
+                    // better associate it with the correct plot.
+                    type=annot.GetObjectName();
+                    type.replace(0,4, "legend");
+                    s = PyLegendAttributesObject_ToString(&annot, (type + ".") .c_str());
+                     break;
+                default:
+                     break;
+            }
+            if(!s.empty())
+            {
+                std::string getObj = type +
+                            " = GetAnnotationObject(\"" +
+                            annot.GetObjectName() +
+                            "\")\n";
+                all += visitmodule() + getObj + s + "\n";
+           }
+        }
+    }
+    return all;
 }
 
 static std::string log_SetDefaultAnnotationObjectListRPC(ViewerRPC *rpc)
@@ -1685,8 +1848,8 @@ static std::string log_ResetPickLetterRPC(ViewerRPC *rpc)
 
 static std::string log_RenamePickLabelRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("RenamePickLabel(\"") + 
-           rpc->GetStringArg1() + std::string("\", \"") + 
+    return visitmodule() + std::string("RenamePickLabel(\"") +
+           rpc->GetStringArg1() + std::string("\", \"") +
            rpc->GetStringArg2() + std::string("\")\n");
 }
 
@@ -1703,7 +1866,7 @@ static std::string log_ChooseCenterOfRotationRPC(ViewerRPC *rpc)
     char str[SLEN];
     if(rpc->GetBoolFlag())
     {
-        snprintf(str, SLEN, "ChooseCenterOfRotation(%g, %g)\n", 
+        snprintf(str, SLEN, "ChooseCenterOfRotation(%g, %g)\n",
                  rpc->GetQueryPoint1()[0], rpc->GetQueryPoint1()[1]);
     }
     else
@@ -1716,7 +1879,7 @@ static std::string log_ChooseCenterOfRotationRPC(ViewerRPC *rpc)
 static std::string log_SetCenterOfRotationRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    snprintf(str, SLEN, "SetCenterOfRotation(%g, %g, %g)\n", 
+    snprintf(str, SLEN, "SetCenterOfRotation(%g, %g, %g)\n",
              rpc->GetQueryPoint1()[0], rpc->GetQueryPoint1()[1],
              rpc->GetQueryPoint1()[2]);
     return visitmodule() + std::string(str);
@@ -1806,7 +1969,7 @@ static std::string log_ExportDBRPC(ViewerRPC *rpc)
 
     std::string s(constructor(PyExportDBAttributes_GetLogString()));
 
-    // if ops were included, we need to call differently 
+    // if ops were included, we need to call differently
     if(s.find("DBExportOpts =") !=std::string::npos )
     {
         s += "ExportDatabase(ExportDBAtts, DBExportOpts)\n";
@@ -1859,7 +2022,7 @@ static std::string log_ResetMeshManagementAttributesRPC(ViewerRPC *rpc)
 
 static std::string log_ResizeWindowRPC(ViewerRPC *rpc)
 {
-    char str[SLEN]; 
+    char str[SLEN];
     snprintf(str, SLEN, "ResizeWindow(%d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2());
     return visitmodule() + std::string(str);
@@ -1867,7 +2030,7 @@ static std::string log_ResizeWindowRPC(ViewerRPC *rpc)
 
 static std::string log_MoveWindowRPC(ViewerRPC *rpc)
 {
-    char str[SLEN]; 
+    char str[SLEN];
     snprintf(str, SLEN, "MoveWindow(%d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2());
     return visitmodule() + std::string(str);
@@ -1875,7 +2038,7 @@ static std::string log_MoveWindowRPC(ViewerRPC *rpc)
 
 static std::string log_MoveAndResizeWindowRPC(ViewerRPC *rpc)
 {
-    char str[SLEN]; 
+    char str[SLEN];
     snprintf(str, SLEN, "ResizeWindow(%d, %d, %d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3(),
              rpc->GetWindowLayout());
@@ -1884,7 +2047,7 @@ static std::string log_MoveAndResizeWindowRPC(ViewerRPC *rpc)
 
 static std::string log_RequestMetaDataRPC(ViewerRPC *rpc)
 {
-    char str[SLEN]; 
+    char str[SLEN];
     snprintf(str, SLEN, "metadata = %sGetMetaData(\"%s\", %d)\n",
              visitmodule().c_str(), EscapeFilename(rpc->GetDatabase()).c_str(), rpc->GetStateNumber());
     return std::string(str);
@@ -1892,8 +2055,8 @@ static std::string log_RequestMetaDataRPC(ViewerRPC *rpc)
 
 static std::string log_SetQueryFloatFormatRPC(ViewerRPC *rpc)
 {
-    char str[SLEN]; 
-    snprintf(str, SLEN, "SetQueryFloatFormat(\"%s\")\n", 
+    char str[SLEN];
+    snprintf(str, SLEN, "SetQueryFloatFormat(\"%s\")\n",
                         rpc->GetStringArg1().c_str());
     return visitmodule() + std::string(str);
 }
@@ -1910,7 +2073,7 @@ static std::string log_CreateNamedSelectionRPC(ViewerRPC *rpc)
 
 static std::string log_DeleteNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("DeleteNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("DeleteNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_LoadNamedSelectionRPC(ViewerRPC *rpc)
@@ -1920,27 +2083,27 @@ static std::string log_LoadNamedSelectionRPC(ViewerRPC *rpc)
 
 static std::string log_SaveNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("SaveNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("SaveNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_ApplyNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("ApplyNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("ApplyNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_SetNamedSelectionAutoApplyRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("SetNamedSelectionAutoApply(\"") + std::string(rpc->GetBoolFlag()?"1":"0") + "\")\n"; 
+    return visitmodule() + std::string("SetNamedSelectionAutoApply(\"") + std::string(rpc->GetBoolFlag()?"1":"0") + "\")\n";
 }
 
 static std::string log_UpdateNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("UpdateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("UpdateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_InitializeNamedSelectionVariablesRPC(ViewerRPC *rpc)
 {
-    return visitmodule() + std::string("InitializeNamedSelectionVariables(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("InitializeNamedSelectionVariables(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_SetPlotDescriptionRPC(ViewerRPC *rpc)
@@ -1981,7 +2144,7 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 // ****************************************************************************
 // Method: LogRPCs
 //
-// Purpose: 
+// Purpose:
 //   This is a callback function used for logging that dispatches to other
 //   RPC-specific logging functions.
 //
@@ -2052,7 +2215,7 @@ LogRPCs(Subject *subj, void *)
     {
     case ViewerRPC::SetStateLoggingRPC:
         LogFile_SetEnabled(rpc->GetBoolFlag());
-        record = false;        
+        record = false;
         break;
 
     // The rpc's that we want to log.
@@ -2452,12 +2615,14 @@ LogRPCs(Subject *subj, void *)
     case ViewerRPC::DeleteActiveAnnotationObjectsRPC:
         str = log_DeleteActiveAnnotationObjectsRPC(rpc);
         break;
+#if 0
     case ViewerRPC::RaiseActiveAnnotationObjectsRPC:
         str = log_RaiseActiveAnnotationObjectsRPC(rpc);
         break;
     case ViewerRPC::LowerActiveAnnotationObjectsRPC:
         str = log_LowerActiveAnnotationObjectsRPC(rpc);
         break;
+#endif
     case ViewerRPC::SetAnnotationObjectOptionsRPC:
         str = log_SetAnnotationObjectOptionsRPC(rpc);
         break;
@@ -2608,7 +2773,7 @@ LogRPCs(Subject *subj, void *)
     // RPCs that we want to log but do not require anything special.
     default:
         {
-        // Do the default behavior of stripping "RPC" from the name and 
+        // Do the default behavior of stripping "RPC" from the name and
         // making a function call from the rpc name.
         std::string rpcName(ViewerRPC::ViewerRPCType_ToString(rpc->GetRPCType()));
         str = (std::string("# MAINTENANCE ISSUE: ") + rpcName) + " is not handled in "
@@ -2668,7 +2833,7 @@ SpontaneousStateLogger(const std::string &s)
 // ****************************************************************************
 // Method: SS_log_ViewAxisArray
 //
-// Purpose: 
+// Purpose:
 //   This is a callback function for when ViewAxisArray state from the viewer
 //   makes its way to the CLI as a result of a direct user interaction.
 //
@@ -2678,13 +2843,13 @@ SpontaneousStateLogger(const std::string &s)
 // Creation:   February  4, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 SS_log_ViewAxisArray(const std::string &s)
 {
-    if(LogFile_GetEnabled() && logLevel == 0 && 
+    if(LogFile_GetEnabled() && logLevel == 0 &&
        viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 4)
     {
         const char *v = "SetViewAxisArray(ViewAxisArrayAtts)\n";
@@ -2710,7 +2875,7 @@ SS_log_ViewAxisArray(const std::string &s)
 // ****************************************************************************
 // Method: SS_log_ViewCurve
 //
-// Purpose: 
+// Purpose:
 //   This is a callback function for when ViewCurve state from the viewer makes
 //   its way to the CLI as a result of a direct user interaction.
 //
@@ -2718,13 +2883,13 @@ SS_log_ViewAxisArray(const std::string &s)
 // Creation:   Tue Jan 10 11:45:16 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 SS_log_ViewCurve(const std::string &s)
 {
-    if(LogFile_GetEnabled() && logLevel == 0 && 
+    if(LogFile_GetEnabled() && logLevel == 0 &&
        viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 1)
     {
         const char *v = "SetViewCurve(ViewCurveAtts)\n";
@@ -2750,7 +2915,7 @@ SS_log_ViewCurve(const std::string &s)
 // ****************************************************************************
 // Method: SS_log_View2D
 //
-// Purpose: 
+// Purpose:
 //   This is a callback function for when View2D state from the viewer makes its
 //   way to the CLI as a result of a direct user interaction.
 //
@@ -2758,13 +2923,13 @@ SS_log_ViewCurve(const std::string &s)
 // Creation:   Tue Jan 10 11:45:16 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 SS_log_View2D(const std::string &s)
 {
-    if(LogFile_GetEnabled() && logLevel == 0 && 
+    if(LogFile_GetEnabled() && logLevel == 0 &&
        viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 2)
     {
         const char *v = "SetView2D(View2DAtts)\n";
@@ -2790,7 +2955,7 @@ SS_log_View2D(const std::string &s)
 // ****************************************************************************
 // Method: SS_log_View3D
 //
-// Purpose: 
+// Purpose:
 //   This is a callback function for when View3D state from the viewer makes its
 //   way to the CLI as a result of a direct user interaction.
 //
@@ -2798,13 +2963,13 @@ SS_log_View2D(const std::string &s)
 // Creation:   Tue Jan 10 11:45:16 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 SS_log_View3D(const std::string &s)
 {
-    if(LogFile_GetEnabled() && logLevel == 0 && 
+    if(LogFile_GetEnabled() && logLevel == 0 &&
        viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 3)
     {
         const char *v = "SetView3D(View3DAtts)\n";

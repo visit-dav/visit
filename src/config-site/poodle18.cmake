@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Tue Feb 20 16:48:56 PST 2024
-## system: Linux poodle22 4.18.0-513.11.1.1toss.t4.x86_64 #1 SMP Fri Jan 12 16:54:14 PST 2024 x86_64 x86_64 x86_64 GNU/Linux
-## by: cyrush
+## created: Tue Nov 26 11:20:10 PST 2024
+## system: Linux poodle18 4.18.0-553.22.1.1toss.t4.x86_64 #1 SMP Tue Sep 24 16:50:00 PDT 2024 x86_64 x86_64 x86_64 GNU/Linux
+## by: justin
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.2/toss4)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ### NOTE: Modified from build_visit output
@@ -89,12 +89,6 @@ VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
 ##
 SETUP_APP_VERSION(QT 6.4.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/6.4.2/${VISITARCH})
-
-##
-## QWT
-##
-SETUP_APP_VERSION(QWT 6.3.0)
-VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
 ## OSPRay
@@ -179,7 +173,7 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## Conduit
 ##
 SETUP_APP_VERSION(CONDUIT 0.9.2)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v${CONDUIT_VERSION}/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ${VISIT_SILO_LIBDEP} TYPE STRING)
 
 ##
@@ -243,9 +237,15 @@ SETUP_APP_VERSION(PIDX 0.9.3)
 VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
 
 ##
+## QWT
+##
+SETUP_APP_VERSION(QWT 6.3.0)
+VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
+
+##
 ## Uintah
 ##
-SETUP_APP_VERSION(UINTAH 2.6.2)
+SETUP_APP_VERSION(UINTAH 2.6.3)
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##

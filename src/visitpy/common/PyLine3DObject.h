@@ -15,5 +15,7 @@ AnnotationObject *PyLine3DObject_FromPyObject(PyObject *obj);
 PyObject         *PyLine3DObject_NewPyObject();
 PyObject         *PyLine3DObject_WrapPyObject(AnnotationObject *attr);
 
+std::string       PyLine3DObject_ToString(const AnnotationObject *, const char *);
+
 #endif
 
