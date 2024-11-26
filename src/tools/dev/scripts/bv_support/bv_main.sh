@@ -337,23 +337,23 @@ function initialize_build_visit()
         #  export VISITARCH=${VISITARCH-${ARCH}}
         export SO_EXT="dylib"
         VER=$(uname -r)
-	
+    
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
         # work See issue https://github.com/visit-dav/visit/issues/1506
 
-	VER_MAJOR=${VER%%.*}
+    VER_MAJOR=${VER%%.*}
 
-	# bash script educational note:
-	# The less than sign "<" is an arithmetic expression and
-	# as such one must use parenthesis (( .. )) and not square brackets.
-	# i.e. if (( ${VER_MAJOR} < 8 )) ; then
+    # bash script educational note:
+    # The less than sign "<" is an arithmetic expression and
+    # as such one must use parenthesis (( .. )) and not square brackets.
+    # i.e. if (( ${VER_MAJOR} < 8 )) ; then
 
-	# Square brackets are for conditionals only. To make it a
-	# conditional one must use "-lt"
+    # Square brackets are for conditionals only. To make it a
+    # conditional one must use "-lt"
         # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
-	    
+        
         if [[ ${VER_MAJOR} -lt 18 ]] ; then
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             exit 1
@@ -387,7 +387,7 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
-	
+    
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"

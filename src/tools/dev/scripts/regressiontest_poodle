@@ -170,6 +170,10 @@
 #   Eric Brugger, Mon Oct  7 11:15:18 PDT 2024
 #   Updated to run the test suite on poodle instead of pascal. Made
 #   the logic that detects new test results more general.
+#
+#   Eric Brugger, Thu Nov 21 12:15:11 PST 2024
+#   Reorder some git operations when committing changes to GitHub to
+#   avoid unnecessary merges.
 # 
 
 # Determine the users name and e-mail address.
@@ -577,12 +581,17 @@ if test "$post" = "true" ; then
     cd $repoDir
     if test "\$hasFailed" = ""; then
         gitHead=\`git log -1 | grep "^commit" | cut -d' ' -f2\`
+        # First do a "git checkout" on lastpass to restore it in case
+        # it was modified and not committed. Then do a "git pull" to
+        # update develop in case there have been an commits since the
+        # test suite run started. Then update lastpass and push to
+        # GitHub.
         git checkout src/tools/dev/scripts/lastpass_$testHost
         rm -f src/tools/dev/scripts/lastpass_$testHost
+        git pull
         echo "\$gitHead" > src/tools/dev/scripts/lastpass_$testHost
         git add src/tools/dev/scripts/lastpass_$testHost
         git commit -m "Update the last test suite pass on $testHost."
-        git pull
         git push
     fi
 
@@ -598,9 +607,13 @@ if test "$post" = "true" ; then
     newResults=\`ls -d ????-??-??-??:??\`
     # should the dashboard have group perms?
     cd /usr/WS1/visit/dashboard/dashboard
+    # First do a "git pull" to update main in case there have been
+    # any commits since the last update. This is most likely from
+    # removing an old test result. Then add the new results and push
+    # to GitHub.
+    git pull
     git add \$newResults baselines index.html
     git commit -m "Add new results to the dashboard."
-    git pull
     git push
     
     # Move the new results to old_results.
