@@ -88,21 +88,20 @@ function bv_vtk_info
 
     if [[ "$DO_VTK94" == "yes" ]] ; then
         info "setting up vtk for version 9.4.0"
-        export VTK_FILE=${VTK_FILE:-"vtk-9.4.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"9.4.0"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.4"}
         export VTK_SHA256_CHECKSUM=""
     else
         info "setting up vtk for version 9.2.6"
-        export VTK_FILE=${VTK_FILE:-"VTK-9.2.6.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
         export VTK_SHA256_CHECKSUM=""
     fi
 
+    export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"vtk-${VTK_VERSION}"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-${VTK_VERSION}"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
 }
 
