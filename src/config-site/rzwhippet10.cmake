@@ -1,14 +1,14 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Fri Feb 23 09:09:12 PST 2024
-## system: Linux rzwhippet10 4.18.0-513.11.1.1toss.t4.x86_64 #1 SMP Fri Jan 12 16:54:14 PST 2024 x86_64 x86_64 x86_64 GNU/Linux
-## by: cyrush
+## created: Wed Nov 27 13:48:32 PST 2024
+## system: Linux rzwhippet10 4.18.0-553.22.1.1toss.t4.x86_64 #1 SMP Tue Sep 24 16:50:00 PDT 2024 x86_64 x86_64 x86_64 GNU/Linux
+## by: justin
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ## Compiler flags.
@@ -78,12 +78,6 @@ VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
 ##
 SETUP_APP_VERSION(QT 6.4.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/6.4.2/${VISITARCH})
-
-##
-## QWT
-##
-SETUP_APP_VERSION(QWT 6.3.0)
-VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
 ## OSPRay
@@ -225,6 +219,12 @@ VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/2.2.0/${VISITARCH})
 ##
 SETUP_APP_VERSION(PIDX 0.9.3)
 VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
+
+##
+## QWT
+##
+SETUP_APP_VERSION(QWT 6.3.0)
+VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
 ## Uintah
