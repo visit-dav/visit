@@ -749,13 +749,35 @@ avtFileFormat::GuessCycle(const char *fname, const char *re)
     string reToUse = avtDatabaseMetaData::GetCycleFromFilenameRegex();
     if (reToUse == "")
         reToUse = re ? re : "";
-    if (reToUse == "")
-        reToUse = "<([0-9]+)([^0-9]*)\\..*$> \\1";
+    if (reToUse != "")
+    {
+printf("using the old method\n");
+        double d = GuessCycleOrTime(fname, reToUse.c_str());
+        if (d == INVALID_TIME) return INVALID_CYCLE;
+        return (int) d;
+    }
 
-    double d = GuessCycleOrTime(fname, reToUse.c_str());
+    //
+    // The above logic will compute cycle from filename for cases where
+    // a specific regular expression has been provided.
+    //
+    // The logic below attempts to do so in the absence of any specific
+    // information about how to do it. It is the "default" case.
+    //
+    // Search for a string of 6 or more digits, then 5 or more,
+    // then 4 or more and finally 3 or more. Stop with the longest
+    // found and use that.
+    for (int i = 6; i > 2; i--)
+    {
+        char tmp[32];
+        snprintf(tmp, sizeof(tmp), "<([0-9]{%d,})> \\1", i);
+        double d = GuessCycleOrTime(fname, tmp);
+        if (d == INVALID_TIME) continue;
+printf("using the new method and with %d digits and got %d\n", i, (int) d);
+        return (int) d;
+    }
 
-    if (d == INVALID_TIME) return INVALID_CYCLE;
-    return (int) d;
+    return INVALID_CYCLE;
 }
 
 // ****************************************************************************
