@@ -741,6 +741,10 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //    Mark C. Miller, Wed Dec 13 15:23:05 PST 2023
 //    Adjusted regular expression to take last group of digits BEFORE
 //    any extension if present.
+//
+//    Mark C. Miller, Mon Dec  2 11:30:21 PST 2024
+//    Adjust default logic to search for longer strings of digits first and
+//    then for shorter strings of digits.
 // ****************************************************************************
 
 int
@@ -751,7 +755,6 @@ avtFileFormat::GuessCycle(const char *fname, const char *re)
         reToUse = re ? re : "";
     if (reToUse != "")
     {
-printf("using the old method\n");
         double d = GuessCycleOrTime(fname, reToUse.c_str());
         if (d == INVALID_TIME) return INVALID_CYCLE;
         return (int) d;
@@ -767,13 +770,13 @@ printf("using the old method\n");
     // Search for a string of 6 or more digits, then 5 or more,
     // then 4 or more and finally 3 or more. Stop with the longest
     // found and use that.
+    //
     for (int i = 6; i > 2; i--)
     {
         char tmp[32];
         snprintf(tmp, sizeof(tmp), "<([0-9]{%d,})> \\1", i);
         double d = GuessCycleOrTime(fname, tmp);
         if (d == INVALID_TIME) continue;
-printf("using the new method and with %d digits and got %d\n", i, (int) d);
         return (int) d;
     }
 
