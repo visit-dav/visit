@@ -10131,6 +10131,10 @@ RemapFacelistForPolyhedronZones(DBfacelist *sfl, DBzonelist *szl)
 //
 //    Mark C. Miller, Wed Feb 11 17:06:02 PST 2015
 //    Made it return a point mesh for a DBucdmesh with no topology defined.
+//
+//    Mark C. Miller, Fri Nov 22 16:19:58 PST 2024
+//    Fix mesh name used to cache global node ids in the case this UCD mesh is
+//    really just a point mesh.
 // ****************************************************************************
 
 vtkDataSet *
@@ -10222,7 +10226,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
             // so that it can be obtained through the GetAuxiliaryData call
             //
             void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
-            cache->CacheVoidRef(mn, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, domain, vr);
+            cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, domain, vr);
         }
 
         points->Delete();
