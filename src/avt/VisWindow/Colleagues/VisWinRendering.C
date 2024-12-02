@@ -1266,6 +1266,10 @@ VisWinRendering::Realize(void)
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Kathleen Biagas, Mon Dec 2, 2024
+//    Added debug log statement to print the vtkRenderWindow classname being
+//    used. For debuging VTK-9.4 runtime choosing of the renderwindow type.
+//
 // ****************************************************************************
 
 void
@@ -1285,6 +1289,9 @@ VisWinRendering::RenderRenderWindow(void)
 #endif
 
     GetRenderWindow()->Render();
+
+    debug1 << "VisWinRendering, vtkRenderWindow classname: " << GetRenderWindow()->GetClassName() << endl;
+
 }
 
 // ****************************************************************************
