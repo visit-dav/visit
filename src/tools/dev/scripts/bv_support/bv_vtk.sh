@@ -157,6 +157,35 @@ function bv_vtk_ensure
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
+function apply_vtk94_vtkxopenglrenderwindow_patch
+{
+   # patches to change use of vtkWarningMacro to vtkDebugMacro to
+   # prevent user confusion.
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig	2024-12-02 10:53:41.882999000 -0800
++++ Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx	2024-12-02 10:56:45.421080000 -0800
+@@ -1287,7 +1287,12 @@
+     this->DisplayId = XOpenDisplay(static_cast<char*>(nullptr));
+     if (this->DisplayId == nullptr)
+     {
+-      vtkWarningMacro(<< "bad X server connection. DISPLAY="
++      // When choosing RenderWindow at runtime, this as a vtkWarningMacro
++      // makes it seem something went horribly wrong, which could
++      // confuse users since it is printed to terminal.
++      // Use vtkDebugMacro instead
++      // vtkWarningMacro(<< "bad X server connection. DISPLAY="
++      vtkDebugMacro(<< "bad X server connection. DISPLAY="
+                       << vtksys::SystemTools::GetEnv("DISPLAY"));
+     }
+     else
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkXOpenGLRenderWindow.cxx failed."
+        return 1
+    fi
+}
+
 function apply_vtk94_vtkmobiledevices_patch
 {
    # patches to fix CMake warning when VisIt is built with vtk
@@ -1603,6 +1632,11 @@ function apply_vtk_patch
         #fi
 
         apply_vtk94_vtkmobiledevices_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk94_vtkxopenglrenderwindow_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
