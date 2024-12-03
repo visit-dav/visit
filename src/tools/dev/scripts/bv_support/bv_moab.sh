@@ -141,10 +141,16 @@ function build_moab
     MOAB_BUILD_DIR="${MOAB_SRC_DIR}-build"
     rm -f ${MOAB_SRC_DIR}/src/moab/MOABConfig.h
 
-    # Fix a problem with MPI_LIBRARY variable not being defined for CMakeLists.txt
-    # files in sub-dirs by ensuring it gets cached.
-    sed -i.orig '322a\    set(MPI_LIBRARY ${MPI_LIBRARY} CACHE STRING "MPI library path")' ${MOAB_SRC_DIR}/CMakeLists.txt
-    sed -i.orig '322a\    set(MPI_LIBRARIES ${MPI_LIBRARY} CACHE STRING "MPI library path alternate variable")' ${MOAB_SRC_DIR}/CMakeLists.txt
+    # Fix HDF5 package name MOAB's CMakeLists.txt file uses
+    sed -i.orig '366s/HDF5_MOAB/HDF5/' ${MOAB_SRC_DIR}/CMakeLists.txt
+
+    # Fix a problem with MPI_LIBRARY and MPI_LIBRARIES variables not being defined
+    # for CMakeLists.txt files in sub-dirs by ensuring it gets cached.
+    sed -i.orig '323i\
+    # These lines added by VisIt bv_moab.sh\
+    set(MPI_LIBRARY ${MPI_LIBRARY} CACHE STRING "MPI library path")\
+    set(MPI_LIBRARIES ${MPI_LIBRARY} CACHE STRING "MPI library path alternate variable")\
+    ' ${MOAB_SRC_DIR}/CMakeLists.txt
 
     # Make a build directory for an out-of-source build.. Change the
     # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
