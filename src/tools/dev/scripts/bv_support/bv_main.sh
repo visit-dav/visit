@@ -1228,6 +1228,8 @@ function run_build_visit()
             # to prevent it triggering an "Urecognized option" error.
             --qt510) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
+            # want to disable this check with VTK-94 (or write a new version)
+            --vtk94) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;
