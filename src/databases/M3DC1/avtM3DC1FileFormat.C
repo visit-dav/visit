@@ -2017,10 +2017,10 @@ avtM3DC1FileFormat::linkIterator(hid_t locId, const char* name,
   switch (linfo->type) {
     case H5L_TYPE_HARD: {
 
-      H5O_info_t objinfo;
+      H5O_info1_t objinfo;
 
       /* Stat the object */
-      if(H5Oget_info_by_name(locId, name, &objinfo, H5P_DEFAULT) < 0) {
+      if(H5Oget_info_by_name1(locId, name, &objinfo, H5P_DEFAULT) < 0) {
         debug5 << "visitLinks() - unable to open object with name " <<name <<std::endl;
         debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
         return 0;
@@ -2069,7 +2069,7 @@ avtM3DC1FileFormat::linkIterator(hid_t locId, const char* name,
       targbuf = NULL;
       
       // Get info of the linked object.
-      H5O_info_t objinfo;
+      H5O_info1_t objinfo;
       hid_t obj_id = H5Oopen(locId, name, H5P_DEFAULT);
       
       if (obj_id < 0) {
@@ -2079,7 +2079,7 @@ avtM3DC1FileFormat::linkIterator(hid_t locId, const char* name,
       }
 
       //Test-open the linked object
-      if (H5Oget_info (obj_id, &objinfo) < 0) {
+      if (H5Oget_info1 (obj_id, &objinfo) < 0) {
         debug5 << "visitLinks() - unable to open external object " <<name <<std::endl;
         debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
         return 0;
