@@ -61,8 +61,8 @@ using     std::string;
 //
 // ****************************************************************************
 
-string meshnameArr[4] = { "0_Vertices", "1_Edges", "2_Faces", "3_Solids"};
-string meshnameAll = "4 Mesh";
+string meshnameArr[4] = { "0_Verts", "1_Edges", "2_Faces", "3_Solid"}; // all names the same length
+string meshnameAll = "4_Meshs";
 
 avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1), readOptions(readOpts),  file_descriptor(NULL), pcomm(NULL), mbCore(NULL)
@@ -413,10 +413,10 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             string nameDisplay;
             struct tagBasic tag = nodeTags[i];
-            nameDisplay =meshnameArr[0] + "/" + tag.nameTag;
+            nameDisplay =meshnameArr[0] + "/" + tag.nameTag + "/" + "Cloud";
             // add also to whole mesh, for fringe plots
             string nameDisplayExtra;
-            nameDisplayExtra = meshnameAll +  "/" + tag.nameTag;
+            nameDisplayExtra = meshnameArr[0] +  "/" + tag.nameTag + "/" + "Fringe";
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
@@ -959,16 +959,25 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
                 break;
         // could be a nodeTag if meshnameAll is the mesh at this level
         bool nodeTag = (dimMesh == 0);
-        if ( strcmp(meshName.c_str(), meshnameAll.c_str()) == 0 ) nodeTag = true;
+        //if ( strcmp(meshName.c_str(), meshnameAll.c_str()) == 0 ) nodeTag = true;
         bool elemTag = !nodeTag;
 
         debug1 << "avtMOABFileFormat::GetVar dimMesh: " << dimMesh << "\n";
         debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " elem_tag "
                 << elemTag << " node_tag: " << nodeTag << "\n";
-        string tagName;
-        tagName = string( varname + meshName.length() + 1) ; // meshName length + 1 for "/"
+        string tagNameTmp;
+        tagNameTmp = string( varname + meshName.length() + 1) ; // meshName length + 1 for "/"
 
 
+        // for vertex tags, strip after the slash,
+        char slash = '/';//character to search in what is left of the tag name
+        const char *foundSlash = strchr(tagNameTmp.c_str(), slash);
+        string tagName = tagNameTmp;
+        if (foundSlash)
+        {
+            debug1 << "tagNameTmp= " <<tagNameTmp << "\n";
+            tagName = tagNameTmp.substr( 0, (int)( foundSlash-tagNameTmp.c_str() ) );
+        }
         debug1 << "moab tag name:" <<tagName << "\n";
         vtkDataArray * result = 0;
 
