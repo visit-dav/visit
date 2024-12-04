@@ -62,6 +62,7 @@ using     std::string;
 // ****************************************************************************
 
 string meshnameArr[4] = { "0_Vertices", "1_Edges", "2_Faces", "3_Solids"};
+string meshnameAll = "4 Mesh";
 
 avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1), readOptions(readOpts),  file_descriptor(NULL), pcomm(NULL), mbCore(NULL)
@@ -327,7 +328,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         // Define the mesh
         //
-        string meshnameAll = "4 Mesh";
+
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = meshnameAll;
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
@@ -413,6 +414,9 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             string nameDisplay;
             struct tagBasic tag = nodeTags[i];
             nameDisplay =meshnameArr[0] + "/" + tag.nameTag;
+            // add also to whole mesh, for fringe plots
+            string nameDisplayExtra;
+            nameDisplayExtra = meshnameAll +  "/" + tag.nameTag;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
@@ -432,12 +436,28 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 smd->SetMissingData(values);
                 smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                 md->Add(smd);
+
+                avtScalarMetaData *smd2 = new avtScalarMetaData;
+                smd2->name = nameDisplayExtra.c_str();
+                smd2->meshName = meshnameAll;
+                smd2->centering = AVT_NODECENT;
+
+                smd2->SetMissingData(values);
+                smd2->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                md->Add(smd2);
+
             }
               // AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
             else if (tag.size == 2 || tag.size == 3)
+            {
               AddVectorVarToMetaData(md, nameDisplay.c_str(), meshnameArr[0], AVT_NODECENT, tag.size);
+              AddVectorVarToMetaData(md, nameDisplayExtra.c_str(), meshnameAll, AVT_NODECENT, tag.size);
+            }
             else
+            {
               AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshnameArr[0], AVT_NODECENT);
+              AddArrayVarToMetaData(md, nameDisplayExtra.c_str(), tag.size, meshnameAll, AVT_NODECENT);
+            }
         }
 
         //  So, here, we handle the parallel partition
@@ -937,7 +957,9 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         for (dimMesh = 0; dimMesh < 4; dimMesh++)
             if (strcmp(meshName.c_str(), meshnameArr[dimMesh].c_str()) == 0)
                 break;
+        // could be a nodeTag if meshnameAll is the mesh at this level
         bool nodeTag = (dimMesh == 0);
+        if ( strcmp(meshName.c_str(), meshnameAll.c_str()) == 0 ) nodeTag = true;
         bool elemTag = !nodeTag;
 
         debug1 << "avtMOABFileFormat::GetVar dimMesh: " << dimMesh << "\n";
