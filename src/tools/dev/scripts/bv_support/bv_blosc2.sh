@@ -72,6 +72,11 @@ function build_blosc2
     cd $BLOSC2_BUILD_DIR || error "Can't cd to BLOSC2 source dir."
 
     cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
+    # Enable ssse3 target feature on intel and amd processors.
+    if [[ "$(uname -m)" == "x86_64" ]] ; then
+        cfg_opts="$cfg_opts -DCMAKE_C_FLAGS=-mssse3"
+        cfg_opts="$cfg_opts -DCMAKE_CXX_FLAGS=-mssse3"
+    fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
