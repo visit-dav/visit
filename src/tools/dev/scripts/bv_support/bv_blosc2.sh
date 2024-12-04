@@ -152,6 +152,7 @@ function bv_blosc2_print_usage
 function bv_blosc2_host_profile
 {
     if [[ "$DO_BLOSC2" == "yes" ]] ; then
+        echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## BLOSC2" >> $HOSTCONF
         echo "##" >> $HOSTCONF
