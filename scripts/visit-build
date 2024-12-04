@@ -623,8 +623,8 @@ elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f $result_dir/buildlog.$machine_name
 cp buildlog $result_dir/buildlog.$machine_name
-rm -f $result_dir/visit\$ver2.linux-intel-$machine_name.tar.gz
-cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-$machine_name.tar.gz
+rm -f $result_dir/visit\$ver2.linux-ppc64le-$machine_name.tar.gz
+cp build/visit\$ver2.linux-ppc64le.tar.gz $result_dir/visit\$ver2.linux-ppc64le-$machine_name.tar.gz
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
