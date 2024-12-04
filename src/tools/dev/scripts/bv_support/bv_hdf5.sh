@@ -628,10 +628,12 @@ function build_hdf5
         fi
 
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
-        # configure, we wrap the invokation in 'sh -c "..."' syntax
         C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
+	# ignore conversion of NULL to int.
+	C_OPT_FLAGS="$C_OPT_FLAGS -Wno-error=int-conversion"
         info "Invoking command to configure $bt HDF5"
         set -x
+        # configure, we wrap the invokation in 'sh -c "..."' syntax
         sh -c "../configure CC=\"$cf_c_compiler\" \
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS $cf_extra_flags\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
