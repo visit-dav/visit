@@ -205,9 +205,7 @@ function build_adios2
             # note: lib dir can be `lib``, or `lib64` depending on the platform
             if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
                 BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.${SO_EXT}"
-            fi
-
-            if [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
+            elif [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
                 BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
             fi
 
