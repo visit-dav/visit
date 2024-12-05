@@ -246,7 +246,7 @@ function qt6_macos_14_xcode_15_patch
 {
     info "Patching qt 6 for macOS xcode 15 with toolchain fix"
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff --git qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf qtbase-everywhere-src-6.4.2-patched/mkspecs/features/toolchain.prf
 index 0040b6c..bfad10d 100644
 --- qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf
@@ -269,13 +269,12 @@ index 0040b6c..bfad10d 100644
 @@ -411,7 +414,7 @@
          QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
      }
-
+ 
 -    unix:if(!cross_compile|host_build) {
 +    unix:!darwin:if(!cross_compile|host_build) {
          isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
          isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
      }
-
 EOF
     if [[ $? != 0 ]] ; then
         warn "Patching qt 6 for macOS xcode 15 with toolchain fix failed"
