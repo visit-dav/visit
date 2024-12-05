@@ -247,10 +247,10 @@ function qt6_macos_14_xcode_15_patch
     info "Patching qt 6 for macOS xcode 15 with toolchain fix"
 
     patch -p0 <<EOF
-diff --git a/mkspecs/features/toolchain.prf b/mkspecs/features/toolchain.prf
+diff --git qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf qtbase-everywhere-src-6.4.2-patched/mkspecs/features/toolchain.prf
 index 0040b6c..bfad10d 100644
---- a/mkspecs/features/toolchain.prf
-+++ b/mkspecs/features/toolchain.prf
+--- qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf
++++ qtbase-everywhere-src-6.4.2-patched/mkspecs/features/toolchain.prf
 @@ -288,9 +288,12 @@
                  }
              }
