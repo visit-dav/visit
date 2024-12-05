@@ -1,8 +1,8 @@
-#/usr/projects/views/visit/loser/thirdparty_shared/3.4.2/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared/3.4.2/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/cmake
 ##
 ## ./build_visit3_4_2 generated host.cmake
 ## created: Wed 04 Dec 2024 03:51:16 PM MST
-## system: Linux xr-fe1 5.14.21-150400.24.111_12.0.90-cray_shasta_c #1 SMP Fri Apr 19 23:37:58 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+## system: Linux xr-fe1 5.14.21-150400.24.111_12.0.90-cray_shasta_c #1 SMP Fri Apr 19 23:37:58 UTC 2024 (18c041e) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
@@ -13,8 +13,8 @@ SET(VISITARCH linux-x86_64_gcc-12.2)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER cc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER CC TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
@@ -24,8 +24,13 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER cc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpicc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)
+
+##
+## VisIt Thread Option
+##
+VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
 ##
 ## Turn on DDT support.
