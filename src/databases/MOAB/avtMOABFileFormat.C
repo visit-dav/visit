@@ -953,10 +953,20 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         if (string(varname) == "GeometrySets")
             return GetGeometrySetsVar();
 
+        // change in plans, we use the varname to decide the mesh part it is on
+        // we are not using anymore the meshname to decide if node tag or element tag
+        // basically, use the first / to decide the tag type
+        // for vertex tags, strip after the slash,
+
+        string meshFromVarName(varname);
+        meshFromVarName = meshFromVarName.substr(0,7); // we know the length of the mesh part in name is 7
+
+
         int dimMesh = -1;
         for (dimMesh = 0; dimMesh < 4; dimMesh++)
-            if (strcmp(meshName.c_str(), meshnameArr[dimMesh].c_str()) == 0)
+            if (strcmp(meshFromVarName.c_str(), meshnameArr[dimMesh].c_str()) == 0)
                 break;
+        assert(dimMesh != -1);
         // could be a nodeTag if meshnameAll is the mesh at this level
         bool nodeTag = (dimMesh == 0);
         //if ( strcmp(meshName.c_str(), meshnameAll.c_str()) == 0 ) nodeTag = true;
@@ -966,9 +976,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " elem_tag "
                 << elemTag << " node_tag: " << nodeTag << "\n";
         string tagNameTmp;
-        tagNameTmp = string( varname + meshName.length() + 1) ; // meshName length + 1 for "/"
-
-
+        tagNameTmp = string( varname + 8) ; // meshName length + 1 for "/"
         // for vertex tags, strip after the slash,
         char slash = '/';//character to search in what is left of the tag name
         const char *foundSlash = strchr(tagNameTmp.c_str(), slash);
@@ -978,6 +986,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
             debug1 << "tagNameTmp= " <<tagNameTmp << "\n";
             tagName = tagNameTmp.substr( 0, (int)( foundSlash-tagNameTmp.c_str() ) );
         }
+
         debug1 << "moab tag name:" <<tagName << "\n";
         vtkDataArray * result = 0;
 
