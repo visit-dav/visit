@@ -303,6 +303,7 @@ magma=false
 sierra=false
 tuolumne=false
 rzadams=false # rzadams will piggyback off of tuolumne for the most part
+rzansel=false # piggyback off of lassen
 
 ver=undefined
 machine_name="unknown"
@@ -341,8 +342,15 @@ do
       -lassen)
          lassen=true
          machine_name="lassen"
-         architecture="linux-intel"
+         architecture="linux-ppc64le"
          network="llnl_open_cz"
+         shift
+         ;;
+      -rzansel)
+         lassen=true
+         machine_name="lassen"
+         architecture="linux-ppc64le"
+         network="llnl_open_rz"
          shift
          ;;
       -rzwhippet)
@@ -362,7 +370,7 @@ do
       -sierra)
          sierra=true
          machine_name="sierra"
-         architecture="linux-intel"
+         architecture="linux-ppc64le"
          network="llnl_closed"
          shift
          ;;
@@ -380,7 +388,7 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams"
+   echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams rzansel"
    exit
 fi
 
