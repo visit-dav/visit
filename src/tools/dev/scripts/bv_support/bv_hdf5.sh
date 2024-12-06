@@ -540,6 +540,13 @@ function build_hdf5
     fi
 
     #
+    # Fix a test failing to compile
+    #
+    if [[ "$OPSYS" == "Darwin" && $(uname -r | cut -d'.' -f1) -ge 23 ]]; then
+        sed -i '' 's/{NULL}};/{0}};/' test/tmisc.c
+    fi
+
+    #
     # Configure HDF5
     #
     info "Configuring HDF5 . . ."
