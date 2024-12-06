@@ -117,7 +117,7 @@ function apply_qt6_base_patch
 function qt6_xkbcommon_patch
 {
     info "Patching qt 6 for xkbcommon issue"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 -- qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp.orig	2024-05-21 08:51:16.000000000 -0700
 +++ qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp	2024-05-21 08:50:33.000000000 -0700
 @@ -236,16 +236,20 @@
@@ -153,7 +153,7 @@ function qt6_macos_13_cpp_stdlib_issue_patch
 {
     info "Patching qt 6 for macOS c++ stdlib issue"
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h
 *** qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h	Tue Nov 15 23:54:24 2022
 --- qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h	Wed Oct 25 13:14:40 2023
@@ -246,7 +246,7 @@ function qt6_macos_14_xcode_15_patch
 {
     info "Patching qt 6 for macOS xcode 15 with toolchain fix"
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff --git qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf qtbase-everywhere-src-6.4.2-patched/mkspecs/features/toolchain.prf
 index 0040b6c..bfad10d 100644
 --- qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf

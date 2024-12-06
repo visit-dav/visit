@@ -137,7 +137,7 @@ function bv_hdf5_ensure
 function apply_hdf5_1814_static_patch
 {
     info "Patching hdf5 1.8.14 for static build"
-    patch -p0 << EOF
+    patch -p0 << \EOF
 *** src/H5PL.c.orig    2015-10-23 11:51:35.000000000 -0700
 --- src/H5PL.c  2015-10-23 11:56:48.000000000 -0700
 ***************
@@ -467,7 +467,7 @@ EOF
 function apply_hdf5_1814_isatty_patch
 {
     info "Patching hdf5 1.8.14 for isatty"
-    patch -p0 << EOF
+    patch -p0 << \EOF
 --- hl/src/H5LTanalyze.c.orig	2014-11-07 04:53:42.000000000 -0800
 +++ hl/src/H5LTanalyze.c	2021-02-01 13:40:36.000000000 -0800
 @@ -40,6 +40,7 @@

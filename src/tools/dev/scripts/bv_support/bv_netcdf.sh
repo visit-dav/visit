@@ -422,7 +422,7 @@ function build_netcdf
         return 1
     fi
 
-    if [[ -n "$(uname -rs | grep 'Darwin 21')" ]] ; then
+    if [[ -n "$(uname -rs | grep 'Darwin')" ]] ; then
         # there is an include file on newer macOS #include <version> which case-clashes
         # with any file living in a dir that is -I included on the compilation line
         mv -f VERSION VERSION.orig
