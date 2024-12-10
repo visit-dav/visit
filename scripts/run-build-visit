@@ -9,13 +9,13 @@
 # Usage:
 #    run-build-visit -<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
-#       poodle    (LC, Linux, x86_64, toss4),
-#       lassen    (LC, Linux, power9),
-#       rzwhippet (LC, Linux, x86_64, toss4),
-#       rzvernal  (LC, Linux, x86_64, toss4-cray),
-#       trinity   (LANL, x86_64)
-#       tuolumne  (LC, Linux, x86_64, toss4-cray),
-#       rzadams   (LC, Linux, x86_64, toss4-cray)
+#       poodle     (LC, Linux, x86_64, toss4),
+#       lassen     (LC, Linux, power9),
+#       rzwhippet  (LC, Linux, x86_64, toss4),
+#       rzvernal   (LC, Linux, x86_64, toss4-cray),
+#       crossroads (LANL, x86_64)
+#       tuolumne   (LC, Linux, x86_64, toss4-cray),
+#       rzadams    (LC, Linux, x86_64, toss4-cray)
 #
 # Modifications:
 #    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
@@ -71,6 +71,9 @@
 #    Justin Privitera, Fri Nov 22 16:40:46 PST 2024
 #    Removed kickit with extreme prejudice.
 #
+#    Eric Brugger, Wed Dec  4 16:00:35 PST 2024
+#    Removed trinity and added crossroads.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -80,7 +83,7 @@ poodle=false
 lassen=false
 rzgenie=false
 rzvernal=false
-trinity=false
+crossroads=false
 tuolumne=false
 
 machine_name="unknown"
@@ -118,9 +121,9 @@ do
          machine_name="rzvernal"
          shift
          ;;
-      -trinity)
-         trinity=true
-         machine_name="trinity"
+      -crossroads)
+         crossroads=true
+         machine_name="crossroads"
          shift
          ;;
       -tuolumne)
@@ -151,13 +154,13 @@ if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    poodle    (LC, Linux, x86_64, toss4),"
-   echo "    lassen    (LC, Linux, power9),"
-   echo "    rzwhippet (LC, Linux, x86_64, toss4),"
-   echo "    rzvernal  (LC, Linux, x86_64, toss4-cray),"
-   echo "    trinity   (LANL, Linux, x86_64)"
-   echo "    tuolumne  (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams   (LC, Linux, x86_64, toss4-cray)"
+   echo "    poodle     (LC, Linux, x86_64, toss4),"
+   echo "    lassen     (LC, Linux, power9),"
+   echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
+   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -178,7 +181,7 @@ fi
 # Info and set ran_build_visit
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+   [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
    ran_build_visit=true
@@ -198,7 +201,7 @@ elif [ "$rzvernal" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
 elif [ "$tuolumne" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx942
-elif [ "$trinity" = true ]; then
+elif [ "$crossroads" = true ]; then
    dest_dir=/usr/projects/views/visit/thirdparty_shared/$version
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -211,7 +214,7 @@ fi
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
-elif [ "$trinity" = true ]; then
+elif [ "$crossroads" = true ]; then
    dest_group=viz
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -222,7 +225,7 @@ fi
 # housekeeping
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+   [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
       mv ${build_visit_script}_log.${machine_name} ${build_visit_script}_log
@@ -266,19 +269,15 @@ elif [ "$rzvernal" = true ]; then
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
-elif [ "$trinity" = true ]; then
-   module swap PrgEnv-intel/6.0.10 PrgEnv-gnu/6.0.10
-   module swap gcc/11.2.0 gcc/8.2.0
-   export XTPE_LINK_TYPE=dynamic
-   export CRAYPE_LINK_TYPE=dynamic
-   env C_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
-       CXX_COMPILER=/opt/cray/pe/craype/2.7.15/bin/CC \
-       PAR_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
-       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.15/bin/CC \
-       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/include \
-       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -lmpich" \
+elif [ "$crossroads" = true ]; then
+   env C_COMPILER=gcc \
+       CXX_COMPILER=g++ \
+       PAR_COMPILER=mpicc \
+       PAR_COMPILER_CXX=mpic++ \
+       PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
+       PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --no-adios --no-adios2 --no-mili --no-pyside --qt510 --qwt --no-visit \
+       --qt6 --qwt --no-adios --no-gdal --no-pyside --no-visit \
        --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    env CC=gcc \
@@ -296,7 +295,7 @@ fi
 # Final housekeeping and permissions
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ] || \
+   [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
    # just in case perms
@@ -316,12 +315,12 @@ then
    echo "Invalid or missing machine name."
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    poodle   (LC, Linux, x86_64, toss4),"
-   echo "    lassen   (LC, Linux, power9),"
-   echo "    rzgenie  (LC, Linux, x86_64, toss3),"
-   echo "    rzvernal (LC, Linux, x86_64, toss4-cray),"
-   echo "    trinity  (LANL, Linux, x86_64)"
-   echo "    tuolumne (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams  (LC, Linux, x86_64, toss4-cray),"
+   echo "    poodle     (LC, Linux, x86_64, toss4),"
+   echo "    lassen     (LC, Linux, power9),"
+   echo "    rzgenie    (LC, Linux, x86_64, toss3),"
+   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
    exit
 fi
