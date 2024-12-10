@@ -35,7 +35,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Turn on DDT support.
 ##
-VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
+##VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 
 ##############################################################
 ##
