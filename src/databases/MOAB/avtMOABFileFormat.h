@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <set>
+#include <map> // this is heavy too
 class DBOptionsAttributes;
 
 namespace moab
@@ -117,6 +118,8 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     int                    num_diri;    // DIRICHLET_SETs
     int                    num_geom;    // geometry dimension sets
     moab::ParallelComm*    pcomm;
+    long                   num_sets, start_set_id;
+    std::map<long, long> setIdMap;
 };
 
 
