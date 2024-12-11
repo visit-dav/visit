@@ -158,7 +158,11 @@ function bv_ospray_host_profile
         if [[ "$USE_SYSTEM_OSPRAY" == "no" ]]; then
             echo "SETUP_APP_VERSION(OSPRAY ${OSPRAY_VERSION})" >> $HOSTCONF
             if [[ "$DO_VTK9" == "yes" ]]; then
-                echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH}/ospray)" >> $HOSTCONF
+                if [[ "$OPSYS" == "Darwin" ]]; then
+                    echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH})" >> $HOSTCONF
+                else
+                    echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH}/ospray)" >> $HOSTCONF
+                fi
             else
                 echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY ON TYPE BOOL)" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH})" >> $HOSTCONF
@@ -333,7 +337,6 @@ function build_ospray
             # Just install them now.
             pushd $OSPRAY_SRC_DIR 1>/dev/null 2>&1
             find . -name '*.dylib' -exec xattr -d com.apple.quarantine {} \;
-            find . -name '*.dylib' -exec codesign --remove-signature {} \;
             mkdir -p ${OSPRAY_INSTALL_DIR}
             cp -R include lib ${OSPRAY_INSTALL_DIR}/.
             info "Installed OSPRay from pre-built binaries. . . "
