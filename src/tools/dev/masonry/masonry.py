@@ -397,7 +397,7 @@ class NotarizeAction(Action):
                     cmd = 'codesign --force --options runtime --timestamp'
                     cmd += ' --entitlements %s' % self.params["entitlements"]
                     cmd += ' -s "%s" %s' % (self.params["cert"], binary)
-                    rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                    rcode, rout = shexe(cmd, ret_output=True, env=env)
                     print("[res: %s]" % rout)
 
             # codesign VisIt.app

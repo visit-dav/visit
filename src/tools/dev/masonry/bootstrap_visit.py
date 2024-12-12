@@ -219,11 +219,17 @@ def steps_install(opts,build_type,ctx):
                                    target="install")
     ctx.triggers["build"].append(a_make_install)
 
+#
+# Override nthreads to force use of just a single thread here.
+# This will hopefully prevent situations where `make package` fails
+# during the hdiutil command to make the `.dmg` file due to a 
+# "resource busy" error condition.
+#
 def steps_package(opts,build_type,ctx):
     build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
     a_make_pkg = "package_" + build_type.lower()
     ctx.actions[a_make_pkg] = make(description="building visit package",
-                                   nthreads=opts["make_nthreads"],
+                                   nthreads=1,
                                    working_dir=build_dir,
                                    target="package")
     ctx.triggers["build"].append(a_make_pkg)
@@ -237,7 +243,7 @@ def steps_package(opts,build_type,ctx):
                                             working_dir=build_dir,
                                             description="configuring visit (osx bundle)")
         ctx.actions[a_make_bundle] = make(description="packaging visit (osx bundle)",
-                                          nthreads=opts["make_nthreads"],
+                                          nthreads=1,
                                           working_dir=build_dir,
                                           target="package")
         ctx.triggers["build"].extend([a_cmake_bundle,
