@@ -356,7 +356,7 @@ function(PYTHON_ADD_MODULE _NAME )
         if(WIN32)
             set_target_properties(${_NAME} PROPERTIES SUFFIX ".pyd")
         endif()
-        target_link_libraries(${_NAME} ${PYTHON_LIBRARIES})
+        target_link_libraries(${_NAME} PRIVATE ${PYTHON_LIBRARIES})
     endif()
 endfunction()
 
@@ -411,6 +411,10 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     # like we were able to do with distutils, you have to use TMPDIR
     # TODO: we might want to  explore this in the future
 
+    # Use a stamp file to track when the pip comand was last executed
+    # wrt its dependencies
+    set(stamp ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}.stamp)
+
     # add some cleanup (rm -rf) for the build artifacts left in source
     # by pip-install
     # since the egg-info dir for flow_vpe doesn't match its dirname
@@ -418,25 +422,27 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     # there isn't a reliable way to only delete it when visit_flow_vpe
     # calls this function. So, go ahead and add it to all the pip installs
     # the 'rm -rf' will not error out if the dir doesn't exist
-
-    add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build
+    add_custom_command(OUTPUT ${stamp}
             COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
             --disable-pip-version-check --no-warn-script-location
             --target "${abs_dest_path}"
             COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/build
             COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/${args_PY_MODULE_DIR}.egg-info
             COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/flow.egg-info
+            COMMAND ${CMAKE_COMMAND} -E touch ${stamp}
             DEPENDS  ${args_PY_SETUP_FILE} ${args_PY_SOURCES}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-    add_custom_target(${args_NAME} ALL DEPENDS
-                      ${CMAKE_CURRENT_BINARY_DIR}/${args_NAME}_build)
+    # The pip command wipes the --target directory, so all dependent modules need
+    # to be linked afterwards. Propagate this dependency as a usage requirement.
+    add_library(${args_NAME} INTERFACE ${stamp})
+    set_property(TARGET ${args_NAME} APPEND PROPERTY INTERFACE_LINK_DEPENDS ${stamp})
 
     # set folder if passed
     if(DEFINED args_FOLDER)
         blt_set_target_folder(TARGET ${args_NAME} FOLDER ${args_FOLDER})
     endif()
-    
+
     if(WIN32)
         visit_add_to_util_builds(${args_NAME})
     endif()
@@ -506,7 +512,7 @@ FUNCTION(PYTHON_ADD_HYBRID_MODULE)
         set_target_properties(${args_NAME} PROPERTIES
              LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${args_DEST_DIR}/${args_NAME}/")
     endif()
-    add_dependencies(${args_NAME} "${args_NAME}_py_setup")
+    target_link_libraries(${args_NAME} PRIVATE "${args_NAME}_py_setup")
     VISIT_INSTALL_TARGETS_RELATIVE(${args_DEST_DIR}/${args_NAME} ${args_NAME})
 
 ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
