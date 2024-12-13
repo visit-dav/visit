@@ -198,6 +198,13 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
 //
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
+// 
+//  Modifications:
+//    Justin Privitera, Thu Dec 12 16:30:22 PST 2024
+//    Prevent there from being given cells when there are no given points.
+//    Later logic unconditionally sends cells without checking if points
+//    exist or not. The correct thing to do is to send 0 for num cells if
+//    num points is 0.
 //
 // ****************************************************************************
 
@@ -237,6 +244,11 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
                 givenPoints[index].push_back(points[i]);
             }
         }
+    }
+
+    if (givenPoints[index].empty())
+    {
+        givenCells[index].clear();
     }
 }
 
