@@ -424,6 +424,12 @@ do
          config_site="lassen708.cmake"
          shift
          ;;
+      -rzansel)
+         lassen=true # piggy back off of lassen
+         machine_name="rzansel"
+         config_site="rzansel61.cmake"
+         shift
+         ;;
       -rzwhippet)
          rzwhippet=true
          machine_name="rzwhippet"
@@ -443,7 +449,7 @@ do
          shift
          ;;
       -rzadams)
-         tuolumne=true
+         tuolumne=true # piggy back off of tuolumne
          machine_name="rzadams"
          config_site="rzadams1001.cmake"
          shift
@@ -474,7 +480,7 @@ if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    poodle lassen rzwhippet rzvernal tuolumne rzadams"
+   echo "    poodle lassen rzwhippet rzvernal tuolumne rzadams rzansel"
    echo "    magma (LC, x86_64)"
    echo "    sierra (LC, ppc)"
    exit
