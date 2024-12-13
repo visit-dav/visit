@@ -448,7 +448,7 @@ function(PYSIDE_ADD_HYBRID_MODULE module_name
                   ${mod_gen_global}
                   ${mod_gen_typesystem})
 
-    add_dependencies(${module_name} "${module_name}_py_setup")
+    target_link_libraries(${module_name} PRIVATE "${module_name}_py_setup")
     add_dependencies(${module_name} "${module_name}_gen")
 
 endfunction(PYSIDE_ADD_HYBRID_MODULE)

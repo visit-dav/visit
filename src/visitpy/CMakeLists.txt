@@ -451,7 +451,7 @@ ELSE(VISIT_STATIC)
     # Create the visitmodule
     PYTHON_ADD_MODULE(visitmodule
                       ${COMMON_SOURCES})
-    TARGET_LINK_LIBRARIES(visitmodule
+    TARGET_LINK_LIBRARIES(visitmodule PUBLIC
         viewerproxy
         viewerrpc
         avtdbatts
@@ -463,7 +463,7 @@ ELSE(VISIT_STATIC)
     IF(NOT WIN32)
         IF(NOT APPLE)
             find_library(LIBRT rt)
-            TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
+            TARGET_LINK_LIBRARIES(visitmodule PUBLIC ${LIBRT})
         ENDIF(NOT APPLE)
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES
                                           LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
@@ -486,7 +486,7 @@ ADD_SUBDIRECTORY(visitmodule)
 # the visitmodule subdir added above creates the visitmodule_py_setup target
 # visitmodule needs to depend on it so it is built after the py module,
 # otherwise pip install will overwrite the directory and delete visitmodule.so
-add_dependencies(visitmodule visitmodule_py_setup)
+target_link_libraries(visitmodule PRIVATE visitmodule_py_setup)
 ADD_SUBDIRECTORY(visit_utils)
 ADD_SUBDIRECTORY(visit_flow)
 
