@@ -311,6 +311,8 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
 //  Creation:   10/17/24
 //
 //  Modifications:
+//    Justin Privitera, Thu Dec 12 16:49:08 PST 2024
+//    Added debugging information.
 //
 // ****************************************************************************
 
@@ -346,6 +348,11 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
                         {
                             // we don't know what to do in the case that the ghost
                             // zone/node array has more than one component
+                            debug1 << "AugmentGhostData: When attempting to combine "
+                                      "avtGhostNodes/Zones and avtExtraGhostNodes/Zones, "
+                                      "one of the arrays has more than one component. "
+                                      "This should not be possible. Please contact a "
+                                      "VisIt developer." << std::endl;
                             EXCEPTION0(ImproperUseException);
                         }
                         const int num_tuples = ghosts->GetNumberOfTuples();
@@ -354,6 +361,11 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
                             // we don't know what to do in the case that the original
                             // and extra ghost zone/node arrays do not have the same
                             // number of tuples.
+                            debug1 << "AugmentGhostData: When attempting to combine "
+                                      "avtGhostNodes/Zones and avtExtraGhostNodes/Zones, "
+                                      "the arrays do not have the same number of tuples. "
+                                      "This should not be possible. Please contact a "
+                                      "VisIt developer." << std::endl;
                             EXCEPTION0(ImproperUseException);
                         }
 
