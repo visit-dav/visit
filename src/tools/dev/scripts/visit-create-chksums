@@ -112,7 +112,8 @@ do
    $cmd INSTALL_NOTES.txt                                 >> $output
    $cmd jvisit$version.tar.gz                             >> $output
    $cmd VisIt-$version.dmg                                >> $output
-   $cmd visit$version2.darwin-x86_64.tar.gz               >> $output
+   $cmd visit$version2.darwin22-x86_64.tar.gz             >> $output
+   $cmd visit$version2.darwin23-arm64.tar.gz              >> $output
    $cmd visit$version2.linux-x86_64-debian10.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-debian11.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-fedora31.tar.gz       >> $output
