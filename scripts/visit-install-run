@@ -332,8 +332,8 @@ do
          shift
          ;;
       -rzadams)
-         tuolumne=true
-         rzadams=true
+         tuolumne=true # piggy back off of tuolumne
+         rzadams=true # used for setting up the symlink for rzvernal
          machine_name="rzadams"
          architecture="linux-x86_64-gfx942"
          network="llnl_open_rz"
@@ -347,8 +347,8 @@ do
          shift
          ;;
       -rzansel)
-         lassen=true
-         machine_name="lassen"
+         lassen=true # piggy back off of lassen
+         machine_name="rzansel"
          architecture="linux-ppc64le"
          network="llnl_open_rz"
          shift
