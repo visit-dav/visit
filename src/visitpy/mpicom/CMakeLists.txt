@@ -68,7 +68,7 @@ IF(VISIT_PARALLEL)
         ADD_TARGET_DEFINITIONS(mpicom ${VISIT_PARALLEL_DEFS})
     ENDIF(UNIX)
 
-    TARGET_LINK_LIBRARIES(mpicom
+    TARGET_LINK_LIBRARIES(mpicom PRIVATE
                           ${PYTHON_LIBRARY}
                           ${VISIT_PARALLEL_LIBS})
 
