@@ -81,7 +81,6 @@ function bv_ospray_print
 {
     print "%s%s\n" "OSPRAY_FILE=" "${OSPRAY_FILE}"
     print "%s%s\n" "OSPRAY_VERSION=" "${OSPRAY_VERSION}"
-    print "%s%s\n" "OSPRAY_COMPATIBILITY_VERSION=" "${OSPRAY_COMPATIBILITY_VERSION}"
     print "%s%s\n" "OSPRAY_SRC_DIR=" "${OSPRAY_SRC_DIR}"
     print "%s%s\n" "OSPRAY_BUILD_DIR=" "${OSPRAY_BUILD_DIR}"
 }
