@@ -175,6 +175,7 @@ class avtGEOSFileFormat : public avtMTMDFileFormat
 
     bool           HasInvariantMetaData(void) const override { return false;}
     bool           HasInvariantSIL(void) const override { return false;}
+    bool           HasVarsDefinedOnSubMeshes(void) override { return true;}
     int            GetNTimesteps(void) override;
     void           GetTimes(std::vector<double> &) override;
 
