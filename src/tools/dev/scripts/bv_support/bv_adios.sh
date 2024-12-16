@@ -310,6 +310,11 @@ function build_adios
         WITH_BLOSC_ARGS="--without-blosc"
     fi
 
+    # Fix compilation error on newer Darwin
+    if [[ "$OPSYS" == "Darwin" && $(uname -r | cut -d'.' -f1) -ge 23 ]]; then
+        sed -i '' 's/^libparse_test_query_xml_a_LIBADD/#libparse_test_query_xml_a_LIBADD/' tests/C/query/common/Makefile.in
+    fi
+
     set -x
     sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \

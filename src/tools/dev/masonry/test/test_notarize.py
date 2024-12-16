@@ -13,6 +13,8 @@ params = {
     "password":"VisIt",
     "asc_provider":"A827VH86QR"
 } 
+if os.uname().machine == "arm64":
+    params["password"]:"VisIt-arm64"
 
 temp_dmg = "TestDmgNotarization.dmg"
 temp_app = "TestDmgNotarization.app"
