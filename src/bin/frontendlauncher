@@ -73,7 +73,12 @@ if test "$osname" = "Linux"; then
         platform="linux-intel"
     fi
 elif test "$osname" = "Darwin"; then
-    platform="darwin-x86_64"
+    proc=$(uname -m)
+    if test "$proc" = "x86_64"; then
+        platform="darwin-x86_64"
+    elif test "$proc" = "arm64"; then
+        platform="darwin-arm64"
+    fi
 elif test "$osname" = "AIX"; then
     if test "$OBJECT_MODE" = "32"; then
         platform="ibm-aix-pwr"
