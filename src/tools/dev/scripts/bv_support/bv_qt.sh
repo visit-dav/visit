@@ -326,7 +326,7 @@ function apply_qt_patch
 function apply_qt_5101_linux_mesagl_patch
 {
     info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
     diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
     *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
     --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
@@ -352,7 +352,7 @@ EOF
         return 1
     fi
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
 *** qtbase/mkspecs/linux-icc-64/qmake.conf.orig Fri Nov 22 15:24:45 2019
 --- qtbase/mkspecs/linux-icc-64/qmake.conf      Fri Nov 22 15:25:11 2019
@@ -380,7 +380,7 @@ EOF
 function apply_qt_5101_centos8_patch
 {
     info "Patching qt 5.10.1 for Centos8"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib/io/qfilesystemengine_unix.cpp
 *** qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig       Thu Oct 17 13:54:59 2019
 --- qtbase/src/corelib/io/qfilesystemengine_unix.cpp    Thu Oct 17 13:57:20 2019
@@ -434,7 +434,7 @@ function apply_qt_5101_blueos_patch
 function apply_qt_5101_macos_mojave_patch
 {
     info "Patching qt 5.10.1 for macOS 10.14 (Mojave)..."
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm
 *** qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig   2020-01-16 11:06:12.000000000 -0800
 --- qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm        2020-01-16 11:06:38.000000000 -0800
@@ -467,7 +467,7 @@ EOF
 function apply_qt_5101_qrandom_patch
 {
     info "Patching qt 5.10.1 for gcc 9.2"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/src/corelib/global/qrandom.cpp.orig qtbase/src/corelib/global/qrandom.cpp
 *** qtbase/src/corelib/global/qrandom.cpp.orig  Mon Mar  9 17:09:47 2020
 --- qtbase/src/corelib/global/qrandom.cpp       Mon Mar  9 17:10:42 2020
@@ -493,7 +493,7 @@ EOF
 function apply_qt_5142_xkbcommon_patch
 {
     info "Patching qt 5.14.2 for libxkbcommon-1.6.0 issue"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 --- qtbase/src/platformsupport/input/xkbcommon/qxkbcommon.cpp.orig	2024-05-21 12:54:00.432442000 -0700
 +++ qtbase/src/platformsupport/input/xkbcommon/qxkbcommon.cpp	2024-05-21 12:55:35.162440000 -0700
 @@ -271,10 +271,14 @@
@@ -521,7 +521,7 @@ EOF
 function apply_qt_5142_numeric_limits_patch
 {   
     info "Patching qt 5.14.2 for numeric-limits" 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/src/corelib/global/qendian.h.orig c qtbase/src/corelib/global/qendian.h
 *** qtbase/src/corelib/global/qendian.h.orig	Wed Oct 13 20:10:58 2021
 --- qtbase/src/corelib/global/qendian.h	Wed Oct 13 20:11:12 2021
@@ -541,7 +541,7 @@ EOF
         return 1
     fi
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/src/corelib/global/qfloat16.h.orig c qtbase/src/corelib/global/qfloat16.h
 *** qtbase/src/corelib/global/qfloat16.h.orig	Wed Oct 13 20:09:19 2021
 --- qtbase/src/corelib/global/qfloat16.h	Wed Oct 13 20:09:50 2021
@@ -560,7 +560,7 @@ EOF
         warn "qt 5.14.2 for numeric-limits patch2 failed"
         return 1
     fi
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/src/corelib/text/qbytearraymatcher.h.orig c qtbase/src/corelib/text/qbytearraymatcher.h
 *** qtbase/src/corelib/text/qbytearraymatcher.h.orig	Wed Oct 13 20:11:58 2021
 --- qtbase/src/corelib/text/qbytearraymatcher.h	Wed Oct 13 20:12:21 2021
@@ -586,7 +586,7 @@ EOF
 function apply_qt_5142_cmath_patch
 {
     info "Patching qt 5.14.2 for qjp2handler cmath include"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp.orig qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp
 *** qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp.orig
 --- qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp
@@ -612,7 +612,7 @@ EOF
 function apply_qt_5142_linux_mesagl_patch
 {   
     info "Patching qt 5.14.2 for Linux and Mesa-as-GL"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
 *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig
 --- qtbase/mkspecs/linux-g++-64/qmake.conf
@@ -641,7 +641,7 @@ EOF
         return 1
     fi
     
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
 *** qtbase/mkspecs/linux-icc-64/qmake.conf.orig
 --- qtbase/mkspecs/linux-icc-64/qmake.conf
@@ -666,7 +666,7 @@ EOF
         return 1
     fi
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
 *** qtbase/mkspecs/common/linux.conf.orig
 --- qtbase/mkspecs/common/linux.conf
@@ -699,7 +699,7 @@ EOF
 function apply_qt_5142_linux_opengl_patch
 {
     info "Patching qt 5.14.2 for Linux and OpenGL"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
 *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig
 --- qtbase/mkspecs/linux-g++-64/qmake.conf
@@ -727,7 +727,7 @@ EOF
         return 1
     fi
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
 *** qtbase/mkspecs/linux-icc-64/qmake.conf.orig
 --- qtbase/mkspecs/linux-icc-64/qmake.conf
@@ -757,7 +757,7 @@ EOF
 function apply_qt_5142_macOS_1014_hunspell_patch
 {   
     info "Patching qt 5.14.2 for macOS 10.14 hunspell"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h.orig qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h
 *** qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h.orig
 --- qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h
@@ -784,7 +784,7 @@ EOF
         return 1
     fi
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -c qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp.orig qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp
 *** qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp.orig
 --- qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp

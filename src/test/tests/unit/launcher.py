@@ -177,6 +177,7 @@ for k in keys:
                         "linux-intel"     : "$PLATFORM",
                         "linux-x86_64"    : "$PLATFORM",
                         "darwin-i386"     : "$PLATFORM",
+                        "darwin-arm64"    : "$PLATFORM",
                         "darwin-x86_64"   : "$PLATFORM"}
 
         output = FilterLauncherOutput(output, replacements)
