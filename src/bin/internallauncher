@@ -2800,6 +2800,8 @@ class MainLauncher(object):
                 if mach == "x86_64":
                     supportedarches.append("darwin-x86_64")
                     supportedarches.append("darwin-i386")
+                elif mach == "arm64":
+                    supportedarches.append("darwin-arm64")
                 else:
                     supportedarches.append("darwin-i386")
             else:
@@ -2828,6 +2830,14 @@ class MainLauncher(object):
                     if procname != -1:
                         if "Intel Core Solo" in line or "Intel Core Duo" in line:
                             supportedarches.append("darwin-i386")
+                        else:
+                            supportedarches.append("darwin-x86_64")
+                            supportedarches.append("darwin-i386")
+                        break
+                    procname = line.find("Chip:")
+                    if procname != -1:
+                        if "Apple M" in line:
+                            supportedarches.append("darwin-arm64")
                         else:
                             supportedarches.append("darwin-x86_64")
                             supportedarches.append("darwin-i386")

@@ -71,6 +71,15 @@ function apply_advio_12_darwin_patch
     patch -p0 << \EOF
 --- AdvIO-1.2/configure	2006-02-14 05:19:56.000000000 -0800
 +++ AdvIO-1.2/configure.new	2024-02-09 16:28:49.000000000 -0800
+@@ -1003,7 +1003,7 @@
+ #line 1004 "configure"
+ #include "confdefs.h"
+ 
+-main(){return(0);}
++int main(){return(0);}
+ EOF
+ if { (eval echo configure:1009: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+   ac_cv_prog_cc_works=yes
 @@ -1897,11 +1897,12 @@
  #line 1898 "configure"
  #include "confdefs.h"
