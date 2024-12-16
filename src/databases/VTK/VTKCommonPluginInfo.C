@@ -69,6 +69,9 @@ using std::string;
 bool
 FindGEOSNestedElement(vtkXMLDataElement *el)
 {
+    if(el->GetNumberOfNestedElements() == 0)
+        return false;
+
     // check for Blocks with certain name attributes used by GEOS
     if(el->FindNestedElementWithNameAndAttribute("Block", "name","CellElementRegion") ||
        el->FindNestedElementWithNameAndAttribute("Block", "name","SurfaceElementRegion") ||
