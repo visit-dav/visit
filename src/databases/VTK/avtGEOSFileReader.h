@@ -61,7 +61,7 @@ class avtGEOSFileReader : public avtVTKFileReader
 
     int currentTS;
     bool haveReadRoot;
-    std::string primaryVar;
+    std::vector<std::string> registeredVars;
     std::string rootFile;
 
 };

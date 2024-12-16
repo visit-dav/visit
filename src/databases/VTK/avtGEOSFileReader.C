@@ -218,12 +218,22 @@ namespace GEOSInternal
         return int(groupNames.size());
     }
 
-    bool VarBelongsToBlock(const int blockNum, const string & var)
+    bool VarBelongsToBlock(const int blockNum, const vector<string> &vars,
+       const string &meshName="") 
     {
         int groupForThisBlock = GEOSInternal::GetGroupForBlock(blockNum);
         vector<string> vpg = varsPerGroup[groupForThisBlock];
-        auto it = std::find(vpg.begin(), vpg.end(), var);
-        return (it != vpg.end());
+        bool valid = true;
+        for (size_t i = 0; i < vars.size() && valid; ++i)
+        {
+            string var(vars[i]);
+            if(!meshName.empty() && (var == meshName || var == "domains"))
+            {
+                continue; 
+            }
+            valid = (std::find(vpg.begin(), vpg.end(), var) != vpg.end());
+        }
+        return valid;
     }
 }
 
@@ -325,9 +335,12 @@ avtGEOSFileReader::FreeUpResources(void)
 
 void
 avtGEOSFileReader::RegisterVariableList(const char* primary,
-                       const std::vector<CharStrRef> &)
+                       const std::vector<CharStrRef> &vars2nd)
 {
-    primaryVar=primary;
+    registeredVars.clear();
+    registeredVars.push_back(primary);
+    for(size_t i = 0; i < vars2nd.size(); ++i)
+        registeredVars.push_back(*vars2nd[i]);
 }
 
 // ****************************************************************************
@@ -737,11 +750,9 @@ avtGEOSFileReader::GetMesh(int domain, const char *meshname)
     // is registered with this domain, then retrieve it
     // otherwise return NULL:
 
-    if(ngroups > 1 && !primaryVar.empty() && 
-       primaryVar != meshname && 
-       primaryVar != "domains")
+    if(ngroups > 1 && !registeredVars.empty())
     { 
-        if(!GEOSInternal::VarBelongsToBlock(domain, primaryVar))
+        if(!GEOSInternal::VarBelongsToBlock(domain, registeredVars, string(meshname)))
             return nullptr;
     }
     return avtVTKFileReader::GetMesh(domain, meshname);
@@ -771,8 +782,8 @@ avtGEOSFileReader::GetVar(int domain, const char *varname)
     // is this var available for this domain?
     // if not return nullptr;
 
-    if(!primaryVar.empty() && string(varname) == primaryVar &&
-       !GEOSInternal::VarBelongsToBlock(domain, primaryVar))
+    if(!registeredVars.empty() &&  
+       !GEOSInternal::VarBelongsToBlock(domain, registeredVars))
     {
        return nullptr;
     }
