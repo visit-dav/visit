@@ -154,5 +154,47 @@ class avtPVD_MTMDFileFormat : public avtMTMDFileFormat
     avtPVDFileReader *reader;
 };
 
+// ****************************************************************************
+//  Class: avtGEOSFileFormat
+//
+//  Purpose:
+//      Reads in GEOS formatted .pvd (root) and .vtm files
+//
+//  Programmer: Katlheen Biagas 
+//  Creation:   Wed Dec 4, 2024 
+//
+// ****************************************************************************
+
+class avtGEOSFileReader;
+
+class avtGEOSFileFormat : public avtMTMDFileFormat
+{
+  public:
+                   avtGEOSFileFormat(const char *, const DBOptionsAttributes *);
+    virtual       ~avtGEOSFileFormat(); 
+
+    bool           HasInvariantMetaData(void) const override { return false;}
+    bool           HasInvariantSIL(void) const override { return false;}
+    int            GetNTimesteps(void) override;
+    void           GetTimes(std::vector<double> &) override;
+
+    vtkDataSet    *GetMesh(int, int, const char *) override;
+    vtkDataArray  *GetVar(int, int, const char *) override;
+    vtkDataArray  *GetVectorVar(int, int, const char *) override;
+
+    const char    *GetType(void) override;
+    void           FreeUpResources(void) override;  
+    void           ActivateTimestep(int ts) override;
+    void           RegisterVariableList(const char*,
+                       const std::vector<CharStrRef> &) override;
+
+  protected:
+
+    void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int) override;
+
+  private:
+    avtGEOSFileReader *reader;
+};
 
 #endif
+

@@ -3,16 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <VTKPluginInfo.h>
-
 #include <avtVTKFileFormat.h>
-#include <avtVTKOptions.h>
-
-#include <avtSTSDFileFormatInterface.h>
 #include <avtSTMDFileFormatInterface.h>
-#include <avtMTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
-
-using std::string;
+#include <avtVTKOptions.h>
 
 VTKCommonPluginInfo::VTKCommonPluginInfo() : CommonDatabasePluginInfo(), VTKGeneralPluginInfo()
 {
@@ -58,10 +52,75 @@ VTKCommonPluginInfo::GetDatabaseType()
 //    I changed the code so it switches the interface based on how many domains
 //    are present in the 1st file.
 //
-//    Kathleen Biagas, Fri Augus 13, 2021
+//    Kathleen Biagas, Fri August 13, 2021
 //    Add MTMD for .pvd file types.
 //
+//    Kathleen Biagas, Thu Dec 12, 2024 
+//    Added tests to see if .pvd is GEOS flavor.
+//
 // ****************************************************************************
+
+#include <FileFunctions.h>
+#include <vtkNew.h>
+#include <vtkXMLDataElement.h>
+#include <vtkXMLDataParser.h>
+using std::string;
+
+bool
+FindGEOSNestedElement(vtkXMLDataElement *el)
+{
+    // check for Blocks with certain name attributes used by GEOS
+    if(el->FindNestedElementWithNameAndAttribute("Block", "name","CellElementRegion") ||
+       el->FindNestedElementWithNameAndAttribute("Block", "name","SurfaceElementRegion") ||
+       el->FindNestedElementWithNameAndAttribute("Block", "name","ParticleElementRegion") ||
+       el->FindNestedElementWithNameAndAttribute("Block", "name","WellElementRegion") )
+    {
+        return true;
+    }
+    for(int i = 0; i < el->GetNumberOfNestedElements(); ++i)
+        return FindGEOSNestedElement(el->GetNestedElement(i));
+}
+
+
+bool
+CheckIfGEOS(const string &rootFile)
+{
+    vtkNew<vtkXMLDataParser> pvdParser;
+    pvdParser->SetFileName(rootFile.c_str());
+    if(pvdParser->Parse())
+    {
+        vtkXMLDataElement *root = pvdParser->GetRootElement();
+        if(root)
+        {
+            vtkXMLDataElement *datasetNode = root->LookupElementWithName("DataSet");
+            if(datasetNode) 
+            {
+                string fileName = datasetNode->GetAttribute("file");
+                size_t pos1 = fileName.find_last_of('.');
+                string ext1 = fileName.substr(pos1 + 1);
+                if(ext1 == "vtm")
+                {
+                    // extract dir from rootFile and prepend to fileName:
+                    string dir = FileFunctions::Dirname(rootFile);
+                    string file = dir + VISIT_SLASH_STRING + fileName;
+                    vtkNew<vtkXMLDataParser> vtmParser;
+                    vtmParser->SetFileName(file.c_str());
+                    if(!vtmParser->Parse())
+                        return false;
+
+                    vtkXMLDataElement *vtmRoot = vtmParser->GetRootElement();
+                    if(FindGEOSNestedElement(vtmRoot))
+                        return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+#include <avtSTSDFileFormatInterface.h>
+#include <avtMTMDFileFormatInterface.h>
 
 avtDatabase *
 VTKCommonPluginInfo::SetupDatabase(const char *const *list,
@@ -78,12 +137,16 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
 
         // Only using 1 timestepgroup
         avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[1];
-        ffl[0] = new avtPVD_MTMDFileFormat(fn.c_str(), readOptions);
+        if(CheckIfGEOS(fn))
+            ffl[0] = new avtGEOSFileFormat(fn.c_str(), readOptions);
+        else
+            ffl[0] = new avtPVD_MTMDFileFormat(fn.c_str(), readOptions);
         avtMTMDFileFormatInterface *inter = new avtMTMDFileFormatInterface(ffl, 1);
         db = new avtGenericDatabase(inter);
 
         return db;
     }
+
 
     // Figure out how many domains there are in the 1st file.
     avtVTKFileReader *reader = new avtVTKFileReader(list[0], readOptions);

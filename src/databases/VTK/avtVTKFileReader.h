@@ -21,6 +21,8 @@
 class avtDatabaseMetaData;
 class vtkDataArray;
 class vtkDataSet;
+class vtkDataSetAttributes;
+class vtkFieldData;
 class vtkRectilinearGrid;
 class vtkStructuredPoints;
 class vtkVisItXMLPDataReader;
@@ -97,6 +99,11 @@ class DBOptionsAttributes;
 //    ReadInFile so that avtPVDReader could override them.  Change pieceNames
 //    type to vector<string>. Change pieceExtents to vectr<array<int, 6>>.
 //
+//    Kathleen Biagas, Thu Dec 12, 2024
+//    Removed GetVectorVar, have all file formats in avtVTKFileFormat use
+//    GetVar in response to GetVectorVar calls since that is what this
+//    class was doing anyways.  Added helper functions for filling MetaData.
+//
 // ****************************************************************************
 
 class avtVTKFileReader
@@ -109,11 +116,10 @@ class avtVTKFileReader
 
     vtkDataSet   *GetMesh(int, const char *);
     vtkDataArray *GetVar(int, const char *);
-    vtkDataArray *GetVectorVar(int, const char *);
     void         *GetAuxiliaryData(const char *var, int,
                                    const char *type, void *, DestructorFunction &df);
 
-     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void  PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     bool          IsEmpty();
 
@@ -122,11 +128,12 @@ class avtVTKFileReader
     double        GetTime(void);
     int           GetCycle(void);
 
+
   protected:
     static int            INVALID_CYCLE;
     static double         INVALID_TIME;
 
-    char                 *filename;
+    std::string                filename;
 
     bool                  readInDataset;
 
@@ -139,13 +146,13 @@ class avtVTKFileReader
     std::vector<std::string> blockNames;
     std::vector<int>         groupIds;
 
-    std::vector<std::string> pieceFileNames;
-    vtkDataSet          **pieceDatasets;
+    std::vector<std::string>        pieceFileNames;
+    std::vector<vtkDataSet *>       pieceDatasets;
     std::vector<std::array<int,6> > pieceExtents;
 
     static const char    *MESHNAME;
     static const char    *VARNAME;
-    char                 *matvarname;
+    std::string           matvarname;
     std::vector<int>      matnos;
     std::vector<std::string> matnames;
     double                vtk_time;
@@ -172,10 +179,31 @@ class avtVTKFileReader
     void       AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering, int = 3,
                                       const double * = NULL);
+    void       AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *,
+                                      std::string, std::string,
+                                      avtCentering, int = 6);
     void       AddTensorVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering, int = 3);
+                                      std::string, avtCentering, int = 9);
     void       AddArrayVarToMetaData(avtDatabaseMetaData *, std::string, int,
                                      std::string, avtCentering);
+
+    // Helper methods for filling in Mesh, Variable, and Material MetaData.
+    void        FillMeshMetaData(avtDatabaseMetaData *md, vtkDataSet *ds,
+                    const std::string &meshName);
+
+    void        FillMaterialMetaData(avtDatabaseMetaData *md,
+                    const std::string &meshName, const std::string &varName,
+                    vtkDataArray *arr, vtkDataArray *materialIds);
+
+    void        FillSingleVarMetaData(avtDatabaseMetaData *md,
+                    const std::string &meshName, const std::string &varName,
+                    int ncomp, int dataType, avtCentering center);
+
+    void        FillVarsMetaData(avtDatabaseMetaData *md,
+                    vtkDataSetAttributes *atts,
+                    const std::string &meshName,
+                    avtCentering center,
+                    vtkFieldData *fieldData = nullptr);
 };
 
 
