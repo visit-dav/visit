@@ -104,7 +104,7 @@ function bv_silo_ensure
 function apply_silo_4102_fpzip_patch
 {
     info "Patching silo for fpzip DOMAIN and RANGE symbols"
-    patch --verbose -p0 <<EOF
+    patch --verbose -p0 << \EOF
 Index: src/fpzip/codec.h
 ===================================================================
 --- src/fpzip/codec.h   (revision 809)
