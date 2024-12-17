@@ -75,7 +75,7 @@ FindGEOSNestedElement(vtkXMLDataElement *el)
     // check for Blocks with certain name attributes used by GEOS
     if(el->FindNestedElementWithNameAndAttribute("Block", "name","CellElementRegion") ||
        el->FindNestedElementWithNameAndAttribute("Block", "name","SurfaceElementRegion") ||
-       el->FindNestedElementWithNameAndAttribute("Block", "name","ParticleElementRegion") ||
+       el->FindNestedElementWithNameAndAttribute("Block", "name","ParticleRegion") ||
        el->FindNestedElementWithNameAndAttribute("Block", "name","WellElementRegion") )
     {
         return true;

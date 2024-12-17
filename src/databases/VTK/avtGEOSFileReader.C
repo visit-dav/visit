@@ -227,7 +227,7 @@ namespace GEOSInternal
         for (size_t i = 0; i < vars.size() && valid; ++i)
         {
             string var(vars[i]);
-            if(!meshName.empty() && (var == meshName || var == "domains"))
+            if(!meshName.empty() && (var == meshName || var == "blocks"))
             {
                 continue; 
             }
@@ -630,6 +630,7 @@ avtGEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     if (pieceDatasets[0] == nullptr)
         ReadInDataset(0);
 
+    blockPieceName = "block";
     FillMeshMetaData(md, pieceDatasets[0], "mesh");
 
     if(ngroups == 1)
