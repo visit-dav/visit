@@ -223,7 +223,13 @@ def fixup_items(items,lib_maps,prefix_path):
                     shexe(dep_cmd)
 
 def main():
-    prefix_path = "darwin-x86_64"
+    if os.uname().machine == "x86_64":
+        prefix_path = "darwin-x86_64"
+    elif os.uname().machine == "arm64":
+        prefix_path = "darwin-arm64"
+    else:
+        print("[response from 'os.uname().machine' is not recognized]")
+        sys.exit(-1)
     if len(sys.argv) > 1:
         prefix_path = sys.argv[1]
     prefix_path = os.path.abspath(prefix_path)

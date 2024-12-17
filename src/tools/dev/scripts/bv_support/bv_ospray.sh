@@ -53,21 +53,34 @@ function bv_ospray_depends_on
 
 function bv_ospray_info
 {
-    export OSPRAY_VERSION=${OSPRAY_VERSION:-"3.0.0"}
-    export OSPRAY_FILE=${OSPRAY_FILE:-"ospray-${OSPRAY_VERSION}.tar.gz"}
-    export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
-    export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
-    export OSPRAY_SHA256_CHECKSUM="d8d8e632d77171c810c0f38f8d5c8387470ca19b75f5b80ad4d3d12007280288"
-    export OSPRAY_LIBS_FILE=${OSPRAY_LIBS_FILE:-"ospray-libs-${OSPRAY_VERSION}.tar.gz"}
-    export OSPRAY_LIBS_DIR=${OSPRAY_LIBS_DIR:-"${OSPRAY_LIBS_FILE%.tar*}"}
-    export OSPRAY_LIBS_SHA256_CHECKSUM="8ab33df7ea88d7eb3b9170fc3b6342e77cd105d9549db8bce31cddd5a0336f2f"
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        export OSPRAY_VERSION=${OSPRAY_VERSION:-"3.2.0"}
+        if [[ "$(uname -m)" == "x86_64" ]]; then
+            export OSPRAY_FILE=${OSPRAY_FILE:-"ospray-${OSPRAY_VERSION}.x86_64.macosx.zip"}
+            export OSPRAY_SHA256_CHECKSUM="073587a9fe4f985086e8d1e1c4749860ae81259e4806fe9475792e7864fe0e9c"
+        elif [[ "$(uname -m)" == "arm64" ]]; then
+            export OSPRAY_FILE=${OSPRAY_FILE:-"ospray-${OSPRAY_VERSION}.arm64.macosx.zip"}
+            export OSPRAY_SHA256_CHECKSUM="adcaf17e4ed4e98d707a49b07e6ad833029ccff24f45ce3ae33c73254f1ca6a7"
+        fi
+        # This isn't really a "source" dir because its pre-built binaries we're dealing with
+        export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.zip*}"}
+        export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
+    else
+        export OSPRAY_VERSION=${OSPRAY_VERSION:-"3.0.0"}
+        export OSPRAY_FILE=${OSPRAY_FILE:-"ospray-${OSPRAY_VERSION}.tar.gz"}
+        export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
+        export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
+        export OSPRAY_SHA256_CHECKSUM="d8d8e632d77171c810c0f38f8d5c8387470ca19b75f5b80ad4d3d12007280288"
+        export OSPRAY_LIBS_FILE=${OSPRAY_LIBS_FILE:-"ospray-libs-${OSPRAY_VERSION}.tar.gz"}
+        export OSPRAY_LIBS_DIR=${OSPRAY_LIBS_DIR:-"${OSPRAY_LIBS_FILE%.tar*}"}
+        export OSPRAY_LIBS_SHA256_CHECKSUM="8ab33df7ea88d7eb3b9170fc3b6342e77cd105d9549db8bce31cddd5a0336f2f"
+    fi
 }
 
 function bv_ospray_print
 {
     print "%s%s\n" "OSPRAY_FILE=" "${OSPRAY_FILE}"
     print "%s%s\n" "OSPRAY_VERSION=" "${OSPRAY_VERSION}"
-    print "%s%s\n" "OSPRAY_COMPATIBILITY_VERSION=" "${OSPRAY_COMPATIBILITY_VERSION}"
     print "%s%s\n" "OSPRAY_SRC_DIR=" "${OSPRAY_SRC_DIR}"
     print "%s%s\n" "OSPRAY_BUILD_DIR=" "${OSPRAY_BUILD_DIR}"
 }
@@ -89,7 +102,11 @@ function bv_ospray_host_profile
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_OSPRAY" == "no" ]]; then
             echo "SETUP_APP_VERSION(OSPRAY ${OSPRAY_VERSION})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH}/ospray)" >> $HOSTCONF
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            else
+                echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH}/ospray)" >> $HOSTCONF
+            fi
         else
             local _tmp_=$(basename ${OSPRAY_CONFIG_DIR})
             echo "SETUP_APP_VERSION(OSPRAY ${_tmp_:7})" >> $HOSTCONF
@@ -109,7 +126,9 @@ function bv_ospray_is_enabled
 function bv_ospray_ensure
 {
     if [[ "$DO_OSPRAY" == "yes" && "$USE_SYSTEM_OSPRAY" == "no" ]]; then
-        download_file ${OSPRAY_LIBS_FILE}
+        if [[ "$OPSYS" != "Darwin" ]]; then
+           download_file ${OSPRAY_LIBS_FILE}
+        fi
         ensure_built_or_ready "ospray" $OSPRAY_VERSION $OSPRAY_BUILD_DIR $OSPRAY_FILE $OSPRAY_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -207,6 +226,20 @@ function build_ospray
     if [[ $untarred_ospray == -1 ]] ; then
         warn "Unable to uncompress OSPRay source file. Giving Up!"
         return 1
+    fi
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # The above "untar" operation produced the pre-built binaries we need.
+        # Just install them now. Removing com.apple.quarantine attribute may
+        # trigger an email inquiry from LLNL cyber-security team. Just let them
+        # know its part of Intel software we use in our release.
+        pushd $OSPRAY_SRC_DIR 1>/dev/null 2>&1
+        find . -name '*.dylib' -exec xattr -d com.apple.quarantine {} \;
+        mkdir -p ${OSPRAY_INSTALL_DIR}
+        cp -R include lib ${OSPRAY_INSTALL_DIR}/.
+        info "Installed OSPRay from pre-built binaries. . . "
+        popd 1>/dev/null 2>&1
+        return 0
     fi
 
     #
