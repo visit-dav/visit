@@ -3425,6 +3425,22 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 {
     ENSURE_VIEWER_EXISTS();
 
+    static bool suspendGUIUpdates = false;
+
+    if (!strncmp(name, "SuspendGUIUpdates", 17) && t == Expression::Unknown)
+    {
+        suspendGUIUpdates = true;
+        return IntReturnValue(Synchronize());
+    }
+    if (!strncmp(name, "ResumeGUIUpdates", 16) && t == Expression::Unknown)
+    {
+        suspendGUIUpdates = false;
+        ExpressionList *list = GetViewerState()->GetExpressionList();
+        list->Notify();
+        GetViewerMethods()->ProcessExpressions();
+        return IntReturnValue(Synchronize());
+    }
+        
     char *exprName;
     char *exprDef;
     if (!PyArg_ParseTuple(args, "ss", &exprName, &exprDef))
@@ -3455,8 +3471,11 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
         }
 
         // Send the new list to the viewer.
-        list->Notify();
-        GetViewerMethods()->ProcessExpressions();
+        if (!suspendGUIUpdates)
+        {
+            list->Notify();
+            GetViewerMethods()->ProcessExpressions();
+        }
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3542,6 +3561,18 @@ STATIC PyObject *
 visit_DefineSpeciesExpression(PyObject *self, PyObject *args)
 {
     return ExpressionDefinitionHelper(args, "DefineSpeciesExpression", Expression::Species);
+}
+
+STATIC PyObject *
+visit_SuspendGUIUpdates(PyObject *self, PyObject *args)
+{
+    return ExpressionDefinitionHelper(args, "SuspendGUIUpdates", Expression::Unknown);
+}
+
+STATIC PyObject *
+visit_ResumeGUIUpdates(PyObject *self, PyObject *args)
+{
+    return ExpressionDefinitionHelper(args, "ResumeGUIUpdates", Expression::Unknown);
 }
 
 // ****************************************************************************
@@ -18680,6 +18711,11 @@ AddProxyMethods()
     AddMethod("WriteConfigFile",  visit_WriteConfigFile,
                                                     visit_WriteConfigFile_doc);
     AddMethod("ZonePick", visit_ZonePick, visit_ZonePick_doc);
+
+    AddMethod("SuspendGUIUpdates", visit_SuspendGUIUpdates,
+                                             visit_SuspendGUIUpdates_doc);
+    AddMethod("ResumeGUIUpdates", visit_ResumeGUIUpdates,
+                                             visit_ResumeGUIUpdates_doc);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the

@@ -1889,6 +1889,52 @@ return type : CLI_return_t
   DrawPlots()
 
 
+SuspendGUIUpdates
+-----------------
+
+**Synopsis:**
+
+::
+
+  SuspendGUIupdates() -> integer
+
+return type : CLI_return_t
+    The DefineVectorExpression function returns 1 on success and 0 on failure.
+
+**Description:**
+
+    SuspendGUIUpdates temporarily suspends updating the GUI after certain CLI
+    operations such as defining expressions. This is useful when defining many
+    expressions becuase updating the GUI after each new expression is defined
+    can really bog down performance. Use ResumeGUIUpdates to resume normal
+    behavior.
+
+**Example:**
+
+::
+
+  OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+  SuspendGUIUpdates()
+  for i in range(1000):
+      DefineScalarExpression("var%04d" % i, "d*%d" % i)
+  ResumeGUIUpdates()
+
+ResumeGUIUpdates
+----------------
+
+**Synopsis:**
+
+::
+
+  ResumeGUIupdates() -> integer
+
+return type : CLI_return_t
+    The DefineVectorExpression function returns 1 on success and 0 on failure.
+
+**Description:**
+
+    Undoes the effect of SuspendGUIUpdates.
+
 DeleteActivePlots
 -----------------
 

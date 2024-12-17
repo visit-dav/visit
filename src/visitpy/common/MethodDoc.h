@@ -54,6 +54,8 @@ extern const char *visit_DefineScalarExpression_doc;
 extern const char *visit_DefineSpeciesExpression_doc;
 extern const char *visit_DefineTensorExpression_doc;
 extern const char *visit_DefineVectorExpression_doc;
+extern const char *visit_SuspendGUIUpdates_doc;
+extern const char *visit_ResumeGUIUpdates_doc;
 extern const char *visit_DeleteActivePlots_doc;
 extern const char *visit_DeleteAllPlots_doc;
 extern const char *visit_DeleteDatabaseCorrelation_doc;
