@@ -1929,7 +1929,7 @@ ResumeGUIUpdates
   ResumeGUIupdates() -> integer
 
 return type : CLI_return_t
-    The DefineVectorExpression function returns 1 on success and 0 on failure.
+    The ResumeGUIUpdates function returns 1 on success and 0 on failure.
 
 **Description:**
 
