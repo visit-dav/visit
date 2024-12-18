@@ -1903,11 +1903,9 @@ return type : CLI_return_t
 
 **Description:**
 
-    SuspendGUIUpdates temporarily suspends updating the GUI after certain CLI
-    operations such as defining expressions. This is useful when defining many
-    expressions becuase updating the GUI after each new expression is defined
-    can really bog down performance. Use ResumeGUIUpdates to resume normal
-    behavior.
+    SuspendGUIUpdates temporarily suspends updating the GUI after certain CLI operations such as defining expressions.
+    This is useful when defining many expressions becuase updating the GUI after each new expression is defined can really bog down performance.
+    Use ResumeGUIUpdates to resume normal behavior.
 
 **Example:**
 
