@@ -1896,7 +1896,7 @@ SuspendGUIUpdates
 
 ::
 
-  SuspendGUIupdates() -> integer
+  SuspendGUIUpdates() -> integer
 
 return type : CLI_return_t
     The SuspendGUIUpdates function returns 1 on success and 0 on failure.
