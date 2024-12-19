@@ -15,5 +15,7 @@ AnnotationObject *PyTimeSliderObject_FromPyObject(PyObject *obj);
 PyObject         *PyTimeSliderObject_NewPyObject();
 PyObject         *PyTimeSliderObject_WrapPyObject(AnnotationObject *attr);
 
+std::string       PyTimeSliderObject_ToString(const AnnotationObject *, const char *);
+
 #endif
 

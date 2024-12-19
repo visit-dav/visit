@@ -15,5 +15,7 @@ AnnotationObject *PyText2DObject_FromPyObject(PyObject *obj);
 PyObject         *PyText2DObject_NewPyObject();
 PyObject         *PyText2DObject_WrapPyObject(AnnotationObject *attr);
 
+std::string       PyText2DObject_ToString(const AnnotationObject *, const char *);
+
 #endif
 

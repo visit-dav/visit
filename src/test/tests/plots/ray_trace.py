@@ -40,7 +40,7 @@ def test1(a):
 
     AddPlot("Volume", "d")
     vol_atts = VolumeAttributes()
-    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.rendererType = vol_atts.Composite
     vol_atts.smoothData = 1
     SetPlotOptions(vol_atts)
     DrawPlots()
@@ -118,7 +118,7 @@ def test2(a):
 
     AddPlot("Volume", "d")
     vol_atts = VolumeAttributes()
-    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.rendererType = vol_atts.Composite
     vol_atts.smoothData = 0
     SetPlotOptions(vol_atts)
     DrawPlots()
@@ -149,7 +149,7 @@ def test3(a):
 
     AddPlot("Volume", "Primitive Var _number_0")
     vol_atts = VolumeAttributes()
-    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.rendererType = vol_atts.Composite
     vol_atts.smoothData = 0
     vol_atts.useColorVarMin = 1
     vol_atts.colorVarMin = 22
@@ -180,7 +180,7 @@ def test3(a):
 
     AddPlot("Volume", "d")
     vol_atts = VolumeAttributes()
-    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.rendererType = vol_atts.Composite
     SetPlotOptions(vol_atts)
     DrawPlots()
     Test("ray_trace_08")

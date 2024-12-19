@@ -160,6 +160,10 @@ avtANSYSFileFormat::ActivateTimestep()
 // 
 //    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
 //    Changed 'supressed' to 'suppressed'.
+//
+//    Mark C. Miller, Tue Dec  3 17:47:41 PST 2024
+//    Explicitly set errno to zero so that calls to check its value after
+//    calling strtod() don't wind up using an old value.
 // ****************************************************************************
 
 int
@@ -299,18 +303,21 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             char *valstart = line + fieldStart;
             char *valend = valstart + fieldWidth;
             char *endptr = 0;
+            errno = 0;
             pt[2] = strtod(valstart, &endptr);
             CHECK_COORD_COMPONENT(pt[2]);
 
             valstart -= fieldWidth;
             valend -= fieldWidth;
             *valend = '\0';
+            errno = 0;
             pt[1] = strtod(valstart, &endptr);
             CHECK_COORD_COMPONENT(pt[1]);
 
             valstart -= fieldWidth;
             valend -= fieldWidth;
             *valend = '\0';
+            errno = 0;
             pt[0] = strtod(valstart, &endptr);
             CHECK_COORD_COMPONENT(pt[0]);
 #if 0

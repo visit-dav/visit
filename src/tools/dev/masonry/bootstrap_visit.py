@@ -1,3 +1,21 @@
+#
+# I usually work from a git worktree that is peer or child dir of the main `develop` repo
+# 1. Create a `release` folder there
+# 2. Ensure masonry options file is updated with correct
+#     - VisIt version number
+#     - Git branch name (or tag or commit hash)
+#     - architecture
+#     - keychain profile name
+#     - path to entitlements file
+#     - nthreads setting (for make -j)
+#
+# cd to `release` folder and run command like so...
+#
+#     env PATH=/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin python3 ../src/tools/dev/masonry/bootstrap_visit.py ../src/tools/dev/masonry/opts/mb-3.4.2-darwin-23-arm64-release.json
+#
+# First try will fail. When it does, cd to the build-mb-x.y.z-arch... folder and create a symlink
+# named `visit` to ../.. from that build folder and restart.
+#
 import sys
 import json
 import subprocess
@@ -219,11 +237,21 @@ def steps_install(opts,build_type,ctx):
                                    target="install")
     ctx.triggers["build"].append(a_make_install)
 
+########################################################################
+# NOTE: Mark C. Miller, Fri Dec 13 19:13:32 PST 2024
+# I believe CMake's `make package` target tries to also use hdiutil.
+# When make is invoked with a lot of parallelism (e.g. -j8 or more),
+# I believe a race condition occurs in CMake sometimes causing the
+# `make package` operation to fail during `hdiutil` command with
+# "Resource busy" error. So, here we override nthreads to force use
+# of just a single thread.
+########################################################################
+
 def steps_package(opts,build_type,ctx):
     build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
     a_make_pkg = "package_" + build_type.lower()
     ctx.actions[a_make_pkg] = make(description="building visit package",
-                                   nthreads=opts["make_nthreads"],
+                                   nthreads=1,
                                    working_dir=build_dir,
                                    target="package")
     ctx.triggers["build"].append(a_make_pkg)
@@ -237,7 +265,7 @@ def steps_package(opts,build_type,ctx):
                                             working_dir=build_dir,
                                             description="configuring visit (osx bundle)")
         ctx.actions[a_make_bundle] = make(description="packaging visit (osx bundle)",
-                                          nthreads=opts["make_nthreads"],
+                                          nthreads=1,
                                           working_dir=build_dir,
                                           target="package")
         ctx.triggers["build"].extend([a_cmake_bundle,
@@ -308,9 +336,11 @@ def steps_osx_dmg_sanity_checks(opts,build_type,ctx):
     test_base = "mount/VisIt.app/Contents/Resources/%s/%s" % (actual_version, 
                                                               opts["arch"])
     # stop at any error
+    final_dmg_name = "visit%s.darwin%s-%s.dmg" % (opts["version"].replace('.','_'),os.uname().release[0:2],os.uname().machine)
+
     test_cmd  = ""
-    test_cmd  += "hdiutil attach -mountpoint mount VisIt-%s.dmg\n"
-    test_dylib = "libvtkRenderingCore-*.*.dylib "
+    test_cmd  += "hdiutil attach -mountpoint mount %s\n" % final_dmg_name
+    test_dylib = "libvtkRenderingCore*.*.dylib "
     test_cmd += "otool -L %s/lib/%s | grep @exe\n"
     test_cmd += "otool -L %s/lib/%s | grep build-mb\n"
     test_cmd += "otool -L %s/lib/%s | grep build-mb | wc -l\n"
@@ -323,10 +353,10 @@ def steps_osx_dmg_sanity_checks(opts,build_type,ctx):
     # verify the app
     test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
     test_cmd += "hdiutil detach mount\n"
-    test_cmd = test_cmd %  (actual_version,test_base,test_dylib,
-                                           test_base,test_dylib,
-                                           test_base,test_dylib,
-                                           test_base,test_dylib)
+    test_cmd = test_cmd %  (test_base,test_dylib,
+                            test_base,test_dylib,
+                            test_base,test_dylib,
+                            test_base,test_dylib)
     saction = "osx_sanity_" + build_type.lower()
     ctx.actions[saction] = shell(cmd=test_cmd,
                                       description="sanity check",

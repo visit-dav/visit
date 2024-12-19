@@ -25,9 +25,9 @@
 
 # Use the VTK_DIR hint from the config-site .cmake file
 
-if(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
+if(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/vtk-config.cmake)
     set(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
-elseif(EXISTS ${VISIT_VTK_DIR}/lib64/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
+elseif(EXISTS ${VISIT_VTK_DIR}/lib64/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/vtk-config.cmake)
     set(VTK_DIR ${VISIT_VTK_DIR}/lib64/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
 endif()
 

@@ -853,96 +853,111 @@ TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
     return retval ? 0 : -1;
 }
 
-static std::string
-PyTimeSliderObject_ToString(PyObject *v)
+std::string
+PyTimeSliderObject_ToString(const AnnotationObject *atts, const char *prefix)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)v;
-    stringVector const &s = obj->data->GetText();
-    size_t textLen = s.size() > 0 ? s[0].length() : 0;
-    size_t memLen = textLen + 512;
-    char *memStr = new char[memLen];
-    size_t memIdx = 0;
+    std::string str;
+    char tmpStr[1000];
 
-    if(obj->data->GetVisible())
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "visible = 1\n");
+    if(atts->GetVisible())
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "visible = 0\n");
-    if(obj->data->GetActive())
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "active = 1\n");
-    else
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "active = 0\n");
-    {   const double *position = obj->data->GetPosition();
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "position = (");
-        for(int i = 0; i < 2; ++i)
-        {
-            memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "%g", position[i]);
-            if(i < 1)
-                memIdx += snprintf(&memStr[memIdx], memLen-memIdx, ", ");
-        }
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, ")\n");
-    }
-/*CUSTOM*/
-    const double *position2 = obj->data->GetPosition2();
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "width = %g\n", position2[0]);
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "height = %g\n", position2[1]);
-    const unsigned char *textColor = obj->data->GetTextColor().GetColor();
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
-    if(obj->data->GetUseForegroundForTextColor())
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "useForegroundForTextColor = 1\n");
-    else
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "useForegroundForTextColor = 0\n");
-/*CUSTOM*/
-    const unsigned char *startColor = obj->data->GetColor1().GetColor();
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "startColor = (%d, %d, %d, %d)\n", int(startColor[0]), int(startColor[1]), int(startColor[2]), int(startColor[3]));
-/*CUSTOM*/
-    const unsigned char *endColor = obj->data->GetColor2().GetColor();
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "endColor = (%d, %d, %d, %d)\n", int(endColor[0]), int(endColor[1]), int(endColor[2]), int(endColor[3]));
-/*CUSTOM*/
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "timeFormatString = \"%s\"\n", s.size() > 1 ? s[1].c_str() : "%%g");
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
+    str += tmpStr;
 
-/*CUSTOM*/
-    int timeDisplay = ((obj->data->GetIntAttribute1() >> 2) & 3);
+    if(atts->GetActive())
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
+    str += tmpStr;
+
+    const double *position = atts->GetPosition();
+    snprintf(tmpStr, 1000, "%sposition = (%g, %g)\n", prefix, position[0], position[1]);
+    str += tmpStr;
+
+
+    const double *position2 = atts->GetPosition2();
+    snprintf(tmpStr, 1000, "%swidth = %g\n", prefix, position2[0]);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%sheight = %g\n", prefix, position2[1]);
+    str += tmpStr;
+
+    const unsigned char *textColor = atts->GetTextColor().GetColor();
+    snprintf(tmpStr, 1000, "%stextColor = (%d, %d, %d, %d)\n", prefix,
+        int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    str += tmpStr;
+
+    if(atts->GetUseForegroundForTextColor())
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 0\n", prefix);
+    str += tmpStr;
+
+
+    const unsigned char *startColor = atts->GetColor1().GetColor();
+    snprintf(tmpStr, 1000, "%sstartColor = (%d, %d, %d, %d)\n", prefix,
+        int(startColor[0]), int(startColor[1]), int(startColor[2]), int(startColor[3]));
+    str += tmpStr;
+
+    const unsigned char *endColor = atts->GetColor2().GetColor();
+    snprintf(tmpStr, 1000, "%sendColor = (%d, %d, %d, %d)\n", prefix,
+        int(endColor[0]), int(endColor[1]), int(endColor[2]), int(endColor[3]));
+    str += tmpStr;
+
+    const stringVector &t = atts->GetText();
+    snprintf(tmpStr, 1000, "%stext = \"%s\"\n", prefix,  (t.size() > 0 ? t[0].c_str() : ""));
+    str += tmpStr;
+
+    snprintf(tmpStr, 1000, "%stimeFormatString = \"%s\"\n", prefix,  (t.size() > 1 ? t[1].c_str() : "%%g"));
+    str += tmpStr;
+
+
+    int timeDisplay = ((atts->GetIntAttribute1() >> 2) & 3);
     const char *timeDisplay_names = "AllFrames, FramesForPlot, StatesForPlot, UserSpecified";
     if(timeDisplay == 0)
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "timeDisplay = AllFrames  # %s\n", timeDisplay_names);
+        snprintf(tmpStr, 1000, "%stimeDisplay = AllFrames  # %s\n", prefix, timeDisplay_names);
     else if(timeDisplay == 1)
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "timeDisplay = FramesForPlot  # %s\n", timeDisplay_names);
+        snprintf(tmpStr, 1000, "%stimeDisplay = FramesForPlot  # %s\n", prefix, timeDisplay_names);
     else if(timeDisplay == 2)
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "timeDisplay = StatesForPlot  # %s\n", timeDisplay_names);
+        snprintf(tmpStr, 1000, "%stimeDisplay = StatesForPlot  # %s\n", prefix, timeDisplay_names);
     else
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "timeDisplay = UserSpecified  # %s\n", timeDisplay_names);
-    memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "percentComplete = %g\n", obj->data->GetDoubleAttribute1() * 100.);
-/*CUSTOM*/
-    int rounded = obj->data->GetIntAttribute1() & 1;
-    if(rounded)
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "rounded = 1\n");
-    else
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "rounded = 0\n");
-/*CUSTOM*/
-    int shaded = obj->data->GetIntAttribute1() & 2;
-    if(shaded)
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "shaded = 1\n");
-    else
-        memIdx += snprintf(&memStr[memIdx], memLen-memIdx, "shaded = 0\n");
+        snprintf(tmpStr, 1000, "%stimeDisplay = UserSpecified  # %s\n", prefix, timeDisplay_names);
+    str += tmpStr;
 
-    memStr[memIdx] = '\0';
-    std::string retval = memStr;
-    delete [] memStr;
-    return retval;
+    snprintf(tmpStr, 1000, "%spercentComplete = %g\n", prefix, atts->GetDoubleAttribute1() * 100.);
+    str += tmpStr;
+
+    int rounded = atts->GetIntAttribute1() & 1;
+    if(rounded)
+        snprintf(tmpStr, 1000, "%srounded = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%srounded = 0\n", prefix);
+    str += tmpStr;
+
+
+    int shaded = atts->GetIntAttribute1() & 2;
+    if(shaded)
+        snprintf(tmpStr, 1000, "%sshaded = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sshaded = 0\n", prefix);
+    str += tmpStr;
+
+    return str;
 }
 
 static int
 TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
 {
-    fprintf(fp, "%s", PyTimeSliderObject_ToString(v).c_str());
+    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)v;
+    fprintf(fp, "%s", PyTimeSliderObject_ToString(obj->data, "").c_str());
     return 0;
 }
 
 PyObject *
 TimeSliderObject_str(PyObject *v)
 {
-    return PyString_FromString(PyTimeSliderObject_ToString(v).c_str());
+    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)v;
+    return PyString_FromString(PyTimeSliderObject_ToString(obj->data, "").c_str());
 }
 
 //

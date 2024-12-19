@@ -113,7 +113,7 @@ def TestVolumeScaling():
     SetPlotOptions(volAtts)
     Test("volumeScaling_08")
 
-    volAtts.rendererType = volAtts.RayCasting
+    volAtts.rendererType = volAtts.Composite
     volAtts.scaling = volAtts.Linear
     volAtts.lightingFlag = 0
     SetPlotOptions(volAtts)
@@ -204,7 +204,7 @@ def TestOpacityAttenuation():
     volAtts = VolumeAttributes()
     volAtts.lightingFlag = 0
     volAtts.opacityAttenuation = 1
-    volAtts.rendererType = volAtts.RayCasting
+    volAtts.rendererType = volAtts.Composite
     SetPlotOptions(volAtts)
     DrawPlots()
     Test("opacityAttenuation_01")
@@ -214,7 +214,7 @@ def TestOpacityAttenuation():
     #
     volAtts = VolumeAttributes()
     volAtts.lightingFlag = 0
-    volAtts.rendererType = volAtts.RayCasting
+    volAtts.rendererType = volAtts.Composite
     volAtts.opacityAttenuation = .12
     SetPlotOptions(volAtts)
     DrawPlots()
@@ -372,7 +372,7 @@ def TestVolumeSampling():
     AddPlot("Volume", "hardyglobal")
     v = VolumeAttributes()
     v.lightingFlag = 0
-    v.rendererType = v.RayCasting
+    v.rendererType = v.Composite
     v.sampling = v.KernelBased
     ct = GetColorTable("hot_desaturated")
     v.SetColorControlPoints(ct)
@@ -429,7 +429,7 @@ def TestGradientLightingReduction():
     #
     v = VolumeAttributes()
     v.lightingFlag = 1
-    v.rendererType = v.RayCasting
+    v.rendererType = v.Composite
     v.sampling     = v.Trilinear
 
     v.lowGradientLightingReduction = v.Lower
@@ -621,7 +621,7 @@ def TestCommandRecording():
     VolumeAtts.opacityVarMax = 0
     VolumeAtts.smoothData = 0
     VolumeAtts.samplesPerRay = 500
-    VolumeAtts.rendererType = VolumeAtts.Default
+    VolumeAtts.rendererType = VolumeAtts.Serial
     VolumeAtts.gradientType = VolumeAtts.SobelOperator
     VolumeAtts.scaling = VolumeAtts.Linear
     VolumeAtts.skewFactor = 1

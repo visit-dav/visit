@@ -71,7 +71,8 @@ def main():
     res["src"] = {}
     ver_underscores = ver.replace(".","_")
     exe_files = [ "VisIt-%s.dmg" % ver,
-                  "visit%s.darwin-x86_64.tar.gz" % ver_underscores,
+                  "visit%s.darwin22-x86_64.tar.gz" % ver_underscores,
+                  "visit%s.darwin23-arm64.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-debian10.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-debian11.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-debian12.tar.gz" % ver_underscores,

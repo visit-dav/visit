@@ -45,10 +45,10 @@ function bv_silo_depends_on
 function bv_silo_info
 {
     export SILO_VERSION=${SILO_VERSION:-"4.10.2"}
-    export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
+    export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}-w-unix-line-endings.tar.gz"}
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
-    export SILO_SHA256_CHECKSUM="3af87e5f0608a69849c00eb7c73b11f8422fa36903dd14610584506e7f68e638"
+    export SILO_SHA256_CHECKSUM="db5e4fb6a4c313b9c596f09df307659079d51c36f013933dd957fe9412d37761"
 }
 
 function bv_silo_print
@@ -104,11 +104,11 @@ function bv_silo_ensure
 function apply_silo_4102_fpzip_patch
 {
     info "Patching silo for fpzip DOMAIN and RANGE symbols"
-    patch --verbose -p0 <<EOF
+    patch --verbose -p0 << \EOF
 Index: src/fpzip/codec.h
 ===================================================================
---- src/fpzip/codec.h	(revision 809)
-+++ src/fpzip/codec.h	(working copy)
+--- src/fpzip/codec.h   (revision 809)
++++ src/fpzip/codec.h   (working copy)
 @@ -16,13 +16,13 @@
  // identity map for integer arithmetic
  template <typename T, unsigned width>
@@ -130,8 +130,8 @@ Index: src/fpzip/codec.h
  
 Index: src/fpzip/pcdecoder.inl
 ===================================================================
---- src/fpzip/pcdecoder.inl	(revision 809)
-+++ src/fpzip/pcdecoder.inl	(working copy)
+--- src/fpzip/pcdecoder.inl (revision 809)
++++ src/fpzip/pcdecoder.inl (working copy)
 @@ -19,7 +19,7 @@
  T PCdecoder<T, M, false>::decode(T pred, unsigned context)
  {
@@ -152,8 +152,8 @@ Index: src/fpzip/pcdecoder.inl
      unsigned k = s - bias - 1;
 Index: src/fpzip/pcencoder.inl
 ===================================================================
---- src/fpzip/pcencoder.inl	(revision 809)
-+++ src/fpzip/pcencoder.inl	(working copy)
+--- src/fpzip/pcencoder.inl (revision 809)
++++ src/fpzip/pcencoder.inl (working copy)
 @@ -18,7 +18,7 @@
  T PCencoder<T, M, false>::encode(T real, T pred, unsigned context)
  {
@@ -174,8 +174,8 @@ Index: src/fpzip/pcencoder.inl
    // compute (-1)^s (2^k + m) = r - p, entropy code (s, k),
 Index: src/fpzip/pcmap.h
 ===================================================================
---- src/fpzip/pcmap.h	(revision 809)
-+++ src/fpzip/pcmap.h	(working copy)
+--- src/fpzip/pcmap.h   (revision 809)
++++ src/fpzip/pcmap.h   (working copy)
 @@ -14,53 +14,53 @@
  // specialized for integer-to-integer map
  template <typename T, unsigned width>
@@ -265,8 +265,8 @@ Index: src/fpzip/pcmap.h
  #include "pcmap.inl"
 Index: src/fpzip/pcmap.inl
 ===================================================================
---- src/fpzip/pcmap.inl	(revision 809)
-+++ src/fpzip/pcmap.inl	(working copy)
+--- src/fpzip/pcmap.inl (revision 809)
++++ src/fpzip/pcmap.inl (working copy)
 @@ -3,12 +3,12 @@
  PCmap<float, width, void>::fcast(float d) const
  {
@@ -365,8 +365,8 @@ Index: src/fpzip/pcmap.inl
    return icast(r);
 Index: src/fpzip/read.cpp
 ===================================================================
---- src/fpzip/read.cpp	(revision 809)
-+++ src/fpzip/read.cpp	(working copy)
+--- src/fpzip/read.cpp  (revision 809)
++++ src/fpzip/read.cpp  (working copy)
 @@ -103,7 +103,7 @@
  {
    // initialize decompressor
@@ -378,8 +378,8 @@ Index: src/fpzip/read.cpp
    PCdecoder<U, UMAP>* fd = new PCdecoder<U, UMAP>(rd, &rm);
 Index: src/fpzip/write.cpp
 ===================================================================
---- src/fpzip/write.cpp	(revision 809)
-+++ src/fpzip/write.cpp	(working copy)
+--- src/fpzip/write.cpp (revision 809)
++++ src/fpzip/write.cpp (working copy)
 @@ -103,7 +103,7 @@
  {
    // initialize compressor
@@ -454,6 +454,7 @@ function build_silo
     #
     info "Configuring Silo . . ."
     cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
+
     apply_silo_patch || return 1
     info "Invoking command to configure Silo"
     if [[ "$DO_HDF5" == "yes" ]] ; then
