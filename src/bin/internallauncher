@@ -3315,6 +3315,7 @@ class MainLauncher(object):
         #
         osmesa_gl_dir = os.path.join(self.visitlibdir,"osmesa")
         osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libGL.so.1")
+        osmesa_osmesa_lib = os.path.join(self.visitlibdir,"libOSMesa.so.8")
         #
         # if we have osmesa, use it for the engine & viewer -nowin
         #
@@ -3332,6 +3333,18 @@ class MainLauncher(object):
                 SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
         elif self.generalArgs.osmesa:
             self.error("Can't launch using osmesa. '-osmesa' specified, but the osmesa library is not available.")
+        #
+        #
+        # Here is what is possible to force use of vtkOSOpenGLRenderWindow
+        # Not sure this is the best path, it will force everyone to use OSMesa
+        # when they might want to use EGL.
+        #
+        #elif os.path.isfile(osmesa_osmesa_lib):
+        #    # will need only this if-path and not the above ones when we remove support for VTK < 9.4
+        #    # set env var telling VTK we want to use vtkOSOpenGLRenderWindow
+        #    if ( (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
+        #         (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
+        #        SETENV("VTK_DEFAULT_OPENGL_WINDOW", "vtkOSOpenGLRenderWindow")
 
     ############################################################################
     # Method: PrintEnvironment
