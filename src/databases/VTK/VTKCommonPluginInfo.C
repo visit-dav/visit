@@ -82,11 +82,25 @@ FindGEOSNestedElement(vtkXMLDataElement *el)
     }
     for(int i = 0; i < el->GetNumberOfNestedElements(); ++i)
         return FindGEOSNestedElement(el->GetNestedElement(i));
+
+    return false;
+}
+
+bool
+CheckIfGEOSVTM(const string &vtmFile)
+{
+    vtkNew<vtkXMLDataParser> vtmParser;
+    vtmParser->SetFileName(vtmFile.c_str());
+    if(!vtmParser->Parse())
+        return false;
+
+    vtkXMLDataElement *vtmRoot = vtmParser->GetRootElement();
+    return FindGEOSNestedElement(vtmRoot);
 }
 
 
 bool
-CheckIfGEOS(const string &rootFile)
+CheckIfGEOSPVD(const string &rootFile)
 {
     vtkNew<vtkXMLDataParser> pvdParser;
     pvdParser->SetFileName(rootFile.c_str());
@@ -106,14 +120,7 @@ CheckIfGEOS(const string &rootFile)
                     // extract dir from rootFile and prepend to fileName:
                     string dir = FileFunctions::Dirname(rootFile);
                     string file = dir + VISIT_SLASH_STRING + fileName;
-                    vtkNew<vtkXMLDataParser> vtmParser;
-                    vtmParser->SetFileName(file.c_str());
-                    if(!vtmParser->Parse())
-                        return false;
-
-                    vtkXMLDataElement *vtmRoot = vtmParser->GetRootElement();
-                    if(FindGEOSNestedElement(vtmRoot))
-                        return true;
+                    return CheckIfGEOSVTM(file);
                 }
             }
         }
@@ -140,7 +147,7 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
 
         // Only using 1 timestepgroup
         avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[1];
-        if(CheckIfGEOS(fn))
+        if(CheckIfGEOSPVD(fn))
             ffl[0] = new avtGEOSFileFormat(fn.c_str(), readOptions);
         else
             ffl[0] = new avtPVD_MTMDFileFormat(fn.c_str(), readOptions);
@@ -148,6 +155,27 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
         db = new avtGenericDatabase(inter);
 
         return db;
+    }
+    else if (ext == "vtm")
+    {
+        if(CheckIfGEOSVTM(fn))
+        {
+            dbType = DB_TYPE_STMD;
+            avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
+            avtGEOSFileReader *reader = new avtGEOSFileReader(list[0], readOptions);
+            for (int i = 0; i < nList; i++)
+            {
+                if(i == 0)
+                    ffl[i] = new avtGEOS_STMDFileFormat(list[i], readOptions, reader);
+                else
+                    ffl[i] = new avtGEOS_STMDFileFormat(list[i], readOptions);
+            }
+            avtSTMDFileFormatInterface *inter
+               = new avtSTMDFileFormatInterface(ffl, nList);
+            db = new avtGenericDatabase(inter);
+
+            return db;
+        }
     }
 
 

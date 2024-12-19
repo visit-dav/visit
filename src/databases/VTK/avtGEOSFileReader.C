@@ -257,6 +257,15 @@ avtGEOSFileReader::avtGEOSFileReader(const char *filename, const DBOptionsAttrib
 {
     currentTS = -1;    
     haveReadRoot = false;
+    size_t pos = rootFile.find_last_of('.');
+    string ext = rootFile.substr(pos+1);
+    rootIsPVD = (ext == "pvd");
+    if(!rootIsPVD)
+    {
+       baseDir = FileFunctions::Dirname(rootFile) + VISIT_SLASH_STRING;
+       string baseName = FileFunctions::Basename(rootFile);
+       timeStepFileNames.push_back(baseName);
+    }
 }
 
 // ****************************************************************************
@@ -359,78 +368,80 @@ avtGEOSFileReader::RegisterVariableList(const char* primary,
 void
 avtGEOSFileReader::ReadRootFile()
 {
-    vtkNew<vtkXMLDataParser> pvdParser;
-    baseDir = FileFunctions::Dirname(rootFile) + VISIT_SLASH_STRING;
-    string errorMessage;
-
-    pvdParser->SetFileName(rootFile.c_str());
-
-    if (!pvdParser->Parse())
+    if(rootIsPVD)
     {
-        errorMessage = "Error parsing file: " + rootFile;
-        EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
-    }
+        vtkNew<vtkXMLDataParser> pvdParser;
+        baseDir = FileFunctions::Dirname(rootFile) + VISIT_SLASH_STRING;
+        string errorMessage;
 
-    vtkXMLDataElement *root = pvdParser->GetRootElement();
-    if (!root)
-    {
-        errorMessage = "Error retrieving RootElement after parsing file.";
-        EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
-    }
-    string rootName(root->GetName());
-    if (rootName != "VTKFile")
-    {
-        errorMessage = rootFile + "does not contain 'VTKFile' tag.";
-        EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
-    }
+        pvdParser->SetFileName(rootFile.c_str());
 
-    string fType = root->GetAttribute("type");
-    if (fType != "Collection")
-    {
-        errorMessage = string("VTKFile type: ") +
-                      fType + string(" currently not supported.");
-        EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
-    }
-
-    vtkXMLDataElement *collectionNode = root->GetNestedElement(0);
-    if (collectionNode->GetName() != fType)
-    {
-        errorMessage = "First nested element doesn't match " + fType;
-        EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
-    }
-
-    for (int i = 0; i < collectionNode->GetNumberOfNestedElements(); ++i)
-    {
-        vtkXMLDataElement *el = collectionNode->GetNestedElement(i);
-        if (string(el->GetName()) == "DataSet")
+        if (!pvdParser->Parse())
         {
-            if (el->GetAttribute("file") == 0)
-            {
-                debug3 << "DataSet element " << i << " does not have "
-                       << "`file` element, ignoring." << endl;
-                continue;
-            }
-            if (el->GetAttribute("timestep") == 0)
-            {
-                debug3 << "DataSet element " << i << " does not have "
-                       << "`timestep` element, ignoring." << endl;
-                continue;
-            }
-            timeStepFileNames.push_back(el->GetAttribute("file"));
-            double t;
-            el->GetScalarAttribute("timestep", t);
-            timeSteps.push_back(t);
+            errorMessage = "Error parsing file: " + rootFile;
+            EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
         }
-    }
-    if(timeSteps.empty())
-    {
-        errorMessage = string("Error retrieving file and/or timestep")
-                   + string(" attributes from ") + string(rootFile);
-        EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
-    }
-    haveReadRoot = true;
-}
 
+        vtkXMLDataElement *root = pvdParser->GetRootElement();
+        if (!root)
+        {
+            errorMessage = "Error retrieving RootElement after parsing file.";
+            EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
+        }
+        string rootName(root->GetName());
+        if (rootName != "VTKFile")
+        {
+            errorMessage = rootFile + "does not contain 'VTKFile' tag.";
+            EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
+        }
+
+        string fType = root->GetAttribute("type");
+        if (fType != "Collection")
+        {
+            errorMessage = string("VTKFile type: ") +
+                          fType + string(" currently not supported.");
+            EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
+        }
+
+        vtkXMLDataElement *collectionNode = root->GetNestedElement(0);
+        if (collectionNode->GetName() != fType)
+        {
+            errorMessage = "First nested element doesn't match " + fType;
+            EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
+        }
+
+        for (int i = 0; i < collectionNode->GetNumberOfNestedElements(); ++i)
+        {
+            vtkXMLDataElement *el = collectionNode->GetNestedElement(i);
+            if (string(el->GetName()) == "DataSet")
+            {
+                if (el->GetAttribute("file") == 0)
+                {
+                    debug3 << "DataSet element " << i << " does not have "
+                       << "`file` element, ignoring." << endl;
+                    continue;
+                }
+                if (el->GetAttribute("timestep") == 0)
+                {
+                    debug3 << "DataSet element " << i << " does not have "
+                           << "`timestep` element, ignoring." << endl;
+                    continue;
+                }
+                timeStepFileNames.push_back(el->GetAttribute("file"));
+                double t;
+                el->GetScalarAttribute("timestep", t);
+                timeSteps.push_back(t);
+            }
+        }
+        if(timeSteps.empty())
+        {
+            errorMessage = string("Error retrieving file and/or timestep")
+                       + string(" attributes from ") + string(rootFile);
+            EXCEPTION2(InvalidFilesException, rootFile, errorMessage);
+        }
+        haveReadRoot = true;
+    }
+}
 
 
 // ****************************************************************************

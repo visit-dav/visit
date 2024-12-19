@@ -49,7 +49,6 @@ class avtGEOSFileReader : public avtVTKFileReader
 
     void           ReadInFile(int) override;
 
-
   private:
     void          ReadRootFile(void);
     void          ReadTimeStepFile(int ts);
@@ -61,6 +60,7 @@ class avtGEOSFileReader : public avtVTKFileReader
 
     int currentTS;
     bool haveReadRoot;
+    bool rootIsPVD;
     std::vector<std::string> registeredVars;
     std::string rootFile;
 

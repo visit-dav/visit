@@ -165,7 +165,7 @@ class avtPVD_MTMDFileFormat : public avtMTMDFileFormat
 //
 // ****************************************************************************
 
-class avtGEOSFileReader;
+#include <avtGEOSFileReader.h>
 
 class avtGEOSFileFormat : public avtMTMDFileFormat
 {
@@ -189,12 +189,63 @@ class avtGEOSFileFormat : public avtMTMDFileFormat
     void           RegisterVariableList(const char*,
                        const std::vector<CharStrRef> &) override;
 
+    void          *GetAuxiliaryData(const char *, int, int, const char *,
+                                    void *, DestructorFunction &);
   protected:
 
     void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int) override;
 
   private:
     avtGEOSFileReader *reader;
+};
+
+
+// ****************************************************************************
+//  Class: avtGEOS_STMDFileFormat
+//
+//  Purpose:
+//      Reads in GEOS_STMD (single or grouped .vtm) files as a plugin to VisIt.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   December 17, 2024
+//
+// ****************************************************************************
+
+class avtGEOS_STMDFileFormat : public avtSTMDFileFormat
+{
+public:
+                   avtGEOS_STMDFileFormat(const char *filename,
+                                          const DBOptionsAttributes *);
+                   avtGEOS_STMDFileFormat(const char *filename,
+                                          const DBOptionsAttributes *,
+                                          avtGEOSFileReader *r);
+    virtual       ~avtGEOS_STMDFileFormat();
+
+    bool           HasInvariantMetaData(void) const override { return false;}
+    bool           HasInvariantSIL(void) const override { return false;}
+    bool           HasVarsDefinedOnSubMeshes(void) override { return true;}
+    void           RegisterVariableList(const char*,
+                       const std::vector<CharStrRef> &) override;
+
+    const char    *GetType(void) override;
+    void           FreeUpResources(void) override;
+
+    double         GetTime(void) override;
+    int            GetCycle(void) override { return INVALID_CYCLE;}
+
+    void           PopulateDatabaseMetaData(avtDatabaseMetaData *) override;
+
+    vtkDataSet    *GetMesh(int domain, const char *) override;
+    vtkDataArray  *GetVar(int domain, const char *) override;
+    vtkDataArray  *GetVectorVar(int domain, const char *) override;
+
+    void          *GetAuxiliaryData(const char *var, int domain,
+                       const char *type, void *,
+                       DestructorFunction &df) override;
+
+protected:
+    avtGEOSFileReader *reader;
+
 };
 
 #endif
