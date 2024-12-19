@@ -3429,16 +3429,20 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 
     if (!strncmp(name, "SuspendGUIUpdates", 17) && t == Expression::Unknown)
     {
+        bool suspendGUIUpdatesOld = suspendGUIUpdates;
+        NO_ARGUMENTS();
         suspendGUIUpdates = true;
-        return IntReturnValue(Synchronize());
+        return PyInt_FromLong(long(suspendGUIUpdatesOld));
     }
     if (!strncmp(name, "ResumeGUIUpdates", 16) && t == Expression::Unknown)
     {
+        bool suspendGUIUpdatesOld = suspendGUIUpdates;
+        NO_ARGUMENTS();
         suspendGUIUpdates = false;
         ExpressionList *list = GetViewerState()->GetExpressionList();
         list->Notify();
         GetViewerMethods()->ProcessExpressions();
-        return IntReturnValue(Synchronize());
+        return PyInt_FromLong(long(suspendGUIUpdatesOld));
     }
         
     char *exprName;

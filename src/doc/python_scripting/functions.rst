@@ -1899,7 +1899,9 @@ SuspendGUIUpdates
   SuspendGUIUpdates() -> integer
 
 return type : CLI_return_t
-    The SuspendGUIUpdates function returns 1 on success and 0 on failure.
+    The SuspendGUIUpdates function returns whatever the preceding state was.
+    If the preceding state was that GUI updates were suspended, it returns a 1.
+    Otherwise, it returns a 0.
 
 **Description:**
 
@@ -1927,7 +1929,9 @@ ResumeGUIUpdates
   ResumeGUIupdates() -> integer
 
 return type : CLI_return_t
-    The ResumeGUIUpdates function returns 1 on success and 0 on failure.
+    The ResumeGUIUpdates function returns whatever the preceding state was.
+    If the preceding state was that GUI updates were suspended, it returns a 1.
+    Otherwise, it returns a 0.
 
 **Description:**
 
