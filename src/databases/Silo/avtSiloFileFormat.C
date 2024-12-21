@@ -90,6 +90,17 @@
 #include <string>
 #include <vector>
 
+#ifndef DB_ZONETYPE_QUAD_BEAM
+// Define fake elts for avoiding ifdef all the time
+#define DB_ZONETYPE_QUAD_BEAM      11
+#define DB_ZONETYPE_QUAD_TRIANGLE  25
+#define DB_ZONETYPE_QUAD_QUAD      26
+#define DB_ZONETYPE_QUAD_TET      118
+#define DB_ZONETYPE_QUAD_PYRAMID  120
+#define DB_ZONETYPE_QUAD_PRISM    113
+#define DB_ZONETYPE_QUAD_HEX      116
+#endif
+
 
 using std::map;
 using std::set;
@@ -6867,6 +6878,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                 int edge[4][2];
                 switch (zl->shapetype[seg])
                 {
+                    case DB_ZONETYPE_QUAD_TRIANGLE:
                     case DB_ZONETYPE_TRIANGLE:
                     {
                         edge[0][0] = zl->nodelist[nlIdx+0];
@@ -6877,6 +6889,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         edge[2][1] = zl->nodelist[nlIdx+0];
                         nedges = 3;
                     }
+                    case DB_ZONETYPE_QUAD_QUAD:
                     case DB_ZONETYPE_QUAD:
                     {
                         edge[0][0] = zl->nodelist[nlIdx+0];
@@ -6984,6 +6997,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                 int face[6][4];
                 switch (zl->shapetype[seg])
                 {
+                    case DB_ZONETYPE_QUAD_TET:
                     case DB_ZONETYPE_TET:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -7004,6 +7018,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[3][3] = -1;
                         nfaces = 4;
                     }
+                    case DB_ZONETYPE_QUAD_PYRAMID:
                     case DB_ZONETYPE_PYRAMID:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -7028,6 +7043,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[4][3] = -1;
                         nfaces = 5;
                     }
+                    case DB_ZONETYPE_QUAD_PRISM:
                     case DB_ZONETYPE_PRISM:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -7052,6 +7068,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[4][3] = zl->nodelist[nlIdx+3];
                         nfaces = 5;
                     }
+                    case DB_ZONETYPE_QUAD_HEX:
                     case DB_ZONETYPE_HEX:
                     {
                         face[0][0] = zl->nodelist[nlIdx+0];
@@ -10704,7 +10721,80 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
-                    for (k = 0 ; k < (size_t)shapesize ; k++)
+                    int nblinnod = 0 ;
+#ifdef DB_ZONETYPE_QUAD_BEAM
+                    // Handle quadratic elements assuming the first nodes are in Silo convention.
+                    // This is to be more easily compatible with an external face extractor that would consider only
+                    // the first linear nodes. This is not an issue for both TETs and HEXs.
+                    switch (vtk_zonetype)
+                    {
+                    case VTK_QUADRATIC_WEDGE:
+                    {
+                        nblinnod = 6 ;
+                        vtkIdType vtk_wedge[nblinnod];
+                        TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
+                        for (k = 0 ; k < nblinnod ; k++)
+                        {
+                            *nl++ = vtk_wedge[k]-origin;
+                        }
+                        break ;
+                    }
+                    case VTK_QUADRATIC_PYRAMID:
+                    {
+                        nblinnod = 5 ;
+                        vtkIdType vtk_pyramid[nblinnod];
+                        TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
+                        for (k = 0 ; k < nblinnod ; k++)
+                        {
+                            *nl++ = vtk_pyramid[k]-origin;
+                        }
+                        break ;
+                    }
+                    case VTK_QUADRATIC_TETRA:
+                    {
+                        nblinnod = 4 ;
+                        // Apply the same logic for Silo quadratic tetras : make sure linear nodes are in the Silo convention,
+                        // i.e. not the VTK one.
+                        // Practically, this means that the user may input tetras into Silo using VTK convention without issue.
+                        if (firstTet)
+                        {
+                            firstTet = false;
+                            tetsAreInverted = TetIsInverted(nodelist, ugrid);
+                            static bool haveIssuedWarning = false; (void) haveIssuedWarning;
+                            if (tetsAreInverted)
+                            {
+                                haveIssuedWarning = true;
+                                char msg[1024];
+                                snprintf(msg, sizeof(msg), "An examination of the first quad tet "
+                                         "element in this mesh indicates that the node order is "
+                                         "inverted from Silo's standard conventions. All tets are "
+                                         "being automatically re-ordered.\n"
+                                         "Further messages of this issue will be suppressed.");
+                                avtCallback::IssueWarning(msg);
+                            }
+                        }
+
+                        vtkIdType vtk_tetra[nblinnod];
+                        if (tetsAreInverted)
+                        {
+                            for (k = 0 ; k < 4 ; k++)
+                                vtk_tetra[k] = nodelist[k];
+                        }
+                        else
+                        {
+                            TranslateSiloTetrahedronToVTKTetrahedron(nodelist,
+                                                                     vtk_tetra);
+                        }
+
+                        for (k = 0 ; k < nblinnod ; k++)
+                        {
+                            *nl++ = vtk_tetra[k]-origin;
+                        }
+                        break ;
+                    }
+                    }
+#endif
+                    for (k = nblinnod ; k < (size_t)shapesize ; k++)
                         *nl++ = *(nodelist+k) - origin;
                 }
                 else if (vtk_zonetype == VTK_POLYGON)
