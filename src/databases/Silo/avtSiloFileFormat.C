@@ -16650,6 +16650,29 @@ SiloZoneTypeToVTKZoneType(int zonetype)
       case DB_ZONETYPE_BEAM:
         vtk_zonetype = VTK_LINE;
         break;
+#ifdef DB_ZONETYPE_QUAD_BEAM
+      case DB_ZONETYPE_QUAD_BEAM:
+        vtk_zonetype = VTK_QUADRATIC_EDGE;
+        break;
+      case DB_ZONETYPE_QUAD_TRIANGLE:
+        vtk_zonetype = VTK_QUADRATIC_TRIANGLE;
+        break;
+      case DB_ZONETYPE_QUAD_QUAD:
+        vtk_zonetype = VTK_QUADRATIC_QUAD;
+        break;
+      case DB_ZONETYPE_QUAD_TET:
+        vtk_zonetype = VTK_QUADRATIC_TETRA;
+        break;
+      case DB_ZONETYPE_QUAD_PYRAMID:
+        vtk_zonetype = VTK_QUADRATIC_PYRAMID;
+        break;
+      case DB_ZONETYPE_QUAD_PRISM:
+        vtk_zonetype = VTK_QUADRATIC_WEDGE;
+        break;
+      case DB_ZONETYPE_QUAD_HEX:
+        vtk_zonetype = VTK_QUADRATIC_HEXAHEDRON;
+        break;
+#endif
     }
 
     return vtk_zonetype;
