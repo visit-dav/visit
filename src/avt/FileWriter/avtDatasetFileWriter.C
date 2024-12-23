@@ -576,12 +576,19 @@ avtDatasetFileWriter::WriteVTKFamily(const char *filename, bool binary)
 //  Programmer: Hank Childs
 //  Creation:   May 27, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Dec 23, 2024
+//    Set file version to 4.2.
+//
 // ****************************************************************************
 
 void
 avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
+#if LIB_VERSION_GE(VTK, 9,4,0)
+    writer->SetFileVersion(42);
+#endif
     writer->SetInputData(ds);
     if (bin)
     {
