@@ -269,11 +269,12 @@ endmacro()
 #    OUTPUT_NAME  [name]                     OPTIONAL
 #    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
 #    FOLDER       [name])                    OPTIONAL
+#    SKIP_INSTALL                            OPTIONAL
 #
 ##############################################################################
 
 macro(visit_add_library)
-    set(options)
+    set(options SKIP_INSTALL)
     set(singleValueArgs NAME OUTPUT_NAME FOLDER)
     set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
 
@@ -305,7 +306,9 @@ macro(visit_add_library)
         target_compile_features(${val_NAME} PRIVATE ${val_FEATURES})
     endif()
 
-    visit_install_export_targets(${val_NAME})
+    if(NOT ${val_SKIP_INSTALL})
+        visit_install_export_targets(${val_NAME})
+    endif()
 
     # vars that may have been created by calls to visit_append_list
     unset(${val_NAME}_SOURCES CACHE)

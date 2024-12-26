@@ -213,7 +213,6 @@ class CMakeGeneratorPlugin : public Plugin
         defaultvfiles.clear();
         defaultmfiles.clear();
         defaultefiles.clear();
-        defaultwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -233,8 +232,6 @@ class CMakeGeneratorPlugin : public Plugin
             QString filter = QString("avt") + name + "Filter.C";
             defaultvfiles.push_back(filter);
             defaultefiles.push_back(filter);
-            QString widgets = QString("Qvis") + name + "PlotWindow.h";
-            defaultwfiles.push_back(widgets);
         }
         else if (type == "operator")
         {
@@ -328,35 +325,26 @@ class CMakeGeneratorPlugin : public Plugin
                         tmp2.prepend("VTK::");
                     else
                         tmp2.replace(0,3,"VTK::");
-                    libs9.push_back(tmp2);
+                    libs[i] = tmp2;
                 }
                 else
                 {
                     tmp.append(vtkversion);
-                    libs9.push_back(tmp);
+                    libs[i] = tmp;
                 }
             }
             else if(libs[i].startsWith("VTK::"))
             {
-                if (using_dev)
-                {
-                    libs_sans_vtk.push_back(libs[i]);
-                }
-                else
+                if (!using_dev)
                 {
                     // for plugin-vs-install, need to
                     // replace 'VTK::' with 'vtk' and append the version
                     QString tmp(libs[i].replace(QString("VTK::"), QString("vtk")));
                     tmp.append(vtkversion);
-                    libs9.push_back(tmp);
+                    libs[i] = tmp;
                 }
             }
-            else
-            {
-                libs_sans_vtk.push_back(libs[i]);
-            }
         }
-        libs = libs_sans_vtk;
     }
 
     QString
@@ -695,6 +683,113 @@ class CMakeGeneratorPlugin : public Plugin
             }
         }
         return false;
+    }
+
+    void WriteCMake_PlotSources(QTextStream &out,
+        const QString component,
+        const std::vector<QString> files)
+    {
+        out << Endl;
+        out << "    " << component << "SRC       " << files[0];
+        for(size_t i = 1; i < files.size(); ++i)
+            out << Endl << "               " << files[i];
+    }
+
+    void WriteCMake_PlotLibs(QTextStream &out,
+        const QString component,
+        const std::vector<QString> libs)
+    {
+        out << Endl;
+        QString IOne("   ");
+        if (component == "V" ||  component=="G")
+            IOne += QString("   ");
+        out << "    " << component << "LIBS" << IOne << libs[0];
+        for(size_t i = 1; i < libs.size(); ++i)
+            out << Endl << "               " << libs[i];
+    }
+
+    void WriteCMake_PlotConditionalDefinitions(QTextStream &out)
+    {
+        QStringList conditions, defs;
+        if(GetCondition("Definitions:", conditions, defs))
+        {
+            out << Endl;
+            out << "set(" << name << "_DEFINES)" << Endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << "if(" << conditions[i] << ")" << Endl;
+                out << "    list(APPEND " << name << "_DEFINES " << defs[i];
+                out << ")" << Endl;
+                out << "endif()" << Endl;
+                out << Endl;
+            }
+        }
+    }
+
+    void WriteCMake_PlotVerbatim(QTextStream &out, QString prepost)
+    {
+        if (atts != NULL && atts->codeFile != NULL)
+        {
+            QStringList logic;
+            if(atts->codeFile->GetVerbatim(prepost, logic))
+            {
+                out << Endl;
+                out << "\n" << logic[0] << Endl;
+                out << Endl;
+            }
+        }
+    }
+            
+
+    void WriteCMake_Plot(QTextStream &out,
+                         const QString &guilibname,
+                         const QString &viewerlibname)
+    {
+        WriteCMake_PlotVerbatim(out, "Pre");
+        WriteCMake_PlotConditionalDefinitions(out);
+        out << Endl;
+        out << "visit_add_plot_plugin(" << Endl;
+        out << "    PNAME      " << name;
+        if (customgfiles)
+        {
+            WriteCMake_PlotSources(out, "G", gfiles);
+        }
+        if (customvfiles)
+        {
+            WriteCMake_PlotSources(out, "V", vfiles);
+        }
+        if (customefiles)
+        {
+            WriteCMake_PlotSources(out, "E", efiles);
+        }
+
+        out << "\n    DEFINES    ${" << name << "_DEFINES}";
+
+        // gui libs
+        if (!glibs.empty())
+        {
+            WriteCMake_PlotLibs(out, "G", glibs);
+        }
+
+        // viewer libs
+        if (!vlibs.empty())
+        {
+            WriteCMake_PlotLibs(out, "V", vlibs);
+        }
+        // engine libs
+        if (!elibsSer.empty())
+        {
+            WriteCMake_PlotLibs(out, "ESER", elibsSer);
+        }
+
+        if (!elibsPar.empty())
+        {
+            WriteCMake_PlotLibs(out, "EPAR", elibsPar);
+        }
+
+        out << ")" << Endl;
+
+        WriteCMake_PlotVerbatim(out, "Post");
     }
 
     void WriteCMake_PlotOperator(QTextStream &out,
@@ -1295,8 +1390,10 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
         if(type == "database")
             WriteCMake_Database(out);
-        else
+        else if(type == "operator")
             WriteCMake_PlotOperator(out, guilibname, viewerlibname);
+        else if(type == "plot")
+            WriteCMake_Plot(out, guilibname, viewerlibname);
 
         WriteCMake_AdditionalCode(out);
     }
