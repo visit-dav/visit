@@ -8,6 +8,7 @@
 
 #include <avtIsovolumeFilter.h>
 
+#include <visit-config.h> // for HAVE_LIBVTKM
 #ifdef HAVE_LIBVTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>

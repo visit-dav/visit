@@ -12,17 +12,6 @@
     <LIBS components="EPar">
       avtivp_par
     </LIBS>
-    <Files components="V">
-    </Files>
-    <Files components="E">
-      avtLimitCycleFilter.C
-    </Files>
-    <LIBS components="ESer">
-      avtivp_ser
-    </LIBS>
-    <LIBS components="EPar">
-      avtivp_par
-    </LIBS>
     <Attribute name="LimitCycleAttributes" purpose="Attributes for the LimitCycle" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LimitCycle.code">
       <Enum name="SourceType">
         SpecifiedLine

@@ -4,7 +4,7 @@
 
 #include <Python.h>
 #include <stdio.h>
-#include <visit-config.h> // for VISIT_VERSION
+#include <visit-config.h> // for VISIT_VERSION, HAVE_LIBVTKM
 #if !defined(_WIN32)
 #include <strings.h>
 #else

@@ -3,9 +3,6 @@
     <Files components="G">
       QvisReflectWidget.C
     </Files>
-    <Files components="W">
-      QvisReflectWidget.h
-    </Files>
     <Attribute name="ReflectAttributes" purpose="This class contains attributes for the reflect operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="Octant">
         PXPYPZ

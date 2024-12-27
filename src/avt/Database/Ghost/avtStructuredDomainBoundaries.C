@@ -401,7 +401,7 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 21, 2001
 //
-//  Note:  bnddata, bndmixmat, and bndmixzone may each be NULL.  
+//  Note:  bnddata, bndmixmat, and bndmixzone may each be NULL.
 //         olddata may be NULL as well as long as the mixlen is zero.
 //
 //  Modifications:
@@ -874,7 +874,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
 
             if (domain2proc[d1] != domain2proc[d2])
             {
-            
+
                 if (domain2proc[d1] == rank)
                 {
                     if (bnddata)
@@ -996,12 +996,12 @@ BoundaryHelperFunctions<T>::CopyOldValues(int      d1,
 //    comp_num       0=X, 1=Y, 2=Z
 //
 //  Programmer:  Hank Childs
-//  Creation:    November 11, 2003 
+//  Creation:    November 11, 2003
 //
 // ****************************************************************************
 template <class T>
 void
-BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata, 
+BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
                                                      T *newdata, int comp_num)
 {
     Boundary *bi = &sdb->boundary[d1];
@@ -1013,7 +1013,7 @@ BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
     int nInew = newbiextents[1] - newbiextents[0] + 1;
     int nJnew = newbiextents[3] - newbiextents[2] + 1;
     int nKnew = newbiextents[5] - newbiextents[4] + 1;
-    
+
     if (comp_num == 0)
     {
         //
@@ -1030,7 +1030,7 @@ BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
             int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
             int oldI = oldindex % nIold;
             int newI = newindex % nInew;
-            newdata[newI] = olddata[oldI]; 
+            newdata[newI] = olddata[oldI];
         }
     }
     else if (comp_num == 1)
@@ -1043,7 +1043,7 @@ BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
             int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
             int oldJ = (oldindex/nIold) % nJold;
             int newJ = (newindex/nInew) % nJnew;
-            newdata[newJ] = olddata[oldJ]; 
+            newdata[newJ] = olddata[oldJ];
         }
     }
     else if (comp_num == 2)
@@ -1056,7 +1056,7 @@ BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
             int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
             int oldK = (oldindex/(nIold*nJold)) % nKold;
             int newK = (newindex/(nInew*nJnew)) % nKnew;
-            newdata[newK] = olddata[oldK]; 
+            newdata[newK] = olddata[oldK];
         }
     }
 }
@@ -1154,7 +1154,7 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
             {
                 for (int i=n1extents[0]; i<=n1extents[1]; i++)
                 {
-                    int index = (isPointData ? 
+                    int index = (isPointData ?
                                  bi->NewPointIndexFromNeighbor(n1, i,j,k) :
                                  bi->NewCellIndexFromNeighbor(n1, i,j,k));
                     if (index >= 0)
@@ -1171,7 +1171,7 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
 //  Method:  BoundaryHelperFunctions::SetNewBoundaryData
 //
 //  Purpose:
-//    Set the ghost values of the given domain using the temporary 
+//    Set the ghost values of the given domain using the temporary
 //    boundary data.
 //
 //  Arguments:
@@ -1253,7 +1253,7 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
             {
                 for (int i=n1extents[0]; i<=n1extents[1]; i++)
                 {
-                    int newindex = (isPointData ? 
+                    int newindex = (isPointData ?
                                     bi->NewPointIndexFromNeighbor(n1, i,j,k) :
                                     bi->NewCellIndexFromNeighbor(n1, i,j,k));
                     if (newindex >= 0)
@@ -1272,7 +1272,7 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
 //  Method:  BoundaryHelperFunctions::SetNewRectilinearBoundaryData
 //
 //  Purpose:
-//    Set the ghost values of the given domain using the temporary 
+//    Set the ghost values of the given domain using the temporary
 //    boundary data.
 //
 //  Arguments:
@@ -1576,7 +1576,7 @@ BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
     }
     delete[] newexists;
 }
-    
+
 
 // ----------------------------------------------------------------------------
 //                               public methods
@@ -1609,7 +1609,7 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
     bhf_float = new BoundaryHelperFunctions<float>(this);
     bhf_double = new BoundaryHelperFunctions<double>(this);
     bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
-    shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents; 
+    shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents;
     haveCalculatedBoundaries = false;
     maxAMRLevel = 1;
 }
@@ -1622,7 +1622,7 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
 //
 //  Modifications:
 //    Mark C. Miller, ed Mar 23 15:29:56 PST 2005
-//    Added code to delete stuff new'd in constructor 
+//    Added code to delete stuff new'd in constructor
 //
 // ****************************************************************************
 avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries()
@@ -1741,8 +1741,8 @@ avtStructuredDomainBoundaries::SetExtents(int domain, int e[6])
 //
 // ****************************************************************************
 void
-avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3], 
-                                           int e[6], RefinementRelationship rr, 
+avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3],
+                                           int e[6], RefinementRelationship rr,
                                            const std::vector<int>& ref_ratio,
                                            NeighborRelationship nr)
 {
@@ -1807,6 +1807,9 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //    Brad Whitlock, Sun Apr 22 08:52:14 PDT 2012
 //    Double support.
 //
+//    Kathleen Biagas, Fri Nov 1, 2024
+//    Added consistency check for dataTypes.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
@@ -1815,16 +1818,27 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 {
     int dataType = (scalars.empty() ? -1 : scalars[0]->GetDataType());
 
+    int maxDataType = dataType;
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
-    int myDataType = dataType;
-    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
+    {
+        // This should never happen, so throw the exception.
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries:ExchangeScalar "
+                   "vtkDataArray data types do not match.");
+    }
 #endif
 
-    if (dataType < 0)
+    if (maxDataType < 0)
         return scalars;
 
-    switch (dataType)
+    switch (maxDataType)
     {
       case VTK_FLOAT:
         return ExchangeFloatScalar(domainNum, isPointData, scalars);
@@ -1870,7 +1884,7 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 //    Propagate variable names.
 //
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray
 //    and vtkFloatArray instead.
 //
 //    Jeremy Meredith, Fri Nov  7 15:13:56 PST 2003
@@ -1940,7 +1954,7 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
         Boundary *bi = &boundary[domainNum[d]];
 
         // Create the new VTK objects
-        out[d] = vtkFloatArray::New(); 
+        out[d] = vtkFloatArray::New();
         out[d]->SetName(scalars[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(bi->newnpts);
@@ -2041,7 +2055,7 @@ avtStructuredDomainBoundaries::ExchangeDoubleScalar(vector<int>     domainNum,
         Boundary *bi = &boundary[domainNum[d]];
 
         // Create the new VTK objects
-        out[d] = vtkDoubleArray::New(); 
+        out[d] = vtkDoubleArray::New();
         out[d]->SetName(scalars[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(bi->newnpts);
@@ -2150,7 +2164,7 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
         Boundary *bi = &boundary[domainNum[d]];
 
         // Create the new VTK objects
-        out[d] = vtkIntArray::New(); 
+        out[d] = vtkIntArray::New();
         out[d]->SetName(scalars[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(bi->newnpts);
@@ -2260,7 +2274,7 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
         Boundary *bi = &boundary[domainNum[d]];
 
         // Create the new VTK objects
-        out[d] = vtkUnsignedCharArray::New(); 
+        out[d] = vtkUnsignedCharArray::New();
         out[d]->SetName(scalars[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(bi->newnpts);
@@ -2302,6 +2316,8 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
 //  Creation:    April 21, 2015
 //
 //  Modifications:
+//    Kathleen Biagas, Fri Nov 1, 2024
+//    Added consistency check for dataTypes.
 //
 // ****************************************************************************
 vector<vtkDataArray*>
@@ -2310,17 +2326,29 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
                                               vector<vtkDataArray*> vectors)
 {
     int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
-    
+
+    int maxDataType = dataType;
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
-    int myDataType = dataType;    
-    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+
+    // Now verify if there is a dataType mismatch.
+    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
+    int hasDataTypeMismatchMax = hasDataTypeMismatch;
+    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if(hasDataTypeMismatchMax)
+    {
+        // This should never happen, so throw the exception.
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries:ExchangeVector "
+                   "vtkDataArray data types do not match.");
+    }
 #endif
-    
-    if (dataType < 0)
+
+    if (maxDataType < 0)
         return vectors;
-    
-    switch (dataType)
+
+    switch (maxDataType)
     {
         case VTK_FLOAT:
             return ExchangeFloatVector(domainNum, isPointData, vectors);
@@ -2363,13 +2391,13 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
 //    Propagate variable names.
 //
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray 
+//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray
 //    and vtkFloatArray instead.
 //
-//    Kathleen Bonnell, Mon May 20 13:33:03 PDT 2002 
+//    Kathleen Bonnell, Mon May 20 13:33:03 PDT 2002
 //    Change name to reflect underlying data type.  Allow for arbitrary
-//    number of components in the array. 
-//    
+//    number of components in the array.
+//
 //    Hank Childs, Fri Dec  6 14:56:20 PST 2002
 //    Do not assume that the number of vectors is > 0.
 //
@@ -2438,7 +2466,7 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
     {
         // Create the new VTK objects
         out[d] = vtkFloatArray::New();
-        out[d]->SetNumberOfComponents(nComp); 
+        out[d]->SetNumberOfComponents(nComp);
         out[d]->SetName(vectors[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
@@ -2538,8 +2566,8 @@ avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
     for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
-        out[d] = vtkDoubleArray::New(); 
-        out[d]->SetNumberOfComponents(nComp); 
+        out[d] = vtkDoubleArray::New();
+        out[d]->SetNumberOfComponents(nComp);
         out[d]->SetName(vectors[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
@@ -2580,19 +2608,19 @@ avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
 //  Notes:
 //    Taken from ExchangeFloatVector and modified for integer data types.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    May 20, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    May 20, 2002
 //
 //  Modifications:
 //
 //    Hank Childs, Fri Dec  6 14:56:20 PST 2002
 //    Do not assume that the number of vectors is > 0.
 //
-//    Kathleen Bonnell, Wed Dec 11 09:13:25 PST 2002 
-//    Preserver underlying data type:  use MakeObject instead of New. 
+//    Kathleen Bonnell, Wed Dec 11 09:13:25 PST 2002
+//    Preserver underlying data type:  use MakeObject instead of New.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
-//    Use NewInstance instead of MakeObject, new vtk api. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Use NewInstance instead of MakeObject, new vtk api.
 //
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
@@ -2658,8 +2686,8 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
     for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
-        out[d] = vectors[d]->NewInstance(); 
-        out[d]->SetNumberOfComponents(nComp); 
+        out[d] = vectors[d]->NewInstance();
+        out[d]->SetNumberOfComponents(nComp);
         out[d]->SetName(vectors[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
@@ -2844,7 +2872,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_int->FakeNonexistentBoundaryData(domainNum[d], newmatlist, false);
 
-        out[d] = new avtMaterial(oldmat->GetNMaterials(), 
+        out[d] = new avtMaterial(oldmat->GetNMaterials(),
                                  oldmat->GetMaterials(),
                                  boundary[domainNum[d]].newncells,
                                  newmatlist,
@@ -3160,8 +3188,8 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
         {
             debug1 << "Rejecting domain boundaries because of inconsistency "
                    << "with domain " << domainNum[i] << endl;
-            debug1 << "File returned " << meshes[i]->GetNumberOfPoints() 
-                   << " points, but dbi object believed it should be " 
+            debug1 << "File returned " << meshes[i]->GetNumberOfPoints()
+                   << " points, but dbi object believed it should be "
                    << b.oldnpts << endl;
             return false;
         }
@@ -3169,8 +3197,8 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
         {
             debug1 << "Rejecting domain boundaries because of inconsistency "
                    << "with domain " << domainNum[i] << endl;
-            debug1 << "File returned " << meshes[i]->GetNumberOfCells() 
-                   << "cells, but dbi object believed it should be " 
+            debug1 << "File returned " << meshes[i]->GetNumberOfCells()
+                   << "cells, but dbi object believed it should be "
                    << b.oldncells << endl;
             return false;
         }
@@ -3238,7 +3266,7 @@ avtStructuredDomainBoundaries::ResetCachedMembers(void)
 void
 avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
                                               vtkDataSet *inMesh, Boundary *bi,
-                                              bool haveCommunicatedGhosts, 
+                                              bool haveCommunicatedGhosts,
                                               int domain, unsigned char ***ghosts)
 {
     vtkUnsignedCharArray *oldGhosts = (vtkUnsignedCharArray *)
@@ -3255,11 +3283,11 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
     {
         if (oldGhosts == NULL)
             EXCEPTION0(ImproperUseException);  // we should never get to this point
-        bhf_uchar->CopyOldValues(domain, 
+        bhf_uchar->CopyOldValues(domain,
                                  (unsigned char *) oldGhosts->GetVoidPointer(0),
                                  (unsigned char *) ghostCells->GetVoidPointer(0),
                                  false, 1);
-        bhf_uchar->SetNewBoundaryData(domain, ghosts, 
+        bhf_uchar->SetNewBoundaryData(domain, ghosts,
                                  (unsigned char *) ghostCells->GetVoidPointer(0),
                                  false, 1);
     }
@@ -3291,7 +3319,7 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 
     outMesh->GetCellData()->AddArray(ghostCells);
     ghostCells->Delete();
-    outMesh->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0); 
+    outMesh->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 
     //
     //  Create a field-data array indicating the extents of real zones.
@@ -3330,7 +3358,7 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 //    Made use of templatized functions.  Added call to fake boundary
 //    data when it is nonexistent.
 //
-//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002 
+//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002
 //    Create a field-data array indicating the extents of real zones.
 //    Used during ghostzone removal.
 //
@@ -3462,7 +3490,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(Helper *bhf, int vtktype,
         Boundary *bi = &boundary[d1];
 
         // Create the VTK objects
-        vtkStructuredGrid    *outm  = vtkStructuredGrid::New(); 
+        vtkStructuredGrid    *outm  = vtkStructuredGrid::New();
         vtkPoints            *outp  = vtkPoints::New(vtktype);
         outm->SetPoints(outp);
         outp->Delete();
@@ -3486,7 +3514,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(Helper *bhf, int vtktype,
         out[d] = outm;
     }
     visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in curvmesh version)");
- 
+
     bhf->FreeBoundaryData(coord);
 }
 
@@ -3621,7 +3649,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
         int d1 = domainNum[d];
         Boundary *bi = &boundary[d1];
 
-        vtkRectilinearGrid   *outm  = vtkRectilinearGrid::New(); 
+        vtkRectilinearGrid   *outm  = vtkRectilinearGrid::New();
         vtkDataArray         *newx, *newy, *newz;
         if(oldx->GetDataType() == VTK_DOUBLE)
         {
@@ -3645,7 +3673,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
         newx->SetNumberOfTuples(bi->newndims[0]);
         newy->SetNumberOfTuples(bi->newndims[1]);
         newz->SetNumberOfTuples(bi->newndims[2]);
-     
+
         int  i;
         for (i = 0 ; i < bi->newndims[0] ; i++)
         {
@@ -3658,7 +3686,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             }
             else if (id > bi->oldnextents[1])
             {
-                double last_dist = (oldx->GetTuple1(bi->oldndims[0]-1) - 
+                double last_dist = (oldx->GetTuple1(bi->oldndims[0]-1) -
                                     oldx->GetTuple1(bi->oldndims[0]-2));
                 int   num_off = (id - bi->oldnextents[1]);
                 newx->SetTuple1(i, oldx->GetTuple1(bi->oldndims[0]-1) + last_dist*num_off);
@@ -3683,7 +3711,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             }
             else if (id > bi->oldnextents[3])
             {
-                double last_dist = (oldy->GetTuple1(bi->oldndims[1]-1) - 
+                double last_dist = (oldy->GetTuple1(bi->oldndims[1]-1) -
                                     oldy->GetTuple1(bi->oldndims[1]-2));
                 int   num_off = (id - bi->oldnextents[3]);
                 newy->SetTuple1(i, oldy->GetTuple1(bi->oldndims[1]-1) + last_dist*num_off);
@@ -3708,7 +3736,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             }
             else if (id > bi->oldnextents[5])
             {
-                double last_dist = (oldz->GetTuple1(bi->oldndims[2]-1) - 
+                double last_dist = (oldz->GetTuple1(bi->oldndims[2]-1) -
                                     oldz->GetTuple1(bi->oldndims[2]-2));
                 int   num_off = (id - bi->oldnextents[5]);
                 newz->SetTuple1(i, oldz->GetTuple1(bi->oldndims[2]-1) + last_dist*num_off);
@@ -3717,9 +3745,9 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             {
                 int oldindex = bi->OldPointIndex(0, 0, id);
                 int newindex = bi->NewPointIndex(0, 0, id);
-                int oldK = (oldindex/(bi->oldndims[0]*bi->oldndims[1])) 
+                int oldK = (oldindex/(bi->oldndims[0]*bi->oldndims[1]))
                          % bi->oldndims[2];
-                int newK = (newindex/(bi->newndims[0]*bi->newndims[1])) 
+                int newK = (newindex/(bi->newndims[0]*bi->newndims[1]))
                          % bi->newndims[2];
                 newz->SetTuple1(newK, oldz->GetTuple1(oldK));
             }
@@ -3789,7 +3817,7 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
     // If we are doing DLB, we want to mark nodes as ghost, even if their
     // neighboring domains are not being used on this iteration.  Do this by
     // consulting the "allDomains" list.  Note that we can only play this
-    // trick because the rest of the routine does not care which domains 
+    // trick because the rest of the routine does not care which domains
     // are on which processors -- only that we are using them.
     //
     int ntotaldomains = (int)wholeBoundary.size();
@@ -3814,7 +3842,7 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
         gn->SetNumberOfTuples(npts);
         gn->SetName("avtGhostNodes");
         unsigned char *gnp = gn->GetPointer(0);
-   
+
         for (int j = 0 ; j < npts ; j++)
             gnp[j] = 0;
 
@@ -3963,14 +3991,14 @@ avtStructuredDomainBoundaries::SetRefinementRatios(const std::vector<int> &r)
 //
 //    Kathleen Bonnell, Tue Jan 20 17:26:40 PST 2004
 //    Reversed order of Exceptions, per Mark Miller's request.
-// 
+//
 //    Hank Childs, Fri Nov 14 10:50:06 PST 2008
 //    Set data member for tracking maximum AMR level.
 //
 // ****************************************************************************
 
 void
-avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain, 
+avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
                                                      int level, int e[6])
 {
     if (!shouldComputeNeighborsFromExtents)
@@ -4039,7 +4067,7 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    of levels.
 //
 //    Hank Childs, Tue Jan  4 13:35:56 PST 2011
-//    Add support for the types of ghost data needed to create crack-free 
+//    Add support for the types of ghost data needed to create crack-free
 //    isosurfaces with the AMR stitch operator.  They are:
 //      (1) values from the coarse patch when a fine patch is embedded in a
 //          coarse patch.
@@ -4053,7 +4081,7 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Add support for T-intersections.
 //
 //    Gunther H. Weber, Thu Jan 19 14:35:59 PST 2012
-//    Select new support for T-intersections by defining 
+//    Select new support for T-intersections by defining
 //    CREATE_GHOSTS_FOR_T_INTERSECTIONS
 //
 //    Gunther H. Weber, Thu Jun 14 17:31:59 PDT 2012
@@ -4204,7 +4232,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                     "computation of neighbors from index extents");
         }
 
-        // 
+        //
         // The logic for setting up boundaries across AMR levels and within an
         // AMR level are similar.  So the code is combined into a single loop.
         // Also, the normal rectilinear case is the same as "within an AMR level".
@@ -4382,9 +4410,9 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                                     // if the current boundary doesn't apply, skip it
                                     if ((axisOffset[0]==-1 && !minFace[0]) ||
-                                            (axisOffset[0]==+1 && !maxFace[0]) || 
+                                            (axisOffset[0]==+1 && !maxFace[0]) ||
                                             (axisOffset[1]==-1 && !minFace[1]) ||
-                                            (axisOffset[1]==+1 && !maxFace[1]) || 
+                                            (axisOffset[1]==+1 && !maxFace[1]) ||
                                             (axisOffset[2]==-1 && !minFace[2]) ||
                                             (axisOffset[2]==+1 && !maxFace[2]))
                                     {
@@ -4486,8 +4514,8 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 //    domain     the domain to get the extents of
 //    e          the extents
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    February 8, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    February 8, 2005
 //
 // ****************************************************************************
 
@@ -4495,7 +4523,7 @@ void
 avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
 {
     int ntotaldomains = (int)wholeBoundary.size();
-  
+
     if (domain < 0 || ntotaldomains <= domain)
     {
         EXCEPTION2(BadIndexException, domain, ntotaldomains);
@@ -4574,11 +4602,11 @@ avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
 //  Creation:   Dec 15, 2008
 //
 // ****************************************************************************
-vector<Neighbor> 
+vector<Neighbor>
 avtStructuredDomainBoundaries::GetNeighbors(int domain)
 {
     int ntotaldomains = (int)wholeBoundary.size();
-  
+
     if (domain < 0 || ntotaldomains <= domain)
     {
         EXCEPTION2(BadIndexException, domain, ntotaldomains);
