@@ -12,7 +12,6 @@
 #
 #*****************************************************************************
 
-<<<<<<< HEAD
 visit_append_list(
     NAME  avtexpressions_ser_SOURCES
     ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtAbsValExpression.C
