@@ -23,6 +23,10 @@ class     vtkDataArray;
 //
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2005
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -38,7 +42,7 @@ class EXPRESSION_API avtFloorExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
 };
 
 

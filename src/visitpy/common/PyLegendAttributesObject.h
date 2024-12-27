@@ -15,5 +15,8 @@ AnnotationObject *PyLegendAttributesObject_FromPyObject(PyObject *obj);
 PyObject         *PyLegendAttributesObject_NewPyObject();
 PyObject         *PyLegendAttributesObject_WrapPyObject(AnnotationObject *attr);
 
+std::string       PyLegendAttributesObject_ToString(const AnnotationObject *, const char *);
+
+
 #endif
 

@@ -1166,9 +1166,10 @@ StringHelpers::CaseInsensitiveEqual(const char *str_a, const char *str_b, size_t
 }
 bool
 StringHelpers::CaseInsensitiveEqual(const std::string &str_a,
-                                   const std::string &str_b)
+                                   const std::string &str_b,
+                                   size_t n)
 {
-    return StringHelpers::CaseInsensitiveEqual(str_a.c_str(), str_b.c_str());
+    return StringHelpers::CaseInsensitiveEqual(str_a.c_str(), str_b.c_str(), n);
 }
 
 // ****************************************************************************

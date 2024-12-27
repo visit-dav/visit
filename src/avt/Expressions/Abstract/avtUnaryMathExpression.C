@@ -128,6 +128,9 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 //
 //    Kathleen Bonnell, Tue Apr  7 07:58:33 PDT 2009
 //    When data == NULL, don't create a new vtkFloatArray twice.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -285,7 +288,7 @@ avtUnaryMathExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
     // number.  So send in the input.  Really doesn't matter.
     //
     cur_mesh = in_ds;
-    DoOperation(data, dv, ncomps, nvals);
+    DoOperation(data, dv, ncomps, nvals, in_ds);
     cur_mesh = NULL;
 
     return dv;

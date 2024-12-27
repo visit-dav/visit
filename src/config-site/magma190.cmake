@@ -1,14 +1,14 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Thu Mar  7 11:07:31 PST 2024
-## system: Linux magma102 4.18.0-513.11.1.1toss.t4.x86_64 #1 SMP Fri Jan 12 16:54:14 PST 2024 x86_64 x86_64 x86_64 GNU/Linux
+## created: Tue Dec  3 13:56:36 PST 2024
+## system: Linux magma575 4.18.0-553.22.1.1toss.t4.x86_64 #1 SMP Tue Sep 24 16:50:00 PDT 2024 x86_64 x86_64 x86_64 GNU/Linux
 ## by: justin
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -24,11 +24,11 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/lib")
 
 ##
 ## VisIt Thread Option
@@ -81,12 +81,6 @@ SETUP_APP_VERSION(QT 6.4.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/6.4.2/${VISITARCH})
 
 ##
-## QWT
-##
-SETUP_APP_VERSION(QWT 6.3.0)
-VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
-
-##
 ## OSPRay
 ##
 SETUP_APP_VERSION(OSPRAY 3.0.0)
@@ -114,16 +108,16 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib z TYPE STRING)
 
 ##
-## BLOSC2
-##
-VISIT_OPTION_DEFAULT(VISIT_BLOSC2_DIR ${VISITHOME}/blosc2/2.11.3/${VISITARCH})
-
-##
 ## ADIOS
 ## (configured w/ mpi compiler wrapper)
 ##
 SETUP_APP_VERSION(ADIOS 1.13.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
+
+##
+## BLOSC2
+##
+VISIT_OPTION_DEFAULT(VISIT_BLOSC2_DIR ${VISITHOME}/blosc2/2.11.3/${VISITARCH})
 
 ##
 ## ADIOS2
@@ -169,8 +163,8 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.9.1)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.1/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.9.2)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ${VISIT_SILO_LIBDEP} TYPE STRING)
 
 ##
@@ -229,9 +223,15 @@ SETUP_APP_VERSION(PIDX 0.9.3)
 VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
 
 ##
+## QWT
+##
+SETUP_APP_VERSION(QWT 6.3.0)
+VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
+
+##
 ## Uintah
 ##
-SETUP_APP_VERSION(UINTAH 2.6.2)
+SETUP_APP_VERSION(UINTAH 2.6.3)
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##

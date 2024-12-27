@@ -71,12 +71,15 @@ avtPrincipalTensorExpression::~avtPrincipalTensorExpression()
 //
 //    Eric Brugger, Mon Aug  8 09:29:25 PDT 2011
 //    I reduced the tolerance on invariant1 to be less restrictive.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 
 void
 avtPrincipalTensorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                   int ncomps, int ntuples)
+                                   int ncomps, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomps == 9)
     {

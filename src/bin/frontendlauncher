@@ -43,6 +43,9 @@
 #   Added logic to use system `python3` if `python` is not available.
 #   (Installed use finds and calls our python, this helps with developer use)
 #
+#   Cyrus Harrison, Thu Dec 12 11:33:24 PST 2024
+#   Added case for power9 architecture
+#
 ###############################################################################
 
 #
@@ -64,11 +67,18 @@ if test "$osname" = "Linux"; then
         platform="linux-ppc"
     elif test "$proc" = "ppc64"; then
         platform="linux-ppc64"
+    elif test "$proc" = "ppc64le"; then
+        platform="linux-ppc64le"
     else
         platform="linux-intel"
     fi
 elif test "$osname" = "Darwin"; then
-    platform="darwin-x86_64"
+    proc=$(uname -m)
+    if test "$proc" = "x86_64"; then
+        platform="darwin-x86_64"
+    elif test "$proc" = "arm64"; then
+        platform="darwin-arm64"
+    fi
 elif test "$osname" = "AIX"; then
     if test "$OBJECT_MODE" = "32"; then
         platform="ibm-aix-pwr"

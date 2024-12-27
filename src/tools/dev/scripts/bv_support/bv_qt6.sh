@@ -31,7 +31,6 @@ function bv_qt6_info
 {
     export QT6_VERSION=${QT6_VERSION:-"6.4.2"}
     export QT6_SHORT_VERSION=${QT6_SHORT_VERSION:-"6.4"}
-    export QT6_URL=${QT6_URL:-"https://download.qt.io/archive/qt/${QT6_SHORT_VERSION}/${QT6_VERSION}/submodules"}
     export QT6_BASE_FILE=${QT6_BASE_FILE:-"qtbase-everywhere-src-${QT6_VERSION}.tar.xz"}
     export QT6_BASE_SOURCE_DIR=${QT6_BASE_SOURCE_DIR:-"qtbase-everywhere-src-${QT6_VERSION}"}
     export QT6_BASE_SHA256_CHECKSUM="a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"
@@ -97,10 +96,17 @@ function bv_qt6_ensure
 function apply_qt6_base_patch
 {
      if [[ "$OPSYS" == "Darwin" ]]; then
-        qt6_macos_13_cpp_stdlib_issue_patch 
+
+        qt6_macos_13_cpp_stdlib_issue_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        qt6_macos_14_xcode_15_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
     fi
     qt6_xkbcommon_patch
     if [[ $? != 0 ]] ; then
@@ -111,7 +117,7 @@ function apply_qt6_base_patch
 function qt6_xkbcommon_patch
 {
     info "Patching qt 6 for xkbcommon issue"
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 -- qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp.orig	2024-05-21 08:51:16.000000000 -0700
 +++ qtbase-everywhere-src-6.4.2/src/gui/platform/unix/qxkbcommon.cpp	2024-05-21 08:50:33.000000000 -0700
 @@ -236,16 +236,20 @@
@@ -147,7 +153,7 @@ function qt6_macos_13_cpp_stdlib_issue_patch
 {
     info "Patching qt 6 for macOS c++ stdlib issue"
 
-    patch -p0 <<EOF
+    patch -p0 << \EOF
 diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h
 *** qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h	Tue Nov 15 23:54:24 2022
 --- qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h	Wed Oct 25 13:14:40 2023
@@ -235,6 +241,47 @@ EOF
         return 1
     fi
 }
+
+function qt6_macos_14_xcode_15_patch
+{
+    info "Patching qt 6 for macOS xcode 15 with toolchain fix"
+
+    patch -p0 << \EOF
+diff --git qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf qtbase-everywhere-src-6.4.2-patched/mkspecs/features/toolchain.prf
+index 0040b6c..bfad10d 100644
+--- qtbase-everywhere-src-6.4.2/mkspecs/features/toolchain.prf
++++ qtbase-everywhere-src-6.4.2-patched/mkspecs/features/toolchain.prf
+@@ -288,9 +288,12 @@
+                 }
+             }
+         }
+-        isEmpty(QMAKE_DEFAULT_LIBDIRS)|isEmpty(QMAKE_DEFAULT_INCDIRS): \
++        isEmpty(QMAKE_DEFAULT_INCDIRS): \
+             !integrity: \
+-                error("failed to parse default search paths from compiler output")
++                error("failed to parse default include paths from compiler output")
++        isEmpty(QMAKE_DEFAULT_LIBDIRS): \
++            !integrity:!darwin: \
++                error("failed to parse default library paths from compiler output")
+         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
+     } else: ghs {
+         cmd = $$QMAKE_CXX $$QMAKE_CXXFLAGS -$${LITERAL_HASH} -o /tmp/fake_output /tmp/fake_input.cpp
+@@ -411,7 +414,7 @@
+         QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
+     }
+ 
+-    unix:if(!cross_compile|host_build) {
++    unix:!darwin:if(!cross_compile|host_build) {
+         isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
+         isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
+     }
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 6 for macOS xcode 15 with toolchain fix failed"
+        return 1
+    fi
+}
+
 
 function build_qt6_base
 {

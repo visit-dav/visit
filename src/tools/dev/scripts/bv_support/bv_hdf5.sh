@@ -61,8 +61,6 @@ function bv_hdf5_info
     export HDF5_FILE=${HDF5_FILE:-"hdf5-${HDF5_VERSION}.tar.gz"}
     export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
     export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
-    # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
-    export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
     export HDF5_SHA256_CHECKSUM="1dbefeeef7f591897c632b2b090db96bb8d35ad035beaa36bc39cb2bc67e0639"
 }
 
@@ -139,7 +137,7 @@ function bv_hdf5_ensure
 function apply_hdf5_1814_static_patch
 {
     info "Patching hdf5 1.8.14 for static build"
-    patch -p0 << EOF
+    patch -p0 << \EOF
 *** src/H5PL.c.orig    2015-10-23 11:51:35.000000000 -0700
 --- src/H5PL.c  2015-10-23 11:56:48.000000000 -0700
 ***************
@@ -469,7 +467,7 @@ EOF
 function apply_hdf5_1814_isatty_patch
 {
     info "Patching hdf5 1.8.14 for isatty"
-    patch -p0 << EOF
+    patch -p0 << \EOF
 --- hl/src/H5LTanalyze.c.orig	2014-11-07 04:53:42.000000000 -0800
 +++ hl/src/H5LTanalyze.c	2021-02-01 13:40:36.000000000 -0800
 @@ -40,6 +40,7 @@
@@ -539,6 +537,13 @@ function build_hdf5
                  "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
         fi
+    fi
+
+    #
+    # Fix a test failing to compile
+    #
+    if [[ "$OPSYS" == "Darwin" && $(uname -r | cut -d'.' -f1) -ge 23 ]]; then
+        sed -i '' 's/{NULL}};/{0}};/' test/tmisc.c
     fi
 
     #
@@ -630,10 +635,12 @@ function build_hdf5
         fi
 
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
-        # configure, we wrap the invokation in 'sh -c "..."' syntax
         C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
+	# ignore conversion of NULL to int.
+	C_OPT_FLAGS="$C_OPT_FLAGS -Wno-error=int-conversion"
         info "Invoking command to configure $bt HDF5"
         set -x
+        # configure, we wrap the invokation in 'sh -c "..."' syntax
         sh -c "../configure CC=\"$cf_c_compiler\" \
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS $cf_extra_flags\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \

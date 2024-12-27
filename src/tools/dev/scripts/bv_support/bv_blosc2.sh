@@ -23,10 +23,6 @@ function bv_blosc2_info
     # note this is c-blosc2, NOT c-blosc
     export BLOSC2_VERSION=${BLOSC2_VERSION:-"2.11.3"}
     export BLOSC2_FILE=${BLOSC2_FILE:-"c-blosc2-${BLOSC2_VERSION}.tar.gz"}
-    # the URL is commented out because the filename is different in the blosc2 release
-    # there, the filename is v2.11.3.tar.gz.
-    # export BLOSC2_URL=${BLOSC2_URL:-"https://github.com/Blosc/c-blosc2/releases/tag"}
-    # to use that download you'd need to rename the file once downloaded.
     export BLOSC2_BUILD_DIR=${BLOSC2_BUILD_DIR:-"c-blosc2-${BLOSC2_VERSION}"}
     export BLOSC2_SHA256_CHECKSUM="7273ec3ab42adc247425ab34b0601db86a6e2a6aa1a97a11e29df02e078f5037"
 }
@@ -53,17 +49,14 @@ function bv_blosc2_depends_on
 function build_blosc2
 {
     #
-    # Blosc2 uses CMake  -- make sure we have it built.
+    # Blosc2 uses CMake  -- make sure we have it.
     #
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
         info "Blosc2: CMake found"
     else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
+        warn "Unable to find cmake, cannot build Blosc2. Giving up."
+        return 1
     fi
 
     #
@@ -79,6 +72,11 @@ function build_blosc2
     cd $BLOSC2_BUILD_DIR || error "Can't cd to BLOSC2 source dir."
 
     cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
+    # Enable ssse3 target feature on intel and amd processors.
+    if [[ "$(uname -m)" == "x86_64" ]] ; then
+        cfg_opts="$cfg_opts -DCMAKE_C_FLAGS=-mssse3"
+        cfg_opts="$cfg_opts -DCMAKE_CXX_FLAGS=-mssse3"
+    fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
@@ -159,6 +157,7 @@ function bv_blosc2_print_usage
 function bv_blosc2_host_profile
 {
     if [[ "$DO_BLOSC2" == "yes" ]] ; then
+        echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## BLOSC2" >> $HOSTCONF
         echo "##" >> $HOSTCONF

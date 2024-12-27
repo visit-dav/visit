@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <cassert>
+#include <cerrno>
 #include <cstdio>
 #include <StringHelpers.h>
 #include <FileFunctions.h>
@@ -354,11 +355,55 @@ int main(int argc, char **argv)
                   "../kerry/apple///banana/./././///../../../grape",
                   "/foo/bar/grape");
 
+    //
+    // Regular expressions for extracting cycles from filenames. This
+    // logic is largely the same as in avtFileFormat::GuessCycle().
+    //
+    int cycregex_errors = 0;
+#define CHECK_CYCLE_REGEX(FNAME,CYCLE)                                  \
+    {                                                                   \
+        int cyc = -9999;                                                \
+        for (int i = 6; i > 2; i--)                                     \
+        {                                                               \
+            char tmp[32];                                               \
+            snprintf(tmp, sizeof(tmp), "<([0-9]{%d,})> \\1", i);        \
+            string substr = StringHelpers::ExtractRESubstr(FNAME, tmp); \
+            if (substr != "")                                           \
+            {                                                           \
+                errno = 0;                                              \
+                cyc = strtod(substr.c_str(), 0);                        \
+                if (errno == 0) break;                                  \
+            }                                                           \
+        }                                                               \
+        if (cyc != CYCLE)                                               \
+        {                                                               \
+            cerr << "Got cycle=" << cyc << " when getting cycle from "  \
+                 << "\"" << FNAME << "\". Expected " << CYCLE << "." << endl; \
+            cycregex_errors++;                                          \
+        }                                                               \
+    }
+
+    CHECK_CYCLE_REGEX("SpallImpact_112.51100088", 51100088);
+    CHECK_CYCLE_REGEX("SpallImpact_112.00042.55", 42);
+    CHECK_CYCLE_REGEX("SpallImpact_112.00000", 0);
+    CHECK_CYCLE_REGEX("SpallImpact_112.00088", 88);
+    CHECK_CYCLE_REGEX("SpallImpact_112.00000.1", 0);
+    CHECK_CYCLE_REGEX("SpallImpact_112.00000.7", 0);
+    CHECK_CYCLE_REGEX("SpallImpact_112.00088.7", 88);
+    CHECK_CYCLE_REGEX("SpallImpact_112.0088.7", 88);
+    CHECK_CYCLE_REGEX("SpallImpact_112.088.7", 112);
+    CHECK_CYCLE_REGEX("SpallImpact_112.88.7", 112);
+    CHECK_CYCLE_REGEX("foo1.h5m", -9999);
+    CHECK_CYCLE_REGEX("foo001.h5m", 1);
+    CHECK_CYCLE_REGEX("foo002.h5m", 2);
+    CHECK_CYCLE_REGEX("foo010.h5m", 10);
+
     int all_errors = falseNegatives.size() +
                      falsePositives.size() +
                      pluralizing_errors +
                      extract_substr_errors +
-                     pathname_errors;
+                     pathname_errors +
+                     cycregex_errors;
 
     return all_errors > 0;
 }
