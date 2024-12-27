@@ -4,9 +4,15 @@
 
 #*****************************************************************************
 # Modifications:
+#    Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+#    Added avtGlobalAvgExpression.C,     avtGlobalMaxExpression.C, 
+#          avtGlobalMinExpression.C,     avtGlobalRMSExpression.C, 
+#          avtGlobalStdDevExpression.C,  avtGlobalSumExpression.C, 
+#      and avtGlobalVarianceExpression.C
 #
 #*****************************************************************************
 
+<<<<<<< HEAD
 visit_append_list(
     NAME  avtexpressions_ser_SOURCES
     ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtAbsValExpression.C
@@ -34,6 +40,13 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtEigenvectorExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExpExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFloorExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalAvgExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMaxExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMinExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalRMSExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalStdDevExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalSumExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalVarianceExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtIdentityExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtInverseExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtNaturalLogExpression.C
@@ -78,6 +91,13 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtEigenvectorExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExpExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFloorExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalAvgExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMaxExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMinExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalRMSExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalStdDevExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalSumExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalVarianceExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtIdentityExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtInverseExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtNaturalLogExpression.h

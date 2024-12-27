@@ -27,11 +27,9 @@ function bv_llvm_info
 {
     export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
-    export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
     export BV_LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
 
-    export BV_CLANG_URL=${BV_LLVM_URL}
     export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
     export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
     export BV_CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"

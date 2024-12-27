@@ -4,8 +4,11 @@
 
 #*****************************************************************************
 # Modifications:
+#   Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+#   Added avtGhostAwareUnaryMathExpression.C
 #
 #*****************************************************************************
+
 
 visit_append_list(
     NAME  avtexpressions_ser_SOURCES
@@ -13,6 +16,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtComparisonExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionDataTreeIterator.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGhostAwareUnaryMathExpression.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMacroExpressionFilter.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputExpressionFilter.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputMathExpression.C
@@ -25,6 +29,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtComparisonExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionDataTreeIterator.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGhostAwareUnaryMathExpression.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMacroExpressionFilter.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputExpressionFilter.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputMathExpression.h

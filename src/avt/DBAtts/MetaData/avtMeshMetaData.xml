@@ -178,6 +178,9 @@
     <Field name="zonesWereSplit" label="Orignal zones were split" type="bool" access="public">
       false
     </Field>
+    <Field name="hasExtraGhostInfo" label="Has extra ghost information." type="bool" access="public">
+      false
+    </Field>
     <Function name="avtMeshMetaData2" user="true" member="true">
     </Function>
     <Function name="avtMeshMetaData3" user="true" member="true">

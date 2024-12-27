@@ -21,6 +21,10 @@
 //
 //  Programmer: Hank Childs
 //  Creation:   February 21, 2008
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -37,7 +41,7 @@ class EXPRESSION_API avtTransposeExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
 };
 
 #endif

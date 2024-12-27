@@ -1215,6 +1215,7 @@ GetMeshes(0).hideFromGUI = 0
 GetMeshes(0).LODs = 1
 GetMeshes(0).presentGhostZoneTypes = 0
 GetMeshes(0).zonesWereSplit = 0
+GetMeshes(0).hasExtraGhostInfo = 0
 GetMeshes(1).name = "Surface"
 GetMeshes(1).originalName = "Surface"
 GetMeshes(1).validVariable = 1
@@ -1273,6 +1274,7 @@ GetMeshes(1).hideFromGUI = 0
 GetMeshes(1).LODs = 1
 GetMeshes(1).presentGhostZoneTypes = 0
 GetMeshes(1).zonesWereSplit = 0
+GetMeshes(1).hasExtraGhostInfo = 0
 #subsets does not contain any avtSubsetsMetaData objects.
 GetScalars(0).name = "Solid/EffectiveStrain"
 GetScalars(0).originalName = "Solid/EffectiveStrain"

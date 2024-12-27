@@ -2725,12 +2725,23 @@ class MainLauncher(object):
                  "/opt/rocm-6.1.0/lib/llvm/bin/offload-arch"]
 
         gpu_arch = None
-        for file in files:
-            if os.path.exists(file):
-                p = subprocess.run(file, capture_output=True, text=True)
-                if p.stdout != "":
-                    gpu_arch = p.stdout.rstrip()
-                break
+
+        # Assume we are on an AMD system if lspci displays any AMD devices.
+        have_amd = False
+        if os.path.exists("/usr/sbin/lspci"):
+            p = subprocess.run("/usr/sbin/lspci", capture_output=True, text=True)
+            if "amd" in p.stdout.lower():
+                have_amd =  True
+
+        # If we are on an AMD system, use offload-arch to determine the
+        # GPU architecture.
+        if have_amd:
+            for file in files:
+                if os.path.exists(file):
+                    p = subprocess.run(file, capture_output=True, text=True)
+                    if p.stdout != "":
+                        gpu_arch = p.stdout.rstrip()
+                    break
 
         return gpu_arch
 
@@ -2789,6 +2800,8 @@ class MainLauncher(object):
                 if mach == "x86_64":
                     supportedarches.append("darwin-x86_64")
                     supportedarches.append("darwin-i386")
+                elif mach == "arm64":
+                    supportedarches.append("darwin-arm64")
                 else:
                     supportedarches.append("darwin-i386")
             else:
@@ -2817,6 +2830,14 @@ class MainLauncher(object):
                     if procname != -1:
                         if "Intel Core Solo" in line or "Intel Core Duo" in line:
                             supportedarches.append("darwin-i386")
+                        else:
+                            supportedarches.append("darwin-x86_64")
+                            supportedarches.append("darwin-i386")
+                        break
+                    procname = line.find("Chip:")
+                    if procname != -1:
+                        if "Apple M" in line:
+                            supportedarches.append("darwin-arm64")
                         else:
                             supportedarches.append("darwin-x86_64")
                             supportedarches.append("darwin-i386")

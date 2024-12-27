@@ -97,6 +97,7 @@ void avtMeshMetaData::Init()
     LODs = 1;
     presentGhostZoneTypes = 0;
     zonesWereSplit = false;
+    hasExtraGhostInfo = false;
 
     avtMeshMetaData::SelectAll();
 }
@@ -187,6 +188,7 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     LODs = obj.LODs;
     presentGhostZoneTypes = obj.presentGhostZoneTypes;
     zonesWereSplit = obj.zonesWereSplit;
+    hasExtraGhostInfo = obj.hasExtraGhostInfo;
 
     avtMeshMetaData::SelectAll();
 }
@@ -425,7 +427,8 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (hideFromGUI == obj.hideFromGUI) &&
             (LODs == obj.LODs) &&
             (presentGhostZoneTypes == obj.presentGhostZoneTypes) &&
-            (zonesWereSplit == obj.zonesWereSplit));
+            (zonesWereSplit == obj.zonesWereSplit) &&
+            (hasExtraGhostInfo == obj.hasExtraGhostInfo));
 }
 
 // ****************************************************************************
@@ -621,6 +624,7 @@ avtMeshMetaData::SelectAll()
     Select(ID_LODs,                           (void *)&LODs);
     Select(ID_presentGhostZoneTypes,          (void *)&presentGhostZoneTypes);
     Select(ID_zonesWereSplit,                 (void *)&zonesWereSplit);
+    Select(ID_hasExtraGhostInfo,              (void *)&hasExtraGhostInfo);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -707,6 +711,7 @@ avtMeshMetaData::GetFieldName(int index) const
     case ID_LODs:                           return "LODs";
     case ID_presentGhostZoneTypes:          return "presentGhostZoneTypes";
     case ID_zonesWereSplit:                 return "zonesWereSplit";
+    case ID_hasExtraGhostInfo:              return "hasExtraGhostInfo";
     default:  return "invalid index";
     }
 }
@@ -783,6 +788,7 @@ avtMeshMetaData::GetFieldType(int index) const
     case ID_LODs:                           return FieldType_int;
     case ID_presentGhostZoneTypes:          return FieldType_int;
     case ID_zonesWereSplit:                 return FieldType_bool;
+    case ID_hasExtraGhostInfo:              return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -859,6 +865,7 @@ avtMeshMetaData::GetFieldTypeName(int index) const
     case ID_LODs:                           return "int";
     case ID_presentGhostZoneTypes:          return "int";
     case ID_zonesWereSplit:                 return "bool";
+    case ID_hasExtraGhostInfo:              return "bool";
     default:  return "invalid index";
     }
 }
@@ -1173,6 +1180,11 @@ avtMeshMetaData::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_zonesWereSplit:
         {  // new scope
         retval = (zonesWereSplit == obj.zonesWereSplit);
+        }
+        break;
+    case ID_hasExtraGhostInfo:
+        {  // new scope
+        retval = (hasExtraGhostInfo == obj.hasExtraGhostInfo);
         }
         break;
     default: retval = false;

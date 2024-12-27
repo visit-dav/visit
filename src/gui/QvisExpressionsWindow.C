@@ -178,6 +178,13 @@
 //
 //    Kathleen Biagas, Wed Jun 15 2022
 //    Added crack_width to misc submenu.
+// 
+//    Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+//    Added global mesh expressions: global_avg, global_max, global_min, 
+//    global_rms, global_std_dev, global_sum, and global_variance.
+// 
+//    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
+//    Added displacement to vector expressions.
 //
 // ****************************************************************************
 
@@ -291,6 +298,7 @@ const char *expr_vector[] = {
     "colorlookup",
     "cross",
     "curl",
+    "displacement",
     "divergence",
     "dot",
     "gradient",
@@ -444,7 +452,18 @@ const char *expr_time_iteration[] = {
     NULL
 };
 
-#define NUM_EXPRESSION_CATEGORIES 15
+const char *expr_global[] = {
+    "global_avg",
+    "global_max",
+    "global_min",
+    "global_rms",
+    "global_std_dev",
+    "global_sum",
+    "global_variance",
+    NULL
+};
+
+#define NUM_EXPRESSION_CATEGORIES 16
 ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 
 // ****************************************************************************
@@ -469,6 +488,9 @@ ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 //
 //   Hank Childs, Mon Jul  5 11:20:47 PDT 2010
 //   Enable Load and Save buttons.
+// 
+//   Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+//   Added Global category.
 //
 // ****************************************************************************
 
@@ -513,6 +535,8 @@ QvisExpressionsWindow::QvisExpressionsWindow(
     exprlist[13].list = expr_logical;
     exprlist[14].name = tr("Time iteration");
     exprlist[14].list = expr_time_iteration;
+    exprlist[15].name = tr("Global");
+    exprlist[15].list = expr_global;
 
     exprList = exprList_;
 }

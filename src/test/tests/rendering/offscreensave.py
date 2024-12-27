@@ -31,6 +31,9 @@
 #    to run_dir so the test will execute on Windows properly once it can
 #    be enabled.
 #
+#    Eric Brugger, Mon Nov 18 11:44:28 PST 2024
+#    Updated the large image test and added several more.
+#
 # ----------------------------------------------------------------------------
 
 import hashlib
@@ -139,9 +142,8 @@ def GeneralTests():
     slider.Delete()
     DeleteAllPlots()
 
-def TestLargeImage():
-    # Test saving a 16384 x 16384 image
-    OpenDatabase(silo_data_path("curv2d.silo"))
+def TestLargeImage(width, height, md5sum):
+    # Test saving a large image
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -151,13 +153,16 @@ def TestLargeImage():
     
     swa=SaveWindowAttributes()
     # ensure the image is written to the run_dir by providing full path
-    imgOutName=pjoin(TestEnv.params["run_dir"], "image_16384x16384.png")
-    swa.width = 16384
-    swa.height = 16384
+    imgOutName=pjoin(TestEnv.params["run_dir"], "image_%dx%d.png" % (width,height))
+    swa.width = width
+    swa.height = height
+    swa.resConstraint = swa.NoConstraint
     swa.fileName = imgOutName
     swa.family = 0
     SetSaveWindowAttributes(swa)
     SaveWindow()
+
+    DeleteAllPlots()
 
     # Comparing md5 sum instead of image, since the image is large.
     md5_hash = hashlib.md5()
@@ -165,12 +170,24 @@ def TestLargeImage():
         # Read and update hash in chunks of 4K
         for byte_block in iter(lambda: f.read(4096),b""):
             md5_hash.update(byte_block)
-    TestValueEQ("md5 hash for 16384x16384 image", md5_hash.hexdigest(), "3ec309acbd64eb52f8d7bf4c1f9e9628")
+    TestValueEQ("md5 hash for %dx%d image" % (width,height), md5_hash.hexdigest(), md5sum)
 
 GeneralTests()
 
 if not sys.platform.startswith("win"):
     # Cannot perform this test on Windows as image size is limited
-    TestLargeImage()
+    OpenDatabase(silo_data_path("curv2d.silo"))
+
+    TestLargeImage(16384, 16384, "19d173a8af27d8b552a58bf7b99fa771")
+    TestLargeImage(23168, 23168, "e76139eb88920334c6f931b5fec9c09d")
+    TestLargeImage(32768, 16380, "5a6315eae4bf7912a0ab6bd15f62d624")
+
+    # The images sizes for the last 2 tests are too large so they
+    # will get scaled to be within the size allowed. The 32768x32768
+    # image will be 23168x23168 and the 32768x24000 will be 27071x19827.
+    TestLargeImage(32768, 32768, "e76139eb88920334c6f931b5fec9c09d")
+    TestLargeImage(32768, 24000, "8c9c5ba01ab8132a42b7d0fa457cabba")
+
+    CloseDatabase(silo_data_path("curv2d.silo"))
 
 Exit()
