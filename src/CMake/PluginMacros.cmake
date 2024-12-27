@@ -288,6 +288,10 @@ function(visit_add_plot_plugin)
         ${COMMON_HEADERS})
     if(DEFINED plot_GSRC)
         list(APPEND LIBG_SOURCES ${plot_GSRC})
+        foreach(src ${plot_GSRC})
+            string(REPLACE ".C" ".h" hdr ${src})
+            list(APPEND LIBG_HEADERS ${hdr})
+        endforeach()
     endif()
 
     set(LIBV_SOURCES
@@ -331,7 +335,7 @@ function(visit_add_plot_plugin)
         foreach(src ${plot_ESRC})
             string(REPLACE ".C" ".h" src hdr)
             list(APPEND LIBE_HEADERS ${hdr})
-        endforeach(src ${plot_ESRC})
+        endforeach()
     endif()
 
     set(ITarget    I${plot_PNAME}Plot)
@@ -404,7 +408,7 @@ function(visit_add_plot_plugin)
         endif()
 
         if(VISIT_JAVA)
-            file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/operators)
+            file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/plots)
             add_custom_target(Java${plot_PNAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
                 DEPENDS_ON JavaClient
                 WORKING_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
