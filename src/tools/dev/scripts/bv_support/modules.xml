@@ -38,6 +38,7 @@
             <lib name="mpich"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
+            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
@@ -86,6 +87,7 @@
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="netcdf"/>
+            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
             <lib name="pidx"/>
