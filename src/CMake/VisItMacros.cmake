@@ -375,8 +375,12 @@ endmacro()
 #    DEPENDS_ON   [dep1 ...]                 OPTIONAL
 #    OUTPUT_NAME  [name]                     OPTIONAL
 #    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
-#    FOLDER       [name])                    OPTIONAL
+#    FOLDER       [name]                     OPTIONAL
 #    SKIP_INSTALL                            OPTIONAL (visit only)
+#
+# Modifications:
+#    Kathleen Biags, Thu Oct 24, 2024
+#    Added SKIP_INSTALL to indicate the target should not be installed.
 #
 ##############################################################################
 
@@ -393,7 +397,6 @@ macro(visit_add_library)
     if(NOT val_NAME)
         message(FATAL_ERROR "visit_add_library() must be called with argument NAME <name>")
     endif()
-
     if (NOT val_SOURCES AND NOT val_HEADERS)
         message(FATAL_ERROR "visit_add_library(NAME ${val_NAME} ...) called with no given sources or headers (at least one is required).")
     endif()
