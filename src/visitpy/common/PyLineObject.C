@@ -233,7 +233,7 @@ static PyObject *
 LineObject_GetWidth(PyObject *self, PyObject *args)
 {
     LineObjectObject *obj = (LineObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntAttribute1()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("width")->AsInt()));
     return retval;
 }
 
@@ -382,9 +382,20 @@ LineObject_SetBeginArrow(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the beginArrow in the object.
-    obj->data->GetOptions().GetEntry("beginArrow")->SetValue(ival);
-    UpdateAnnotationHelper(obj->data);
+    if(ival >=0 && ival <=2)
+    {
+        // Set the beginArrow in the object.
+        obj->data->GetOptions().GetEntry("beginArrow")->SetValue(ival);
+        UpdateAnnotationHelper(obj->data);
+    }
+    else
+    {
+        fprintf(stderr, "An invalid  value was given. "
+                "Valid values are in the range of [0,2]. "
+                "You can also use the following names: "
+                "\"None\", \"Line\", \"Solid\"\n");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -407,9 +418,20 @@ LineObject_SetEndArrow(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the endArrow in the object.
-    obj->data->GetOptions().GetEntry("endArrow")->SetValue(ival);
-    UpdateAnnotationHelper(obj->data);
+    if(ival >=0 && ival <=2)
+    {
+        // Set the endArrow in the object.
+        obj->data->GetOptions().GetEntry("endArrow")->SetValue(ival);
+        UpdateAnnotationHelper(obj->data);
+    }
+    else
+    {
+        fprintf(stderr, "An invalid  value was given. "
+                "Valid values are in the range of [0,2]. "
+                "You can also use the following names: "
+                "\"None\", \"Line\", \"Solid\"\n");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -506,6 +528,12 @@ LineObject_getattr(PyObject *self, char *name)
         return LineObject_GetBeginArrow(self, NULL);
     if(strcmp(name, "endArrow") == 0)
         return LineObject_GetEndArrow(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(0));
+    if(strcmp(name, "Line") == 0)
+        return PyInt_FromLong(long(1));
+    if(strcmp(name, "Solid") == 0)
+        return PyInt_FromLong(long(2));
 
     return Py_FindMethod(LineObject_methods, self, name);
 }
@@ -545,88 +573,76 @@ LineObject_setattr(PyObject *self, char *name, PyObject *args)
     return retval ? 0 : -1;
 }
 
-static int
-LineObject_print(PyObject *v, FILE *fp, int flags)
-{
-    LineObjectObject *obj = (LineObjectObject *)v;
 
-    if(obj->data->GetVisible())
-        fprintf(fp, "visible = 1\n");
-    else
-        fprintf(fp, "visible = 0\n");
-    if(obj->data->GetActive())
-        fprintf(fp, "active = 1\n");
-    else
-        fprintf(fp, "active = 0\n");
-    {
-        const double *position = obj->data->GetPosition();
-        fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
-    }
-    {
-        const double *position2 = obj->data->GetPosition2();
-        fprintf(fp, "position2 = (%g, %g)\n", position2[0], position2[1]);
-    }
-    fprintf(fp, "width = %d\n", obj->data->GetOptions().GetEntry("width")->AsInt());
-    if (obj->data->GetUseForegroundForTextColor())
-        fprintf(fp, "useForegroundForLineColor = 1\n");
-    else
-        fprintf(fp, "useForegroundForLineColor = 0\n");
-    const unsigned char *color = obj->data->GetColor1().GetColor();
-    fprintf(fp, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
-    fprintf(fp, "opacity = %d\n", obj->data->GetColor1().Alpha());
-    fprintf(fp, "beginArrow = %d\n", obj->data->GetOptions().GetEntry("beginArrow")->AsInt());
-    fprintf(fp, "endArrow = %d\n", obj->data->GetOptions().GetEntry("endArrow")->AsInt());
-
-    return 0;
-}
-
-PyObject *
-PyLineObject_StringRepresentation(const AnnotationObject *atts)
+std::string
+PyLineObject_ToString(const AnnotationObject *atts, const char *prefix)
 {
     std::string str;
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        snprintf(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
+
     if(atts->GetActive())
-        snprintf(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
     str += tmpStr;
+
     const double *position = atts->GetPosition();
-    snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+    snprintf(tmpStr, 1000, "%sposition = (%g, %g)\n", prefix, position[0], position[1]);
     str += tmpStr;
+
     const double *position2 = atts->GetPosition2();
-    snprintf(tmpStr, 1000, "position2 = (%g, %g)\n", position2[0], position2[1]);
+    snprintf(tmpStr, 1000, "%sposition2 = (%g, %g)\n", prefix, position2[0], position2[1]);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "width = %d\n", atts->GetIntAttribute1());
-    str += tmpStr;
-    if(atts->GetUseForegroundForTextColor())
-        snprintf(tmpStr, 1000, "useForegroundForLineColor = 1\n");
-    else
-        snprintf(tmpStr, 1000, "useForegroundForLineColor = 0\n");
+
+    snprintf(tmpStr, 1000, "%swidth = %d\n", prefix,
+        atts->GetOptions().GetEntry("width")->AsInt());
     str += tmpStr;
 
     const unsigned char *color = atts->GetColor1().GetColor();
-    snprintf(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
+    snprintf(tmpStr, 1000, "%scolor = (%d, %d, %d, %d)\n", prefix, int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     str += tmpStr;
-    snprintf(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
+
+    if(atts->GetUseForegroundForTextColor())
+        snprintf(tmpStr, 1000, "%suseForegroundForLineColor = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%suseForegroundForLineColor = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "beginArrow = %d\n", atts->GetOptions().GetEntry("beginArrow")->AsInt());
+
+
+    snprintf(tmpStr, 1000, "%sopacity = %d\n", prefix, atts->GetColor1().Alpha());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "endArrow = %d\n", atts->GetOptions().GetEntry("endArrow")->AsInt());
+
+    const char * arrowTypes[]={"None", "Line", "Solid"};
+    snprintf(tmpStr, 1000, "%sbeginArrow = %s%s # None, Line, Solid\n", prefix,
+      prefix, arrowTypes[atts->GetOptions().GetEntry("beginArrow")->AsInt()]);
     str += tmpStr;
-    return PyString_FromString(str.c_str());
+
+    snprintf(tmpStr, 1000, "%sendArrow = %s%s # None, Line, Solid\n", prefix,
+      prefix, arrowTypes[atts->GetOptions().GetEntry("endArrow")->AsInt()]);
+    str += tmpStr;
+
+    return str;
+}
+
+static int
+LineObject_print(PyObject *v, FILE *fp, int flags)
+{
+    LineObjectObject *obj = (LineObjectObject *)v;
+    fprintf(fp, "%s", PyLineObject_ToString(obj->data, "").c_str());
+    return 0;
 }
 
 static PyObject *
 LineObject_str(PyObject *v)
 {
     LineObjectObject *obj = (LineObjectObject *)v;
-    return PyLineObject_StringRepresentation(obj->data);
+    return PyString_FromString(PyLineObject_ToString(obj->data,"").c_str());
 }
 
 

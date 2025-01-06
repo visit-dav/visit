@@ -62,6 +62,7 @@ avtDeterminantExpression::~avtDeterminantExpression()
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in_ds         The input dataset.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2003
@@ -70,12 +71,15 @@ avtDeterminantExpression::~avtDeterminantExpression()
 //
 //    Hank Childs, Fri Mar  3 08:56:52 PST 2006
 //    Add support for 2D tensors ['7063].
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
  
 void
 avtDeterminantExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                      int ncomponents, int ntuples)
+                                      int ncomponents, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomponents == 9)
     {

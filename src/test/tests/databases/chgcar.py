@@ -142,7 +142,7 @@ ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
 
 
 VolumeAtts.opacityAttenuation = .4
-VolumeAtts.rendererType = VolumeAtts.RayCasting
+VolumeAtts.rendererType = VolumeAtts.Composite
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_09")

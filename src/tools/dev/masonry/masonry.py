@@ -397,8 +397,7 @@ class NotarizeAction(Action):
                     cmd = 'codesign --force --options runtime --timestamp'
                     cmd += ' --entitlements %s' % self.params["entitlements"]
                     cmd += ' -s "%s" %s' % (self.params["cert"], binary)
-                    rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                    print("[res: %s]" % rout)
+                    rcode, rout = shexe(cmd, ret_output=True, env=env)
 
             # codesign VisIt.app
             visit_app = pjoin(bundle_dir, "VisIt-%s/VisIt.app" % self.params["build_version"])
@@ -406,7 +405,6 @@ class NotarizeAction(Action):
             cmd += ' --entitlements %s' % self.params["entitlements"]
             cmd += ' -s "%s" %s' % (self.params["cert"], visit_app) 
             rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-            print("[res: %s]" % rout)
 
             # Create DMG to upload to Apple
             notarize_dir = pjoin(self.params["build_dir"], "notarize.%s" % self.params["build_type"])
@@ -427,6 +425,13 @@ class NotarizeAction(Action):
             # the dmg creation process is unreliable, it can often fail with:
             #   hdiutil: create failed - Resource busy 
             # but then works fine on subsequent tries, so we try here multiple times
+            #
+            # NOTE (miller86) Mark C. Miller, Fri Dec 13 19:12:02 PST 2024
+            # I believe the "Resource busy" condition we sometimes hit is actually not
+            # from hdiutil commands here but instead down in CMake's `make package`
+            # logic when large parallel task counts are used (e.g. -j8 or more).
+            # So, in the trigger in the bootstrap, we override nthreads to 1 there in
+            # hopes of preventing the "Resource busy" error in hdiutil commands.
             ##########################################################################
 
             dmg_created = False
@@ -447,52 +452,49 @@ class NotarizeAction(Action):
                 raise RuntimeError(msg, cmd, dmg_create_output)
 
             ######################################
-            # Upload to Apple Notary Service 
+            # Submit to Apple Notary Service 
             ######################################
-            cmd = [
-                "xcrun", "notarytool", "submit",
-                "--apple-id", self.params["username"],
-                "--keychain-profile", self.params["password"],
-                "--team-id", self.params["asc_provider"],
-                "--output-format", "json",
-                temp_dmg
-            ]
+            cmd = 'xcrun notarytool submit'
+            cmd += ' --apple-id "%s"' % self.params["username"]
+            cmd += ' --keychain-profile %s' % self.params["password"]
+            cmd += ' --team-id %s' % self.params["asc_provider"]
+            cmd += ' --output-format json'
+            cmd += ' %s' % temp_dmg
             rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
             if rcode != 0:
-                raise RuntimeError("[error submitting VisIt dmg for notarization]", cmd)
+                raise RuntimeError("[error submitting VisIt dmg for notarization, error='%s']"%rout, cmd)
 
             jr = json.loads(rout)
             uuid = jr.get("id")
             print("[id: %s]" % uuid)
 
             # Check status of notarization request
-            cmd = [
-                "xcrun", "notarytool", "info",
-                "--apple-id", self.params["username"],
-                "--keychain-profile", self.params["password"],
-                "--team-id", self.params["asc_provider"],
-                "--output-format", "json",
-                uuid
-            ]
+            cmd = 'xcrun notarytool info'
+            cmd += ' --apple-id "%s"' % self.params["username"]
+            cmd += ' --keychain-profile %s' % self.params["password"]
+            cmd += ' --team-id %s' % self.params["asc_provider"]
+            cmd += ' --output-format json'
+            cmd += ' %s' % uuid
 
             status = "in progress"
-            while "in progress" in status:
-                time.sleep(30)
+            while "progress" in status:
+                time.sleep(120) # check status every two minutes
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 jr = json.loads(rout)
-                status = jr.get("status")
-                status = status.strip()
-                status = status.lower()
-                print("[status: %s]" % status)
+                status = jr.get("status").strip().lower()
+                print('Status check result: %s ("%s")'%(status,rout))
              
-            ###################################
+            #################################################################
             # Staple notarization ticket to app bundle
-            ###################################
+            # NOTE: Mark C. Miller, Sat Dec 14 09:06:34 PST 2024
+            # Stapling helps users who are not connected to a network still
+            # be able to validate the VisIt .dmg download before using it.
+            #################################################################
 
-            if status == "accepted":
+            if "accepted" in status:
                 cmd = "xcrun stapler staple %s" % visit_app
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                print("[stapler: %s]" % rout)
+                print('[stapler result: "%s"]' % rout)
                 if rcode != 0:
                     raise RuntimeError("[error stapling VisIt (bad network or on VPN?)]", cmd)
 
@@ -500,16 +502,17 @@ class NotarizeAction(Action):
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
                 cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                print("[hdiutil: %s]" % rout)
+                print('[hdiutil result: "%s"]' % rout)
                 if rcode != 0:
                     raise RuntimeError("[error creating stapled VisIt.stpl.dmg]", cmd)
 
-                dmg_release = pjoin(notarize_dir, "VisIt-%s.dmg" % self.params["build_version"])
+                final_dmg_name = "visit%s.darwin%s-%s.dmg" % (self.params["build_version"].replace('.','_'),os.uname().release[0:2],os.uname().machine)
+                dmg_release = pjoin(notarize_dir, final_dmg_name)
                 cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                print("[hdiutil:convert: %s]" % rout)
+                print('[hdiutil convert result: "%s"]' % rout)
                 if rcode != 0:
-                    raise RuntimeError("[error creating final VisIt-{0}.dmg]".format(self.params["build_version"]), cmd)
+                    raise RuntimeError("[error creating final {0}]".format(final_dmg_name), cmd)
             else:
                 raise RuntimeError("Notarization Failed!")
         except KeyboardInterrupt as e:

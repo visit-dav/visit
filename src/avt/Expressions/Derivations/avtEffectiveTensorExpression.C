@@ -67,11 +67,15 @@ avtEffectiveTensorExpression::~avtEffectiveTensorExpression()
 //
 //    Mark C. Miller, Mon Nov 11 14:21:38 PST 2019
 //    Added comments to try to document what this function is computing.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
+//
 // ****************************************************************************
 
 void
 avtEffectiveTensorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                   int ncomps, int ntuples)
+                                   int ncomps, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomps == 9)
     {

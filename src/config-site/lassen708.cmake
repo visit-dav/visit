@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.4.2/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Tue Feb 20 18:58:54 PST 2024
-## system: Linux lassen709 4.14.0-115.35.1.3chaos.ch6a.ppc64le #1 SMP Wed Jul 21 17:12:16 PDT 2021 ppc64le ppc64le ppc64le GNU/Linux
-## by: cyrush
+## created: Tue Nov 26 12:50:59 PST 2024
+## system: Linux lassen708 4.14.0-115.35.1.3chaos.ch6a.ppc64le #1 SMP Wed Jul 21 17:12:16 PDT 2021 ppc64le ppc64le ppc64le GNU/Linux
+## by: justin
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.4.1/blueos)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/blueos)
 SET(VISITARCH linux-ppc64le_gcc-8.3)
 
 ### NOTE: Modified from build_visit output
@@ -94,12 +94,6 @@ SETUP_APP_VERSION(QT 5.14.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/${QT_VERSION}/${VISITARCH})
 
 ##
-## QWT
-##
-SETUP_APP_VERSION(QWT 6.1.2)
-VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
-
-##
 ## VTK
 ##
 SETUP_APP_VERSION(VTK 9.2.6)
@@ -169,8 +163,8 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.9.1)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.1/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.9.2)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ${VISIT_SILO_LIBDEP} TYPE STRING)
 
 ##
@@ -218,9 +212,15 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## QWT
+##
+SETUP_APP_VERSION(QWT 6.1.2)
+VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
+
+##
 ## Uintah
 ##
-SETUP_APP_VERSION(UINTAH 2.6.2)
+SETUP_APP_VERSION(UINTAH 2.6.3)
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##

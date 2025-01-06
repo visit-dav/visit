@@ -1644,6 +1644,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Kathleen Biagas, Fri Aug 31 13:15:56 PDT 2018
 //    Send Options from SaveWindowAttributes to fileWriter if non-image.
 //
+//    Eric Brugger, Wed Nov 13 15:40:54 PST 2024
+//    I added logic so that the maximum image size is limited to 536,756,224
+//    pixels.
+//
 // ****************************************************************************
 
 void
@@ -1885,6 +1889,17 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             {
                 w = (int)((double)w * (double)VISIT_RENDERING_SIZE_LIMIT / (double)h);
                 h = VISIT_RENDERING_SIZE_LIMIT;
+                GetViewerMessaging()->Message(
+                    TR("The window was too large to save at the requested resolution.  "
+                       "The resolution has been automatically reduced."));
+            }
+	    // if the total image size is too large, reduce them
+	    // proportionally.
+	    if (w * h > 536756224)
+            {
+                double image_size = (double)(w * h);
+                w = (int)((double)w * std::sqrt(536756224. / image_size));
+                h = (int)((double)h * std::sqrt(536756224. / image_size));
                 GetViewerMessaging()->Message(
                     TR("The window was too large to save at the requested resolution.  "
                        "The resolution has been automatically reduced."));

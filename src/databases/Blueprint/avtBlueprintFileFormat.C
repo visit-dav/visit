@@ -1021,8 +1021,13 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle 1D curve case.
 // 
-//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
-//     Fixed warnings.
+//    Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//    Fixed warnings.
+// 
+//    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+//    Determine if MFEM meshes could be periodic (all periodic are L2 but not 
+//    all L2 are periodic) and mark fields for those meshes as nodal because
+//    they will use legacy LOR down the line which makes all fields nodal.
 //
 // ****************************************************************************
 void
@@ -1050,6 +1055,10 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     // fields
     std::map<std::string,int> topo_dims;
 
+    // a map from topology names to grid function names
+    // ... if any exist
+    std::map<std::string, std::string> topo_names_to_gf_names;
+
     //
     // loop over topologies
     //
@@ -1075,6 +1084,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         {
             BP_PLUGIN_INFO(mesh_topo_name << " is an mfem mesh");
             is_mfem_mesh = true;
+            topo_names_to_gf_names[topo_name] = n_topo["grid_function"].as_string();
         }
 
         string coordset_name = n_topo["coordset"].as_string();
@@ -1191,6 +1201,30 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
     if(n_mesh_info.has_child("fields"))
     {
+        // This is a set of topology names that MAY BE periodic.
+        // There is no way to check directly, so we are forced to
+        // filter all L2 meshes.
+        std::set<std::string> periodic_topos;
+
+        // examine mfem basis functions to filter periodic meshes
+        for (const auto & topo_gf : topo_names_to_gf_names)
+        {
+            const std::string topo_name = topo_gf.first;
+            const std::string gf_name = topo_gf.second;
+            if (n_mesh_info["fields"].has_child(gf_name))
+            {
+                const Node &n_field = n_mesh_info["fields"][gf_name];
+                if (n_field.has_child("basis"))
+                {
+                    const std::string basis = n_field["basis"].as_string();
+                    if (basis.find("L2_") != std::string::npos)
+                    {
+                        // COULD BE periodic
+                        periodic_topos.insert(topo_name);
+                    }
+                }
+            }
+        }
 
         NodeConstIterator fields_itr = n_mesh_info["fields"].children();
 
@@ -1222,31 +1256,37 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
             int ncomps = n_field["number_of_components"].to_int();
             int ndims = topo_dims[var_topo_name];
-
-            // note: this logic is ok b/c the mfem case
-            // (w/ basis instead of assoc) will always be nodal
-            avtCentering cent = AVT_NODECENT;
-
+            
+            // 
+            // handle centering
+            // 
+            avtCentering cent = AVT_NODECENT; // default
             if (n_field.has_child("association") &&
                 n_field["association"].as_string() == "element")
             {
                 cent = AVT_ZONECENT;
             }
-            else if(n_field.has_child("basis"))
+            else if (n_field.has_child("basis"))
             {
                 // if any of the fields are mfem grid funcs, we may have to
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
 
                 m_mfem_mesh_map[var_topo_name] = true;
 
-                // if new LOR is turned on
-                if (m_new_refine)
+                if (periodic_topos.count(var_topo_name) > 0)
                 {
+                    // if this field belongs to a topology that might be a periodic 
+                    // mfem mesh then we are always nodal because we are going to
+                    // fall back to legacy LOR.
+                    cent = AVT_NODECENT;
+                }
+                else if (m_new_refine) // if new LOR is turned on
+                {
+                    const std::string basis = n_field["basis"].as_string();
                     // H1 is nodal
                     // L2 is zonal
-                    std::string basis = n_field["basis"].as_string();
-                    bool l2 = basis.find("L2_") != std::string::npos;
-                    bool h1 = basis.find("H1_") != std::string::npos;
+                    const bool l2 = basis.find("L2_") != std::string::npos;
+                    const bool h1 = basis.find("H1_") != std::string::npos;
                     bool node_centered;
                     if (h1 && l2)
                     {
@@ -1260,9 +1300,14 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                         node_centered = true; 
                     }
                     else
+                    {
                         node_centered = h1 && !l2;
+                    }
+
                     if (!node_centered)
+                    {
                         cent = AVT_ZONECENT;
+                    }
                 }
             }
 

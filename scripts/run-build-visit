@@ -9,13 +9,13 @@
 # Usage:
 #    run-build-visit -<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
-#       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
-#       kickit_opengl (B-Div, Linux, x86_64, opengl),
-#       poodle    (LC, Linux, x86_64, toss4),
-#       lassen    (LC, Linux, power9),
-#       rzwhippet (LC, Linux, x86_64, toss4),
-#       rzvernal  (LC, Linux, x86_64, toss4-cray),
-#       trinity   (LANL, x86_64)
+#       poodle     (LC, Linux, x86_64, toss4),
+#       lassen     (LC, Linux, power9),
+#       rzwhippet  (LC, Linux, x86_64, toss4),
+#       rzvernal   (LC, Linux, x86_64, toss4-cray),
+#       crossroads (LANL, x86_64)
+#       tuolumne   (LC, Linux, x86_64, toss4-cray),
+#       rzadams    (LC, Linux, x86_64, toss4-cray)
 #
 # Modifications:
 #    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
@@ -61,18 +61,30 @@
 #    Justin Privitera, Tue Sep 10 16:23:34 PDT 2024
 #    Removed rztopaz.
 #
+#    Eric Brugger, Mon Oct  7 09:03:43 PDT 2024
+#    Added support for building on tuolumne.
+# 
+#    Justin Privitera, Wed Nov  6 16:11:16 PST 2024
+#    Added support for building on rzadams (secretly the same as 
+#    tuolumne).
+# 
+#    Justin Privitera, Fri Nov 22 16:40:46 PST 2024
+#    Removed kickit with extreme prejudice.
+#
+#    Eric Brugger, Wed Dec  4 16:00:35 PST 2024
+#    Removed trinity and added crossroads.
+#
 #-----------------------------------------------------------------------
 
 #
 # Parse the execute line, providing default values for error checking.
 #
-kickit_mesagl=false
-kickit_opengl=false
 poodle=false
 lassen=false
 rzgenie=false
 rzvernal=false
-trinity=false
+crossroads=false
+tuolumne=false
 
 machine_name="unknown"
 
@@ -89,16 +101,6 @@ ran_build_visit=false
 for abc
 do
    case $1 in
-      -kickit_mesagl)
-         kickit_mesagl=true
-         machine_name="kickit_mesagl"
-         shift
-         ;;
-      -kickit_opengl)
-         kickit_opengl=true
-         machine_name="kickit_opengl"
-         shift
-         ;;
       -poodle)
          poodle=true
          machine_name="poodle"
@@ -119,9 +121,19 @@ do
          machine_name="rzvernal"
          shift
          ;;
-      -trinity)
-         trinity=true
-         machine_name="trinity"
+      -crossroads)
+         crossroads=true
+         machine_name="crossroads"
+         shift
+         ;;
+      -tuolumne)
+         tuolumne=true
+         machine_name="tuolumne"
+         shift
+         ;;
+      -rzadams)
+         tuolumne=true
+         machine_name="rzadams"
          shift
          ;;
       -v)
@@ -142,13 +154,13 @@ if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
-   echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
-   echo "    poodle    (LC, Linux, x86_64, toss4),"
-   echo "    lassen    (LC, Linux, power9),"
-   echo "    rzwhippet (LC, Linux, x86_64, toss4),"
-   echo "    rzvernal  (LC, Linux, x86_64, toss4-cray),"
-   echo "    trinity   (LANL, Linux, x86_64)"
+   echo "    poodle     (LC, Linux, x86_64, toss4),"
+   echo "    lassen     (LC, Linux, power9),"
+   echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
+   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -166,26 +178,12 @@ fi
 #######################################################
 
 #
-# Info line
+# Info and set ran_build_visit
 #
-if [ "$kickit_mesagl" = true ]; then
-   echo "Building using mesagl on $machine_name"
-elif [ "$kickit_opengl" = true ]; then
-   echo "Building using opengl on $machine_name"
-elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
+   [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
-else
-   echo "case for $machine_name not implemented. Bailing out."
-   exit
-fi
-
-#
-# Set ran_build_visit
-#
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
    ran_build_visit=true
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -195,17 +193,15 @@ fi
 #
 # Set destination directory
 #
-if [ "$kickit_mesagl" = true ]; then
-   dest_dir=/usr/gapps/visit/thirdparty_shared/$version/mesagl
-elif [ "$kickit_opengl" = true ]; then
-   dest_dir=/usr/gapps/visit/thirdparty_shared/$version/opengl
-elif [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$lassen" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
 elif [ "$rzvernal" = true ]; then
-   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray
-elif [ "$trinity" = true ]; then
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
+elif [ "$tuolumne" = true ]; then
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx942
+elif [ "$crossroads" = true ]; then
    dest_dir=/usr/projects/views/visit/thirdparty_shared/$version
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -215,11 +211,10 @@ fi
 #
 # Set destination group
 #
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ]; then
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
-elif [ "$trinity" = true ]; then
+elif [ "$crossroads" = true ]; then
    dest_group=viz
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -229,9 +224,9 @@ fi
 #
 # housekeeping
 #
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
+   [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
       mv ${build_visit_script}_log.${machine_name} ${build_visit_script}_log
    fi
@@ -246,25 +241,7 @@ fi
 #
 # Call build_visit
 #
-if [ "$kickit_mesagl" = true ]; then
-   export CC=/usr/gapps/gcc/gcc-9.1/bin/gcc
-   export CXX=/usr/gapps/gcc/gcc-9.1/bin/g++
-   export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
-   export PATH=/usr/gapps/gcc/gcc-9.1/bin:$PATH
-   env CC=/usr/gapps/gcc/gcc-9.1/bin/gcc CXX=/usr/gapps/gcc/gcc-9.1/bin/g++ \
-   ./$build_visit_script --group ${dest_group} --required --optional --parallel \
-    --mpich --mesagl --uintah --qwt --no-adios2 --no-moab --no-visit --makeflags -j4 \
-    --thirdparty-path ${dest_dir}
-elif [ "$kickit_opengl" = true ]; then
-   export CC=/usr/gapps/gcc/gcc-9.1/bin/gcc
-   export CXX=/usr/gapps/gcc/gcc-9.1/bin/g++
-   export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64:/usr/gapps/gcc/gcc-9.1/lib
-   export PATH=/usr/gapps/gcc/gcc-9.1/bin:$PATH
-   env CC=/usr/gapps/gcc/gcc-9.1/bin/gcc CXX=/usr/gapps/gcc/gcc-9.1/bin/g++ \
-   ./$build_visit_script --group ${dest_group} --skip-opengl-context-check --required --optional \
-    --parallel --mpich --osmesa --uintah --qwt --no-adios2 --no-moab --no-visit --makeflags -j4 \
-    --thirdparty-path ${dest_dir}
-elif [ "$poodle" = true ]; then
+if [ "$poodle" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
@@ -292,20 +269,23 @@ elif [ "$rzvernal" = true ]; then
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
-elif [ "$trinity" = true ]; then
-   module swap PrgEnv-intel/6.0.10 PrgEnv-gnu/6.0.10
-   module swap gcc/11.2.0 gcc/8.2.0
-   export XTPE_LINK_TYPE=dynamic
-   export CRAYPE_LINK_TYPE=dynamic
-   env C_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
-       CXX_COMPILER=/opt/cray/pe/craype/2.7.15/bin/CC \
-       PAR_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
-       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.15/bin/CC \
-       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/include \
-       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -lmpich" \
+elif [ "$crossroads" = true ]; then
+   env C_COMPILER=gcc \
+       CXX_COMPILER=g++ \
+       PAR_COMPILER=mpicc \
+       PAR_COMPILER_CXX=mpic++ \
+       PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
+       PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --no-adios --no-adios2 --no-mili --no-pyside --qt510 --qwt --no-visit \
+       --qt6 --qwt --no-adios --no-gdal --no-pyside --no-visit \
        --makeflags -j16 --thirdparty-path ${dest_dir}
+elif [ "$tuolumne" = true ]; then
+   env CC=gcc \
+       CXX=g++ \
+       PAR_COMPILER=cc \
+       PAR_COMPILER_CXX=CC \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab --no-icet \
+       --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-pidx --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -314,9 +294,9 @@ fi
 #
 # Final housekeeping and permissions
 #
-if [ "$kickit_mesagl" = true ] || [ "$kickit_opengl" = true ] || \
-   [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$trinity" = true ]; then
+if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
+   [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
    # just in case perms
    echo "changing permissions of ${dest_dir}"
@@ -335,12 +315,12 @@ then
    echo "Invalid or missing machine name."
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
-   echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
-   echo "    poodle   (LC, Linux, x86_64, toss4),"
-   echo "    lassen   (LC, Linux, power9),"
-   echo "    rzgenie  (LC, Linux, x86_64, toss3),"
-   echo "    rzvernal (LC, Linux, x86_64, toss4-cray),"
-   echo "    trinity  (LANL, Linux, x86_64)"
+   echo "    poodle     (LC, Linux, x86_64, toss4),"
+   echo "    lassen     (LC, Linux, power9),"
+   echo "    rzgenie    (LC, Linux, x86_64, toss3),"
+   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
    exit
 fi

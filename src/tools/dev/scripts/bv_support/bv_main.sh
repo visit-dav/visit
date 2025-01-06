@@ -337,23 +337,23 @@ function initialize_build_visit()
         #  export VISITARCH=${VISITARCH-${ARCH}}
         export SO_EXT="dylib"
         VER=$(uname -r)
-	
+    
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
         # work See issue https://github.com/visit-dav/visit/issues/1506
 
-	VER_MAJOR=${VER%%.*}
+    VER_MAJOR=${VER%%.*}
 
-	# bash script educational note:
-	# The less than sign "<" is an arithmetic expression and
-	# as such one must use parenthesis (( .. )) and not square brackets.
-	# i.e. if (( ${VER_MAJOR} < 8 )) ; then
+    # bash script educational note:
+    # The less than sign "<" is an arithmetic expression and
+    # as such one must use parenthesis (( .. )) and not square brackets.
+    # i.e. if (( ${VER_MAJOR} < 8 )) ; then
 
-	# Square brackets are for conditionals only. To make it a
-	# conditional one must use "-lt"
+    # Square brackets are for conditionals only. To make it a
+    # conditional one must use "-lt"
         # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
-	    
+        
         if [[ ${VER_MAJOR} -lt 18 ]] ; then
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             exit 1
@@ -387,20 +387,16 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
-	
+    
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
         if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -m64 -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         elif [[ "$(uname -m)" == "ppc64" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
                 CFLAGS="$CFLAGS -qpic"
@@ -412,13 +408,9 @@ function initialize_build_visit()
             else
                 CFLAGS="$CFLAGS -fPIC"
                 FCFLAGS="$FCFLAGS -fPIC"
-                if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                    C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-                fi
+                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
                 CXXFLAGS="$CXXFLAGS -fPIC"
-                if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                    CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-                fi
+                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
         elif [[ "$(uname -m)" == "ppc64le" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
@@ -430,35 +422,23 @@ function initialize_build_visit()
             else
                 CFLAGS="$CFLAGS -fPIC"
                 FCFLAGS="$FCFLAGS -fPIC"
-                if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                    C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-                fi
+                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
                 CXXFLAGS="$CXXFLAGS -fPIC"
-                if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                    CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-                fi
+                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 QT_PLATFORM="linux-g++"
             fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         elif [[ "$(uname -m)" == "aarch64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             QT_PLATFORM="linux-aarch64-gnu-g++"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
@@ -499,24 +479,16 @@ function initialize_build_visit()
         if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -m64 -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         fi
         if [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"
-            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
-                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
-            fi
+            C_OPT_FLAGS="$C_OPT_FLAGS -O2"
             CXXFLAGS="$CXXFLAGS -fPIC"
-            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
-                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
-            fi
+            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
@@ -1145,8 +1117,7 @@ function run_build_visit()
             if [[ $? == 0 ]] ; then
                 #echo "enabling $resolve_arg"
                 initializeFunc="bv_${resolve_arg}_enable"
-                #argument is being explicitly set by the user so add a "force" flag
-                $initializeFunc force
+                $initializeFunc
                 continue
             elif [[ ${#resolve_arg} -gt 3 ]] ; then #in case it is --no-
                 resolve_arg_no_opt=${resolve_arg:3}

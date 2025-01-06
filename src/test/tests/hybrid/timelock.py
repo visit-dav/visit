@@ -29,6 +29,10 @@
 #    Eric Brugger, Fri Jul 30 13:53:48 PDT 2010
 #    I increased the number of lines of information it prints to 18.
 #
+#    Eric Brugger, Tue Nov 12 10:27:55 PST 2024
+#    I modified the coding that skips some tests in scalable rendering mode
+#    to also skip the SetTimeSliderState call as well.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -279,9 +283,9 @@ def test2(testindex):
     ToggleLockTime()
 
     # See if both windows updated when we changed the time in window 2.
-    SetTimeSliderState(5)
     # This crashes in scalable,parallel,icet.
     if TestEnv.params["scalable"] == False:
+        SetTimeSliderState(5)
         Test("timelock_%02d" % (testindex+3))
         TestWindowInformation("timelock_%02d" % (testindex+4))
         GotoWindow(1)

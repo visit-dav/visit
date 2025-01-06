@@ -140,6 +140,13 @@ function build_cfitsio
     info "Configuring CFITSIO . . ."
     cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
+    #
+    # Fix an issue with configure
+    #
+    if [[ "$OPSYS" == "Darwin" && $(uname -r | cut -d'.' -f1) -ge 23 ]]; then
+        sed -i '' 's/^main(){return(0);}/int main(){return(0);}/' configure
+    fi
+
     C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
