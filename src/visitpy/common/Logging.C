@@ -1356,9 +1356,9 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
             qn = "NodePick";
         else if (pt == "DomainZone")
         {
-            bool global = false;
+            int global = 0;
             if (queryParams.HasNumericEntry("use_global_id"))
-                global = queryParams.GetEntry("use_global_id")->ToBool();
+                global = queryParams.GetEntry("use_global_id")->ToInt();
             if (global)
                 qn = "PickByGlobalZone";
             else
@@ -1366,9 +1366,9 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         }
         else if (pt == "DomainNode")
         {
-            bool global = false;
+            int global = 0;
             if (queryParams.HasNumericEntry("use_global_id"))
-                global = queryParams.GetEntry("use_global_id")->AsBool();
+                global = queryParams.GetEntry("use_global_id")->AsInt();
             if (global)
                 qn = "PickByGlobalNode";
             else
