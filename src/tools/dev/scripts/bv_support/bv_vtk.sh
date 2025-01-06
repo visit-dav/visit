@@ -95,7 +95,7 @@ function bv_vtk_info
         info "setting up vtk for version 9.2.6"
         export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
-        export VTK_SHA256_CHECKSUM=""
+        export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
     fi
 
     export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
