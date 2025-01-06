@@ -4,21 +4,22 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Thu Oct 24, 2024
+#  Use visit_patch_target instead of blt_patch_target.
 #
 #****************************************************************************
 
-target_sources(viewer PRIVATE
-    DDTActions.C
-    DDTActionsUI.C
-    DDTManager.C
-    DDTSession.C
-    DDTActions.h
-    DDTActionsUI.h
-    DDTManager.h
-    DDTSession.h)
 
-blt_patch_target(
+visit_patch_target(
     NAME     viewer
+    SOURCES  DDTActions.C
+             DDTActionsUI.C
+             DDTManager.C
+             DDTSession.C
+    HEADERS  DDTActions.h
+             DDTActionsUI.h
+             DDTManager.h
+             DDTSession.h
     INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
              $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/viewer/main/ddt>)
 

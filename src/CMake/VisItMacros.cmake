@@ -77,7 +77,7 @@ function(ADD_PARALLEL_LIBRARY target)
 
     else()
       ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
+      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFINES})
     endif()
     if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
         target_link_libraries(${target} ${VISIT_PARALLEL_LIBS})
@@ -255,9 +255,116 @@ macro(visit_append_list)
 endmacro()
 
 ##############################################################################
-# Adds a library target. Wrapper around blt_add_library so that CACHE vars
-# possibly created by visit_append_list for forming SOURCES/INCLUDES, etc
-# can be unset.
+# patch a target with new sources, headers, etc:
+#
+# After visit-specific args are parsed and handled,
+# all args are passed directly to blt_patch_target.
+#
+# The visit-specific args must appear first in the caller argument list
+# before blt-specific, otherwise blt swallows them up with one of the args it
+# does understand, causing issues.
+#
+# ARGUMENTS:
+#    NAME         target name                REQUIRED
+#
+# visit-specific (not handled by blt_patch_target)
+#
+#    SOURCES      [source1 [source2 ...]]    OPTIONAL
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL
+#    LINKDIR                                 OPTIONAL
+#
+# pass-through to blt_patch_target:
+#
+#    INCLUDES       [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES        [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON     [dep1 ...]                 OPTIONAL
+#
+##############################################################################
+
+macro(visit_patch_target)
+    # need to parse everything that VisIt recognizes and everything that
+    # BLT recognizes, otherwise there ends up being issues.
+    set(singleValueArgs NAME)
+    set(multiValueArgs SOURCES HEADERS LINKDIR INCLUDES DEFINES DEPENDS_ON)
+    # parse the arguments
+    cmake_parse_arguments(vpt "" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT vpt_NAME)
+        message(FATAL_ERROR "visit_patch_target() must be called with argument NAME <name>")
+    endif()
+    if(NOT TARGET ${vpt_NAME})
+        message(FATAL_ERROR " attempting to patch ${vpt_NAME} but it is NOT a target!")
+    endif()
+    if (vpt_SOURCES OR vpt_HEADERS)
+        target_sources(${vpt_NAME} PRIVATE ${vpt_SOURCES} ${vpt_HEADERS})
+    endif()
+    if (vpt_LINKDIR)
+        target_link_directories(${vpt_NAME} PRIVATE ${vpt_LINKDIR})
+    endif()
+    blt_patch_target(${ARGV})
+endmacro()
+
+
+##############################################################################
+# Patches target with parallel specific additions common to all VisIt
+# parallel targets whether library or executable.
+#
+# ARGUMENTS:
+#    NAME         target name               REQUIRED
+#
+##############################################################################
+
+macro(visit_patch_parallel_target)
+
+    cmake_parse_arguments(vppt "" "NAME" "" ${ARGN})
+    if(NOT vppt_NAME)
+        message(FATAL_ERROR "visit_patch_parallel_target() must be called with argument NAME <name of parallel target>")
+    endif()
+
+    if(UNIX)
+        if(VISIT_PARALLEL_CXXFLAGS)
+            set_property(TARGET ${vppt_NAME} APPEND
+                         PROPERTY COMPILE_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
+        endif()
+        if(VISIT_PARALLEL_LINK_FLAGS)
+            set_property(TARGET ${vppt_NAME} APPEND
+                         PROPERTY LINK_FLAGS ${VISIT_PARALLEL_LINK_FLAGS})
+        endif()
+
+        if(${CMAKE_INSTALL_RPATH})
+            string(REPLACE " " ";" CPAR_RPATHS ${CAKE_INSTALL_RPATH})
+            set_property(TARGET ${vppt_NAME} APPEND PROPERTY
+                         INSTALL_RPATH ${CPAR_RPATHS})
+        endif()
+
+        if(VISIT_PARALLEL_RPATH)
+            set_property(TARGET ${vppt_NAME} APPEND PROPERTY
+                         INSTALL_RPATH ${VISIT_PARALLEL_RPATH})
+        endif()
+        if(VISIT_PARALLEL_DEFINES)
+            visit_patch_target(
+                NAME      ${vppt_NAME}
+                DEFINES   ${VISIT_PARALLEL_DEFINES})
+
+        endif()
+    else()
+        visit_patch_target(
+            NAME      ${vppt_NAME}
+            INCLUDES  ${VISIT_PARALLEL_INCLUDE}
+            DEFINES   ${VISIT_PARALLEL_DEFINES})
+    endif()
+    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND VISIT_PARALLEL_LIBS)
+        visit_patch_target(
+            NAME       ${vppt_NAME}
+            LINKDIR    ${VISIT_PARALLEL_LINK_DIRS}
+            DEPENDS_ON ${VISIT_PARALLEL_LIBS})
+    endif()
+endmacro()
+
+##############################################################################
+# Adds a library target.
+# calls blt_add_library
+# clears cache vars.
 #
 # ARGUMENTS:
 #    NAME         library name               REQUIRED
@@ -268,12 +375,17 @@ endmacro()
 #    DEPENDS_ON   [dep1 ...]                 OPTIONAL
 #    OUTPUT_NAME  [name]                     OPTIONAL
 #    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
-#    FOLDER       [name])                    OPTIONAL
+#    FOLDER       [name]                     OPTIONAL
+#    SKIP_INSTALL                            OPTIONAL (visit only)
+#
+# Modifications:
+#    Kathleen Biags, Thu Oct 24, 2024
+#    Added SKIP_INSTALL to indicate the target should not be installed.
 #
 ##############################################################################
 
 macro(visit_add_library)
-    set(options)
+    set(options SKIP_INSTALL)
     set(singleValueArgs NAME OUTPUT_NAME FOLDER)
     set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
 
@@ -285,7 +397,6 @@ macro(visit_add_library)
     if(NOT val_NAME)
         message(FATAL_ERROR "visit_add_library() must be called with argument NAME <name>")
     endif()
-
     if (NOT val_SOURCES AND NOT val_HEADERS)
         message(FATAL_ERROR "visit_add_library(NAME ${val_NAME} ...) called with no given sources or headers (at least one is required).")
     endif()
@@ -305,7 +416,9 @@ macro(visit_add_library)
         target_compile_features(${val_NAME} PRIVATE ${val_FEATURES})
     endif()
 
-    visit_install_export_targets(${val_NAME})
+    if(NOT ${val_SKIP_INSTALL})
+        visit_install_export_targets(${val_NAME})
+    endif()
 
     # vars that may have been created by calls to visit_append_list
     unset(${val_NAME}_SOURCES CACHE)
@@ -317,81 +430,18 @@ macro(visit_add_library)
 endmacro()
 
 ##############################################################################
-# Like visit_add_library, but adds parallel compile/link options.
-# Taken mostly from VISIT_ADD_PARALLEL_LIBRARY
+# Adds a parallel library target.
+# calls visit_add_library
+# calls visit_patch_parallel_target to set all the parallel options for the
+# target
 #
-# ARGUMENTS:
-#    NAME         target name                REQUIRED
-#    SOURCES      [source1 [source2 ...]]    REQUIRED
-#    HEADERS      [header1 [header2 ...]]    OPTIONAL
-#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
-#    DEFINES      [define1 [define2 ...]]    OPTIONAL
-#    DEPENDS_ON   [dep1 ...]                 OPTIONAL
-#    FOLDER       [name])                    OPTIONAL
+# See visit_add_library for arguments.
 #
 ##############################################################################
 
 macro(visit_add_parallel_library)
-
     visit_add_library(${ARGV})
-
     cmake_parse_arguments(vapl "" "NAME" "" ${ARGN})
-
-    if(UNIX)
-        if(VISIT_PARALLEL_CXXFLAGS)
-            # check for compile flags vs includes
-            set(PAR_COMPILE_FLAGS "")
-            set(PAR_INCLUDE "")
-            string(REPLACE " " ";" VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CXXFLAGS})
-            foreach(X ${VISIT_PARALLEL_CXXFLAGS})
-                string(SUBSTRING ${X} 0 2 is_include)
-                if(is_include STREQUAL "-I")
-                    string(SUBSTRING ${X} 2 -1 x_as_include)
-                    list(APPEND PAR_INCLUDE $<BUILD_INTERFACE:${x_as_include}>)
-                else()
-                    list(APPEND PAR_COMPILE_FLAGS "${X}")
-                endif()
-            endforeach()
-            target_include_directories(${vapl_NAME} PUBLIC ${PAR_INCLUDE})
-            target_compile_options(${vapl_NAME} PUBLIC ${PAR_COMPILE_FLAGS})
-
-        endif()
-
-        if(VISIT_PARALLEL_LINKER_FLAGS)
-            set(PAR_LINK_FLAGS "")
-            set(PAR_LINK_DIR "")
-            string(REPLACE " " ";" VISIT_PARALLEL_LINKER_FLAGS ${VISIT_PARALLEL_LINKER_FLAGS})
-            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                string(SUBSTRING ${X} 0 2 is_link_dir)
-                if(is_link_dir STREQUAL "-L")
-                    string(SUBSTRING ${X} 2 -1 x_as_link)
-                    list(APPEND PAR_LINK_DIR ${x_as_link})
-                else()
-                    list(APPEND PAR_LINK_FLAGS "${X}")
-                endif()
-            endforeach()
-            target_link_options(${vapl_NAME} PUBLIC ${PAR_LINK_FLAGS})
-            target_link_directories(${vapl_NAME} PUBLIC ${PAR_LINK_DIR})
-        endif()
-
-        if(VISIT_PARALLEL_RPATH)
-            set(PAR_RPATHS "")
-            foreach(X ${CMAKE_INSTALL_RPATH})
-                list(APPEND PAR_RPATHS ${X})
-            endforeach()
-            foreach(X ${VISIT_PARALLEL_RPATH})
-                list(APPEND PAR_RPATHS ${X})
-            endforeach()
-            set_property(TARGET ${vapl_NAME}
-                     APPEND PROPERTY INSTALL_RPATH ${PAR_RPATHS})
-        endif()
-    else() # not on unix
-      target_include_directories(${vapl_NAME} PUBLIC $<BUILD_INTERFACE:${VISIT_PARALLEL_INCLUDE}>)
-      target_compile_definitions(${vapl_NAME} PUBLIC ${VISIT_PARALLEL_DEFS})
-    endif()
-
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        target_link_libraries(${vapl_NAME} PUBLIC ${VISIT_PARALLEL_LIBS})
-    endif()
+    visit_patch_parallel_target(NAME ${vapl_NAME})
 endmacro()
 

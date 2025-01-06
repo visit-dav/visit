@@ -8,7 +8,7 @@
 #   Make cognomen always build static lib on windows.
 #
 #   Kathleen Biagas, Mon Oct 7, 2024
-#   Utilize visit_add_parallel_library.
+#   Utilize visit_add_library.
 #
 #****************************************************************************
 
@@ -34,6 +34,6 @@ visit_add_parallel_library(
     FOLDER      thirdparty_builtin/cognomen)
 
 if(WIN32)
-    target_link_libraries(cognomen PUBLIC ws2_32)
+    visit_patch_target(NAME cognomen DEPENDS_ON ws2_32)
 endif()
 
