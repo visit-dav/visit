@@ -61,7 +61,7 @@ function bv_ninja_print_usage
 function bv_ninja_host_profile
 {
     # Nothing added to the host profile since ninja is only used for
-    # building third pary libraries.
+    # building third party libraries.
     return 0
 }
 
