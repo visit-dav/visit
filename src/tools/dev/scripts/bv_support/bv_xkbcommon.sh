@@ -99,14 +99,9 @@ function build_xkbcommon
     #
     info "Configuring xkbcommon . . ."
 
-    MESON_BIN="${MESON_INSTALL}/meson"
-
     cd $XKBCOMMON_BUILD_DIR || error "Can't cd to xkbcommon build dir."
 
     export PATH=$MESON_INSTALL_DIR/bin:$NINJA_INSTALL_DIR/bin:$PATH
-    echo "PATH=${PATH}"
-    echo "MESON_INSTALL_DIR=${MESON_INSTALL_DIR}"
-    echo "NINJA_INSTALL_DIR=${NINJA_INSTALL_DIR}"
 
     meson setup build || error "Xkbcommon did not configure correctly. Giving up."
 
