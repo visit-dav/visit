@@ -127,6 +127,8 @@ function build_meson
     echo "    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])" >> $MESON_CMD
     echo "    sys.exit(main())" >> $MESON_CMD
 
+    chmod 700 $MESON_CMD
+
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/meson"
         chgrp -R ${GROUP} "$VISITDIR/meson"
