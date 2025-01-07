@@ -32,6 +32,7 @@
             <lib name="llvm"/>
             <lib name="mdsplus"/>
             <lib name="mesagl"/>
+            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
@@ -83,6 +84,7 @@
             <lib name="icet"/>
             <lib name="ispc"/>
             <lib name="llvm"/>
+            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
