@@ -33,7 +33,7 @@ function bv_ninja_depends_on
 function bv_ninja_initialize_vars
 {
     if [[ "$USE_SYSTEM_NINJA" == "no" ]]; then
-        NINJA_INSTALL_DIR="\${VISITDIR}/ninja/$NINJA_VERSION/\${VISITARCH}"
+        NINJA_INSTALL_DIR="${VISITDIR}/ninja/$NINJA_VERSION/${VISITARCH}"
     fi
 }
 
