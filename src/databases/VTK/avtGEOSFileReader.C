@@ -227,7 +227,7 @@ namespace GEOSInternal
         for (size_t i = 0; i < vars.size() && valid; ++i)
         {
             string var(vars[i]);
-            if(!meshName.empty() && (var == meshName || var == "blocks"))
+            if(!meshName.empty() && (var == meshName || var == "blocks" || var == "groups"))
             {
                 continue; 
             }
