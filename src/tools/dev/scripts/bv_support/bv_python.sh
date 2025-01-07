@@ -94,13 +94,11 @@ function bv_python_initialize
     export USE_SYSTEM_PYTHON="no"
     export PY_BUILD_MPI4PY="no"
     export PY_BUILD_SPHINX="yes"
-    export PY_BUILD_MESON="no"
     export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-""}
     add_extra_commandline_args "python" "system-python" 0 "Using system python"
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
     add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
     add_extra_commandline_args "python" "no-sphinx" 0 "Disable building sphinx"
-    add_extra_commandline_args "python" "meson" 0 "Build meson"
 }
 
 function bv_python_enable
@@ -202,12 +200,6 @@ function bv_python_no_sphinx
 {
     echo "Disabling building sphinx"
     export PY_BUILD_SPHINX="no"
-}
-
-function bv_python_meson
-{
-    echo "configuring for building meson"
-    export PY_BUILD_MESON="yes"
 }
 
 function bv_python_alt_python_dir
@@ -421,10 +413,6 @@ function bv_python_info
     export PY_SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
     export PY_SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
     export PY_SPHINX_TABS_SHA256_CHECKSUM=""
-
-    export PY_MESON_FILE="meson-1.6.1.tar.gz"
-    export PY_MESON_BUILD_DIR="meson-1.6.1"
-    export PY_MESON_SHA256_CHECKSUM=""
 }
 
 function bv_python_print
@@ -442,7 +430,6 @@ function bv_python_print_usage
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
     printf "%-20s %s [%s]\n" "--no-sphinx" "Disable building sphinx"
-    printf "%-20s %s [%s]\n" "--meson" "Build meson with Python"
   }
 
 function bv_python_host_profile
@@ -1404,31 +1391,6 @@ function build_sphinx_tabs
     return 0
 }
 
-# *************************************************************************** #
-#                              build_meson                                    #
-# *************************************************************************** #
-function build_meson
-{
-    download_py_module ${PY_MESON_FILE} ${PY_MESON_URL}
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    extract_py_module ${PY_MESON_BUILD_DIR} ${PY_MESON_FILE} "meson"
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    install_py_module ${PY_MESON_BUILD_DIR} "meson"
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    fix_py_permissions
-
-    return 0
-}
-
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -1510,17 +1472,6 @@ function bv_python_is_installed
         if [[ $? != 0 ]] ; then
             if [[ $PY_CHECK_ECHO != 0 ]] ; then
                 info "python module mpi4py is not installed"
-            fi
-            PY_OK=0
-        fi
-    fi
-
-    if [[ "$PY_BUILD_MESON" == "yes" ]]; then
-
-        check_if_py_module_installed "meson"
-        if [[ $? != 0 ]] ; then
-            if [[ $PY_CHECK_ECHO != 0 ]] ; then
-                info "python module meson is not installed"
             fi
             PY_OK=0
         fi
@@ -1634,19 +1585,6 @@ function bv_python_build
                         error "sphinx tabs python module build failed. Bailing out."
                     fi
                     info "Done building the sphinx tabs."
-                fi
-            fi
-
-            if [[ "$PY_BUILD_MESON" == "yes" ]]; then
-
-                check_if_py_module_installed "meson"
-                if [[ $? != 0 ]] ; then
-                    info "Building the meson module"
-                    build_meson
-                    if [[ $? != 0 ]] ; then
-                        error "meson build failed. Bailing out."
-                    fi
-                    info "Done building the meson module"
                 fi
             fi
         fi
