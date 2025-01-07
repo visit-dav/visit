@@ -1,34 +1,31 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.4.2/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared/3.4.2/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/cmake
 ##
-## ./build_visit generated host.cmake
-## created: Tue Dec  3 14:16:58 PST 2024
-## system: Linux sierra4359 4.14.0-115.35.1.3chaos.ch6a.ppc64le #1 SMP Wed Jul 21 17:12:16 PDT 2021 ppc64le ppc64le ppc64le GNU/Linux
-## by: justin
+## ./build_visit3_4_2 generated host.cmake
+## created: Wed 04 Dec 2024 03:51:16 PM MST
+## system: Linux xr-fe1 5.14.21-150400.24.111_12.0.90-cray_shasta_c #1 SMP Fri Apr 19 23:37:58 UTC 2024 (18c041e) x86_64 x86_64 x86_64 GNU/Linux
+## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/blueos)
-SET(VISITARCH linux-ppc64le_gcc-8.3)
-VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+SET(VISITHOME /usr/projects/views/visit/loser/thirdparty_shared/3.4.2)
+SET(VISITARCH linux-x86_64_gcc-12.2)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-8.3.1/bin/gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-8.3.1/bin/g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER cc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER CC TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib -Wl,-rpath=/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpi_ibm)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib")
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)
 
 ##
 ## VisIt Thread Option
@@ -38,7 +35,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Turn on DDT support.
 ##
-VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
+##VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -75,10 +72,16 @@ VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
 
 ##
-## Qt
+## QT6
 ##
-SETUP_APP_VERSION(QT 5.14.2)
-VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/${QT_VERSION}/${VISITARCH})
+SETUP_APP_VERSION(QT 6.4.2)
+VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/6.4.2/${VISITARCH})
+
+##
+## OSPRay
+##
+SETUP_APP_VERSION(OSPRAY 3.0.0)
+VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR ${VISITHOME}/ospray/${OSPRAY_VERSION}/${VISITARCH}/ospray)
 
 ##
 ## VTK
@@ -102,13 +105,6 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib z TYPE STRING)
 
 ##
-## ADIOS
-## (configured w/ mpi compiler wrapper)
-##
-SETUP_APP_VERSION(ADIOS 1.13.1)
-VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
-
-##
 ## BLOSC2
 ##
 VISIT_OPTION_DEFAULT(VISIT_BLOSC2_DIR ${VISITHOME}/blosc2/2.11.3/${VISITARCH})
@@ -125,6 +121,12 @@ VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSI
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+
+##
+## BOOST
+##
+SETUP_APP_VERSION(BOOST 1_67_0)
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/${BOOST_VERSION}/${VISITARCH})
 
 ##
 ## Boxlib
@@ -200,16 +202,21 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
-## QWT
+## OpenEXR
 ##
-SETUP_APP_VERSION(QWT 6.1.2)
-VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/2.2.0/${VISITARCH})
 
 ##
-## Uintah
+## PIDX
 ##
-SETUP_APP_VERSION(UINTAH 2.6.3)
-VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
+SETUP_APP_VERSION(PIDX 0.9.3)
+VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
+
+##
+## QWT
+##
+SETUP_APP_VERSION(QWT 6.3.0)
+VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
 ## VTKM
