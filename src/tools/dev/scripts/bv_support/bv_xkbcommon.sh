@@ -117,6 +117,8 @@ function build_xkbcommon
     meson compile -C build || error "Xkbcommon did not build correctly. Giving up."
 
     info "Installing Xkbcommon . . . (~1 minutes)"
+
+    # The libraries
     if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/lib ]] ; then
         mkdir -p ${XKBCOMMON_INSTALL_DIR}/lib
     fi
@@ -129,10 +131,47 @@ function build_xkbcommon
     cp build/libxkbregistry.so.0.0.0 ${XKBCOMMON_INSTALL_DIR}/lib
     ln -s libxkbregistry.so.0.0.0 ${XKBCOMMON_INSTALL_DIR}/lib/libxkbregistry.so
     ln -s libxkbregistry.so.0.0.0 ${XKBCOMMON_INSTALL_DIR}/lib/libxkbregistry.so.0
+
+    # The header files
     if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/include/xkbcommon ]] ; then
         mkdir -p ${XKBCOMMON_INSTALL_DIR}/include/xkbcommon
     fi
     cp include/xkbcommon/* ${XKBCOMMON_INSTALL_DIR}/include/xkbcommon
+
+    # The pkg-config files
+    if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/pkgconfig ]] ; then
+        mkdir -p ${XKBCOMMON_INSTALL_DIR}/pkgconfig
+    fi
+
+    PC_FILE=${XKBCOMMON_INSTALL_DIR}/pkgconfig/xkbcommon.pc
+    if [[ -f $PC_FILE ]] ; then
+        rm $PC_FILE
+    fi
+    echo "prefix=${XKBCOMMON_INSTALL_DIR}" > $PC_FILE
+    echo "libdir=\${prefix}/lib" >> $PC_FILE
+    echo "includedir=\${prefix}/inlude" >> $PC_FILE
+    echo "" >> $PC_FILE
+    echo "Name: xkbcommon" >> $PC_FILE
+    echo "Description: XKB API common to servers and clients" >> $PC_FILE
+    echo "Version: 1.7.0" >> $PC_FILE
+    echo "Libs: -L\${libdir} -lxkbcommon" >> $PC_FILE
+    echo "Cflags: -I\${includedir}" >> $PC_FILE
+
+    PC_FILE=${XKBCOMMON_INSTALL_DIR}/pkgconfig/xkbcommon-x11.pc
+    if [[ -f $PC_FILE ]] ; then
+        rm $PC_FILE
+    fi
+    echo "prefix=${XKBCOMMON_INSTALL_DIR}" > $PC_FILE
+    echo "libdir=\${prefix}/lib" >> $PC_FILE
+    echo "includedir=\${prefix}/inlude" >> $PC_FILE
+    echo "" >> $PC_FILE
+    echo "Name: xkbcommon-x11" >> $PC_FILE
+    echo "Description: XKB API common to servers and clients - X11 support" >> $PC_FILE
+    echo "Version: 1.7.0" >> $PC_FILE
+    echo "Requires: xkbcommon" >> $PC_FILE
+    echo "Requires.private: xcb >= 1.10, xcb-xkb >= 1.10" >> $PC_FILE
+    echo "Libs: -L\${libdir} -lxkbcommon" >> $PC_FILE
+    echo "Cflags: -I\${includedir}" >> $PC_FILE
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/xkbcommon"
