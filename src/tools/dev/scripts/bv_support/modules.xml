@@ -53,6 +53,7 @@
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
+            <lib name="xkbcommon"/>
         </optional>
 
         <!-- thirdparty flag -->
@@ -100,6 +101,7 @@
             <lib name="tbb"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
+            <lib name="xkbcommon"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
