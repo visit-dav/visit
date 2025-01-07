@@ -1117,8 +1117,8 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsReader* reader,
     haveDataSelections = 1;
 #endif
 
-    int numPoints = 1;
-    for (size_t i=0; i<numSpatialDims; ++i)
+    ssize_t numPoints = 1;
+    for (ssize_t i=0; i<numSpatialDims; ++i)
       numPoints *= gdims[i];
 
     VsLog::debugLog() << CLASSFUNCLINE
@@ -1183,7 +1183,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsReader* reader,
                           << numSpatialDims << " is less than 3.  "
                           << "Moving data into correct location." << std::endl;
 
-        for (int i=numPoints-1; i>=0; --i)
+        for (ssize_t i=numPoints-1; i>=0; --i)
         {
             unsigned char* destPtr
               = (unsigned char*) dataPtr + i*3*dsize;
@@ -1235,22 +1235,6 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsReader* reader,
         delete [] fltDataPtr;
     }
 
-    /*
-     // debug: output points
-     fltDataPtr = (float*)ptsPtr;
-     dblDataPtr = (double*)ptsPtr;
-     for (size_t i = 0; i < numPoints; ++i) {
-     VsLog::debugLog() << i << ":";
-     for (size_t j = 0; j < 3; ++j) {
-     if (H5Tequal(type, H5T_NATIVE_DOUBLE)) {
-     VsLog::debugLog() << " " << dblDataPtr[(3*i)+j];
-     }
-     else VsLog::debugLog() << " " << fltDataPtr[(3*i)+j];
-     }
-     VsLog::debugLog() << std::endl;
-     }
-     // end debug
-     */
     vtkStructuredGrid* sgrid = vtkStructuredGrid::New();
     sgrid->SetDimensions(&(gdims[0]));
     sgrid->SetPoints(vpoints);
@@ -3986,6 +3970,16 @@ void avtVsFileFormat::RegisterMeshes(VsRegistry* registry, avtDatabaseMetaData* 
                                       (int) numTopologicalDims, meshType);
 
                 vmd->SetBounds( bounds );
+                VsLog::debugLog() << CLASSFUNCLINE
+                                  << "Setting avtMeshMetaData.numberCells to "
+                                  << numCells
+                                  << " or " <<(int)numCells
+                                  << "." << std::endl;
+                if ((int)numCells < 0) {
+                    VsLog::errorLog() << CLASSFUNCLINE
+                                      << "Number of cells has overflowed the integer field."
+                                      <<std::endl;
+                }
                 vmd->SetNumberCells( (int)numCells );
                 setAxisLabels(registry, vmd, rectMesh->hasTransform());
                 setGlobalExtents(registry, vmd);
@@ -4078,6 +4072,16 @@ void avtVsFileFormat::RegisterMeshes(VsRegistry* registry, avtDatabaseMetaData* 
                                   (int) numTopologicalDims, meshType);
 
             vmd->SetBounds( bounds );
+            VsLog::debugLog() << CLASSFUNCLINE
+                  << "Setting avtMeshMetaData.numberCells to "
+                  << numCells
+                  << " or " <<(int)numCells
+                  << "." << std::endl;
+            if ((int)numCells < 0) {
+                VsLog::errorLog() << CLASSFUNCLINE
+                                  << "Number of cells has overflowed the integer field."
+                                  <<std::endl;
+            }
             vmd->SetNumberCells( (int) numCells );
             setAxisLabels(registry, vmd);
             setGlobalExtents(registry, vmd);
@@ -4379,6 +4383,16 @@ void avtVsFileFormat::RegisterVarsWithMesh(VsRegistry* registry, avtDatabaseMeta
                               AVT_POINT_MESH);
 
         vmd->SetBounds(bounds);
+        VsLog::debugLog() << CLASSFUNCLINE
+                          << "Setting avtMeshMetaData.numberCells to "
+                          << numCells
+                          << " or " <<(int)numCells
+                          << "." << std::endl;
+        if ((int)numCells < 0) {
+            VsLog::errorLog() << CLASSFUNCLINE
+                              << "Number of cells has overflowed the integer field."
+                              <<std::endl;
+        }
         vmd->SetNumberCells(numCells);
         setAxisLabels(registry, vmd);
         setGlobalExtents(registry, vmd);
