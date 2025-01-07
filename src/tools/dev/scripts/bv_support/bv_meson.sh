@@ -115,7 +115,7 @@ function build_meson
         mkdir -p ${MESON_INSTALL_DIR}/bin
     fi
     MESON_CMD="${MESON_INSTALL_DIR}/bin/meson"
-    if [[ -f ${MESON_INSTALL_DIR}/bin/meson ]] ; then
+    if [[ -f $MESON_CMD ]] ; then
         rm $MESON_CMD
     fi
     echo "#!${PYTHON_COMMAND}" > $MESON_CMD
