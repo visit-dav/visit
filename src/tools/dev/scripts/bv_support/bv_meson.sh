@@ -114,10 +114,10 @@ function build_meson
     if [[ ! -d ${MESON_INSTALL_DIR}/bin ]] ; then
         mkdir -p ${MESON_INSTALL_DIR}/bin
     fi
+    MESON_CMD="${MESON_INSTALL_DIR}/bin/meson"
     if [[ -f ${MESON_INSTALL_DIR}/bin/meson ]] ; then
         rm $MESON_CMD
     fi
-    MESON_CMD="${MESON_INSTALL_DIR}/bin/meson"
     echo "#!${PYTHON_COMMAND}" > $MESON_CMD
     echo "# -*- coding: utf-8 -*-" >> $MESON_CMD
     echo "import re" >> $MESON_CMD
