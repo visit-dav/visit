@@ -144,7 +144,7 @@ function build_xkbcommon
     fi
     echo "prefix=${XKBCOMMON_INSTALL_DIR}" > $PC_FILE
     echo "libdir=\${prefix}/lib" >> $PC_FILE
-    echo "includedir=\${prefix}/inlude" >> $PC_FILE
+    echo "includedir=\${prefix}/include" >> $PC_FILE
     echo "" >> $PC_FILE
     echo "Name: xkbcommon" >> $PC_FILE
     echo "Description: XKB API common to servers and clients" >> $PC_FILE
@@ -158,7 +158,7 @@ function build_xkbcommon
     fi
     echo "prefix=${XKBCOMMON_INSTALL_DIR}" > $PC_FILE
     echo "libdir=\${prefix}/lib" >> $PC_FILE
-    echo "includedir=\${prefix}/inlude" >> $PC_FILE
+    echo "includedir=\${prefix}/include" >> $PC_FILE
     echo "" >> $PC_FILE
     echo "Name: xkbcommon-x11" >> $PC_FILE
     echo "Description: XKB API common to servers and clients - X11 support" >> $PC_FILE
