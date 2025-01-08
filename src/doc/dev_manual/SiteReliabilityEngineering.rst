@@ -193,7 +193,7 @@ SRE vs. Product Development
 
 Part of the reason for formalizing this process is the recognition of a
 different category of work,
-`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`__ (SRE),
+`Software Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`__ (SRE),
 that is
 `essential part of maintaining the overall quality <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
 of a software product as well as the productivity of both developers and users
