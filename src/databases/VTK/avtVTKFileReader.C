@@ -845,7 +845,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             dataset = pieceDatasets[domain];
 
             int ncellvars = dataset->GetCellData()->GetNumberOfArrays();
-            for(int i=0;( i < ncellvars) && (matvarname.empty()) ;i++)
+            for (int i=0; (i < ncellvars) && matvarname.empty(); i++)
             {
                 // we are looking for either "avtSubsets" or "material"
                 if(strcmp(dataset->GetCellData()->GetArrayName(i), "avtSubsets") == 0)
