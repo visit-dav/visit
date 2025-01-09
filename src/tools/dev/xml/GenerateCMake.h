@@ -213,7 +213,6 @@ class CMakeGeneratorPlugin : public Plugin
         defaultvfiles.clear();
         defaultmfiles.clear();
         defaultefiles.clear();
-        defaultwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -233,8 +232,6 @@ class CMakeGeneratorPlugin : public Plugin
             QString filter = QString("avt") + name + "Filter.C";
             defaultvfiles.push_back(filter);
             defaultefiles.push_back(filter);
-            QString widgets = QString("Qvis") + name + "PlotWindow.h";
-            defaultwfiles.push_back(widgets);
         }
         else if (type == "operator")
         {
@@ -328,35 +325,26 @@ class CMakeGeneratorPlugin : public Plugin
                         tmp2.prepend("VTK::");
                     else
                         tmp2.replace(0,3,"VTK::");
-                    libs9.push_back(tmp2);
+                    libs[i] = tmp2;
                 }
                 else
                 {
                     tmp.append(vtkversion);
-                    libs9.push_back(tmp);
+                    libs[i] = tmp;
                 }
             }
             else if(libs[i].startsWith("VTK::"))
             {
-                if (using_dev)
-                {
-                    libs_sans_vtk.push_back(libs[i]);
-                }
-                else
+                if (!using_dev)
                 {
                     // for plugin-vs-install, need to
                     // replace 'VTK::' with 'vtk' and append the version
                     QString tmp(libs[i].replace(QString("VTK::"), QString("vtk")));
                     tmp.append(vtkversion);
-                    libs9.push_back(tmp);
+                    libs[i] = tmp;
                 }
             }
-            else
-            {
-                libs_sans_vtk.push_back(libs[i]);
-            }
         }
-        libs = libs_sans_vtk;
     }
 
     QString

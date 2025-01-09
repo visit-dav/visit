@@ -50,7 +50,10 @@ visit_add_library(
     INCLUDES   ${avtpythonfilters_INCLUDES}
     DEPENDS_ON ${avtpythonfilters_DEPENDS}
                avtpipeline_ser)
-    target_link_directories(avtpythonfilters_ser PUBLIC ${PYTHON_DIR})
+
+visit_patch_target(
+    NAME    avtpythonfilters_ser
+    LINKDIR ${PYTHON_DIR})
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
@@ -61,6 +64,8 @@ if(VISIT_PARALLEL)
         INCLUDES   ${avtpythonfilters_INCLUDES}
         DEPENDS_ON ${avtpythonfilters_DEPENDS}
                    avtpipeline_par)
-    target_link_directories(avtpythonfilters_par PUBLIC ${PYTHON_DIR})
+    visit_patch_target(
+        NAME    avtpythonfilters_par
+        LINKDIR ${PYTHON_DIR})
 endif()
 

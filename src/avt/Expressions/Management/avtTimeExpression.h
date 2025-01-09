@@ -31,6 +31,9 @@
 //
 //    Jeremy Meredith, Wed Mar 11 12:35:18 EDT 2009
 //    Added support for cycle and timestep values.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -51,7 +54,7 @@ class EXPRESSION_API avtTimeExpression : public avtUnaryMathExpression
 
   protected:
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples);
+                                         int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
     virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);

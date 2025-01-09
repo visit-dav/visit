@@ -1,7 +1,6 @@
 # a windows 11 system
 set(CMAKE_CONFIGURATION_TYPES Release Debug)
 
-include(config-site/windows.cmake)
 
 # disable some warnings
 # 4244 conversion double to float etc
@@ -44,15 +43,10 @@ if(USE_REDUCED_BUILD) # this is just a var I create when I need it
   VISIT_OPTION_DEFAULT(VISIT_WINDOWS_APPLICATION OFF TYPE BOOL)
 
   VISIT_OPTION_DEFAULT(VISIT_SELECTED_DATABASE_PLUGINS "VTK;Silo" TYPE STRING)
-  VISIT_OPTION_DEFAULT(VISIT_SELECTED_PLOT_PLUGINS "Pseudocolor;Curve" TYPE STRING)
+  VISIT_OPTION_DEFAULT(VISIT_SELECTED_PLOT_PLUGINS "Pseudocolor;Curve;Mesh;Subset" TYPE STRING)
   VISIT_OPTION_DEFAULT(VISIT_SELECTED_OPERATOR_PLUGINS "Slice;Lineout" TYPE STRING)
   
 endif()
 
-if(USE_DEBUG_VTK) # this is a var I create when I need it
-  if(MSVC_TOOLSET_VERSION LESS "143")
-    VISIT_OPTION_DEFAULT(VISIT_VTK_DIR C:/A_VisIt/TPForDebugging/vtk-debug/8.1.0)
-  else()
-    VISIT_OPTION_DEFAULT(VISIT_VTK_DIR C:/A_VisIt/TPForDebugging/vtk-debug/9.2.6)
-  endif()
-endif()
+include(config-site/windows.cmake)
+

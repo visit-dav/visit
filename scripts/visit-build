@@ -341,12 +341,18 @@ set -e
 # 
 #   Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
 #   Completely reworked this script to have no more duplication.
+# 
+#   Justin Privitera, Wed Nov  6 15:19:28 PST 2024
+#   Added support for building on tuolumne and rzadams.
+# 
+#   Justin Privitera, Fri Nov 22 16:40:46 PST 2024
+#   Removed kickit with extreme prejudice.
 #-----------------------------------------------------------------------
 
 test=no
 
 user=`whoami`
-result_dir=/usr/workspace/visit/visit/_release_builds/
+result_dir=/usr/workspace/visit/visit/_release_builds
 
 
 #
@@ -386,11 +392,11 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-kickit=false
 poodle=false
 lassen=false
 rzwhippet=false
 rzvernal=false
+tuolumne=false
 magma=false
 sierra=false
 
@@ -406,11 +412,6 @@ config_site="unknown"
 for abc
 do
    case $1 in
-      -kickit)
-         kickit=true
-         machine_name="kickit"
-         shift
-         ;;
       -poodle)
          poodle=true
          machine_name="poodle"
@@ -423,6 +424,12 @@ do
          config_site="lassen708.cmake"
          shift
          ;;
+      -rzansel)
+         lassen=true # piggy back off of lassen
+         machine_name="rzansel"
+         config_site="rzansel61.cmake"
+         shift
+         ;;
       -rzwhippet)
          rzwhippet=true
          machine_name="rzwhippet"
@@ -433,6 +440,18 @@ do
          rzvernal=true
          machine_name="rzvernal"
          config_site="rzvernal10.cmake"
+         shift
+         ;;
+      -tuolumne)
+         tuolumne=true
+         machine_name="tuolumne"
+         config_site="tuolumne1001.cmake"
+         shift
+         ;;
+      -rzadams)
+         tuolumne=true # piggy back off of tuolumne
+         machine_name="rzadams"
+         config_site="rzadams1001.cmake"
          shift
          ;;
       -magma)
@@ -461,7 +480,7 @@ if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    kickit poodle lassen rzwhippet rzvernal"
+   echo "    poodle lassen rzwhippet rzvernal tuolumne rzadams rzansel"
    echo "    magma (LC, x86_64)"
    echo "    sierra (LC, ppc)"
    exit
@@ -492,8 +511,8 @@ fi
 # create the build script
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$kickit" = true ] || [ "$magma" = true ] || \
-   [ "$sierra" = true ]; then
+   [ "$rzvernal" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    rm -f machine_specific_build_script
    cat <<EOF > machine_specific_build_script
 #!/bin/sh
@@ -507,32 +526,33 @@ fi
 #
 # set up paths
 #
-if [ "$kickit" = true ]; then
-   cat <<EOF >> machine_specific_build_script
-export PATH=/usr/gapps/gcc/gcc-9.1/bin:\$PATH
-export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64
-EOF
-elif [ "$poodle" = true ]; then
+if [ "$poodle" = true ]; then
    cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 EOF
 elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
 cat <<EOF >> machine_specific_build_script
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
 EOF
 elif [ "$rzwhippet" = true ] || [ "$magma" = true ]; then
 cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
 EOF
 elif [ "$rzvernal" = true ]; then
 cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.1/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+EOF
+elif [ "$tuolumne" = true ]; then
+cat <<EOF >> machine_specific_build_script
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4-cray-gfx942/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -542,22 +562,9 @@ fi
 #
 # housekeeping
 #
-if [ "$kickit" = true ]; then
-   cat <<EOF >> machine_specific_build_script
-if test ! -e /home/$user/$machine_name ; then
-   mkdir /home/$user/$machine_name
-fi
-rm -rf /home/$user/$machine_name/visitbuild
-mkdir /home/$user/$machine_name/visitbuild
-cp $machine_name_$dist.tar.gz /home/$user/$machine_name/visitbuild/$dist.tar.gz
-cd /home/$user/$machine_name/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-EOF
-elif [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-     [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
+if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+   [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 if test ! -d /usr/tmp/$user/$machine_name ; then
    mkdir -p /usr/tmp/$user/$machine_name
@@ -581,17 +588,8 @@ fi
 # 
 # Actually build
 # 
-if [ "$kickit" = true ]; then
-   cat <<EOF >> machine_specific_build_script
-mkdir ../build
-cd ../build
-/usr/gapps/visit/thirdparty_shared/3.4.0/opengl/cmake/3.24.3/linux-x86_64_gcc-9.1/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-EOF
-elif [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+   [ "$rzwhippet" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
@@ -612,24 +610,27 @@ fi
 #
 # move things to result directory
 #
-if [ "$kickit" = true ]; then
-   # nothing to do for this case
-   cat <<EOF >> machine_specific_build_script
-EOF
-elif [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
-     [ "$magma" = true ]; then
+if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
+   [ "$magma" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f $result_dir/buildlog.$machine_name
 cp buildlog $result_dir/buildlog.$machine_name
 rm -f $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
 cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
 EOF
+elif [ "$tuolumne" = true ]; then
+   cat <<EOF >> machine_specific_build_script
+rm -f $result_dir/buildlog.$machine_name
+cp buildlog $result_dir/buildlog.$machine_name
+rm -f $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
+cp build/visit\$ver2.linux-x86_64-gfx942.tar.gz $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
+EOF
 elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f $result_dir/buildlog.$machine_name
 cp buildlog $result_dir/buildlog.$machine_name
-rm -f $result_dir/visit\$ver2.linux-intel-$machine_name.tar.gz
-cp build/visit\$ver2.linux-intel.tar.gz $result_dir/visit\$ver2.linux-intel-$machine_name.tar.gz
+rm -f $result_dir/visit\$ver2.linux-ppc64le-$machine_name.tar.gz
+cp build/visit\$ver2.linux-ppc64le.tar.gz $result_dir/visit\$ver2.linux-ppc64le-$machine_name.tar.gz
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -639,23 +640,9 @@ fi
 #
 # result log
 #
-if [ "$kickit" = true ]; then
-   cat <<EOF >> machine_specific_build_script
-rm -f resultlog
-echo "        build of visit on $machine_name"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-elif [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-     [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
+if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+   [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
+   [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f resultlog
 echo "        build of visit on $machine_name"       > resultlog 2>&1
@@ -678,52 +665,14 @@ else
 fi
 
 #
-# bonus content for kickit
-#
-if [ "$kickit" = true ]; then
-   cat <<EOF >> machine_specific_build_script
-rm -rf $dist
-gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
-cd $dist/src
-mkdir ../build
-cd ../build
-/usr/gapps/visit/thirdparty_shared/3.4.0/mesagl/cmake/3.24.3/linux-x86_64_gcc-9.1/bin/cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE="config-site/kickit.mesagl.cmake" >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
-cd ../..
-echo ""                                       >> resultlog 2>&1
-echo "        build of visit on $machine_name"       >> resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/build/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/build/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/build/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/build/plugins/databases/libI* | sed "s/$dist\/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-elif [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-     [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
-   # nothing to do for this case
-   cat <<EOF >> machine_specific_build_script
-EOF
-else
-   echo "case for $machine_name not implemented. Bailing out."
-   exit
-fi
-
-#
 # email
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ]; then
+   [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 mail  -s "VisIt build ($dist): $machine_name" $emailName < resultlog
 EOF
-elif  [ "$kickit" = true ] || [ "$magma" = true ] || [ "$sierra" = true ]; then
+elif [ "$magma" = true ] || [ "$sierra" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_build_script
 EOF
@@ -738,22 +687,11 @@ fi
 # Call our machine-specific build script
 #
 if [ "$test" = "no" ]; then
-   if [ "$kickit" = true ]; then
-      echo "Building on ${machine_name}"
-      cp machine_specific_build_script ~/${machine_name}_buildit
-      cp $dist.tar.gz ~/${machine_name}_$dist.tar.gz
-      echo "cd;chmod 750 ${machine_name}_buildit;./${machine_name}_buildit" | bash &
-   elif [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-        [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ]; then
-      echo "Building on $machine_name"
-      cp machine_specific_build_script ${machine_name}_buildit
-      cp $dist.tar.gz ${machine_name}_$dist.tar.gz
-      chmod 750 ${machine_name}_buildit
-      ./${machine_name}_buildit
-   else
-      echo "case for $machine_name not implemented. Bailing out."
-      exit
-   fi
+   echo "Building on $machine_name"
+   cp machine_specific_build_script ${machine_name}_buildit
+   cp $dist.tar.gz ${machine_name}_$dist.tar.gz
+   chmod 750 ${machine_name}_buildit
+   ./${machine_name}_buildit
 
    # Clean up
    rm -f machine_specific_build_script

@@ -5,17 +5,6 @@
       QvisParallelCoordinatesPlotWizard.C
       QvisParallelCoordinatesPlotWizardPage.C
     </Files>
-    <Files components="V">
-      avtParallelCoordinatesFilter.C
-    </Files>
-    <Files components="E">
-      avtParallelCoordinatesFilter.C
-    </Files>
-    <Files components="W">
-      QvisParallelCoordinatesWidget.h
-      QvisParallelCoordinatesPlotWizard.h
-      QvisParallelCoordinatesPlotWizardPage.h
-    </Files>
     <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
       <Enum name="FocusRendering">
         IndividualLines

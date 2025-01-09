@@ -4,14 +4,18 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Thu Oct 24, 2024
+#  Utilize visit_patch_target.
 #
 #****************************************************************************
 
-target_sources(avtqtviswindow PRIVATE
-    vtkDashedXorGridMapper2D.C
-    vtkRubberBandMapper2D.C
-    vtkDashedXorGridMapper2D.h
-    vtkRubberBandMapper2D.h)
+visit_patch_target(
+    NAME      avtqtviswindow
+    SOURCES   vtkDashedXorGridMapper2D.C
+              vtkRubberBandMapper2D.C
+    HEADERS   vtkDashedXorGridMapper2D.h
+              vtkRubberBandMapper2D.h
+    INCLUDES  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 if(NOT APPLE AND X11_FOUND)
     set_source_files_properties(
@@ -19,6 +23,4 @@ if(NOT APPLE AND X11_FOUND)
         PROPERTIES COMPILE_FLAGS "-DHAVE_XLIB")
 endif()
 
-target_include_directories(avtqtviswindow PRIVATE 
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 

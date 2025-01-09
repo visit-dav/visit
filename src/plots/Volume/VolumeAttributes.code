@@ -976,4 +976,31 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 
 Target: xml2cmake
 Condition: VISIT_SLIVR
-Definitions: -DVISIT_SLIVR
+Definitions: VISIT_SLIVR
+
+Target: xml2cmake
+Condition: ICET_FOUND
+Definitions: HAVE_ICET
+Includes: ${ICET_INCLUDE_DIR}
+ELinkLibraries: ${ICET_FULLPATH_LIB}
+
+Target: xml2cmake
+Verbatim: Post
+if(ICET_FOUND)
+    # We need to link with OpenGL on Mac when we have IceT.
+    if(APPLE)
+        set(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+    endif()
+    # Link icet libraries using absolute pathes
+    set(ICET_FULLPATH_LIB ${ICET_OPENGL})
+    foreach(X ${ICET_LIB})
+        list(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
+    endforeach()
+
+    target_link_libraries(EVolumePlot_ser PUBLIC ${ICET_FULLPATH_LIB})
+    if(VISIT_PARALLEL)
+        target_link_libraries(EVolumePlot_par PUBLIC ${ICET_FULLPATH_LIB})
+    endif()
+endif()
+
+

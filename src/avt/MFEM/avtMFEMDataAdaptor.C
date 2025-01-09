@@ -20,6 +20,9 @@
 #include <vtkHexahedron.h>
 #include <vtkQuad.h>
 #include <vtkTetra.h>
+#include <vtkWedge.h>
+#include <vtkPyramid.h>
+
 
 //-----------------------------------------------------------------------------
 // visit includes
@@ -39,6 +42,11 @@ using namespace mfem;
 // to create higher resolution low-order VTK data objects to represent the
 // high order mfem objects.
 //
+//
+// Modifications:
+//  Cyrus Harrison, Mon Oct 28 16:31:26 PDT 2024
+//  Added support for wedges (prisms) and pyramids.
+//
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
@@ -46,11 +54,9 @@ using namespace mfem;
 std::string
 ElementTypeToShapeName(Element::Type element_type)
 {
-   // Adapted from SidreDataCollection
-
    // Note -- the mapping from Element::Type to string is based on
    //   enum Element::Type { POINT, SEGMENT, TRIANGLE, QUADRILATERAL,
-   //                        TETRAHEDRON, HEXAHEDRON };
+   //                        TETRAHEDRON, HEXAHEDRON, WEDGE, PYRAMID};
    // Note: -- the string names are from conduit's blueprint
 
    switch (element_type)
@@ -61,9 +67,8 @@ ElementTypeToShapeName(Element::Type element_type)
       case Element::QUADRILATERAL:  return "quad";
       case Element::TETRAHEDRON:    return "tet";
       case Element::HEXAHEDRON:     return "hex";
-      // not yet supported:
-      case Element::WEDGE:       return "unknown";
-      
+      case Element::WEDGE:          return "wedge";
+      case Element::PYRAMID:        return "pyramid";
    }
    
 
@@ -74,12 +79,14 @@ ElementTypeToShapeName(Element::Type element_type)
 static int
 ElementShapeNameToVTKCellType(const std::string &shape_name)
 {
-    if (shape_name == "point") return VTK_VERTEX;
-    if (shape_name == "line")  return VTK_LINE;
-    if (shape_name == "tri")   return VTK_TRIANGLE;
-    if (shape_name == "quad")  return VTK_QUAD;
-    if (shape_name == "hex")   return VTK_HEXAHEDRON;
-    if (shape_name == "tet")   return VTK_TETRA;
+    if (shape_name == "point")   return VTK_VERTEX;
+    if (shape_name == "line")    return VTK_LINE;
+    if (shape_name == "tri")     return VTK_TRIANGLE;
+    if (shape_name == "quad")    return VTK_QUAD;
+    if (shape_name == "hex")     return VTK_HEXAHEDRON;
+    if (shape_name == "tet")     return VTK_TETRA;
+    if (shape_name == "wedge")   return VTK_WEDGE;
+    if (shape_name == "pyramid") return VTK_PYRAMID;
     AVT_MFEM_INFO("Warning: Unsupported Element Shape: " << shape_name);
     return 0;
 }
@@ -94,6 +101,8 @@ VTKCellTypeSize(int cell_type)
     if (cell_type == VTK_QUAD)       return 4;
     if (cell_type == VTK_HEXAHEDRON) return 8;
     if (cell_type == VTK_TETRA)      return 4;
+    if (cell_type == VTK_WEDGE)      return 6;
+    if (cell_type == VTK_PYRAMID)    return 5;
     return 0;
 }
 
@@ -209,6 +218,8 @@ avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                 case Geometry::SQUARE:       ele_cell = vtkQuad::New();       break;
                 case Geometry::TETRAHEDRON:  ele_cell = vtkTetra::New();      break;
                 case Geometry::CUBE:         ele_cell = vtkHexahedron::New(); break;
+                case Geometry::PRISM:        ele_cell = vtkWedge::New();      break;
+                case Geometry::PYRAMID:      ele_cell = vtkPyramid::New();    break;
             }
             // the are ele_nverts for each refined element
             for (int k = 0; k < ele_nverts; k++, j++)
@@ -341,6 +352,7 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //
 //  Arguments:
 //    mesh:        MFEM mesh to be refined
+//    domain:      domain id
 //    lod:         number of refinement steps
 //    new_refine:  switch for using the new LOR or legacy LOR
 //
@@ -363,6 +375,9 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Cyrus Harrison, Fri Mar 10 11:58:33 PST 2023
 //    Add original cell ids, so mesh plots render outlines of the
 //    high order elements.
+// 
+//    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+//    Simplified test for periodic meshes and added comments.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -379,29 +394,37 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
-    // This logic avoids segfaults
-    if (mesh)
+    if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
     {
-        if (mesh->GetNodes())
-        {
-            if (mesh->GetNodes()->FESpace())
-            {
-                if (mesh->GetNodes()->FESpace()->FEColl())
-                {
-                    // Check if the mesh is periodic.
-                    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                                     (mesh->GetNodes()->FESpace()->FEColl());
-                    if (L2_coll)
-                    {
-                        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-                        return LegacyRefineMeshToVTK(mesh, domain, lod);
-                    }
-                }
-            }
-        }
+        // This if-test condition was taken from here:
+        // https://github.com/orgs/mfem/discussions/4556#discussioncomment-11093211
+
+        // Periodic meshes don't play nicely with the new mesh refinement method.
+        // They actually refine just fine, but what is produced is also periodic.
+        // We need to disconnect the mesh to view it. In lieu of some algorithm
+        // that disconnects the result for us, we choose to fall back to legacy
+        // LOR.
+
+        // The problem is, there is no easy way to tell if a mesh is periodic.
+        // We know that all periodic meshes are L2, but not all L2 meshes are
+        // periodic. So our best bet is to catch all L2 meshes and fall back
+        // to legacy LOR.
+
+        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
+        return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
+
+    // mfem::Mesh::MakeRefined does not yet support pyramids
+    if(mesh->GetNE() > 0)
+    {
+        if(mesh->GetElement(0)->GetType() == mfem::Element::PYRAMID)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Current MFEM implementation does not support refining Meshes with Pyramids.");
+        }
+    }
 
     // refine the mesh
     mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
@@ -863,6 +886,9 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 // 
 //    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
 //    Cleaned up nodal/zonal logic to match blueprint plugin.
+// 
+//    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
+//    Simplified test for periodic meshes and added comments.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -880,26 +906,24 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
-    // This logic avoids segfaults
-    if (mesh)
+    if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
     {
-        if (mesh->GetNodes())
-        {
-            if (mesh->GetNodes()->FESpace())
-            {
-                if (mesh->GetNodes()->FESpace()->FEColl())
-                {
-                    // Check if the mesh is periodic.
-                    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                                     (mesh->GetNodes()->FESpace()->FEColl());
-                    if (L2_coll)
-                    {
-                        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-                        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
-                    }
-                }
-            }
-        }
+        // This if-test condition was taken from here:
+        // https://github.com/orgs/mfem/discussions/4556#discussioncomment-11093211
+
+        // Periodic meshes don't play nicely with the new mesh refinement method.
+        // They actually refine just fine, but what is produced is also periodic.
+        // We need to disconnect the mesh to view it. In lieu of some algorithm
+        // that disconnects the result for us, we choose to fall back to legacy
+        // LOR.
+
+        // The problem is, there is no easy way to tell if a mesh is periodic.
+        // We know that all periodic meshes are L2, but not all L2 meshes are
+        // periodic. So our best bet is to catch all L2 meshes and fall back
+        // to legacy LOR.
+
+        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");

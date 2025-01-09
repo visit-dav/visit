@@ -15,5 +15,7 @@ AnnotationObject *PyText3DObject_FromPyObject(PyObject *obj);
 PyObject         *PyText3DObject_NewPyObject();
 PyObject         *PyText3DObject_WrapPyObject(AnnotationObject *attr);
 
+std::string       PyText3DObject_ToString(const AnnotationObject *, const char *);
+
 #endif
 

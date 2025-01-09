@@ -554,6 +554,8 @@ def finalize_options(opts):
 #    For windows, move the glob of '*.py' tests name to after full-path
 #    expansion in main.
 #
+#    Mark C. Miller, Thu Nov 14 18:54:01 PST 2024
+#    Improve usage info for --fuzzy, --pixdiff and --avgdiff.
 # ----------------------------------------------------------------------------
 def parse_args():
     """
@@ -654,7 +656,8 @@ def parse_args():
                       dest="fuzzy",
                       default=defs["fuzzy"],
                       action = "store_true",
-                      help="Use fuzzy image matching [default=False]")
+                      help="Shorthand to set minimum fuzzy thresholds to "
+                           "--pixdiff 2 --avgdiff 1 [default=False].")
     parser.add_option("--no-fuzzy",
                       dest="no_fuzzy",
                       default=defs["no_fuzzy"],
@@ -693,16 +696,20 @@ def parse_args():
     parser.add_option("--pixdiff",
                       type="float",
                       default=defs["pixdiff"],
-                      help="allowed % of pixels different [default = 0.0%]")
+                      help="Allowed % of pixels different [default = 0.0%]. "
+                           "'--pixdiff 6.3', for example, means 6.3% of pixels can differ. "
+                           "When both pixdiff and avgdiff are specified, avgdiff is considered "
+                           "only if pixdiff has not been exceeded.")
     parser.add_option("--avgdiff",
                       type="float",
                       default=defs["avgdiff"],
-                      help="if pixdiff exceeded, allowed mean grayscale diff "
-                           "[default = 0]")
+                      help="Allowed mean grayscale diff [default = 0]. "
+                           "When both pixdiff and avgdiff are specified, avgdiff is considered "
+                           "only if pixdiff has not been exceeded.")
     parser.add_option("--numdiff",
                       type="float",
                       default=defs["numdiff"],
-                      help="allowed relative numerical difference in text "
+                      help="Allowed relative numerical difference in text "
                            "results [default = 0.0]")
     parser.add_option("--vargs",
                       default=defs["vargs"],

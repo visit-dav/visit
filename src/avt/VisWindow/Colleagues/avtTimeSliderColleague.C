@@ -6,6 +6,7 @@
 
 #include <ColorAttribute.h>
 #include <AnnotationObject.h>
+#include <StringHelpers.h>
 #include <VisWindowColleagueProxy.h>
 
 #include <vtkRenderer.h>
@@ -712,8 +713,46 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
         strcpy(timeFormatString, timeFormat);
     }
 
+    //
+    // The two variables here are poorly named. One is the textFormatString
+    // which holds the text part of the string like "Time=" or "Cycle=", etc.
+    // The other is timeFormatString which holds a printf-style format
+    // string indicating how to format the numerical value associated with
+    // time.
+    //
+
+    //
+    // We have two possible places the printf-format string could be specified.
+    // One is part of the textFormatString itself (the new way) as in
+    // "Time=$time%6.4f" and the other (the old way) is in the separate
+    // timeFormatString. Which to use?
+    //
+
+    // 
+    // We first check for possible printf-style format string within the
+    // textFormatString itself. If we find something there, we just allow
+    // it to proceed. If we do not find a format string there but do
+    // find a non-empty, non-default value in timeFormatString, then we
+    // temporarily create a textFormatString with the timeFormatString
+    // appended to it to pass on to create the annotation string.
+    //
+
     delete [] textString;
-    textString = CreateAnnotationString(textFormatString);
+    char const *rawStrWithFormatPattern = R"(\$[a-z]*%[.\d]+[GgFfEeAa])";
+    int formatInTextString = StringHelpers::FindRE(textFormatString,
+                                 rawStrWithFormatPattern);
+    if (formatInTextString == StringHelpers::FindNone &&
+        tf_len > 0 &&
+        std::string(timeFormatString) != "%g")
+    {
+        std::string combined = std::string(textFormatString) +
+                               std::string(timeFormatString);
+        textString = CreateAnnotationString(combined.c_str());
+    }
+    else
+    {
+        textString = CreateAnnotationString(textFormatString);
+    }
 
     if (textActor)
         textActor->SetInput(textString);

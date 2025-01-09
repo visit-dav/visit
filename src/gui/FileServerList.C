@@ -1796,6 +1796,10 @@ FileServerList::QualifiedName(const string &fileName)
 //   If there is a real host profile and it uses a gateway, check the gateway
 //   for validity instead of the remote host.
 //
+//   Eric Brugger, Mon Oct 28 14:47:44 PDT 2024
+//   Skip the check of the validity of the remote host if using a gateway
+//   and the gateway host is blank.
+//
 // ****************************************************************************
 
 #include <RemoteProcess.h>
@@ -1850,19 +1854,28 @@ FileServerList::StartServer(const string &host)
         MachineProfile profile(MachineProfile::Default(host));
 
         // Determine which host we'll be connecting to and see if that host is
-        // valid. We might be connecting via a gateway.
+        // valid. We might be connecting via a gateway. Skip the test if using
+        // a gateway and the gateway host is blank.
         std::string connectionHost(host);
+        bool skipHostCheck = false;
         MachineProfile *actualProfile = NULL;
         if(profiles != NULL)
             actualProfile = profiles->GetMachineProfileForHost(host);
         if(actualProfile != NULL)
         {
-            if(actualProfile->GetUseGateway() && !actualProfile->GetGatewayHost().empty())
+            if(actualProfile->GetUseGateway())
             {
-                connectionHost = actualProfile->GetGatewayHost();
+                if(actualProfile->GetGatewayHost().empty())
+                {
+                    skipHostCheck = true;
+                }
+                else
+                {
+                    connectionHost = actualProfile->GetGatewayHost();
+                }
             }
         }
-        if(!CheckHostValidity(connectionHost))
+        if(!skipHostCheck && !CheckHostValidity(connectionHost))
         {
             EXCEPTION1(BadHostException, connectionHost);
         }

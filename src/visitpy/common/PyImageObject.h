@@ -23,7 +23,8 @@ PyObject       *PyImageObject_WrapPyObject(const AnnotationObject *attr);
 void            PyImageObject_SetLogging(bool val);
 void            PyImageObject_SetDefaults(const AnnotationObject *atts);
 
-PyObject       *PyImageObject_StringRepresentation(const AnnotationObject *atts);
+std::string     PyImageObject_ToString(const AnnotationObject *, const char *);
+
 
 #endif
 
