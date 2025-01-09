@@ -15,6 +15,7 @@ VTKPluginInfo.C
 SET(LIBM_SOURCES
 VTKMDServerPluginInfo.C
 ${COMMON_SOURCES}
+avtGEOSFileReader.C
 avtPVDFileReader.C
 avtVTKFileFormat.C
 avtVTKFileReader.C
@@ -27,6 +28,7 @@ VTMParser.C
 SET(LIBE_SOURCES
 VTKEnginePluginInfo.C
 ${COMMON_SOURCES}
+avtGEOSFileReader.C
 avtPVDFileReader.C
 avtVTKFileFormat.C
 avtVTKFileReader.C
