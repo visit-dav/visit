@@ -122,7 +122,7 @@ avtVTK_STSDFileFormat::GetVar(const char *name)
 vtkDataArray *
 avtVTK_STSDFileFormat::GetVectorVar(const char *name)
 {
-    return reader->GetVectorVar(0, name);
+    return reader->GetVar(0, name);
 }
 
 void *
@@ -260,7 +260,7 @@ avtVTK_STMDFileFormat::GetVar(int domain, const char *name)
 vtkDataArray *
 avtVTK_STMDFileFormat::GetVectorVar(int domain, const char *name)
 {
-    return reader->GetVectorVar(domain, name);
+    return reader->GetVar(domain, name);
 }
 
 void *
@@ -325,7 +325,7 @@ avtPVD_MTMDFileFormat::GetVar(int /*ts*/, int domain, const char *name)
 vtkDataArray *
 avtPVD_MTMDFileFormat::GetVectorVar(int /*ts*/, int domain, const char *name)
 {
-    return reader->GetVectorVar(domain, name);
+    return reader->GetVar(domain, name);
 }
 
 void *
@@ -352,3 +352,173 @@ avtPVD_MTMDFileFormat::GetTimes(std::vector<double> &_times)
 {
     reader->GetTimes(_times);
 }
+
+// ****************************************************************************
+//   MTMDFileFormat for GEOS .pvd 
+// ****************************************************************************
+
+#include <avtGEOSFileReader.h>
+
+// ****************************************************************************
+// ****************************************************************************
+// ****************************************************************************
+
+avtGEOSFileFormat::avtGEOSFileFormat(const char *filename, const DBOptionsAttributes *opts) :
+    avtMTMDFileFormat(filename)
+{
+    reader = new avtGEOSFileReader(filename, opts);
+}
+
+avtGEOSFileFormat::~avtGEOSFileFormat()
+{
+    delete reader;
+}
+
+const char *
+avtGEOSFileFormat::GetType(void)
+{
+    return "GEOS";
+}
+
+void
+avtGEOSFileFormat::FreeUpResources(void)
+{
+    reader->FreeUpResources();
+}
+
+
+void
+avtGEOSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
+{
+    reader->PopulateDatabaseMetaData(md, ts);
+}
+
+vtkDataSet *
+avtGEOSFileFormat::GetMesh(int ts, int domain, const char *name)
+{
+    return reader->GetMesh(domain, name);
+}
+
+vtkDataArray *
+avtGEOSFileFormat::GetVar(int /*ts*/, int domain, const char *name)
+{
+    return reader->GetVar(domain, name);
+}
+
+vtkDataArray *
+avtGEOSFileFormat::GetVectorVar(int /*ts*/, int domain, const char *name)
+{
+    return reader->GetVar(domain, name);
+}
+
+void *
+avtGEOSFileFormat::GetAuxiliaryData(const char *var, int /*ts*/, int domain,
+    const char *type, void *d, DestructorFunction &df)
+{
+    return reader->GetAuxiliaryData(var, domain, type, d, df);
+}
+
+void
+avtGEOSFileFormat::ActivateTimestep(int ts)
+{
+    reader->ActivateTimestep(ts);
+}
+
+
+int
+avtGEOSFileFormat::GetNTimesteps()
+{
+    return reader->GetNTimesteps();
+}
+
+void
+avtGEOSFileFormat::GetTimes(std::vector<double> &_times)
+{
+    reader->GetTimes(_times);
+}
+
+void
+avtGEOSFileFormat::RegisterVariableList(const char* primaryVar,
+    const std::vector<CharStrRef> &secondaryVars)
+{
+    reader->RegisterVariableList(primaryVar, secondaryVars);
+}
+
+// ****************************************************************************
+//   STMDFileFormat for GEOS grouped (or single) .vtm files
+// ****************************************************************************
+
+avtGEOS_STMDFileFormat::avtGEOS_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
+    avtSTMDFileFormat(&filename, 1)
+{
+    reader = new avtGEOSFileReader(filename, opts);
+}
+
+avtGEOS_STMDFileFormat::avtGEOS_STMDFileFormat(const char *filename,
+    const DBOptionsAttributes *opts, avtGEOSFileReader *r) :
+    avtSTMDFileFormat(&filename, 1)
+{
+    reader = r;
+}
+
+avtGEOS_STMDFileFormat::~avtGEOS_STMDFileFormat()
+{
+    delete reader;
+}
+
+const char *
+avtGEOS_STMDFileFormat::GetType(void)
+{
+    return "GEOS";
+}
+
+void
+avtGEOS_STMDFileFormat::FreeUpResources(void)
+{
+    reader->FreeUpResources();
+}
+
+
+double
+avtGEOS_STMDFileFormat::GetTime(void)
+{
+    return  reader->GetTime();
+}
+
+void
+avtGEOS_STMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    reader->PopulateDatabaseMetaData(md,0);
+}
+
+vtkDataSet *
+avtGEOS_STMDFileFormat::GetMesh(int domain, const char *name)
+{
+    return reader->GetMesh(domain, name);
+}
+
+vtkDataArray *
+avtGEOS_STMDFileFormat::GetVar(int domain, const char *name)
+{
+    return reader->GetVar(domain, name);
+}
+
+vtkDataArray *
+avtGEOS_STMDFileFormat::GetVectorVar(int domain, const char *name)
+{
+    return reader->GetVar(domain, name);
+}
+void *
+avtGEOS_STMDFileFormat::GetAuxiliaryData(const char *var, int domain,
+    const char *type, void *d, DestructorFunction &df)
+{
+    return reader->GetAuxiliaryData(var, domain, type, d, df);
+}
+
+void
+avtGEOS_STMDFileFormat::RegisterVariableList(const char* primaryVar,
+    const std::vector<CharStrRef> &secondaryVars)
+{
+    reader->RegisterVariableList(primaryVar, secondaryVars);
+}
+

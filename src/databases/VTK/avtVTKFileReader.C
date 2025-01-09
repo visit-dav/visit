@@ -18,7 +18,9 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkDataSetAttributes.h>
 #include <vtkDataSetReader.h>
+#include <vtkFieldData.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -115,37 +117,21 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 // ****************************************************************************
 
 avtVTKFileReader::avtVTKFileReader(const char *fname, const DBOptionsAttributes *) :
-    vtk_meshname()
+    filename(fname),
+    vtk_meshname(),
+    pieceDatasets(),
+    pieceFileNames(),
+    pieceExtents(),
+    matvarname()
 {
-    filename = new char[strlen(fname)+1];
-    strcpy(filename, fname);
-
     nblocks = 1;
-    pieceDatasets = NULL;
+    ngroups = 0;
 
     readInDataset = false;
-    matvarname = NULL;
 
-    // find the file extension
-    int i, start = -1;
-    int len = int(strlen(fname));
-    for(i = len-1; i >= 0; i--)
-    {
-        if(fname[i] == '.')
-        {
-            start = i;
-            break;
-        }
-        else if(fname[i] == '/' || fname[i] == '\\')
-        {
-            // We hit a path separator. There is no file extension.
-            start = -1;
-            break;
-        }
-    }
-
-    if (start != -1)
-        fileExtension = string(fname, start+1, len-1);
+    size_t pos = filename.find_last_of('.');
+    if(pos != string::npos)
+        fileExtension = filename.substr(pos+1);
     else
         fileExtension = "none";
 
@@ -186,21 +172,15 @@ avtVTKFileReader::FreeUpResources(void)
 {
     debug4 << "VTK file " << filename << " forced to free up resources." << endl;
 
-    if (matvarname != NULL)
-    {
-        free(matvarname);
-        matvarname = NULL;
-    }
     pieceFileNames.clear();
-    if (pieceDatasets != NULL)
+    if (!pieceDatasets.empty())
     {
-        for (int i = 0; i < nblocks; i++)
+        for (size_t i = 0; i < pieceDatasets.size(); ++i)
         {
             if (pieceDatasets[i] != NULL)
                 pieceDatasets[i]->Delete();
         }
-        delete [] pieceDatasets;
-        pieceDatasets = 0;
+        pieceDatasets.clear();
     }
     pieceExtents.clear();
     for(std::map<string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
@@ -241,7 +221,6 @@ avtVTKFileReader::FreeUpResources(void)
 avtVTKFileReader::~avtVTKFileReader()
 {
     FreeUpResources();
-    delete [] filename;
 }
 
 
@@ -307,7 +286,7 @@ avtVTKFileReader::ReadInFile(int _domain)
         fileExtension == "pvtp")
     {
         vtkVisItXMLPDataReader *xmlpReader = vtkVisItXMLPDataReader::New();
-        xmlpReader->SetFileName(filename);
+        xmlpReader->SetFileName(filename.c_str());
         xmlpReader->ReadXMLInformation();
 
         ngroups = 1;
@@ -333,7 +312,7 @@ avtVTKFileReader::ReadInFile(int _domain)
     else if (fileExtension == "pvtk")
     {
         PVTKParser *parser = new PVTKParser();
-        parser->SetFileName(filename);
+        parser->SetFileName(filename.c_str());
         if (!parser->Parse())
         {
             string em = parser->GetErrorMessage();
@@ -368,7 +347,7 @@ avtVTKFileReader::ReadInFile(int _domain)
     else if (fileExtension == "vtm")
     {
         VTMParser *parser = new VTMParser;
-        parser->SetFileName(filename);
+        parser->SetFileName(filename.c_str());
         if (!parser->Parse())
         {
             string em = parser->GetErrorMessage();
@@ -407,7 +386,7 @@ avtVTKFileReader::ReadInFile(int _domain)
     }
 
 
-    pieceDatasets = new vtkDataSet*[nblocks];
+    pieceDatasets.resize(nblocks);
     for (int i = 0; i < nblocks; i++)
         pieceDatasets[i] = NULL;
 
@@ -852,7 +831,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
         // a crash any time the time slider is changed (and treat all dbs
         // as time varying is off)
 
-        if(matvarname == NULL)
+        if(matvarname.empty())
         {
             if (!readInDataset)
             {
@@ -866,13 +845,13 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             dataset = pieceDatasets[domain];
 
             int ncellvars = dataset->GetCellData()->GetNumberOfArrays();
-            for(int i=0;( i < ncellvars) && (matvarname == NULL) ;i++)
+            for (int i=0; (i < ncellvars) && matvarname.empty(); i++)
             {
                 // we are looking for either "avtSubsets" or "material"
                 if(strcmp(dataset->GetCellData()->GetArrayName(i), "avtSubsets") == 0)
-                    matvarname = strdup("avtSubsets");
+                    matvarname = "avtSubsets";
                 else if(strcmp(dataset->GetCellData()->GetArrayName(i), "material") == 0)
-                    matvarname = strdup("material");
+                    matvarname = "material";
             }
         }
         else
@@ -880,7 +859,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             dataset = pieceDatasets[domain];
         }
 
-        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(domain, matvarname));
+        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(domain, matvarname.c_str()));
 
 
         // again, if we haven't called PopulateDatabaseMetaData().
@@ -1149,46 +1128,6 @@ avtVTKFileReader::GetVar(int domain, const char *real_name)
 
 
 // ****************************************************************************
-//  Method: avtVTKFileReader::GetVectorVar
-//
-//  Purpose:
-//      Gets the vector variable.
-//
-//  Arguments:
-//      var      The desired varname, this should be VARNAME.
-//
-//  Returns:     The varialbe as VTK vectors.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 20, 2001
-//
-//  Modifications:
-//    Hank Childs, Tue Mar 26 13:33:43 PST 2002
-//    Add a reference so that reference counting tricks work.
-//
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
-//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
-//
-//    Hank Childs, Thu Aug 15 09:17:14 PDT 2002
-//    Route the vector call through the scalar variable call, since there is
-//    now no effective difference between the two.
-//
-//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
-//    I enhanced the reader so that it can read parallel VTK files.
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtVTKFileReader::GetVectorVar(int domain, const char *var)
-{
-    //
-    // There is no difference between vectors and scalars for this class.
-    //
-    return GetVar(domain, var);
-}
-
-
-// ****************************************************************************
 //  Method: avtVTKFileReader::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -1299,6 +1238,9 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    Kathleen Biagas, Fri August 13, 2021
 //    Add call to ReadInDataset if pieceDataset[0] is NULL.
 //
+//    Kathleen Biagas, Thu Dec 12, 2024
+//    Utilize new helper methods for filling MetaData.
+//
 // ****************************************************************************
 
 void
@@ -1315,381 +1257,15 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     vtkDataSet *dataset = pieceDatasets[0];
+    string meshName = MESHNAME;
+    if(!vtk_meshname.empty())
+        meshName = vtk_meshname;
 
-    int spat = 3;
-    int topo = 3;
+    FillMeshMetaData(md, dataset, meshName);
 
-    avtMeshType type;
-    int  vtkType = dataset->GetDataObjectType();
-    switch (vtkType)
-    {
-      case VTK_RECTILINEAR_GRID:
-        type = AVT_RECTILINEAR_MESH;
-        break;
-      case VTK_STRUCTURED_GRID:
-        type = AVT_CURVILINEAR_MESH;
-        break;
-      case VTK_UNSTRUCTURED_GRID:
-        type = AVT_UNSTRUCTURED_MESH;
-        break;
-      case VTK_POLY_DATA:
-        topo = 2;
-        type = AVT_SURFACE_MESH;
-        break;
-      default:
-        debug1 << "Unable to identify mesh type " << vtkType << endl;
-        type = AVT_UNKNOWN_MESH;
-        break;
-    }
-
-    double bounds[6];
-    dataset->GetBounds(bounds);
-
-    if ((bounds[4] == bounds[5]) && (bounds[5] == 0.))
-    {
-        spat = 2;
-        topo = 2;
-    }
-
-    //
-    // Some mesh types can have a lower topological dimension
-    //
-    if (vtkType == VTK_UNSTRUCTURED_GRID)
-    {
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) dataset;
-
-        if(ugrid->GetNumberOfPoints() > 0)
-        {
-            if (ugrid->GetNumberOfCells() == 0)
-            {
-                // no cells declared, assume  point mesh.
-                debug5 << "The VTK file format contains all points -- "
-                       << "declaring this a point mesh." << endl;
-                type = AVT_POINT_MESH;
-                topo = 0;
-            }
-            else
-            {
-                vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
-                GetListOfUniqueCellTypes(ugrid, types);
-
-                if (types->GetNumberOfTuples() == 1)
-                {
-                    int myType = (int) types->GetValue(0);
-                    if (myType == VTK_VERTEX)
-                    {
-                        debug5 << "The VTK file format contains all points -- "
-                               << "declaring this a point mesh." << endl;
-                        type = AVT_POINT_MESH;
-                        topo = 0;
-                    }
-                    else if(myType == VTK_LINE)
-                    {
-                        debug5 << "The mesh contains all lines, set topo=1" << endl;
-                        topo = 1;
-                    }
-                }
-                types->Delete();
-            }
-        }
-    }
-    else if (vtkType == VTK_STRUCTURED_GRID)
-    {
-        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) dataset;
-        int dims[3];
-        sgrid->GetDimensions(dims);
-        if ((dims[0] == 1 && dims[1] == 1) ||
-            (dims[0] == 1 && dims[2] == 1) ||
-            (dims[1] == 1 && dims[2] == 1))
-        {
-            topo = 1;
-        }
-        else if (dims[0] == 1 || dims[1] == 1 || dims[2] == 1)
-        {
-            topo = 2;
-        }
-    }
-    else if (vtkType == VTK_POLY_DATA)
-    {
-        vtkPolyData *pd = (vtkPolyData *) dataset;
-        if (pd->GetNumberOfPoints() > 0)
-        {
-            if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
-            {
-                if (pd->GetNumberOfLines() > 0)
-                {
-                    topo = 1;
-                }
-                else
-                {
-                    debug3 << "The VTK file format contains all points -- "
-                           << "declaring this a point mesh." << endl;
-                    type = AVT_POINT_MESH;
-                    topo = 0;
-                }
-            }
-        }
-    }
-
-    avtMeshMetaData *mesh = new avtMeshMetaData;
-    if(vtk_meshname.empty())
-    {
-        mesh->name = MESHNAME;
-    }
-    else
-    {
-        mesh->name = vtk_meshname;
-    }
-    mesh->meshType = type;
-    mesh->spatialDimension = spat;
-    mesh->topologicalDimension = topo;
-    if (ngroups > 1)
-    {
-        mesh->numGroups = ngroups;
-        if (!groupNames.empty())
-            mesh->groupNames = groupNames;
-        if (!groupPieceName.empty())
-        {
-            mesh->groupPieceName = groupPieceName;
-            mesh->groupTitle = groupPieceName + string("s");
-        }
-        mesh->groupIds = groupIds;
-    }
-    mesh->numBlocks = nblocks;
-    mesh->blockOrigin = 0;
-    if (nblocks == 1)
-        mesh->SetExtents(bounds);
-    else
-    {
-        if (!blockPieceName.empty())
-        {
-            mesh->blockPieceName = blockPieceName;
-            mesh->blockTitle = blockPieceName + string("s");
-        }
-        if (!blockNames.empty() && (int)blockNames.size() == nblocks)
-            mesh->blockNames = blockNames;
-    }
-    if (dataset->GetFieldData()->GetArray("MeshCoordType") != NULL)
-    {
-        avtMeshCoordType mct = (avtMeshCoordType)
-            int(dataset->GetFieldData()->GetArray("MeshCoordType")->
-                                                        GetComponent(0, 0));
-        mesh->meshCoordType = mct;
-        if (mct == AVT_RZ)
-        {
-            mesh->xLabel = "Z-Axis";
-            mesh->yLabel = "R-Axis";
-        }
-        else if (mct == AVT_ZR)
-        {
-            mesh->xLabel = "R-Axis";
-            mesh->yLabel = "Z-Axis";
-        }
-    }
-    if (dataset->GetFieldData()->GetArray("UnitCellVectors"))
-    {
-        vtkDataArray *ucv = dataset->GetFieldData()->
-                                               GetArray("UnitCellVectors");
-        for (int j=0; j<3; j++)
-        {
-            for (int k=0; k<3; k++)
-            {
-                mesh->unitCellVectors[j*3+k] = ucv->GetComponent(j*3+k,0);
-            }
-        }
-    }
-    if (dataset->GetCellData()->GetArray("avtGhostZones"))
-    {
-        mesh->containsGhostZones = AVT_HAS_GHOSTS;
-        int ncells = dataset->GetNumberOfCells();
-        vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) dataset->GetCellData()->GetArray("avtGhostZones");
-        unsigned char *ptr = arr->GetPointer(0);
-        unsigned char v = '\0';
-        avtGhostData::AddGhostZoneType(v, ZONE_EXTERIOR_TO_PROBLEM);
-        for (int i = 0 ; i < ncells ; i++)
-            if (ptr[i] & v)
-            {
-                mesh->containsExteriorBoundaryGhosts = true;
-                break;
-            }
-    }
-    else
-        mesh->containsGhostZones = AVT_NO_GHOSTS;
-
-    md->Add(mesh);
-
-    std::map<string, vtkRectilinearGrid *>::iterator pos;
-    for(pos = vtkCurves.begin(); pos != vtkCurves.end(); ++pos)
-    {
-        avtCurveMetaData *curve = new avtCurveMetaData;
-        curve->name = pos->first;
-        curve->hasSpatialExtents = false;
-        curve->hasDataExtents = false;
-        md->Add(curve);
-    }
-
-    int nvars = 0;
-
-    for (int i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
-    {
-        vtkDataArray *arr = dataset->GetPointData()->GetArray(i);
-        int ncomp = arr->GetNumberOfComponents();
-        const char *name = arr->GetName();
-        char buffer[1024];
-        char buffer2[1024];
-        if (name == NULL || strcmp(name, "") == 0)
-        {
-            sprintf(buffer, "%s%d", VARNAME, nvars);
-            name = buffer;
-        }
-        if (strncmp(name, "avt", strlen("avt")) == 0)
-        {
-            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
-            name = buffer2;
-        }
-        if (ncomp == 1)
-        {
-            bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, mesh->name, AVT_NODECENT, NULL, ascii);
-        }
-        else if (ncomp <= 4)
-        {
-            AddVectorVarToMetaData(md, name, mesh->name, AVT_NODECENT, ncomp);
-        }
-        else if (ncomp == 9)
-        {
-            AddTensorVarToMetaData(md, name, mesh->name, AVT_NODECENT);
-        }
-        else
-        {
-            if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
-               arr->GetDataType() == VTK_CHAR)
-            {
-                md->Add(new avtLabelMetaData(name, mesh->name, AVT_NODECENT));
-            }
-            else
-            {
-                AddArrayVarToMetaData(md, name, ncomp, mesh->name, AVT_NODECENT);
-                int compnamelen = int(strlen(name) + 40);
-                char *exp_name = new char[compnamelen];
-                char *exp_def = new char[compnamelen];
-                for(int c = 0; c < ncomp; ++c)
-                {
-                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression e;
-                    e.SetType(Expression::ScalarMeshVar);
-                    e.SetName(exp_name);
-                    e.SetDefinition(exp_def);
-                    md->AddExpression(&e);
-                }
-                delete [] exp_name;
-                delete [] exp_def;
-            }
-        }
-        nvars++;
-    }
-    for (int i = 0 ; i < dataset->GetCellData()->GetNumberOfArrays() ; i++)
-    {
-        vtkDataArray *arr = dataset->GetCellData()->GetArray(i);
-        int ncomp = arr->GetNumberOfComponents();
-        const char *name = arr->GetName();
-        char buffer[1024];
-        char buffer2[1024];
-        if (name == NULL || strcmp(name, "") == 0)
-        {
-            sprintf(buffer, "%s%d", VARNAME, nvars);
-            name = buffer;
-        }
-        if (strncmp(name, "avt", strlen("avt")) == 0)
-        {
-            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
-            name = buffer2;
-        }
-        if ((arr->GetDataType() == VTK_INT) && (ncomp == 1) &&
-            ((strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0) ||
-            ((strncmp(name, "material", strlen("material")) == 0))))
-        {
-            std::map<int, bool> valMap;
-            vtkIntArray  *iarr = NULL;
-            // check for field data "MaterialIds" that can directly provide us
-            // the proper set of material ids.
-            vtkDataArray *mids_arr = dataset->GetFieldData()->GetArray("MaterialIds");
-            if( mids_arr != NULL)
-                iarr = vtkIntArray::SafeDownCast(mids_arr);
-            else
-                iarr = vtkIntArray::SafeDownCast(arr);
-
-            int *iptr = iarr->GetPointer(0);
-            int ntuples = iarr->GetNumberOfTuples();
-            for (int j = 0; j < ntuples; j++)
-                valMap[iptr[j]] = true;
-
-            std::map<int, bool>::const_iterator it;
-            for (it = valMap.begin(); it != valMap.end(); it++)
-            {
-                char tmpname[32];
-                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
-                matnames.push_back(tmpname);
-                matnos.push_back(it->first);
-            }
-
-            avtMaterialMetaData *mmd =
-                new avtMaterialMetaData("materials", mesh->name,
-                                        (int)valMap.size(), matnames);
-            md->Add(mmd);
-
-            if (strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0)
-                matvarname = strdup("internal_var_Subsets");
-            else
-                matvarname = strdup("material");
-        }
-        else if (ncomp == 1)
-        {
-            bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, mesh->name, AVT_ZONECENT, NULL, ascii);
-        }
-        else if (ncomp <= 4)
-        {
-            AddVectorVarToMetaData(md, name, mesh->name, AVT_ZONECENT, ncomp);
-        }
-        else if (ncomp == 9)
-        {
-            AddTensorVarToMetaData(md, name, mesh->name, AVT_ZONECENT);
-        }
-        else
-        {
-            if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
-               arr->GetDataType() == VTK_CHAR)
-            {
-                md->Add(new avtLabelMetaData(name, mesh->name, AVT_ZONECENT));
-            }
-            else
-            {
-                AddArrayVarToMetaData(md, name, ncomp, mesh->name, AVT_ZONECENT);
-                int compnamelen = int(strlen(name) + 40);
-                char *exp_name = new char[compnamelen];
-                char *exp_def = new char[compnamelen];
-                for(int c = 0; c < ncomp; ++c)
-                {
-                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression e;
-                    e.SetType(Expression::ScalarMeshVar);
-                    e.SetName(exp_name);
-                    e.SetDefinition(exp_def);
-                    md->AddExpression(&e);
-                }
-                delete [] exp_name;
-                delete [] exp_def;
-            }
-        }
-        nvars++;
-    }
-
-    // Add expressions from the database
-    for (int i = 0; i < vtk_exprs.GetNumExpressions(); i++)
-        md->AddExpression(&vtk_exprs.GetExpressions(i));
+    FillVarsMetaData(md, dataset->GetPointData(), meshName, AVT_NODECENT);
+    FillVarsMetaData(md, dataset->GetCellData(), meshName, AVT_ZONECENT,
+                     dataset->GetFieldData());
 
     // Don't hang on to all the data we've read. We might not even need it
     // if we're in mdserver or of on non-zero mpi-rank.
@@ -2099,6 +1675,36 @@ avtVTKFileReader::AddVectorVarToMetaData(avtDatabaseMetaData *md, string name,
     md->Add(vector);
 }
 
+// ****************************************************************************
+//  Method: avtFileFormat::AddSymmetricTensorVarToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a tensor variable to the meta-data.
+//
+//  Arguments:
+//      md        The meta-data object to add the tensor var to.
+//      name      The name of the tensor variable.
+//      mesh      The mesh the tensor var is defined on.
+//      cent      The centering type - node vs cell.
+//      dim       The dimension of the tensor variable. (optional = 3)
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtVTKFileReader::AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *md,
+     string name, string mesh, avtCentering cent, int dim)
+{
+    avtSymmetricTensorMetaData *tensor = new avtSymmetricTensorMetaData();
+    tensor->name = name;
+    tensor->meshName = mesh;
+    tensor->centering = cent;
+    tensor->dim = dim;
+
+    md->Add(tensor);
+}
 
 // ****************************************************************************
 //  Method: avtFileFormat::AddTensorVarToMetaData
@@ -2168,3 +1774,411 @@ avtVTKFileReader::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
 
     md->Add(st);
 }
+
+// ****************************************************************************
+//  Method: avtVTKFileReader::FillMeshMetaData
+//
+//  Purpose:
+//      Fill in the mesh related meta data.
+//
+//  Notes:
+//      Derived from PopulateDatabaseMetaData to facilitate use
+//      by derived classes that may have multiple meshes.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 12, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVTKFileReader::FillMeshMetaData(avtDatabaseMetaData *md,
+    vtkDataSet *ds,
+    const string &meshName)
+{
+    int spat = 3;
+    int topo = 3;
+
+    avtMeshType type;
+    int  vtkType = ds->GetDataObjectType();
+    switch (vtkType)
+    {
+      case VTK_RECTILINEAR_GRID:
+        type = AVT_RECTILINEAR_MESH;
+        break;
+      case VTK_STRUCTURED_GRID:
+        type = AVT_CURVILINEAR_MESH;
+        break;
+      case VTK_UNSTRUCTURED_GRID:
+        type = AVT_UNSTRUCTURED_MESH;
+        break;
+      case VTK_POLY_DATA:
+        topo = 2;
+        type = AVT_SURFACE_MESH;
+        break;
+      default:
+        debug1 << "Unable to identify mesh type " << vtkType << endl;
+        type = AVT_UNKNOWN_MESH;
+        break;
+    }
+
+    double bounds[6];
+    ds->GetBounds(bounds);
+
+    if ((bounds[4] == bounds[5]) && (bounds[5] == 0.))
+    {
+        spat = 2;
+        topo = 2;
+    }
+
+    //
+    // Some mesh types can have a lower topological dimension
+    //
+    if (vtkType == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
+
+        if(ugrid->GetNumberOfPoints() > 0)
+        {
+            if (ugrid->GetNumberOfCells() == 0)
+            {
+                // no cells declared, assume  point mesh.
+                debug5 << "The VTK file format contains all points -- "
+                       << "declaring this a point mesh." << endl;
+                type = AVT_POINT_MESH;
+                topo = 0;
+            }
+            else
+            {
+                vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
+                GetListOfUniqueCellTypes(ugrid, types);
+
+                if (types->GetNumberOfTuples() == 1)
+                {
+                    int myType = (int) types->GetValue(0);
+                    if (myType == VTK_VERTEX)
+                    {
+                        debug5 << "The VTK file format contains all points -- "
+                               << "declaring this a point mesh." << endl;
+                        type = AVT_POINT_MESH;
+                        topo = 0;
+                    }
+                    else if(myType == VTK_LINE)
+                    {
+                        debug5 << "The mesh contains all lines, set topo=1" << endl;
+                        topo = 1;
+                    }
+                }
+                types->Delete();
+            }
+        }
+    }
+    else if (vtkType == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) ds;
+        int dims[3];
+        sgrid->GetDimensions(dims);
+        if ((dims[0] == 1 && dims[1] == 1) ||
+            (dims[0] == 1 && dims[2] == 1) ||
+            (dims[1] == 1 && dims[2] == 1))
+        {
+            topo = 1;
+        }
+        else if (dims[0] == 1 || dims[1] == 1 || dims[2] == 1)
+        {
+            topo = 2;
+        }
+    }
+    else if (vtkType == VTK_POLY_DATA)
+    {
+        vtkPolyData *pd = (vtkPolyData *) ds;
+        if (pd->GetNumberOfPoints() > 0)
+        {
+            if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
+            {
+                if (pd->GetNumberOfLines() > 0)
+                {
+                    topo = 1;
+                }
+                else
+                {
+                    debug3 << "The VTK file format contains all points -- "
+                           << "declaring this a point mesh." << endl;
+                    type = AVT_POINT_MESH;
+                    topo = 0;
+                }
+            }
+        }
+    }
+
+    avtMeshMetaData *mesh = new avtMeshMetaData;
+    mesh->name = meshName;
+    mesh->meshType = type;
+    mesh->spatialDimension = spat;
+    mesh->topologicalDimension = topo;
+    if (ngroups > 1)
+    {
+        mesh->numGroups = ngroups;
+        if (!groupNames.empty())
+            mesh->groupNames = groupNames;
+        if (!groupPieceName.empty())
+        {
+            mesh->groupPieceName = groupPieceName;
+            mesh->groupTitle = groupPieceName + string("s");
+        }
+        mesh->groupIds = groupIds;
+    }
+    mesh->numBlocks = nblocks;
+    mesh->blockOrigin = 0;
+    if (nblocks == 1)
+        mesh->SetExtents(bounds);
+    else
+    {
+        if (!blockPieceName.empty())
+        {
+            mesh->blockPieceName = blockPieceName;
+            mesh->blockTitle = blockPieceName + string("s");
+        }
+        if (!blockNames.empty() && (int)blockNames.size() == nblocks)
+            mesh->blockNames = blockNames;
+    }
+    if (ds->GetFieldData()->GetArray("MeshCoordType") != NULL)
+    {
+        avtMeshCoordType mct = (avtMeshCoordType)
+            int(ds->GetFieldData()->GetArray("MeshCoordType")->
+                                            GetComponent(0, 0));
+        mesh->meshCoordType = mct;
+        if (mct == AVT_RZ)
+        {
+            mesh->xLabel = "Z-Axis";
+            mesh->yLabel = "R-Axis";
+        }
+        else if (mct == AVT_ZR)
+        {
+            mesh->xLabel = "R-Axis";
+            mesh->yLabel = "Z-Axis";
+        }
+    }
+    if (ds->GetFieldData()->GetArray("UnitCellVectors"))
+    {
+        vtkDataArray *ucv = ds->GetFieldData()->GetArray("UnitCellVectors");
+        for (int j=0; j<3; j++)
+        {
+            for (int k=0; k<3; k++)
+            {
+                mesh->unitCellVectors[j*3+k] = ucv->GetComponent(j*3+k,0);
+            }
+        }
+    }
+    if (ds->GetCellData()->GetArray("avtGhostZones"))
+    {
+        mesh->containsGhostZones = AVT_HAS_GHOSTS;
+        int ncells = ds->GetNumberOfCells();
+        vtkUnsignedCharArray *arr =
+          (vtkUnsignedCharArray *) ds->GetCellData()->GetArray("avtGhostZones");
+        unsigned char *ptr = arr->GetPointer(0);
+        unsigned char v = '\0';
+        avtGhostData::AddGhostZoneType(v, ZONE_EXTERIOR_TO_PROBLEM);
+        for (int i = 0 ; i < ncells ; i++)
+            if (ptr[i] & v)
+            {
+                mesh->containsExteriorBoundaryGhosts = true;
+                break;
+            }
+    }
+    else
+        mesh->containsGhostZones = AVT_NO_GHOSTS;
+
+    md->Add(mesh);
+
+    for(auto pos = vtkCurves.begin(); pos != vtkCurves.end(); ++pos)
+    {
+        avtCurveMetaData *curve = new avtCurveMetaData;
+        curve->name = pos->first;
+        curve->hasSpatialExtents = false;
+        curve->hasDataExtents = false;
+        md->Add(curve);
+    }
+
+    // Add expressions from the database
+    for (int i = 0; i < vtk_exprs.GetNumExpressions(); i++)
+        md->AddExpression(&vtk_exprs.GetExpressions(i));
+}
+
+
+// ****************************************************************************
+//  Method: avtVTKFileReader::FillMaterialMetaData
+//
+//  Purpose:
+//      Fill in the Material meta data.
+//
+//  Notes:
+//      Derived from PopulateDAtabaseMetaData, moved here to facilitate
+//      use by derived classes that may have multiple meshes.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 12, 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVTKFileReader::FillMaterialMetaData(avtDatabaseMetaData *md,
+    const std::string &meshName, const std::string &varName,
+    vtkDataArray *arr, vtkDataArray *materialIds)
+{
+    std::map<int, bool> valMap;
+    vtkIntArray  *iarr = NULL;
+    // check for field data "MaterialIds" that can directly provide us
+    // the proper set of material ids.
+    vtkDataArray *mids_arr = nullptr;
+    if(materialIds)
+        iarr = vtkIntArray::SafeDownCast(materialIds);
+    else
+        iarr = vtkIntArray::SafeDownCast(arr);
+
+    int *iptr = iarr->GetPointer(0);
+    int ntuples = iarr->GetNumberOfTuples();
+    for (int j = 0; j < ntuples; j++)
+        valMap[iptr[j]] = true;
+
+    std::map<int, bool>::const_iterator it;
+    for (it = valMap.begin(); it != valMap.end(); it++)
+    {
+        string tmpname = std::to_string(it->first);
+        matnames.push_back(tmpname);
+        matnos.push_back(it->first);
+    }
+
+    avtMaterialMetaData *mmd = new avtMaterialMetaData("materials",
+         meshName, int(valMap.size()), matnames);
+    md->Add(mmd);
+
+    matvarname = varName;
+}
+
+// ****************************************************************************
+//  Method: avtVTKFileReader::FillSingleVarMetaData
+//
+//  Purpose:
+//      Adds a single variable to the meta data. 
+//
+//  Notes:
+//      Derived from PopulateDatabaseMetaData to facilitate use
+//      by derived classes that may have multiple meshes.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 12, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVTKFileReader::FillSingleVarMetaData(avtDatabaseMetaData *md,
+    const std::string &meshName, const std::string &varName,
+    int ncomp, int dataType, avtCentering center)
+{
+    if (ncomp == 1)
+    {
+        bool ascii = (dataType == VTK_CHAR);
+        AddScalarVarToMetaData(md, varName, meshName, center, NULL, ascii);
+    }
+    else if (ncomp <= 4)
+    {
+        AddVectorVarToMetaData(md, varName, meshName, center, ncomp);
+    }
+    else if (ncomp == 6)
+    {
+        AddSymmetricTensorVarToMetaData(md, varName, meshName, center);
+    }
+    else if (ncomp == 9)
+    {
+        AddTensorVarToMetaData(md, varName, meshName, center);
+    }
+    else
+    {
+        if(dataType == VTK_UNSIGNED_CHAR || dataType == VTK_CHAR)
+        {
+            md->Add(new avtLabelMetaData(varName, meshName, center));
+        }
+        else
+        {
+            AddArrayVarToMetaData(md, varName, ncomp, meshName, center);
+            string baseName = varName + "/comp_";
+            string baseDef = string("array_decompose(<") + varName + string(">, ");
+            string exp_name;
+            string exp_def;
+            for(int c = 0; c < ncomp; ++c)
+            {
+                exp_name = baseName + std::to_string(c);
+                exp_def = baseDef + std::to_string(c) + string(")");
+                Expression e;
+                e.SetType(Expression::ScalarMeshVar);
+                e.SetName(exp_name);
+                e.SetDefinition(exp_def);
+                md->AddExpression(&e);
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtVTKFileReader::FillVarsMetaData
+//
+//  Purpose:
+//      Adds all vars in the paseed in vtkDataSetAttributes to the MetaData.
+//
+//  Notes:
+//      Derived from PopulateDatabaseMetaData to facilitate use
+//      by derived classes that may have multiple meshes.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 12, 2024
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVTKFileReader::FillVarsMetaData(avtDatabaseMetaData *md,
+    vtkDataSetAttributes *atts, const std::string &meshName,
+    avtCentering center, vtkFieldData *fieldData)
+{
+    static int nvars=0;
+    for (int i = 0 ; i < atts->GetNumberOfArrays() ; i++)
+    {
+        vtkDataArray *arr = atts->GetArray(i);
+        int ncomp = arr->GetNumberOfComponents();
+        char *tname = arr->GetName();
+        char buffer[1024];
+        if (tname == NULL || strcmp(tname, "") == 0)
+        {
+            sprintf(buffer, "%s%d", VARNAME, nvars);
+            tname = buffer;
+        }
+        string name(tname);
+        if (name.find("avt") == 0)
+        {
+            name = "internal_var_" + name.substr(3);
+        }
+        if (center == AVT_ZONECENT &&
+           ((arr->GetDataType() == VTK_INT) && (ncomp == 1) &&
+            ((name == "internal_var_Subsets")  || (name == "material"))))
+        {
+            vtkDataArray *mids = nullptr;
+            if(fieldData)
+                mids = fieldData->GetArray("MaterialIds");
+            FillMaterialMetaData(md, meshName, name, arr, mids);
+        }
+        else
+        {
+            FillSingleVarMetaData(md, meshName, name, ncomp, arr->GetDataType(),
+                                  center);
+        }
+    }
+}
+
+

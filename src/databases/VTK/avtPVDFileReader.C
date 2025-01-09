@@ -114,11 +114,11 @@ avtPVDFileReader::ReadInFile(int _domain)
         // parse the file
         vtkNew<vtkXMLDataParser> parser;
 
-        string baseDir = FileFunctions::Dirname(string(filename)) +
+        string baseDir = FileFunctions::Dirname(filename) +
                          VISIT_SLASH_STRING;
         string errorMessage;
 
-        parser->SetFileName(filename);
+        parser->SetFileName(filename.c_str());
 
         if (!parser->Parse())
         {
@@ -334,7 +334,7 @@ avtPVDFileReader::ReadInFile(int _domain)
             pieceExtents = timePieceMap[times[0]];
         }
 
-        pieceDatasets = new vtkDataSet*[nblocks];
+        pieceDatasets.resize(nblocks);
         for (int i = 0; i < nblocks; ++i)
         {
             pieceDatasets[i] = NULL;
@@ -469,9 +469,9 @@ avtPVDFileReader::ActivateTimestep(int ts)
             pieceFileNames = timeBlockMap[times[ts]];
     }
 
-    if (pieceDatasets == NULL)
+    if (pieceDatasets.empty())
     {
-        pieceDatasets = new vtkDataSet*[nblocks];
+        pieceDatasets.resize(nblocks);
         for (int i = 0; i < nblocks; ++i)
         {
             pieceDatasets[i] = NULL;
