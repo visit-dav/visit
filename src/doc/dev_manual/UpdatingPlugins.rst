@@ -27,7 +27,6 @@ GUI                                  **G**
 Python scripting                     **S**
 Viewer                               **V**
 Widgets                              **W**
-Widgets for viewer                   **VW**
 =================================    ===========================
 
 Here is a list of most often updated tags:
@@ -49,24 +48,12 @@ The condition is a CMake variable that describes something related to the build:
 Conditionals must be specified in the *.code* file with *Target* specified as *xml2cmake*, as seen in the code file for the Volume plot:
 
 .. literalinclude:: ../../plots/Volume/VolumeAttributes.code
-    :lines: 691-698
+    :lines: 977-983
 
 These conditionals create these lines in the CMakeLists.txt:
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 63-65
-
-.. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 59-61
-
-.. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 81-84
-
-.. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 113-115
-
-.. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 123-125
+    :lines: 3-10
 
 
 Info files
@@ -89,7 +76,7 @@ and the corresponding entry in the .xml file
 Attributes
 ----------
 
-Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``xml2atts``, one for python (``xml2python`` and one for java (``xml2java``.
+Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``xml2atts``), one for python (``xml2python``) and one for java (``xml2java``).
 
 When Attributes objects are changed (e.g. members removed or renamed), our policy is to maintain backward compatibility with older versions for at least 2 point releases.
 VisIt_ can encounter older Attributes objects in either Python CLI code or from previous saves of XML content (e.g. settings).

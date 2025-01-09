@@ -229,3 +229,219 @@ function(CREATE_PLUGIN_DEPENDENCIES target comp type)
     #message("${cachevar} = ${${cachevar}}")
 endfunction(CREATE_PLUGIN_DEPENDENCIES)
 
+function(visit_add_plot_plugin)
+    # required arguments:
+    #   PNAME             Name of the plot plugin
+    # optional arguments:
+    #   GSRC              additional sources for the gui target
+    #   VSRC              additional sources for the viewer target
+    #   ESRC              additional sources for the engine targets
+    #   GLIBS             additional libraries for the gui target
+    #   VLIBS             additional libraries for the viewer target
+    #   SLIBS             additional libraries for the scripting target
+    #   ESERLIBS          additional libraries for the serial engine targets
+    #   EPARLIBS          additional libraries for the parallel engine targets
+    #   DEFINES           any defines for viewer,engine targets
+    #   DISABLE_AUTOGEN   disable xml autogeneration
+
+
+    # NOTES:  not all of the target link libraries being added to the
+    # targets here are necessary for every plot.  They are being added
+    # for convenience to ease plugin developement
+
+    set(OPTS DISABLE_AUTOGEN)
+    set(VALS PNAME)
+    set(MVALS GSRC VSRC ESRC GLIBS VLIBS SLIBS ESERLIBS EPARLIBS DEFINES)
+    cmake_parse_arguments(plot "${OPTS}" "${VALS}" "${MVALS}" ${ARGN})
+
+    if(NOT DEFINED plot_PNAME)
+        message(FATAL_ERROR "Incomplete arguments to visit_add_plot_plugin. Required: PNAME")
+    endif()
+
+    project(${plot_PNAME}_plot)
+
+    # if doing dev build ??
+    if(NOT ${plot_DISABLE_AUTOGEN})
+        ADD_PLOT_CODE_GEN_TARGETS(${plot_PNAME})
+    endif()
+
+    set(CATTS ${plot_PNAME}Attributes)
+    set(PYATTS Py${plot_PNAME}Attributes)
+    set(JATTS ${plot_PNAME}Attributes.java)
+    set(COMMON_SOURCES
+        ${plot_PNAME}PluginInfo.C
+        ${plot_PNAME}CommonPluginInfo.C
+        ${CATTS}.C)
+    set(COMMON_HEADERS
+        ${plot_PNAME}PluginInfo.h
+        ${CATTS}.h)
+
+    set(LIBI_SOURCES ${plot_PNAME}PluginInfo.C)
+    set(LIBI_HEADERS ${plot_PNAME}PluginInfo.h)
+
+    set(LIBG_SOURCES
+        ${plot_PNAME}GUIPluginInfo.C
+        Qvis${plot_PNAME}PlotWindow.C
+        ${COMMON_SOURCES})
+    set(LIBG_HEADERS
+        Qvis${plot_PNAME}PlotWindow.h
+        ${COMMON_HEADERS})
+    if(DEFINED plot_GSRC)
+        list(APPEND LIBG_SOURCES ${plot_GSRC})
+        foreach(src ${plot_GSRC})
+            string(REPLACE ".C" ".h" hdr ${src})
+            list(APPEND LIBG_HEADERS ${hdr})
+        endforeach()
+    endif()
+
+    set(LIBV_SOURCES
+        ${plot_PNAME}ViewerEnginePluginInfo.C
+        ${plot_PNAME}ViewerPluginInfo.C
+        avt${plot_PNAME}Plot.C
+        ${COMMON_SOURCES})
+    set(LIBV_HEADERS
+        avt${plot_PNAME}Plot.h
+        ${COMMON_HEADERS})
+
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/avt${plot_PNAME}Filter.C)
+        list(APPEND LIBV_SOURCES avt${plot_PNAME}Filter.C)
+        list(APPEND LIBV_HEADERS avt${plot_PNAME}Filter.h)
+    endif()
+
+    if(DEFINED plot_VSRC)
+        list(APPEND LIBV_SOURCES ${plot_VSRC})
+        foreach(src ${plot_VSRC})
+            string(REPLACE ".C" ".h" src hdr)
+            list(APPEND LIBV_HEADERS ${hdr})
+        endforeach()
+    endif()
+
+    set(LIBE_SOURCES
+        ${plot_PNAME}ViewerEnginePluginInfo.C
+        ${plot_PNAME}EnginePluginInfo.C
+        avt${plot_PNAME}Plot.C
+        ${COMMON_SOURCES})
+    set(LIBE_HEADERS
+        avt${plot_PNAME}Plot.h
+        ${COMMON_HEADERS})
+
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/avt${plot_PNAME}Filter.C)
+        list(APPEND LIBE_SOURCES avt${plot_PNAME}Filter.C)
+        list(APPEND LIBE_HEADERS avt${plot_PNAME}Filter.h)
+    endif()
+
+    if(DEFINED plot_ESRC)
+        list(APPEND LIBE_SOURCES ${plot_ESRC})
+        foreach(src ${plot_ESRC})
+            string(REPLACE ".C" ".h" src hdr)
+            list(APPEND LIBE_HEADERS ${hdr})
+        endforeach()
+    endif()
+
+    set(ITarget    I${plot_PNAME}Plot)
+    set(GTarget    G${plot_PNAME}Plot)
+    set(VTarget    V${plot_PNAME}Plot)
+    set(STarget    S${plot_PNAME}Plot)
+    set(ESerTarget E${plot_PNAME}Plot_ser)
+    set(EParTarget E${plot_PNAME}Plot_par)
+
+    # we are setting SKIP_INSTALL for all visit_add_library calls
+    # because plugins don't need to be installed via the export-targets
+    # install path. Will use standard install logic at end of the method.
+    visit_add_library(
+        NAME        ${ITarget}
+        SOURCES     ${LIBI_SOURCES}
+        HEADERS     ${LIBI_HEADERS}
+        INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        DEPENDS_ON  visitcommon
+        SKIP_INSTALL)
+
+    set(INSTALLTARGETS ${ITarget})
+
+    if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+        visit_add_library(
+            NAME        ${GTarget}
+            SOURCES     ${LIBG_SOURCES}
+            HEADERS     ${LIBG_HEADERS}
+            INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEPENDS_ON  visitcommon gui ${plot_GLIBS}
+            SKIP_INSTALL)
+
+        set_target_properties(${GTarget} PROPERTIES AUTOMOC ON)
+   
+        visit_add_library(
+            NAME        ${VTarget}
+            SOURCES     ${LIBV_SOURCES}
+            HEADERS     ${LIBV_HEADERS}
+            INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEFINES     VIEWER ${plot_DEFINES}
+            DEPENDS_ON  visitcommon viewer ${plot_VLIBS}
+            SKIP_INSTALL)
+
+        set_target_properties(${VTarget} PROPERTIES AUTOMOC ON)
+
+        if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+            qt6_disable_unicode_defines(${GTarget})
+            qt6_disable_unicode_defines(${VTarget})
+        endif()
+      
+        list(APPEND INSTALLTARGETS ${GTarget} ${VTarget})
+
+        if(VISIT_PYTHON_SCRIPTING)
+            visit_add_library(
+                NAME       ${STarget}
+                SOURCES    ${plot_PNAME}ScriptingPluginInfo.C
+                           ${PYATTS}.C
+                           ${COMMON_SOURCES}
+                HEADERS    ${PYATTS}.h
+                           ${COMMON_HEADERS}
+                INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                           $<BUILD_INTERFACE:${PYTHON_INCLUDE_DIR}>
+                DEPENDS_ON visitcommon visitpy ${PYTHON_LIBRARY} ${plot_SLIBS}
+                SKIP_INSTALL)
+
+            if(WIN32)
+                # This prevents python from #defining snprintf as _snprintf
+                target_compile_definitions(${STarget} PRIVATE HAVE_SNPRINTF)
+            endif()
+            list(APPEND INSTALLTARGETS ${STarget})
+        endif()
+
+        if(VISIT_JAVA)
+            file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/plots)
+            add_custom_target(Java${plot_PNAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
+                DEPENDS_ON JavaClient
+                WORKING_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+        endif()
+    endif()
+
+    visit_add_library(
+        NAME        ${ESerTarget}
+        SOURCES     ${LIBE_SOURCES}
+        HEADERS     ${LIBE_HEADERS}
+        INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        DEFINES     ENGINE ${plot_DEFINES}
+        DEPENDS_ON  visitcommon avtplotter_ser ${plot_ESERLIBS}
+        SKIP_INSTALL)
+
+    list(APPEND INSTALLTARGETS ${ESerTarget})
+
+    if(VISIT_PARALLEL)
+        visit_add_parallel_library(
+            NAME        ${EParTarget}
+            SOURCES     ${LIBE_SOURCES}
+            HEADERS     ${LIBE_HEADERS}
+            INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            DEFINES     ENGINE ${plot_DEFINES}
+            DEPENDS_ON  visitcommon
+                        avtplotter_par
+                        ${plot_EPARLIBS})
+        list(APPEND INSTALLTARGETS ${EParTarget})
+    endif()
+
+    # one of these is not needed for plugin vs install, which one?
+    VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
+    VISIT_PLUGIN_TARGET_OUTPUT_DIR(plots ${INSTALLTARGETS})
+    VISIT_PLUGIN_TARGET_FOLDER(plots ${plot_PNAME} ${INSTALLTARGETS})
+endfunction()
+
