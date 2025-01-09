@@ -237,9 +237,6 @@ namespace GEOSInternal
     }
 }
 
-// ****************************************************************************
-//  
-// ****************************************************************************
 
 // ****************************************************************************
 //  Method: avtGEOSFileReader constructor
@@ -338,8 +335,12 @@ avtGEOSFileReader::GetTimes(std::vector<double> &times)
 void
 avtGEOSFileReader::FreeUpResources(void)
 {
-    //GEOSInternal::CleanUp();
-    //avtVTKMultiGroupFileReader::FreeUpResources();
+    GEOSInternal::CleanUp();
+    haveReadRoot = false;
+    timeSteps.clear();
+    timeStepFileNames.clear();
+    currentTS = -1;
+    avtVTKFileReader::FreeUpResources();
 }
 
 void
@@ -550,6 +551,7 @@ avtGEOSFileReader::ReadTimeStepFile(int ts)
     }
 
     currentTS = ts;
+    readInDataset = true;
 }
 
 void
