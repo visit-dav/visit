@@ -87,8 +87,8 @@ function bv_vtk_info
     info "bv_vtk_info"
 
     if [[ "$DO_VTK94" == "yes" ]] ; then
-        info "setting up vtk for version 9.4.0"
-        export VTK_VERSION=${VTK_VERSION:-"9.4.0"}
+        info "setting up vtk for version 9.4.1"
+        export VTK_VERSION=${VTK_VERSION:-"9.4.1"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.4"}
         export VTK_SHA256_CHECKSUM=""
     else
@@ -156,35 +156,6 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
-
-function apply_vtk94_vtkxopenglrenderwindow_patch
-{
-   # patches to change use of vtkWarningMacro to vtkDebugMacro to
-   # prevent user confusion.
-   patch -p0 << \EOF
---- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig	2024-12-02 10:53:41.882999000 -0800
-+++ Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx	2024-12-02 10:56:45.421080000 -0800
-@@ -1287,7 +1287,12 @@
-     this->DisplayId = XOpenDisplay(static_cast<char*>(nullptr));
-     if (this->DisplayId == nullptr)
-     {
--      vtkWarningMacro(<< "bad X server connection. DISPLAY="
-+      // When choosing RenderWindow at runtime, this as a vtkWarningMacro
-+      // makes it seem something went horribly wrong, which could
-+      // confuse users since it is printed to terminal.
-+      // Use vtkDebugMacro instead
-+      // vtkWarningMacro(<< "bad X server connection. DISPLAY="
-+      vtkDebugMacro(<< "bad X server connection. DISPLAY="
-                       << vtksys::SystemTools::GetEnv("DISPLAY"));
-     }
-     else
-EOF
-
-    if [[ $? != 0 ]] ; then
-        warn "vtk patch for vtkXOpenGLRenderWindow.cxx failed."
-        return 1
-    fi
-}
 
 function apply_vtk94_vtkmobiledevices_patch
 {
@@ -1635,11 +1606,6 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
-
-        apply_vtk94_vtkxopenglrenderwindow_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
     fi
  
 
@@ -1867,7 +1833,9 @@ function build_vtk
             pylib="${PYTHON_LIBRARY}"
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
-            vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            if [[ "$DO_VTK94" == "no" ]] ; then
+                vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            fi
             vopts="${vopts} -DPython3_EXECUTABLE:FILEPATH=${py}"
             vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=\"${VTK_PY_LIBS}\""
             vopts="${vopts} -DPython3_INCLUDE_DIR:PATH=${pyinc}"
@@ -1884,7 +1852,8 @@ function build_vtk
         vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
-        # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
+        # for now, until Mesa can be updated to a version that supports GLVND,
+        # set LEGACY preference
         vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
         vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
         vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
@@ -1892,13 +1861,11 @@ function build_vtk
 
         if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-                vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
-                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
                 vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
             fi
         fi
-    elif [[ "$DO_OSMESA" == "yes" ]] ; then
+    # Is there a use-case where VTK-9.4 would need to build against OSMesa?
+    elif [[ "$DO_OSMESA" == "yes" && "$DO_VTK94" == "no" ]] ; then
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
         vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
@@ -1932,7 +1899,7 @@ function build_vtk
     else
         vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
     fi
-    if test "${VTK_VERSION}" = "9.4.0" ; then
+    if [[ "$DO_VTK94" == "yes" ]] ; then
         vopts="${vopts} -DZLIB_BUILD_EXAMPLES:BOOL=false"
         vopts="${vopts} -DVTK_ENABLE_REMOTE_MODULES:BOOL=OFF"
     fi
@@ -1940,17 +1907,20 @@ function build_vtk
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
 
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    elif [[ "$DO_OSMESA" == "yes" && "$DO_VTK94" == "no" ]] ; then
+        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    fi
+
     #
     # Several platforms have had problems with the VTK cmake configure command
     # issued simply via "issue_command".  This was first discovered on
     # BGQ and then showed up in random cases for both OSX and Linux machines.
     # Brad resolved this on BGQ  with a simple work around - we write a simple
-    # script that we invoke with bash which calls cmake with all of the properly
+    # script that we invoke with bash which calls cmake with all of the proper
     # arguments. We are now using this strategy for all platforms.
     #
-    if [[ "$DO_MESAGL" == "yes" || "$DO_OSMESA" == "yes" ]] ; then
-        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-    fi
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
