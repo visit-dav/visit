@@ -5,5 +5,4 @@ visit_add_operator_plugin(
     ESRC       avtRemoveCracksFilter.C
                avtCracksDensityFilter.C
                vtkCracksClipper.C
-               vtkCrackWidthFilter.C
-    DEFINES    ${CracksClipper_DEFINES})
+               vtkCrackWidthFilter.C)

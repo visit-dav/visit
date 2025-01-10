@@ -2,5 +2,4 @@
 
 visit_add_operator_plugin(
     ONAME      Reflect
-    GSRC       QvisReflectWidget.C
-    DEFINES    ${Reflect_DEFINES})
+    GSRC       QvisReflectWidget.C)

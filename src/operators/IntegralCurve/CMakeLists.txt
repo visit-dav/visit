@@ -2,6 +2,5 @@
 
 visit_add_operator_plugin(
     ONAME      IntegralCurve
-    DEFINES    ${IntegralCurve_DEFINES}
     ESERLIBS   avtivp_ser
     EPARLIBS   avtivp_par)

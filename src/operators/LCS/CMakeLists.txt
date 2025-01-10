@@ -4,6 +4,5 @@ visit_add_operator_plugin(
     ONAME      LCS
     ESRC       avtLCSFilterFTLE.C
                avtLCSFilterFSLE.C
-    DEFINES    ${LCS_DEFINES}
     ESERLIBS   avtivp_ser
     EPARLIBS   avtivp_par)

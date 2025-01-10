@@ -6,6 +6,5 @@ visit_add_operator_plugin(
                RationalSurfaceLib.C
                skelet.C
                dir_graph.C
-    DEFINES    ${Poincare_DEFINES}
     ESERLIBS   avtivp_ser
     EPARLIBS   avtivp_par)

@@ -393,12 +393,6 @@ SliceAttributes::SetValue(const std::string &name, const bool &value)
 }
 
 Target: xml2cmake
-Verbatim: Post
-if(HAVES_LIBVTKM)
-    target_link_libraries(ESliceOperator_ser PUBLIC vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis)
-
-    if(VISIT_PARALLEL)
-        target_link_libraries(ESliceOperator_par PUBLIC vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis)
-    endif()
-endif()
+Condition: HAVE_LIBVTKM
+ELinkLibraries: vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis
 

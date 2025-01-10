@@ -2,6 +2,5 @@
 
 visit_add_operator_plugin(
     ONAME      LimitCycle
-    DEFINES    ${LimitCycle_DEFINES}
     ESERLIBS   avtivp_ser
     EPARLIBS   avtivp_par)

@@ -3,5 +3,4 @@
 visit_add_operator_plugin(
     ONAME      AMRStitchCell
     ESRC       AMRStitchCellTesselations3D.C
-               AMRStitchCellTesselations2D.C
-    DEFINES    ${AMRStitchCell_DEFINES})
+               AMRStitchCellTesselations2D.C)

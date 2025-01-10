@@ -2,6 +2,5 @@
 
 visit_add_operator_plugin(
     ONAME      Lagrangian
-    DEFINES    ${Lagrangian_DEFINES}
     ESERLIBS   avtivp_ser
     EPARLIBS   avtivp_par)

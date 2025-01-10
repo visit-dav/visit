@@ -2,6 +2,5 @@
 
 visit_add_operator_plugin(
     ONAME      CartographicProjection
-    DEFINES    ${CartographicProjection_DEFINES}
     ESERLIBS   VTK::GeovisCore
     EPARLIBS   VTK::GeovisCore)
