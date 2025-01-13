@@ -1845,7 +1845,6 @@ function build_vtk
             vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=\"${VTK_PY_LIBS}\""
             vopts="${vopts} -DPython3_INCLUDE_DIR:PATH=${pyinc}"
             vopts="${vopts} -DPython3_LIBRARY:FILEPATH=${pylib}"
-            vopts="${vopts} -DVTK_INSTALL_PYTHON_EXES:BOOL=false"
         else
             warn "Forgetting python filters because we are doing a static build."
         fi
