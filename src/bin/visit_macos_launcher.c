@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     COPYCHARS(argv[0]);
 
     /* walk backwards from end of argv[0] to first slash char */
-    while (syscmd[cmdidx] != '/' && cmdidx >= 0) cmdidx--;
+    while ((cmdidx >= 0) && (syscmd[cmdidx] != '/')) cmdidx--;
 
     /* if we didn't actually find a slash char, cmdidx will be -1
        and we're in a funky place. Just use "." */
