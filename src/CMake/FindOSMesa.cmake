@@ -97,7 +97,15 @@ if (VISIT_OSMESA_DIR)
                                     ${OSMESA_LIBRARY}
                                     ${VISIT_BINARY_DIR}/lib/osmesa/libGL.so.1)
         else()
-            # We just need libOSMesa to be available if needed.
+            if(NOT EXISTS ${VISIT_BINARY_DIR}/lib)
+                message("${VISIT_BINARY_DIR}/lib does not exist yet")
+                execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${VISIT_BINARY_DIR}/lib
+                        RESULT_VARIABLE LIB_MKDIR)
+
+            endif()
+            message("copying ${OSMESA_LIBRARY} to ${VISIT_BINARY_DIR}/lib")
+            # We want libOSMesa to be available if needed.
             execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                     ${OSMESA_LIBRARY}
                                     ${VISIT_BINARY_DIR}/lib/)
