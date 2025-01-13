@@ -19,6 +19,7 @@
 #include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 #include <vtkInformation.h>
 #include <vtkFloatArray.h>
@@ -586,9 +587,7 @@ void
 avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
-#if LIB_VERSION_GE(VTK, 9,4,0)
     writer->SetFileVersion(42);
-#endif
     writer->SetInputData(ds);
     if (bin)
     {
