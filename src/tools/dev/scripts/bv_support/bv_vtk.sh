@@ -18,6 +18,11 @@ function bv_vtk94_enable
     info "bv_vtk94_enable"
     DO_VTK94="yes"
     bv_vtk_enable
+    # osmesa required for vtk 9.4.
+    # not for building vtk, but to have available for VisIt.
+    if [[ "$DO_MESAGL" == "no" ]] ; then
+        bv_osmesa_enable
+    fi
 }
 
 function bv_vtk_disable
@@ -1864,8 +1869,14 @@ function build_vtk
                 vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
             fi
         fi
-    # Is there a use-case where VTK-9.4 would need to build against OSMesa?
-    elif [[ "$DO_OSMESA" == "yes" && "$DO_VTK94" == "no" ]] ; then
+    elif [[ "$DO_VTK94" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_USE_X:BOOL=ON"
+        # turn off EGL
+        vopts="${vopts} -DOPENGL_EGL_INCLUDE_DIR:PATH=\"\""
+        vopts="${vopts} -DOPENGL_egl_LIBRARY:FILEPATH=\"\""
+        vopts="${vopts} -DVTK_OPENGL_HAS_EGL:BOOL=OFF"
+    elif [[ "$DO_OSMESA" == "yes" ]] ; then
+        # Is there a use-case where VTK-9.4 would need to build against only OSMesa?
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
         vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
@@ -1874,8 +1885,6 @@ function build_vtk
         vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${OSMESA_LIB}\""
         vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${OSMESA_INCLUDE_DIR}"
         vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
-    else
-        vopts="${vopts} -DVTK_USE_X:BOOL=ON"
     fi
 
     # Use OSPRay?
