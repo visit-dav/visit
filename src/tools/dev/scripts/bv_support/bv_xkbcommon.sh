@@ -30,7 +30,7 @@ function bv_xkbcommon_info
     export XKBCOMMON_VERSION=${XKBCOMMON_VERSION:-"1.7.0"}
     export XKBCOMMON_FILE=${XKBCOMMON_FILE:-"libxkbcommon-${XKBCOMMON_VERSION}.tar.xz"}
     export XKBCOMMON_BUILD_DIR=${XKBCOMMON_BUILD_DIR:-"libxkbcommon-${XKBCOMMON_VERSION}"}
-    export XKBCOMMON_SHA256_CHECKSUM=""65782f0a10a4b455af9c6baab7040e2f537520caa2ec2092805cdfd36863b247
+    export XKBCOMMON_SHA256_CHECKSUM="65782f0a10a4b455af9c6baab7040e2f537520caa2ec2092805cdfd36863b247"
 }
 
 function bv_xkbcommon_print
