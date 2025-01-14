@@ -20,11 +20,15 @@ function bv_qt6_disable
 
 function bv_qt6_depends_on
 {
+    QT6_DEPENDS=""
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        echo "mesagl glu"
-    else
-        echo ""
+        QT6_DEPENDS="mesagl glu"
     fi
+    if [[ "$DO_XKBCOMMON" == "yes" ]] ; then
+        QT6_DEPENDS="$QT6_DEPENDS xkbcommon"
+    fi
+
+    echo $QT6_DEPENDS
 }
 
 function bv_qt6_info
@@ -374,6 +378,11 @@ function build_qt6_base
     #
     # Call configure
     #
+
+    if [[ "$DO_XKBCOMMON" == "yes" ]] ; then
+        export PKG_CONFIG_PATH=$XKBCOMMON_INSTALL_DIR/pkgconfig:$PKG_CONFIG_PATH
+    fi
+
 
     QT6_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
     QT6_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
