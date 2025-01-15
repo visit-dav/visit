@@ -1850,6 +1850,13 @@ function build_vtk
         fi
     fi
 
+    if [[ "$DO_VTK94" == "yes" ]] ; then
+        # For now, turn off EGL (Our large-image regression tests fail)
+        vopts="${vopts} -DOPENGL_EGL_INCLUDE_DIR:PATH=\"\""
+        vopts="${vopts} -DOPENGL_egl_LIBRARY:FILEPATH=\"\""
+        vopts="${vopts} -DVTK_OPENGL_HAS_EGL:BOOL=OFF"
+    fi
+
     # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
@@ -1870,10 +1877,6 @@ function build_vtk
         fi
     elif [[ "$DO_VTK94" == "yes" ]] ; then
         vopts="${vopts} -DVTK_USE_X:BOOL=ON"
-        # turn off EGL
-        vopts="${vopts} -DOPENGL_EGL_INCLUDE_DIR:PATH=\"\""
-        vopts="${vopts} -DOPENGL_egl_LIBRARY:FILEPATH=\"\""
-        vopts="${vopts} -DVTK_OPENGL_HAS_EGL:BOOL=OFF"
     elif [[ "$DO_OSMESA" == "yes" ]] ; then
         # Is there a use-case where VTK-9.4 would need to build against only OSMesa?
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
