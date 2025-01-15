@@ -17,6 +17,7 @@
       *.pvd
     </FilePatterns>
     <Files components="M">
+      avtGEOSFileReader.C
       avtPVDFileReader.C
       avtVTKFileFormat.C
       avtVTKFileReader.C
@@ -26,6 +27,7 @@
       VTMParser.C
     </Files>
     <Files components="E">
+      avtGEOSFileReader.C
       avtPVDFileReader.C
       avtVTKFileFormat.C
       avtVTKFileReader.C
