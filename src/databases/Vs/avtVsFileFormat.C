@@ -828,14 +828,23 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
         }
 
         hid_t axisDataType = axisData->getType();
+        size_t axisDataSize = axisData->getLength();
 
         // Read points and add in zero for any lacking dimension
         if( isDoubleType( axisDataType ) ) {
-            dblDataPtr = new double[gdims[i]];
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "Initializing dblDataPtr with space for "
+                              << axisDataSize
+                              << " double values.\n";
+            dblDataPtr = new double[axisDataSize];
             dataPtr = dblDataPtr;
         }
         else if( isFloatType( axisDataType ) ) {
-            fltDataPtr = new float[gdims[i]];
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "Initializing fltDataPtr with space for "
+                              << axisDataSize
+                              << " float values.\n";
+            fltDataPtr = new float[axisDataSize];
             dataPtr = fltDataPtr;
         } else {
             VsLog::debugLog() << CLASSFUNCLINE
@@ -844,7 +853,10 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
             return NULL;
         }
 
-        if (!dataPtr) {
+        if (dataPtr) {
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "Allocation succeeded.\n";
+        } else {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Allocation failed, pointer is NULL."
                               << "Returning NULL." << std::endl;
@@ -859,7 +871,7 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
 
         if (err < 0) {
             VsLog::debugLog() << CLASSFUNCLINE
-                              << "GetDataSet returned error: " << err << "  "
+                              << "GetData returned error: " << err << "  "
                               << "Returning NULL." << std::endl;
 
             if( isDoubleType( axisDataType ) )
@@ -868,6 +880,9 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
               delete [] fltDataPtr;
 
             return NULL;
+        } else {
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "GetData returned success.\n";
         }
 
         // Storage for mesh points in VisIt are spatially 3D. So create 3
@@ -937,6 +952,9 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
                           << std::endl;
     }
 
+    VsLog::debugLog() << CLASSFUNCLINE
+                      << "Completed reading axis data.\n";
+
     for (size_t i=numSpatialDims; i<vsdim; ++i) {
         if( isDouble )
           coords[i] = vtkDoubleArray::New();
@@ -952,7 +970,7 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
     if (!transform) {
         // Create vtkRectilinearGrid
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Creating rectilinear grid." << std::endl;
+                          << "Creating rectilinear grid.\n";
         vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
         rgrid->SetDimensions(&(gdims[0]));
 
@@ -974,6 +992,8 @@ avtVsFileFormat::getRectilinearMesh(VsReader* reader,
         // true. Calculate the points and return a Structured mesh instead
         // of a Rectilinear mesh
         //
+        VsLog::debugLog() << CLASSFUNCLINE
+                          << "Creating transformed rectilinear grid.\n";
         float /*temp,*/ tempk, tempj, tempi;
         vtkPoints* vpoints = vtkPoints::New();
         if (isDouble) {
@@ -1072,7 +1092,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsReader* reader,
         return NULL;
     }
 
-    // ARS - Becasue of the way the data structures are used to hold
+    // ARS - Because of the way the data structures are used to hold
     // structured data in VTK and VisIt the topological dimension has
     // to equal the spatial dimension. That is ONLY the last dim(s) of
     // the nodes can be 1.
