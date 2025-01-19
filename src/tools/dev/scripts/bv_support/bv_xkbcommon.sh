@@ -165,7 +165,7 @@ function build_xkbcommon
     echo "Version: 1.7.0" >> $PC_FILE
     echo "Requires: xkbcommon" >> $PC_FILE
     echo "Requires.private: xcb >= 1.10, xcb-xkb >= 1.10" >> $PC_FILE
-    echo "Libs: -L\${libdir} -lxkbcommon" >> $PC_FILE
+    echo "Libs: -L\${libdir} -lxkbcommon-x11" >> $PC_FILE
     echo "Cflags: -I\${includedir}" >> $PC_FILE
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
