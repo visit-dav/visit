@@ -53,6 +53,7 @@
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
+            <lib name="xcb"/>
             <lib name="xkbcommon"/>
         </optional>
 
@@ -101,6 +102,7 @@
             <lib name="tbb"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
+            <lib name="xcb"/>
             <lib name="xkbcommon"/>
         </group>
 
