@@ -27,6 +27,7 @@ function bv_xcb_initialize_vars
 
 function bv_xcb_info
 {
+    export XCB_VERSION=${XCB_VERSION:-"0.4.1"}
     export XCB_IMAGE_VERSION=${XCB_IMAGE_VERSION:-"0.4.1"}
     export XCB_IMAGE_FILE=${XCB_IMAGE_FILE:-"libxcb-image-xcb-util-image-${XCB_IMAGE_VERSION}.tar.gz"}
     export XCB_IMAGE_BUILD_DIR=${XCB_IMAGE_BUILD_DIR:-"libxcb-image-xcb-util-image-${XCB_IMAGE_VERSION}"}
@@ -170,12 +171,12 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_IMAGE_BUILD_DIR $XCB_IMAGE_FILE
+    prepare_build_dir $XCB_M4_BUILD_DIR $XCB_M4_FILE
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_xcb == -1 ]] ; then
-        warn "Unable to prepare xcb image build directory. Giving Up!"
+        warn "Unable to prepare xcb m4 build directory. Giving Up!"
         return 1
     fi
 
