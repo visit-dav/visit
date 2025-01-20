@@ -207,7 +207,8 @@ function build_xcb
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
-    ./autogen.sh --prefix=/usr/WS1/brugger/visit_spack_xcb_build/bv_test/third_party/xcb/0.4.1/linux-ppc64le_gcc-8.3/
+    ./autogen.sh --prefix=${XCB_INSTALL_DIR}
+
     make install
     cd ..
 
@@ -239,7 +240,7 @@ function build_xcb
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
-    ./autogen.sh --prefix=/usr/WS1/brugger/visit_spack_xcb_build/bv_test/third_party/xcb/0.4.1/linux-ppc64le_gcc-8.3/
+    ./autogen.sh --prefix=${XCB_INSTALL_DIR}
     make install
     cd ..
 
@@ -267,7 +268,7 @@ function build_xcb
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
-    ./autogen.sh --prefix=/usr/WS1/brugger/visit_spack_xcb_build/bv_test/third_party/xcb/0.4.1/linux-ppc64le_gcc-8.3/
+    ./autogen.sh --prefix=${XCB_INSTALL_DIR}
     make install
     cd ..
 
@@ -295,7 +296,7 @@ function build_xcb
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
-    ./autogen.sh --prefix=/usr/WS1/brugger/visit_spack_xcb_build/bv_test/third_party/xcb/0.4.1/linux-ppc64le_gcc-8.3/
+    ./autogen.sh --prefix=${XCB_INSTALL_DIR}
     make install
     cd ..
 
@@ -323,7 +324,7 @@ function build_xcb
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
-    ./autogen.sh --prefix=/usr/WS1/brugger/visit_spack_xcb_build/bv_test/third_party/xcb/0.4.1/linux-ppc64le_gcc-8.3/
+    ./autogen.sh --prefix=${XCB_INSTALL_DIR}
     make install
     cd ..
 
