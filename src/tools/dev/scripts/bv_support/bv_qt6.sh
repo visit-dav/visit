@@ -27,6 +27,9 @@ function bv_qt6_depends_on
     if [[ "$DO_XKBCOMMON" == "yes" ]] ; then
         QT6_DEPENDS="$QT6_DEPENDS xkbcommon"
     fi
+    if [[ "$DO_XCB" == "yes" ]] ; then
+        QT6_DEPENDS="$QT6_DEPENDS xcb"
+    fi
 
     echo $QT6_DEPENDS
 }
