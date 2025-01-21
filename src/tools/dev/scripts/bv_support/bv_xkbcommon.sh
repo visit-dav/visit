@@ -47,9 +47,14 @@ function bv_xkbcommon_print_usage
 
 function bv_xkbcommon_host_profile
 {
-    # Nothing added to the host profile since xkbcommon is only used for
-    # building third party libraries.
-    return 0
+    if [[ "$DO_XKBCOMMON" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Xkbcommon" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_XKBCOMMON_DIR \${VISITHOME}/xkbcommon/$XKBCOMMON_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
+    fi
 }
 
 function bv_xkbcommon_ensure

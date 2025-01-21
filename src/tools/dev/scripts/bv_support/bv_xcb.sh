@@ -84,9 +84,14 @@ function bv_xcb_print_usage
 
 function bv_xcb_host_profile
 {
-    # Nothing added to the host profile since xcb is only used for
-    # building third party libraries.
-    return 0
+    if [[ "$DO_XCB" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Xcb" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_XCB_DIR \${VISITHOME}/xcb/$XCB_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
+    fi
 }
 
 function bv_xcb_ensure
