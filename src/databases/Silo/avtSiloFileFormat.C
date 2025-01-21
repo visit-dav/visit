@@ -5695,6 +5695,9 @@ static void copy_mmadj_neighbor_entry(DBmultimeshadj *dst, int dstidx,
 //  pbcBndList and pbcDomList parallel array arguments).
 //
 //  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
+//
+//  Mark C. Miller, Fri Jan 17 18:25:55 PST 2025
+//  Adjust to handle 2D as well as 3D meshes.
 // ****************************************************************************
 static bool 
 process_pbcs_for_one_domain(int dom, int const nBndEntries,
@@ -5746,11 +5749,16 @@ process_pbcs_for_one_domain(int dom, int const nBndEntries,
 
     new_mmadj->nneighbors[dom] = ncopied;
 
-    // These consistency checks assume a rectangular arrangement of domains.
-    // 7 is for domains on extreme corners; 11 for domains on edges, 17
-    // for domains on faces and 26 for wholly internal domains
-    return ncopied == 7 || ncopied == 11 ||
-          ncopied == 17 || ncopied == 26;
+    // The consistency checks here assume a rectangular arrangement of domains
+    // in 2D or 3D. A removal of PB domains will wind up copying only specific
+    // numbers of domains. For 2D, there are 3 cases for domains on the extreme
+    // corner, edge or wholly internal to the mesh. For 3D, there are 4 cases 
+    // for domains on the extreme corner, edge, face or wholly internal.
+    // The the 2D cases, ncopied can assume only the values 3, 5 and 8.
+    // For the 3D cases, ncopied can assume only the values 7, 11, 17 and 26.
+    return
+        ncopied == 3 || ncopied == 5  ||  ncopied == 8 || 
+        ncopied == 7 || ncopied == 11 || ncopied == 17 || ncopied == 26;
 }
 
 // ****************************************************************************
