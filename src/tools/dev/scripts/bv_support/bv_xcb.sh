@@ -56,6 +56,7 @@ function bv_xcb_info
 
 function bv_xcb_print
 {
+    printf "%s%s\n" "XCB_VERSION=" "${XCB_VERSION}"
     printf "%s%s\n" "XCB_IMAGE_FILE=" "${XCB_IMAGE_FILE}"
     printf "%s%s\n" "XCB_IMAGE_VERSION=" "${XCB_IMAGE_VERSION}"
     printf "%s%s\n" "XCB_IMAGE_BUILD_DIR=" "${XCB_IMAGE_BUILD_DIR}"
