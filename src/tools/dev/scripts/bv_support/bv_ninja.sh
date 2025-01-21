@@ -110,15 +110,6 @@ function build_ninja
     vopts="${vopts} -DBUILD_TESTING:BOOL=OFF"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
 
-    #
-    # Several platforms have had problems with the VTK cmake configure
-    # command issued simply via "issue_command".  This was first discovered
-    # on BGQ and then showed up in random cases for both OSX and Linux
-    # machines. Brad resolved this on BGQ  with a simple work around - we
-    # write a simple script that we invoke with bash which calls cmake with
-    # all of the properly arguments. We are now using this strategy for all
-    # platforms.
-    #
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
