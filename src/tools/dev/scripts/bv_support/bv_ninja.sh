@@ -85,17 +85,6 @@ function bv_ninja_ensure
 function build_ninja
 {
     #
-    # Extract the sources
-    #
-    if [[ -d $NINJA_BUILD_DIR ]] ; then
-        if [[ ! -f $NINJA_FILE ]] ; then
-            warn "The directory NINJA exists, deleting before uncompressing"
-            rm -Rf $NINJA_BUILD_DIR
-            ensure_built_or_ready $NINJA_INSTALL_DIR $NINJA_VERSION $NINJA_BUILD_DIR $NINJA_FILE
-        fi
-    fi
-
-    #
     # Prepare build dir
     #
     prepare_build_dir $NINJA_BUILD_DIR $NINJA_FILE

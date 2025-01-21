@@ -72,17 +72,6 @@ function bv_xkbcommon_ensure
 function build_xkbcommon
 {
     #
-    # Extract the sources
-    #
-    if [[ -d $XKBCOMMON_BUILD_DIR ]] ; then
-        if [[ ! -f $XKBCOMMON_FILE ]] ; then
-            warn "The directory XKBCOMMON exists, deleting before uncompressing"
-            rm -Rf $XKBCOMMON_BUILD_DIR
-            ensure_built_or_ready $XKBCOMMON_INSTALL_DIR $XKBCOMMON_VERSION $XKBCOMMON_BUILD_DIR $XKBCOMMON_FILE
-        fi
-    fi
-
-    #
     # Prepare build dir
     #
     prepare_build_dir $XKBCOMMON_BUILD_DIR $XKBCOMMON_FILE
