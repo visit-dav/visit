@@ -103,7 +103,7 @@ function build_xkbcommon
 
     export PATH=$MESON_INSTALL_DIR/bin:$NINJA_INSTALL_DIR/bin:$PATH
 
-    meson setup build || error "Xkbcommon did not configure correctly. Giving up."
+    meson setup build --prefix $XKBCOMMON_INSTALL_DIR || error "Xkbcommon did not configure correctly. Giving up."
 
     #
     # Build xkbcommon
@@ -111,11 +111,14 @@ function build_xkbcommon
     info "Building xkbcommon . . . (~1 minutes)"
     meson compile -C build || error "Xkbcommon did not build correctly. Giving up."
 
-    info "Installing Xkbcommon . . . (~1 minutes)"
+    info "Installing xkbcommon . . . (~1 minutes)"
+    # Manually installing xkbcommon since "meson install -C build" gave
+    # an error with an unhandled python OSError.
 
     # The libraries
-    if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/lib ]] ; then
-        mkdir -p ${XKBCOMMON_INSTALL_DIR}/lib
+    if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/lib64 ]] ; then
+        mkdir -p ${XKBCOMMON_INSTALL_DIR}/lib64
+	ln -s lib64 ${XKBCOMMON_INSTALL_DIR}/lib
     fi
     cp build/libxkbcommon.so.0.0.0 ${XKBCOMMON_INSTALL_DIR}/lib
     ln -s libxkbcommon.so.0.0.0 ${XKBCOMMON_INSTALL_DIR}/lib/libxkbcommon.so
@@ -134,39 +137,12 @@ function build_xkbcommon
     cp include/xkbcommon/* ${XKBCOMMON_INSTALL_DIR}/include/xkbcommon
 
     # The pkg-config files
-    if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/pkgconfig ]] ; then
-        mkdir -p ${XKBCOMMON_INSTALL_DIR}/pkgconfig
+    if [[ ! -d ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig ]] ; then
+        mkdir -p ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig
     fi
-
-    PC_FILE=${XKBCOMMON_INSTALL_DIR}/pkgconfig/xkbcommon.pc
-    if [[ -f $PC_FILE ]] ; then
-        rm $PC_FILE
-    fi
-    echo "prefix=${XKBCOMMON_INSTALL_DIR}" > $PC_FILE
-    echo "libdir=\${prefix}/lib" >> $PC_FILE
-    echo "includedir=\${prefix}/include" >> $PC_FILE
-    echo "" >> $PC_FILE
-    echo "Name: xkbcommon" >> $PC_FILE
-    echo "Description: XKB API common to servers and clients" >> $PC_FILE
-    echo "Version: 1.7.0" >> $PC_FILE
-    echo "Libs: -L\${libdir} -lxkbcommon" >> $PC_FILE
-    echo "Cflags: -I\${includedir}" >> $PC_FILE
-
-    PC_FILE=${XKBCOMMON_INSTALL_DIR}/pkgconfig/xkbcommon-x11.pc
-    if [[ -f $PC_FILE ]] ; then
-        rm $PC_FILE
-    fi
-    echo "prefix=${XKBCOMMON_INSTALL_DIR}" > $PC_FILE
-    echo "libdir=\${prefix}/lib" >> $PC_FILE
-    echo "includedir=\${prefix}/include" >> $PC_FILE
-    echo "" >> $PC_FILE
-    echo "Name: xkbcommon-x11" >> $PC_FILE
-    echo "Description: XKB API common to servers and clients - X11 support" >> $PC_FILE
-    echo "Version: 1.7.0" >> $PC_FILE
-    echo "Requires: xkbcommon" >> $PC_FILE
-    echo "Requires.private: xcb >= 1.10, xcb-xkb >= 1.10" >> $PC_FILE
-    echo "Libs: -L\${libdir} -lxkbcommon-x11" >> $PC_FILE
-    echo "Cflags: -I\${includedir}" >> $PC_FILE
+    cp build/meson-private/xkbcommon.pc ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig
+    cp build/meson-private/xkbcommon-x11.pc ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig
+    cp build/meson-private/xkbregistry.pc ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/xkbcommon"

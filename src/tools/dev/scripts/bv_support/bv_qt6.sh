@@ -383,7 +383,7 @@ function build_qt6_base
     #
 
     if [[ "$DO_XKBCOMMON" == "yes" ]] ; then
-        export PKG_CONFIG_PATH=$XKBCOMMON_INSTALL_DIR/pkgconfig:$PKG_CONFIG_PATH
+        export PKG_CONFIG_PATH=$XKBCOMMON_INSTALL_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
     fi
     if [[ "$DO_XCB" == "yes" ]] ; then
         export PKG_CONFIG_PATH=$XCB_INSTALL_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
