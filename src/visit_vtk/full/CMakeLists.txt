@@ -101,9 +101,11 @@ ${OPENEXR_SRC}
 )
 
 if(VTK_VERSION VERSION_LESS "9.4.0")
-list(APPEND VISIT_VTK_SOURCES
-     vtkVisItRectilinearGrid.C
-     vtkVisItStructuredGrid.C)
+    list(APPEND VISIT_VTK_SOURCES
+         vtkVisItRectilinearGrid.C
+         vtkVisItStructuredGrid.C)
+else()
+    list(APPEND VISIT_VTK_SOURCES vtkVisItDataSetWriter.C)
 endif()
 
 INCLUDE_DIRECTORIES(
