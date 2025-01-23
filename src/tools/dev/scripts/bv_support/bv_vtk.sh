@@ -1600,13 +1600,6 @@ function apply_vtk_patch
             return 1
         fi
 
-        # should test if this is needed for 9.4,
-        # see https://gitlab.kitware.com/vtk/vtk/-/issues/18450
-        #apply_vtk94_vtkCutter_patch
-        #if [[ $? != 0 ]] ; then
-        #    return 1
-        #fi
-
         apply_vtk94_vtkmobiledevices_patch
         if [[ $? != 0 ]] ; then
             return 1
