@@ -10,7 +10,7 @@
 ##
 
 if(USE_VTK94)
-    SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.9-vtk94)
+    SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.9-vtk94/toss4)
 else()
     SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4)
 endif()
