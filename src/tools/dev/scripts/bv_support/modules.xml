@@ -30,12 +30,14 @@
             <lib name="llvm"/>
             <lib name="mdsplus"/>
             <lib name="mesagl"/>
+            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="mpich"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
+            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
@@ -48,6 +50,8 @@
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
+            <lib name="xcb"/>
+            <lib name="xkbcommon"/>
         </optional>
 
         <!-- thirdparty flag -->
@@ -77,10 +81,12 @@
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="llvm"/>
+            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="netcdf"/>
+            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
             <lib name="pidx"/>
@@ -90,6 +96,8 @@
             <lib name="szip"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
+            <lib name="xcb"/>
+            <lib name="xkbcommon"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
