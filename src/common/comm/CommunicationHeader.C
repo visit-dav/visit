@@ -131,16 +131,16 @@ CommunicationHeader::WriteHeader(Connection *conn, const std::string &version,
     //   3 : CouldNotConnectException
     //   4 : CancelledConnectException
     //
-    buffer[5] = (failCode >= 0 && failCode < 5) ? ((unsigned char)failCode) : 3;
+    buffer[5] = (failCode >= 0 && failCode < 5) ? static_cast<unsigned char>(failCode) : 3;
 
     // The next 10 bytes are for a NULL terminated version string.
-    strncpy((char *)(buffer+6), version.c_str(), 10);
+    strncpy(reinterpret_cast<char *>(buffer+6), version.c_str(), 10);
 
     // The next 21 bytes are for securityKey.
-    strncpy((char *)(buffer+6+10), securityKey.c_str(), 21);
+    strncpy(reinterpret_cast<char *>(buffer+6+10), securityKey.c_str(), 21);
 
     // The next 21 bytes are for socketKey.
-    strncpy((char *)(buffer+6+10+21), socketKey.c_str(), 21);
+    strncpy(reinterpret_cast<char *>(buffer+6+10+21), socketKey.c_str(), 21);
 
 #ifdef DEBUG_COMMUNICATION_HEADER
     debug1 << "CommunicationHeader::WriteHeader: HEADER={";
@@ -229,7 +229,7 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
 #endif
 
     // Check to see if the version numbers are compatible.
-    if(!VisItVersionsCompatible((const char *)(buffer+6), version.c_str()))
+    if(!VisItVersionsCompatible(reinterpret_cast<const char *>(buffer+6), version.c_str()))
     {
         debug1 << "Versions are " << buffer << "(" << buffer+6 << "),"
                << version << endl;
@@ -258,14 +258,14 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
     // the same as the keys that were sent to the client.
     if(checkKeys)
     {
-        if((strcmp((const char *)(buffer+6+10), securityKey.c_str()) != 0) ||
-           (strcmp((const char *)(buffer+6+10+21), socketKey.c_str()) != 0))
+        if((strcmp(reinterpret_cast<const char *>(buffer+6+10), securityKey.c_str()) != 0) ||
+           (strcmp(reinterpret_cast<const char *>(buffer+6+10+21), socketKey.c_str()) != 0))
         {
             EXCEPTION0(IncompatibleSecurityTokenException);
         }
     }
-    securityKey = std::string((const char *)(buffer+6+10));
-    socketKey = std::string((const char *)(buffer+6+10+21));
+    securityKey = std::string(reinterpret_cast<const char *>(buffer+6+10));
+    socketKey = std::string(reinterpret_cast<const char *>(buffer+6+10+21));
 
 #ifdef DEBUG_COMMUNICATION_HEADER
     debug1 << "CommunicationHeader::ReadHeader: securityKey=" << securityKey.c_str() << endl;
@@ -332,12 +332,12 @@ more_random_srand()
         long    value;
         time_t  updated;
         };
-    void    *seedp = (void *) -1;
+    void    *seedp = static_cast<void *> -1;
     char    *seed_path = NULL;
     key_t    seed_shm_key = -1;
-    int     seed_shd_id;
+    int      seed_shd_id;
     //    Create a directory or file path for ftok()
-    if ((seed_path = getcwd((char *) NULL, (size_t) PATH_MAX)) == NULL)  {
+    if ((seed_path = getcwd(static_cast<char *> NULL, (size_t) PATH_MAX)) == NULL)  {
         debug1 << "Error reading current dir for ftok()" << endl;
         return false;
     }

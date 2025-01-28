@@ -5,6 +5,7 @@
 #ifndef TYPEREPRESENTATION_H
 #define TYPEREPRESENTATION_H
 #include <comm_exports.h>
+#include <cstddef>
 
 // *******************************************************************
 // Class: TypeRepresentation
@@ -19,7 +20,8 @@
 // Creation:   Thu Oct 5 12:36:08 PDT 2000
 //
 // Modifications:
-//   
+//     Cyrus Harrison, Tue Jan 28 09:55:51 PST 2025
+//     Convert to size_t for buffer sizes
 // *******************************************************************
 
 class COMM_API TypeRepresentation
@@ -32,11 +34,11 @@ public:
     void operator = (const TypeRepresentation &);
     bool operator == (const TypeRepresentation &);
 
-    int CharSize() const;
-    int IntSize() const;
-    int LongSize() const;
-    int FloatSize() const;
-    int DoubleSize() const;
+    size_t CharSize() const;
+    size_t IntSize() const;
+    size_t LongSize() const;
+    size_t FloatSize() const;
+    size_t DoubleSize() const;
     SupportedFormat GetSupportedFormat() const;
     void SetSupportedFormat(SupportedFormat format);
 

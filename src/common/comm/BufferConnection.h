@@ -22,7 +22,10 @@
 // Modifications:
 //    Brad Whitlock, Wed Mar 20 17:23:43 PST 2002
 //    Added Fill, DirectWrite, DirectRead methods.
-//   
+//    
+//    Cyrus Harrison, Tue Jan 28 09:55:51 PST 2025
+//    Convert to size_t for buffer sizes
+//
 // ****************************************************************************
 
 class COMM_API BufferConnection : public Connection
@@ -31,16 +34,16 @@ public:
     BufferConnection();
     virtual ~BufferConnection();
 
-    virtual int  Fill();
-    virtual void Flush();
-    virtual long Size();
-    virtual void Reset();
+    virtual size_t Fill();
+    virtual void   Flush();
+    virtual size_t Size();
+    virtual void   Reset();
 
-    virtual void Write(unsigned char value);
-    virtual void Read(unsigned char *address);
-    virtual void Append(const unsigned char *buf, int count);
-    virtual long DirectRead(unsigned char *buf, long len);
-    virtual long DirectWrite(const unsigned char *buf, long len);
+    virtual void   Write(unsigned char value);
+    virtual void   Read(unsigned char *address);
+    virtual void   Append(const unsigned char *buf, size_t count);
+    virtual size_t DirectRead(unsigned char *buf, size_t len);
+    virtual size_t DirectWrite(const unsigned char *buf, size_t len);
 private:
     std::deque<unsigned char> buffer;
 };

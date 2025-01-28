@@ -30,6 +30,9 @@
 //    Brad Whitlock, Tue Jan  6 15:45:23 PST 2009
 //    I added convenience methods for reading/writing string.
 //
+//    Brad Whitlock, Tue Jan 28 09:45:07 PST 2025
+//    Port interface to size_t for lenghts
+//
 // ****************************************************************************
 
 class COMM_API Connection
@@ -41,20 +44,20 @@ public:
     Connection();
     virtual ~Connection();
 
-    virtual int  Fill() = 0;
-    virtual void Flush() = 0;
-    virtual long Size() = 0;
-    virtual void Reset() = 0; /// Reset Connection State
+    virtual size_t Fill() = 0;
+    virtual void   Flush() = 0;
+    virtual size_t Size() = 0;
+    virtual void   Reset() = 0; /// Reset Connection State
 
     // These read or write a byte to whatever we're using
     // as the connection.
     virtual void Write(unsigned char value) = 0;
     virtual void Read(unsigned char *address) = 0;
-    virtual void Append(const unsigned char *buf, int count) = 0;
-    virtual long DirectRead(unsigned char *buf, long len) = 0;
-    virtual long DirectWrite(const unsigned char *buf, long len) = 0;
-    virtual long ReadHeader(unsigned char *buf, long len);
-    virtual long WriteHeader(const unsigned char *buf, long len);
+    virtual void Append(const unsigned char *buf, size_t count) = 0;
+    virtual size_t DirectRead(unsigned char *buf, size_t len) = 0;
+    virtual size_t DirectWrite(const unsigned char *buf, size_t len) = 0;
+    virtual size_t ReadHeader(unsigned char *buf, size_t len);
+    virtual size_t WriteHeader(const unsigned char *buf, size_t len);
     virtual bool NeedsRead(bool = false) const { return true; }
     virtual int  GetDescriptor() const { return -1; }
 
@@ -76,17 +79,17 @@ public:
     void ReadDouble(double *d);
     void ReadString(std::string &);
 
-    int CharSize(bool = true);
-    int UnsignedCharSize(bool = true);
-    int IntSize(bool = true);
-    int LongSize(bool = true);
-    int FloatSize(bool = true);
-    int DoubleSize(bool = true);
+    size_t CharSize(bool = true);
+    size_t UnsignedCharSize(bool = true);
+    size_t IntSize(bool = true);
+    size_t LongSize(bool = true);
+    size_t FloatSize(bool = true);
+    size_t DoubleSize(bool = true);
 
-    int IntFormat(bool = true);
-    int LongFormat(bool = true);
-    int FloatFormat(bool = true);
-    int DoubleFormat(bool = true);
+    size_t IntFormat(bool = true);
+    size_t LongFormat(bool = true);
+    size_t FloatFormat(bool = true);
+    size_t DoubleFormat(bool = true);
 
     // Set the destination format.
     void  SetDestinationFormat(const TypeRepresentation &);
@@ -126,27 +129,27 @@ inline void Connection::ReadUnsignedChar(unsigned char *c)
 // Functions to return the sizes of the source or destation types.
 //
 
-inline int Connection::CharSize(bool dest)
+inline size_t Connection::CharSize(bool dest)
 {
     return (dest ? destFormat.CharSize() : srcFormat.CharSize());
 }
 
-inline int Connection::IntSize(bool dest)
+inline size_t Connection::IntSize(bool dest)
 {
     return (dest ? destFormat.IntSize() : srcFormat.IntSize());
 }
 
-inline int Connection::LongSize(bool dest)
+inline size_t Connection::LongSize(bool dest)
 {
     return (dest ? destFormat.LongSize() : srcFormat.LongSize());
 }
 
-inline int Connection::FloatSize(bool dest)
+inline size_t Connection::FloatSize(bool dest)
 {
     return (dest ? destFormat.FloatSize() : srcFormat.FloatSize());
 }
 
-inline int Connection::DoubleSize(bool dest)
+inline size_t Connection::DoubleSize(bool dest)
 {
     return (dest ? destFormat.DoubleSize() : srcFormat.DoubleSize());
 }
@@ -155,23 +158,23 @@ inline int Connection::DoubleSize(bool dest)
 // Functions to return the format of these types
 //
 
-inline int Connection::IntFormat(bool dest)
+inline size_t Connection::IntFormat(bool dest)
 {
-    return (int)(dest ? destFormat.IntFormat : srcFormat.IntFormat);
+    return (dest ? destFormat.IntFormat : srcFormat.IntFormat);
 }
 
-inline int Connection::LongFormat(bool dest)
+inline size_t Connection::LongFormat(bool dest)
 {
-    return (int)(dest ? destFormat.LongFormat : srcFormat.LongFormat);
+    return (dest ? destFormat.LongFormat : srcFormat.LongFormat);
 }
 
-inline int Connection::FloatFormat(bool dest)
+inline size_t Connection::FloatFormat(bool dest)
 {
-    return (int)(dest ? destFormat.FloatFormat : srcFormat.FloatFormat);
+    return (dest ? destFormat.FloatFormat : srcFormat.FloatFormat);
 }
 
-inline int Connection::DoubleFormat(bool dest)
+inline size_t Connection::DoubleFormat(bool dest)
 {
-    return (int)(dest ? destFormat.DoubleFormat : srcFormat.DoubleFormat);
+    return (dest ? destFormat.DoubleFormat : srcFormat.DoubleFormat);
 }
 #endif

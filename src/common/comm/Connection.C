@@ -9,12 +9,12 @@
 const bool Connection::SRC = false;
 const bool Connection::DEST = true;
 
-long Connection::ReadHeader(unsigned char *buf, long len)
+long Connection::ReadHeader(unsigned char *buf, size_t len)
 {
     return DirectRead(buf,len);
 }
 
-long Connection::WriteHeader(const unsigned char *buf, long len)
+long Connection::WriteHeader(const unsigned char *buf, size_t len)
 {
     return DirectWrite(buf,len);
 }
@@ -77,11 +77,11 @@ Connection::WriteInt(int val)
     if(doConversion)
     {
         unsigned char buffer[8];
-        int nbytes = IntConvert(val, buffer, IntFormat());
+        size_t nbytes = IntConvert(val, buffer, IntFormat());
         Append(buffer, nbytes);
     }
     else
-        Append((unsigned char *)&val, SIZEOF_INT);
+        Append(static_cast<unsigned char *>(&val), SIZEOF_INT);
 }
 
 // *******************************************************************
@@ -106,11 +106,11 @@ Connection::WriteLong(long val)
     if(doConversion)
     {
         unsigned char buffer[8];
-        int nbytes = LongConvert(val, buffer, LongFormat());
+        size_t nbytes = LongConvert(val, buffer, LongFormat());
         Append(buffer, nbytes);
     }
     else
-        Append((unsigned char *)&val, SIZEOF_LONG);
+        Append(static_cast<unsigned char *>), SIZEOF_LONG);
 }
 
 // *******************************************************************
@@ -135,11 +135,11 @@ Connection::WriteFloat(float val)
     if(doConversion)
     {
         unsigned char buffer[8];
-        int nbytes = FloatConvert(val, buffer, FloatFormat());
+        size_t nbytes = FloatConvert(val, buffer, FloatFormat());
         Append(buffer, nbytes);
     }
     else
-        Append((unsigned char *)&val, SIZEOF_FLOAT);
+        Append(static_cast<unsigned char *>), SIZEOF_FLOAT);
 }
 
 // *******************************************************************
@@ -164,11 +164,11 @@ Connection::WriteDouble(double val)
     if(doConversion)
     {
         unsigned char buffer[8];
-        int nbytes = DoubleConvert(val, buffer, DoubleFormat());
+        size_t nbytes = DoubleConvert(val, buffer, DoubleFormat());
         Append(buffer, nbytes);
     }
     else
-        Append((unsigned char *)&val, SIZEOF_DOUBLE);
+        Append(static_cast<unsigned char *>), SIZEOF_DOUBLE);
 }
 
 // ****************************************************************************
@@ -190,7 +190,7 @@ Connection::WriteDouble(double val)
 void
 Connection::WriteString(const std::string &s)
 {
-    Append((unsigned char *)s.c_str(), (int)s.size() + 1);
+    Append(s.c_str(),s.size() + 1);
 }
 
 // *******************************************************************
@@ -212,7 +212,7 @@ Connection::WriteString(const std::string &s)
 void
 Connection::ReadInt(int *i)
 {
-    unsigned char *temp = (unsigned char *)i;
+    unsigned char *temp = static_cast<unsigned char *>(i);
 #if(SIZEOF_INT == 4)
     Read(temp);
     Read(temp + 1);
@@ -251,7 +251,7 @@ Connection::ReadInt(int *i)
 void
 Connection::ReadLong(long *l)
 {
-    unsigned char *temp = (unsigned char *)l;
+    unsigned char *temp = static_cast<unsigned char *>(l);
 
 #if(SIZEOF_LONG == 4)
     Read(temp);
@@ -291,7 +291,7 @@ Connection::ReadLong(long *l)
 void
 Connection::ReadFloat(float *f)
 {
-    unsigned char *temp = (unsigned char *)f;
+    unsigned char *temp = static_cast<unsigned char *>(f);
 
 #if(SIZEOF_FLOAT == 4)
     Read(temp);
@@ -322,7 +322,7 @@ Connection::ReadFloat(float *f)
 void
 Connection::ReadDouble(double *d)
 {
-    unsigned char *temp = (unsigned char *)d;
+    unsigned char *temp = static_cast<unsigned char *>(d);
 
 #if(SIZEOF_DOUBLE == 8)
     Read(temp);
@@ -361,7 +361,7 @@ Connection::ReadString(std::string &s)
     char c;
     do
     {
-        ReadChar((unsigned char *)&c);
+        ReadChar(static_cast<unsigned char *>(&c));
         if(c != '\0')
             s += char(c);
     }

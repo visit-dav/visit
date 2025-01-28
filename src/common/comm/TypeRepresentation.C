@@ -165,7 +165,9 @@ TypeRepresentation::operator = (const TypeRepresentation &obj)
 // Creation:   Thu Oct 5 12:41:04 PDT 2000
 //
 // Modifications:
-//   
+//     Cyrus Harrison, Tue Jan 28 09:55:51 PST 2025
+//     Convert to size_t for buffer sizes
+//
 // *******************************************************************
 
 bool
@@ -187,31 +189,31 @@ TypeRepresentation::operator == (const TypeRepresentation &obj)
 // Methods to return the size of the datatypes based on their format.
 //
 
-int
+size_t
 TypeRepresentation::CharSize() const
 {
     return 1;
 }
 
-int
+size_t
 TypeRepresentation::IntSize() const
 {
     return (IntFormat == B32 || IntFormat == L32) ? 4 : 8;
 }
 
-int
+size_t
 TypeRepresentation::LongSize() const
 {
     return (LongFormat == B32 || LongFormat == L32) ? 4 : 8;
 }
 
-int
+size_t
 TypeRepresentation::FloatSize() const
 {
     return (FloatFormat == B32 || FloatFormat == L32) ? 4 : 8;
 }
 
-int   
+size_t   
 TypeRepresentation::DoubleSize() const
 {
     return (DoubleFormat == B32 || DoubleFormat == L32) ? 4 : 8;

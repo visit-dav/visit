@@ -12,7 +12,7 @@ BufferConnection::~BufferConnection()
 {
 }
 
-int
+size_t
 BufferConnection::Fill()
 {
     return 0;
@@ -25,10 +25,10 @@ BufferConnection::Flush()
     buffer.clear();
 }
 
-long
+size_t
 BufferConnection::Size()
 {
-    return (long)(buffer.empty() ? 0 : buffer.size());
+    return buffer.empty() ? 0 : buffer.size();
 }
 
 void
@@ -58,10 +58,10 @@ BufferConnection::Read(unsigned char *address)
 }
 
 void
-BufferConnection::Append(const unsigned char *buf, int count)
+BufferConnection::Append(const unsigned char *buf, size_t count)
 {
     const unsigned char *temp = buf;
-    for(int i = 0; i < count; ++i)
+    for(size_t i = 0; i < count; ++i)
         buffer.push_back(*temp++);
 }
 
@@ -87,15 +87,17 @@ BufferConnection::Append(const unsigned char *buf, int count)
 //     Burlen Loring, Mon Aug  3 13:29:43 PDT 2015
 //     Fix a bug where this method did nothing.
 //
+//     Cyrus Harrison, Tue Jan 28 09:55:51 PST 2025
+//     Convert to size_t for buffer sizes
 // ****************************************************************************
 
-long
-BufferConnection::DirectRead(unsigned char *buf, long len)
+size_t
+BufferConnection::DirectRead(unsigned char *buf, size_t len)
 {
     if (!buf)
         return 0;
 
-    long n = 0;
+    size_t n = 0;
     while (buffer.size() && (n < len))
     {
         buf[n] = buffer.front();
@@ -124,11 +126,12 @@ BufferConnection::DirectRead(unsigned char *buf, long len)
 // Creation:   Mon Mar 25 14:20:11 PST 2002
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Jan 28 09:55:51 PST 2025
+//    Convert to size_t for buffer sizes
 // ****************************************************************************
 
-long
-BufferConnection::DirectWrite(const unsigned char *buf, long len)
+size_t
+BufferConnection::DirectWrite(const unsigned char *buf, size_t len)
 {
     Append(buf, len);
     return len;
