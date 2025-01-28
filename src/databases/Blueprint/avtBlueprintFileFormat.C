@@ -6,6 +6,34 @@
 // avtBlueprintFileFormat.C
 // ************************************************************************* //
 
+// place these before any includes
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wunused"
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#pragma GCC diagnostic ignored "-Wduplicated-cond"
+#pragma GCC diagnostic ignored "-Wduplicated-branches"
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#pragma GCC diagnostic ignored "-Wdouble-promotion"
+#pragma GCC diagnostic ignored "-Wformat=2"
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-pedantic"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+// includes here
+
 #include "avtBlueprintFileFormat.h"
 
 //-----------------------------------------------------------------------------
@@ -75,6 +103,9 @@
 
 #include <vtkDataArray.h>
 #include <algorithm>
+
+// after includes
+#pragma GCC diagnostic pop
 
 using std::string;
 using namespace conduit;
@@ -837,7 +868,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 
             // Save the material field as float into the new out node.
             conduit::Node &f = vf[it->first];
-            auto nzones = static_cast<vtkIdType>(da->GetNumberOfTuples());
+            auto nzones = da->GetNumberOfTuples();
             f.set(conduit::DataType::float32(nzones));
             float *fptr = f.as_float32_ptr();
             for(vtkIdType zi = 0; zi < nzones; ++zi)
@@ -1559,7 +1590,7 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         BP_PLUGIN_INFO("adding species set "
                         <<  mesh_topo_name << " " <<  mesh_specset_name);
 
-        const int nmat = n_specset["species"].number_of_children();
+        const int nmat = static_cast<int>(n_specset["species"].number_of_children());
 
         std::vector<int> num_species;
         std::vector<std::vector<std::string>> species_names;
@@ -1568,7 +1599,7 @@ avtBlueprintFileFormat::AddBlueprintSpeciesMetadata(avtDatabaseMetaData *md,
         while (mat_itr.has_next())
         {
             const Node &mat_val = mat_itr.next();
-            num_species.push_back(mat_val.number_of_children());
+            num_species.push_back(static_cast<int>(mat_val.number_of_children()));
 
             std::vector<std::string> spec_names_for_mat;
             auto specie_itr = mat_val.children();
@@ -2581,7 +2612,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             {
                 // Get the shape's topological dimension.
                 conduit::blueprint::mesh::utils::ShapeType shape(n_topo);
-                tdims = shape.dim;
+                tdims = static_cast<int>(shape.dim);
 
                 if (shape.is_polygonal() || shape.is_polyhedral())
                 {
@@ -2758,8 +2789,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
                             // the number of elements is the number of non-polytopal elements plus the number 
                             // of new triangular/tetrahedral elements.
-                            const int final_num_elems = n_shapes.number_of_elements() - num_polytopal_elements
-                                                      + side_field_values.number_of_elements();
+                            const int final_num_elems = static_cast<int>(n_shapes.number_of_elements()) - num_polytopal_elements
+                                                      + static_cast<int>(side_field_values.number_of_elements());
 
                             new_field["values"].set(DataType::float64(final_num_elems));
                             double_array new_field_values = new_field["values"].value();
@@ -3264,7 +3295,7 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         }
 
         // first we need number of zones
-        const int nzones = n_silo_specset["speclist"].dtype().number_of_elements();
+        const int nzones = static_cast<int>(n_silo_specset["speclist"].dtype().number_of_elements());
 
         if (!m_specset_info.has_path(std::string(spec_name) + "/topo_name"))
         {
