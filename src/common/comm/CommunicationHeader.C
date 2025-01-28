@@ -332,12 +332,12 @@ more_random_srand()
         long    value;
         time_t  updated;
         };
-    void    *seedp = static_cast<void *> -1;
+    void    *seedp = (void *) -1;
     char    *seed_path = NULL;
     key_t    seed_shm_key = -1;
-    int      seed_shd_id;
+    int     seed_shd_id;
     //    Create a directory or file path for ftok()
-    if ((seed_path = getcwd(static_cast<char *> NULL, (size_t) PATH_MAX)) == NULL)  {
+    if ((seed_path = getcwd((char *) NULL, (size_t) PATH_MAX)) == NULL)  {
         debug1 << "Error reading current dir for ftok()" << endl;
         return false;
     }
