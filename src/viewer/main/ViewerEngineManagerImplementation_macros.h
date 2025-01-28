@@ -24,6 +24,9 @@
 //    Brad Whitlock, Wed Feb 23 16:47:36 PST 2005
 //    Added ENGINE_PROXY_RPC_BEGIN_NOSTART that does not try to launch
 //    a compute engine before checking for its existence.
+//
+//    Mark C. Miller, Tue Jan 28 11:01:15 PST 2025
+//    Fix CATCH macro usage.
 
 #define ENGINE_PROXY_RPC_BEGIN_NOSTART(rpcname) \
     bool retval = false; \
@@ -99,7 +102,7 @@
                    retval = false; \
                 } \
             } \
-            CATCH(VisItException e) \
+            CATCH2(VisItException,e) \
             { \
                 retry = false; \
                 retval = false; \
