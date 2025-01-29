@@ -35,7 +35,7 @@ namespace DebugStream
     extern MISC_API int GetLevel();
 }
 
-#define debug1 DebugStream::Level1() && DebugStream::Stream1((char const *)__FILE__,(int)__LINE__)
+#define debug1 DebugStream::Level1() && DebugStream::Stream1(static_cast<char const *>(__FILE__),__LINE__)
 #define debug2 DebugStream::Level2() && DebugStream::Stream2()
 #define debug3 DebugStream::Level3() && DebugStream::Stream3()
 #define debug4 DebugStream::Level4() && DebugStream::Stream4()
