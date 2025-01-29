@@ -147,6 +147,9 @@
 #    Eric Brugger, Wed Nov 13 13:39:08 PST 2024
 #    Increase the rendering size limit from 16384 to 32768.
 #
+#    Eric Brugger, Thu Jan 23 13:10:04 PST 2025
+#    Add the xcb and xkbcommon libraries to the distribution.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -520,6 +523,32 @@ endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
+if(VISIT_XCB_DIR)
+    message(STATUS "Installing xcb")
+    file(GLOB xcb_libs "${VISIT_XCB_DIR}/lib/libxcb*.so*")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+	            ${xcb_libs}
+		    ${VISIT_BINARY_DIR}/lib)
+    install(FILES ${xcb_libs}
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                        WORLD_READ             WORLD_EXECUTE)
+
+endif()
+
+if(VISIT_XKBCOMMON_DIR)
+    message(STATUS "Installing xkbcommon")
+    file(GLOB xkbcommon_libs "${VISIT_XKBCOMMON_DIR}/lib/libxkb*.so*")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+	            ${xkbcommon_libs}
+		    ${VISIT_BINARY_DIR}/lib)
+    install(FILES ${xkbcommon_libs}
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                        WORLD_READ             WORLD_EXECUTE)
+endif()
 
 # Enable thread build of VisIt
 if(VISIT_THREAD)
