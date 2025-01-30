@@ -234,7 +234,7 @@ vtkDataSetFromVolume::EdgeHashTable::AddPoint(vtkIdType ap1, vtkIdType ap2, floa
     {
         p1 = ap2;
         p2 = ap1;
-        percent = 1. - apercent;
+        percent = 1.f - apercent;
     }
     else
     {

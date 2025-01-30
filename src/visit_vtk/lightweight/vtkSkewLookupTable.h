@@ -65,14 +65,14 @@ public:
 
   // Description:
   // Sets/Gets the skew factor. 
-  vtkSetMacro(SkewFactor, float);
-  vtkGetMacro(SkewFactor, float);
+  vtkSetMacro(SkewFactor, double);
+  vtkGetMacro(SkewFactor, double);
 
 protected:
   vtkSkewLookupTable(int sze=256, int ext=256);
   ~vtkSkewLookupTable(){}
 
-  float SkewFactor;
+  double SkewFactor;
 
 private:
   vtkSkewLookupTable(const vtkSkewLookupTable&) = delete;
