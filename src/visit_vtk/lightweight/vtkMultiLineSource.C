@@ -108,10 +108,8 @@ void vtkMultiLineSource::Shift2d(const double &shiftFactor)
 int vtkMultiLineSource::RequestInformation(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
-  vtkInformationVector *outputVector)
+  vtkInformationVector **vtkNotUsed(outputVector))
 {
-  // get the info object
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
   return 1;
 }
 
