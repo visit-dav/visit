@@ -2,14 +2,6 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wall"
-#pragma GCC diagnostic warning "-Wextra"
-#pragma GCC diagnostic warning "-Wpedantic"
-
-// Code with strict warnings here
-
-
 // ************************************************************************* //
 //                           avtSiloFileFormat.C                             //
 // ************************************************************************* //
@@ -18235,4 +18227,3 @@ db_get_index(DBnamescheme const *ns, int natnum)
 
     return (int) strtol(&name_str[i], 0, 10);
 }
-#pragma GCC diagnostic pop
