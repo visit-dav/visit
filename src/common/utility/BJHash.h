@@ -11,6 +11,8 @@
 
 #include <cstring>
 #include <string>
+#include <vector>
+#include <functional>
 
 namespace BJHash
 {
@@ -75,14 +77,13 @@ inline unsigned int BJHash::Mask(int n)
   c -= a; c -= b; c ^= (b>>15); \
 }
 
-
 inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, unsigned int initval)
 {
-   unsigned int a,b,c,len;
-
-   len = length;
-   a = b = 0x9e3779b9;
-   c = initval;
+   unsigned int len = length;
+   unsigned int a = 0x9e3779b9;
+   unsigned int b = a;
+   unsigned int c = initval;
+   unsigned int i;
 
    while (len >= 12)
    {
@@ -95,28 +96,22 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
 
    c += length;
 
-   if (len>=11)
-       c+=((unsigned int)k[10]<<24);
-   if (len>=10)
-      c+=((unsigned int)k[9]<<16);
-   if (len>=9)
-      c+=((unsigned int)k[8]<<8);
-   if (len>=8)
-      b+=((unsigned int)k[7]<<24);
-   if (len>=7)
-      b+=((unsigned int)k[6]<<16);
-   if (len>=6)
-      b+=((unsigned int)k[5]<<8);
-   if (len>=5)
-      b+=k[4];
-   if (len>=4)
-      a+=((unsigned int)k[3]<<24);
-   if (len>=3)
-      a+=((unsigned int)k[2]<<16);
-   if (len>=2)
-      a+=((unsigned int)k[1]<<8);
-   if (len>=1)
-      a+=k[0];
+   std::vector<std::function<void()>> cases = {
+      [&] { c+=((unsigned int)k[10]<<24); },
+      [&] { c+=((unsigned int)k[9]<<16);  },
+      [&] { c+=((unsigned int)k[8]<<8);   },
+      [&] { b+=((unsigned int)k[7]<<24);  },
+      [&] { b+=((unsigned int)k[6]<<16);  },
+      [&] { b+=((unsigned int)k[5]<<8);   },
+      [&] { b+=k[4];                      },
+      [&] { a+=((unsigned int)k[3]<<24);  },
+      [&] { a+=((unsigned int)k[2]<<16);  },
+      [&] { a+=((unsigned int)k[1]<<8);   },
+      [&] { a+=k[0];                      },
+   };
+
+   for (i = len; i > 0; i--)
+      cases[i];
 
    bjhash_mix(a,b,c);
 
