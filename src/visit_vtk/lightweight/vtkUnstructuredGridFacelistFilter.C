@@ -3036,11 +3036,11 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
             vtkPolygon *polygon = (vtkPolygon *) face;
             polygon->Triangulate(tris);
             int numTris = tris->GetNumberOfIds() / 3;
-            for (int i = 0 ; i < numTris ; i++)
+            for (int j = 0 ; j < numTris ; j++)
             {
-                nodes[0] = polygon->GetPointId(tris->GetId(3*i+0));
-                nodes[1] = polygon->GetPointId(tris->GetId(3*i+1));
-                nodes[2] = polygon->GetPointId(tris->GetId(3*i+2));
+                nodes[0] = polygon->GetPointId(tris->GetId(3*j+0));
+                nodes[1] = polygon->GetPointId(tris->GetId(3*j+1));
+                nodes[2] = polygon->GetPointId(tris->GetId(3*j+2));
                 list.AddTri(nodes, cellId);
             }
             tris->Delete();

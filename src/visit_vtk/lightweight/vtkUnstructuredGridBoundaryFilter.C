@@ -1081,11 +1081,11 @@ BQuad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
-    vtkIdType *list = quad_reorder_list[ordering_case];
-    n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
-    n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
-    n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
-    n[3] = (list[3] == -1 ? node0 : nodes[list[3]]);
+    vtkIdType *blist = quad_reorder_list[ordering_case];
+    n[0] = (blist[0] == -1 ? node0 : nodes[blist[0]]);
+    n[1] = (blist[1] == -1 ? node0 : nodes[blist[1]]);
+    n[2] = (blist[2] == -1 ? node0 : nodes[blist[2]]);
+    n[3] = (blist[3] == -1 ? node0 : nodes[blist[3]]);
     int newId = pd->InsertNextCell(VTK_QUAD, 4, n);
     out_cd->CopyData(in_cd, orig_zone, newId);
 }

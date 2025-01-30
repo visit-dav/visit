@@ -44,7 +44,6 @@ vtkStandardNewMacro(vtkVisItCellLocator)
 #define VTK_CELL_OUTSIDE 0
 #define VTK_CELL_INSIDE 1
 
-typedef vtkIdList *vtkIdListPtr;
 
 class vtkNeighborCells
 {
