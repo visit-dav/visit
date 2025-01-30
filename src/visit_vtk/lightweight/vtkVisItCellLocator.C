@@ -1462,9 +1462,9 @@ void vtkVisItCellLocator::GetOverlappingBuckets(double x[3], int vtkNotUsed(ijk)
   // Determine the range of indices in each direction
   for (i=0; i < 3; i++)
     {
-    minLevel[i] = (int) ((double) (((x[i]-dist) - this->Bounds[2*i])
+    minLevel[i] = (int) ((((x[i]-dist) - this->Bounds[2*i])
                                   / this->H[i]));
-    maxLevel[i] = (int) ((double) (((x[i]+dist) - this->Bounds[2*i])
+    maxLevel[i] = (int) ((((x[i]+dist) - this->Bounds[2*i])
                                   / this->H[i]));
     
     if ( minLevel[i] < 0 )
@@ -1636,8 +1636,7 @@ void vtkVisItCellLocator::BuildLocator()
     double diff, l = 0.0;
     for (i=0; i<3; ++i)
       {
-      diff = static_cast<double>(bounds[2*i+1]) -
-             static_cast<double>(bounds[2*i]);
+      diff = bounds[2*i+1] - bounds[2*i];
       l += diff * diff;
       }
       diff = sqrt(l);
@@ -1652,7 +1651,7 @@ void vtkVisItCellLocator::BuildLocator()
       if (l > length)
         {
         bounds = this->DataSet->GetBounds(); 
-        length = static_cast<double>(l);
+        length = l;
         }
     }
 
@@ -1672,7 +1671,7 @@ void vtkVisItCellLocator::BuildLocator()
   if ( this->Automatic ) 
     {
     this->Level = (int) (ceil(log((double)numCells/numCellsPerBucket) / 
-      (log((double) 8.0))));
+      (log(8.0))));
     } 
   this->Level =(this->Level > this->MaxLevel ? this->MaxLevel : this->Level);
   

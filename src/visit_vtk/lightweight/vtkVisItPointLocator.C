@@ -981,7 +981,7 @@ void vtkVisItPointLocator::BuildLocator()
   if ( this->Automatic ) 
     {
     level = (double) numPts / this->NumberOfPointsPerBucket;
-    level = ceil( pow((double)level,(double)0.33333333) );
+    level = ceil( pow(level,0.33333333) );
     for (i=0; i<3; i++)
       {
       ndivs[i] = (int) level;
@@ -991,7 +991,7 @@ void vtkVisItPointLocator::BuildLocator()
     {
     for (i=0; i<3; i++)
       {
-      ndivs[i] = (int) this->Divisions[i];
+      ndivs[i] = this->Divisions[i];
       }
     }
 
@@ -1031,7 +1031,7 @@ void vtkVisItPointLocator::BuildLocator()
     x = this->DataSet->GetPoint(i);
     for (j=0; j<3; j++) 
       {
-      ijk[j] = (int) ((double) ((x[j] - this->Bounds[2*j]) / 
+      ijk[j] = (int) (((x[j] - this->Bounds[2*j]) / 
                         (this->Bounds[2*j+1] - this->Bounds[2*j])) * ndivs[j]);
       if (ijk[j] >= this->Divisions[j])
         {
@@ -1130,9 +1130,9 @@ void vtkVisItPointLocator::GetOverlappingBuckets(vtkNeighborPoints* buckets,
   // Determine the range of indices in each direction
   for (i=0; i < 3; i++)
     {
-    minLevel[i] = (int) ((double) (((x[i]-dist) - this->Bounds[2*i]) / 
+    minLevel[i] = (int) ((((x[i]-dist) - this->Bounds[2*i]) / 
         (this->Bounds[2*i+1] - this->Bounds[2*i])) * this->Divisions[i]);
-    maxLevel[i] = (int) ((double) (((x[i]+dist) - this->Bounds[2*i]) / 
+    maxLevel[i] = (int) ((((x[i]+dist) - this->Bounds[2*i]) / 
         (this->Bounds[2*i+1] - this->Bounds[2*i])) * this->Divisions[i]);
 
     if ( minLevel[i] < 0 )
@@ -1182,9 +1182,9 @@ void vtkVisItPointLocator::GetOverlappingBuckets(vtkNeighborPoints* buckets,
   // Determine the range of indices in each direction
   for (i=0; i < 3; i++)
     {
-    minLevel[i] = (int) ((double) (((x[i]-dist) - this->Bounds[2*i])
+    minLevel[i] = (int) ((((x[i]-dist) - this->Bounds[2*i])
                                   / this->H[i]));
-    maxLevel[i] = (int) ((double) (((x[i]+dist) - this->Bounds[2*i])
+    maxLevel[i] = (int) ((((x[i]+dist) - this->Bounds[2*i])
                                   / this->H[i]));
     
     if ( minLevel[i] < 0 )
@@ -1315,7 +1315,7 @@ int vtkVisItPointLocator::InitPointInsertion(vtkPoints *newPts,
   if ( this->Automatic && (estNumPts > 0) )
     {
     level = (double) estNumPts / this->NumberOfPointsPerBucket;
-    level = ceil( pow((double)level,(double)0.33333333) );
+    level = ceil( pow(level,0.33333333));
     for (i=0; i<3; i++)
       {
       ndivs[i] = (int) level;
@@ -1325,7 +1325,7 @@ int vtkVisItPointLocator::InitPointInsertion(vtkPoints *newPts,
     {
     for (i=0; i<3; i++)
       {
-      ndivs[i] = (int) this->Divisions[i];
+      ndivs[i] = this->Divisions[i];
       }
     }
 
@@ -1354,7 +1354,7 @@ int vtkVisItPointLocator::InitPointInsertion(vtkPoints *newPts,
     hmin = (this->H[i] < hmin ? this->H[i] : hmin);
     maxDivs = (maxDivs > this->Divisions[i] ? maxDivs : this->Divisions[i]);
     }
-  this->InsertionLevel = ceil ((double) this->Tolerance / hmin);
+  this->InsertionLevel = ceil (this->Tolerance / hmin);
   this->InsertionLevel = (this->InsertionLevel > maxDivs ? maxDivs : this->InsertionLevel);
   return 1;
 }
@@ -1377,7 +1377,7 @@ vtkIdType vtkVisItPointLocator::InsertNextPoint(const double x[3])
   //
   for (i=0; i<3; i++)
     {
-    ijk[i] = (int) ((double) ((x[i] - this->Bounds[2*i]) / 
+    ijk[i] = (int) (((x[i] - this->Bounds[2*i]) / 
         (this->Bounds[2*i+1] - this->Bounds[2*i])) * this->Divisions[i]);
     if (ijk[i] >= this->Divisions[i])
       {
@@ -1417,7 +1417,7 @@ void vtkVisItPointLocator::InsertPoint(vtkIdType ptId, const double x[3])
   //
   for (i=0; i<3; i++)
     {
-    ijk[i] = (int) ((double) ((x[i] - this->Bounds[2*i]) / 
+    ijk[i] = (int) (((x[i] - this->Bounds[2*i]) / 
        (this->Bounds[2*i+1] - this->Bounds[2*i])) * this->Divisions[i]);
     if (ijk[i] >= this->Divisions[i])
       {
@@ -1452,7 +1452,7 @@ vtkIdType vtkVisItPointLocator::IsInsertedPoint(const double x[3])
   //
   for (i=0; i<3; i++)
     {
-    ijk[i] = (int) ((double) ((x[i] - this->Bounds[2*i]) / 
+    ijk[i] = (int) (((x[i] - this->Bounds[2*i]) / 
         (this->Bounds[2*i+1] - this->Bounds[2*i])) * this->Divisions[i]);
     if (ijk[i] >= this->Divisions[i])
       {
