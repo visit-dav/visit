@@ -108,7 +108,7 @@ void vtkMultiLineSource::Shift2d(const double &shiftFactor)
 int vtkMultiLineSource::RequestInformation(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
-  vtkInformationVector **vtkNotUsed(outputVector))
+  vtkInformationVector *vtkNotUsed(outputVector))
 {
   return 1;
 }
