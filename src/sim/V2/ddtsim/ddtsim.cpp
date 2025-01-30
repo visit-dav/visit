@@ -383,7 +383,7 @@ DDTSim::DDTSim(const char *libsimPath,int par_rank, int par_size) :
         snprintf(mAbsSimFileName,MAX_SIMFILE_NAME_LENGTH-1,
                  "%s/.ddt/visualizations/%012d.%s-ddt.sim2",
                  mDDTSharedPath,
-                 (int)visitSim.time(),
+                 static_cast<int>(visitSim.time()),
                  mProgramName);
 
         sprintf(desc,"DDT provided visualisation of %s", mProgramName);
