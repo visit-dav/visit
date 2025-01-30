@@ -15052,7 +15052,7 @@ avtSiloFileFormat::GetLocalDomainBoundaryInfo(int domain, const char *var)
     // extract the packed info into a avtLocalStructuredDomainBoundaryList
     //
 
-    int *dc_ptr = decomp;
+    int *dc_ptr = decomp+1;
     int nbnd    = *dc_ptr++;
     avtLocalStructuredDomainBoundaryList *res =
                     new avtLocalStructuredDomainBoundaryList(domain,dc_ptr);
