@@ -113,7 +113,7 @@ class VISIT_VTK_API vtkCSGGrid : public vtkDataSet
 public:
   static vtkCSGGrid *New();
 
-  vtkTypeMacro(vtkCSGGrid,vtkDataSet);
+  vtkTypeMacro(vtkCSGGrid,vtkDataSet)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
