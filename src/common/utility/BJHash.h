@@ -97,17 +97,19 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
 
    switch(len)
    {
-      case 11: c+=((unsigned int)k[10]<<24);
-      case 10: c+=((unsigned int)k[9]<<16);
-      case 9 : c+=((unsigned int)k[8]<<8);
-      case 8 : b+=((unsigned int)k[7]<<24);
-      case 7 : b+=((unsigned int)k[6]<<16);
-      case 6 : b+=((unsigned int)k[5]<<8);
-      case 5 : b+=k[4];
-      case 4 : a+=((unsigned int)k[3]<<24);
-      case 3 : a+=((unsigned int)k[2]<<16);
-      case 2 : a+=((unsigned int)k[1]<<8);
-      case 1 : a+=k[0];
+      // The unusual coding style here is to explicitly indicate
+      // intentional fall through so compiler won't complain.
+               case 11: c+=((unsigned int)k[10]<<24);  goto case_10;
+      case_10: case 10: c+=((unsigned int)k[9]<<16);   goto case_9;
+      case_9:  case 9:  c+=((unsigned int)k[8]<<8);    goto case_8;
+      case_8:  case 8:  b+=((unsigned int)k[7]<<24);   goto case_7;
+      case_7:  case 7:  b+=((unsigned int)k[6]<<16);   goto case_6;
+      case_6:  case 6:  b+=((unsigned int)k[5]<<8);    goto case_5;
+      case_5:  case 5:  b+=k[4];                       goto case_4;
+      case_4:  case 4:  a+=((unsigned int)k[3]<<24);   goto case_3;
+      case_3:  case 3:  a+=((unsigned int)k[2]<<16);   goto case_2;
+      case_2:  case 2:  a+=((unsigned int)k[1]<<8);    goto case_1;
+      case_1:  case 1:  a+=k[0];
    }
 
    bjhash_mix(a,b,c);
