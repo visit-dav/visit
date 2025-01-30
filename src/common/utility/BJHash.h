@@ -111,7 +111,7 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
    };
 
    for (i = len; i > 0; i--)
-      cases[i];
+      cases[11-i]();
 
    bjhash_mix(a,b,c);
 
