@@ -24,7 +24,7 @@
 #include "vtkObjectFactory.h"
 #include "vtkPolyData.h"
 
-vtkStandardNewMacro(vtkVisItPointLocator);
+vtkStandardNewMacro(vtkVisItPointLocator)
 
 static const int VTK_INITIAL_SIZE=1000;
 

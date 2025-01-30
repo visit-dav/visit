@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-vtkStandardNewMacro(vtkCellIntersections);
+vtkStandardNewMacro(vtkCellIntersections)
 
 
 

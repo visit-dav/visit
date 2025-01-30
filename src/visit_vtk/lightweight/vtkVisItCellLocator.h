@@ -61,7 +61,7 @@ class vtkPoints;
 class VISIT_VTK_LIGHT_API vtkVisItCellLocator : public vtkLocator
 {
 public:
-  vtkTypeMacro(vtkVisItCellLocator,vtkLocator);
+  vtkTypeMacro(vtkVisItCellLocator,vtkLocator)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
@@ -103,7 +103,7 @@ public:
   // (thus the dataset bounds are much larger than just the bounds
   // for all the cells). 
    void SetUserBounds(double b[6]);
-   double* GetUserBounds(void) {return UserBounds;};
+   double* GetUserBounds(void) {return UserBounds;}
 
   // Description:
   // Return intersection point (if any) of finite line with cells contained

@@ -32,8 +32,8 @@
 
 #include <math.h>
 
-vtkStandardNewMacro(vtkMultiLineSource);
-vtkCxxSetObjectMacro(vtkMultiLineSource,Points,vtkPoints);
+vtkStandardNewMacro(vtkMultiLineSource)
+vtkCxxSetObjectMacro(vtkMultiLineSource,Points,vtkPoints)
 
 // ----------------------------------------------------------------------
 vtkMultiLineSource::vtkMultiLineSource()

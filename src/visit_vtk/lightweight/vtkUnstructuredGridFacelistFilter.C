@@ -399,14 +399,14 @@ class Tri
                            hashEntryList->tmm.ReRegisterTri(this);
                        }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
-    inline int     GetOriginalZone(void) { return orig_zone; };
+    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
+    inline int     GetOriginalZone(void) { return orig_zone; }
 
     void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     inline void    RegisterHashEntryList(HashEntryList *hel)
-                          { hashEntryList = hel; };
-    inline void    SetNumberOfPoints(int np) { npts = np; };
+                          { hashEntryList = hel; }
+    inline void    SetNumberOfPoints(int np) { npts = np; }
 
 
   protected:
@@ -1663,7 +1663,7 @@ HashEntry::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 }
 
 
-vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter);
+vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter)
 
 
 // ****************************************************************************

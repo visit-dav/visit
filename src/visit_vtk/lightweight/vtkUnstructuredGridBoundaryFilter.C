@@ -225,7 +225,7 @@ class BQuad
     friend class   BTri;
 
   public:
-                   BQuad() { ordering_case = 255; matched = false; };
+                   BQuad() { ordering_case = 255; matched = false; }
 
     vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(BQuad *);
@@ -236,18 +236,18 @@ class BQuad
                              MemoryManager->ReRegisterQuad(this);
                          }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
-    inline int     GetOriginalZone(void) { return orig_zone; };
-    inline void    SetCellValue(const int &cv) { cell_value = cv; };
-    inline int     GetCellValue(void) { return cell_value; };
-    inline void    SetMatched(bool m) { matched = m; };
-    inline bool    GetMatched() { return matched; };
+    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
+    inline int     GetOriginalZone(void) { return orig_zone; }
+    inline void    SetCellValue(const int &cv) { cell_value = cv; }
+    inline int     GetCellValue(void) { return cell_value; }
+    inline void    SetMatched(bool m) { matched = m; }
+    inline bool    GetMatched() { return matched; }
 
     void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     static void    RegisterBHashEntryList(BHashEntryList *);
     static void    RegisterMemoryManager(BQuadMemoryManager *);
-    static void    SetNumberOfPoints(int np) { npts = np; };
+    static void    SetNumberOfPoints(int np) { npts = np; }
 
   protected:
     unsigned char ordering_case;
@@ -321,7 +321,7 @@ class BTri
     friend class   BQuad;
 
   public:
-                   BTri() { ordering_case = 255; matched = false; };
+                   BTri() { ordering_case = 255; matched = false; }
 
     vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(BTri *&t)
@@ -340,17 +340,17 @@ class BTri
                            MemoryManager->ReRegisterTri(this);
                        }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
-    inline int     GetOriginalZone(void) { return orig_zone; };
-    inline void    SetCellValue(const int &cv) { cell_value = cv; };
-    inline int     GetCellValue(void) { return cell_value; };
-    inline void    SetMatched(bool m) { matched = m; };
-    inline bool    GetMatched() { return matched; };
+    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
+    inline int     GetOriginalZone(void) { return orig_zone; }
+    inline void    SetCellValue(const int &cv) { cell_value = cv; }
+    inline int     GetCellValue(void) { return cell_value; }
+    inline void    SetMatched(bool m) { matched = m; }
+    inline bool    GetMatched() { return matched; }
 
     void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     static void    RegisterMemoryManager(BTriMemoryManager *);
-    static void    SetNumberOfPoints(int np) { npts = np; };
+    static void    SetNumberOfPoints(int np) { npts = np; }
 
 
   protected:
@@ -401,7 +401,7 @@ static int tri_reorder_list[6][3] =
 class BLine
 {
   public:
-                   BLine() { ordering_case = 255; matched = false; };
+                   BLine() { ordering_case = 255; matched = false; }
 
     vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(BLine *l)
@@ -414,17 +414,17 @@ class BLine
                            MemoryManager->ReRegisterLine(this);
                        }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
-    inline int     GetOriginalZone(void) { return orig_zone; };
-    inline void    SetCellValue(const int &cv) { cell_value = cv; };
-    inline int     GetCellValue(void) { return cell_value; };
-    inline void    SetMatched(bool m) { matched = m; };
-    inline bool    GetMatched() { return matched; };
+    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
+    inline int     GetOriginalZone(void) { return orig_zone; }
+    inline void    SetCellValue(const int &cv) { cell_value = cv; }
+    inline int     GetCellValue(void) { return cell_value; }
+    inline void    SetMatched(bool m) { matched = m; }
+    inline bool    GetMatched() { return matched; }
 
     void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     static void    RegisterMemoryManager(BLineMemoryManager *);
-    static void    SetNumberOfPoints(int np) { npts = np; };
+    static void    SetNumberOfPoints(int np) { npts = np; }
 
 
   protected:
@@ -479,16 +479,16 @@ class BHashEntry
 {
   public:
                    BHashEntry();
-    virtual       ~BHashEntry() {;};
+    virtual       ~BHashEntry() {;}
 
     void           AddQuad(BQuad *);
     void           AddTri(BTri *);
 
-    inline void    SetPointIndex(int pi) { point_index = pi; };
+    inline void    SetPointIndex(int pi) { point_index = pi; }
     static void    RegisterMemoryManager(BHashEntryMemoryManager *mm)
-                          { MemoryManager = mm; };
+                          { MemoryManager = mm; }
     static void    RegisterBHashEntryList(BHashEntryList *hel)
-                          { list = hel; };
+                          { list = hel; }
 
     void           CreateOutputCells(vtkPolyData*, vtkCellData*, vtkCellData*,
                                      bool);
@@ -530,15 +530,15 @@ class BHashEntry2D
 {
   public:
                    BHashEntry2D();
-    virtual       ~BHashEntry2D() {;};
+    virtual       ~BHashEntry2D() {;}
 
     void           AddLine(BLine *);
 
-    inline void    SetPointIndex(int pi) { point_index = pi; };
+    inline void    SetPointIndex(int pi) { point_index = pi; }
     static void    RegisterMemoryManager(BHashEntryMemoryManager2D *mm)
-                          { MemoryManager = mm; };
+                          { MemoryManager = mm; }
     static void    RegisterBHashEntryList(BHashEntryList2D *hel)
-                          { list = hel; };
+                          { list = hel; }
 
     void           CreateOutputCells(vtkPolyData*, vtkCellData*, vtkCellData*,
                                      bool);
@@ -664,8 +664,8 @@ class BHashEntryList
 
     inline void IncrementMatchedCount() { matchedCount++; }
 
-    inline void RemoveFace(void) { nfaces--; };
-    int         GetNumberOfMatchedFaces(void) { return matchedCount; };
+    inline void RemoveFace(void) { nfaces--; }
+    int         GetNumberOfMatchedFaces(void) { return matchedCount; }
 
     void        CreateOutputCells(vtkPolyData *, vtkCellData *, vtkCellData *,
                                   bool);
@@ -706,8 +706,8 @@ class BHashEntryList2D
 
     void        AddLine(const vtkIdType *, int orig_zone, int cell_value);
 
-    inline void RemoveLine(void) { nlines--; };
-    int         GetNumberOfMatchedLines(void) { return matchedCount; };
+    inline void RemoveLine(void) { nlines--; }
+    int         GetNumberOfMatchedLines(void) { return matchedCount; }
 
     void        CreateOutputCells(vtkPolyData *, vtkCellData *, vtkCellData *,
                                   bool);
@@ -2579,7 +2579,7 @@ BHashEntry2D::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 }
 
 
-vtkStandardNewMacro(vtkUnstructuredGridBoundaryFilter);
+vtkStandardNewMacro(vtkUnstructuredGridBoundaryFilter)
 
 
 // ****************************************************************************

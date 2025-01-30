@@ -5,7 +5,7 @@
 #include "vtkElementLabelArray.h"
 #include "DebugStream.h"
 #include "StringHelpers.h"
-vtkStandardNewMacro(vtkElementLabelArray);
+vtkStandardNewMacro(vtkElementLabelArray)
 
 vtkElementLabelArray::vtkElementLabelArray()
 {

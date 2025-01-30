@@ -50,7 +50,7 @@ class VISIT_VTK_LIGHT_API vtkSkewLookupTable : public vtkLookupTable
 public:
   static vtkSkewLookupTable *New();
   
-  vtkTypeMacro(vtkSkewLookupTable,vtkLookupTable);
+  vtkTypeMacro(vtkSkewLookupTable,vtkLookupTable)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
@@ -70,7 +70,7 @@ public:
 
 protected:
   vtkSkewLookupTable(int sze=256, int ext=256);
-  ~vtkSkewLookupTable(){};
+  ~vtkSkewLookupTable(){}
 
   float SkewFactor;
 

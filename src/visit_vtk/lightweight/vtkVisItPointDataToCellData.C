@@ -29,7 +29,7 @@
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 
-vtkStandardNewMacro(vtkVisItPointDataToCellData);
+vtkStandardNewMacro(vtkVisItPointDataToCellData)
 
 //----------------------------------------------------------------------------
 // Instantiate object so that point data is not passed to output.

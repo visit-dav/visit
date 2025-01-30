@@ -107,7 +107,7 @@ ComboDigitsFromId(double id, int n, int maxr, const vector<vector<int> > &ptMap,
 }
 
 
-vtkStandardNewMacro(vtkEnumThreshold);
+vtkStandardNewMacro(vtkEnumThreshold)
 
 //  Modifications:  
 //    Jeremy Meredith, Tue Aug 22 16:20:41 EDT 2006

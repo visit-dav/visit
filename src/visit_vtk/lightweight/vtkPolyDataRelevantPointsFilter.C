@@ -18,7 +18,7 @@
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //-----------------------------------------------------------------------------
 
-vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
+vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter)
 
 // ***************************************************************************
 //  Modifications:

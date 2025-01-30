@@ -13,7 +13,7 @@
 //   Replace 'New' method with Macro to match VTK 4.0 API. 
 // *************************************************************************
 
-vtkStandardNewMacro(vtkSkewLookupTable);
+vtkStandardNewMacro(vtkSkewLookupTable)
 
 
 // Construct with range=(0,1); 
