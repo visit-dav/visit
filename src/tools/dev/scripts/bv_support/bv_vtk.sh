@@ -1532,7 +1532,7 @@ EOF
 
 function apply_vtk_patch
 {
-    if test "${VTK_VERSION}" = "9.2.6" ; then
+    if [[ ${VTK_VERSION} == 9.2.6 ]] ; then
         apply_vtk92_gcc13_patch
         if [[ $? != 0 ]] ; then
             return 1
@@ -1910,9 +1910,7 @@ function build_vtk
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
 
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-    elif [[ "$DO_OSMESA" == "yes" && "$DO_VTK94" == "no" ]] ; then
+    if [[ "$DO_MESAGL" == "yes" ]] || [[ "$DO_OSMESA" == "yes" && "$DO_VTK94" == "no" ]] ; then
         export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
     fi
 
