@@ -95,7 +95,7 @@ function bv_vtk_info
         info "setting up vtk for version 9.4.1"
         export VTK_VERSION=${VTK_VERSION:-"9.4.1"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.4"}
-        export VTK_SHA256_CHECKSUM=""
+        export VTK_SHA256_CHECKSUM="c253b0c8d002aaf98871c6d0cb76afc4936c301b72358a08d5f3f72ef8bc4529"
     else
         info "setting up vtk for version 9.2.6"
         export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
@@ -105,7 +105,6 @@ function bv_vtk_info
 
     export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-${VTK_VERSION}"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
 }
