@@ -14,7 +14,8 @@ endif()
 add_subdirectory(networktest)
 add_subdirectory(exceptiontest)
 
-if(HAVE_OSMESA)
+
+if(HAVE_OSMESA AND VTK_VERSION VERSION_LESS "9.4.0")
     add_subdirectory(osmesatest)
 endif()
 
