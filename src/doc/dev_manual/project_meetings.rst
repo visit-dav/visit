@@ -32,11 +32,3 @@ Special Topics Meeting Topics/Agenda
 We consider the need and interest in using the upcoming special topics meeting time.
 Sometimes, we opt to use this meeting time for further issue triage.
 Other times, we decide on some topic(s) to discuss and contributors may prepare some informal materials.
-
-Inclusive Moment
-----------------
-To begin the first project meeting of each new month a contributor shares an inclusive moment.
-An inclusive moment is a factoid, resource, event, experience, etc. related to STEAM with the purpose of raising awareness, seeding deeper thinking and/or informing future action.
-
-Whenever possible, we try to rotate responsibility to a different contributor each time.
-There is an article that goes into `more details <https://hpc-workforce-development-and-retention.github.io/hpc-wdr/jekyll/update/2023/04/08/inclusive-minute.html>`__ about the inclusive minute exercise.
