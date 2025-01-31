@@ -160,8 +160,8 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
 
   if(accessMethod == 1)
     {
-    const float *in_ptr = (const float *) inPts->GetVoidPointer(0);
-    float *out_ptr = (float *) newPts->GetVoidPointer(0);
+    const float *in_ptr = static_cast<const float *>(inPts->GetVoidPointer(0));
+    float *out_ptr = static_cast<float *>(newPts->GetVoidPointer(0));
     for (vtkIdType i = 0 ; i < numNewPts ; i++)
       {
       const float *src = in_ptr + 3*newToOld[i];
@@ -172,8 +172,8 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
     }
   else if(accessMethod == 2)
     {
-    const double *in_ptr = (const double *) inPts->GetVoidPointer(0);
-    double *out_ptr = (double *) newPts->GetVoidPointer(0);
+    const double *in_ptr = static_cast<const double *>(inPts->GetVoidPointer(0));
+    double *out_ptr = static_cast<double *>( newPts->GetVoidPointer(0));
     for (vtkIdType i = 0 ; i < numNewPts ; i++)
       {
       const double *src = in_ptr + 3*newToOld[i];

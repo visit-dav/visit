@@ -114,36 +114,50 @@ vtkCellIntersections::CellIntersectWithLine(vtkCell *cell,
     {
     case VTK_EMPTY_CELL : return 0;
     case VTK_VERTEX : 
-      return VertexIntersectWithLine((vtkVertex*)cell, p1, p2, t, x);
+      return VertexIntersectWithLine(
+             static_cast<vtkVertex*>(cell), p1, p2, t, x);
     case VTK_POLY_VERTEX : 
-      return PolyVertexIntersectWithLine((vtkPolyVertex*)cell, p1, p2, t, x);
+      return PolyVertexIntersectWithLine(
+             static_cast<vtkPolyVertex*>(cell), p1, p2, t, x);
     case VTK_LINE : 
-      return LineIntersectWithLine((vtkLine*)cell, p1, p2, t, x);
+      return LineIntersectWithLine(
+             static_cast<vtkLine*>(cell), p1, p2, t, x);
     case VTK_POLY_LINE : 
-      return PolyLineIntersectWithLine((vtkPolyLine*)cell, p1, p2, t, x);
+      return PolyLineIntersectWithLine(
+             static_cast<vtkPolyLine*>(cell), p1, p2, t, x);
     case VTK_TRIANGLE : 
-      return TriangleIntersectWithLine((vtkTriangle*)cell, p1, p2, t, x);
+      return TriangleIntersectWithLine(
+             static_cast<vtkTriangle*>(cell), p1, p2, t, x);
     case VTK_TRIANGLE_STRIP : 
-      return TriStripIntersectWithLine((vtkTriangleStrip*)cell, p1, p2, t, x);
+      return TriStripIntersectWithLine(
+             static_cast<vtkTriangleStrip*>(cell), p1, p2, t, x);
     case VTK_POLYGON : 
-      return PolygonIntersectWithLine((vtkPolygon*)cell, p1, p2, t, x);
+      return PolygonIntersectWithLine(
+             static_cast<vtkPolygon*>(cell), p1, p2, t, x);
     case VTK_PIXEL : 
-      return PixelIntersectWithLine((vtkPixel*)cell, p1, p2, t, x);
+      return PixelIntersectWithLine(
+             static_cast<vtkPixel*>(cell), p1, p2, t, x);
     case VTK_QUAD : 
-      return QuadIntersectWithLine((vtkQuad*)cell, p1, p2, t, x);
+      return QuadIntersectWithLine(
+             static_cast<vtkQuad*>(cell), p1, p2, t, x);
     case VTK_TETRA : 
-      return TetraIntersectWithLine((vtkTetra*)cell, p1, p2, t, x);
+      return TetraIntersectWithLine(
+             static_cast<vtkTetra*>(cell), p1, p2, t, x);
     case VTK_VOXEL : 
-      return VoxelIntersectWithLine((vtkVoxel*)cell, p1, p2, t, x);
+      return VoxelIntersectWithLine(
+             static_cast<vtkVoxel*>(cell), p1, p2, t, x);
     case VTK_HEXAHEDRON : 
-      return HexIntersectWithLine((vtkHexahedron*)cell, p1, p2, t, x);
+      return HexIntersectWithLine(
+             static_cast<vtkHexahedron*>(cell), p1, p2, t, x);
     case VTK_WEDGE : 
-      return WedgeIntersectWithLine((vtkWedge*)cell, p1, p2, t, x);
+      return WedgeIntersectWithLine(
+             static_cast<vtkWedge*>(cell), p1, p2, t, x);
     case VTK_PYRAMID : 
-      return PyramidIntersectWithLine((vtkPyramid*)cell, p1, p2, t, x);
+      return PyramidIntersectWithLine(
+             static_cast<vtkPyramid*>(cell), p1, p2, t, x);
     case VTK_QUADRATIC_HEXAHEDRON : 
-      return QuadraticHexahedronIntersectWithLine((vtkQuadraticHexahedron*)cell,
-                                                  p1, p2, t, x);
+      return QuadraticHexahedronIntersectWithLine(
+             static_cast<vtkQuadraticHexahedron*>(cell), p1, p2, t, x);
     default:
       vtkErrorMacro( << "CellType  " << cell->GetCellType() 
                      << "not yet supported for CellIntersectWithLine ..." );

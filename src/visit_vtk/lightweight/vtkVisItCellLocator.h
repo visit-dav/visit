@@ -257,7 +257,7 @@ protected:
   int NumberOfDivisions; // number of "leaf" octant sub-divisions
   vtkIdList **Tree; // octree
 
-  void MarkParents(void*, int, int, int, int, int);
+  void MarkParents(const vtkSmartPointer<vtkIdList>&,int,int,int,int,int);
   void GetChildren(int idx, int level, int children[8]);
   int GenerateIndex(int offset, int numDivs, int i, int j, int k,
                     vtkIdType &idx);

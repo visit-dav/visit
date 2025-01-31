@@ -154,52 +154,52 @@ vtkSkewLookupTable::MapScalarsThroughTable2(
   switch (inputDataType)
     {
     case VTK_CHAR:
-      vtkSkewLookupTableMapData(this, (char *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<char *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_UNSIGNED_CHAR:
-      vtkSkewLookupTableMapData(this, (unsigned char *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned char *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_SHORT:
-      vtkSkewLookupTableMapData(this, (short *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<short *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
     break;
       
     case VTK_UNSIGNED_SHORT:
-      vtkSkewLookupTableMapData(this, (unsigned short *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned short *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_INT:
-      vtkSkewLookupTableMapData(this, (int *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<int *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_UNSIGNED_INT:
-      vtkSkewLookupTableMapData(this, (unsigned int *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned int *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_LONG:
-      vtkSkewLookupTableMapData(this, (long *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<long *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_UNSIGNED_LONG:
-      vtkSkewLookupTableMapData(this, (unsigned long *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned long *>(input), output,
                          numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_FLOAT:
-      vtkSkewLookupTableMapData(this, (float *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<float *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_DOUBLE:
-      vtkSkewLookupTableMapData(this, (double *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<double *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       

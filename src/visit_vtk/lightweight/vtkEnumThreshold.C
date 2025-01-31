@@ -60,10 +60,10 @@ choose(int n, int r)
     int k = 1;
     for (int i = r+1; i <=n; i++)
     {
-        result *= (double) i;
+        result *= static_cast<double>(i);
         if (k <= n-r)
         {
-            result /= (double) k;
+            result /= static_cast<double>(k);
             k++;
         }
     }
@@ -148,8 +148,8 @@ vtkEnumThreshold::~vtkEnumThreshold()
 // Need for argument to qsort
 static int CompareIds(const void *a, const void *b)
 {
-    vtkIdType *pa = (vtkIdType *) a;
-    vtkIdType *pb = (vtkIdType *) b;
+    vtkIdType *pa = const_cast<vtkIdType*>(static_cast<const vtkIdType *>(a));
+    vtkIdType *pb = const_cast<vtkIdType*>(static_cast<const vtkIdType *>(b));
     if (*pa < *pb)
         return -1;
     else if (*pa > *pb)
@@ -175,7 +175,7 @@ static void HashCell(vtkCell *theCell, unsigned int &hashVal,
     // the hash value
     qsort(&pids[0], npts, sizeof(vtkIdType), CompareIds);
 
-    hashVal = BJHash::Hash((unsigned char*)&pids[0],
+    hashVal = BJHash::Hash(reinterpret_cast<unsigned char*>(&pids[0]),
         npts * sizeof(vtkIdType), 0xdeadbeef);
 }
 
@@ -253,7 +253,7 @@ static void AddEdgeToMaps(vtkCell *edgeCell,
     HashCell(edgeCell, hval, pids);
 
     // put this edge in the edge map
-    edgeMap[hval].push_back((vtkIdType) pids.size());
+    edgeMap[hval].push_back(pids.size());
     for (size_t i = 0; i < pids.size(); i++)
         edgeMap[hval].push_back(pids[i]);
 
@@ -277,7 +277,7 @@ static void AddFaceToMaps(vtkCell *faceCell,
     HashCell(faceCell, hval, pids);
 
     // put this face in the face map
-    faceMap[hval].push_back((vtkIdType) pids.size());
+    faceMap[hval].push_back(pids.size());
     for (size_t i = 0; i < pids.size(); i++)
         faceMap[hval].push_back(pids[i]);
 
@@ -567,7 +567,7 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     // pairs. This search works because we've sorted the range bins.
     //
     int bot = 0;
-    int top = (int)enumerationRanges.size() / 2 - 1;
+    int top = static_cast<int>(enumerationRanges.size()) / 2 - 1;
     int mid;
     while (bot <= top)
     {
@@ -590,9 +590,9 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
 
 bool vtkEnumThreshold::HasBitsSetInEnumerationMask(double val)
 {
-    unsigned long long lval = (unsigned long long) val;
+    unsigned long long lval = static_cast<unsigned long long>(val);
 
-    if (double(lval) != val)
+    if (static_cast<double>(lval) != val)
     {
         vtkDebugMacro(<< "Value " << val << " for ByBitMask enumeration mode is too large.");
         return true;
@@ -710,8 +710,8 @@ void vtkEnumThreshold::SetEnumerationRanges(const std::vector<double> &vals)
 
 static int CompareRanges(const void *a, const void *b)
 {
-    double *pa = (double *) a;
-    double *pb = (double *) b;
+    double *pa = const_cast<double*>(static_cast<const double *>(a));
+    double *pb = const_cast<double*>(static_cast<const double *>(b));
 
     if (pa[1] < pb[0])
         return -1;
@@ -775,7 +775,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             selectedEnumMask = 0;
             if (selectedEnumMaskBitArray) selectedEnumMaskBitArray->Delete();
             selectedEnumMaskBitArray = vtkBitArray::New();
-            selectedEnumMaskBitArray->SetNumberOfComponents((((int)enumerationRanges.size()/2+bpuc-1)/bpuc)*bpuc);
+            selectedEnumMaskBitArray->SetNumberOfComponents(((static_cast<int>(enumerationRanges.size())/2+bpuc-1)/bpuc)*bpuc);
             selectedEnumMaskBitArray->SetNumberOfTuples(1);
             memset(selectedEnumMaskBitArray->GetVoidPointer(0), 0,
                    selectedEnumMaskBitArray->GetSize()/bpuc);
@@ -787,8 +787,8 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
                     if (enumMode == ByBitMask)
                     {
                         if ((i/2) < sizeof(unsigned long long)*8)
-                            selectedEnumMask |= (((unsigned long long)1)<<(i/2));
-                        selectedEnumMaskBitArray->SetComponent(0, (int)i/2, 1);
+                            selectedEnumMask |= ((static_cast<unsigned long long>(1))<<(i/2));
+                        selectedEnumMaskBitArray->SetComponent(0, static_cast<int>(i)/2, 1);
                     }
                     else
                         enumerationMap[int(enumerationRanges[i]-minEnumerationValue)] = 1;

@@ -91,7 +91,7 @@ int vtkVisItPointDataToCellData::RequestData(
     {
     if ( !(cellId % progressInterval) )
       {
-      this->UpdateProgress((double)cellId/numCells);
+      this->UpdateProgress(static_cast<double>(cellId/numCells));
       abort = GetAbortExecute();
       }
 

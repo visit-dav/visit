@@ -3033,7 +3033,7 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
         else if (face->GetCellType() == VTK_POLYGON)
         {
             vtkIdList *tris = vtkIdList::New();
-            vtkPolygon *polygon = (vtkPolygon *) face;
+            vtkPolygon *polygon = static_cast<vtkPolygon *>(face);
             polygon->Triangulate(tris);
             int numTris = tris->GetNumberOfIds() / 3;
             for (int j = 0 ; j < numTris ; j++)

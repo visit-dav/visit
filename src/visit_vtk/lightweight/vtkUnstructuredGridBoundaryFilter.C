@@ -2802,7 +2802,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
         return 0;
     }
 
-    int *cellData = (int*)(boundaryArray->GetVoidPointer(0));
+    int *cellData = static_cast<int*>(boundaryArray->GetVoidPointer(0));
     isSingleValue = true;
 
     int         numUnhashedCells = 0;
