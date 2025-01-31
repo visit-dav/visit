@@ -575,6 +575,7 @@ function initialize_build_visit()
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     export DO_QT510="no"
+    export DO_VTK94="no"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
 
@@ -619,6 +620,9 @@ function initialize_build_visit()
         esac
         case $arg in
             --qt6) DO_QT6="yes"; DO_QT="no";;
+        esac
+        case $arg in
+            --vtk94) DO_VTK94="yes"; DO_VTK="yes";;
         esac
     done
 
@@ -1224,6 +1228,8 @@ function run_build_visit()
             # to prevent it triggering an "Urecognized option" error.
             --qt510) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
+            # want to disable this check with VTK-94 (or write a new version)
+            --vtk94) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;

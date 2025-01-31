@@ -220,6 +220,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Justin Privitera, Mon Apr 25 15:57:29 PDT 2022
 //    Removed the expression output.
 //
+//    Kathleen Biagas, Jan 10, 2025
+//    Set file version to 4.2 for legacy versions.
+//
 // ****************************************************************************
 
 void
@@ -290,6 +293,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
             wrtr->SetFileTypeToBinary();
         wrtr->SetInputData(ds);
         wrtr->SetFileName(chunkname);
+        wrtr->SetFileVersion(42);
         wrtr->Write();
 
         wrtr->Delete();
