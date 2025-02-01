@@ -536,6 +536,7 @@ QvisLightingWindow::Apply(bool ignore)
             lightsModified.clear();
         }
         GetViewerMethods()->SetLightList();
+        lightsModified.erase(activeLight);
     }
     else
         lights->Notify();
