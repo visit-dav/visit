@@ -510,12 +510,30 @@ QvisLightingWindow::Apply(bool ignore)
         lights->Notify();
 
         LightAttributes &light = lights->GetLight(activeLight);
-        if (light.GetEnabledFlag() == false && !enableToggledSinceApply)
+        if (light.GetEnabledFlag() == false && !enableToggledSinceApply &&
+            wasModified)
         {
             // User modified a light, but the light is not enabled.  Let them
             // know.
-            Error("You have modified the properties of a disabled light.  This "
-                  "will have no effect.");
+            QString msg = "You have modified the properties of a disabled "
+                          "light.  This will have no effect.";
+
+            // Add more context which lights were modified.
+            QString strLightsModified;
+
+            for (const auto& l : lightsModified)
+            {
+                strLightsModified += QString::number(l + 1) + ", ";
+            }
+            strLightsModified.chop(2);
+
+            msg += "\n\nThe following lights were modified: " + strLightsModified;
+
+            Error(msg);
+
+            // Reset the modified lights.
+            wasModified = false;
+            lightsModified.clear();
         }
         GetViewerMethods()->SetLightList();
     }
@@ -590,6 +608,8 @@ void
 QvisLightingWindow::reset()
 {
     GetViewerMethods()->ResetLightList();
+    lightsModified.erase(activeLight);
+    wasModified = false;
 }
 
 // ****************************************************************************
@@ -649,6 +669,8 @@ QvisLightingWindow::brightnessChanged(int val)
     lightBrightnessSpinBox->blockSignals(false);
 
     SetUpdate(false);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -665,6 +687,8 @@ QvisLightingWindow::brightnessChanged2(int val)
     lightBrightness->blockSignals(false);
 
     SetUpdate(false);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -749,6 +773,8 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
               .arg(x,1,'g',3).arg(y,1,'g',3).arg(z,1,'g',3);
             lightDirectionLineEdit->setText(direction);
             SetUpdate(false);
+            lightsModified.insert(activeLight);
+            wasModified = true;
             Apply();
         }
     }
@@ -776,6 +802,8 @@ QvisLightingWindow::lightTypeComboBoxChanged(int newType)
     LightAttributes &light = lights->GetLight(activeLight);
     light.SetType(LightAttributes::LightType(newType));
     lights->SelectLight(activeLight);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -827,6 +855,8 @@ void
 QvisLightingWindow::processLineDirectionText()
 {
     GetCurrentValues(0);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -853,5 +883,7 @@ QvisLightingWindow::selectedLightColor(const QColor &c)
     ColorAttribute C(c.red(), c.green(), c.blue());
     light.SetColor(C);
     lights->SelectLight(activeLight);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }

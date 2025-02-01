@@ -6,6 +6,7 @@
 #define QVIS_LIGHTING_WINDOW_H
 #include <gui_exports.h>
 #include <QvisPostableWindowObserver.h>
+#include <set>
 
 // Forward declarations.
 class LightList;
@@ -84,6 +85,8 @@ private:
     LightList          *lights;
     int                 mode;
     bool                enableToggledSinceApply;
+    bool                wasModified;
+    std::set<int>       lightsModified;
 
     QPixmap            *onLightIcon;
     QPixmap            *offLightIcon;
