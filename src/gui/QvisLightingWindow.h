@@ -49,6 +49,10 @@ class QSpinBox;
 //   Hank Childs, Fri Aug  6 07:13:17 PDT 2010
 //   Add data member for keeping tracking if the enabled toggle has changed.
 //
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added a set of lights that have been modified and a flag to indicate that
+//   the lights have been modified.
+//
 // ****************************************************************************
 
 class GUI_API QvisLightingWindow : public QvisPostableWindowObserver

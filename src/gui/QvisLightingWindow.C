@@ -492,6 +492,12 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Wed Feb 23 17:38:24 PST 2005
 //   I made GetCurrentValues be called all the time.
 //
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added a check to see if the light was modified. If it was and the light
+//   is disabled, the old error message is displayed. Additionally, a list
+//   of modified lights is displayed in the error message. Else, no error
+//   message is displayed.
+//
 // ****************************************************************************
 
 void
@@ -602,6 +608,8 @@ QvisLightingWindow::makeDefault()
 // Creation:   Fri Oct 19 16:17:03 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Clear the list of modified lights.
 //
 // ****************************************************************************
 
@@ -609,7 +617,7 @@ void
 QvisLightingWindow::reset()
 {
     GetViewerMethods()->ResetLightList();
-    lightsModified.erase(activeLight);
+    lightsModified.clear();
     wasModified = false;
 }
 
@@ -654,6 +662,9 @@ QvisLightingWindow::activeLightComboBoxChanged(int index)
 //   Made the routines set their partner widget directly so we don't have to
 //   use UpdateWindow, called by Apply since that interferes with the slider
 //   when you hold down on the +/- arrows.
+//
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
@@ -754,6 +765,9 @@ QvisLightingWindow::enableToggled(bool val)
 //   Kathleen Biagas, Jan 21, 2021
 //   Replace QString.asprintf with QString.arg.
 //
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
+//
 // ****************************************************************************
 
 void
@@ -794,6 +808,8 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
 // Creation:   Fri Oct 19 16:21:16 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
@@ -849,6 +865,8 @@ QvisLightingWindow::modeClicked(int index)
 // Creation:   Fri Oct 19 16:22:40 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
@@ -874,6 +892,8 @@ QvisLightingWindow::processLineDirectionText()
 // Creation:   Fri Oct 19 16:23:09 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
