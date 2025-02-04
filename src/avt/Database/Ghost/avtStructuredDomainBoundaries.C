@@ -424,6 +424,9 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //    Add code to detect incorrect domain boundary information, where two
 //    neighbors don't list each other in their neighbor lists.
 //
+//    Brad Whitlock, Mon Feb  3 16:29:45 PST 2025
+//    Skip copying mixzone if it is nullptr.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -517,7 +520,11 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
                             if (bndmixmat)
                                 bndmixmat[d1][n][bndindex]  = oldmat->GetMixMat()[oldmixindex];
                             if (bndmixzone)
-                                bndmixzone[d1][n][bndindex] = oldmat->GetMixZone()[oldmixindex];
+                            {
+                                bndmixzone[d1][n][bndindex] = (oldmat->GetMixZone() != nullptr)
+                                                              ? oldmat->GetMixZone()[oldmixindex]
+                                                              : oldindex;
+                            }
                             if (bndmixnext)
                                 bndmixnext[d1][n][bndindex] = oldmat->GetMixNext()[oldmixindex];
                             oldmixindex = oldmat->GetMixNext()[oldmixindex] - 1;
@@ -1077,6 +1084,10 @@ BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
 //
 //  Note:  olddata may be NULL if the mixlen is zero.
 //
+//  Modifications:
+//    Brad Whitlock, Mon Feb  3 16:31:56 PST 2025
+//    Skip copying old data if it was not provided.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1084,8 +1095,17 @@ BoundaryHelperFunctions<T>::CopyOldMixedValues(avtMaterial *oldmat,
                                                   const T     *olddata,
                                                   T           *newdata)
 {
-    for (int i=0; i<oldmat->GetMixlen(); i++)
-        newdata[i] = olddata[i];
+    if(olddata)
+    {
+        for (int i=0; i<oldmat->GetMixlen(); i++)
+            newdata[i] = olddata[i];
+    }
+    else
+    {
+        // olddata was not provided (e.g. mixzone) skip it.
+        for (int i=0; i<oldmat->GetMixlen(); i++)
+            newdata[i] = T{};
+    }
 }
 
 // ****************************************************************************
