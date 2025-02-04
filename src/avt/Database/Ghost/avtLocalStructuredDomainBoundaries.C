@@ -235,9 +235,6 @@ avtLocalStructuredDomainBoundaryList::Print(ostream &os) const
 //  Creation:    Thu Apr 19 11:03:08 PDT 2012
 //
 //  Modifications:
-//   Brad Whitlock, Mon Feb  3 17:06:25 PST 2025
-//   Pass valid "mi" pointer to addNeighbor call to avoid problems later in
-//   mixed material data exchanges.
 //
 // ****************************************************************************
 avtStructuredDomainBoundaries *
@@ -329,7 +326,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGenerate
             DomainNeighbor *n = lst->neighbors[j];
             dbi->AddNeighbor(domain_id,
                              n->neighborId,
-                             n->match,
+                             -1, // this signals that we don't care about match
                              n->orientation,
                              n->extents);
         }
