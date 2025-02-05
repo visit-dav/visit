@@ -43,6 +43,7 @@ if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
     extensions.append('notfound.extension')
+    call(['pip', 'install', 'sphinx_rtd_theme'])
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
