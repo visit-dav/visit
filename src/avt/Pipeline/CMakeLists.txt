@@ -42,6 +42,12 @@
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   I replaced vtkh with vtkm.
+#
+#   Cyrus Harrison, Thu Mar  9 11:30:26 PST 2023
+#   Fixed typo in vtk-m link for avtpipeline_par
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -248,8 +254,11 @@ TARGET_LINK_LIBRARIES(avtpipeline_ser
                       vtkCommonDataModel vtkCommonMath vtkCommonTransforms
                       vtkFiltersGeometry
                       ${ZLIB_LIBRARY})
-if(VTKH_FOUND)
-    target_link_libraries(avtpipeline_ser vtkh)
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+    if(VTKm_ENABLE_KOKKOS)
+        target_link_libraries(avtpipeline_ser amdhip64)
+    endif()
 endif()
 
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
@@ -264,8 +273,11 @@ IF(VISIT_PARALLEL)
                           vtkCommonDataModel vtkCommonMath vtkCommonTransforms
                           vtkFiltersGeometry
                           ${ZLIB_LIBRARY})
-    if(VTKH_FOUND)
-        target_link_libraries(avtpipeline_par vtkh)
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+        if(VTKm_ENABLE_KOKKOS)
+            target_link_libraries(avtpipeline_par amdhip64)
+        endif()
     endif()
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)

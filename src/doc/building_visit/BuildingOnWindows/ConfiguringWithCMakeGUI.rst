@@ -95,7 +95,7 @@ Configuring
 ~~~~~~~~~~~
 Before configuring, you may want to suppress warnings.  
 From the **Options** menu, choose *Warnings*.  
-Check the *Developer Warnings* and *Deprecated Warnings* in the *Supress Warnings* section. 
+Check the *Developer Warnings* and *Deprecated Warnings* in the *Suppress Warnings* section. 
 Click **OK**.
 :numref:`Figure %s<suppress_cmake_warnings_image>`
 
@@ -161,7 +161,7 @@ Suppressing Regeneration
 The solution file that CMake creates has a project called *ZERO_CHECK* that is 
 occasionally invoked to regenerate the projects. 
 This can be highly undesirable during development, since it may be triggered during a build and can cause numerous projects to be reloaded into the VS IDE, wasting time unnecessarily. 
-To avoid this behavior, you can create a new CMake cache entry named *CMAKE_SUPRESS_REGENERATION*,  with type *BOOL* and make sure that it is checked. 
+To avoid this behavior, you can create a new CMake cache entry named *CMAKE_SUPPRESS_REGENERATION*,  with type *BOOL* and make sure that it is checked. 
 If you made this change click **Configure** again.
 
 You can automate this step in your host.cmake file by adding this line to your host.cmake file:

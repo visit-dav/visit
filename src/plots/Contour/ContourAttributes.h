@@ -166,7 +166,6 @@ public:
     void MarkColorAsChanged(int index);
     virtual bool SetValue(const std::string &name, const int &value);
     virtual bool SetValue(const std::string &name, const doubleVector &value);
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

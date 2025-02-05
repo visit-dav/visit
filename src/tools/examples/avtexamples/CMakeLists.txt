@@ -16,6 +16,9 @@
 #   Eric Brugger, Thu Jul 15 13:34:12 PDT 2021
 #   Added qtviswinExample.C
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -85,7 +88,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -115,7 +118,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -142,7 +145,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -172,7 +175,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -203,7 +206,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 

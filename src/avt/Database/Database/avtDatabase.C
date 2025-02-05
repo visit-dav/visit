@@ -2387,6 +2387,10 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Eric Brugger, Fri May  1 12:39:32 PDT 2020
 //    Added logic to skip lines that start with !TIME and !ENSEMBLE.
 //
+//    Kathleen Biagas, Thu Oct 27 11:45:24 PDT 2022
+//    Removed badCount, it prevented .visit files from having comments
+//    associated with each file when fileCount >= 10000.
+//
 // ****************************************************************************
 
 bool
@@ -2412,11 +2416,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     char  str_auto[1024];
     char  str_with_dir[2048];
     int   goodCount = 0; // number of valid lines, keywords and files
-    int   badCount = 0; // number of empty and comment lines
     int   fileCount = 0; // number of non empty, non comment, non keyword, lines
     int   bang_nBlocks = -1;
     bool failed = false;
-    while (!ifile.eof() && !failed && badCount < 10000)
+    while (!ifile.eof() && !failed)
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
@@ -2499,8 +2502,6 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             if (str_auto[0] != '!')
                 ++fileCount;
         }
-        else
-            ++badCount;
     }
 
     if (bang_nBlocks > 0 && !failed)

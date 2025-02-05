@@ -120,6 +120,7 @@ MFEMGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.mfem_root");
+    defaultPatterns.push_back("*.mesh");
 
     return defaultPatterns;
 }

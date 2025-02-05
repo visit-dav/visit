@@ -473,6 +473,11 @@ avtTensorPlot::SetLegend(bool legendOn)
 //  Programmer: Hank Childs
 //  Date:       September 23, 2003
 //
+//  Modifications:
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Modified the range limits text to use the current variable limits
+//    if OriginalData is not set.
+//
 // ****************************************************************************
 
 void
@@ -493,7 +498,10 @@ avtTensorPlot::SetLegendRanges()
     //
     // Set the range for the legend's text and colors.
     //
-    tensorMapper->GetVarRange(min, max);
+    if (atts.GetLimitsMode() == TensorAttributes::OriginalData)
+        tensorMapper->GetVarRange(min, max);
+    else
+        tensorMapper->GetCurrentVarRange(min, max);
     varLegend->SetVarRange(min, max);
 }
 

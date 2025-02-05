@@ -153,12 +153,6 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
-    // User-defined methods
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
-    void ProcessOldLegend(DataNode *searchNode, const char *configVersion);
-    void ProcessOldLine3D(DataNode *searchNode);
-    void ProcessOldLine2D(DataNode *searchNode);
-    void ProcessOldText3D(DataNode *searchNode);
 
     // IDs that can be used to identify fields in case statements
     enum {

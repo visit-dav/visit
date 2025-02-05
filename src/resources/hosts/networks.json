@@ -156,6 +156,9 @@
           "name": "host_llnl_pascal.xml"
         },
         {
+          "name": "host_llnl_poodle.xml"
+        },
+        {
           "name": "host_llnl_quartz.xml"
         },
         {
@@ -299,7 +302,7 @@
           "name": "customlauncher"
         },
         {
-          "name": "host_nersc_cori.xml"
+          "name": "host_nersc_perlmutter.xml"
         }
       ]
     },
@@ -344,10 +347,7 @@
           "name": "host_ornl_andes.xml"
         },
         {
-          "name": "host_ornl_crusher.xml"
-        },
-        {
-          "name": "host_ornl_spock.xml"
+          "name": "host_ornl_frontier.xml"
         },
         {
           "name": "host_ornl_summit.xml"

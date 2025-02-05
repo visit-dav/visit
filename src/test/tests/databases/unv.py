@@ -5,6 +5,12 @@
 #
 #  Programmer: Olivier Cessenat
 #  Date: Thu Oct 11 08:42:44 PDT 2012
+#
+#  Modifications:
+#    Kathleen Biagas, Fri Sep 23 15:08:38 PDT 2022
+#    Remove use of obsolete FilledBoundaryAttributes fields: boundaryType
+#    and filledFlag.
+#
 # ----------------------------------------------------------------------------
 
 datapath = data_path("unv_test_data")
@@ -77,13 +83,11 @@ FilledBoundaryAtts = FilledBoundaryAttributes()
 FilledBoundaryAtts.colorType = FilledBoundaryAtts.ColorByMultipleColors
 FilledBoundaryAtts.colorTableName = "Default"
 FilledBoundaryAtts.invertColorTable = 0
-FilledBoundaryAtts.filledFlag = 1
 FilledBoundaryAtts.legendFlag = 1
 FilledBoundaryAtts.lineWidth = 0
 FilledBoundaryAtts.singleColor = (0, 0, 0, 255)
 FilledBoundaryAtts.SetMultiColor(0, (255, 0, 0, 255))
 FilledBoundaryAtts.SetMultiColor(1, (0, 255, 0, 255))
-FilledBoundaryAtts.boundaryType = FilledBoundaryAtts.Material
 FilledBoundaryAtts.opacity = 0.258824
 FilledBoundaryAtts.wireframe = 0
 FilledBoundaryAtts.drawInternal = 0

@@ -38,4 +38,12 @@ ELSE(VISIT_DBIO_ONLY)
     IF(VISIT_PYTHON_FILTERS)
         ADD_SUBDIRECTORY(PythonFilters)
     ENDIF(VISIT_PYTHON_FILTERS)
+
+    if(MFEM_FOUND)
+        add_subdirectory(MFEM)
+    endif()
+    if(CONDUIT_FOUND AND MFEM_FOUND)
+        add_subdirectory(Blueprint)
+    endif()
+
 ENDIF(VISIT_DBIO_ONLY)

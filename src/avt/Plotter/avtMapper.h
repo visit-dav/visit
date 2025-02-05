@@ -95,6 +95,10 @@ class   ColorAttribute;
 //    Kathleen Biagas, Thu Apr 13 09:05:05 PDT 2017
 //    Inherit from new avtMapperBase.
 //
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Moved GetVarRange from the derived classes to this class. Added
+//    GetCurrentVarRange.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtMapperBase
@@ -109,6 +113,10 @@ class PLOTTER_API avtMapper : public avtMapperBase
     virtual int                SetTransparencyActor(avtTransparencyActor *);
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&);
+
+    bool                       GetVarRange(double &, double &);
+    bool                       GetCurrentVarRange(double &, double &);
+
   protected:
     vtkDataSetMapper         **mappers;
     vtkActor                 **actors;

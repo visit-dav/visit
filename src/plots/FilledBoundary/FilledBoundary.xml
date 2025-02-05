@@ -67,8 +67,6 @@
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="PyFilledBoundaryAttributes_SetDefaults" user="false" member="true">
       </Function>
       <Function name="FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">

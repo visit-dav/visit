@@ -166,6 +166,9 @@ avtANSYSFileFormat::ActivateTimestep()
 //    read floating point values. Corrected logic for NBLOCK and EBLOCK
 //    parsing to interpret field count after *first* comma and not second.
 //    Changed interface to InterpretFormatString to accept field count arg.
+// 
+//    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
+//    Changed 'supressed' to 'suppressed'.
 // ****************************************************************************
 
 int
@@ -185,7 +188,7 @@ get_errno()
 #define CHECK_COORD_COMPONENT(Coord)                                \
 do {                                                                \
     int _errno = get_errno();                                       \
-    char msg[512] = "Further warnings will be supressed";           \
+    char msg[512] = "Further warnings will be suppressed";           \
     if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
     {                                                               \
         if (invalidCoordCompWarning < 5)                            \

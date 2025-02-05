@@ -33,6 +33,11 @@ class AnnotationObject;
 //   Burlen Loring, Thu Oct  8 13:43:48 PDT 2015
 //   Fix a couple of compiler warnings
 //
+//   Mark C. Miller, Thu Oct  5 15:30:04 PDT 2023
+//   Moved timeScale,timeOffset from avtTimeSliderCollegue
+//   This is because by virtue of annotation macros, half the annotations
+//   could potentially need to access this info when handling $time macros.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtAnnotationColleague : protected VisWinColleague
@@ -82,14 +87,19 @@ public:
     virtual void UpdatePlotList(std::vector<avtActor_p> &) { };
     virtual void SetFrameAndState(int, int, int, int, int, int, int) { };
 
-    virtual void SetTimeScaleAndOffset(double,double) { };
+    virtual void SetTimeScaleAndOffset(double,double);
 
     virtual void SetVisibility(int) {}
+
+protected:
+    double      timeScale;
+    double      timeOffset;
 
 private:
     std::string name;
     bool        active;
     bool        visible;
+
 };
 
 #endif

@@ -77,6 +77,9 @@ class vtkLookupTable;
 //    Added virtual inheritance from avtMapper, Removed SetPointSize as
 //    this mapper no loner handles points.
 //
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Moved GetVarRange to avtMapper.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVariableMapper : virtual public avtMapper
@@ -92,7 +95,6 @@ class PLOTTER_API  avtVariableMapper : virtual public avtMapper
     void                       SetMaxOff(void);
     virtual bool               GetRange(double &, double &);
     virtual bool               GetCurrentRange(double &, double &);
-    bool                       GetVarRange(double &, double &);
 
     void                       TurnLightingOn(void);
     void                       TurnLightingOff(void);

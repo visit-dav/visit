@@ -7,6 +7,10 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
+#   and vtkpng with vtkpng_LIBRARIES.
+#
 #****************************************************************************
 
 SET(MCURVIT_SOURCES
@@ -72,9 +76,9 @@ ${VTK_INCLUDE_DIRS}
 )
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
+${vtktiff_LIBRARIES}
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
 ${VTK_FREETYPE_LIBRARIES}
 )
 
@@ -93,7 +97,7 @@ IF(APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "MCurveIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "MCurveIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
 ELSE(APPLE)
     ADD_EXECUTABLE(mcurvit ${VISIT_APPLICATION_STYLE} ${MCURVIT_SOURCES} ${STATIC_SOURCES})
 ENDIF(APPLE)

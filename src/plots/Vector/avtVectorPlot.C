@@ -662,6 +662,10 @@ avtVectorPlot::SetLegend(bool legendOn)
 //    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
 //    Account for user-set min and max or limitsMode.
 //
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Modified the range limits text to use the current variable limits
+//    if OriginalData is not set.
+//
 // ****************************************************************************
 
 void
@@ -682,7 +686,10 @@ avtVectorPlot::SetLegendRanges()
     //
     // Set the range for the legend's text and colors.
     //
-    vectorMapper->GetVarRange(min, max);
+    if (atts.GetLimitsMode() == VectorAttributes::OriginalData)
+        vectorMapper->GetVarRange(min, max);
+    else
+        vectorMapper->GetCurrentVarRange(min, max);
     varLegend->SetVarRange(min, max);
 }
 

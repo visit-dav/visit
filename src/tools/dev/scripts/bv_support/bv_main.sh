@@ -52,16 +52,36 @@ function testvercomp ()
 #
 # Way to get version digits from compiler output which is much less
 # sensitive to variations in how compiler vendors choose to output
-# this information. The tr filter replaces every space or dash with
-# a newline, turning each word of output into its own line. The
-# grep then looks for lines that have only digits and dots between
-# the beginning (^) and ending ($) of the line. The final grep takes
-# only lines that actually contain output, presumably the one and only
-# isolated version digit string.
+# this information...
+#   1. The $(...) runs all the intervening commands in a subshell.
+#   2. The $1 -v runs the compiler with -v command-line option which
+#      should print version information (along with potentially a
+#      lot of other stuff).
+#   3. The 2>&1 sends stderr to the same pipe as stdout so that all
+#      output produced is seen by the rest of the commands.
+#   4. The grep -i version matches only lines that have the word 
+#      'version' (case-insensitive) in them so only lines with that
+#      word in them go on to the next step. So far, all compilers
+#      we've seen include that word in the line that includes the
+#      version number itself.
+#   5. The tr ' -' '\n\n' does a mapping of all spaces and dashes
+#      to newlines. This has the effect of putting every word of
+#      output (from the line(s) that had the word version in them
+#      from the preceding step) on its own line.
+#   6. The grep '\.' matches non-blank lines so only non-blank lines
+#      get passed onto the next step.
+#   7. The grep '^[0-9\.]\{5,\}$' matches a line that BEGINs (^) with
+#      any digit and has at least 5 matches for only digits and dots in
+#      it before the line ENDs ($) (e.g. 4.7.5 or 13.2.12).
+#   If all of the above produces an empty string, try it all again looking
+#   for at least 3 digits and dots (e.g. 4.7)
 #
 function get_version_digits()
 {
-    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep .)
+    retval=$($1 -v 2>&1 | grep -i version | tr ' -' '\n\n' | grep '\.' | grep '^[0-9\.]\{5,\}$')
+    if [[ -z "$retval" ]] ; then
+        retval=$($1 -v 2>&1 | grep -i version | tr ' -' '\n\n' | grep '\.' | grep '^[0-9\.]\{3,\}$')
+    fi
     echo $retval
 }
 

@@ -1,0 +1,48 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <title>VisIt 3.3.3 Release Notes</title>
+</head>
+<body>
+<center><b><font size="6">VisIt 3.3.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 3.3.3</font></b></p>
+<ul>
+  <li>Fixed a bug in the Exodus reader where it would display an erroneous error message when the array with the simulation times had zero length.</li>
+  <li>Fixed a bug with Swivel focus where it didn't properly center the picked point in the window when the image was panned.</li>
+  <li>Fixed a bug with Swivel focus where the view in locked windows didn't get updated.</li>
+  <li>Fixed a bug with the Pseudocolor, Vector and Tensor plots where the limits displayed at the bottom of the color bar displayed the original data limits even when "Use Actual Data" was specified for the "Limits".</li>
+  <li>Fixed blank viewer window on first plot on macOS by resetting layout briefly on first plot.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 3.3.3</font></b></p>
+<ul>
+  <li>Added domain variable ordering to the metadata that comes out of the X Ray Image Query Conduit outputs.</li>
+  <li>Changed the metadata coming out of the X Ray Image Query Conduit outputs to use pot_hole_case as opposed to camelCase.</li>
+  <li>Built and installed an x86_64 toss4 version of VisIt on the LLNL systems.</li>
+  <li>Added support plot boundary topologies and boundary attribute fields to the MFEM Plugin.</li>
+  <li>Added support to directly open ".mesh" files with MFEM Plugin.</li>
+  <li>Updated the VTKm library from version 1.7.0 to 1.9.0 to add support for AMD GPUs.</li>
+  <li>Added original cell id support for MFEM Meshes in the Blueprint Plugin. With this change the Mesh plot will now plot outlines of high order elements, instead of the elements of the low order refined mesh.</li>
+  <li>The X Ray Image Query now includes two new topologies (and associated fields) when using a Conduit Blueprint output type, the Spatial Energy Reduced Mesh and the Spectra Mesh.</li>
+  <li>Added support to read RZ (2D cylindrical) meshes to the Blueprint Plugin.</li>
+  <li>Added support to handle 1D meshes as curves to the Blueprint Plugin.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.3.2.html>3.3.2</a>.</p>
+</body>
+</html>

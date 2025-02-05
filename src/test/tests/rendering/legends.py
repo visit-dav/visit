@@ -63,6 +63,9 @@
 #    Use FilledBoundary plot for materials instead of Subset, and Subset for 
 #    domains instead of FilledBoundary.
 #
+#    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+#    Added TestVariableLegend.
+#
 # ----------------------------------------------------------------------------
 
 # Test the Filled Boundary plot with some subsets turned off, and
@@ -508,6 +511,68 @@ def TestLegendTics():
     #clean up
     DeleteAllPlots()
     
+# Test the pseudocolor plot with original and actual limits.
+# This test ensures that correct limits are displayed.
+def TestVariableLegend():
+    TestSection("Test Variable legend")
+    OpenDatabase(silo_data_path("curv2d.silo"))
+
+    AddPlot("Pseudocolor", "d")
+    pc = PseudocolorAttributes()
+    pc.limitsMode = pc.OriginalData
+    SetPlotOptions(pc)
+    DrawPlots()
+    TurnMaterialsOff("1")
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    legend.xScale = 2.0
+    legend.yScale = 2.0
+    Test("legends_61")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "d")
+    pc = PseudocolorAttributes()
+    pc.limitsMode = pc.OriginalData
+    pc.minFlag = 1
+    pc.min = 2.8
+    pc.maxFlag = 1
+    pc.max = 4.2
+    SetPlotOptions(pc)
+    DrawPlots()
+    TurnMaterialsOff("1")
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    legend.xScale = 2.0
+    legend.yScale = 2.0
+    Test("legends_62")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "d")
+    pc = PseudocolorAttributes()
+    pc.limitsMode = pc.ActualData
+    SetPlotOptions(pc)
+    DrawPlots()
+    TurnMaterialsOff("1")
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    legend.xScale = 2.0
+    legend.yScale = 2.0
+    Test("legends_63")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "d")
+    pc = PseudocolorAttributes()
+    pc.limitsMode = pc.ActualData
+    pc.minFlag = 1
+    pc.min = 2.8
+    pc.maxFlag = 1
+    pc.max = 4.2
+    SetPlotOptions(pc)
+    DrawPlots()
+    TurnMaterialsOff("1")
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    legend.xScale = 2.0
+    legend.yScale = 2.0
+    Test("legends_64")
+    DeleteAllPlots()
+
 def main():
     # Turn off all annotation except the legend.
     a = GetAnnotationAttributes()
@@ -521,6 +586,7 @@ def main():
     TestLegendProperties(a)
     TestLegendCopying(a)
     TestLegendTics()
+    TestVariableLegend()
 
     # reset DatabaseInfo for future tests.
     a.databaseInfoFlag = 0

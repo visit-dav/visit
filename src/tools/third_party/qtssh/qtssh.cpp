@@ -54,7 +54,7 @@ qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
     QInputDialog dlg;
     dlg.setWindowTitle(p->name);
     dlg.setLabelText(p->prompts[i]->prompt);
-    dlg.setTextEchoMode((p->prompts[i]->echo > 0) ? QLineEdit::Normal : QLineEdit::Password);
+    dlg.setTextEchoMode((p->prompts[i]->echo) ? QLineEdit::Normal : QLineEdit::Password);
     if(in != NULL)
     {
         char *tmp = new char[inlen+1];
@@ -70,14 +70,7 @@ qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
         {
             ret = 1;
             
-            if(p->prompts[i]->resultsize > 0) {
-                strncpy(p->prompts[i]->result, s.toStdString().c_str(),
-                        p->prompts[i]->resultsize);
-                p->prompts[i]->result[p->prompts[i]->resultsize-1] = '\0';
-            } else {
-                p->prompts[i]->result = dupstr(s.toStdString().c_str());
-                p->prompts[i]->resultsize = s.size();
-            }
+            prompt_set_result(p->prompts[i], s.toStdString().c_str());
         }
     }
     else
@@ -291,16 +284,7 @@ getpassword:
     else if(status == VisItPasswordWindow::PW_Accepted)
     {
         ret = 1;
-        
-        if(p->prompts[i]->resultsize > 0) {
-            // Copy the password back into the prompts.
-            strncpy(p->prompts[i]->result, password.toStdString().c_str(),
-                    p->prompts[i]->resultsize);
-            p->prompts[i]->result[p->prompts[i]->resultsize-1] = '\0';
-        } else {
-            p->prompts[i]->result = dupstr(password.toStdString().c_str());
-            p->prompts[i]->resultsize = password.size();
-        }
+        prompt_set_result(p->prompts[i], password.toStdString().c_str());
     }
     else
     {

@@ -386,7 +386,6 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const IntegralCurveAttributes &) const;
-    virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

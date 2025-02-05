@@ -1573,51 +1573,6 @@ MoleculeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
-// ****************************************************************************
-// Method: MoleculeAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
-//
-// Programmer: Kathleen Biagas
-// Creation:   April 4, 2018
-//
-// Modifications:
-//
-// ****************************************************************************
-#include <visit-config.h>
-#ifdef VIEWER
-#include <avtCallback.h>
-#endif
-
-void
-MoleculeAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("MoleculeAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("bondLineStyle") != 0)
-        {
-#ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("bondLineStyle", "3.3.2"));
-#endif
-            searchNode->RemoveNode("bondLineStyle");
-        }
-    }
-#endif
-}
-
 bool
 MoleculeAttributes::ChangesRequireRecalculation(const MoleculeAttributes &obj)
 {

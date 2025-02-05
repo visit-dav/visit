@@ -55,6 +55,15 @@
 #   Kathleen Biagas, Thu Jun  4 16:30:37 PDT 2020
 #   Add avtVertexExtractor, avtLineGlyphFilter.C
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   I replaced vtkh with vtkm.
+#
+#   Kathleen Biagas, Wed Mar 15, 2023 
+#   Only link with pthread if not on Windows.
+#
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change pthread to Threads::Threads.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -193,6 +202,15 @@ IF(VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
     ENDIF()
 ENDIF() 
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+    if(NOT WIN32)
+        target_link_libraries(avtfilters_ser Threads::Threads)
+    endif()
+    if(VTKm_ENABLE_KOKKOS)
+        target_link_libraries(avtfilters_ser amdhip64)
+    endif()
+endif()
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
@@ -205,5 +223,14 @@ IF(VISIT_PARALLEL)
             TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
         ENDIF()
     ENDIF()
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+        if(NOT WIN32)
+            target_link_libraries(avtfilters_par Threads::Threads)
+        endif()
+        if(VTKm_ENABLE_KOKKOS)
+            target_link_libraries(avtfilters_par amdhip64)
+        endif()
+    endif()
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)

@@ -122,6 +122,10 @@ avtTotalRevolvedVolumeQuery::ApplyFilters(avtDataObject_p inData)
 //    Added test for topological dimension, as that is no longer performed by
 //    base class.  
 //
+//    Kathleen Biagas, Wed Apr 19, 2023
+//    Added test for spatial dimension !=2, as avtRevolvedVolume will throw
+//    an Exception but the error message will be lost. 
+//
 // ****************************************************************************
 
 void
@@ -137,6 +141,15 @@ avtTotalRevolvedVolumeQuery::VerifyInput(void)
     {
         EXCEPTION1(NonQueryableInputException,
             "Requires plot with topological dimension > 0.");
+    }
+
+    // avtRevolvedVolume throws an Exception if spatialDim !=2, but
+    // The exception gets lost through the update cycle, so perform the
+    // check here for better error messaging.
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() != 2)
+    {
+        EXCEPTION1(NonQueryableInputException,
+            "Requires plot with spatial dimension == 2.\n");
     }
 
     SetUnits(GetInput()->GetInfo().GetAttributes().GetXUnits());

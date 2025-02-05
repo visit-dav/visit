@@ -52,54 +52,28 @@ else()
                         "${CMAKE_CURRENT_BINARY_DIR}/run_visit_test_suite.bat")
     endif()
 
-    if(NOT WIN32)
-        PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
-                                   site-packages
-                                   setup.py)
-    endif()
+    # deps for visit_testing module
+    SET(pytesting_sources setup.py
+                          py_src/__init__.py
+                          py_src/HtmlDiff.py
+                          py_src/HtmlPython.py
+                          py_src/visit_test_common.py
+                          py_src/visit_test_common.py
+                          py_src/visit_test_ctest.py
+                          py_src/visit_test_main.py
+                          py_src/visit_test_reports.py
+                          py_src/visit_test_main.py
+                          py_src/visit_test_reports.py
+                          py_src/visit_test_suite.py)
+
+
+    PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
+                               site-packages
+                               ${pytesting_sources})
 
     if(BUILD_CTEST_TESTING)
         add_subdirectory(tests)
     endif()
 
-    if(WIN32)
-        # copy over to the Build dir those test files necessary for running
-        # test suite on windows, while keeping src dir clean.
-        if (NOT EXISTS ${VISIT_BINARY_DIR}/test)
-            make_directory(${VISIT_BINARY_DIR}/test)
-        endif()
-        if (NOT EXISTS ${VISIT_BINARY_DIR}/test/report_templates)
-            make_directory(${VISIT_BINARY_DIR}/test/report_templates)
-            make_directory(${VISIT_BINARY_DIR}/test/report_templates/css)
-            make_directory(${VISIT_BINARY_DIR}/test/report_templates/js)
-        endif()
-        foreach(f  visit_test_suite.py
-                   visit_test_reports.py
-                   visit_test_main.py
-                   visit_test_common.py
-                   visit_test_ctest.py
-                   summarizeResults.py
-                   nobaseline.pnm
-                   skip.json
-                   HtmlPython.py
-                   HtmlDiff.py)
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-                 "${CMAKE_CURRENT_SOURCE_DIR}/${f}"
-                 "${VISIT_BINARY_DIR}/test/")
-        endforeach()
-        file(GLOB hf "${CMAKE_CURRENT_SOURCE_DIR}/report_templates/*.html")
-        foreach(h ${hf})
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-                 ${h} "${VISIT_BINARY_DIR}/test/report_templates")
-        endforeach()
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-                 "${CMAKE_CURRENT_SOURCE_DIR}/report_templates/css/styles.css"
-                 "${VISIT_BINARY_DIR}/test/report_templates/css")
-        file(GLOB jf "${CMAKE_CURRENT_SOURCE_DIR}/report_templates/js/*.js")
-        foreach(j ${jf})
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-                 ${j} "${VISIT_BINARY_DIR}/test/report_templates/js")
-        endforeach()
-    endif()
 
 endif()

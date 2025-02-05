@@ -1,35 +1,35 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4/cmake/3.18.2/linux-x86_64_gcc-10.3/bin/cmake
 ##
-## ./build_visit3_3_0 generated host.cmake
-## created: Tue May 31 15:37:45 PDT 2022
-## system: Linux rztopaz194 3.10.0-1160.62.1.1chaos.ch6.x86_64 #1 SMP Wed Apr 6 12:39:56 PDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_3_4 generated host.cmake
+## created: Fri Jun  2 17:22:22 PDT 2023
+## system: Linux rztopaz572 4.18.0-425.19.2.1toss.t4.x86_64 #1 SMP Mon Apr 17 14:05:57 PDT 2023 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss3)
-SET(VISITARCH linux-x86_64_gcc-7.3)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4)
+SET(VISITARCH linux-x86_64_gcc-10.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-10.3.1/bin/gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-10.3.1/bin/g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-7.3.0/lib64")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-10.3.1/lib64")
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib")
 
 ##
 ## VisIt Thread Option
@@ -45,7 +45,7 @@ VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 ##
 ## Database reader plugin support libraries
 ##
-## The HDF4, HDF5 and NetCDF libraries must be first so that
+## The HDF5 and NetCDF libraries must be first so that
 ## their libdeps are defined for any plugins that need them.
 ##
 ## For libraries with LIBDEP settings, order matters.
@@ -183,8 +183,8 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.8.3)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.8.3/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.8.7)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
@@ -194,22 +194,11 @@ VISIT_OPTION_DEFAULT(VISIT_FMS_DIR ${VISITHOME}/fms/0.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP CONDUIT_LIBRARY_DIR conduit CONDUIT_LIBRARY_DIR conduit_blueprint CONDUIT_LIBRARY_DIR conduit_relay ${VISIT_CONDUIT_LIBDEP} TYPE STRING)
 
 ##
-## GDAL
-##
-VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/2.2.4/${VISITARCH})
-
-##
 ## H5Part
 ##
 SETUP_APP_VERSION(H5PART 1.6.6)
 VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/${H5PART_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-
-##
-## HDF4
-##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH}/lib vtkjpeg-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} TYPE STRING)
 
 ##
 ## IceT
@@ -226,14 +215,14 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/22.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/23.02/${VISITARCH})
 
 ##
 ## MOAB 
 ##
-VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR ${VISITHOME}/moab/4.9.2-RC0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR ${VISITHOME}/moab/5.4.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR ${VISITHOME}/moab_mpi/4.9.2-RC0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR ${VISITHOME}/moab_mpi/5.4.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi ${VISIT_HDF5_MPI_LIBDEP} TYPE STRING)
 
 ##
@@ -268,12 +257,7 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VI
 ##
 ## VTKM
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.7.0/${VISITARCH})
-
-##
-## VTKH
-##
-VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/v0.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.9.0/${VISITARCH})
 
 ##
 ## Xdmf

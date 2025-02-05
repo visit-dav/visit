@@ -67,6 +67,9 @@ static void UsageAndExit(DatabasePluginManager *, const char *);
 //    Hank Childs, Thu Nov  5 17:17:35 PST 2009
 //    Only have proc 0 print out error messages.
 //
+//    Kathleen Biagas, Tue Sep 13, 2022
+//    Support MultiLineString option type.
+//
 // ****************************************************************************
 void
 FillOptionsFromCommandline(DBOptionsAttributes *opts)
@@ -100,6 +103,10 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
           case DBOptionsAttributes::String:
             if (PAR_Rank() == 0)
                 cerr << " (string, default='"<<opts->GetString(name)<<"'):\n";
+            break;
+          case DBOptionsAttributes::MultiLineString:
+            if (PAR_Rank() == 0)
+                cerr << " (multi line string, default='"<<opts->GetMultiLineString(name)<<"'):\n";
             break;
           case DBOptionsAttributes::Enum:
             {
@@ -154,9 +161,14 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
                 cerr << "Set to new value "<<opts->GetDouble(name) << endl;
             break;
           case DBOptionsAttributes::String:
-            opts->SetString(name, buff);            
+            opts->SetString(name, buff);
             if (PAR_Rank() == 0)
                 cerr << "Set to new value "<<opts->GetString(name) << endl;
+            break;
+          case DBOptionsAttributes::MultiLineString:
+            opts->SetMultiLineString(name, buff);
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetMultiLineString(name) << endl;
             break;
           case DBOptionsAttributes::Enum:
             opts->SetEnum(name, strtol(buff, NULL, 10));
@@ -172,7 +184,7 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
 //  Function: GetPluginInfo
 //
 //  Programmer: Mark C. Miller
-//  Creation:   May 19, 2009 
+//  Creation:   May 19, 2009
 //
 //  Modifications:
 //
@@ -215,7 +227,7 @@ GetPluginInfo(DatabasePluginManager *dbmgr, const char *arg0, const char *plugin
 //  Purpose: Set read options for the input database.
 //
 //  Notes: As for write options, the logic here is designed such that read
-//  options will ALWAYS be processed in that they well be obtained via 
+//  options will ALWAYS be processed in that they well be obtained via
 //  GetReadOptions and then set via
 //  avtDatabaseFactory::SetDefaultFileOpenOptions. The noOptions bool controls
 //  only whether they are queried from the user, interactively. I believe this
@@ -223,7 +235,7 @@ GetPluginInfo(DatabasePluginManager *dbmgr, const char *arg0, const char *plugin
 //  the desired read options.
 //
 //  Programmer: Mark C. Miller
-//  Creation:   May 19, 2009 
+//  Creation:   May 19, 2009
 //
 //  Modifications:
 //    Jeremy Meredith, Wed Dec 30 15:04:36 EST 2009
@@ -639,7 +651,7 @@ int main(int argc, char *argv[])
              strcpy(filename, argv[2]);
          else
              sprintf(filename, "%04d.%s", i, argv[2]);
-        
+
          TRY
          {
              if (vars.size())
@@ -649,7 +661,7 @@ int main(int argc, char *argv[])
              else
              {
                  wrtr->Write(filename, md);
-             } 
+             }
          }
          CATCH2(VisItException, e)
          {

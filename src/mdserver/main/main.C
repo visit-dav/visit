@@ -15,6 +15,10 @@
 #include <avtDatabaseFactory.h>
 #include <DatabasePluginManager.h>
 
+#ifdef HAVE_CONDUIT
+#include <avtConduitBlueprintDataAdaptor.h>
+#endif
+
 #include <cstring>
 
 // Prototypes.
@@ -114,6 +118,9 @@ void fooz(void)
 //
 //    Brad Whitlock, Wed Nov  4 12:19:46 PST 2009
 //    I renamed a namespace to InitVTKLite.
+// 
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
 // ****************************************************************************
 
@@ -127,6 +134,9 @@ MDServerMain(int argc, char *argv[])
     VisItInit::Initialize(argc, argv);
     InitVTKLite::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
+#ifdef HAVE_CONDUIT
+    avtConduitBlueprintDataAdaptor::Initialize();
+#endif
 
     bool runApp = ProcessCommandLine(argc, argv);
 

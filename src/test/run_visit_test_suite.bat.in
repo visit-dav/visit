@@ -1,4 +1,5 @@
-@PYTHON_EXECUTABLE@ @CMAKE_BINARY_DIR@/test/visit_test_suite.py ^
+SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/
+@PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/run_visit_test_suite.py ^
    --lessverbose --no-timings ^
    -d @CMAKE_BINARY_DIR@/testdata ^
    -b @VISIT_WINDOWS_DIR@/testing_baselines ^

@@ -8,7 +8,6 @@
 #include <ColorTableAttributes.h>
 #include <SelectionList.h>
 
-
 // ****************************************************************************
 // Method: ViewerMethods::ViewerMethods
 //
@@ -2290,10 +2289,13 @@ ViewerMethods::SetPlotFollowsTime(bool val)
 //  Ellen Tarwater October 12, 2007
 //  added drawAllPlots flag
 //
+//    Mark C. Miller, Fri Mar 17 15:14:30 PDT 2023
+//    Add APPLE-specific logic to address blank viewer windows (#18090)
 // ****************************************************************************
 void
 ViewerMethods::DrawPlots(bool drawAllPlots)
 {
+
     //
     // Set the rpc type and arguments.
     //
@@ -2304,6 +2306,19 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
     // Issue the RPC.
     //
     state->GetViewerRPC()->Notify();
+
+    // Stop gap to avert blank viewer windows (#18090)
+    // There is associated logic in core/ViewerWindowManager::SetWindowLayout
+    // which responds to these two successive calls
+#if defined(__APPLE__)
+    static bool first = true;
+    if (first)
+    {
+        first = false;
+        SetWindowLayout(-5); // -5 is magic number to trigger special logic
+        SetWindowLayout(-5); // -5 is magic number to trigger special logic
+    }
+#endif
 }
 
 // ****************************************************************************

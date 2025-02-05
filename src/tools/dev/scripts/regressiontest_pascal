@@ -103,6 +103,16 @@
 #   Kathleen Biagas, Thu June 16, 2022
 #   Modified cmakeCmd to use 3.3's 3.18.2 version and to use gcc-7.3
 #   for test_trunk. Modified the test_branch to build 3.2.
+#
+#   Cyrus Harrison, Thu Sep  8 12:42:42 PDT 2022
+#   Use new entry point for visit testing module.
+#
+#   Eric Brugger, Wed Sep 28 10:11:32 PDT 2022
+#   Changed all paths using /usr/workspace/wsa to /usr/WS1 so that the
+#   launcher test would pass. They are both the same directory, but the
+#   current directory when running the tests needs to start with /usr/WS1
+#   for the launcher test to work properly.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -170,7 +180,7 @@ branch="trunk"
 revision="latest"
 serial="false"
 testHost="pascal"
-testDir="/usr/workspace/wsa/visit"
+testDir="/usr/WS1/visit"
 post="true"
 nerscHost="cori.nersc.gov"
 
@@ -214,7 +224,7 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake"
 else
     workingDir="test_branch"
     cmakeCmd="/usr/gapps/visit/thirdparty_shared/3.2.0/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake"
@@ -408,7 +418,7 @@ echo "Starting tests:\`date\`"
 
 # Run the tests, consolidating the results in one directory
 cd ../src/test
-rm -rf 2022-??-??-??:?? py_src output *.pyc
+rm -rf 2022-??-??-??:?? output *.pyc
 mkdir \$dateTag output
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
@@ -422,7 +432,7 @@ for m in \$modes; do
 
 
     # Run the test
-    python ../../src/test/visit_test_suite.py --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    ../../build/test/run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
@@ -505,7 +515,7 @@ if test "$post" = "true" ; then
     # Check the results into github.
     cd src/test
     newResults=\`ls -d *22:00\`
-    cd /usr/workspace/wsa/visit/dashboard/dashboard
+    cd /usr/WS1/visit/dashboard/dashboard
     git add \$newResults baselines index.html
     git commit -m "Add new results to the dashboard."
     git pull

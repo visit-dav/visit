@@ -13,6 +13,9 @@
 #   Kathleen Biagas, Mon Mar 14 13:51:16 PDT 2016
 #   With QT 5 on linux, link with Qt's X11Extras library.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Link with X11 library when linking with X11Extras library.
+#
 #****************************************************************************
 
 SET(WINUTIL_SOURCES
@@ -55,7 +58,7 @@ ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
 # Specify the libraries to link against on Windows & Mac
 TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 if(LINUX)
-    target_link_libraries(winutil ${QT_QTX11EXTRAS_LIBRARY})
+    target_link_libraries(winutil ${QT_QTX11EXTRAS_LIBRARY} X11)
 endif()
 
 VISIT_INSTALL_TARGETS(winutil)

@@ -9,6 +9,9 @@
 #ifndef AVT_BLUEPRINT_WRITER_H
 #define AVT_BLUEPRINT_WRITER_H
 
+// NOTE: This is from avtblueprint lib
+#include "avtConduitBlueprintDataAdaptor.h"
+
 #include <avtDatabaseWriter.h>
 
 #include <ExpressionList.h>

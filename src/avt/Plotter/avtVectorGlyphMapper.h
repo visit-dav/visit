@@ -70,7 +70,10 @@ class     vtkVisItGlyph3D;
 //
 //    Kathleen Biagas, Wed Feb 6 19:38:27 PST 2013
 //    Changed signature of InsertFilters.  Changed signature of constructor
-///   to accept vtkAlgorithmOutput for pipeline connections with vtk-6.
+//    to accept vtkAlgorithmOutput for pipeline connections with vtk-6.
+//
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Moved GetVarRange to avtMapper.
 //
 // ****************************************************************************
 
@@ -98,7 +101,6 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     void                       SetMaxOff(void);
     virtual bool               GetRange(double &, double &);
     virtual bool               GetCurrentRange(double &, double &);
-    bool                       GetVarRange(double &, double &);
 
   protected:
     vtkAlgorithmOutput        *glyph;

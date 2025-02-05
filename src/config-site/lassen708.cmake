@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/blueos/cmake/3.18.2/linux-ppc64le_gcc-7.3/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/blueos/cmake/3.18.2/linux-ppc64le_gcc-7.3/bin/cmake
 ##
-## ./build_visit3_3_0 generated host.cmake
-## created: Wed Jun  1 12:01:33 PDT 2022
+## ./build_visit3_3_3 generated host.cmake
+## created: Wed Mar 29 10:51:06 PDT 2023
 ## system: Linux lassen709 4.14.0-115.35.1.3chaos.ch6a.ppc64le #1 SMP Wed Jul 21 17:12:16 PDT 2021 ppc64le ppc64le ppc64le GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/blueos)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/blueos)
 SET(VISITARCH linux-ppc64le_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -45,7 +45,7 @@ VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 ##
 ## Database reader plugin support libraries
 ##
-## The HDF4, HDF5 and NetCDF libraries must be first so that
+## The HDF5 and NetCDF libraries must be first so that
 ## their libdeps are defined for any plugins that need them.
 ##
 ## For libraries with LIBDEP settings, order matters.
@@ -153,8 +153,8 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.8.3)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.8.3/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.8.7)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
@@ -190,14 +190,14 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/22.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/23.02/${VISITARCH})
 
 ##
 ## MOAB 
 ##
-VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR ${VISITHOME}/moab/4.9.2-RC0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR ${VISITHOME}/moab/5.4.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR ${VISITHOME}/moab_mpi/4.9.2-RC0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR ${VISITHOME}/moab_mpi/5.4.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi ${VISIT_HDF5_MPI_LIBDEP} TYPE STRING)
 
 ##
@@ -228,12 +228,7 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VI
 ##
 ## VTKM
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.7.0/${VISITARCH})
-
-##
-## VTKH
-##
-VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/v0.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.9.0/${VISITARCH})
 
 ##
 ## Xdmf

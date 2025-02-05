@@ -65,6 +65,7 @@ void ColorControlPointList::Init()
     equalSpacingFlag = false;
     discreteFlag = false;
     externalFlag = false;
+    tagChangesMade = true;
 
     ColorControlPointList::SelectAll();
 }
@@ -108,6 +109,7 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
     tagNames = obj.tagNames;
+    tagChangesMade = obj.tagChangesMade;
 
     ColorControlPointList::SelectAll();
 }
@@ -283,7 +285,8 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (equalSpacingFlag == obj.equalSpacingFlag) &&
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
-            (tagNames == obj.tagNames));
+            (tagNames == obj.tagNames) &&
+            (tagChangesMade == obj.tagChangesMade));
 }
 
 // ****************************************************************************
@@ -433,6 +436,7 @@ ColorControlPointList::SelectAll()
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
     Select(ID_tagNames,         (void *)&tagNames);
+    Select(ID_tagChangesMade,   (void *)&tagChangesMade);
 }
 
 // ****************************************************************************
@@ -683,11 +687,35 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
     Select(ID_externalFlag, (void *)&externalFlag);
 }
 
+// ****************************************************************************
+// Method: ColorControlPointList::SetTagNames
+//
+// Purpose:
+//   Setter for names.
+//
+// Note:       There needs to be a custom setter to make sure that every time
+//             the tagNames are set, tagChangesMade is set to true.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun 29 16:38:18 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
 ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
     tagNames = tagNames_;
+    tagChangesMade = true;
     Select(ID_tagNames, (void *)&tagNames);
+}
+
+void
+ColorControlPointList::SetTagChangesMade(bool tagChangesMade_)
+{
+    tagChangesMade = tagChangesMade_;
+    Select(ID_tagChangesMade, (void *)&tagChangesMade);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -740,6 +768,12 @@ stringVector &
 ColorControlPointList::GetTagNames()
 {
     return tagNames;
+}
+
+bool
+ColorControlPointList::GetTagChangesMade() const
+{
+    return tagChangesMade;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -985,6 +1019,7 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
     case ID_tagNames:         return "tagNames";
+    case ID_tagChangesMade:   return "tagChangesMade";
     default:  return "invalid index";
     }
 }
@@ -1015,6 +1050,7 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
     case ID_tagNames:         return FieldType_stringVector;
+    case ID_tagChangesMade:   return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1045,6 +1081,7 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
     case ID_tagNames:         return "stringVector";
+    case ID_tagChangesMade:   return "bool";
     default:  return "invalid index";
     }
 }
@@ -1108,6 +1145,11 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_tagNames:
         {  // new scope
         retval = (tagNames == obj.tagNames);
+        }
+        break;
+    case ID_tagChangesMade:
+        {  // new scope
+        retval = (tagChangesMade == obj.tagChangesMade);
         }
         break;
     default: retval = false;
@@ -1706,6 +1748,8 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true every time a tag is added.
 //
 // ****************************************************************************
 
@@ -1714,7 +1758,10 @@ ColorControlPointList::AddTag(std::string newtag)
 {
     // If the tag is already in the tag list then we will do nothing.
     if (!HasTag(newtag))
+    {
         tagNames.push_back(newtag);
+        tagChangesMade = true;
+    }
 }
 
 // ****************************************************************************
@@ -1727,6 +1774,8 @@ ColorControlPointList::AddTag(std::string newtag)
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true each time the tags are cleared.
 //
 // ****************************************************************************
 
@@ -1734,6 +1783,7 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
+    tagChangesMade = true;
 }
 
 // ****************************************************************************

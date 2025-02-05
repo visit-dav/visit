@@ -20,6 +20,12 @@
 #  Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
 #  Updated the bundle name, icon file name, identifier and copyright
 #
+#  Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#  Replaced vtkpng with vtkpng_LIBRARIES and vtkjpeg with vtkjpeg_LIBRARIES.
+#
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -226,7 +232,7 @@ avtwriter_ser
 avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 vtkGUISupportQt
 )
 
@@ -253,7 +259,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2021, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
     
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
@@ -267,8 +273,8 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkpng
-    vtkjpeg
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
     ${VTK_FREETYPE_LIBRARIES}
 )
 

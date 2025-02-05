@@ -8,10 +8,11 @@
 
 #include <avtIsovolumeFilter.h>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkh/vtkh.hpp>
-#include <vtkh/DataSet.hpp>
-#include <vtkh/filters/IsoVolume.hpp>
+#ifdef HAVE_LIBVTKM
+#include <avtVtkmDataSet.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/filter/contour/ClipWithField.h>
+#include <vtkm/filter/field_conversion/PointAverage.h>
 #endif
 
 #include <vtkVisItClipper.h>
@@ -311,6 +312,9 @@ inline void IsovolumeMinMax(double &min, double &max, Accessor access)
 //    Eric Brugger, Tue Aug 25 10:13:49 PDT 2015
 //    I modified the routine to return NULL if the output data set was NULL.
 //
+//    Eric Brugger, Mon Feb 13 11:34:09 PST 2023
+//    I replaced VTKh with VTKm.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -364,7 +368,7 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     bool doVTKM = VTKmAble(in_dr);
     avtDataRepresentation *out_dr = NULL;
-    if (doVTKM && doMinClip && doMaxClip)
+    if (doVTKM && (doMinClip || doMaxClip))
         out_dr = ExecuteData_VTKM(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
     else
         out_dr = ExecuteData_VTK(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
@@ -474,6 +478,8 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
 //  Creation:   March 25, 2020
 //
 //  Modifications:
+//    Eric Brugger, Mon Feb 13 11:34:09 PST 2023
+//    I replaced VTKh with VTKm.
 //
 // ****************************************************************************
 
@@ -490,7 +496,9 @@ avtIsovolumeFilter::VTKmAble(avtDataRepresentation *in_dr) const
                                             : pipelineVariable);
         vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
         if (pointData == NULL)
+        {
             useVTKm = false;
+        }
         else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
             vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
@@ -632,6 +640,8 @@ avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<do
 //  Creation:   March 25, 2020
 //
 //  Modifications:
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced VTKh with VTKm.
 //
 // ****************************************************************************
 
@@ -640,26 +650,90 @@ avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr,
                                      std::vector<double> bounds,
                                      std::vector<bool> clips)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     return NULL;
 #else
-    int timerHandle = visitTimer->StartTimer();
-    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
-    if (!in_ds || in_ds->GetNumberOfDomains() != 1)
+    //
+    // Get the VTKM data set, the domain number, and the label.
+    //
+    avtVtkmDataSet *in_ds = in_dr->GetDataVTKm();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
+    if (!in_ds)
+    {
         return NULL;
+    }
 
     std::string isoVar(activeVariable != NULL ? activeVariable
                                               : pipelineVariable);
 
-    vtkh::IsoVolume iso;
+    vtkm::cont::DataSet dataset = in_ds->ds;
 
-    iso.SetRange(vtkm::Range(bounds[0], bounds[1]));
-    iso.SetField(isoVar);
-    iso.SetInput(in_ds);
-    iso.Update();
-    vtkh::DataSet *out_ds = iso.GetOutput();
+    int timerHandle = visitTimer->StartTimer();
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds, in_dr->GetDomain(), in_dr->GetLabel());
+    //
+    // Recenter the field to the nodes if necessary.
+    // FIX_ME: This code is never executed because VTKmAble returns
+    // false if the variable is cell associated. This is because the
+    // point averaging is flawed. It should create a copy of the field
+    // and point average it for doing the isovoluming and then remove
+    // the point averaged field afterwards. This way the original cell
+    // associated field is left intact.
+    //
+    bool isCellAssoc = dataset.GetField(isoVar).GetAssociation() ==
+                vtkm::cont::Field::Association::Cells;
+
+    if (isCellAssoc)
+    {
+        vtkm::filter::field_conversion::PointAverage avg;
+        avg.SetActiveField(isoVar);
+        dataset = avg.Execute(dataset);
+    }
+
+    //
+    // Execute the clip with field filter.
+    //
+    vtkm::filter::contour::ClipWithField iso;
+
+    iso.SetActiveField(isoVar);
+
+    //
+    // Do lower clip.
+    //
+    if (clips[0])
+    {
+        iso.SetClipValue(bounds[0]);
+        iso.SetInvertClip(false);
+        dataset = iso.Execute(dataset);
+    }
+
+    //
+    // Do upper clip.
+    //
+    if (clips[1])
+    {
+        iso.SetClipValue(bounds[1]);
+        iso.SetInvertClip(true);
+        dataset = iso.Execute(dataset);
+    }
+
+    //
+    // Determine if the dataset is empty, and if so, set the output
+    // to NULL.
+    //
+    avtVtkmDataSet *isoOut = NULL;
+    if(dataset.GetCellSet().GetNumberOfCells() > 0)
+    {
+        isoOut = new avtVtkmDataSet;
+        isoOut->ds = dataset;
+    }
+
+    //
+    // Create the output data representation
+    //
+    avtDataRepresentation *out_dr = new avtDataRepresentation(isoOut, in_dr->GetDomain(), in_dr->GetLabel());
+
     visitTimer->StopTimer(timerHandle, "avtIsovolumeFilter::ExecuteDataTree_VTKM");
 
     return out_dr;

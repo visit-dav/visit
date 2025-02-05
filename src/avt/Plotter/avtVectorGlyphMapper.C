@@ -973,41 +973,6 @@ avtVectorGlyphMapper::SetLimitsMode(const int lm)
     SetMappersMinMax();
 }
 
-// ****************************************************************************
-//  Method: avtVectorGlyphMapper::GetVarRange
-//
-//  Purpose:
-//      Gets the range of the variable. (Artificial limits ignored).
-//
-//  Arguments:
-//      rmin          The minimum in the range.
-//      rmax          The maximum in the range.
-//
-//  Returns:    True if the extents were found, false otherwise.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 22, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-bool
-avtVectorGlyphMapper::GetVarRange(double &rmin, double &rmax)
-{
-    if (mappers == NULL)
-    {
-        //
-        // We have been asked for the range before the input has been set.
-        //
-        rmin = 0.;
-        rmax = 1.;
-        return false;
-    }
-
-    bool rv = avtMapper::GetRange(rmin, rmax);
-    return rv;
-}
 
 // ****************************************************************************
 // Method: avtVectorGlyphMapper::SetFullFrameScaling

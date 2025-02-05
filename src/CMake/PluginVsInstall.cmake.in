@@ -102,6 +102,9 @@
 #   Added VISIT_ROOT_INCLUDE_DIR for ThirdParty and .cmake includes, so that
 #   VISIT_INCLUDE_DIR can be used for visit includes.
 #
+#   Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+#   Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+#
 #****************************************************************************/
 
 ##
@@ -307,7 +310,6 @@ set(XDMF_LIB @XDMF_LIB@)
 set(CONDUIT_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/conduit/conduit)
 set(CONDUIT_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(CONDUIT_LIB @CONDUIT_LIB@)
-set(CONDUIT_HAVE_PARTITION_FLATTEN @CONDUIT_HAVE_PARTITION_FLATTEN@)
 if(VISIT_PARALLEL)
     set(CONDUIT_MPI_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/conduit/conduit)
     set(CONDUIT_MPI_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})

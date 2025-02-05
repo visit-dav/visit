@@ -487,12 +487,16 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    Eric Brugger, Wed Nov 19 15:48:18 PST 2014
 //    I modified the arguments so that they map one for one with the actual
 //    image properties stored in the class.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Use avtVectors for some inputs since they come that way from 
+//    avtXRayImageQuery.
 //
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(double *_normal, double *_focus, 
-    double *_viewUp, double _viewAngle, double _parallelScale,
+avtXRayFilter::SetImageProperties(avtVector _normal, avtVector _focus, 
+    avtVector _viewUp, double _viewAngle, double _parallelScale,
     double _nearPlane, double _farPlane, double *_imagePan,
     double _imageZoom, bool _perspective, int *_imageSize)
 {
@@ -2270,6 +2274,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Modifications:
 //    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Fixed a bug causing the viewWidth to be calculated incorrectly.
 //
 // ****************************************************************************
 
@@ -2293,7 +2300,7 @@ avtXRayFilter::CalculateLines(void)
     double nearWidth, viewWidth, farWidth;
 
     viewHeight = parallelScale;
-    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
+    viewWidth  = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
     if (perspective)
     {
         double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);

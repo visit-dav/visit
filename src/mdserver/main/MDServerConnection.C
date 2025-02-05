@@ -94,13 +94,13 @@
 //   This is a signal handler that aborts the mdserver if it cannot connect
 //   to a client in a certain amount of time.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 30 09:31:10 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -116,14 +116,14 @@ InitialConnectionHandler(int)
 // ****************************************************************************
 // Method: RPCExecutor<CreateGroupListRPC>::Execute
 //
-// Purpose: 
+// Purpose:
 //   Creates a group list.
 //
 // Programmer: Sean Ahern
 // Creation:   Tue Feb 13 15:41:29 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 template<>
 void
@@ -156,7 +156,7 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 // ****************************************************************************
 // Method: MDServerConnection::MDServerConnection
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the MDServerConnection class. This method connects to a
 //   remote process and creates new state objects used for communicating back
 //   and forth with the remote process.
@@ -177,7 +177,7 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 // Modifications:
 //    Sean Ahern, Wed Feb 28 14:30:41 PST 2001
 //    Added the CreateGroupListRPC.
-//   
+//
 //    Hank Childs, Thu Mar 29 17:01:44 PST 2001
 //    Added SIL.
 //
@@ -201,7 +201,7 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //
 //    Brad Whitlock, Mon Sep 30 09:36:34 PDT 2002
 //    I added a signal handler that kills the mdserver if it cannot connect
-//    to its client within a few minutes. It most likely indicates that 
+//    to its client within a few minutes. It most likely indicates that
 //    the client does not want to connect anymore.
 //
 //    Brad Whitlock, Tue Jul 29 11:36:11 PDT 2003
@@ -223,7 +223,7 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Added new RPCs.
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
-//    Added support for specifying cycle number regular expression 
+//    Added support for specifying cycle number regular expression
 //
 //    Jeremy Meredith, Wed Jan 23 16:18:17 EST 2008
 //    Added SetMFileOpenOptionsRPC and its Executor.
@@ -236,7 +236,7 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //
 // ****************************************************************************
 
-MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc, 
+MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc,
     char **argv[])
 {
     app = a;
@@ -317,7 +317,7 @@ MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc,
     quitExecutor = new QuitRPCExecutor(quitRPC);
     keepAliveExecutor = new KeepAliveRPCExecutor(keepAliveRPC);
     getDirectoryExecutor = new GetDirectoryRPCExecutor(this, &mdstate->GetGetDirectoryRPC());
-    changeDirectoryExecutor = 
+    changeDirectoryExecutor =
         new ChangeDirectoryRPCExecutor(this, &mdstate->GetChangeDirectoryRPC());
     getFileListExecutor = new GetFileListRPCExecutor(this, &mdstate->GetGetFileListRPC());
     getMetaDataExecutor = new GetMetaDataRPCExecutor(this, &mdstate->GetGetMetaDataRPC());
@@ -347,7 +347,7 @@ MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc,
 // ****************************************************************************
 // Method: MDServerConnection::~MDServerConnection
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the MDServerConnection class.
 //
 // Programmer: Brad Whitlock
@@ -425,7 +425,7 @@ MDServerConnection::~MDServerConnection()
 // ****************************************************************************
 // Method: MDServerConnection::KeepGoing
 //
-// Purpose: 
+// Purpose:
 //   Tells whether the MDServerConnection's quit rpc state object wants to
 //   keep going.
 //
@@ -433,7 +433,7 @@ MDServerConnection::~MDServerConnection()
 // Creation:   Fri Nov 17 16:38:42 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -445,7 +445,7 @@ MDServerConnection::KeepGoing() const
 // ****************************************************************************
 // Method: MDServerConnection::ProcessInput
 //
-// Purpose: 
+// Purpose:
 //   Tells the MDServerConnection to check for command input and execute it
 //   if there was any.
 //
@@ -453,7 +453,7 @@ MDServerConnection::KeepGoing() const
 //
 // Returns:    Returns true if there was command input.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 15:25:39 PST 2000
@@ -483,20 +483,20 @@ MDServerConnection::ProcessInput()
 // ****************************************************************************
 // Method: MDServerConnection::GetWriteConnection
 //
-// Purpose: 
+// Purpose:
 //   Returns the MDServerConnection's write connection.
 //
 // Arguments:
 //
 // Returns:    The MDServerConnection's write connection.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 27 09:35:43 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 Connection *
@@ -508,7 +508,7 @@ MDServerConnection::GetWriteConnection() const
 // ****************************************************************************
 // Method: MDServerConnection::LoadPlugins
 //
-// Purpose: 
+// Purpose:
 //   Loads the plugins if they have not been loaded.
 //
 // Programmer: Brad Whitlock
@@ -619,7 +619,7 @@ MDServerConnection::GetPluginErrors()
 //   Added support to treat all databases as time varying
 //
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
-//   Added flags controlling creation of MeshQuality and TimeDerivative 
+//   Added flags controlling creation of MeshQuality and TimeDerivative
 //   expressions. Send the flags to the database factory.
 //
 //   Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
@@ -656,11 +656,11 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
            << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
            << ", forcedFileType=" << forcedFileType_
            << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
-           << ", createMeshQualityExpressions = " 
+           << ", createMeshQualityExpressions = "
            << createMeshQualityExpressions
-           << ", createTimeDerivativeExpressions = " 
-           << createTimeDerivativeExpressions      
-           << ", createVectorMagnitudeExpressions = " 
+           << ", createTimeDerivativeExpressions = "
+           << createTimeDerivativeExpressions
+           << ", createVectorMagnitudeExpressions = "
            << createVectorMagnitudeExpressions
            << endl;
 
@@ -696,7 +696,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     }
     CATCH2(VisItException, e)
     {
-        EXCEPTION3(InvalidFilesException, file.c_str(), plugins, 
+        EXCEPTION3(InvalidFilesException, file.c_str(), plugins,
                                           e.Message().c_str());
     }
     ENDTRY
@@ -710,7 +710,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
                                               treatAllDBsAsTimeVarying);
             visitTimer->StopTimer(t0, "Get metadata from inside ReadMetaData");
 
-            // Cache the file type 
+            // Cache the file type
             if (currentMetaData)
                 filePlugins[file] = currentMetaData->GetFileFormat();
         }
@@ -762,14 +762,14 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
 // ****************************************************************************
 // Method: MDServerConnection::GetCurrentMetaData
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the current file's metadata.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 15:04:17 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtDatabaseMetaData *
@@ -874,7 +874,7 @@ MDServerConnection::ReadSIL(std::string file, int timeState,
 // ****************************************************************************
 // Method: MDServerConnection::GetCurrentSIL
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the current file's SIL.
 //
 // Programmer: Hank Childs
@@ -891,7 +891,7 @@ MDServerConnection::GetCurrentSIL() const
 // ****************************************************************************
 // Method: MDServerConnection::GetDBPluginInfo
 //
-// Purpose: 
+// Purpose:
 //   Returns the DB plugin info.
 //
 // Programmer: Hank Childs
@@ -1081,20 +1081,20 @@ MDServerConnection::ChangeDirectory(const std::string &dir)
 // ****************************************************************************
 // Method: MDServerConnection::GetCurrentWorkingDirectory
 //
-// Purpose: 
+// Purpose:
 //   Returns the current working directory.
 //
 // Arguments:
 //
-// Returns:  Returns the current working directory.  
+// Returns:  Returns the current working directory.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 15:29:30 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string &
@@ -1162,7 +1162,7 @@ MDServerConnection::ReadCWD()
 //   Hank Childs, Wed Nov 10 16:15:19 PST 2004
 //   Do not call readdir if opendir failed.  This is because readdir will
 //   segfault on MCR due to bizarre Lustre group read permission issues.
-//   
+//
 //   Brad Whitlock, Wed Dec 14 17:01:53 PST 2005
 //   I moved the code to stat files out of this method so we now just get
 //   file list (on UNIX anyway).
@@ -1277,7 +1277,7 @@ MDServerConnection::ReadFileList()
             // from dirent struct but do not ever actually stat the
             // file here.
             FileFunctions::FileType ft = FileFunctions::GetFileType(
-                ent->d_name, ent, FileFunctions::FILE_TYPE_DONT_STAT); 
+                ent->d_name, ent, FileFunctions::FILE_TYPE_DONT_STAT);
             if (ft == FileFunctions::FILE_TYPE_REG)
                 fl.types.push_back(GetFileListRPC::REG);
             else if (ft == FileFunctions::FILE_TYPE_DIR)
@@ -1305,8 +1305,8 @@ MDServerConnection::ReadFileList()
 // ****************************************************************************
 // Method: MDServerConnection::ReadFileListAttributes
 //
-// Purpose: 
-//   This method calls stat on all of the files in the passed in FileList 
+// Purpose:
+//   This method calls stat on all of the files in the passed in FileList
 //   when they have UNCHECKED type.
 //
 // Arguments:
@@ -1316,7 +1316,7 @@ MDServerConnection::ReadFileList()
 // Creation:   Wed Dec 14 17:03:28 PST 2005
 //
 // Modifications:
-//   
+//
 //    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
 //    Made it use VisItStat instead of stat
 //
@@ -1350,14 +1350,14 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
             ++nStat;
             FileFunctions::VisItStat_t s;
             FileFunctions::VisItStat((currentWorkingDirectory + "/" + fl.names[i]).c_str(), &s);
-    
+
             mode_t mode = s.st_mode;
 
             bool isdir = S_ISDIR(mode);
             bool isreg = S_ISREG(mode);
-    
+
             fl.types[i] = (isdir ? GetFileListRPC::DIR :
-                           isreg ? GetFileListRPC::REG : 
+                           isreg ? GetFileListRPC::REG :
                                    GetFileListRPC::UNKNOWN);
         }
 
@@ -1395,14 +1395,14 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
 // ****************************************************************************
 // Method: MDServerConnection::GetReadFileListReturnValue
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag that indicates how the ReadFileList function performed.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 24 15:50:09 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1414,7 +1414,7 @@ MDServerConnection::GetReadFileListReturnValue() const
 // ****************************************************************************
 // Method: MDServerConnection::GetCurrentFileList
 //
-// Purpose: 
+// Purpose:
 //   Returns a reference to the current file list.
 //
 // Programmer: Brad Whitlock
@@ -1445,7 +1445,7 @@ MDServerConnection::GetCurrentFileList()
 // ****************************************************************************
 // Method: MDServerConnection::FileMatchesFilterList
 //
-// Purpose: 
+// Purpose:
 //   Checks a filename against a list of filters to see if it matches
 //   any of them.
 //
@@ -1481,7 +1481,7 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 // ****************************************************************************
 // Method: MDServerConnection::GetPattern
 //
-// Purpose: 
+// Purpose:
 //   Return a pattern string of the form *[0-9]?[0-9]** that will match
 //   the file name.
 //
@@ -1517,12 +1517,15 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //   which extension is detected to make it easier to add additional
 //   extenstions.
 //
-//    Gunther H. Weber, Thu Aug  9 11:55:06 PDT 2012
-//    Allow files ending in .h5p and .h5block to be grouped.
+//   Gunther H. Weber, Thu Aug  9 11:55:06 PDT 2012
+//   Allow files ending in .h5p and .h5block to be grouped.
 //
 //   Gunther H. Weber, Mon Mar  5 13:32:05 PST 2012
 //   Also consider compressed files ".gz",... when exculding file extensions
-//   from pattern matching. 
+//   from pattern matching.
+//
+//   Kathleen Biagas, Thu Nov 17, 2022
+//   Allow files ending in .h5m (MOAB plugin) to be grouped.
 //
 // ****************************************************************************
 
@@ -1545,7 +1548,7 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 
     const char *excludedFileTypeExtensions[] =
     {
-        ".h5", ".hdf5", ".vsh5", ".h5part", ".h5p", ".h5block", ".ch5", 0
+        ".h5", ".hdf5", ".vsh5", ".h5part", ".h5p", ".h5block", ".ch5", ".h5m", 0
     };
     int excludedFileTypeExtensionIdx = -1; // -1 -> None
 
@@ -1664,7 +1667,7 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 // ****************************************************************************
 // Method: MDServerConnection::FileHasVisItExtension
 //
-// Purpose: 
+// Purpose:
 //   Determines whether a file has the ".visit" extension.
 //
 // Arguments:
@@ -1676,7 +1679,7 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 // Creation:   Thu Jul 29 11:25:44 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1699,14 +1702,14 @@ MDServerConnection::FileHasVisItExtension(const std::string &file) const
 // ****************************************************************************
 // Method: MDServerConnection::SetFileGroupingOptions
 //
-// Purpose: 
+// Purpose:
 //   Sets the file filter and file grouping options that should be used
 //   when filtering the file list.
 //
 // Arguments:
 //   filter                 : A space separated list of filters.
 //   extraSmartFileGrouping : Whether extra smart file grouping should be used.
-// Returns:    
+// Returns:
 //
 // Note:       This used to be in GetFilteredFileList but I moved it here so
 //             implicit definition of virtual databases would at least use the
@@ -1716,7 +1719,7 @@ MDServerConnection::FileHasVisItExtension(const std::string &file) const
 // Creation:   Fri Feb 4 15:09:34 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1747,7 +1750,7 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 // ****************************************************************************
 // Method: MDServerConnection::GetFilteredFileList
 //
-// Purpose: 
+// Purpose:
 //   Returns a file list in which the files match the passed in filter. The
 //   file names are also checked so that like filenames are grouped into
 //   virtual VisIt files.
@@ -1788,7 +1791,7 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   Added code to group "abort" files into their related database.
 //
 //   Brad Whitlock, Mon Jun 27 14:22:59 PST 2005
-//   I made the code to consolidate virtual databases be off unless the 
+//   I made the code to consolidate virtual databases be off unless the
 //   VISIT_CONSOLIDATE_VIRTUAL_DATABASES environment variable is set to "on".
 //   This prevents users from always running into it where it might cause
 //   problems for a small subset of users. Those who want the feature can
@@ -1801,6 +1804,9 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   I added a check for empty file lists in the virtual db definition, though
 //   I fixed a different bug so that should not be able to happen.
 //
+//    Mark C. Miller, Tue May 30 15:29:56 PDT 2023
+//    Avert possible crash by protecting loop that removes any virtual dbs
+//    with no files.
 // ****************************************************************************
 
 void
@@ -1871,12 +1877,12 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 
                         //
                         // If the pattern contains "_abort_" then it might be
-                        // an ale3d abort file. Take out the "_abort_" string 
+                        // an ale3d abort file. Take out the "_abort_" string
                         // and replace it with "_". If there's a pattern that
                         // matches the new pattern without the "_abort_" string
                         // then assume we have an abort file and the file should
                         // be grouped with the pattern that we found.
-                        // 
+                        //
                         size_t apos;
                         if((apos = pattern.find("_abort_")) != std::string::npos)
                         {
@@ -1888,7 +1894,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                                 std::string altName(names[i]);
                                 apos = altName.find("_abort_");
                                 altName.replace(apos, 7, "_");
-                                // Since the abort filename is most likely to 
+                                // Since the abort filename is most likely to
                                 // come after the regularly numbered files, we
                                 // have to insert the abort file name into the
                                 // virtual database definition to prevent the
@@ -1986,7 +1992,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
     //
     if(newVirtualFiles.size() > 0)
     {
-        // Try and group virtual databases that have similar names into a 
+        // Try and group virtual databases that have similar names into a
         // larger virtual database if the names look like what we'd get
         // with Flash files.
         int stage2 = visitTimer->StartTimer();
@@ -2013,7 +2019,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
             pos = newVirtualFiles.find(files.names[fileIndex]);
             if(pos == newVirtualFiles.end())
                 continue;
-        
+
             if(pos->second.files.size() == 1)
             {
                 // Change the name in the files list back to the original file
@@ -2052,7 +2058,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         int stage5 = visitTimer->StartTimer();
         int vfIndex = 0;
         bool needToSortFileList = false;
-        for(fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+        for(fileIndex = 0; !virtualFilesToCheck.types.empty() && (fileIndex < files.names.size()); ++fileIndex)
         {
             pos = newVirtualFiles.find(files.names[fileIndex]);
             if(pos == newVirtualFiles.end())
@@ -2147,23 +2153,23 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 // ****************************************************************************
 // Method: MDServerConnection::FileLooksLikePartFile
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the pattern that was passed in corresponds to
 //   an ale3d part file (the sub-domain files that end in .1, .2, .3, ...).
 //
 // Arguments:
 //   newVirtualFiles : The virtual file definitions.
 //   pattern         : The pattern we're checking.
-//                     
+//
 // Returns:    True if the file is looks like an ale3d part file; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Apr 26 14:30:03 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2195,7 +2201,7 @@ MDServerConnection::FileLooksLikePartFile(const VirtualFileInformationMap &
 // ****************************************************************************
 // Method: MDServerConnection::ConsolidateVirtualDatabases
 //
-// Purpose: 
+// Purpose:
 //   Consolidates related virtual databases into a single virtual database.
 //
 // Arguments:
@@ -2209,7 +2215,7 @@ MDServerConnection::FileLooksLikePartFile(const VirtualFileInformationMap &
 // Creation:   Tue Apr 26 17:59:03 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2281,7 +2287,7 @@ MDServerConnection::ConsolidateVirtualDatabases(
 
             for(size_t s = 0; s < it->second.files.size(); ++s)
             {
-                VirtualFileInformationMap::iterator ci = 
+                VirtualFileInformationMap::iterator ci =
                     newVirtualFiles.find(it->second.files[s]);
                 if(ci != newVirtualFiles.end() &&
                    ci->second.files.size() > 1)
@@ -2300,11 +2306,11 @@ MDServerConnection::ConsolidateVirtualDatabases(
                         }
                     }
                     virtualDBNames += (ci->first.name + " ");
-    
+
                     consolidatedInfo.path = ci->second.path;
                     for(size_t index = 0; index < ci->second.files.size(); ++index)
                         consolidatedInfo.files.push_back(ci->second.files[index]);
-    
+
                     // Get the file access information.
                     stringVector::iterator vdb_names_it = files.names.begin();
                     intVector::iterator vdb_types_it    = files.types.begin();
@@ -2368,7 +2374,7 @@ MDServerConnection::ConsolidateVirtualDatabases(
 // ****************************************************************************
 // Method: MDServerConnection::GetVirtualFileDefinition
 //
-// Purpose: 
+// Purpose:
 //   Gets an iterator to the definition of a virtual file.
 //
 // Arguments:
@@ -2514,7 +2520,7 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Added logic to only force close and re-open if the timeState is different
 //    and the current database has invariant metadata. If the current database
 //    does NOT have invariant metadata, then metadata at a different time
-//    step can be correctly read without having to close and re-open. 
+//    step can be correctly read without having to close and re-open.
 //
 //    Hank Childs, Mon Mar  1 08:48:26 PST 2004
 //    Set the time state to the database factory.
@@ -2527,7 +2533,7 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    read virtual databases on the Windows platform when we use the CLI.
 //
 //    Brad Whitlock, Tue Jul 27 16:54:02 PST 2004
-//    Added code to prevent crashes when we ask for a time state that is 
+//    Added code to prevent crashes when we ask for a time state that is
 //    greater than the end of the size of a virtual database. This can happen
 //    if we're trying to reopen a virtual database after files have disappeared.
 //
@@ -2607,7 +2613,7 @@ MDServerConnection::GetDatabase(std::string file, int timeState,
         currentDatabaseName = file;
         currentDatabaseTimeState = timeState;
         const char *fn = file.c_str();
-        VirtualFileInformationMap::iterator virtualFile = 
+        VirtualFileInformationMap::iterator virtualFile =
             GetVirtualFileDefinition(file);
 
         if (virtualFile != virtualFiles.end())
@@ -2732,7 +2738,7 @@ MDServerConnection::GetDatabase(std::string file, int timeState,
 // ****************************************************************************
 // Method: MDServerConnection::CloseDatabase
 //
-// Purpose: 
+// Purpose:
 //   Closes the open database so it is re-read the next time we access it.
 //
 // Programmer: Brad Whitlock
@@ -2805,13 +2811,13 @@ MDServerConnection::CloseDatabase(const std::string &db)
 // Purpose:
 //   This class is a string that sorts using numeric string sorting.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 27 11:43:10 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 MDServerConnection::VirtualFileName::VirtualFileName() : name()
@@ -2830,7 +2836,7 @@ MDServerConnection::VirtualFileName::~VirtualFileName()
 {
 }
 
-void 
+void
 MDServerConnection::VirtualFileName::operator = (const MDServerConnection::VirtualFileName &obj)
 {
     name = obj.name;
@@ -2860,7 +2866,7 @@ MDServerConnection::VirtualFileName::operator < (const MDServerConnection::Virtu
 //   This class is a container for a path and list of filenames that can
 //   be found at that path.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Apr 2 12:32:24 PDT 2003
@@ -2892,7 +2898,7 @@ MDServerConnection::VirtualFileInformation::operator = (
 {
     path = obj.path;
     files = obj.files;
-    digitLength = obj.digitLength; 
+    digitLength = obj.digitLength;
     filterList = obj.filterList;
 }
 

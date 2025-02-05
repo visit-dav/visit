@@ -1276,7 +1276,7 @@ function build_hostconf
     # First line of config-site file provides a hint to the location
     # of cmake.
 
-    THIRD_PARTY_ABS_PATH=$(pushd $THIRD_PARTY_PATH 1,2>/dev/null; pwd; popd 1,2>/dev/null)
+    THIRD_PARTY_ABS_PATH=$(pushd $THIRD_PARTY_PATH >/dev/null 2>&1; pwd; popd >/dev/null 2>&1)
     if [[ "$CMAKE_INSTALL" != "" ]]; then
         echo "#$CMAKE_INSTALL/cmake" > $HOSTCONF
     else

@@ -26,12 +26,12 @@ function bv_moab_depends_on
 
 function bv_moab_info
 {
-    export MOAB_VERSION=${MOAB_VERSION:-"4.9.2-RC0"}
+    export MOAB_VERSION=${MOAB_VERSION:-"5.5.0"}
     export MOAB_FILE=${MOAB_FILE:-"moab-${MOAB_VERSION}.tar.gz"}
-    export MOAB_URL=${MOAB_URL:-"ftp://ftp.mcs.anl.gov/pub/fathom"}
-    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-4.9.2"}
-    export MOAB_MD5_CHECKSUM="8581acec855308b34144c66e1163ad8e"
-    export MOAB_SHA256_CHECKSUM="216e34f07717714fcc0675f211a2ddbd5063530a753467b8c13d5ba69535c7f4"
+    export MOAB_URL=${MOAB_URL:-"https://web.cels.anl.gov/projects/sigma/downloads/moab"}
+    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-5.5.0"}
+    export MOAB_MD5_CHECKSUM="c8043113d6e8ac584fb27fc9bda93dc6"
+    export MOAB_SHA256_CHECKSUM="58969f8a1b209ec9036c08c53a6b7078b368eb3bf99d0368a4de5a2f2a8db678"
 }
 
 function bv_moab_print

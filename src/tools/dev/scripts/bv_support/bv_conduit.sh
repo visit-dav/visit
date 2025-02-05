@@ -38,12 +38,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.3"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.7"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.8.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="f799fedf6d2abb2b27a249c756cd320f"
-    export CONDUIT_SHA256_CHECKSUM="a9e60945366f3b8c37ee6a19f62d79a8d5888be7e230eabc31af2f837283ed1a"
+    export CONDUIT_MD5_CHECKSUM="a7747fedfa4f1452a8410d555e21eacf"
+    export CONDUIT_SHA256_CHECKSUM="f3bf44d860783f4e0d61517c5e280c88144af37414569f4cf86e2d29b3ba5293"
 }
 
 function bv_conduit_print
@@ -227,7 +227,7 @@ function build_conduit
     if [[ "$PAR_COMPILER" != "" ]] ; then
         cfg_opts="${cfg_opts} -DENABLE_MPI:BOOL=ON"
         cfg_opts="${cfg_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
-        cfg_opts="${cfg_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER}"
+        cfg_opts="${cfg_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
     fi
     
     if [[ "$PAR_INCLUDE" != "" ]] ; then

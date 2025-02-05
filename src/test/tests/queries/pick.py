@@ -3060,6 +3060,42 @@ def TestRemoveLabeledPicks():
     DeleteAllPlots()
     ResetPickLetter()
 
+def TestSwivelFocus():
+    ResetPickAttributes()
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Mesh", "mesh1")
+    DrawPlots()
+    v = GetView3D()
+    v.viewNormal = (-0.461806, -0.673199, 0.577526)
+    v.focus = (0., 0., 0.)
+    v.viewUp = (-0.243052, 0.722237, 0.647532)
+    v.viewAngle = 30
+    v.parallelScale = 17.3205
+    v.nearPlane = -34.641
+    v.farPlane = 34.641
+    v.imagePan = (0.341463, 0.234840)
+    v.imageZoom = 1.21
+    SetView3D(v)
+
+    orig_atts = GetPickAttributes()
+    fh_atts   = GetPickAttributes()
+    fh_atts.swivelFocusToPick = 1
+    SetPickAttributes(fh_atts)
+
+    PickByNode(element=707)
+    Test("SwivelFocus_00")
+
+    SetPickAttributes(orig_atts)
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+
 def TestSwivelHighlight():
     ResetPickAttributes()
     ClearPickPoints()
@@ -3219,6 +3255,7 @@ def PickMain():
     PickZoneLabel()
     PickNodeLabel()
     PickRangeLabel()
+    TestSwivelFocus()
     TestSwivelHighlight()
     TestNodeHighlight()
     TestTranslatedHighlight()

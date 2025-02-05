@@ -1,24 +1,10 @@
 #!/bin/sh
 #
 # You should do this in both the src and data directories. You might also
-# just do a find over all file names when you are finished for "2000 - 2018"
+# just do a find over all file names when you are finished for "2000 - 2022"
 # to check if you missed any files.
 #
-find -type f -name "*.c" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.C" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.h" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.f" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.java" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.cmake" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.txt" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.in" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.py" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.sh" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.cxx" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.hxx" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.cpp" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.mm" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.cu" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.vpe" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.vpq" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
-find -type f -name "*.i" -exec sed -i "s/Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.txt" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.html" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "LICENSE" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.in" -exec sed -i "s/Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC/" {} \; -print

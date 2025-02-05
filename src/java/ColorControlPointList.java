@@ -23,7 +23,7 @@ import java.util.Vector;
 
 public class ColorControlPointList extends AttributeSubject
 {
-    private static int ColorControlPointList_numAdditionalAtts = 6;
+    private static int ColorControlPointList_numAdditionalAtts = 7;
 
     // Enum values
     public final static int SMOOTHINGMETHOD_NONE = 0;
@@ -41,6 +41,7 @@ public class ColorControlPointList extends AttributeSubject
         discreteFlag = false;
         externalFlag = false;
         tagNames = new Vector();
+        tagChangesMade = true;
     }
 
     public ColorControlPointList(int nMoreFields)
@@ -53,6 +54,7 @@ public class ColorControlPointList extends AttributeSubject
         discreteFlag = false;
         externalFlag = false;
         tagNames = new Vector();
+        tagChangesMade = true;
     }
 
     public ColorControlPointList(ColorControlPointList obj)
@@ -77,6 +79,7 @@ public class ColorControlPointList extends AttributeSubject
         for(i = 0; i < obj.tagNames.size(); ++i)
             tagNames.addElement(new String((String)obj.tagNames.elementAt(i)));
 
+        tagChangesMade = obj.tagChangesMade;
 
         SelectAll();
     }
@@ -119,7 +122,8 @@ public class ColorControlPointList extends AttributeSubject
                 (equalSpacingFlag == obj.equalSpacingFlag) &&
                 (discreteFlag == obj.discreteFlag) &&
                 (externalFlag == obj.externalFlag) &&
-                tagNames_equal);
+                tagNames_equal &&
+                (tagChangesMade == obj.tagChangesMade));
     }
 
     // Property setting methods
@@ -153,6 +157,12 @@ public class ColorControlPointList extends AttributeSubject
         Select(5);
     }
 
+    public void SetTagChangesMade(boolean tagChangesMade_)
+    {
+        tagChangesMade = tagChangesMade_;
+        Select(6);
+    }
+
     // Property getting methods
     public Vector  GetControlPoints() { return controlPoints; }
     public int     GetSmoothing() { return smoothing; }
@@ -160,6 +170,7 @@ public class ColorControlPointList extends AttributeSubject
     public boolean GetDiscreteFlag() { return discreteFlag; }
     public boolean GetExternalFlag() { return externalFlag; }
     public Vector  GetTagNames() { return tagNames; }
+    public boolean GetTagChangesMade() { return tagChangesMade; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -183,6 +194,8 @@ public class ColorControlPointList extends AttributeSubject
             buf.WriteBool(externalFlag);
         if(WriteSelect(5, buf))
             buf.WriteStringVector(tagNames);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(tagChangesMade);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -217,6 +230,9 @@ public class ColorControlPointList extends AttributeSubject
         case 5:
             SetTagNames(buf.ReadStringVector());
             break;
+        case 6:
+            SetTagChangesMade(buf.ReadBool());
+            break;
         }
     }
 
@@ -245,6 +261,7 @@ public class ColorControlPointList extends AttributeSubject
         str = str + boolToString("discreteFlag", discreteFlag, indent) + "\n";
         str = str + boolToString("externalFlag", externalFlag, indent) + "\n";
         str = str + stringVectorToString("tagNames", tagNames, indent) + "\n";
+        str = str + boolToString("tagChangesMade", tagChangesMade, indent) + "\n";
         return str;
     }
 
@@ -289,5 +306,6 @@ public class ColorControlPointList extends AttributeSubject
     private boolean discreteFlag;
     private boolean externalFlag;
     private Vector  tagNames; // vector of String objects
+    private boolean tagChangesMade;
 }
 

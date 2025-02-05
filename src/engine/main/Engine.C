@@ -82,6 +82,14 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtExecutionManager.h>
 
+#ifdef HAVE_CONDUIT
+#include <avtConduitBlueprintDataAdaptor.h>
+#endif
+
+#ifdef HAVE_LIBVTKM
+#include <vtkm/cont/Initialize.h>
+#endif
+
 #include <visit-config.h>
 #if defined(HAVE_OSMESA) || defined(HAVE_EGL)
 #  include <vtkOffScreenRenderingFactory.h>
@@ -767,6 +775,12 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
+// 
+//   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
+//
+//   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//   I replaced vtkh with vtkm.
 //
 // ****************************************************************************
 
@@ -783,6 +797,12 @@ Engine::InitializeCompute()
     int setupTimer = visitTimer->StartTimer();
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
+#ifdef HAVE_LIBVTKM
+    vtkm::cont::Initialize();
+#endif
+#ifdef HAVE_CONDUIT
+    avtConduitBlueprintDataAdaptor::Initialize();
+#endif
     if (avtCallback::GetSoftwareRendering())
     {
         // Install factory for  VisIt's OffScreen Render Window overrides

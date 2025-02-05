@@ -1635,46 +1635,6 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wellNames") == 0)
         return WellBoreAttributes_GetWellNames(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-
-    //
-    //  Removed in 3.0.0
-    //
-    // wellLineStyle and it's possible enumerations
-    bool wellLineStyleFound = false;
-    if (strcmp(name, "wellLineStyle") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-
-    if (wellLineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "wellLineStyle is no longer a valid WellBore "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1733,23 +1693,6 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "wellNames") == 0)
         obj = WellBoreAttributes_SetWellNames(self, args);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        //
-        //  Removed in 3.0.0
-        //
-        if(strcmp(name, "wellLineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'wellLineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

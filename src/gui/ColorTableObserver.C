@@ -104,7 +104,7 @@ ColorTableObserver::Update(Subject *)
         const intVector &active = colorAtts->GetActive();
 
         // This should never happen. Resetting the names will reset the active
-        // array as well, and make very color table active. However, this does
+        // array as well, and make every color table active. However, this does
         // happen; when loading settings from config/session files, `names` is
         // populated but `active` is left empty. Ideally, loading settings
         // would correctly preserve which color tables are active, but this

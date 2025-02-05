@@ -9,7 +9,8 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QLineEdit>
-#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QFont>
 
 #include <cstring>
 
@@ -19,22 +20,22 @@
 // ****************************************************************************
 // Method: QvisDBOptionsDialog::QvisDBOptionsDialog
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
-// Programmer: 
+// Programmer:
 // Creation:   Tue Apr  8 11:12:48 PDT 2008
 //
 // Modifications:
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
-//   
+//
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
@@ -51,6 +52,13 @@
 //
 //    Chris Laganella, Tue Feb  8 18:24:35 EST 2022
 //    Add support for multi line string
+//
+//    Kathleen Biagas, Tue Sep 13, 2022
+//    Use QPlainTextEdit for MultiLineString instead of QTextEdit, so that
+//    multiple lines are properly displayed. Also use a fixed-width font
+//    (Courier) and prevent tabs from being entered by setting
+//    tabChangesFocus to true.
+//
 // ****************************************************************************
 
 QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
@@ -64,7 +72,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
     QGridLayout *grid = new QGridLayout();
 
     QLineEdit *ledit;
-    
+
     topLayout->addLayout(grid);
     for (int i=0; i<size; i++)
     {
@@ -120,7 +128,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
                 cbo_box->addItem(curr_name);
             }
             cbo_box->setCurrentIndex(atts->GetEnum(name));
-            
+
             grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(cbo_box, i, 1);
             comboboxes.append(cbo_box);
@@ -129,7 +137,12 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
           case DBOptionsAttributes::MultiLineString:
             { // new scope
             txt = atts->GetMultiLineString(name).c_str();
-            QTextEdit *textEdit = new QTextEdit(txt, this);
+            QPlainTextEdit *textEdit = new QPlainTextEdit(txt, this);
+            // this prevents users from typing tabs in the editor.
+            textEdit->setTabChangesFocus(true);
+            // use a fixed width font
+            QFont f("Courier", 10);
+            textEdit->setFont(f);
             QLabel *label = new QLabel(tr(name.c_str()), this);
             label->setAlignment(Qt::AlignTop);
             grid->addWidget(label, i, 0);
@@ -139,7 +152,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             break;
         }
     }
-   
+
     QHBoxLayout *btnLayout = new QHBoxLayout();
     topLayout->addLayout(btnLayout);
     //btnLayout->addStretch(10);
@@ -164,7 +177,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
 // ****************************************************************************
 // Method: QvisDBOptionsDialog::~QvisDBOptionsDialog
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Creation:   Tue Apr  8 11:12:48 PDT 2008
@@ -179,7 +192,7 @@ QvisDBOptionsDialog::~QvisDBOptionsDialog()
 // ****************************************************************************
 // Method: QvisDBOptionsDialog::okayClicked
 //
-// Purpose: 
+// Purpose:
 //   Slot to handle updating options.
 //
 // Creation:   Tue Apr  8 11:12:48 PDT 2008
@@ -219,7 +232,7 @@ QvisDBOptionsDialog::okayClicked()
           case DBOptionsAttributes::Bool:
           {
             bool val = checkboxes[checkbox_index++]->isChecked();
-            debug5 << mName << "Setting \"" << name.c_str() << "\" to " 
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to "
                    << (val?"true":"false") << endl;
             atts->SetBool(name, val);
           }
@@ -268,7 +281,7 @@ QvisDBOptionsDialog::okayClicked()
           }
         }
     }
-    
+
 
     accept();
 }

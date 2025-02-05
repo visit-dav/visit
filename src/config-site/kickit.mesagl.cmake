@@ -1,8 +1,8 @@
 #/usr/gapps/visit/thirdparty_shared/3.3.0/mesagl/cmake/3.18.2/linux-x86_64_gcc-9.1/bin/cmake
 ##
-## ./build_visit3_3_0 generated host.cmake
-## created: Tue May 31 18:02:36 PDT 2022
-## system: Linux kickit.llnl.gov 3.10.0-1160.62.1.el7.x86_64 #1 SMP Wed Mar 23 09:04:02 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_3_3 generated host.cmake
+## created: Wed Mar 29 11:29:47 PDT 2023
+## system: Linux kickit.llnl.gov 3.10.0-1160.88.1.el7.x86_64 #1 SMP Sat Feb 18 13:27:00 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
@@ -19,7 +19,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/gapps/gcc/gcc-9.1/bin/g++ TYPE FILE
 VISIT_OPTION_DEFAULT(VISIT_CXX_LIBRARY /usr/gapps/gcc/gcc-9.1/lib64/libstdc++.so TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
@@ -37,7 +37,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Database reader plugin support libraries
 ##
-## The HDF4, HDF5 and NetCDF libraries must be first so that
+## The HDF5 and NetCDF libraries must be first so that
 ## their libdeps are defined for any plugins that need them.
 ##
 ## For libraries with LIBDEP settings, order matters.
@@ -178,8 +178,8 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.8.3)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.8.3/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.8.7)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
@@ -199,12 +199,6 @@ VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/2.2.4/${VISITARCH})
 SETUP_APP_VERSION(H5PART 1.6.6)
 VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/${H5PART_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-
-##
-## HDF4
-##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH}/lib vtkjpeg-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} TYPE STRING)
 
 ##
 ## IceT
@@ -270,12 +264,7 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VI
 ##
 ## VTKM
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.7.0/${VISITARCH})
-
-##
-## VTKH
-##
-VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/v0.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.9.0/${VISITARCH})
 
 ##
 ## Xdmf

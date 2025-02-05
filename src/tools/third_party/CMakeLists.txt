@@ -8,10 +8,13 @@
 #  Remove if test that is handled by the parent dir's CMakeLists.txt
 #  (VISIT_DBIO_ONLY, VISIT_ENGINE_ONLY, AND VISIT_SERVER_COMPONENTS_ONLY)
 #
+#  Kathleen Biagas, Mon Jan 30, 2023
+#  No longer build qtssh on unix.
+#
 #****************************************************************************
 
 add_subdirectory(mpeg2encode)
 
-if(WIN32 OR UNIX)
+if(WIN32)
     add_subdirectory(qtssh)
 endif()
