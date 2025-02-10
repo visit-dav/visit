@@ -25,7 +25,7 @@ function bv_meson_alt_meson_dir
 
 function bv_meson_depends_on
 {
-    depends_on="python"
+    depends_on="ninja python"
 
     echo ${depends_on}
 }
