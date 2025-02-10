@@ -62,8 +62,8 @@ void vtkMultiLineSource::AddLine(double p0[3], double p1[3])
 // ----------------------------------------------------------------------
 void vtkMultiLineSource::Shift3d(const double vec[3], const double &shiftFactor)
 {
-    const int numPointsOrig = OriginalPoints->GetNumberOfPoints();
-    const int numPoints = Points->GetNumberOfPoints();
+    const vtkIdType numPointsOrig = OriginalPoints->GetNumberOfPoints();
+    const vtkIdType numPoints = Points->GetNumberOfPoints();
 
     if(numPointsOrig != numPoints)
     {
@@ -71,7 +71,7 @@ void vtkMultiLineSource::Shift3d(const double vec[3], const double &shiftFactor)
         return;
     }
 
-    for(int i = 0; i < numPoints; ++i)
+    for(vtkIdType i = 0; i < numPoints; ++i)
     {
         double p[3];
         OriginalPoints->GetPoint(i,p);
@@ -85,8 +85,8 @@ void vtkMultiLineSource::Shift3d(const double vec[3], const double &shiftFactor)
 // ----------------------------------------------------------------------
 void vtkMultiLineSource::Shift2d(const double &shiftFactor)
 {
-    const int numPointsOrig = OriginalPoints->GetNumberOfPoints();
-    const int numPoints = Points->GetNumberOfPoints();
+    const vtkIdType numPointsOrig = OriginalPoints->GetNumberOfPoints();
+    const vtkIdType numPoints = Points->GetNumberOfPoints();
 
     if(numPointsOrig != numPoints)
     {
@@ -94,7 +94,7 @@ void vtkMultiLineSource::Shift2d(const double &shiftFactor)
         return;
     }
 
-    for(int i = 0; i < numPoints; ++i)
+    for(vtkIdType i = 0; i < numPoints; ++i)
     {
         double p[3];
         OriginalPoints->GetPoint(i,p);
@@ -119,8 +119,8 @@ int vtkMultiLineSource::RequestData(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
 { 
-    const int numPointsOrig = OriginalPoints->GetNumberOfPoints();
-    const int numPoints = Points->GetNumberOfPoints();
+    const vtkIdType numPointsOrig = OriginalPoints->GetNumberOfPoints();
+    const vtkIdType numPoints = Points->GetNumberOfPoints();
 
     //Sanity Check
     if(numPointsOrig != numPoints)
@@ -143,10 +143,10 @@ int vtkMultiLineSource::RequestData(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     vtkCellArray *lines = vtkCellArray::New();
-    const int numLines = numPoints / 2;
+    const vtkIdType numLines = numPoints / 2;
     lines->Allocate( lines->EstimateSize(numLines, 2));
     
-    for(int i = 0; i < numLines; ++i)
+    for(vtkIdType i = 0; i < numLines; ++i)
     {
         vtkLine * line  = vtkLine::New();
         line->GetPointIds()->SetId(0,i*2+0);

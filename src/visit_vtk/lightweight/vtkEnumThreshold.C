@@ -166,7 +166,7 @@ static int CompareIds(const void *a, const void *b)
 static void HashCell(vtkCell *theCell, unsigned int &hashVal,
     vector<vtkIdType> &pids)
 {
-    int npts = theCell->GetNumberOfPoints();
+    int npts = static_cast<int>(theCell->GetNumberOfPoints());
 
     for (int i = 0; i < npts; i++)
         pids.push_back(theCell->GetPointId(i));
@@ -176,7 +176,7 @@ static void HashCell(vtkCell *theCell, unsigned int &hashVal,
     qsort(&pids[0], npts, sizeof(vtkIdType), CompareIds);
 
     hashVal = BJHash::Hash(reinterpret_cast<unsigned char*>(&pids[0]),
-        npts * sizeof(vtkIdType), 0xdeadbeef);
+        static_cast<unsigned int>(npts) * sizeof(vtkIdType), 0xdeadbeef);
 }
 
 //
@@ -330,18 +330,19 @@ int vtkEnumThreshold::RequestData(
 
     // get the input and ouptut
     vtkDataSet *input = vtkDataSet::SafeDownCast(
-                                                 inInfo->Get(vtkDataObject::DATA_OBJECT()));
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
     vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
-                                                                    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     vtkIdType cellId, newCellId;
     vtkIdList *cellPts, *pointMap;
     vtkIdList *newCellPts;
     vtkCell *cell;
     vtkPoints *newPoints;
-    int i, newId, numPts;
+    int i;
+    vtkIdType newId, numPts;
     vtkIdType ptId;
-    int numCellPts;
+    vtkIdType numCellPts;
     double x[3];
     vtkPointData *pd=input->GetPointData(), *outPD=output->GetPointData();
     vtkCellData *cd=input->GetCellData(), *outCD=output->GetCellData();
@@ -762,7 +763,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
                 if (enumerationMap)
                     delete[] enumerationMap;
                 enumerationMap = new unsigned char[int(maxEnumerationValue-minEnumerationValue)+1];
-                for (size_t i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
+                for (int i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
                     enumerationMap[i] = 0;
             }
 

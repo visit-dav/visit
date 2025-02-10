@@ -26,8 +26,8 @@ bool vtkElementLabelArray::AddName(const std::string &name,
     typedef std::map<std::string, LabelToZoneMapping> MapType; 
 
     bool valid = true;
-    const int arraySize = this->GetNumberOfTuples();
-    const int numRanges = labelRangesBegin.size();
+    const vtkIdType arraySize = this->GetNumberOfTuples();
+    const size_t numRanges = labelRangesBegin.size();
     //
     // Basic error checking 
     //
@@ -54,7 +54,7 @@ bool vtkElementLabelArray::AddName(const std::string &name,
     //
     //  Validate the ranges
     //
-    for(int i = 0; i < numRanges; ++i)
+    for(size_t i = 0; i < numRanges; ++i)
     {
         if(elementIdsEnd[i] >= arraySize  ||
            elementIdsBegin[i] < 0)
@@ -134,9 +134,8 @@ bool vtkElementLabelArray::GetElementId(const std::string &name,
     }
     // label starting index. E.g., Mili is one indexed
     const LabelToZoneMapping &nameMap = NameMapping[tokens[0]];
-    const int numRanges = nameMap.LabelRangesBegin.size(); 
     bool found = false;
-    for(int i = 0; i < numRanges; ++i)
+    for(size_t i = 0; i < nameMap.LabelRangesBegin.size(); ++i)
     {
         if(localId >= nameMap.LabelRangesBegin[i] &&
            localId <= nameMap.LabelRangesEnd[i])

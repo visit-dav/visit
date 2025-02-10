@@ -165,7 +165,8 @@ vtkIdType vtkVisItPointLocator::FindClosestPoint(const double x[3])
   double minDist2;
   double dist2 = VTK_FLOAT_MAX;
   double pt[3];
-  int closest, level;
+  vtkIdType closest;
+  int level;
   vtkIdType ptId, cno;
   vtkIdList *ptIds;
   int ijk[3], *nei;

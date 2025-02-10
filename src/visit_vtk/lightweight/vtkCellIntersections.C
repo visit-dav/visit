@@ -191,7 +191,7 @@ int
 vtkCellIntersections::PolyVertexIntersectWithLine(vtkPolyVertex *cell, 
     double p1[3], double p2[3], double& t, double x[3])
 {
-  int numPts=cell->Points->GetNumberOfPoints();
+  vtkIdType numPts=cell->Points->GetNumberOfPoints();
   
   vtkVertex *vertex = vtkVertex::New();
   double pt[3], tTemp, xTemp[3];
@@ -244,7 +244,8 @@ int
 vtkCellIntersections::PolyLineIntersectWithLine(vtkPolyLine *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
-  int i, numLines=cell->Points->GetNumberOfPoints() - 1;
+  int i;
+  vtkIdType numLines=cell->Points->GetNumberOfPoints() - 1;
   double a1[3], a2[3];
   int intersection = 0;
   double xTemp[3], tTemp, u = VTK_DOUBLE_MAX, v = VTK_DOUBLE_MAX;
@@ -384,7 +385,7 @@ int
 vtkCellIntersections::TriStripIntersectWithLine(vtkTriangleStrip *cell, 
     double p1[3], double p2[3], double& t, double x[3])
 {
-  int numTris = cell->Points->GetNumberOfPoints()-2;
+  vtkIdType numTris = cell->Points->GetNumberOfPoints()-2;
   double pt1[3], pt2[3], pt3[3];
   double tTemp, xTemp[3];
   int i, intersection = 0;
@@ -435,7 +436,7 @@ vtkCellIntersections::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3],
   double pt1[3], n[3];
   double closestPoint[3], xTemp[3];
   double dist2;
-  int npts = cell->GetNumberOfPoints();
+  vtkIdType npts = cell->GetNumberOfPoints();
   int i, success;
   double *weights = NULL;;
  

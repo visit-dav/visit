@@ -99,7 +99,7 @@ int vtkVisItPointDataToCellData::RequestData(
     numPts = cellPts->GetNumberOfIds();
     if ( numPts > 0 )
       {
-      weight = 1.0 / numPts;
+      weight = 1.0 / static_cast<double>(numPts);
       for (ptId=0; ptId < numPts; ptId++)
         {
         weights[ptId] = weight;

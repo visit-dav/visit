@@ -66,17 +66,17 @@ vtkVisItUtility_GetPointsRectilinear(int dt, vtkDataArray *xc, vtkDataArray *yc,
     T *x = new T[nx];
     for (i = 0 ; i < nx ; i++)
     {
-        x[i] = xc->GetComponent(i, 0);
+        x[i] = static_cast<T>(xc->GetComponent(i, 0));
     }
     T *y = new T[ny];
     for (i = 0 ; i < ny ; i++)
     {
-        y[i] = yc->GetComponent(i, 0);
+        y[i] = static_cast<T>(yc->GetComponent(i, 0));
     }
     T *z = new T[nz];
     for (i = 0 ; i < nz ; i++)
     {
-        z[i] = zc->GetComponent(i, 0);
+        z[i] = static_cast<T>(zc->GetComponent(i, 0));
     }
 
     vtkPoints *pts = vtkPoints::New(dt);
@@ -529,13 +529,13 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
         vtkRectilinearGrid *rgrid = static_cast<vtkRectilinearGrid*>(ds);
         if (ComputeStructuredCoordinates(rgrid, x, ijk) == 0)
             return -1;
-        return rgrid->ComputeCellId(ijk);
+        return static_cast<int>(rgrid->ComputeCellId(ijk));
     }
     else
     {
         // Pulled this from vtkPointSet::FindCell, because for
         // some of our data, their default 'MAXWALK' is too small.
-        int nCells = ds->GetNumberOfCells();
+        vtkIdType nCells = ds->GetNumberOfCells();
         if (nCells == 0)
         {
             return -1;
@@ -594,7 +594,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
 
                 if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
                 {
-                    found = cellId;
+                    found = static_cast<int>(cellId);
                     minDist2 = dist2;
                 }
             }
@@ -621,7 +621,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
                         if (eval == 1 && dist2 <= tol && dist2 < minDist2)
                         {
                             minDist2 = dist2;
-                            found = cellId;
+                            found = static_cast<int>(cellId);
                         }
                     }
 
@@ -881,11 +881,11 @@ vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds,
 
     if (globalIds)
     {
-        int n = globalIds->GetNumberOfTuples();
+        vtkIdType n = globalIds->GetNumberOfTuples();
         int *g = globalIds->GetPointer(0);
-        for (int i = 0; i < n && retVal == -1; i++)
+        for (vtkIdType i = 0; i < n && retVal == -1; i++)
         {
-            retVal = (g[i] == globalElement ? i : -1);
+            retVal = (g[i] == globalElement ? static_cast<int>(i) : -1);
         }
     }
     return retVal;
@@ -1546,9 +1546,9 @@ bool
 vtkVisItUtility::IntersectBox(double bounds[6], double origin[3],
                               double dir[3], double coord[3], double& t)
 {
-    int VTK_RIGHT  = 0;
-    int VTK_LEFT   = 1;
-    int VTK_MIDDLE = 2;
+    char VTK_RIGHT  = 0;
+    char VTK_LEFT   = 1;
+    char VTK_MIDDLE = 2;
     bool    inside=true;
     char    quadrant[3];
     int     i, whichPlane=0;

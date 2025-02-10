@@ -76,7 +76,7 @@ vtkDataSetFromVolume::PointList::GetList(vtkIdType listId,
     }
  
     outlist = list[listId];
-    return (listId == currentList ? currentPoint : pointsPerList);
+    return static_cast<int>((listId == currentList ? currentPoint : pointsPerList));
 }
  
  
@@ -276,11 +276,11 @@ vtkDataSetFromVolume::EdgeHashTable::AddPoint(vtkIdType ap1, vtkIdType ap2, floa
 
 
 vtkDataSetFromVolume::vtkDataSetFromVolume(vtkIdType ptSizeGuess)
-   : pt_list(), edges(ptSizeGuess, pt_list), numPrevPts(0)
+   : pt_list(), edges(static_cast<int>(ptSizeGuess), pt_list), numPrevPts(0)
 {
 }
       
 vtkDataSetFromVolume::vtkDataSetFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess)
-   : pt_list(), edges(ptSizeGuess, pt_list), numPrevPts(nPts)
+   : pt_list(), edges(static_cast<int>(ptSizeGuess), pt_list), numPrevPts(nPts)
 {
 }

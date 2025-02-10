@@ -230,20 +230,20 @@ class BQuad
     vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(BQuad *);
     bool           Equals(BTri *);
-    void           AddInRemainingTriangle(BTri *, int);
+    void           AddInRemainingTriangle(BTri *, vtkIdType);
     inline void    ReRegisterMemory(void)
                          {
                              MemoryManager->ReRegisterQuad(this);
                          }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
-    inline int     GetOriginalZone(void) { return orig_zone; }
+    inline void      SetOriginalZone(const vtkIdType &oz) { orig_zone = oz; }
+    inline vtkIdType GetOriginalZone(void) { return orig_zone; }
     inline void    SetCellValue(const int &cv) { cell_value = cv; }
     inline int     GetCellValue(void) { return cell_value; }
     inline void    SetMatched(bool m) { matched = m; }
     inline bool    GetMatched() { return matched; }
 
-    void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
+    void           OutputCell(vtkIdType,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     static void    RegisterBHashEntryList(BHashEntryList *);
     static void    RegisterMemoryManager(BQuadMemoryManager *);
@@ -251,8 +251,8 @@ class BQuad
 
   protected:
     unsigned char ordering_case;
-    int           nodes[3];
-    int           orig_zone;
+    vtkIdType     nodes[3];
+    vtkIdType     orig_zone;
     int           cell_value;
     bool          matched;
 
@@ -260,7 +260,7 @@ class BQuad
     static BQuadMemoryManager *MemoryManager;
     static int                 npts;
 
-    void          AddInRemainingTriangle(int, int);
+    void          AddInRemainingTriangle(int, vtkIdType);
 };
 
 //
@@ -334,20 +334,20 @@ class BTri
                    }
 
     bool           Equals(BQuad *);
-    void           AddInRemainingTriangle(BQuad *, int);
+    void           AddInRemainingTriangle(BQuad *, vtkIdType);
     inline void    ReRegisterMemory(void)
                        {
                            MemoryManager->ReRegisterTri(this);
                        }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
-    inline int     GetOriginalZone(void) { return orig_zone; }
+    inline void      SetOriginalZone(const vtkIdType &oz) { orig_zone = oz; }
+    inline vtkIdType GetOriginalZone(void) { return orig_zone; }
     inline void    SetCellValue(const int &cv) { cell_value = cv; }
     inline int     GetCellValue(void) { return cell_value; }
     inline void    SetMatched(bool m) { matched = m; }
     inline bool    GetMatched() { return matched; }
 
-    void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
+    void           OutputCell(vtkIdType,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     static void    RegisterMemoryManager(BTriMemoryManager *);
     static void    SetNumberOfPoints(int np) { npts = np; }
@@ -355,8 +355,8 @@ class BTri
 
   protected:
     unsigned char ordering_case;
-    int           nodes[2];
-    int           orig_zone;
+    vtkIdType     nodes[2];
+    vtkIdType     orig_zone;
     int           cell_value;
     bool          matched;
 
@@ -414,14 +414,14 @@ class BLine
                            MemoryManager->ReRegisterLine(this);
                        }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; }
-    inline int     GetOriginalZone(void) { return orig_zone; }
+    inline void      SetOriginalZone(const vtkIdType &oz) { orig_zone = oz; }
+    inline vtkIdType GetOriginalZone(void) { return orig_zone; }
     inline void    SetCellValue(const int &cv) { cell_value = cv; }
     inline int     GetCellValue(void) { return cell_value; }
     inline void    SetMatched(bool m) { matched = m; }
     inline bool    GetMatched() { return matched; }
 
-    void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
+    void           OutputCell(vtkIdType,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     static void    RegisterMemoryManager(BLineMemoryManager *);
     static void    SetNumberOfPoints(int np) { npts = np; }
@@ -429,8 +429,8 @@ class BLine
 
   protected:
     unsigned char ordering_case;
-    int           nodes[1];
-    int           orig_zone;
+    vtkIdType     nodes[1];
+    vtkIdType     orig_zone;
     int           cell_value;
     bool          matched;
 
@@ -484,7 +484,7 @@ class BHashEntry
     void           AddQuad(BQuad *);
     void           AddTri(BTri *);
 
-    inline void    SetPointIndex(int pi) { point_index = pi; }
+    inline void    SetPointIndex(vtkIdType pi) { point_index = pi; }
     static void    RegisterMemoryManager(BHashEntryMemoryManager *mm)
                           { MemoryManager = mm; }
     static void    RegisterBHashEntryList(BHashEntryList *hel)
@@ -495,9 +495,9 @@ class BHashEntry
 
   protected:
     Face           faces[FACES_PER_HASH_ENTRY];
-    int            point_index;
+    vtkIdType      point_index;
     unsigned char  last_good_entry;
-    unsigned char  face_type;
+    int            face_type;
     BHashEntry     *extension;
 
     static BHashEntryMemoryManager *MemoryManager;
@@ -534,7 +534,7 @@ class BHashEntry2D
 
     void           AddLine(BLine *);
 
-    inline void    SetPointIndex(int pi) { point_index = pi; }
+    inline void    SetPointIndex(vtkIdType pi) { point_index = pi; }
     static void    RegisterMemoryManager(BHashEntryMemoryManager2D *mm)
                           { MemoryManager = mm; }
     static void    RegisterBHashEntryList(BHashEntryList2D *hel)
@@ -545,7 +545,7 @@ class BHashEntry2D
 
   protected:
     pBLine         lines[LINES_PER_HASH_ENTRY];
-    int            point_index;
+    vtkIdType      point_index;
     unsigned char  last_good_entry;
     BHashEntry2D   *extension;
 
@@ -656,11 +656,11 @@ class BHashEntryMemoryManager2D
 class BHashEntryList
 {
   public:
-                BHashEntryList(int npts);
+                BHashEntryList(vtkIdType npts);
     virtual    ~BHashEntryList();
 
-    void        AddTri(const vtkIdType *, int orig_zone, int cell_value);
-    void        AddQuad(const vtkIdType *, int orig_zone, int cell_value);
+    void        AddTri(const vtkIdType *, vtkIdType orig_zone, int cell_value);
+    void        AddQuad(const vtkIdType *, vtkIdType orig_zone, int cell_value);
 
     inline void IncrementMatchedCount() { matchedCount++; }
 
@@ -672,8 +672,8 @@ class BHashEntryList
 
   protected:
     BHashEntry             **list;
-    int                     nhashes;
-    int                     npts;
+    vtkIdType               nhashes;
+    vtkIdType               npts;
     int                     nfaces;
     int                     matchedCount;
     BQuadMemoryManager      qmm;
@@ -699,12 +699,12 @@ class BHashEntryList
 class BHashEntryList2D
 {
   public:
-                BHashEntryList2D(int npts);
+                BHashEntryList2D(vtkIdType npts);
     virtual    ~BHashEntryList2D();
 
     inline void IncrementMatchedCount() { matchedCount++; }
 
-    void        AddLine(const vtkIdType *, int orig_zone, int cell_value);
+    void        AddLine(const vtkIdType *, vtkIdType orig_zone, int cell_value);
 
     inline void RemoveLine(void) { nlines--; }
     int         GetNumberOfMatchedLines(void) { return matchedCount; }
@@ -714,8 +714,8 @@ class BHashEntryList2D
 
   protected:
     BHashEntry2D             **list;
-    int                       nhashes;
-    int                       npts;
+    vtkIdType                 nhashes;
+    vtkIdType                 npts;
     int                       nlines;
     int                       matchedCount;
     BLineMemoryManager        lmm;
@@ -743,13 +743,13 @@ BHashEntryMemoryManager2D *BHashEntry2D::MemoryManager = NULL;
 // Function prototypes
 //
 
-static void AddPolygon(int, const vtkIdType *, int, int, BHashEntryList2D &);
-static void AddPixel(const vtkIdType *, int, int, BHashEntryList2D &);
-static void AddTetrahedron(const vtkIdType *, int, int, BHashEntryList &);
-static void AddWedge(const vtkIdType *, int, int, BHashEntryList &);
-static void AddPyramid(const vtkIdType *, int, int, BHashEntryList &);
-static void AddHexahedron(const vtkIdType *, int, int, BHashEntryList &);
-static void AddVoxel(const vtkIdType *, int, int, BHashEntryList &);
+static void AddPolygon(vtkIdType, const vtkIdType *, vtkIdType, int, BHashEntryList2D &);
+static void AddPixel(const vtkIdType *, vtkIdType, int, BHashEntryList2D &);
+static void AddTetrahedron(const vtkIdType *, vtkIdType, int, BHashEntryList &);
+static void AddWedge(const vtkIdType *, vtkIdType, int, BHashEntryList &);
+static void AddPyramid(const vtkIdType *, vtkIdType, int, BHashEntryList &);
+static void AddHexahedron(const vtkIdType *, vtkIdType, int, BHashEntryList &);
+static void AddVoxel(const vtkIdType *, vtkIdType, int, BHashEntryList &);
 
 static int  LoopOverAllCells(vtkUnstructuredGrid *, BHashEntryList &, BHashEntryList2D &, bool &);
 static void LoopOverUnhashedCells(vtkUnstructuredGrid *, vtkPolyData *,
@@ -1077,7 +1077,7 @@ BQuad::AssignNodes(const vtkIdType *n)
 // ****************************************************************************
 
 void
-BQuad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
+BQuad::OutputCell(vtkIdType node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
@@ -1086,7 +1086,7 @@ BQuad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
     n[1] = (blist[1] == -1 ? node0 : nodes[blist[1]]);
     n[2] = (blist[2] == -1 ? node0 : nodes[blist[2]]);
     n[3] = (blist[3] == -1 ? node0 : nodes[blist[3]]);
-    int newId = pd->InsertNextCell(VTK_QUAD, 4, n);
+    vtkIdType newId = pd->InsertNextCell(VTK_QUAD, 4, n);
     out_cd->CopyData(in_cd, orig_zone, newId);
 }
 
@@ -1165,7 +1165,7 @@ BQuad::Equals(BTri *t)
 // ****************************************************************************
 
 void
-BQuad::AddInRemainingTriangle(BTri *t, int node_0)
+BQuad::AddInRemainingTriangle(BTri *t, vtkIdType node_0)
 {
     if (t->nodes[0] == nodes[0])
     {
@@ -1206,7 +1206,7 @@ BQuad::AddInRemainingTriangle(BTri *t, int node_0)
 // ****************************************************************************
 
 void
-BQuad::AddInRemainingTriangle(int n, int node_0)
+BQuad::AddInRemainingTriangle(int n, vtkIdType node_0)
 {
     vtkIdType orig_quad_index = quad_map_back_list[ordering_case][n];
     vtkIdType *neighbors = quad_reorder_list[ordering_case];
@@ -1333,7 +1333,7 @@ BTri::AssignNodes(const vtkIdType *n)
 // ****************************************************************************
 
 void
-BTri::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
+BTri::OutputCell(vtkIdType node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[3];
@@ -1341,7 +1341,7 @@ BTri::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
-    int newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
+    vtkIdType newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
     out_cd->CopyData(in_cd, orig_zone, newId);
 }
 
@@ -1382,7 +1382,7 @@ BTri::Equals(BQuad *q)
 // ****************************************************************************
 
 void
-BTri::AddInRemainingTriangle(BQuad *q, int node_0)
+BTri::AddInRemainingTriangle(BQuad *q, vtkIdType node_0)
 {
     q->AddInRemainingTriangle(this, node_0);
 }
@@ -1455,14 +1455,14 @@ BLine::AssignNodes(const vtkIdType *n)
 // ****************************************************************************
 
 void
-BLine::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
+BLine::OutputCell(vtkIdType node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[2];
     int *list = line_reorder_list[ordering_case];
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
-    int newId = pd->InsertNextCell(VTK_LINE, 2, n);
+    vtkIdType newId = pd->InsertNextCell(VTK_LINE, 2, n);
     out_cd->CopyData(in_cd, orig_zone, newId);
 }
 
@@ -2262,7 +2262,7 @@ BLineMemoryManager::AllocateLinePool(void)
 //
 // ****************************************************************************
 
-BHashEntryList::BHashEntryList(int np)
+BHashEntryList::BHashEntryList(vtkIdType np)
 {
     npts = np;
     nhashes = npts;
@@ -2282,7 +2282,7 @@ BHashEntryList::BHashEntryList(int np)
 
 
 // ****************************************************************************
-//  Method: BHashEntryList constructor
+//  Method: BHashEntryList destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
@@ -2318,7 +2318,7 @@ BHashEntryList::~BHashEntryList()
 // ****************************************************************************
 
 void
-BHashEntryList::AddTri(const vtkIdType *node_list, int orig_zone, int cell_value)
+BHashEntryList::AddTri(const vtkIdType *node_list, vtkIdType orig_zone, int cell_value)
 {
     nfaces++;
     BTri *tri = tmm.GetFreeTri();
@@ -2353,7 +2353,7 @@ BHashEntryList::AddTri(const vtkIdType *node_list, int orig_zone, int cell_value
 // ****************************************************************************
 
 void
-BHashEntryList::AddQuad(const vtkIdType *node_list, int orig_zone, int cell_value)
+BHashEntryList::AddQuad(const vtkIdType *node_list, vtkIdType orig_zone, int cell_value)
 {
     nfaces++;
     BQuad *quad = qmm.GetFreeQuad();
@@ -2452,7 +2452,7 @@ BHashEntry::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 //
 // ****************************************************************************
 
-BHashEntryList2D::BHashEntryList2D(int np)
+BHashEntryList2D::BHashEntryList2D(vtkIdType np)
 {
     npts = np;
     nhashes = npts;
@@ -2504,7 +2504,7 @@ BHashEntryList2D::~BHashEntryList2D()
 // ****************************************************************************
 
 void
-BHashEntryList2D::AddLine(const vtkIdType *node_list, int orig_zone, int cell_value)
+BHashEntryList2D::AddLine(const vtkIdType *node_list, vtkIdType orig_zone, int cell_value)
 {
     nlines++;
     BLine *line = lmm.GetFreeLine();
@@ -2633,7 +2633,7 @@ vtkUnstructuredGridBoundaryFilter::RequestData(
     vtkPointData *outputPD = output->GetPointData();
     outputPD->PassData(pd);
 
-    int ntotalpts = input->GetNumberOfPoints();
+    vtkIdType ntotalpts = input->GetNumberOfPoints();
     BHashEntryList   list(ntotalpts);
     BHashEntryList2D list2d(ntotalpts);
 
@@ -2745,7 +2745,7 @@ void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
           case VTK_TRIANGLE_STRIP:
           case VTK_QUAD:
           case VTK_POLYGON:
-            newCellId = output->InsertNextCell(cellType, npts, pts);
+            newCellId = output->InsertNextCell(cellType, static_cast<int>(npts), pts);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
 
@@ -2754,7 +2754,7 @@ void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
             pixel_ids[1] = pts[1];
             pixel_ids[2] = pts[3];
             pixel_ids[3] = pts[2];
-            newCellId = output->InsertNextCell(cellType, npts, pixel_ids);
+            newCellId = output->InsertNextCell(cellType, static_cast<int>(npts), pixel_ids);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }
@@ -2880,7 +2880,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
 //
 // ****************************************************************************
 void
-AddPolygon(int npts, const vtkIdType *pts, int cellId, int cellVal,
+AddPolygon(vtkIdType npts, const vtkIdType *pts, vtkIdType cellId, int cellVal,
            BHashEntryList2D &list)
 {
     vtkIdType nodes[2];
@@ -2910,7 +2910,7 @@ AddPolygon(int npts, const vtkIdType *pts, int cellId, int cellVal,
 // ****************************************************************************
 
 void
-AddPixel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList2D &list)
+AddPixel(const vtkIdType *pts, vtkIdType cellId, int cellVal, BHashEntryList2D &list)
 {
     vtkIdType nodes[2];
 
@@ -2948,7 +2948,7 @@ AddPixel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList2D &list)
 // ****************************************************************************
 
 void
-AddTetrahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+AddTetrahedron(const vtkIdType *pts, vtkIdType cellId, int cellVal, BHashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -2989,7 +2989,7 @@ AddTetrahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &li
 // ****************************************************************************
 
 void
-AddVoxel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+AddVoxel(const vtkIdType *pts, vtkIdType cellId, int cellVal, BHashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3044,7 +3044,7 @@ AddVoxel(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 // ****************************************************************************
 
 void
-AddHexahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+AddHexahedron(const vtkIdType *pts, vtkIdType cellId, int cellVal, BHashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3099,7 +3099,7 @@ AddHexahedron(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &lis
 // ****************************************************************************
 
 void
-AddWedge(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+AddWedge(const vtkIdType *pts, vtkIdType cellId, int cellVal, BHashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -3147,7 +3147,7 @@ AddWedge(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
 // ****************************************************************************
 
 void
-AddPyramid(const vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
+AddPyramid(const vtkIdType *pts, vtkIdType cellId, int cellVal, BHashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];

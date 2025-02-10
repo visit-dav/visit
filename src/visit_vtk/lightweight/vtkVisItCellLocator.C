@@ -51,7 +51,7 @@ class vtkNeighborCells
     vtkNeighborCells(const int sz, const int ext=1000)
       {this->P = vtkIntArray::New(); this->P->Allocate(3*sz,3*ext);}
     ~vtkNeighborCells(){this->P->Delete();}
-    int GetNumberOfNeighbors() {return (this->P->GetMaxId()+1)/3;}
+    int GetNumberOfNeighbors() {return (static_cast<int>(this->P->GetMaxId())+1)/3;}
     void Reset() {this->P->Reset();}
 
     int *GetPoint(int i) {return this->P->GetPointer(3*i);}
@@ -63,7 +63,7 @@ class vtkNeighborCells
 
 inline int vtkNeighborCells::InsertNextPoint(int *x)
 {
-  int id = this->P->GetMaxId() + 3;
+  int id = static_cast<int>(this->P->GetMaxId()) + 3;
   this->P->InsertValue(id,x[2]);
   this->P->SetValue(id-2, x[0]);
   this->P->SetValue(id-1, x[1]);
@@ -743,7 +743,7 @@ void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
   double pcoords[3]={0.,0.,0.}, point[3]={0.,0.,0.},
          cachedPoint[3]={0.,0.,0.}, weightsArray[6]={0.,0.,0.,0.,0.,0.};
   double *weights = weightsArray;
-  int nWeights = 6, nPoints, cellIsGhost;
+  vtkIdType nWeights = 6, nPoints, cellIsGhost;
   vtkIdList *cellIds;
   vtkUnsignedCharArray *ghosts = static_cast<vtkUnsignedCharArray*>
     (this->DataSet->GetCellData()->GetArray("avtGhostZones"));
@@ -1005,7 +1005,6 @@ void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
   cell->Delete();
 }
 
-int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
 // ****************************************************************************
 //  Modifications:
 //
@@ -1013,6 +1012,8 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius
 //    Rename ghost data array.
 //
 // ****************************************************************************
+int
+vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
                                                  double closestPoint[3],
                                                  vtkGenericCell *cell,
                                                  vtkIdType &cellId, int &subId,
@@ -1022,14 +1023,14 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius
   vtkIdType j;
   int tmpInside;
   int *nei;
-  int closestCell = -1;
+  vtkIdType closestCell = -1;
   int closestSubCell = -1;
   int leafStart;
   int ijk[3];
   double minDist2;
   double pcoords[3], point[3], cachedPoint[3] = {0., 0., 0.}, weightsArray[6];
   double *weights = weightsArray;
-  int nWeights = 6, nPoints;
+  vtkIdType nWeights = 6, nPoints;
   int returnVal = 0;
   vtkIdList *cellIds;
   int cellIsGhost;
@@ -1913,7 +1914,7 @@ void vtkVisItCellLocator::GenerateFace(int face, int numDivs, int i, int j,
   for (ii=0; ii<3; ii++)
     {
     h[ii] = (this->Bounds[2*ii+1] - this->Bounds[2*ii]) / numDivs;
-    origin[ii] = this->Bounds[2*ii] + ids[ii]*h[ii];
+    origin[ii] = this->Bounds[2*ii] + static_cast<double>(ids[ii])*h[ii];
     }
 
   ids[0] = pts->InsertNextPoint(origin);
@@ -2373,7 +2374,7 @@ void
 vtkVisItCellLocator::FindClosestPointToLine(double a0[3], double a1[3],
                                             double &dist2, vtkIdType &cellId)
 {
-    int npoints = this->DataSet->GetNumberOfPoints();
+    vtkIdType npoints = this->DataSet->GetNumberOfPoints();
 
     dist2 = VTK_DOUBLE_MAX;
     cellId = -1;

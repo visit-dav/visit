@@ -126,7 +126,7 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
 
 inline unsigned int BJHash::Hash(char const *k, unsigned int initval)
 {
-    return BJHash::Hash(reinterpret_cast<unsigned char const *>(k), strlen(k), initval);
+    return BJHash::Hash(reinterpret_cast<unsigned char const *>(k), static_cast<unsigned int>(strlen(k)), initval);
 }
 
 inline unsigned int BJHash::Hash(const std::string& str, unsigned int initval)

@@ -215,7 +215,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
     if(nids > nIdStoreSize)
       {
       delete [] pts;
-      nIdStoreSize = int(nids * 1.25);
+      nIdStoreSize = static_cast<int>(static_cast<double>(nids) * 1.25);
       pts = new vtkIdType[nIdStoreSize];
       }
     int cellType = input->GetCellType(i);
@@ -223,7 +223,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
       {
       pts[j] = oldToNew[oldPts[j]];
       }
-    output->InsertNextCell(cellType, nids, pts);
+    output->InsertNextCell(cellType, static_cast<int>(nids), pts);
     }
   delete [] pts;
   delete [] oldToNew;
