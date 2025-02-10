@@ -52,6 +52,10 @@ function bv_xcb_info
     export XCB_WM_FILE=${XCB_WM_FILE:-"libxcb-wm-xcb-util-wm-${XCB_WM_VERSION}.tar.gz"}
     export XCB_WM_BUILD_DIR=${XCB_WM_BUILD_DIR:-"libxcb-wm-xcb-util-wm-${XCB_WM_VERSION}"}
     export XCB_WM_SHA256_CHECKSUM="c1b792306874c36b535413a33edc71a0ac46e78adcf6ddb1a34090a07393d717"
+    export XORG_MACROS_VERSION=${XORG_MACROS_VERSION:-"1.20.2"}
+    export XORG_MACROS_FILE=${XORG_MACROS_FILE:-"macros_util_macros-${XORG_MACROS_VERSION}.tar.gz"}
+    export XORG_MACROS_BUILD_DIR=${XORG_MACROS_BUILD_DIR:-"macros_util_macros-${XORG_MACROS_VERSION}"}
+    export XORG_MACROS_SHA256_CHECKSUM="beac7e00e5996bd0c9d9bd8cf62704583b22dbe8613bd768626b95fcac955744"
 }
 
 function bv_xcb_print
@@ -75,6 +79,9 @@ function bv_xcb_print
     printf "%s%s\n" "XCB_WM_FILE=" "${XCB_WM_FILE}"
     printf "%s%s\n" "XCB_WM_VERSION=" "${XCB_WM_VERSION}"
     printf "%s%s\n" "XCB_WM_BUILD_DIR=" "${XCB_WM_BUILD_DIR}"
+    printf "%s%s\n" "XORG_MACROS_FILE=" "${XORG_MACROS_FILE}"
+    printf "%s%s\n" "XORG_MACROS_VERSION=" "${XORG_MACROS_VERSION}"
+    printf "%s%s\n" "XORG_MACROS_BUILD_DIR=" "${XORG_MACROS_BUILD_DIR}"
 }
 
 function bv_xcb_print_usage
@@ -138,6 +145,13 @@ function bv_xcb_ensure
             DO_XCB="no"
             error "Unable to build xcb wm. ${XCB_WM_FILE} not found."
         fi
+
+        ensure_built_or_ready "xorg-macros" $XORG_MACROS_VERSION $XORG_MACROS_BUILD_DIR $XORG_MACROS_FILE $XORG_MACROS_URL
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_XCB="no"
+            error "Unable to build xorg macros. ${XORG_MACROS_FILE} not found."
+        fi
     fi
 }
 
@@ -170,6 +184,31 @@ function build_xcb
     # XKB
     # GLX
     # XINPUT
+
+    # XORG MACROS
+    # https://gitlab.freedesktop.org/xorg/util/macros
+    # Provides m4 macros needed as part of configure process by other packages.
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $XORG_MACROS_BUILD_DIR $XORG_MACROS_FILE
+    untarred_xcb=$?
+    # 0, already exists, 1 untarred src, 2 error
+
+    if [[ $untarred_xcb == -1 ]] ; then
+        warn "Unable to prepare xorg macros build directory. Giving Up!"
+        return 1
+    fi
+
+    #
+    # Configure and install
+    #
+    info "Configuring and installing xorg macros . . . (~1 minute)"
+    cd $XORG_MACROS_BUILD_DIR || error "Can't cd to xorg macros build dir."
+
+    ./autogen.sh
+
+    cd ..
 
     # XCB M4
     # https://gitlab.freedesktop.org/xorg/util/xcb-util-m4
@@ -211,6 +250,7 @@ function build_xcb
     info "Configuring and installing xcb util . . . (~1 minute)"
     cd $XCB_UTIL_BUILD_DIR || error "Can't cd to xcb util build dir."
     cd m4
+    cp ../../macros-util-macros-1.20.2/* .
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
@@ -244,6 +284,7 @@ function build_xcb
     info "Configuring and installing xcb image . . . (~1 minute)"
     cd $XCB_IMAGE_BUILD_DIR || error "Can't cd to xcb image build dir."
     cd m4
+    cp ../../macros-util-macros-1.20.2/* .
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
@@ -272,6 +313,7 @@ function build_xcb
     info "Configuring and installing xcb keysyms . . . (~1 minute)"
     cd $XCB_KEYSYMS_BUILD_DIR || error "Can't cd to xcb keysyms build dir."
     cd m4
+    cp ../../macros-util-macros-1.20.2/* .
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
@@ -300,6 +342,7 @@ function build_xcb
     info "Configuring and installing xcb wm . . . (~1 minute)"
     cd $XCB_WM_BUILD_DIR || error "Can't cd to xcb wm build dir."
     cd m4
+    cp ../../macros-util-macros-1.20.2/* .
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
@@ -328,6 +371,7 @@ function build_xcb
     info "Configuring and installing xcb renderutil . . . (~1 minute)"
     cd $XCB_RENDERUTIL_BUILD_DIR || error "Can't cd to xcb renderutil build dir."
     cd m4
+    cp ../../macros-util-macros-1.20.2/* .
     cp ../../libxcb-m4-xcb-util-m4-0.4.1/* .
     cd ..
 
