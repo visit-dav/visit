@@ -221,7 +221,7 @@ function build_xcb
 
     # Add the pkgconfig directory to the PKG_CONFIG_PATH so that pkg-config
     # can find xcb util needed by the rest of the xcb packages and qt6.
-    export PKG_CONFIG_PATH=/usr/WS1/brugger/visit_spack_xcb_build/bv_test/third_party/xcb/0.4.1/linux-ppc64le_gcc-8.3/lib/pkgconfig:$PKG_CONFIG_PATH
+    export PKG_CONFIG_PATH=${XCB_INSTALL_DIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 
     # XCB IMAGE
     # https://gitlab.freedesktop.org/xorg/lib/libxcb-image
