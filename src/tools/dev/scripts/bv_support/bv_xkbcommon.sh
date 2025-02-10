@@ -15,7 +15,7 @@ function bv_xkbcommon_disable
 
 function bv_xkbcommon_depends_on
 {
-    depends_on="meson ninja"
+    depends_on="meson"
 
     echo ${depends_on}
 }
