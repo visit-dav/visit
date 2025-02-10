@@ -15,7 +15,7 @@ function bv_xcb_disable
 
 function bv_xcb_depends_on
 {
-    depends_on="meson ninja"
+    local depends_on=""
 
     echo ${depends_on}
 }
