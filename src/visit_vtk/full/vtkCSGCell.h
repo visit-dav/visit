@@ -16,6 +16,7 @@
 #include <visit_vtk_exports.h>
 
 #include <vtkCell.h>
+#include <visit-config.h>
 
 class vtkPointLocator;
 
@@ -42,6 +43,10 @@ public:
   void Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int) override {}
 
   int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts) override;
+
+#if LIB_VERSION_GE(VTK,9,4,0)
+  int TriangulateLocalIds(int, vtkIdList*) override { return 0; }
+#endif
 
   int CellBoundary(int subId, const double pcoords[3], vtkIdList *pts) override
       { return 0; }

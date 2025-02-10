@@ -158,8 +158,10 @@ ${VTK_INCLUDE_DIRS}
 )
 
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
     include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
+endif()
 endif()
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
@@ -222,8 +224,10 @@ Threads::Threads
 ${vtkqtlib}
 )
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
     target_link_libraries(viewer visit_vtk_offscreen)
+endif()
 endif()
 
 #*************************** The viewer executable ***************************

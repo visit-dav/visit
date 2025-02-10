@@ -19404,6 +19404,8 @@ NeedToLoadPlugins(Subject *, void *)
 //   directory, and user may not have write permissions there, making command
 //   logging fail silently.
 //
+//   Mark C. Miller, Tue Jan 28 11:02:20 PST 2025
+//   Fix CATCH macro usage.
 // ****************************************************************************
 
 static int
@@ -19459,7 +19461,7 @@ InitializeModule()
 
         VisItInit::Initialize(argc, argv, 0, 1, false);
     }
-    CATCH(VisItException &)
+    CATCH(VisItException)
     {
         // TODO: This case isn't handled.
         // Return that we could not initialize VisIt.
@@ -19718,7 +19720,7 @@ LaunchViewer(const char *visitProgram)
         GetViewerProxy()->InitializePlugins(PlotPluginManager::Scripting,
                                             visit_plugin_dir.c_str());
     }
-    CATCH(VisItException &)
+    CATCH(VisItException)
     {
         // Return since we could not initialize VisIt.
         CATCH_RETURN(1);
@@ -19743,7 +19745,7 @@ LaunchViewer(const char *visitProgram)
         //
         noViewer = false;
     }
-    CATCH(VisItException &)
+    CATCH(VisItException)
     {
         noViewer = true;
     }
@@ -20533,7 +20535,7 @@ visit_eventloop(void *)
                     GetViewerProxy()->ProcessInput();
                 MUTEX_UNLOCK();
             }
-            CATCH(LostConnectionException &)
+            CATCH(LostConnectionException)
             {
                 // We lost the viewer, terminate the event loop.
                 keepGoing = false;

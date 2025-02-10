@@ -492,6 +492,12 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Wed Feb 23 17:38:24 PST 2005
 //   I made GetCurrentValues be called all the time.
 //
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added a check to see if the light was modified. If it was and the light
+//   is disabled, the old error message is displayed. Additionally, a list
+//   of modified lights is displayed in the error message. Else, no error
+//   message is displayed.
+//
 // ****************************************************************************
 
 void
@@ -510,14 +516,33 @@ QvisLightingWindow::Apply(bool ignore)
         lights->Notify();
 
         LightAttributes &light = lights->GetLight(activeLight);
-        if (light.GetEnabledFlag() == false && !enableToggledSinceApply)
+        if (light.GetEnabledFlag() == false && !enableToggledSinceApply &&
+            wasModified)
         {
             // User modified a light, but the light is not enabled.  Let them
             // know.
-            Error("You have modified the properties of a disabled light.  This "
-                  "will have no effect.");
+            QString msg = "You have modified the properties of a disabled "
+                          "light.  This will have no effect.";
+
+            // Add more context which lights were modified.
+            QString strLightsModified;
+
+            for (const auto& l : lightsModified)
+            {
+                strLightsModified += QString::number(l + 1) + ", ";
+            }
+            strLightsModified.chop(2);
+
+            msg += "\n\nThe following lights were modified: " + strLightsModified;
+
+            Error(msg);
+
+            // Reset the modified lights.
+            wasModified = false;
+            lightsModified.clear();
         }
         GetViewerMethods()->SetLightList();
+        lightsModified.erase(activeLight);
     }
     else
         lights->Notify();
@@ -583,6 +608,8 @@ QvisLightingWindow::makeDefault()
 // Creation:   Fri Oct 19 16:17:03 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Clear the list of modified lights.
 //
 // ****************************************************************************
 
@@ -590,6 +617,8 @@ void
 QvisLightingWindow::reset()
 {
     GetViewerMethods()->ResetLightList();
+    lightsModified.clear();
+    wasModified = false;
 }
 
 // ****************************************************************************
@@ -634,6 +663,9 @@ QvisLightingWindow::activeLightComboBoxChanged(int index)
 //   use UpdateWindow, called by Apply since that interferes with the slider
 //   when you hold down on the +/- arrows.
 //
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
+//
 // ****************************************************************************
 
 void
@@ -649,6 +681,8 @@ QvisLightingWindow::brightnessChanged(int val)
     lightBrightnessSpinBox->blockSignals(false);
 
     SetUpdate(false);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -665,6 +699,8 @@ QvisLightingWindow::brightnessChanged2(int val)
     lightBrightness->blockSignals(false);
 
     SetUpdate(false);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -729,6 +765,9 @@ QvisLightingWindow::enableToggled(bool val)
 //   Kathleen Biagas, Jan 21, 2021
 //   Replace QString.asprintf with QString.arg.
 //
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
+//
 // ****************************************************************************
 
 void
@@ -749,6 +788,8 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
               .arg(x,1,'g',3).arg(y,1,'g',3).arg(z,1,'g',3);
             lightDirectionLineEdit->setText(direction);
             SetUpdate(false);
+            lightsModified.insert(activeLight);
+            wasModified = true;
             Apply();
         }
     }
@@ -767,6 +808,8 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
 // Creation:   Fri Oct 19 16:21:16 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
@@ -776,6 +819,8 @@ QvisLightingWindow::lightTypeComboBoxChanged(int newType)
     LightAttributes &light = lights->GetLight(activeLight);
     light.SetType(LightAttributes::LightType(newType));
     lights->SelectLight(activeLight);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -820,6 +865,8 @@ QvisLightingWindow::modeClicked(int index)
 // Creation:   Fri Oct 19 16:22:40 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
@@ -827,6 +874,8 @@ void
 QvisLightingWindow::processLineDirectionText()
 {
     GetCurrentValues(0);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
 
@@ -843,6 +892,8 @@ QvisLightingWindow::processLineDirectionText()
 // Creation:   Fri Oct 19 16:23:09 PST 2001
 //
 // Modifications:
+//   Felix Heidrich, Sat Feb 01 2025
+//   Added the light to the list of modified lights and set the flag to true.
 //
 // ****************************************************************************
 
@@ -853,5 +904,7 @@ QvisLightingWindow::selectedLightColor(const QColor &c)
     ColorAttribute C(c.red(), c.green(), c.blue());
     light.SetColor(C);
     lights->SelectLight(activeLight);
+    lightsModified.insert(activeLight);
+    wasModified = true;
     Apply();
 }
