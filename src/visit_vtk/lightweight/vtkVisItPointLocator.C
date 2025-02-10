@@ -457,37 +457,21 @@ vtkIdType vtkVisItPointLocator::FindClosestPointWithinRadius(double radius,
   return closest;
   }
 
-
-
-struct idsort
+namespace
 {
+//------------------------------------------------------------------------------
+// Copied from vtkPointLocator
+// Sorting closest points 
+class idsort
+{
+public:
   vtkIdType id;
   double dist;
-};
 
-#ifdef _WIN32_WCE
-static int __cdecl private_vtkidsortcompare(const void *arg1, const void *arg2)
-#else
-extern "C" 
-{  
-  int private_vtkidsortcompare(const void *arg1, const void *arg2)
-#endif
-{
-  idsort *v1 = (idsort *)arg1;
-  idsort *v2 = (idsort *)arg2;
-  if (v1->dist < v2->dist)
-    {
-    return -1;
-    }
-  if (v1->dist > v2->dist)
-    {
-    return 1;
-    }
-  return 0;  
+  bool operator<(const idsort& tuple) const { return dist < tuple.dist; }
+};
 }
-#ifndef _WIN32_WCE
-} // close extern "C"
-#endif
+
 
 void vtkVisItPointLocator::FindDistributedPoints(int N, double x,
                                             double y, double z,
@@ -643,14 +627,14 @@ void vtkVisItPointLocator::FindDistributedPoints(int N, const double x[3],
             minCurrentCount = GetMin(currentCount);         
             if (currentCount[oct] == N)
               {
-              qsort(res[oct], currentCount[oct], sizeof(idsort),private_vtkidsortcompare);
+              std::sort(res[oct], res[oct]+currentCount[oct]);
               }
             }
           else if (dist2 < maxDistance[oct])
             {
             res[oct][N-1].dist = dist2;
             res[oct][N-1].id = ptId;
-            qsort(res[oct], N, sizeof(idsort), private_vtkidsortcompare);
+            std::sort(res[oct], res[oct] + N);
             maxDistance[oct] = res[oct][N-1].dist;
             }
           }
@@ -663,7 +647,7 @@ void vtkVisItPointLocator::FindDistributedPoints(int N, const double x[3],
   // do a sort
   for (i = 0; i < 8; i++)
     {
-    qsort(res[i], currentCount[i], sizeof(idsort), private_vtkidsortcompare);
+    std::sort(res[i], res[i] + currentCount[i]);
     }
   
   // Now do the refinement
@@ -689,7 +673,7 @@ void vtkVisItPointLocator::FindDistributedPoints(int N, const double x[3],
           {
           res[oct][N-1].dist = dist2;
           res[oct][N-1].id = ptId;
-          qsort(res[oct], N, sizeof(idsort), private_vtkidsortcompare);
+          std::sort(res[oct], res[oct] + N);
           maxDistance[oct] = res[oct][N-1].dist;
           }
         }
@@ -788,14 +772,14 @@ void vtkVisItPointLocator::FindClosestNPoints(int N, const double x[3],
             currentCount++;
             if (currentCount == N)
               {
-              qsort(res, currentCount, sizeof(idsort), private_vtkidsortcompare);
+              std::sort(res, res + currentCount);
               }
             }
           else if (dist2 < maxDistance)
             {
             res[N-1].dist = dist2;
             res[N-1].id = ptId;
-            qsort(res, N, sizeof(idsort), private_vtkidsortcompare);
+            std::sort(res, res + N);
             maxDistance = res[N-1].dist;
             }
           }
@@ -806,7 +790,7 @@ void vtkVisItPointLocator::FindClosestNPoints(int N, const double x[3],
     }
 
   // do a sort
-  qsort(res, currentCount, sizeof(idsort), private_vtkidsortcompare);
+  std::sort(res, res + currentCount);
 
   // Now do the refinement
   this->GetOverlappingBuckets (&buckets, x, ijk, sqrt(maxDistance),level-1);
@@ -828,7 +812,7 @@ void vtkVisItPointLocator::FindClosestNPoints(int N, const double x[3],
           {
           res[N-1].dist = dist2;
           res[N-1].id = ptId;
-          qsort(res, N, sizeof(idsort), private_vtkidsortcompare);
+          std::sort(res, res + N);
           maxDistance = res[N-1].dist;
           }
         }
@@ -1004,7 +988,7 @@ void vtkVisItPointLocator::BuildLocator()
 
   this->NumberOfBuckets = numBuckets = ndivs[0]*ndivs[1]*ndivs[2];
   this->HashTable = new vtkIdListPtr[numBuckets];
-  memset (this->HashTable, 0, numBuckets*sizeof(vtkIdListPtr));
+  memset (this->HashTable, 0, static_cast<size_t>(numBuckets)*sizeof(*this->HashTable));
   //
   //  Compute width of bucket in three directions
   //
@@ -1338,8 +1322,8 @@ int vtkVisItPointLocator::InitPointInsertion(vtkPoints *newPts,
 
   this->NumberOfBuckets = ndivs[0]*ndivs[1]*ndivs[2];
   this->HashTable = new vtkIdListPtr[this->NumberOfBuckets];
-  memset (this->HashTable, 0, this->NumberOfBuckets*
-          sizeof(vtkIdListPtr));
+  memset (this->HashTable, 0, static_cast<size_t>(this->NumberOfBuckets)*
+          sizeof(*this->HashTable));
   //
   //  Compute width of bucket in three directions
   //

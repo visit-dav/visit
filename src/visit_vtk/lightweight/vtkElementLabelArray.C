@@ -175,7 +175,7 @@ void vtkElementLabelArray::PrintSelf(ostream& os, vtkIndent indent)
     for(it = NameMapping.begin(); it != NameMapping.end(); ++it)
     {
         os<<"Range name: "<<it->first<<"\n";
-        for(int i = 0; i < it->second.LabelRangesBegin.size(); ++i)
+        for(size_t i = 0; i < it->second.LabelRangesBegin.size(); ++i)
         {
             os<<"  [block "<<i<<"]\n";
             os<<"    Labels ranges "<<it->second.LabelRangesBegin[i]<<" -- "<<it->second.LabelRangesEnd[i]<<"\n";

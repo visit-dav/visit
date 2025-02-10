@@ -94,7 +94,7 @@ ComboDigitsFromId(double id, int n, int maxr, const vector<vector<int> > &ptMap,
     {
         for (row = rowmin; row < n; row++)
         {
-            int seglen = ptMap[row][col];
+            int seglen = ptMap[static_cast<size_t>(row)][static_cast<size_t>(col)];
             if (id < seglen)
             {
                 rowmin = row+1;
@@ -166,14 +166,14 @@ static int CompareIds(const void *a, const void *b)
 static void HashCell(vtkCell *theCell, unsigned int &hashVal,
     vector<vtkIdType> &pids)
 {
-    int npts = static_cast<int>(theCell->GetNumberOfPoints());
+    vtkIdType npts = static_cast<int>(theCell->GetNumberOfPoints());
 
     for (int i = 0; i < npts; i++)
         pids.push_back(theCell->GetPointId(i));
 
     // we sort these to prevent node-order from effecting
     // the hash value
-    qsort(&pids[0], npts, sizeof(vtkIdType), CompareIds);
+    qsort(&pids[0], static_cast<size_t>(npts), sizeof(vtkIdType), CompareIds);
 
     hashVal = BJHash::Hash(reinterpret_cast<unsigned char*>(&pids[0]),
         static_cast<unsigned int>(npts) * sizeof(vtkIdType), 0xdeadbeef);
@@ -202,10 +202,10 @@ static bool AlreadyAddedCell(vtkCell *theCell,
         // point ids match the point ids of one of the cells we've
         // got stored at this key.
         const vector<vtkIdType> fpids = cellPtIdsAtKey->second;
-        for (size_t i = 0; i < fpids.size(); i += fpids[i]+1)
+        for (size_t i = 0; i < fpids.size(); i += static_cast<size_t>(fpids[i]+1))
         {
             bool haveMatch = true;
-            for (int j = 0; haveMatch && (j < fpids[i]); j++)
+            for (size_t j = 0; haveMatch && (j < fpids[i]); j++)
             {
                 if (fpids[i+1+j] != pids[j])
                     haveMatch = false;
@@ -253,7 +253,7 @@ static void AddEdgeToMaps(vtkCell *edgeCell,
     HashCell(edgeCell, hval, pids);
 
     // put this edge in the edge map
-    edgeMap[hval].push_back(pids.size());
+    edgeMap[hval].push_back(static_cast<vtkIdType>(pids.size()));
     for (size_t i = 0; i < pids.size(); i++)
         edgeMap[hval].push_back(pids[i]);
 
@@ -277,7 +277,7 @@ static void AddFaceToMaps(vtkCell *faceCell,
     HashCell(faceCell, hval, pids);
 
     // put this face in the face map
-    faceMap[hval].push_back(pids.size());
+    faceMap[hval].push_back(static_cast<vtkIdType>(pids.size()));
     for (size_t i = 0; i < pids.size(); i++)
         faceMap[hval].push_back(pids[i]);
 
@@ -557,8 +557,8 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     //
     if (lastRangeBin != -1)
     {
-        if (enumerationRanges[2*lastRangeBin  ] <= val &&
-            enumerationRanges[2*lastRangeBin+1] >= val)
+        if (enumerationRanges[static_cast<size_t>(2*lastRangeBin) ] <= val &&
+            enumerationRanges[static_cast<size_t>(2*lastRangeBin+1)] >= val)
             return true;
     }
 
@@ -574,9 +574,9 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     {
         mid = (bot + top) >> 1;
 
-        if (val > enumerationRanges[2*mid+1])
+        if (val > enumerationRanges[static_cast<size_t>(2*mid+1)])
             bot = mid + 1;
-        else if (val < enumerationRanges[2*mid])
+        else if (val < enumerationRanges[static_cast<size_t>(2*mid)])
             top = mid - 1;
         else
         {
@@ -641,7 +641,7 @@ int vtkEnumThreshold::EvaluateComponents( vtkDataArray *scalars, vtkIdType id )
         // vtkBitArray's GetPointer method won't work if the number of
         // components is not a multiple of sizeof(unsigned char). Only 
         // do this test once though for cell id zero.
-        if (id==0 && bscalars->GetNumberOfComponents()%sizeof(unsigned char)) 
+        if (id==0 && static_cast<size_t>(bscalars->GetNumberOfComponents())%sizeof(unsigned char)) 
         {
             vtkDebugMacro(<< "number of components for vtkBitArray "
                 << bscalars->GetNumberOfComponents() <<
@@ -779,7 +779,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             selectedEnumMaskBitArray->SetNumberOfComponents(((static_cast<int>(enumerationRanges.size())/2+bpuc-1)/bpuc)*bpuc);
             selectedEnumMaskBitArray->SetNumberOfTuples(1);
             memset(selectedEnumMaskBitArray->GetVoidPointer(0), 0,
-                   selectedEnumMaskBitArray->GetSize()/bpuc);
+                   static_cast<size_t>(selectedEnumMaskBitArray->GetSize()/bpuc));
 
             for (size_t i=0; i<enumerationRanges.size(); i += 2)
             {
@@ -878,8 +878,12 @@ void vtkEnumThreshold::SetNAndMaxRForNChooseRMode(int n, int maxr)
     }
 
     for (int row = 0; row < n; row++)
+    {
         for (int col = 0; col <= maxr; col++)
-            pascalsTriangleMap[row][col] = int(choose(n-row-1,col));
+        {
+            pascalsTriangleMap[static_cast<size_t>(row)][static_cast<size_t>(col)] = static_cast<int>((choose(n-row-1,col)));
+        }
+    }
 
     pascalsTriangleN = n;
     pascalsTriangleR = maxr;
