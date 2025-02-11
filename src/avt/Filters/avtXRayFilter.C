@@ -1337,7 +1337,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 if (IntersectLineWithQuad(p0, p3, p7, p4, pt1, dir, t))
                     inter[nInter++] = t;
 
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(iCell);
                     dist.push_back(inter[0]*lineLength);
@@ -1438,7 +1438,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 if (IntersectLineWithQuad(p0, p3, p7, p4, pt1, dir, t))
                     inter[nInter++] = t;
 
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(iCell);
                     dist.push_back(inter[0]*lineLength);
@@ -1608,7 +1608,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                     }
                 }
 
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(iCell);
                     dist.push_back(inter[0]*lineLength);
@@ -1701,7 +1701,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                         }
                     }
                 }
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(id);
                     dist.push_back(inter[0]*lineLength);
