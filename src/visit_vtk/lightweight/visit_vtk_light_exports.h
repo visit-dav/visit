@@ -15,6 +15,10 @@
 #else
 #define VISIT_VTK_LIGHT_API
 #endif
+#if defined(_MSC_VER)
+// Turn off warning about lack of DLL interface
+#pragma warning(disable:4251)
+#endif
 #else
 # if __GNUC__ >= 4 && (defined(VISIT_VTK_LIGHT_EXPORTS) || defined(lightweight_visit_vtk_EXPORTS))
 #   define VISIT_VTK_LIGHT_API __attribute__ ((visibility("default")))
