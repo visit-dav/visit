@@ -487,7 +487,7 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double to
 //
 int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
                                       double& t, double x[3], double pcoords[3],
-                                      int &subId, vtkIdType &cellId)
+                                      int &vtkNotUsed(subId), vtkIdType &cellId)
 {
   vtkGenericCell *cell = vtkGenericCell::New();
 
