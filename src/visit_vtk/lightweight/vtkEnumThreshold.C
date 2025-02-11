@@ -205,7 +205,7 @@ static bool AlreadyAddedCell(vtkCell *theCell,
         for (size_t i = 0; i < fpids.size(); i += static_cast<size_t>(fpids[i]+1))
         {
             bool haveMatch = true;
-            for (size_t j = 0; haveMatch && (j < fpids[i]); j++)
+            for (size_t j = 0; haveMatch && (j < static_cast<size_t>(fpids[i])); j++)
             {
                 if (fpids[i+1+j] != pids[j])
                     haveMatch = false;
