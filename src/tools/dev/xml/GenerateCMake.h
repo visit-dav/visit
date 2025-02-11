@@ -707,6 +707,23 @@ class CMakeGeneratorPlugin : public Plugin
         return false;
     }
 
+    bool WriteCMake_PluginConditionalIncludes(QTextStream &out)
+    {
+        QStringList conditions, incs;
+        if(GetCondition("Includes:", conditions, incs))
+        {
+            out << Endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << "if(" << conditions[i] << ")" << Endl;
+                out << "    set(" << name << "_INCLUDES " << incs[i] << ")" << Endl;
+                out << "endif()" << Endl;
+            }
+            return true;
+        }
+        return false;
+    }
+
     bool WriteCMake_PluginConditionalDefinitions(QTextStream &out)
     {
         QStringList conditions, defs;
@@ -747,6 +764,7 @@ class CMakeGeneratorPlugin : public Plugin
     {
         WriteCMake_PluginVerbatim(out, "Pre");
         bool hasDefines = WriteCMake_PluginConditionalDefinitions(out);
+        bool hasIncludes = WriteCMake_PluginConditionalIncludes(out);
         bool hasGLibs  = WriteCMake_PluginConditionalLibs(out, "G");
         bool hasVLibs  = WriteCMake_PluginConditionalLibs(out, "V");
         bool hasELibs  = WriteCMake_PluginConditionalLibs(out, "E");
@@ -777,6 +795,10 @@ class CMakeGeneratorPlugin : public Plugin
         if(hasDefines)
         {
             out << "\n    DEFINES    ${" << name << "_DEFINES}";
+        }
+        if(hasIncludes)
+        {
+            out << "\n    INCLUDES   ${" << name << "_INCLUDES}";
         }
 
         // gui libs

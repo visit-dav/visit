@@ -24,6 +24,10 @@ if(ICET_FOUND)
 endif()
 
 if(ICET_FOUND)
+    set(Volume_INCLUDES ${ICET_INCLUDE_DIR})
+endif()
+
+if(ICET_FOUND)
     set(Volume_ELibs  ${ICET_FULLPATH_LIB})
 endif()
 
@@ -41,6 +45,7 @@ visit_add_plot_plugin(
                avtICETCompositor.C
                avtVolumeResampleFilter.C
     DEFINES    ${Volume_DEFINES}
+    INCLUDES   ${Volume_INCLUDES}
     VLIBS      VTK::RenderingVolume
                VTK::RenderingVolumeOpenGL2
     ESERLIBS   avtexpressions_ser

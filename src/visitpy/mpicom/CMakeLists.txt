@@ -32,6 +32,7 @@ IF(VISIT_PARALLEL)
         src/Buffer.C)
 
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/
+                        ${VISIT_SOURCE_DIR}/visitpy/common
                         ${PYTHON_INCLUDE_PATH})
 
     LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
