@@ -128,6 +128,9 @@
 # 
 #    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
 #    Use numpy.int64 to cast to wide types for diff.
+# 
+#    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
+#    Added test for the far clipping plane actually clipping results.
 # ----------------------------------------------------------------------------
 
 import os
