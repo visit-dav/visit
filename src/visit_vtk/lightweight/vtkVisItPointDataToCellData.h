@@ -67,8 +67,8 @@ protected:
 
   bool PassPointData;
 private:
-  vtkVisItPointDataToCellData(const vtkVisItPointDataToCellData&);  // Not implemented.
-  void operator=(const vtkVisItPointDataToCellData&);  // Not implemented.
+  vtkVisItPointDataToCellData(const vtkVisItPointDataToCellData&) = delete;
+  void operator=(const vtkVisItPointDataToCellData&) = delete;
 };
 
 #endif

@@ -135,8 +135,8 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     bool              allCellsKeptInLastRequestData;
 
   private:
-    vtkEnumThreshold(const vtkEnumThreshold&);  // Not implemented.
-    void operator=(const vtkEnumThreshold&);  // Not implemented.
+    vtkEnumThreshold(const vtkEnumThreshold&) = delete;
+    void operator=(const vtkEnumThreshold&) = delete;
 };
 
 #endif
