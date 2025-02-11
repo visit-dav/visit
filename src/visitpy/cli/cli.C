@@ -182,6 +182,8 @@ extern "C" void cli_runscript(const char *);
 //    as '-s' is a viable option that could be passed to srun via -sla or -la
 //    and we don't that option to be proccessed as a cli '-s' option.
 //
+//    Mark C. Miller, Tue Jan 28 11:01:53 PST 2025
+//    Fix CATCH macro usage. 
 // ****************************************************************************
 
 int
@@ -772,7 +774,7 @@ main(int argc, char *argv[])
 
     }
 
-    CATCH(VisItException &e)
+    CATCH2(VisItException,e)
     {
         cerr << "A fatal exception occurred when trying to launch the CLI." << endl;
         cerr << "The following information may help a VisIt developer debug the problem: " << endl;

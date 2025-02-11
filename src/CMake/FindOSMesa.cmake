@@ -46,6 +46,11 @@
 #   Kathleen Biagas, Tue October 17, 2023
 #   Threads is now required, so no need to test for existence.
 #
+#   Kathleen Biagas, Mon Dec 2, 2024
+#   Handle installation differently for VTK-9.4, which only requires
+#   libOSMesa to be available if needed, so it will be installed directly
+#   to lib.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -60,13 +65,6 @@ if (VISIT_OSMESA_DIR)
             set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
         endif()
         get_filename_component(OSMESA_LIB ${OSMESA_LIBRARY} NAME)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
-                      ${VISIT_BINARY_DIR}/lib/osmesa
-                      RESULT_VARIABLE GEN_OSMESA_DIR)
-
-        if(NOT "${GEN_OSMESA_DIR}" STREQUAL "0")
-            message(WARNING "Failed to create lib/osmesa/")
-        endif()
 
 
         # find the SOName
@@ -84,118 +82,136 @@ if (VISIT_OSMESA_DIR)
         set(OSMESA_LIBRARIES ${OSMESA_LIBRARY} CACHE STRING "OSMesa libraries")
         set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include)
 
-        # for LD_LIB_PATH swap to work, libOSMesa needs to be
-        # called libGL.so.1
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                ${OSMESA_LIBRARY}
-                                ${VISIT_BINARY_DIR}/lib/osmesa/libGL.so.1)
+        if(VTK_VERSION  VERSION_LESS "9.4.0")
+            # We want libOSMesa to be renamed to libGL and stored in lib/osmesa
+            execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+                          ${VISIT_BINARY_DIR}/lib/osmesa
+                          RESULT_VARIABLE GEN_OSMESA_DIR)
+
+            if(NOT "${GEN_OSMESA_DIR}" STREQUAL "0")
+                message(WARNING "Failed to create lib/osmesa/")
+            endif()
+            # for LD_LIB_PATH swap to work, libOSMesa needs to be
+            # called libGL.so.1
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                    ${OSMESA_LIBRARY}
+                                    ${VISIT_BINARY_DIR}/lib/osmesa/libGL.so.1)
+        else()
+            if(NOT EXISTS ${VISIT_BINARY_DIR}/lib)
+                message("${VISIT_BINARY_DIR}/lib does not exist yet")
+                execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${VISIT_BINARY_DIR}/lib
+                        RESULT_VARIABLE LIB_MKDIR)
+
+            endif()
+            message("copying ${OSMESA_LIBRARY} to ${VISIT_BINARY_DIR}/lib")
+            # We want libOSMesa to be available if needed.
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                    ${OSMESA_LIBRARY}
+                                    ${VISIT_BINARY_DIR}/lib/)
+
+        endif()
 
     else()
         return()
     endif()
 
-    set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include CACHE PATH "OSMesa include path")
+    if(VTK_VERSION  VERSION_LESS "9.4.0")
+        set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include CACHE PATH "OSMesa include path")
 
-    find_library(GLAPI_LIBRARY glapi PATH ${VISIT_OSMESA_DIR}/lib
-                 NO_DEFAULT_PATH)
-    if (GLAPI_LIBRARY)
-        get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
-        execute_process(COMMAND objdump -p ${GLAPI_LIBRARY}
-                        COMMAND grep SONAME
-                        RESULT_VARIABLE GLAPI_SONAME_RESULT
-                        OUTPUT_VARIABLE GLAPI_SONAME
-                        ERROR_VARIABLE  GLAPI_SONAME_ERROR)
+        find_library(GLAPI_LIBRARY glapi PATH ${VISIT_OSMESA_DIR}/lib
+                     NO_DEFAULT_PATH)
+        if (GLAPI_LIBRARY)
+            get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
+            execute_process(COMMAND objdump -p ${GLAPI_LIBRARY}
+                            COMMAND grep SONAME
+                            RESULT_VARIABLE GLAPI_SONAME_RESULT
+                            OUTPUT_VARIABLE GLAPI_SONAME
+                            ERROR_VARIABLE  GLAPI_SONAME_ERROR)
 
-        if(GLAPI_SONAME)
-            string(REPLACE "SONAME" "" GLAPI_SONAME ${GLAPI_SONAME})
-            string(STRIP ${GLAPI_SONAME} GLAPI_SONAME)
-            set(GLAPI_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLAPI_SONAME})
-        endif()
+            if(GLAPI_SONAME)
+                string(REPLACE "SONAME" "" GLAPI_SONAME ${GLAPI_SONAME})
+                string(STRIP ${GLAPI_SONAME} GLAPI_SONAME)
+                set(GLAPI_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLAPI_SONAME})
+            endif()
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${GLAPI_LIBRARY}
                                 ${VISIT_BINARY_DIR}/lib/osmesa/)
 
-        list(APPEND OSMESA_LIBRARIES ${GLAPI_LIBRARY})
-    endif()
-
-    find_library(GLU_LIBRARY GLU PATH ${VISIT_OSMESA_DIR}/lib
-                 NO_DEFAULT_PATH)
-    if (GLU_LIBRARY)
-        get_filename_component(GLU_LIB ${GLU_LIBRARY} NAME)
-        execute_process(COMMAND objdump -p ${GLU_LIBRARY}
-                        COMMAND grep SONAME
-                        RESULT_VARIABLE GLU_SONAME_RESULT
-                        OUTPUT_VARIABLE GLU_SONAME
-                        ERROR_VARIABLE  GLU_SONAME_ERROR)
-
-        if(GLU_SONAME)
-            string(REPLACE "SONAME" "" GLU_SONAME ${GLU_SONAME})
-            string(STRIP ${GLU_SONAME} GLU_SONAME)
-            set(GLU_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLU_SONAME})
+            list(APPEND OSMESA_LIBRARIES ${GLAPI_LIBRARY})
         endif()
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+        find_library(GLU_LIBRARY GLU PATH ${VISIT_OSMESA_DIR}/lib
+                     NO_DEFAULT_PATH)
+        if (GLU_LIBRARY)
+            get_filename_component(GLU_LIB ${GLU_LIBRARY} NAME)
+            execute_process(COMMAND objdump -p ${GLU_LIBRARY}
+                            COMMAND grep SONAME
+                            RESULT_VARIABLE GLU_SONAME_RESULT
+                            OUTPUT_VARIABLE GLU_SONAME
+                            ERROR_VARIABLE  GLU_SONAME_ERROR)
+
+            if(GLU_SONAME)
+                string(REPLACE "SONAME" "" GLU_SONAME ${GLU_SONAME})
+                string(STRIP ${GLU_SONAME} GLU_SONAME)
+                set(GLU_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLU_SONAME})
+            endif()
+
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${GLU_LIBRARY}
                                 ${VISIT_BINARY_DIR}/lib/osmesa/)
 
-        list(APPEND OSMESA_LIBRARIES ${GLU_LIBRARY})
-    endif()
+            list(APPEND OSMESA_LIBRARIES ${GLU_LIBRARY})
+        endif()
 
-    # Check for OSMesa size limit --- IS THIS STILL NECESSARY?
-    set(MY_LIBS ${OSMESA_LIBRARIES} Threads::Threads)
-    if (CMAKE_X_LIBS)
-        list(APPEND MY_LIBS ${CMAKE_X_LIBS})
-    endif()
-
-    if (VISIT_LLVM_DIR)
-        find_library(LLVM_LIBRARY LLVM
+        if (VISIT_LLVM_DIR)
+            find_library(LLVM_LIBRARY LLVM
                          PATH ${VISIT_LLVM_DIR}/lib
                          NO_DEFAULT_PATH)
-        if (LLVM_LIBRARY)
-            get_filename_component(LLVM_LIB ${LLVM_LIBRARY} NAME)
+            if (LLVM_LIBRARY)
+                get_filename_component(LLVM_LIB ${LLVM_LIBRARY} NAME)
 
-            execute_process(COMMAND objdump -p ${LLVM_LIBRARY}
-                            COMMAND grep SONAME
-                            RESULT_VARIABLE LLVM_SONAME_RESULT
-                            OUTPUT_VARIABLE LLVM_SONAME
-                            ERROR_VARIABLE  LLVM_SONAME_ERROR)
+                execute_process(COMMAND objdump -p ${LLVM_LIBRARY}
+                                COMMAND grep SONAME
+                                RESULT_VARIABLE LLVM_SONAME_RESULT
+                                OUTPUT_VARIABLE LLVM_SONAME
+                                ERROR_VARIABLE  LLVM_SONAME_ERROR)
 
-            if(LLVM_SONAME)
-                string(REPLACE "SONAME" "" LLVM_SONAME ${LLVM_SONAME})
-                string(STRIP ${LLVM_SONAME} LLVM_SONAME)
-                set(LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${LLVM_SONAME})
-            endif()
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                if(LLVM_SONAME)
+                    string(REPLACE "SONAME" "" LLVM_SONAME ${LLVM_SONAME})
+                    string(STRIP ${LLVM_SONAME} LLVM_SONAME)
+                    set(LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${LLVM_SONAME})
+                endif()
+                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                   ${LLVM_LIBRARY}
-                                  ${VISIT_BINARY_DIR}/lib/osmesa/)
-
-            list(APPEND OSMESA_LIBRARIES ${LLVM_LIBRARY})
-            set(OSMESA_LIBRARIES ${OSMESA_LIBRARIES} CACHE STRING "OSMesa libraries" FORCE)
+                list(APPEND OSMESA_LIBRARIES ${LLVM_LIBRARY})
+                                      ${VISIT_BINARY_DIR}/lib/osmesa/)
+                set(OSMESA_LIBRARIES ${OSMESA_LIBRARIES} CACHE STRING "OSMesa libraries" FORCE)
+            endif()
         endif()
+
+
+        install(DIRECTORY ${VISIT_BINARY_DIR}/lib/osmesa
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                      GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE
+                FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE)
+
     endif()
-
-    message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
-
-    install(DIRECTORY ${VISIT_BINARY_DIR}/lib/osmesa
-            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                  WORLD_READ             WORLD_EXECUTE
-            FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                  GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                  WORLD_READ             WORLD_EXECUTE
-            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
     # OSMESA_LIBRARY is a symbolic link, so we need to install the real
     # library as well as the link.
     get_filename_component(OSMESA_LIBRARY_REAL ${OSMESA_LIBRARY} REALPATH)
     install(FILES ${OSMESA_LIBRARY} ${OSMESA_LIBRARY_REAL}
             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-            PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                             WORLD_READ             WORLD_EXECUTE
-            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
+            PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                         GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                         WORLD_READ             WORLD_EXECUTE)
 
+    message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
 endif()
 

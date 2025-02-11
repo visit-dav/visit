@@ -19,6 +19,7 @@
 #include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 #include <vtkInformation.h>
 #include <vtkFloatArray.h>
@@ -576,12 +577,17 @@ avtDatasetFileWriter::WriteVTKFamily(const char *filename, bool binary)
 //  Programmer: Hank Childs
 //  Creation:   May 27, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Dec 23, 2024
+//    Set file version to 4.2.
+//
 // ****************************************************************************
 
 void
 avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
+    writer->SetFileVersion(42);
     writer->SetInputData(ds);
     if (bin)
     {

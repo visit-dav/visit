@@ -2,7 +2,12 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <visit-config.h>
+#if LIB_VERSION_GE(VTK,9,4,0)
+#include <vtk_glad.h>
+#else
 #include <vtk_glew.h>
+#endif
 
 #include <vtkQtRenderWindow.h>
 

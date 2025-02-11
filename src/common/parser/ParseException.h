@@ -33,13 +33,15 @@ class Rule;
 //    Hank Childs, Fri Jan 28 14:57:14 PST 2005
 //    Inherit from VisItException.
 //
+//    Mark C. Miller, Tue Jan 28 11:00:39 PST 2025
+//    Const qualify read-only api methods.
 // ****************************************************************************
 class ParseException : public VisItException
 {
   public:
     ParseException(Pos p) : pos(p) { }
-    virtual const char *Message() = 0;
-    Pos GetPos() { return pos; }
+    virtual const char *Message() const = 0;
+    Pos GetPos() const { return pos; }
   private:
     Pos pos;
 };
@@ -48,7 +50,7 @@ class LexicalException : public ParseException
 {
   public:
     LexicalException(Pos p) : ParseException(p) { }
-    virtual const char *Message() { return "The text scanner encountered an unexpected character:"; }
+    virtual const char *Message() const { return "The text scanner encountered an unexpected character:"; }
 };
 
 class SyntacticException : public ParseException
@@ -62,7 +64,7 @@ class SyntacticException : public ParseException
     {
         snprintf(msg, 1024, "The expression parser encountered an unexpected token (%s):", s.c_str());
     }
-    virtual const char *Message() { return msg; }
+    virtual const char *Message() const { return msg; }
   private:
     char msg[1024];
 };
@@ -71,22 +73,22 @@ class UnexpectedEndException : public ParseException
 {
   public:
     UnexpectedEndException(Pos p) : ParseException(p) { }
-    virtual const char *Message() { return "The parser expected more stuff after the end of the expression:"; }
+    virtual const char *Message() const { return "The parser expected more stuff after the end of the expression:"; }
 };
 
 class SemanticException : public ParseException
 {
   public:
     SemanticException(Pos p) : ParseException(p) { }
-    virtual const char *Message() { return "Semantic error:"; }
+    virtual const char *Message() const { return "Semantic error:"; }
 };
 
 class UnhandledReductionException : public ParseException
 {
   public:
     UnhandledReductionException(Pos p, const Rule *r) : ParseException(p), rule(r) { }
-    virtual const char *Message() { return "Parse error -- unhandled reduction:"; }
-    virtual const Rule *GetRule() { return rule; }
+    virtual const char *Message() const { return "Parse error -- unhandled reduction:"; }
+    virtual const Rule *GetRule() const { return rule; }
   private:
     const Rule *rule;
 };
