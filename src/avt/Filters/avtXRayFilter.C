@@ -1120,6 +1120,10 @@ avtXRayFilter::PostExecute(void)
 //
 //    Kathleen Biagas, Thu Aug 11 2022
 //    Support VTK9: use vtkCellArrayIterator.
+// 
+//    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
+//    Use far clipping plane to cull ray tracing results. We now make sure
+//    that line-element intercepts are not beyond the end of the line.
 //
 // ****************************************************************************
 
