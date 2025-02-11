@@ -470,7 +470,7 @@ public:
 
   bool operator<(const idsort& tuple) const { return dist < tuple.dist; }
 };
-}
+} // namespace
 
 
 void vtkVisItPointLocator::FindDistributedPoints(int N, double x,
