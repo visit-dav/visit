@@ -2621,6 +2621,12 @@ vtkUnstructuredGridBoundaryFilter::RequestData(
     vtkPolyData *output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    if(input == nullptr || output == nullptr)
+    {
+        vtkWarningMacro(<<"vtkUnstructuredGridBoundaryFilter could not retrieve input or output.");
+        return -1;
+    }
+
     vtkCellData *cd = input->GetCellData();
     vtkCellData *outputCD = output->GetCellData();
 

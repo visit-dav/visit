@@ -1387,6 +1387,13 @@ vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords,
         yc = vtkCharArray::New();
         zc = vtkCharArray::New();
     }
+    else // default to double
+    {
+        xc = vtkDoubleArray::New();
+        yc = vtkDoubleArray::New();
+        zc = vtkDoubleArray::New();
+    }
+
     xc->SetNumberOfComponents(1);
     xc->SetNumberOfTuples(nXCoords);
     if (nXCoords == 1)

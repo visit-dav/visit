@@ -1716,6 +1716,12 @@ vtkUnstructuredGridFacelistFilter::RequestData(
     vtkPolyData *output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    if(input == nullptr || output == nullptr)
+    {
+      vtkWarningMacro(<<"vtkUnstructuredGridFacelistFilter, could not retrieve either input or output.");
+      return 0;
+    }
+
     vtkCellData *cd = input->GetCellData();
     vtkCellData *outputCD = output->GetCellData();
 

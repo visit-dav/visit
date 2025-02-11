@@ -52,6 +52,12 @@ int vtkVisItPointDataToCellData::RequestData(
   vtkDataSet *input = vtkDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+  if(input == nullptr || output == nullptr)
+  {
+    vtkWarningMacro(<<"vtkVisItPointDataToCellData could not retrieve either input or output.");
+    return 0;
+  }
+
   vtkIdType cellId, ptId;
   vtkIdType numCells, numPts;
   vtkPointData *inPD=input->GetPointData();

@@ -125,14 +125,14 @@ int vtkMultiLineSource::RequestData(
     //Sanity Check
     if(numPointsOrig != numPoints)
     {
-    vtkWarningMacro( <<"MultiLineSource points not equal");
-    return 0;
+      vtkWarningMacro( <<"MultiLineSource points not equal");
+      return 0;
     }
     if(numPoints < 2 && (numPoints % 2 != 0))
     {
-    vtkWarningMacro( <<"MultiLineSource must have at least 2 points and"
+      vtkWarningMacro( <<"MultiLineSource must have at least 2 points and"
                  <<"a multiple of 2");
-    return 0;
+      return 0;
     }
 
     // get the info object
@@ -140,7 +140,13 @@ int vtkMultiLineSource::RequestData(
 
     // get the ouptut
     vtkPolyData *output = vtkPolyData::SafeDownCast(
-    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if(output == nullptr)
+    {
+      vtkWarningMacro( <<"MultiLineSource could not retrieve output PolyData.");
+      return 0;
+    }
 
     vtkCellArray *lines = vtkCellArray::New();
     const vtkIdType numLines = numPoints / 2;
