@@ -53,8 +53,8 @@ function bv_xcb_info
     export XCB_WM_BUILD_DIR=${XCB_WM_BUILD_DIR:-"libxcb-wm-xcb-util-wm-${XCB_WM_VERSION}"}
     export XCB_WM_SHA256_CHECKSUM="c1b792306874c36b535413a33edc71a0ac46e78adcf6ddb1a34090a07393d717"
     export XORG_MACROS_VERSION=${XORG_MACROS_VERSION:-"1.20.2"}
-    export XORG_MACROS_FILE=${XORG_MACROS_FILE:-"macros_util_macros-${XORG_MACROS_VERSION}.tar.gz"}
-    export XORG_MACROS_BUILD_DIR=${XORG_MACROS_BUILD_DIR:-"macros_util_macros-${XORG_MACROS_VERSION}"}
+    export XORG_MACROS_FILE=${XORG_MACROS_FILE:-"macros-util-macros-${XORG_MACROS_VERSION}.tar.gz"}
+    export XORG_MACROS_BUILD_DIR=${XORG_MACROS_BUILD_DIR:-"macros-util-macros-${XORG_MACROS_VERSION}"}
     export XORG_MACROS_SHA256_CHECKSUM="beac7e00e5996bd0c9d9bd8cf62704583b22dbe8613bd768626b95fcac955744"
 }
 
