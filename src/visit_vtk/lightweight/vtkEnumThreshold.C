@@ -148,8 +148,8 @@ vtkEnumThreshold::~vtkEnumThreshold()
 // Need for argument to qsort
 static int CompareIds(const void *a, const void *b)
 {
-    vtkIdType *pa = const_cast<vtkIdType*>(static_cast<const vtkIdType *>(a));
-    vtkIdType *pb = const_cast<vtkIdType*>(static_cast<const vtkIdType *>(b));
+    const vtkIdType *pa = static_cast<const vtkIdType *>(a);
+    const vtkIdType *pb = static_cast<const vtkIdType *>(b);
     if (*pa < *pb)
         return -1;
     else if (*pa > *pb)
@@ -557,8 +557,9 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     //
     if (lastRangeBin != -1)
     {
-        if (enumerationRanges[static_cast<size_t>(2*lastRangeBin) ] <= val &&
-            enumerationRanges[static_cast<size_t>(2*lastRangeBin+1)] >= val)
+        size_t idx = 2*static_cast<size_t>(lastRangeBin);
+        if (enumerationRanges[idx] <= val &&
+            enumerationRanges[idx+1] >= val)
             return true;
     }
 
@@ -573,10 +574,10 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     while (bot <= top)
     {
         mid = (bot + top) >> 1;
-
-        if (val > enumerationRanges[static_cast<size_t>(2*mid+1)])
+        size_t idx = 2*static_cast<size_t>(mid);
+        if (val > enumerationRanges[idx+1])
             bot = mid + 1;
-        else if (val < enumerationRanges[static_cast<size_t>(2*mid)])
+        else if (val < enumerationRanges[idx])
             top = mid - 1;
         else
         {
@@ -711,8 +712,8 @@ void vtkEnumThreshold::SetEnumerationRanges(const std::vector<double> &vals)
 
 static int CompareRanges(const void *a, const void *b)
 {
-    double *pa = const_cast<double*>(static_cast<const double *>(a));
-    double *pb = const_cast<double*>(static_cast<const double *>(b));
+    const double *pa = static_cast<const double *>(a);
+    const double *pb = static_cast<const double *>(b);
 
     if (pa[1] < pb[0])
         return -1;
