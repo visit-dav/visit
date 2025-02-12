@@ -14,7 +14,7 @@
 #include <vector>
 #include <set>
 #include <map> // this is heavy too
-class DBOptionsAttributes;
+
 
 namespace moab
 {
@@ -34,7 +34,7 @@ struct mhdf_FileDesc ;
 //  Creation:   Wed Jan 20 13:02:35 PST 2016
 //
 // ****************************************************************************
-
+class DBOptionsAttributes;
 class avtMOABFileFormat : public avtSTMDFileFormat
 {
   public:
@@ -96,13 +96,13 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     vtkDataArray*          GetGeometrySetsVar();
     moab::Core*            mbCore;
     char*                  fileName;
-    const DBOptionsAttributes *  readOptions;
+    bool showAllSets;
+    bool showDefaultTags;
     struct mhdf_FileDesc *       file_descriptor;
     std::set<int>          materials;
     std::set<int>          neumannsets;
     std::set<int>          dirichsets;
 
-    bool opt1d, opt2d, opt3d;
     bool meshd[4];
     moab::Range           *edges;
     moab::Range           *faces;
@@ -119,7 +119,7 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     int                    num_geom;    // geometry dimension sets
     moab::ParallelComm*    pcomm;
     long                   num_sets, start_set_id;
-    std::map<long, long> setIdMap;
+    std::map<long, long> setIdMap; // valid only f showAllSets is true
 };
 
 

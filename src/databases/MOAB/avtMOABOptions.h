@@ -14,6 +14,13 @@ class DBOptionsAttributes;
 #include <string>
 
 
+namespace MoabDBOptions
+{
+    // Read options
+    const char *const MOAB_SHOW_ENTITY_SETS = "Show Entity Sets";
+    const char *const MOAB_SHOW_DEFAULT_TAGS = "Show Default Tags";
+}
+
 // ****************************************************************************
 //  Functions: avtMOABOptions
 //
