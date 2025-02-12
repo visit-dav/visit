@@ -39,8 +39,8 @@ protected:
   virtual ~vtkElementLabelArray();
   std::map<std::string, LabelToZoneMapping> NameMapping;
 private:
-  vtkElementLabelArray(const vtkElementLabelArray&) = delete;
-  void operator=(const vtkElementLabelArray&) = delete;
+  vtkElementLabelArray(const vtkElementLabelArray&);   // not implemented
+  void operator=(const vtkElementLabelArray&);  // not implemented
 };
 
 #endif

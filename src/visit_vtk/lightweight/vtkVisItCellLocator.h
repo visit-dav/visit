@@ -293,8 +293,8 @@ protected:
 
 
 private:
-  vtkVisItCellLocator(const vtkVisItCellLocator&) = delete;
-  void operator=(const vtkVisItCellLocator&) = delete;
+  vtkVisItCellLocator(const vtkVisItCellLocator&);  // Not implemented.
+  void operator=(const vtkVisItCellLocator&);  // Not implemented.
 
 
   vtkCellIntersections *CellIntersections;

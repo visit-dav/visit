@@ -238,8 +238,8 @@ protected:
   double InsertionLevel; 
   bool   IgnoreDisconnectedPoints;
 private:
-  vtkVisItPointLocator(const vtkVisItPointLocator&) = delete;
-  void operator=(const vtkVisItPointLocator&) = delete;
+  vtkVisItPointLocator(const vtkVisItPointLocator&);  // Not implemented.
+  void operator=(const vtkVisItPointLocator&);  // Not implemented.
 };
 
 #endif

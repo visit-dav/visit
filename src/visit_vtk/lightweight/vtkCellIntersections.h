@@ -53,8 +53,8 @@ protected:
   ~vtkCellIntersections();
 
 private:
-  vtkCellIntersections(const vtkCellIntersections&) = delete;
-  void operator=(const vtkCellIntersections&) = delete;
+  vtkCellIntersections(const vtkCellIntersections&);  // Not implemented.
+  void operator=(const vtkCellIntersections&);  // Not implemented.
 
 
   int VertexIntersectWithLine(vtkVertex *, double [3], double [3], 

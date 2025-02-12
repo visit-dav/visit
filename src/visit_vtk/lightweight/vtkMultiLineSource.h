@@ -68,8 +68,8 @@ protected:
   vtkPoints* OriginalPoints;
 
 private:
-  vtkMultiLineSource(const vtkMultiLineSource&) = delete;
-  void operator=(const vtkMultiLineSource&) = delete;
+  vtkMultiLineSource(const vtkMultiLineSource&);  // Not implemented.
+  void operator=(const vtkMultiLineSource&);  // Not implemented.
 };
 
 #endif

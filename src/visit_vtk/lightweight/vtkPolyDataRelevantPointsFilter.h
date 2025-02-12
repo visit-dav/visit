@@ -49,8 +49,8 @@ protected:
                           vtkInformationVector *) override;
 
 private:
-  vtkPolyDataRelevantPointsFilter(const vtkPolyDataRelevantPointsFilter&) = delete; 
-  void operator=(const vtkPolyDataRelevantPointsFilter&) = delete; 
+  vtkPolyDataRelevantPointsFilter(const vtkPolyDataRelevantPointsFilter&); 
+  void operator=(const vtkPolyDataRelevantPointsFilter&); 
 };
 
 #endif

@@ -26,8 +26,8 @@ protected:
   virtual ~vtkDebugStream() {}
 
 private:
-  vtkDebugStream(const vtkDebugStream&) = delete; 
-  void operator=(const vtkDebugStream&) = delete;
+  vtkDebugStream(const vtkDebugStream&); 
+  void operator=(const vtkDebugStream&);
   static bool filterFrequentEvents;
 
 };
