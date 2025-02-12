@@ -30,8 +30,8 @@ class VISIT_VTK_LIGHT_API vtkVisItFactory : public vtkObjectFactory
     const char* GetDescription() override { return "vtkVisItFactory"; }
 
   protected:
-    vtkVisItFactory(const vtkVisItFactory&) = delete;
-    void operator=(const vtkVisItFactory&) = delete;
+    vtkVisItFactory(const vtkVisItFactory&);
+    void operator=(const vtkVisItFactory&);
 };
 
 //
