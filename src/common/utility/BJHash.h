@@ -137,7 +137,7 @@ inline unsigned int BJHash::Hash(const std::string& str, unsigned int initval)
 
 inline unsigned int BJHash::Hash(void const *k, unsigned int length, unsigned int initval)
 {
-    return BJHash::Hash(static_cast<unsigned char const *>(k), length, initval);
+    return BJHash::Hash(reinterpret_cast<unsigned char const *>(k), length, initval);
 }
 
 // Just to keep this macro from leaking out and polluting the global namespace
