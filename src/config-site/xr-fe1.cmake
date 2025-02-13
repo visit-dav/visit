@@ -1,14 +1,14 @@
 #/usr/projects/views/visit/thirdparty_shared/3.4.2/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/cmake
 ##
 ## ./build_visit3_4_2 generated host.cmake
-## created: Wed 04 Dec 2024 03:51:16 PM MST
+## created: Tue 11 Feb 2025 02:33:50 PM MST
 ## system: Linux xr-fe1 5.14.21-150400.24.111_12.0.90-cray_shasta_c #1 SMP Fri Apr 19 23:37:58 UTC 2024 (18c041e) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/loser/thirdparty_shared/3.4.2)
+SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.4.2)
 SET(VISITARCH linux-x86_64_gcc-12.2)
 
 ## Compiler flags.
@@ -70,6 +70,16 @@ VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
 ## MesaGL
 ##
 VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
+
+##
+## Xkbcommon
+##
+VISIT_OPTION_DEFAULT(VISIT_XKBCOMMON_DIR ${VISITHOME}/xkbcommon/1.7.0/${VISITARCH})
+
+##
+## Xcb
+##
+VISIT_OPTION_DEFAULT(VISIT_XCB_DIR ${VISITHOME}/xcb/0.4.1/${VISITARCH})
 
 ##
 ## QT6
