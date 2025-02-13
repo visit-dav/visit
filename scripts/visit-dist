@@ -99,6 +99,9 @@ exec perl -x $0 ${1+"$@"};
 #     Eric Brugger, Wed May  5 16:25:11 PDT 2021
 #     Modified the code that gets the git version to grab 10 characters
 #     instead of 7, to match what "git rev-parse --short HEAD" produces.
+# 
+#     Justin Privitera, Thu Feb 13 15:17:44 PST 2025
+#     Updated usage message.
 #
 require "newgetopt.pl";
 
