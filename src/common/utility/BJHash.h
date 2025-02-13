@@ -28,7 +28,7 @@ namespace BJHash
 
 inline unsigned int BJHash::Mask(int n)
 {
-    return ((unsigned int)1<<n) - 1;
+    return (static_cast<unsigned int>(1)<<n) - 1;
 }
 
 // ****************************************************************************
@@ -87,9 +87,15 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
 
    while (len >= 12)
    {
-      a += (k[0] +((unsigned int)k[1]<<8) +((unsigned int)k[2]<<16) +((unsigned int)k[3]<<24));
-      b += (k[4] +((unsigned int)k[5]<<8) +((unsigned int)k[6]<<16) +((unsigned int)k[7]<<24));
-      c += (k[8] +((unsigned int)k[9]<<8) +((unsigned int)k[10]<<16)+((unsigned int)k[11]<<24));
+      a += (k[0] +(static_cast<unsigned int>(k[1])<<8)
+                 +(static_cast<unsigned int>(k[2])<<16)
+                 +(static_cast<unsigned int>(k[3])<<24));
+      b += (k[4] +(static_cast<unsigned int>(k[5])<<8)
+                 +(static_cast<unsigned int>(k[6])<<16)
+                 +(static_cast<unsigned int>(k[7])<<24));
+      c += (k[8] +(static_cast<unsigned int>(k[9])<<8)
+                 +(static_cast<unsigned int>(k[10])<<16)
+                 +(static_cast<unsigned int>(k[11])<<24));
       bjhash_mix(a,b,c);
       k += 12; len -= 12;
    }
@@ -97,16 +103,16 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
    c += length;
 
    std::vector<std::function<void()>> cases = {
-      [&] { c+=((unsigned int)k[10]<<24); },
-      [&] { c+=((unsigned int)k[9]<<16);  },
-      [&] { c+=((unsigned int)k[8]<<8);   },
-      [&] { b+=((unsigned int)k[7]<<24);  },
-      [&] { b+=((unsigned int)k[6]<<16);  },
-      [&] { b+=((unsigned int)k[5]<<8);   },
+      [&] { c+=(static_cast<unsigned int>(k[10])<<24); },
+      [&] { c+=(static_cast<unsigned int>(k[9])<<16);  },
+      [&] { c+=(static_cast<unsigned int>(k[8])<<8);   },
+      [&] { b+=(static_cast<unsigned int>(k[7])<<24);  },
+      [&] { b+=(static_cast<unsigned int>(k[6])<<16);  },
+      [&] { b+=(static_cast<unsigned int>(k[5])<<8);   },
       [&] { b+=k[4];                      },
-      [&] { a+=((unsigned int)k[3]<<24);  },
-      [&] { a+=((unsigned int)k[2]<<16);  },
-      [&] { a+=((unsigned int)k[1]<<8);   },
+      [&] { a+=(static_cast<unsigned int>(k[3])<<24);  },
+      [&] { a+=(static_cast<unsigned int>(k[2])<<16);  },
+      [&] { a+=(static_cast<unsigned int>(k[1])<<8);   },
       [&] { a+=k[0];                      },
    };
 
@@ -120,17 +126,18 @@ inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, un
 
 inline unsigned int BJHash::Hash(char const *k, unsigned int initval)
 {
-    return BJHash::Hash((unsigned char const *) k, strlen(k), initval);
+    return BJHash::Hash(reinterpret_cast<unsigned char const *>(k), static_cast<unsigned int>(strlen(k)), initval);
 }
 
 inline unsigned int BJHash::Hash(const std::string& str, unsigned int initval)
 {
-    return BJHash::Hash((unsigned char const *)str.c_str(), (unsigned int) str.size(), initval);
+    return BJHash::Hash(reinterpret_cast<unsigned char const *>(str.c_str()),
+         static_cast<unsigned int>(str.size()), initval);
 }
 
 inline unsigned int BJHash::Hash(void const *k, unsigned int length, unsigned int initval)
 {
-    return BJHash::Hash((unsigned char const *) k, length, initval);
+    return BJHash::Hash(reinterpret_cast<unsigned char const *>(k), length, initval);
 }
 
 // Just to keep this macro from leaking out and polluting the global namespace

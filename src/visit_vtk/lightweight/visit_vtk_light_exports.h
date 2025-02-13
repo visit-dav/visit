@@ -18,10 +18,6 @@
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
 #pragma warning(disable:4251)
-// Turn off warning non-dll class is base for dll-interface class.
-#pragma warning(disable:4275)
-// Turn off warning about identifier truncation
-#pragma warning(disable:4786)
 #endif
 #else
 # if __GNUC__ >= 4 && (defined(VISIT_VTK_LIGHT_EXPORTS) || defined(lightweight_visit_vtk_EXPORTS))

@@ -61,7 +61,7 @@ class vtkPoints;
 class VISIT_VTK_LIGHT_API vtkVisItCellLocator : public vtkLocator
 {
 public:
-  vtkTypeMacro(vtkVisItCellLocator,vtkLocator);
+  vtkTypeMacro(vtkVisItCellLocator,vtkLocator)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
@@ -103,7 +103,7 @@ public:
   // (thus the dataset bounds are much larger than just the bounds
   // for all the cells). 
    void SetUserBounds(double b[6]);
-   double* GetUserBounds(void) {return UserBounds;};
+   double* GetUserBounds(void) {return UserBounds;}
 
   // Description:
   // Return intersection point (if any) of finite line with cells contained
@@ -257,7 +257,7 @@ protected:
   int NumberOfDivisions; // number of "leaf" octant sub-divisions
   vtkIdList **Tree; // octree
 
-  void MarkParents(void*, int, int, int, int, int);
+  void MarkParents(const vtkSmartPointer<vtkIdList>&,int,int,int,int,int);
   void GetChildren(int idx, int level, int children[8]);
   int GenerateIndex(int offset, int numDivs, int i, int j, int k,
                     vtkIdType &idx);

@@ -20,7 +20,7 @@ vtkSkewValue(T val, T min, T max, T factor)
     T range = max - min; 
     T k = range / (factor - 1.);
     T t = (val - min) / range;
-    T rv =  k * ((T)exp(t * (T)log(factor)) -1.) + min;
+    T rv =  k * (static_cast<T>(exp(t * static_cast<T>(log(factor))) -1.)) + min;
     return rv;
 }
 
@@ -33,7 +33,7 @@ vtkInverseSkewValue(T val, T min, T max, T factor)
 
     T rangeDif = max - min;
     T t = (val - min) / rangeDif;
-    T t2 = (T)log(t * (factor - 1.) + 1.) / (T)log(factor);
+    T t2 = static_cast<T>(log(t * (factor - 1.) + 1.)) / static_cast<T>(log(factor));
     T rv = t2 * rangeDif + min;
     return rv;
 }

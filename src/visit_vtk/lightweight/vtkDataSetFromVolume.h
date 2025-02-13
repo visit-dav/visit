@@ -83,14 +83,14 @@ class VISIT_VTK_LIGHT_API EdgeHashEntry
 {
   public:
                     EdgeHashEntry();
-    virtual        ~EdgeHashEntry() {;};
+    virtual        ~EdgeHashEntry() {;}
  
     void            SetInfo(vtkIdType, vtkIdType, vtkIdType);
     bool            IsMatch(vtkIdType i1, vtkIdType i2)
-                           { return (i1 == id1 && i2 == id2 ? true : false); };
-    vtkIdType       GetPointId(void) { return ptId; };
-    EdgeHashEntry  *GetNext(void) { return next; };
-    void            SetNext(EdgeHashEntry *n) { next = n; };
+                           { return (i1 == id1 && i2 == id2 ? true : false); }
+    vtkIdType       GetPointId(void) { return ptId; }
+    EdgeHashEntry  *GetNext(void) { return next; }
+    void            SetNext(EdgeHashEntry *n) { next = n; }
  
   protected:
     vtkIdType       id1, id2;
@@ -163,7 +163,7 @@ class VISIT_VTK_LIGHT_API EdgeHashTable
   public:
                       vtkDataSetFromVolume(vtkIdType ptSizeGuess);
                       vtkDataSetFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess);
-    virtual          ~vtkDataSetFromVolume() { ; };
+    virtual          ~vtkDataSetFromVolume() { ; }
 
     vtkIdType         AddPoint(vtkIdType p1, vtkIdType p2, float percent)
                          { return numPrevPts + edges.AddPoint(p1,p2,percent); }
