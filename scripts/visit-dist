@@ -102,7 +102,7 @@ exec perl -x $0 ${1+"$@"};
 #
 require "newgetopt.pl";
 
-$USAGE = "USAGE: $0 dist_file [-withtest] [-dbioonly]\n";
+$USAGE = "USAGE: $0 dist_file [-withtest] [-dbioonly]\nwhere dist_file is typically named visitX.X.X";
 
 if (! -d "src")
 {

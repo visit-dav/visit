@@ -252,12 +252,16 @@ set -e
 # 
 #   Justin Privitera, Fri Nov 22 16:40:46 PST 2024
 #   Removed kickit with extreme prejudice.
+# 
+#   Justin Privitera, Thu Feb 13 15:17:44 PST 2025
+#   Move install location to a variable that can be set.
 #-----------------------------------------------------------------------
 
 test=no
 
 user=`whoami`
 result_dir=/usr/workspace/visit/visit/_release_builds
+install_location=/usr/gapps/visit
 
 #
 # Set the user e-mail address.
@@ -389,6 +393,7 @@ then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
    echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams rzansel"
+   echo "version should just be the version number (e.g. 3.4.9)"
    exit
 fi
 
@@ -418,7 +423,7 @@ if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
 #!/bin/sh
 set -e
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
-$ver ${architecture}-${machine_name} /usr/gapps/visit > installlog 2>&1
+$ver ${architecture}-${machine_name} $install_location > installlog 2>&1
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -436,16 +441,16 @@ echo ""                                              > resultlog 2>&1
 echo "        install of visit on $machine_name"     >> resultlog 2>&1
 echo "       ----------------------------"           >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-df -k /usr/gapps/visit                               >> resultlog 2>&1
+df -k $install_location                              >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/$architecture/bin       >> resultlog 2>&1
+ls -l $install_location/$ver+/$architecture/bin      >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/$architecture/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $install_location/$ver+/$architecture/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $install_location/$ver+/$architecture/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $install_location/$ver+/$architecture/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/$architecture/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/$architecture\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $install_location/$ver+/$architecture/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/$architecture\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 rm -f resultlog.$machine_name
 mv resultlog resultlog.$machine_name
 EOF
@@ -460,7 +465,7 @@ fi
 if [ "$rzadams" = true ]; then
    # rzvernal can use the rzadams build via a symlink
    cat <<EOF >> machine_specific_install_script
-ln -s /usr/gapps/visit/$ver+/$architecture /usr/gapps/visit/$ver+/linux-x86_64-gfx90a
+ln -s $install_location/$ver+/$architecture $install_location/$ver+/linux-x86_64-gfx90a
 EOF
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
      [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
