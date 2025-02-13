@@ -15,7 +15,7 @@ function bv_xkbcommon_disable
 
 function bv_xkbcommon_depends_on
 {
-    depends_on="meson ninja"
+    local depends_on="meson"
 
     echo ${depends_on}
 }
@@ -97,7 +97,7 @@ function build_xkbcommon
 
     export PATH=$MESON_INSTALL_DIR/bin:$NINJA_INSTALL_DIR/bin:$PATH
 
-    meson setup build --prefix $XKBCOMMON_INSTALL_DIR || error "Xkbcommon did not configure correctly. Giving up."
+    meson setup build --prefix $XKBCOMMON_INSTALL_DIR -Denable-wayland=false || error "Xkbcommon did not configure correctly. Giving up."
 
     #
     # Build xkbcommon
