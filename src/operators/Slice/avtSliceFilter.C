@@ -10,6 +10,7 @@
 
 #include <float.h>
 
+#include <visit-config.h> // for HAVE_LIBVTKM
 #ifdef HAVE_LIBVTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/ImplicitFunction.h>

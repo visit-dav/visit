@@ -12,17 +12,6 @@
     <LIBS components="EPar">
       avtivp_par
     </LIBS>
-    <Files components="V">
-    </Files>
-    <Files components="E">
-      avtIntegralCurveFilter.C
-    </Files>
-    <LIBS components="ESer">
-      avtivp_ser
-    </LIBS>
-    <LIBS components="EPar">
-      avtivp_par
-    </LIBS>
     <Attribute name="IntegralCurveAttributes" purpose="Attributes for the IntegralCurve" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="IntegralCurve.code">
       <Enum name="SourceType">
         SpecifiedPoint

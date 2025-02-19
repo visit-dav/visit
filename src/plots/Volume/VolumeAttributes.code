@@ -985,7 +985,7 @@ Includes: ${ICET_INCLUDE_DIR}
 ELinkLibraries: ${ICET_FULLPATH_LIB}
 
 Target: xml2cmake
-Verbatim: Post
+Verbatim: Pre
 if(ICET_FOUND)
     # We need to link with OpenGL on Mac when we have IceT.
     if(APPLE)
@@ -996,11 +996,6 @@ if(ICET_FOUND)
     foreach(X ${ICET_LIB})
         list(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
     endforeach()
-
-    target_link_libraries(EVolumePlot_ser PUBLIC ${ICET_FULLPATH_LIB})
-    if(VISIT_PARALLEL)
-        target_link_libraries(EVolumePlot_par PUBLIC ${ICET_FULLPATH_LIB})
-    endif()
 endif()
 
 

@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="Poincare" type="operator" label="Poincare" version="3.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Integral Curves" createExpression="true" exprInType="vector" exprOutType="scalar" iconFile="Poincare.xpm">
-    <Files components="V">
-    </Files>
     <Files components="E">
-      avtPoincareFilter.C
       FieldlineAnalyzerLib.C
       RationalSurfaceLib.C
       skelet.C

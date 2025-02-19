@@ -552,43 +552,6 @@ class CMakeGeneratorPlugin : public Plugin
         }
     }
 
-    void WriteCMake_PlotOperator_Includes(QTextStream &out)
-    {
-        // take any ${} from the CXXFLAGS to mean a variable that contains
-        // include directories.
-        std::vector<QString> extraIncludes;
-        for (size_t i=0; i<cxxflags.size(); i++)
-        {
-            if(cxxflags[i].startsWith("${"))
-                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i]));
-            else if(cxxflags[i].startsWith("$("))
-                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(cxxflags[i])));
-            else if(cxxflags[i].startsWith("-I"))
-                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
-        }
-
-        out << Endl;
-
-        // Includes
-        out << "INCLUDE_DIRECTORIES(" << Endl;
-        out << "${CMAKE_CURRENT_SOURCE_DIR}" << Endl;
-        if(type == "operator")
-            out << "${VISIT_OPERATOR_INCLUDES}" << Endl;
-        else
-            out << "${VISIT_PLOT_INCLUDES}" << Endl;
-        if(!using_dev)
-        {
-            out << "${QT_INCLUDE_DIR}" << Endl;
-            out << "${QT_QTCORE_INCLUDE_DIR}" << Endl;
-            out << "${QT_QTGUI_INCLUDE_DIR}" << Endl;
-            out << "${QT_QTWIDGETS_INCLUDE_DIR}" << Endl;
-        }
-        if(extraIncludes.size() > 0)
-            out << ToString(extraIncludes, true);
-        out << ")" << Endl;
-        out << Endl;
-    }
-
     void CMakeAdd_EngineTargets(QTextStream &out)
     {
         QString ptype = type;
@@ -685,7 +648,7 @@ class CMakeGeneratorPlugin : public Plugin
         return false;
     }
 
-    void WriteCMake_PlotSources(QTextStream &out,
+    void WriteCMake_PluginSources(QTextStream &out,
         const QString component,
         const std::vector<QString> files)
     {
@@ -695,20 +658,73 @@ class CMakeGeneratorPlugin : public Plugin
             out << Endl << "               " << files[i];
     }
 
-    void WriteCMake_PlotLibs(QTextStream &out,
+    void WriteCMake_PluginLibs(QTextStream &out,
         const QString component,
-        const std::vector<QString> libs)
+        const std::vector<QString> libs,
+        const bool hasConditionalLibs)
     {
+        if(libs.empty() && !hasConditionalLibs)
+            return;
+
         out << Endl;
         QString IOne("   ");
-        if (component == "V" ||  component=="G")
+        QChar c(component[0]);
+        if (c == 'V' || c =='G')
             IOne += QString("   ");
-        out << "    " << component << "LIBS" << IOne << libs[0];
-        for(size_t i = 1; i < libs.size(); ++i)
-            out << Endl << "               " << libs[i];
+        out << "    " << component << "LIBS" << IOne;
+        if(!libs.empty())
+        {
+            out << libs[0];
+            for(size_t i = 1; i < libs.size(); ++i)
+                out << Endl << "               " << libs[i];
+        }
+        if(hasConditionalLibs)
+        {
+            if(!libs.empty())
+                out << Endl << "               ";
+            out << "${" << name << "_" << c << "Libs}";
+        }
     }
 
-    void WriteCMake_PlotConditionalDefinitions(QTextStream &out)
+    bool WriteCMake_PluginConditionalLibs(QTextStream &out, const char *libType)
+    {
+        QString c(libType);
+        c += "LinkLibraries:";
+        QStringList conditions, links;
+        if (GetCondition(c, conditions, links))
+        {
+            out << Endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                QString libs;
+                FilterConditionalLibs(links[i], libs);
+                out << "if(" << conditions[i] << ")" << Endl;
+                out << "    set(" << name << "_" << libType << "Libs " << libs << ")" << Endl;
+                out << "endif()" << Endl;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    bool WriteCMake_PluginConditionalIncludes(QTextStream &out)
+    {
+        QStringList conditions, incs;
+        if(GetCondition("Includes:", conditions, incs))
+        {
+            out << Endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << "if(" << conditions[i] << ")" << Endl;
+                out << "    set(" << name << "_INCLUDES " << incs[i] << ")" << Endl;
+                out << "endif()" << Endl;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    bool WriteCMake_PluginConditionalDefinitions(QTextStream &out)
     {
         QStringList conditions, defs;
         if(GetCondition("Definitions:", conditions, defs))
@@ -721,12 +737,13 @@ class CMakeGeneratorPlugin : public Plugin
                 out << "    list(APPEND " << name << "_DEFINES " << defs[i];
                 out << ")" << Endl;
                 out << "endif()" << Endl;
-                out << Endl;
             }
+            return true;
         }
+        return false;
     }
 
-    void WriteCMake_PlotVerbatim(QTextStream &out, QString prepost)
+    void WriteCMake_PluginVerbatim(QTextStream &out, QString prepost)
     {
         if (atts != NULL && atts->codeFile != NULL)
         {
@@ -741,327 +758,62 @@ class CMakeGeneratorPlugin : public Plugin
     }
             
 
-    void WriteCMake_Plot(QTextStream &out,
-                         const QString &guilibname,
-                         const QString &viewerlibname)
-    {
-        WriteCMake_PlotVerbatim(out, "Pre");
-        WriteCMake_PlotConditionalDefinitions(out);
-        out << Endl;
-        out << "visit_add_plot_plugin(" << Endl;
-        out << "    PNAME      " << name;
-        if (customgfiles)
-        {
-            WriteCMake_PlotSources(out, "G", gfiles);
-        }
-        if (customvfiles)
-        {
-            WriteCMake_PlotSources(out, "V", vfiles);
-        }
-        if (customefiles)
-        {
-            WriteCMake_PlotSources(out, "E", efiles);
-        }
-
-        out << "\n    DEFINES    ${" << name << "_DEFINES}";
-
-        // gui libs
-        if (!glibs.empty())
-        {
-            WriteCMake_PlotLibs(out, "G", glibs);
-        }
-
-        // viewer libs
-        if (!vlibs.empty())
-        {
-            WriteCMake_PlotLibs(out, "V", vlibs);
-        }
-        // engine libs
-        if (!elibsSer.empty())
-        {
-            WriteCMake_PlotLibs(out, "ESER", elibsSer);
-        }
-
-        if (!elibsPar.empty())
-        {
-            WriteCMake_PlotLibs(out, "EPAR", elibsPar);
-        }
-
-        out << ")" << Endl;
-
-        WriteCMake_PlotVerbatim(out, "Post");
-    }
-
     void WriteCMake_PlotOperator(QTextStream &out,
                          const QString &guilibname,
                          const QString &viewerlibname)
     {
-        bool useFortran = false;
-
-        out << "PROJECT(" << name<< "_" << type << ")" << Endl;
+        WriteCMake_PluginVerbatim(out, "Pre");
+        bool hasDefines = WriteCMake_PluginConditionalDefinitions(out);
+        bool hasIncludes = WriteCMake_PluginConditionalIncludes(out);
+        bool hasGLibs  = WriteCMake_PluginConditionalLibs(out, "G");
+        bool hasVLibs  = WriteCMake_PluginConditionalLibs(out, "V");
+        bool hasELibs  = WriteCMake_PluginConditionalLibs(out, "E");
         out << Endl;
-        if (using_dev)
-        {
-            out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << Endl;
-            out << Endl;
-        }
-        out << "SET(COMMON_SOURCES" << Endl;
-        out << name << "PluginInfo.C" << Endl;
-        out << name << "CommonPluginInfo.C" << Endl;
-        out << atts->name << ".C" << Endl;
-        out << ")" << Endl;
-        out << Endl;
-        out << "SET(LIBI_SOURCES" << Endl;
-        out << name << "PluginInfo.C" << Endl;
-        out << ")" << Endl;
-        out << Endl;
-        WriteCMake_ConditionalSources(out, "I", "");
-
-        // libG sources
-        out << "SET(LIBG_SOURCES" << Endl;
-        out << name << "GUIPluginInfo.C" << Endl;
-        out << "Qvis" << name;
         if (type == "plot")
-            out << "PlotWindow.C" << Endl;
-        else
-            out << "Window.C" << Endl;
-        out << "${COMMON_SOURCES}" << Endl;
+        {
+            out << "visit_add_plot_plugin(" << Endl;
+            out << "    PNAME      " << name;
+        }
+        else 
+        {
+            out << "visit_add_operator_plugin(" << Endl;
+            out << "    ONAME      " << name;
+        }
         if (customgfiles)
         {
-            useFortran |= CustomFilesUseFortran(gfiles);
-            for (size_t i=0; i<gfiles.size(); i++)
-                out << gfiles[i] << Endl;
+            WriteCMake_PluginSources(out, "G", gfiles);
         }
-        else
-            for (size_t i=0; i<defaultgfiles.size(); i++)
-                out << defaultgfiles[i] << Endl;
-        out << ")" << Endl;
-        out << Endl;
-        WriteCMake_ConditionalSources(out, "G", "");
-
-        // libV sources
-        out << "SET(LIBV_SOURCES" << Endl;
-        out << name<<"ViewerEnginePluginInfo.C" << Endl;
-        out << name<<"ViewerPluginInfo.C" << Endl;
-        if(type == "plot")
-            out << "avt"<<name<<"Plot.C" << Endl;
         if (customvfiles)
         {
-            useFortran |= CustomFilesUseFortran(vfiles);
-            for (size_t i=0; i<vfiles.size(); i++)
-                out << vfiles[i] << Endl;
+            WriteCMake_PluginSources(out, "V", vfiles);
         }
-        else
-            for (size_t i=0; i<defaultvfiles.size(); i++)
-                out << defaultvfiles[i] << Endl;
-        out << "${COMMON_SOURCES}" << Endl;
-        out << ")" << Endl;
-        if (customvwfiles)
-        {
-            out << "SET(LIBV_MOC_SOURCES" << Endl;
-            for (size_t i=0; i<vwfiles.size(); i++)
-                out << vwfiles[i] << Endl;
-            out << ")" << Endl;
-        }
-        out << Endl;
-        WriteCMake_ConditionalSources(out, "V", "");
-
-        // libE sources
-        out << "SET(LIBE_SOURCES" << Endl;
-        out << name<<"ViewerEnginePluginInfo.C" << Endl;
-        out << name<<"EnginePluginInfo.C" << Endl;
-        if (type == "plot")
-            out << "avt"<<name<<"Plot.C" << Endl;
         if (customefiles)
         {
-            useFortran |= CustomFilesUseFortran(efiles);
-            for (size_t i=0; i<efiles.size(); i++)
-                out << efiles[i] << Endl;
+            WriteCMake_PluginSources(out, "E", efiles);
         }
-        else
-            for (size_t i=0; i<defaultefiles.size(); i++)
-                out << defaultefiles[i] << Endl;
-        out << "${COMMON_SOURCES}" << Endl;
+
+        if(hasDefines)
+        {
+            out << "\n    DEFINES    ${" << name << "_DEFINES}";
+        }
+        if(hasIncludes)
+        {
+            out << "\n    INCLUDES   ${" << name << "_INCLUDES}";
+        }
+
+        // gui libs
+        WriteCMake_PluginLibs(out, "G", glibs, hasGLibs);
+
+        // viewer libs
+        WriteCMake_PluginLibs(out, "V", vlibs, hasVLibs);
+
+        // engine libs
+        WriteCMake_PluginLibs(out, "ESER", elibsSer, hasELibs);
+        WriteCMake_PluginLibs(out, "EPAR", elibsPar, hasELibs);
+
         out << ")" << Endl;
-        out << Endl;
-        WriteCMake_ConditionalSources(out, "E", "");
 
-        if(useFortran)
-        {
-            out << "ENABLE_LANGUAGE(Fortran)" << Endl;
-        }
-
-        WriteCMake_PlotOperator_Includes(out);
-        WriteCMake_ConditionalIncludes(out);
-
-        // Pass other CXXFLAGS
-        bool added_defs = false;
-        for (size_t i=0; i<cxxflags.size(); i++)
-        {
-            if(!cxxflags[i].startsWith("${") &&
-               !cxxflags[i].startsWith("$(") &&
-               !cxxflags[i].startsWith("-I"))
-            {
-                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << Endl;
-                 added_defs = true;
-            }
-        }
-
-        // Pass DEFINITIONS
-        for (size_t i=0; i<defs.size(); i++)
-        {
-            out << "ADD_DEFINITIONS(" << defs[i] << ")" << Endl;
-            added_defs = true;
-        }
-        if (added_defs)
-            out << Endl;
-
-        WriteCMake_ConditionalDefinitions(out);
-
-        if (!vtk9_libs.empty())
-        {
-            out << "set(vtk_libs " << ToString(vtk9_libs) << ")" << Endl;
-        }
-
-        std::vector<QString> linkDirs;
-        linkDirs.push_back("${VISIT_LIBRARY_DIR}");
-        if (!using_dev)
-        {
-            linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
-        }
-        // Extract extra link directories from LDFLAGS if they have ${},$(),-L
-        for (size_t i=0; i<ldflags.size(); i++)
-        {
-            if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
-                 linkDirs.push_back(ldflags[i]);
-            else if(ldflags[i].startsWith("-L"))
-                 linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
-        }
-
-        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << Endl;
-        out << Endl;
-        QString ptype;
-        if (type == "plot")
-            ptype = "Plot";
-        else
-            ptype = "Operator";
-        out << "ADD_LIBRARY(I"<<name<<ptype<<" ${LIBI_SOURCES})" << Endl;
-        out << "TARGET_LINK_LIBRARIES(I"<<name<<ptype<<" visitcommon)" << Endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "I", ptype, "");
-        out << "SET(INSTALLTARGETS I"<<name<<ptype<<")" << Endl;
-        out << Endl;
-
-        out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
-        if (!vtk9_glibs.empty())
-        {
-            out << "    set(vtk_glibs " << ToString(vtk9_glibs) << ")" << Endl;
-        }
-        out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << Endl;
-        out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC ON)" << Endl;
-        if (!using_dev)
-            out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC_EXECUTABLE \${QT_MOC_EXECUTABLE})" << Endl;
-
-        out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
-            << guilibname << " " << ToString(libs) << ToString(glibs);
-        if (!vtk9_libs.empty())
-            out << "${vtk_libs} ";
-        if (!vtk9_glibs.empty())
-            out << "${vtk_glibs} ";
-        out << ")" << Endl;
-        if (!using_dev)
-        {
-            out << "    # Qt 6 requires CXX 17 (Visit proper currently doesn't)." << Endl;
-            out << "    # We don't get the flags for free when building against" << Endl;
-            out << "    # an install, so need to set them for the G target here." << Endl;
-            out << "    set_target_properties(G" << name << ptype << Endl;
-            out << "           PROPERTIES CXX_STANDARD 17)" << Endl;
-            out << "    if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)" << Endl;
-            out << "        set_target_properties(G" << name << ptype << Endl;
-            out << "            PROPERTIES " << Endl;
-            out << "                COMPILE_OPTIONS \"-Zc:__cplusplus;-permissive-\")" << Endl;
-            out << "    endif()" << Endl;
-            out << Endl;
-        }
-        WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
-        out << Endl;
-
-        if (!vtk9_vlibs.empty())
-        {
-            out << "    set(vtk_vlibs " << ToString(vtk9_vlibs) << ")" << Endl;
-        }
-        out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << Endl;
-        out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << Endl;
-        if (customvwfiles)
-        {
-            out << "    set_target_properties(V" << name << ptype << " PROPERTIES AUTOMOC ON)" << Endl;
-        }
-        out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
-            << viewerlibname << " " << ToString(libs) << ToString(vlibs);
-        if (!vtk9_libs.empty())
-            out << "${vtk_libs} ";
-        if (!vtk9_vlibs.empty())
-            out << "${vtk_vlibs} ";
-        out << ")" << Endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "V", ptype, "    ");
-        out << Endl;
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<ptype<<" V"<<name<<ptype<<")" << Endl;
-        out << Endl;
-        // libS sources
-        out << "    IF(VISIT_PYTHON_SCRIPTING)" << Endl;
-        out << "        SET(LIBS_SOURCES" << Endl;
-        out << "            " << name<<"ScriptingPluginInfo.C" << Endl;
-        out << "            Py"<<atts->name<<".C" << Endl;
-        if (customsfiles)
-            for (size_t i=0; i<sfiles.size(); i++)
-                out << "            " << sfiles[i] << Endl;
-        else
-            for (size_t i=0; i<defaultsfiles.size(); i++)
-                out << "            " << defaultsfiles[i] << Endl;
-        out << "            ${COMMON_SOURCES}" << Endl;
-        out << "        )" << Endl;
-        WriteCMake_ConditionalSources(out, "S", "        ");
-        out << "        ADD_LIBRARY(S"<<name<<ptype<<" ${LIBS_SOURCES})" << Endl;
-        out << "        TARGET_LINK_LIBRARIES(S" << name << ptype
-            << " visitcommon visitpy ${PYTHON_LIBRARY})" << Endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "S", ptype, "        ");
-        out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S" << name
-            << ptype << ")" << Endl;
-        out << "    ENDIF(VISIT_PYTHON_SCRIPTING)" << Endl;
-        out << Endl;
-        // Java sources
-        out << "    IF(VISIT_JAVA)" << Endl;
-        out << "        FILE(COPY " << atts->name<<".java DESTINATION ${JavaClient_BINARY_DIR}/src/" << type << "s)" << Endl;
-        out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ";
-        if(customjfiles)
-        {
-            for(size_t i = 0; i < jfiles.size(); ++i)
-                out << jfiles[i] << " ";
-        }
-        out << atts->name<<".java" << Endl;
-        out << "            DEPENDS JavaClient" << Endl;
-        out << "            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})" << Endl;
-        out << "    ENDIF(VISIT_JAVA)" << Endl;
-
-        out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
-        out << Endl;
-
-        CMakeAdd_EngineTargets(out);
-
-        out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << Endl;
-
-        if (using_dev)
-        {
-          out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(" << type << "s ${INSTALLTARGETS})" << Endl;
-          out << "VISIT_PLUGIN_TARGET_FOLDER(" << type << "s " << name
-              << " ${INSTALLTARGETS})" << Endl;
-        }
-        out << Endl;
-#ifdef _WIN32
-        if (!using_dev)
-        {
-          out << "MESSAGE(STATUS \"Plugin will be installed to: ${VISIT_PLUGIN_DIR}\")" << Endl;
-        }
-#endif
+        WriteCMake_PluginVerbatim(out, "Post");
     }
 
     void WriteCMake_Database(QTextStream &out)
@@ -1390,10 +1142,8 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
         if(type == "database")
             WriteCMake_Database(out);
-        else if(type == "operator")
+        else
             WriteCMake_PlotOperator(out, guilibname, viewerlibname);
-        else if(type == "plot")
-            WriteCMake_Plot(out, guilibname, viewerlibname);
 
         WriteCMake_AdditionalCode(out);
     }
