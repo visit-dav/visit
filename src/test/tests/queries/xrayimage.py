@@ -128,6 +128,9 @@
 # 
 #    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
 #    Use numpy.int64 to cast to wide types for diff.
+# 
+#    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
+#    Added test for the far clipping plane actually clipping results.
 # ----------------------------------------------------------------------------
 
 import os
@@ -165,6 +168,12 @@ if not os.path.isdir(conduit_dir_detector_dims):
 conduit_dir_nonsquare_pixels = pjoin(outdir_set, "nonsquare_pix")
 if not os.path.isdir(conduit_dir_nonsquare_pixels):
     os.mkdir(conduit_dir_nonsquare_pixels)
+conduit_dir_far_plane_empty = pjoin(outdir_set, "far_plane_empty")
+if not os.path.isdir(conduit_dir_far_plane_empty):
+    os.mkdir(conduit_dir_far_plane_empty)
+conduit_dir_far_plane_non_empty = pjoin(outdir_set, "far_plane_non_empty")
+if not os.path.isdir(conduit_dir_far_plane_non_empty):
+    os.mkdir(conduit_dir_far_plane_non_empty)
 
 dir_dne = pjoin(outdir_set, "doesnotexist")
 if os.path.isdir(dir_dne):
@@ -1304,6 +1313,80 @@ for i in range(0, len(family_options)):
                                                   outdir_set_family)) + "\n"
     info += str(sorted(os.listdir(outdir_set_family))) + "\n"
     TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
+
+#
+# Test that the far plane actually clips the result
+#
+def test_far_plane_clipping():
+    OpenDatabase(silo_data_path("curv3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+    Query("XRay Image", 
+          background_intensity=0, 
+          divide_emis_by_absorb=0, 
+          far_plane=5, 
+          filename_scheme="none", 
+          focus=(0, 0, -10), 
+          image_pan=(0, 0), 
+          image_size=(200, 200), 
+          image_zoom=1, 
+          near_plane=-5, 
+          normal=(0, 0, 1), 
+          output_dir=conduit_dir_far_plane_empty, 
+          output_ray_bounds=1, 
+          output_type="hdf5", 
+          parallel_scale=10, 
+          perspective=0, 
+          view_angle=30, 
+          view_up=(0, 1, 0), 
+          vars=("d", "p"))
+
+    Query("XRay Image", 
+          background_intensity=0, 
+          divide_emis_by_absorb=0, 
+          far_plane=25, # we changed the far plane
+          filename_scheme="none", 
+          focus=(0, 0, -10), 
+          image_pan=(0, 0), 
+          image_size=(200, 200), 
+          image_zoom=1, 
+          near_plane=-5, 
+          normal=(0, 0, 1), 
+          output_dir=conduit_dir_far_plane_non_empty, 
+          output_ray_bounds=1, 
+          output_type="hdf5", 
+          parallel_scale=10, 
+          perspective=0, 
+          view_angle=30, 
+          view_up=(0, 1, 0), 
+          vars=("d", "p"))
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("curv3d.silo"))
+
+    conduit_db_empty = pjoin(conduit_dir_far_plane_empty, "output.root")
+    OpenDatabase(conduit_db_empty)
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+    DrawPlots()
+    Test("far_plane_clipping_image_topo_intensities1")
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "mesh_image_topo/path_length")
+    DrawPlots()
+    Test("far_plane_clipping_image_topo_path_length1")
+    CloseDatabase(conduit_db_empty)
+
+    conduit_db_nonempty = pjoin(conduit_dir_far_plane_non_empty, "output.root")
+    OpenDatabase(conduit_db_nonempty)
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+    DrawPlots()
+    Test("far_plane_clipping_image_topo_intensities2")
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "mesh_image_topo/path_length")
+    DrawPlots()
+    Test("far_plane_clipping_image_topo_path_length2")
+    CloseDatabase(conduit_db_nonempty)
+
+test_far_plane_clipping()
 
 #
 # Test that we get decent error messages for common cases
