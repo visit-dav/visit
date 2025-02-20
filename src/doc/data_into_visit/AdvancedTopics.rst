@@ -10,6 +10,42 @@ Many of the examples in this chapter use the Silo_ library, which was
 introduced previously.
 For more information on getting started with the Silo_ library, see :ref:`Silo file format <Data_Into_VisIt_Silo>`.
 
+Arrays vs. Meshes
+~~~~~~~~~~~~~~~~~
+
+Very often, the data to be visualized is simply a bare, multidimensional array of numbers—-no meshes, just an organized sequence of values.
+This is typical of input file types that represent data as arrays such as *basic* NETCDF or HDF5 or of *basic* image files that consist of a 2D array of intensities or rgb values.
+
+In our mind's eye, we visualize a 2D array of ``Nx`` by ``Ny`` numbers, for example, as a table.
+However, to visualize the data in VisIt_, we must treat it as a *field* defined on a *mesh* embedded in a geometric space.
+And, there are some choices to make in so doing.
+One key choice is whether to treat the array data as a :term:`zone-centered` (e.g. piecewise constant) or :term:`node-centered` (e.g. piecewise linear) field or, perhaps, both.
+Each choice involves placing the array data on a slightly different mesh.
+But, the mesh used in each case needs to be compatible with the other case.
+Another choice is what the mesh's spatial layout should be (e.g. Centered on origin or offset? Step size in each dimension?).
+
+For a zone-centered treatment, the mesh is one bigger in size (e.g. ``Nx+1`` by ``Ny+1``) in each dimension than the array.
+For a node-centered treatment, the mesh is the same size as the array.
+For these two cases to be compatible, the node-centered mesh needs to be offset a half-step in each dimension from the zone-centered mesh.
+In other words, the nodes of the node-centered case should coincide with the geometric centers of the zones in the zone-centered mesh.
+
+When there are many related arrays, it may be desireable to treat some as node-centered and some as zone-centered.
+Sometimes, one of the dimensions of a multidimension array may represent a *time* dimension.
+This can happen with *basic* NETCDF data, for example.
+However, VisIt_ may properly recognize the time dimension or may treat it as an additional spatial dimension.
+Sometimes the user may prefer one or the other of these choices.
+
+What if VisIt_ opens a NETCDF file with 4D array data?
+In theory, it maybe should be possible to apply a **Slice** operator and display a subset of its dimensions.
+In practice, this may not be possible.
+
+Whether VisIt_ handles bare array data in a desireable way depends on the database plugin used to read it.
+The **Image** plugin, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
+But, the **Image** plugin will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
+Whether this is the correct thing to do depends on information unknown to VisIt_.
+
+These kinds of issues often arise when crafting a ``.xdmf`` file to read some bare HDF5 data into VisIt_.
+
 Writing Vector Data
 ~~~~~~~~~~~~~~~~~~~
 The components of vector data are often stored to files as individual scalar variables and VisIt_ uses an expression to compose the scalars back into a vector field.
@@ -167,7 +203,7 @@ In the above example, the value of 11.5 is only present in domain 3, which means
 .. figure:: images/annotated_dataextents2.png
   :scale: 50%
 
-  Example Mesh and Psuedocolor plots with the data extents for each domain of the Pseudocolor plots' scalar variable.
+  Example Mesh and Pseudocolor plots with the data extents for each domain of the Pseudocolor plots' scalar variable.
 
 .. _annotated_dataextents3:
 
@@ -548,7 +584,7 @@ Each zone in the mesh gets one or more material numbers to indicate its composit
 When a zone has a single material number, it is said to be a "clean zone".
 When there is more than one material number in a zone, it is said to be a "mixed zone".
 When zones are mixed, they have a list of material numbers and a list of volume fractions (floating point numbers that sum to one) that indicate how much of each material is contained in a zone.
-VisIt_ provides the :ref:`Filled Boundary and Bounary plots<boundary_plot_head>` for plotting materials and VisIt_ provides the :ref:`Subset window <Using the Subset Window>` so you can selectively turn off certain materials.
+VisIt_ provides the :ref:`Filled Boundary and Boundary plots<boundary_plot_head>` for plotting materials and VisIt_ provides the :ref:`Subset window <Using the Subset Window>` so you can selectively turn off certain materials.
 
 .. _materialscleanmixed:
 
