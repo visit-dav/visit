@@ -4,23 +4,20 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Wed Feb 19, 2025
+#  Utilize visit_add_executable.
 #
 #****************************************************************************
 
-SET(SOURCES add_visit_searchpath.C)
+visit_add_executable(
+    NAME       add_visit_searchpath
+    SOURCES    add_visit_searchpath.C
+    DEPENDS_ON ${SILO_LIB}
+    FOLDER     tools/add_visit_searchpath) 
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${SILO_INCLUDE_DIR}
-)
+# until Silo is imported as a proper cmake target
+visit_patch_target(
+    NAME       add_visit_search_path
+    INCLUDES   ${SILO_INCLUDE_DIR}
+    LINKDIR    ${SILO_LIBRARY_DIR})
 
-LINK_DIRECTORIES(${SILO_LIBRARY_DIR})
-
-ADD_EXECUTABLE(add_visit_searchpath ${SOURCES})
-
-TARGET_LINK_LIBRARIES(add_visit_searchpath
-${SILO_LIB}
-) 
-
-VISIT_INSTALL_TARGETS(add_visit_searchpath)
-VISIT_TOOLS_ADD_FOLDER(add_visit_searchpath)

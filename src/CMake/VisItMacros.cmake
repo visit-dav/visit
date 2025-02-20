@@ -445,3 +445,89 @@ macro(visit_add_parallel_library)
     visit_patch_parallel_target(NAME ${vapl_NAME})
 endmacro()
 
+##############################################################################
+# Adds an executable target.
+# calls blt_add_executable
+#
+# ARGUMENTS:
+#    NAME         library name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    REQUIRED
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL (except for header-only)
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON   [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
+#    FOLDER       [name]                     OPTIONAL
+#    SKIP_INSTALL                            OPTIONAL (visit only)
+#
+# Modifications:
+#
+##############################################################################
+
+macro(visit_add_executable)
+    set(options SKIP_INSTALL)
+    set(singleValueArgs NAME OUTPUT_NAME FOLDER)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
+
+    # parse the arguments
+    cmake_parse_arguments(vae
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Sanity checks
+    if(NOT vae_NAME)
+        message(FATAL_ERROR "visit_add_executable() must be called with argument NAME <name>")
+    endif()
+    if (NOT vae_SOURCES)
+        message(FATAL_ERROR "visit_add_executable(NAME ${vae_NAME} ...) called with no given sources.")
+    endif()
+
+    blt_add_executable(
+        NAME        ${vae_NAME}
+        SOURCES     ${vae_SOURCES}
+        HEADERS     ${vae_HEADERS}
+        INCLUDES    ${vae_INCLUDES}
+        DEFINES     ${vae_DEFINES}
+        DEPENDS_ON  ${vae_DEPENDS_ON}
+        OUTPUT_NAME ${vae_OUTPUT_NAME}
+        FOLDER      ${vae_FOLDER})
+
+    # currently not a part of blt_add_executable, and causes a CMake
+    # error if we call blt_add_executable(${ARGV})
+    if (vae_FEATURES)
+        target_compile_features(${vae_NAME} PRIVATE ${vae_FEATURES})
+    endif()
+
+    if(VISIT_EXE_LINKER_FLAGS)
+        target_link_options(${vae_NAME} PUBLIC ${VISIT_EXE_LINKER_FLAGS})
+    endif()
+	
+    if(NOT ${vae_SKIP_INSTALL})
+        VISIT_INSTALL_TARGETS(${vae_NAME})
+    endif()
+
+    # vars that may have been created by calls to visit_append_list
+    #unset(${val_NAME}_SOURCES CACHE)
+    #unset(${val_NAME}_HEADERS CACHE)
+    #unset(${val_NAME}_INCLUDES CACHE)
+    #unset(${val_NAME}_DEFINES CACHE)
+    #unset(${val_NAME}_DEPENDS CACHE)
+    #unset(${val_NAME}_FEATURES CACHE)
+endmacro()
+
+##############################################################################
+# Adds a parallel executable target.
+# calls visit_add_executable
+# calls visit_patch_parallel_target to set all the parallel options for the
+# target
+#
+# See visit_add_executable for arguments.
+#
+##############################################################################
+
+macro(visit_add_parallel_executable)
+    visit_add_executable(${ARGV})
+    cmake_parse_arguments(vape "" "NAME" "" ${ARGN})
+    visit_patch_parallel_target(NAME ${vape_NAME})
+endmacro()
+

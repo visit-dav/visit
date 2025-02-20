@@ -2,6 +2,10 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
+# Modifications:
+#   Kathleen Biagas, Thu Feb 20, 2025
+#   Removed ADD_PARALLEL_FORTRAN_EXECUTABLE target as it was only being used
+#   by sim examples. Functionality replicated there.
 
 function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
     # Unset any variables that may have been set before by FindMPI
@@ -91,41 +95,7 @@ function(ADD_PARALLEL_EXECUTABLE target)
     endif()
 endfunction()
 
-function(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
-    add_executable(${target} ${ARGN})
-    if(VISIT_PARALLEL_FORTRAN_FLAGS)
-        set(PAR_COMPILE_FLAGS "")
-        foreach(X ${VISIT_PARALLEL_FORTRAN_FLAGS})
-            set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        endforeach()
-        set_target_properties(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
-        target_compile_definitions(${target} PRIVATE ${VISIT_PARALLEL_DEFINES})
 
-        if(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
-            set(PAR_LINK_FLAGS "")
-            foreach(X ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS})
-                set(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            endforeach()
-            set_target_properties(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
-            if(VISIT_PARALLEL_RPATH)
-                set(PAR_RPATHS "")
-                foreach(X ${CMAKE_INSTALL_RPATH})
-                    list(APPEND PAR_RPATHS ${X})
-                endforeach()
-                foreach(X ${VISIT_PARALLEL_RPATH})
-                    list(APPEND PAR_RPATHS ${X})
-                endforeach()
-                set_target_properties(${target} PROPERTIES
-                    INSTALL_RPATH ${PAR_RPATHS}
-                )
-            endif()
-        endif()
-        target_link_libraries(${target} ${VISIT_EXE_LINKER_FLAGS} ${VISIT_PARALLEL_FORTRAN_LIBS})
-    endif()
-endfunction()
 
 function(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)

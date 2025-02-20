@@ -9,28 +9,23 @@
 #
 #****************************************************************************
 
-SET(TARGETS networktestclient networktestserver)
+visit_add_executable(
+    NAME        networktestclient
+    SOURCES     networktestclient.cpp
+    DEPENDS_ON  visitcommon
+    FOLDER      tools/diagnostics)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-)
+visit_add_executable(
+    NAME        networktestserver
+    SOURCES     networktestserver.cpp
+    DEPENDS_ON  visitcommon
+    FOLDER      tools/diagnostics)
 
-LINK_DIRECTORIES(
-${LIBRARY_OUTPUT_DIRECTORY}
-)
+if(VISIT_PARALLEL)
+    visit_add_parallel_executable(
+        NAME        networktestserver_par
+        SOURCES     networktestserver.cpp
+        DEPENDS_ON  visitcommon
+        FOLDER      tools/diagnostics)
+endif()
 
-ADD_EXECUTABLE(networktestclient networktestclient.cpp)
-TARGET_LINK_LIBRARIES(networktestclient ${VISIT_EXE_LINKER_FLAGS} visitcommon)
-
-ADD_EXECUTABLE(networktestserver networktestserver.cpp)
-TARGET_LINK_LIBRARIES(networktestserver ${VISIT_EXE_LINKER_FLAGS} visitcommon)
-
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_EXECUTABLE(networktestserver_par networktestserver.cpp)
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(networktestserver_par visitcommon)
-    SET(TARGETS ${TARGETS} networktestserver_par)
-ENDIF(VISIT_PARALLEL)
-
-VISIT_INSTALL_TARGETS(${TARGETS})
-VISIT_TOOLS_ADD_FOLDER(diagnostics/networktest ${TARGETS})

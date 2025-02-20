@@ -13,31 +13,25 @@
 #
 #****************************************************************************
 
-SET(COMMON_SOURCES ImageObject.C)
+visit_add_executable(
+    NAME        visit_composite
+    SOURCES     ImageObject.C
+                visit_composite.C
+    HEADERS     ImageObject.h
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${VISIT_SOURCE_DIR}/common/utility
+    DEPENDS_ON  visit_vtk
+                VTK::IOImage
+    FOLDER      tools/fx/visit_composite)
 
-SET(VISIT_COMPOSITE_SOURCES
-visit_composite.C ${COMMON_SOURCES}
-)
+visit_add_executable(
+    NAME        visit_transition
+    SOURCES     ImageObject.C
+                visit_transition.C
+    HEADERS     ImageObject.h
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${VISIT_SOURCE_DIR}/common/utility
+    DEPENDS_ON  visit_vtk
+                VTK::IOImage
+    FOLDER      tools/fx/visit_composite)
 
-SET(VISIT_TRANSITION_SOURCES
-visit_transition.C ${COMMON_SOURCES}
-)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
-${VISIT_SOURCE_DIR}/visit_vtk/full
-)
-
-set(vtkimglib VTK::IOImage)
-
-ADD_EXECUTABLE(visit_composite  ${VISIT_COMPOSITE_SOURCES})
-target_link_libraries(visit_composite ${vtkimglib} visit_vtk)
-
-ADD_EXECUTABLE(visit_transition ${VISIT_TRANSITION_SOURCES})
-target_link_libraries(visit_transition ${vtkimglib} visit_vtk)
-
-# Installation targets
-VISIT_INSTALL_TARGETS(visit_composite visit_transition)
-VISIT_FX_ADD_FOLDER(imagetools visit_composite visit_transition)

@@ -16,27 +16,34 @@
 #
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
-)
+visit_add_executable(
+    NAME        text2polys
+    SOURCES     text2polys.C
+                arial_font.C
+    HEADERS     arial_font.h
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${VISIT_SOURCE_DIR}/common/utility
+    DEPENDS_ON  VTK::IOLegacy
+    FOLDER      tools/fx/annotations)
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
+visit_add_executable(
+    NAME        time_annotation
+    SOURCES     time_annotation.C
+                arial_font.C
+    HEADERS     arial_font.h
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${VISIT_SOURCE_DIR}/common/utility
+    DEPENDS_ON  VTK::InteractionStyle
+                VTK::IOImage
+                VTK::RenderingFreeType
+                VTK::RenderingOpenGL2
+                VTK::vtksys
+    FOLDER      tools/fx/annotations)
 
-ADD_EXECUTABLE(text2polys text2polys.C arial_font.C)
-ADD_EXECUTABLE(time_annotation time_annotation.C arial_font.C)
-
-# Specify the libraries to link against
-TARGET_LINK_LIBRARIES(text2polys VTK::IOLegacy)
-
-TARGET_LINK_LIBRARIES(time_annotation
-        VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle
-        VTK::vtksys VTK::IOImage)
 
 if(HAVE_OSMESA)
-    target_link_libraries(time_annotation ${OSMESA_LIBRARIES})
+    visit_patch_target(
+        NAME       time_annotation
+        DEPENDS_ON ${OSMESA_LIBRARIES})
 endif()
 
-VISIT_INSTALL_TARGETS(text2polys time_annotation)
-VISIT_FX_ADD_FOLDER(annotations text2polys time_annotation)

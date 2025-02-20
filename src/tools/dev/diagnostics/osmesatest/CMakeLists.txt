@@ -15,53 +15,62 @@
 #
 #****************************************************************************
 
-SET(TARGETS osmesatest_ser osmesavtktest_ser)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/include
-${OSMESA_INCLUDE_DIR}
-${VTK_INCLUDE_DIRS}
-)
-
-LINK_DIRECTORIES(
-${LIBRARY_OUTPUT_DIRECTORY}
-)
-
 set(REQUIRED_VTK_LIBS
-        VTK::CommonCore
-        VTK::CommonDataModel
-        VTK::CommonExecutionModel
-        VTK::FiltersGeometry
-        VTK::FiltersHybrid
-        VTK::FiltersSources
-        VTK::IOImage
-        VTK::RenderingCore
-        VTK::RenderingOpenGL2
-        VTK::RenderingFreeType
-        VTK::InteractionStyle)
+    VTK::CommonCore
+    VTK::CommonDataModel
+    VTK::CommonExecutionModel
+    VTK::FiltersGeometry
+    VTK::FiltersHybrid
+    VTK::FiltersSources
+    VTK::IOImage
+    VTK::RenderingCore
+    VTK::RenderingOpenGL2
+    VTK::RenderingFreeType
+    VTK::InteractionStyle)
 
-IF(NOT WIN32)
-    SET(LIBDL dl)
-ENDIF(NOT WIN32)
+if(NOT WIN32)
+    set(LIBDL dl)
+endif()
 
-ADD_EXECUTABLE(osmesatest_ser osmesatest.cpp)
-TARGET_LINK_LIBRARIES(osmesatest_ser ${VISIT_EXE_LINKER_FLAGS} ${OSMESA_LIBRARIES} ${LIBDL} Threads::Threads)
+visit_add_executable(
+    NAME        osmesatest_ser
+    SOURCES     osmesatest.cpp
+    INCLUDES    ${OSMESA_INCLUDE_DIR}
+    DEPENDS_ON  ${OSMESA_LIBRARIES}
+                ${LIBDL}
+                Threads::Threads
+    FOLDER      tools/diagnostics)
 
-ADD_EXECUTABLE(osmesavtktest_ser osmesavtktest.cpp)
-TARGET_LINK_LIBRARIES(osmesavtktest_ser ${VISIT_EXE_LINKER_FLAGS} visit_vtk_offscreen visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} Threads::Threads)
+visit_add_executable(
+    NAME        osmesavtktest_ser
+    SOURCES     osmesavtktest.cpp
+    INCLUDES    ${OSMESA_INCLUDE_DIR}
+    DEPENDS_ON  visit_vtk_offscreen
+                visitcommon
+                ${REQUIRED_VTK_LIBS}
+                ${LIBDL}
+                Threads::Threads
+    FOLDER      tools/diagnostics)
 
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_EXECUTABLE(osmesatest_par osmesatest.cpp)
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(osmesatest_par ${OSMESA_LIBRARIES} ${LIBDL} Threads::Threads)
+if(VISIT_PARALLEL)
+    visit_add_parallel_executable(
+        NAME        osmesatest_par
+        SOURCES     osmesatest.cpp
+        INCLUDES    ${OSMESA_INCLUDE_DIR}
+        DEPENDS_ON  ${OSMESA_LIBRARIES}
+                    ${LIBDL}
+                    Threads::Threads
+        FOLDER      tools/diagnostics)
 
-    ADD_PARALLEL_EXECUTABLE(osmesavtktest_par osmesavtktest.cpp)
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(osmesavtktest_par visit_vtk_offscreen visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} Threads::Threads)
+    visit_add_parallel_executable(
+        NAME        osmesavtktest_par
+        SOURCES     osmesavtktest.cpp
+        INCLUDES    ${OSMESA_INCLUDE_DIR}
+        DEPENDS_ON  visit_vtk_offscreen
+                    visitcommon
+                    ${REQUIRED_VTK_LIBS}
+                    ${LIBDL}
+                    Threads::Threads
+        FOLDER      tools/diagnostics)
+endif()
 
-    SET(TARGETS ${TARGETS} osmesatest_par osmesavtktest_par)
-ENDIF(VISIT_PARALLEL)
-
-VISIT_INSTALL_TARGETS(${TARGETS})
-VISIT_TOOLS_ADD_FOLDER(diagnostics/osmesatest ${TARGETS})
