@@ -17,7 +17,7 @@ class VISIT_VTK_LIGHT_API vtkElementLabelArray : public vtkCharArray
 {
 public:
   static vtkElementLabelArray *New();
-  vtkTypeMacro(vtkElementLabelArray,vtkCharArray);
+  vtkTypeMacro(vtkElementLabelArray,vtkCharArray)
   void PrintSelf(ostream& os, vtkIndent indent) override;
   bool AddName(const std::string &name,
                const std::vector<int> &labelRangesBegin,

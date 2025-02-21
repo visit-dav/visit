@@ -28,7 +28,7 @@ class vtkQuadraticHexahedron;
 class VISIT_VTK_LIGHT_API vtkCellIntersections : public vtkObject
 {
 public:
-  vtkTypeMacro(vtkCellIntersections,vtkObject);
+  vtkTypeMacro(vtkCellIntersections,vtkObject)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

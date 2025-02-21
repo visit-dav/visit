@@ -385,10 +385,12 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ReadMultimats(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
     void                  ReadSpecies(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
     void                  ReadMultispecies(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
-    void                  ReadDefvars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadDefvars(DBfile*,int,char**,avtDatabaseMetaData*);
 
     void                  DoRootDirectoryWork(avtDatabaseMetaData*);
+#ifdef PARALLEL
     void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
+#endif
     void                  StoreMultimeshInfo(const char *const dirname,
                                              const char *const name_w_dir,
                                              int meshnum,
@@ -535,8 +537,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                        CheckForTimeVaryingMetadata(DBfile *toc);
 
-    bool                  PopulateIOInformationEx(const std::string &meshname,
-                                                  avtIOInformation &ioInfo);
+    bool                  PopulateIOInformationEx(avtIOInformation &ioInfo);
 };
 
 

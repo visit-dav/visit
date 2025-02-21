@@ -50,7 +50,7 @@ class VISIT_VTK_LIGHT_API vtkSkewLookupTable : public vtkLookupTable
 public:
   static vtkSkewLookupTable *New();
   
-  vtkTypeMacro(vtkSkewLookupTable,vtkLookupTable);
+  vtkTypeMacro(vtkSkewLookupTable,vtkLookupTable)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
@@ -65,14 +65,14 @@ public:
 
   // Description:
   // Sets/Gets the skew factor. 
-  vtkSetMacro(SkewFactor, float);
-  vtkGetMacro(SkewFactor, float);
+  vtkSetMacro(SkewFactor, double);
+  vtkGetMacro(SkewFactor, double);
 
 protected:
   vtkSkewLookupTable(int sze=256, int ext=256);
-  ~vtkSkewLookupTable(){};
+  ~vtkSkewLookupTable(){}
 
-  float SkewFactor;
+  double SkewFactor;
 
 private:
   vtkSkewLookupTable(const vtkSkewLookupTable&) = delete;
