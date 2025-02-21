@@ -250,6 +250,7 @@ EOF
 function apply_vtk94_vtkdatawriter_patch
 {
   # patch vtkDataWriter to fix a bug when writing a vtkBitArray
+  # Make it use the same calculation as the reader.
    patch -p0 << \EOF
 --- IO/Legacy/vtkDataWriter.cxx.orig	2024-09-23 21:01:47.000000000 -0700
 +++ IO/Legacy/vtkDataWriter.cxx	2024-09-26 08:44:39.000000000 -0700
@@ -261,7 +262,7 @@ function apply_vtk94_vtkdatawriter_patch
        {
          unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
 -        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
-+        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp*numComp - 1) / 8 + 1));
++        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp + 7) / 8));
        }
        *fp << "\n";
      }
