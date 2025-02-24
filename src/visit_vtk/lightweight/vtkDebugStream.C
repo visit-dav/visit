@@ -15,7 +15,7 @@
 //   Use macro for 'New' method.
 // *****************************************************
 
-vtkStandardNewMacro(vtkDebugStream);
+vtkStandardNewMacro(vtkDebugStream)
 
 // *****************************************************
 // Modifications:

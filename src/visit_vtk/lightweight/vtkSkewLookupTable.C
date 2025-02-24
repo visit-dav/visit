@@ -13,7 +13,7 @@
 //   Replace 'New' method with Macro to match VTK 4.0 API. 
 // *************************************************************************
 
-vtkStandardNewMacro(vtkSkewLookupTable);
+vtkStandardNewMacro(vtkSkewLookupTable)
 
 
 // Construct with range=(0,1); 
@@ -27,7 +27,7 @@ vtkSkewLookupTable::vtkSkewLookupTable(int sze, int ext):
 // val is first skewed accoring to the skewFactor
 const unsigned char *vtkSkewLookupTable::MapValue(double val)
 {
-  float temp = vtkSkewValue((float)val, (float)this->TableRange[0], (float)this->TableRange[1],
+  double temp = vtkSkewValue(val, this->TableRange[0], this->TableRange[1],
                             this->SkewFactor);
   return this->Superclass::MapValue(temp);
 }
@@ -48,7 +48,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
   int i = length;
 
   const unsigned char *cptr;
-  float alpha;
+  double alpha;
 
   if ( (alpha = self->GetAlpha()) >= 1.0) // no blending reuqired
     {
@@ -56,7 +56,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = *cptr++;
         *output++ = *cptr++;
         *output++ = *cptr++;
@@ -68,7 +68,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = *cptr++;
         *output++ = *cptr++;
         *output++ = *cptr++;
@@ -79,7 +79,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = static_cast<unsigned char>(cptr[0]*0.30 + cptr[1]*0.59 +
                                                  cptr[2]*0.11 + 0.5);
         *output++ = cptr[3];
@@ -90,7 +90,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = static_cast<unsigned char>(cptr[0]*0.30 + cptr[1]*0.59 +
                                                  cptr[2]*0.11 + 0.5);
         input += inIncr;
@@ -103,7 +103,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = *cptr++;
         *output++ = *cptr++;
         *output++ = *cptr++;
@@ -115,7 +115,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = *cptr++;
         *output++ = *cptr++;
         *output++ = *cptr++;
@@ -126,7 +126,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = static_cast<unsigned char>(cptr[0]*0.30 + cptr[1]*0.59 +
                                                  cptr[2]*0.11 + 0.5);
         *output++ = static_cast<unsigned char>(cptr[3]*alpha);
@@ -137,7 +137,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
       {
       while (--i >= 0)
         {
-        cptr = self->MapValue((float)(*input));
+        cptr = self->MapValue(static_cast<double>(*input));
         *output++ = static_cast<unsigned char>(cptr[0]*0.30 + cptr[1]*0.59 +
                                                  cptr[2]*0.11 + 0.5);
         input += inIncr;
@@ -154,52 +154,52 @@ vtkSkewLookupTable::MapScalarsThroughTable2(
   switch (inputDataType)
     {
     case VTK_CHAR:
-      vtkSkewLookupTableMapData(this, (char *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<char *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_UNSIGNED_CHAR:
-      vtkSkewLookupTableMapData(this, (unsigned char *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned char *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_SHORT:
-      vtkSkewLookupTableMapData(this, (short *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<short *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
     break;
       
     case VTK_UNSIGNED_SHORT:
-      vtkSkewLookupTableMapData(this, (unsigned short *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned short *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_INT:
-      vtkSkewLookupTableMapData(this, (int *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<int *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_UNSIGNED_INT:
-      vtkSkewLookupTableMapData(this, (unsigned int *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned int *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_LONG:
-      vtkSkewLookupTableMapData(this, (long *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<long *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_UNSIGNED_LONG:
-      vtkSkewLookupTableMapData(this, (unsigned long *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<unsigned long *>(input), output,
                          numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_FLOAT:
-      vtkSkewLookupTableMapData(this, (float *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<float *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       
     case VTK_DOUBLE:
-      vtkSkewLookupTableMapData(this, (double *)input, output,
+      vtkSkewLookupTableMapData(this, static_cast<double *>(input), output,
                         numberOfValues, inputIncrement, outputFormat);
       break;
       

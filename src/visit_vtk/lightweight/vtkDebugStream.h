@@ -11,7 +11,7 @@
 class VISIT_VTK_LIGHT_API vtkDebugStream : public vtkOutputWindow
 {
 public:
-  vtkTypeMacro(vtkDebugStream,vtkObject);
+  vtkTypeMacro(vtkDebugStream,vtkObject)
 
   static vtkDebugStream *New();
 
@@ -22,8 +22,8 @@ public:
   static void   FrequentEventsFilter(bool on){filterFrequentEvents = on;}
 
 protected:
-  vtkDebugStream() {};
-  virtual ~vtkDebugStream() {};
+  vtkDebugStream() {}
+  virtual ~vtkDebugStream() {}
 
 private:
   vtkDebugStream(const vtkDebugStream&); 

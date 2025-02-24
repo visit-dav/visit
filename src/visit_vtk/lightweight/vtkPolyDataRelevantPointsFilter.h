@@ -37,12 +37,12 @@ class VISIT_VTK_LIGHT_API vtkPolyDataRelevantPointsFilter :
 {
 public:
   static vtkPolyDataRelevantPointsFilter *New();
-  vtkTypeMacro(vtkPolyDataRelevantPointsFilter, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkPolyDataRelevantPointsFilter, vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
 protected:
-  vtkPolyDataRelevantPointsFilter(){};
- ~vtkPolyDataRelevantPointsFilter(){};
+  vtkPolyDataRelevantPointsFilter(){}
+ ~vtkPolyDataRelevantPointsFilter(){}
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,

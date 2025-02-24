@@ -169,22 +169,22 @@ class HashEntry
 {
   public:
                    HashEntry();
-    virtual       ~HashEntry() {;};
+    virtual       ~HashEntry() {;}
 
     void           AddQuad(Quad *);
     void           AddTri(Tri *);
 
-    inline void    SetPointIndex(int pi) { point_index = pi; };
+    inline void    SetPointIndex(vtkIdType pi) { point_index = pi; }
     inline void    RegisterHashEntryList(HashEntryList *hel)
-                          { hashEntryList = hel; };
+                          { hashEntryList = hel; }
 
     void           CreateOutputCells(vtkPolyData*, vtkCellData*, vtkCellData*);
 
   protected:
     Face           faces[FACES_PER_HASH_ENTRY];
-    int            point_index;
+    vtkIdType      point_index;
     unsigned char  last_good_entry;
-    unsigned char  face_type;
+    int            face_type;
     HashEntry     *extension;
 
     HashEntryList *hashEntryList;
@@ -257,8 +257,8 @@ class HashEntryList
     void        AddTri(const vtkIdType *, vtkIdType orig_zone);
     void        AddQuad(const vtkIdType *, vtkIdType orig_zone);
 
-    inline void RemoveFace(void) { nfaces--; };
-    inline int  GetNumberOfFaces(void) { return nfaces; };
+    inline void RemoveFace(void) { nfaces--; }
+    inline int  GetNumberOfFaces(void) { return nfaces; }
 
     void        CreateOutputCells(vtkPolyData *, vtkCellData *, vtkCellData *);
 
@@ -295,25 +295,25 @@ class Quad
     friend class   Tri;
 
   public:
-                   Quad() { ordering_case = 255; };
+                   Quad() { ordering_case = 255; }
 
     vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(Quad *);
     bool           Equals(Tri *);
-    void           AddInRemainingTriangle(Tri *, int);
+    void           AddInRemainingTriangle(Tri *, vtkIdType);
     inline void    ReRegisterMemory(void)
                          {
                              hashEntryList->qmm.ReRegisterQuad(this);
                          }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
-    inline int     GetOriginalZone(void) { return orig_zone; };
+    inline void      SetOriginalZone(const vtkIdType &oz) { orig_zone = oz; }
+    inline vtkIdType GetOriginalZone(void) { return orig_zone; }
 
-    void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
+    void           OutputCell(vtkIdType,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     inline void    RegisterHashEntryList(HashEntryList *hel)
-                          { hashEntryList = hel; };
-    inline void    SetNumberOfPoints(int np) { npts = np; };
+                          { hashEntryList = hel; }
+    inline void    SetNumberOfPoints(int np) { npts = np; }
 
   protected:
     unsigned char  ordering_case;
@@ -323,7 +323,7 @@ class Quad
     HashEntryList *hashEntryList;
     int            npts;
 
-    void           AddInRemainingTriangle(int, int);
+    void           AddInRemainingTriangle(int, vtkIdType);
 };
 
 //
@@ -380,7 +380,7 @@ class Tri
     friend class   Quad;
 
   public:
-                   Tri() { ordering_case = 255; };
+                   Tri() { ordering_case = 255; }
 
     vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(Tri *&t)
@@ -393,20 +393,20 @@ class Tri
                    }
 
     bool           Equals(Quad *);
-    void           AddInRemainingTriangle(Quad *, int);
+    void           AddInRemainingTriangle(Quad *, vtkIdType);
     inline void    ReRegisterMemory(void)
                        {
                            hashEntryList->tmm.ReRegisterTri(this);
                        }
 
-    inline void    SetOriginalZone(const int &oz) { orig_zone = oz; };
-    inline int     GetOriginalZone(void) { return orig_zone; };
+    inline void      SetOriginalZone(const vtkIdType &oz) { orig_zone = oz; }
+    inline vtkIdType GetOriginalZone(void) { return orig_zone; }
 
-    void           OutputCell(int,vtkPolyData *, vtkCellData *, vtkCellData *);
+    void           OutputCell(vtkIdType,vtkPolyData *, vtkCellData *, vtkCellData *);
 
     inline void    RegisterHashEntryList(HashEntryList *hel)
-                          { hashEntryList = hel; };
-    inline void    SetNumberOfPoints(int np) { npts = np; };
+                          { hashEntryList = hel; }
+    inline void    SetNumberOfPoints(int np) { npts = np; }
 
 
   protected:
@@ -440,28 +440,28 @@ static int tri_reorder_list[6][3] =
 //
 // Function prototypes
 //
-static void AddTetrahedron(const vtkIdType *, int, HashEntryList &);
-static void AddWedge(const vtkIdType *, int, HashEntryList &);
-static void AddPyramid(const vtkIdType *, int, HashEntryList &);
-static void AddHexahedron(const vtkIdType *, int, HashEntryList &);
-static void AddVoxel(const vtkIdType *, int, HashEntryList &);
+static void AddTetrahedron(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddWedge(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddPyramid(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddHexahedron(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddVoxel(const vtkIdType *, vtkIdType, HashEntryList &);
 
-static void AddQuadraticTriangle(const vtkIdType *, int, HashEntryList &);
-static void AddQuadraticQuad(const vtkIdType *, int, HashEntryList &);
-static void AddQuadraticTetrahedron(const vtkIdType *, int, HashEntryList &);
-static void AddQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
-static void AddQuadraticPyramid(const vtkIdType *, int, HashEntryList &);
-static void AddQuadraticWedge(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticTriangle(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddQuadraticQuad(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddQuadraticTetrahedron(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddQuadraticHexahedron(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddQuadraticPyramid(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddQuadraticWedge(const vtkIdType *, vtkIdType, HashEntryList &);
 
-static void AddQuadraticLinearQuad(const vtkIdType *, int, HashEntryList &);
-static void AddQuadraticLinearWedge(const vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticTriangle(const vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuad(const vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuadraticWedge(const vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
-static void AddTriQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticLinearQuad(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddQuadraticLinearWedge(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddBiQuadraticTriangle(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddBiQuadraticQuad(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddBiQuadraticQuadraticWedge(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddBiQuadraticQuadraticHexahedron(const vtkIdType *, vtkIdType, HashEntryList &);
+static void AddTriQuadraticHexahedron(const vtkIdType *, vtkIdType, HashEntryList &);
 
-static void AddUnknownCell(vtkCell *, int, HashEntryList &);
+static void AddUnknownCell(vtkCell *, vtkIdType, HashEntryList &);
 
 static void LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &,
                              int &, int &, int &, int &);
@@ -497,7 +497,7 @@ static void LoopOverStripCells(vtkUnstructuredGrid *, vtkPolyData *,
 vtkIdType
 Quad::AssignNodes(const vtkIdType *n)
 {
-    vtkIdType smallest = 0;
+    int smallest = 0;
     if (n[1] < n[smallest])
        smallest = 1;
     if (n[2] < n[smallest])
@@ -768,7 +768,7 @@ Quad::AssignNodes(const vtkIdType *n)
 // ****************************************************************************
 
 void
-Quad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
+Quad::OutputCell(vtkIdType node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
@@ -777,7 +777,7 @@ Quad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
     n[3] = (list[3] == -1 ? node0 : nodes[list[3]]);
-    int newId = pd->InsertNextCell(VTK_QUAD, 4, n);
+    vtkIdType newId = pd->InsertNextCell(VTK_QUAD, 4, n);
     out_cd->CopyData(in_cd, orig_zone, newId);
 }
 
@@ -856,7 +856,7 @@ Quad::Equals(Tri *t)
 // ****************************************************************************
 
 void
-Quad::AddInRemainingTriangle(Tri *t, int node_0)
+Quad::AddInRemainingTriangle(Tri *t, vtkIdType node_0)
 {
     if (t->nodes[0] == nodes[0])
     {
@@ -894,7 +894,7 @@ Quad::AddInRemainingTriangle(Tri *t, int node_0)
 // ****************************************************************************
 
 void
-Quad::AddInRemainingTriangle(int n, int node_0)
+Quad::AddInRemainingTriangle(int n, vtkIdType node_0)
 {
     vtkIdType orig_quad_index = quad_map_back_list[ordering_case][n];
     vtkIdType *neighbors = quad_reorder_list[ordering_case];
@@ -929,7 +929,7 @@ Quad::AddInRemainingTriangle(int n, int node_0)
 vtkIdType
 Tri::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[0] < n[1])
     {
         if (n[1] < n[2])
@@ -1001,7 +1001,7 @@ Tri::AssignNodes(const vtkIdType *n)
 // ****************************************************************************
 
 void
-Tri::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
+Tri::OutputCell(vtkIdType node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[3];
@@ -1009,7 +1009,7 @@ Tri::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
-    int newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
+    vtkIdType newId = pd->InsertNextCell(VTK_TRIANGLE, 3, n);
     out_cd->CopyData(in_cd, orig_zone, newId);
 }
 
@@ -1050,7 +1050,7 @@ Tri::Equals(Quad *q)
 // ****************************************************************************
 
 void
-Tri::AddInRemainingTriangle(Quad *q, int node_0)
+Tri::AddInRemainingTriangle(Quad *q, vtkIdType node_0)
 {
     q->AddInRemainingTriangle(this, node_0);
 }
@@ -1663,7 +1663,7 @@ HashEntry::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 }
 
 
-vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter);
+vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter)
 
 
 // ****************************************************************************
@@ -1716,6 +1716,12 @@ vtkUnstructuredGridFacelistFilter::RequestData(
     vtkPolyData *output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    if(input == nullptr || output == nullptr)
+    {
+      vtkWarningMacro(<<"vtkUnstructuredGridFacelistFilter, could not retrieve either input or output.");
+      return 0;
+    }
+
     vtkCellData *cd = input->GetCellData();
     vtkCellData *outputCD = output->GetCellData();
 
@@ -1731,7 +1737,7 @@ vtkUnstructuredGridFacelistFilter::RequestData(
     // Pass the field data through
     output->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
 
-    int ntotalpts = input->GetNumberOfPoints();
+    int ntotalpts = static_cast<int>(input->GetNumberOfPoints());
     HashEntryList list(ntotalpts);
 
     //
@@ -1849,7 +1855,7 @@ LoopOverVertexCells(vtkUnstructuredGrid *input, vtkPolyData *output,
         {
           case VTK_VERTEX:
           case VTK_POLY_VERTEX:
-            newCellId = output->InsertNextCell(cellType, npts, pts);
+            newCellId = output->InsertNextCell(cellType, static_cast<int>(npts), pts);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }
@@ -1905,7 +1911,7 @@ LoopOverLineCells(vtkUnstructuredGrid *input, vtkPolyData *output,
         {
           case VTK_LINE:
           case VTK_POLY_LINE:
-            newCellId = output->InsertNextCell(cellType, npts, pts);
+            newCellId = output->InsertNextCell(cellType, static_cast<int>(npts), pts);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
 
@@ -1971,7 +1977,7 @@ LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
           case VTK_TRIANGLE:
           case VTK_QUAD:
           case VTK_POLYGON:
-            newCellId = output->InsertNextCell(cellType, npts, pts);
+            newCellId = output->InsertNextCell(cellType, static_cast<int>(npts), pts);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
 
@@ -1980,7 +1986,7 @@ LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
             ids[1] = pts[1];
             ids[2] = pts[3];
             ids[3] = pts[2];
-            newCellId = output->InsertNextCell(VTK_QUAD, npts, ids);
+            newCellId = output->InsertNextCell(VTK_QUAD, 4, ids);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }
@@ -2031,7 +2037,7 @@ LoopOverStripCells(vtkUnstructuredGrid *input, vtkPolyData *output,
         switch (cellType)
         {
           case VTK_TRIANGLE_STRIP:
-            newCellId = output->InsertNextCell(cellType, npts, pts);
+            newCellId = output->InsertNextCell(cellType, static_cast<int>(npts), pts);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }
@@ -2215,7 +2221,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
 // ****************************************************************************
 
 void
-AddTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddTetrahedron(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -2253,7 +2259,7 @@ AddTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddVoxel(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddVoxel(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2305,7 +2311,7 @@ AddVoxel(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddHexahedron(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2357,7 +2363,7 @@ AddHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddWedge(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2402,7 +2408,7 @@ AddWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddPyramid(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2445,7 +2451,7 @@ AddPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticTriangle(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2483,7 +2489,7 @@ AddQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticQuad(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2529,7 +2535,7 @@ AddQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticTetrahedron(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     // Break up the surface of the quadratic tet into triangles.
     const int triangles[][3] = {
@@ -2565,7 +2571,7 @@ AddQuadraticTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticHexahedron(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     // Break up the surface of the quadratic hex into triangles.
     const int triangles[][3] = {
@@ -2604,7 +2610,7 @@ AddQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticPyramid(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
        {0,5,9},{5,10,9},{5,1,10},{9,10,4},
@@ -2650,7 +2656,7 @@ AddQuadraticPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticWedge(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2699,7 +2705,7 @@ AddQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticLinearQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticLinearQuad(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2737,7 +2743,7 @@ AddQuadraticLinearQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticLinearWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticLinearWedge(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2783,7 +2789,7 @@ AddQuadraticLinearWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticTriangle(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2829,7 +2835,7 @@ AddBiQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticQuad(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2883,7 +2889,7 @@ AddBiQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticQuadraticWedge(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2922,7 +2928,7 @@ AddBiQuadraticQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &li
 // ****************************************************************************
 
 void
-AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},
@@ -2965,7 +2971,7 @@ AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryLis
 // ****************************************************************************
 
 void
-AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
+AddTriQuadraticHexahedron(const vtkIdType *pts, vtkIdType cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},
@@ -3008,7 +3014,7 @@ AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
+AddUnknownCell(vtkCell *cell, vtkIdType cellId, HashEntryList &list)
 {
     int nFaces = cell->GetNumberOfFaces();
     vtkIdType nodes[4];
@@ -3033,14 +3039,15 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
         else if (face->GetCellType() == VTK_POLYGON)
         {
             vtkIdList *tris = vtkIdList::New();
-            vtkPolygon *polygon = (vtkPolygon *) face;
+            vtkPolygon *polygon = static_cast<vtkPolygon *>(face);
             polygon->Triangulate(tris);
-            int numTris = tris->GetNumberOfIds() / 3;
-            for (int i = 0 ; i < numTris ; i++)
+            vtkIdType numTris = tris->GetNumberOfIds() / 3;
+            vtkIdList *ptIds = polygon->GetPointIds();
+            for (vtkIdType j = 0 ; j < numTris ; j++)
             {
-                nodes[0] = polygon->GetPointId(tris->GetId(3*i+0));
-                nodes[1] = polygon->GetPointId(tris->GetId(3*i+1));
-                nodes[2] = polygon->GetPointId(tris->GetId(3*i+2));
+                nodes[0] = ptIds->GetId(tris->GetId(3*j+0));
+                nodes[1] = ptIds->GetId(tris->GetId(3*j+1));
+                nodes[2] = ptIds->GetId(tris->GetId(3*j+2));
                 list.AddTri(nodes, cellId);
             }
             tris->Delete();

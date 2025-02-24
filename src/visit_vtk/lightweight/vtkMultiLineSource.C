@@ -32,8 +32,8 @@
 
 #include <math.h>
 
-vtkStandardNewMacro(vtkMultiLineSource);
-vtkCxxSetObjectMacro(vtkMultiLineSource,Points,vtkPoints);
+vtkStandardNewMacro(vtkMultiLineSource)
+vtkCxxSetObjectMacro(vtkMultiLineSource,Points,vtkPoints)
 
 // ----------------------------------------------------------------------
 vtkMultiLineSource::vtkMultiLineSource()
@@ -62,8 +62,8 @@ void vtkMultiLineSource::AddLine(double p0[3], double p1[3])
 // ----------------------------------------------------------------------
 void vtkMultiLineSource::Shift3d(const double vec[3], const double &shiftFactor)
 {
-    const int numPointsOrig = OriginalPoints->GetNumberOfPoints();
-    const int numPoints = Points->GetNumberOfPoints();
+    const vtkIdType numPointsOrig = OriginalPoints->GetNumberOfPoints();
+    const vtkIdType numPoints = Points->GetNumberOfPoints();
 
     if(numPointsOrig != numPoints)
     {
@@ -71,7 +71,7 @@ void vtkMultiLineSource::Shift3d(const double vec[3], const double &shiftFactor)
         return;
     }
 
-    for(int i = 0; i < numPoints; ++i)
+    for(vtkIdType i = 0; i < numPoints; ++i)
     {
         double p[3];
         OriginalPoints->GetPoint(i,p);
@@ -85,8 +85,8 @@ void vtkMultiLineSource::Shift3d(const double vec[3], const double &shiftFactor)
 // ----------------------------------------------------------------------
 void vtkMultiLineSource::Shift2d(const double &shiftFactor)
 {
-    const int numPointsOrig = OriginalPoints->GetNumberOfPoints();
-    const int numPoints = Points->GetNumberOfPoints();
+    const vtkIdType numPointsOrig = OriginalPoints->GetNumberOfPoints();
+    const vtkIdType numPoints = Points->GetNumberOfPoints();
 
     if(numPointsOrig != numPoints)
     {
@@ -94,7 +94,7 @@ void vtkMultiLineSource::Shift2d(const double &shiftFactor)
         return;
     }
 
-    for(int i = 0; i < numPoints; ++i)
+    for(vtkIdType i = 0; i < numPoints; ++i)
     {
         double p[3];
         OriginalPoints->GetPoint(i,p);
@@ -108,10 +108,8 @@ void vtkMultiLineSource::Shift2d(const double &shiftFactor)
 int vtkMultiLineSource::RequestInformation(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
-  vtkInformationVector *outputVector)
+  vtkInformationVector *vtkNotUsed(outputVector))
 {
-  // get the info object
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
   return 1;
 }
 
@@ -121,20 +119,20 @@ int vtkMultiLineSource::RequestData(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
 { 
-    const int numPointsOrig = OriginalPoints->GetNumberOfPoints();
-    const int numPoints = Points->GetNumberOfPoints();
+    const vtkIdType numPointsOrig = OriginalPoints->GetNumberOfPoints();
+    const vtkIdType numPoints = Points->GetNumberOfPoints();
 
     //Sanity Check
     if(numPointsOrig != numPoints)
     {
-    vtkWarningMacro( <<"MultiLineSource points not equal");
-    return 0;
+      vtkWarningMacro( <<"MultiLineSource points not equal");
+      return 0;
     }
     if(numPoints < 2 && (numPoints % 2 != 0))
     {
-    vtkWarningMacro( <<"MultiLineSource must have at least 2 points and"
+      vtkWarningMacro( <<"MultiLineSource must have at least 2 points and"
                  <<"a multiple of 2");
-    return 0;
+      return 0;
     }
 
     // get the info object
@@ -142,13 +140,19 @@ int vtkMultiLineSource::RequestData(
 
     // get the ouptut
     vtkPolyData *output = vtkPolyData::SafeDownCast(
-    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if(output == nullptr)
+    {
+      vtkWarningMacro( <<"MultiLineSource could not retrieve output PolyData.");
+      return 0;
+    }
 
     vtkCellArray *lines = vtkCellArray::New();
-    const int numLines = numPoints / 2;
+    const vtkIdType numLines = numPoints / 2;
     lines->Allocate( lines->EstimateSize(numLines, 2));
     
-    for(int i = 0; i < numLines; ++i)
+    for(vtkIdType i = 0; i < numLines; ++i)
     {
         vtkLine * line  = vtkLine::New();
         line->GetPointIds()->SetId(0,i*2+0);

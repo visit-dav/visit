@@ -73,7 +73,7 @@ class avtBlueprintTreeCache::CacheMap
   private:
       std::map<int,Node>          m_nodes;
       std::map<int,Node>          m_sidre_nodes;
-      int                         m_max_file_handles;
+      unsigned int                m_max_file_handles;
       std::map<std::string,hid_t> m_h5_ids;
       std::vector<std::string>    m_h5_path_open_order;
 
@@ -195,7 +195,7 @@ avtBlueprintTreeCache::CacheMap::TotalSize() const
         itr != m_nodes.end();
         itr++)
     {
-        res += itr->second.total_bytes_allocated();
+        res += static_cast<uint64>(itr->second.total_bytes_allocated());
     }
     
     // also count cached sidre metadata
@@ -203,7 +203,7 @@ avtBlueprintTreeCache::CacheMap::TotalSize() const
         itr != m_sidre_nodes.end();
         itr++)
     {
-        res += itr->second.total_bytes_allocated();
+        res += static_cast<uint64>(itr->second.total_bytes_allocated());
     }
 
     return res;
@@ -213,7 +213,7 @@ avtBlueprintTreeCache::CacheMap::TotalSize() const
 uint64
 avtBlueprintTreeCache::CacheMap::TotalHDF5Ids() const
 {
-    return (uint64) m_h5_ids.size();
+    return m_h5_ids.size();
 }
 
 //----------------------------------------------------------------------------/
@@ -918,10 +918,10 @@ avtBlueprintTreeCache::IO::ReadHDF5Slab(hid_t h5_file_id,
 
     hid_t h5_status    = 0;
 
-    hsize_t elem_bytes = dtype.element_bytes();
-    hsize_t offset  = dtype.offset() / elem_bytes; // in bytes, convert to elems
-    hsize_t stride  = dtype.stride() / elem_bytes; // in bytes, convert to elems
-    hsize_t num_ele = dtype.number_of_elements();
+    hsize_t elem_bytes = static_cast<hsize_t>(dtype.element_bytes());
+    hsize_t offset  = static_cast<hsize_t>(dtype.offset()) / elem_bytes; // in bytes, convert to elems
+    hsize_t stride  = static_cast<hsize_t>(dtype.stride()) / elem_bytes; // in bytes, convert to elems
+    hsize_t num_ele = static_cast<hsize_t>(dtype.number_of_elements());
     
     BP_PLUGIN_INFO("slab dtype: " << dtype.to_json());
     
@@ -986,11 +986,11 @@ avtBlueprintTreeCache::IO::ReadHDF5Slab(hid_t h5_file_id,
 
 //----------------------------------------------------------------------------/
 avtBlueprintTreeCache::avtBlueprintTreeCache()
-: m_file_pattern(""),
+: m_protocol("hdf5"),
+  m_file_pattern(""),
   m_tree_pattern(""),
   m_num_files(0),
   m_num_trees(0),
-  m_protocol("hdf5"),
   m_cache_map(NULL)
 {
     m_cache_map = new CacheMap();
@@ -1197,8 +1197,9 @@ avtBlueprintTreeCache::GenerateFilePath(const std::string &mesh_name,
             gen_domain_to_file_map(m_num_trees,
                                     m_num_files,
                                     d2f_map);
-            int num_domains_per_file = m_num_trees / m_num_files;
-            int left_overs = m_num_trees % m_num_files;
+            // commented out because these variables are unused
+            // int num_domains_per_file = m_num_trees / m_num_files;
+            // int left_overs = m_num_trees % m_num_files;
             int32_array v_domain_to_file = d2f_map["global_domain_to_file"].value();
             file_id = v_domain_to_file[tree_id];
         }

@@ -54,7 +54,7 @@ public:
   // 25 points per bucket.
   static vtkVisItPointLocator *New();
 
-  vtkTypeMacro(vtkVisItPointLocator,vtkLocator);
+  vtkTypeMacro(vtkVisItPointLocator,vtkLocator)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
@@ -137,7 +137,7 @@ public:
     double xyz[3];
     xyz[0] = x; xyz[1] = y; xyz[2] = z;
     return this->IsInsertedPoint (xyz);
-    };
+    }
   virtual vtkIdType IsInsertedPoint(const double x[3]);
 
   // Description:

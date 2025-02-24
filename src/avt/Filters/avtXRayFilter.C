@@ -1120,6 +1120,10 @@ avtXRayFilter::PostExecute(void)
 //
 //    Kathleen Biagas, Thu Aug 11 2022
 //    Support VTK9: use vtkCellArrayIterator.
+// 
+//    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
+//    Use far clipping plane to cull ray tracing results. We now make sure
+//    that line-element intercepts are not beyond the end of the line.
 //
 // ****************************************************************************
 
@@ -1337,7 +1341,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 if (IntersectLineWithQuad(p0, p3, p7, p4, pt1, dir, t))
                     inter[nInter++] = t;
 
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(iCell);
                     dist.push_back(inter[0]*lineLength);
@@ -1438,7 +1442,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 if (IntersectLineWithQuad(p0, p3, p7, p4, pt1, dir, t))
                     inter[nInter++] = t;
 
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(iCell);
                     dist.push_back(inter[0]*lineLength);
@@ -1608,7 +1612,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                     }
                 }
 
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(iCell);
                     dist.push_back(inter[0]*lineLength);
@@ -1701,7 +1705,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                         }
                     }
                 }
-                if (nInter == 2)
+                if (nInter == 2 && (inter[0] < 1.0 || inter[1] < 1.0))
                 {
                     cells_matched.push_back(id);
                     dist.push_back(inter[0]*lineLength);

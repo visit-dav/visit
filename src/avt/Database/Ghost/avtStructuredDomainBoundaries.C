@@ -424,6 +424,9 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //    Add code to detect incorrect domain boundary information, where two
 //    neighbors don't list each other in their neighbor lists.
 //
+//    Brad Whitlock, Mon Feb  3 16:29:45 PST 2025
+//    Skip copying mixzone if it is nullptr.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -517,7 +520,11 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
                             if (bndmixmat)
                                 bndmixmat[d1][n][bndindex]  = oldmat->GetMixMat()[oldmixindex];
                             if (bndmixzone)
-                                bndmixzone[d1][n][bndindex] = oldmat->GetMixZone()[oldmixindex];
+                            {
+                                bndmixzone[d1][n][bndindex] = (oldmat->GetMixZone() != nullptr)
+                                                              ? oldmat->GetMixZone()[oldmixindex]
+                                                              : oldindex;
+                            }
                             if (bndmixnext)
                                 bndmixnext[d1][n][bndindex] = oldmat->GetMixNext()[oldmixindex];
                             oldmixindex = oldmat->GetMixNext()[oldmixindex] - 1;
@@ -1077,6 +1084,10 @@ BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata,
 //
 //  Note:  olddata may be NULL if the mixlen is zero.
 //
+//  Modifications:
+//    Brad Whitlock, Mon Feb  3 16:31:56 PST 2025
+//    Skip copying old data if it was not provided.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1084,8 +1095,17 @@ BoundaryHelperFunctions<T>::CopyOldMixedValues(avtMaterial *oldmat,
                                                   const T     *olddata,
                                                   T           *newdata)
 {
-    for (int i=0; i<oldmat->GetMixlen(); i++)
-        newdata[i] = olddata[i];
+    if(olddata)
+    {
+        for (int i=0; i<oldmat->GetMixlen(); i++)
+            newdata[i] = olddata[i];
+    }
+    else
+    {
+        // olddata was not provided (e.g. mixzone) skip it.
+        for (int i=0; i<oldmat->GetMixlen(); i++)
+            newdata[i] = T{};
+    }
 }
 
 // ****************************************************************************
@@ -1414,6 +1434,9 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
 //    from a coarse to fine refinement level).  By using the mixnext array,
 //    we know directly if the segment of mixed data has ended.
 //
+//    Brad Whitlock, Tue Feb  4 12:20:12 PST 2025
+//    Support local domain boundaries.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1447,7 +1470,20 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
         }
 
         int mi = n1->match;
-
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+        if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
         if (!bndmatlist[d2][mi])
             EXCEPTION1(VisItException,"Null array");
 
@@ -2755,6 +2791,9 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    Add code to detect incorrect domain boundary information, where two
 //    neighbors don't list each other in their neighbor lists.
 //
+//    Brad Whitlock, Tue Feb  4 12:20:12 PST 2025
+//    Support local domain boundaries.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
@@ -2824,7 +2863,8 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     for (size_t d = 0; d < mats.size(); d++)
     {
         avtMaterial *oldmat = mats[d];
-        Boundary    &bi     = boundary[domainNum[d]];
+        const int    d1     = domainNum[d];
+        Boundary    &bi     = boundary[d1];
 
         // Create the new material objects
         const int   *oldmatlist = oldmat->GetMatlist();
@@ -2834,8 +2874,13 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         int newmixlen = oldmixlen;
         for (size_t n=0; n<bi.neighbors.size(); n++)
         {
-            int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
+            int mi = bi.neighbors[n].match;
+            if(mi == -1)
+            {
+                 // find the match index ourselves
+                 mi = bhf_int->FindMatchIndex(d1,d2);
+            }
             newmixlen += mixlen[d2][mi];
         }
 
