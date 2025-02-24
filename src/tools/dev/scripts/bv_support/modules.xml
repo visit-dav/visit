@@ -41,6 +41,7 @@
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="qwt"/>
@@ -89,6 +90,7 @@
             <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="qwt"/>
@@ -170,6 +172,7 @@
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
         </group>
 
         <!--

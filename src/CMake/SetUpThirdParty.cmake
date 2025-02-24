@@ -48,6 +48,9 @@
 #   Eric Brugger, Wed Sep  4 10:31:31 PDT 2024
 #   I re-enabled vtkm.
 #
+#   Kevin Griffin, Mon 24 Feb 2025
+#   Added Include for FindANARI.cmake
+#
 #****************************************************************************/
 
 # ==============================================
@@ -560,6 +563,7 @@ endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/FindANARI.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindTiff.cmake)
@@ -640,4 +644,3 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 endif()
 
 unset(VISIT_TP_PERMS)
-
