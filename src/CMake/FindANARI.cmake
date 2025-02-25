@@ -44,12 +44,8 @@ The following cache variables may also be set:
 
 ``anari_DIR``
   The directory containing the ANARI config files.
-``ANARI_INCLUDE_DIRS``
-  The directory containing ``anari/anari.h``.
-``ANARI_LIBRARIES``
-  The ANARI Libraries and third-party ANARI back-end libraries if found
 ``ANARI_Example_LIBRARY``
-  The path for the ANARI Example back-end library
+  The path for the ANARI Example back-end library.
 
 #]=======================================================================]
 
@@ -68,11 +64,6 @@ endif()
 
 if(anari_FOUND)
     add_definitions(-DVISIT_ANARI)
-
-    # Include directories
-    get_target_property(_INCLUDE_DIRS anari::anari INTERFACE_INCLUDE_DIRECTORIES)
-    set(ANARI_INCLUDE_DIRS ${_INCLUDE_DIRS} CACHE PATH "ANARI include directories" FORCE)
-    mark_as_advanced(ANARI_INCLUDE_DIRS)
 
     # Install Headers
     if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)

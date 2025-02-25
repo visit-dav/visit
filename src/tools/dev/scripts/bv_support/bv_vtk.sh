@@ -70,7 +70,7 @@ function bv_vtk_depends_on
     if [[ "$DO_OSPRAY" == "yes" ]]; then
         depends_on="${depends_on} ospray"
     fi
-
+    
     if [[ "$DO_ANARI" == "yes" ]]; then
         if [[ "$DO_VTK94" == "yes" ]] ; then
             depends_on="${depends_on} anari"
@@ -202,7 +202,7 @@ function apply_vtk94_vtkRectilinearGridReader_patch
        {
          break;
        }
-
+ 
 -      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
 +      // Have to read field data because it may be binary.
 +      if (!strncmp(this->LowerCase(line), "field", 5))
@@ -220,10 +220,10 @@ function apply_vtk94_vtkRectilinearGridReader_patch
            this->CloseVTKFile();
 @@ -112,12 +119,26 @@
          }
-
+ 
          outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extent[0], extent[1],
            extent[2], extent[3], extent[4], extent[5]);
-
+ 
          dimsRead = true;
 +      }
 +      // if the coordinates have been reached, should be no reason
@@ -242,7 +242,7 @@ function apply_vtk94_vtkRectilinearGridReader_patch
        }
      }
    }
-
+ 
    if (!dimsRead)
    {
 EOF
@@ -273,7 +273,7 @@ function apply_vtk94_vtkdatawriter_patch
        *fp << "\n";
      }
      break;
-
+ 
      case VTK_CHAR:
 EOF
 
@@ -303,7 +303,7 @@ function apply_vtk94_vtkospray_patches
  class vtkSequencePass;
  class vtkVolumetricPass;
 +class vtkViewNodeFactory;
-
+ 
  class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
  {
  public:
@@ -311,7 +311,7 @@ function apply_vtk94_vtkospray_patches
    vtkTypeMacro(vtkOSPRayPass, vtkRenderPass);
 @@ -61,12 +62,17 @@
    ///@}
-
+ 
    /**
     * Called by the internals of this class
     */
@@ -321,7 +321,7 @@ function apply_vtk94_vtkospray_patches
 +   * Called by VisIt
 +   */
 +  virtual vtkViewNodeFactory* GetViewNodeFactory();
-
+ 
    ///@{
    /**
     * Wrapper around ospray's init and shutdown that protect
@@ -343,7 +343,7 @@ EOF
      usedColorTex->Deactivate();
    }
  }
-
+ 
  //------------------------------------------------------------------------------
 +vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
 +{
@@ -355,7 +355,7 @@ EOF
  {
    static bool detected = false;
    static bool is_supported = true;
-
+ 
    // Short-circuit to avoid querying on every call.
 EOF
 
@@ -430,11 +430,11 @@ function apply_vtk92_gcc13_patch
 --- ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp.orig	2024-05-22 12:53:48.817462000 -0700
 +++ ThirdParty/libproj/vtklibproj/src/proj_json_streaming_writer.hpp	2024-05-22 12:54:07.659499000 -0700
 @@ -33,6 +33,7 @@
-
+ 
  #include <vector>
  #include <string>
 +#include <cstdint>
-
+ 
  #define CPL_DLL
 
 EOF
@@ -448,11 +448,11 @@ EOF
 --- IO/Image/vtkSEPReader.h.orig	2024-05-22 13:50:27.027369000 -0700
 +++ IO/Image/vtkSEPReader.h	2024-05-22 13:50:55.044422000 -0700
 @@ -27,6 +27,7 @@
-
+ 
  #include <array>  // for std::array
  #include <string> // for std::string
 +#include <cstdint> // for std::uint8_t
-
+ 
  namespace details
  {
 EOF
@@ -539,7 +539,7 @@ function apply_vtk92_vtkdatawriter_patch2
    this->FileType = VTK_ASCII;
 -  this->FileVersion = VTK_LEGACY_READER_VERSION_5_1;
 +  this->FileVersion = VTK_LEGACY_READER_VERSION_4_2;
-
+ 
    this->ScalarsName = nullptr;
    this->VectorsName = nullptr;
 
@@ -1391,7 +1391,7 @@ function apply_vtk92_vtkRectilinearGridReader_patch
 @@ -95,7 +95,16 @@
          break;
        }
-
+ 
 -      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
 +      // If data file is binary and FieldData is present, it
 +      // must be read here, otherwise a ReadString will fail and the
@@ -1407,7 +1407,7 @@ function apply_vtk92_vtkRectilinearGridReader_patch
          int dim[3];
          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
 @@ -127,6 +136,20 @@
-
+ 
          dimsRead = true;
        }
 +      // if the coordinates have been reached, should be no reason
@@ -1426,7 +1426,7 @@ function apply_vtk92_vtkRectilinearGridReader_patch
 +      }
      }
    }
-
+ 
 EOF
     if [[ $? != 0 ]] ; then
         warn "vtk patch for vtkRectilinearGridReader.cxx failed."
@@ -1448,7 +1448,7 @@ function apply_vtk92_vtkCutter_patch
       // See if the input can be fully processed by the fast vtk3DLinearGridPlaneCutter.
       // This algorithm can provide a substantial speed improvement over the more general
       // algorithm for vtkUnstructuredGrids.
-+
++ 
 + // Don't want to use 3DlinearGridPlaneCutter, it 'promotes' all cell and point data to float arrays
 + #if 0
       if (this->GetGenerateTriangles() && this->GetCutFunction() &&
@@ -1457,11 +1457,11 @@ function apply_vtk92_vtkCutter_patch
 ***************
 *** 417,422 ****
 --- 420,426 ----
-
+  
         return retval;
       }
 + #endif
-
+  
       vtkDebugMacro(<< "Executing Unstructured Grid Cutter");
       this->UnstructuredGridCutter(input, output);
 EOF
@@ -1514,7 +1514,7 @@ diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtk
      this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
    }
 -  this->MakeCurrent();
-
+ 
    this->Mapped = 0;
    this->Size[0] = width;
 @@ -301,8 +300,8 @@
@@ -1611,7 +1611,7 @@ function apply_vtk_patch
             return 1
         fi
     fi
-
+ 
 
     return 0
 }
@@ -1900,7 +1900,7 @@ function build_vtk
             vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"
         fi
     fi
-
+    
     # Use ANARI?
     if [[ "$DO_ANARI" == "yes" ]] && [[ "$DO_VTK94" == "yes" ]] ; then
         vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES"
