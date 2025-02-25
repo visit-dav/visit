@@ -70,6 +70,12 @@ function bv_vtk_depends_on
     if [[ "$DO_OSPRAY" == "yes" ]]; then
         depends_on="${depends_on} ospray"
     fi
+    
+    if [[ "$DO_ANARI" == "yes" ]]; then
+        if [[ "$DO_VTK94" == "yes" ]] ; then
+            depends_on="${depends_on} anari"
+        fi
+    fi
 
     # Only depend on Qt if we're not doing server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
@@ -1892,6 +1898,17 @@ function build_vtk
         else
             warn "Disabling ospray because its lib dir couldn't be found"
             vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"
+        fi
+    fi
+    
+    # Use ANARI?
+    if [[ "$DO_ANARI" == "yes" ]] && [[ "$DO_VTK94" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersTexture:STRING=YES"
+        vopts="${vopts} -Danari_DIR=${VISITDIR}/anari/${ANARI_VERSION}/${VISITARCH}/lib/cmake/anari-${ANARI_VERSION}"
+
+        if [[ "$DO_ANARI_NVTX" == "yes" ]] ; then
+            vopts="${vopts} -DVTK_ANARI_ENABLE_NVTX:BOOL=ON"
         fi
     fi
 

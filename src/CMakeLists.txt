@@ -150,6 +150,9 @@
 #    Eric Brugger, Thu Jan 23 13:10:04 PST 2025
 #    Add the xcb and xkbcommon libraries to the distribution.
 #
+#    Kevin Griffin, Mon 24 Feb 2025
+#    Added ANARI to pkg variable
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -349,7 +352,7 @@ include("${VISIT_SOURCE_DIR}/CMake/VisItOptions.cmake")
 foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC2 BOOST BOXLIB CFITSIO CGNS
             CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 HDF5_MPI H5PART ICET
             ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB MOAB_MPI NEKTAR++ NETCDF
-            OPENGL OPENEXR OSPRAY PIDX PYSIDE PYTHON QT QWT SILO SZIP TBB
+            OPENGL OPENEXR OSPRAY ANARI PIDX PYSIDE PYTHON QT QWT SILO SZIP TBB
             TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
     VISIT_3RDPARTY_DIR(${pkg})
 endforeach()
@@ -1012,4 +1015,3 @@ add_custom_target(visit-dist
   COMMAND ${CMAKE_COMMAND} -E rm ${VISIT_SOURCE_DIR}/GIT_VERSION
   COMMAND ${CMAKE_COMMAND} -E rm -rf ${dist_name}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DR})
-
