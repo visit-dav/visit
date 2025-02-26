@@ -184,9 +184,8 @@ if (VISIT_OSMESA_DIR)
                     set(LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${LLVM_SONAME})
                 endif()
                 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                  ${LLVM_LIBRARY}
+                    ${LLVM_LIBRARY} ${VISIT_BINARY_DIR}/lib/osmesa/)
                 list(APPEND OSMESA_LIBRARIES ${LLVM_LIBRARY})
-                                      ${VISIT_BINARY_DIR}/lib/osmesa/)
                 set(OSMESA_LIBRARIES ${OSMESA_LIBRARIES} CACHE STRING "OSMesa libraries" FORCE)
             endif()
         endif()
