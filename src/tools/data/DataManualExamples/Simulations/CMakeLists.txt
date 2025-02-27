@@ -67,7 +67,7 @@ else()
     set(RTOD ${VISIT_BINARY_DIR})
 endif()
 
-string(APPEND ${RTOD} "/tools/DataManualExamples/Simulations")
+string(APPEND RTOD "/tools/DataManualExamples/Simulations")
 
 # We need more libraries on Linux and Windows
 if(WIN32)
@@ -113,11 +113,14 @@ function(ADD_SIMV2_SIMULATION target)
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_SOURCE_DIR}/sim/V2/lib
         DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
+        FOLDER      tools/data/DataManualExamples/Simulations
         SKIP_INSTALL)
 
     set_target_properties(sim_${target} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${RTOD}
         HAS_CXX ON)
+
 endfunction()
 
 function(ADD_FORTRAN_SIMV2_SIMULATION target)

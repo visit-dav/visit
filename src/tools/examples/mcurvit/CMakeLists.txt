@@ -91,7 +91,7 @@ visit_add_executable(
                 ${mcurvit_STATIC_SOURCES}
     HEADERS     ${mcurvit_HEADERS}
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS_On  ${mcurvit_DEPENDS}
+    DEPENDS_ON  ${mcurvit_DEPENDS}
     FOLDER      tools/mcurvit)
 
 set_target_properties(mcurvit PROPERTIES AUTOMOC ON)

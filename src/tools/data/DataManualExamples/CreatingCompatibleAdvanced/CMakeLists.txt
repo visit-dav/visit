@@ -30,7 +30,7 @@ if(SILO_FOUND)
         SKIP_INSTALL)
 
     # until Silo is imported as a CMake target
-    visit_pach_target(
+    visit_patch_target(
         NAME        adv_example_${target}
         INCLUDES    ${SILO_INCLUDE_DIR}
         LINKDIR     ${SILO_LIBRARY_DIR})

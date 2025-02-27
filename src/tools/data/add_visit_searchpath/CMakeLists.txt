@@ -17,7 +17,7 @@ visit_add_executable(
 
 # until Silo is imported as a proper cmake target
 visit_patch_target(
-    NAME       add_visit_search_path
+    NAME       add_visit_searchpath
     INCLUDES   ${SILO_INCLUDE_DIR}
     LINKDIR    ${SILO_LIBRARY_DIR})
 

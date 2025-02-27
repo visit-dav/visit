@@ -47,7 +47,8 @@ if(NOT WIN32)
                    vclproxy
                    vclrpc
                    Threads::Threads
-                   ${DL_LIB})
+                   ${DL_LIB}
+        SKIP_INSTALL)
 
     set_target_properties(testvcl
         PROPERTIES EXCLUDE_FROM_ALL true)

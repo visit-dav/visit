@@ -510,12 +510,10 @@ if(NOT WIN32)
     if(NOT APPLE)
         find_library(LIBRT rt)
         list(APPEND cli_DEPENDS ${LIBRT})
-        if(NOT AIX)
-            # Is this a Python companion libary? We need it for unresolved openpty/forkpty
-            list_APPEND(cli_DEPENDS util)
-        endif(NOT AIX)
-    endif(NOT APPLE)
-endif(NOT WIN32)
+        # Is this a Python companion libary? We need it for unresolved openpty/forkpty
+        list(APPEND cli_DEPENDS util)
+    endif()
+endif()
 
 # Create the CLI
 visit_add_executable(
@@ -555,10 +553,10 @@ if(NOT VISIT_STATIC)
             find_library(LIBRT rt)
             target_link_libraries(visitmodule PUBLIC ${LIBRT})
             set_target_properties(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
-        endif(APPLE)
+        endif()
         set_target_properties(visitmodule PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
-    endif(NOT WIN32)
+    endif()
     VISIT_INSTALL_TARGETS_RELATIVE(site-packages/visit visitmodule)
 endif()
 

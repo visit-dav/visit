@@ -10,15 +10,9 @@
 #****************************************************************************
 
 
-# Add link directories
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR}
-${HDF5_LIBRARY_DIR}
-)
-
-
 #********************************* SERIAL ************************************
 
-visit_add_executable(
+visit_add_library(
     NAME        xdmf_writer_ser
     SOURCES     xdmf_writer.c
     HEADERS     xdmf_writer.h
@@ -29,7 +23,7 @@ visit_add_executable(
                 m
     SKIP_INSTALL)  
 
-function add_serial_example(tname)
+function(add_serial_example tname)
 
     visit_add_executable(
         NAME        ${tname}
@@ -49,7 +43,7 @@ add_serial_example(xdmf_multi_curv3d)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
-    visit_add_executable(
+    visit_add_parallel_library(
         NAME        xdmf_writer_par
         SOURCES     xdmf_writer.c
         HEADERS     xdmf_writer.h
@@ -60,9 +54,9 @@ IF(VISIT_PARALLEL)
                     m
         SKIP_INSTALL)  
 
-    function add_parallel_example(tname)
+    function(add_parallel_example tname)
 
-        visit_add_executable(
+        visit_add_parallel_executable(
             NAME        ${tname}
             SOURCES     ${tname}.c
             HEADERS     xdmf_writer.h

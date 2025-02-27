@@ -22,7 +22,8 @@ function(ADD_EXAMPLE target)
     visit_add_executable(
         NAME        example_${target}
         SOURCES     ${ARGN}
-        INCLUDES    ${VISIT_BINARY_DIR}/include
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_BINARY_DIR}/include
         DEPENDS_ON  m
         OUTPUT_NAME ${target}
         FOLDER      tools/DataManualExamples/CreatingCompatible
@@ -38,7 +39,8 @@ function(ADD_SILO_EXAMPLE target)
     visit_add_executable(
         NAME        example_${target}
         SOURCES     ${ARGN}
-        INCLUDES    ${VISIT_BINARY_DIR}/include
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_BINARY_DIR}/include
         DEPENDS_ON  ${SILO_LIB} stdc++ m
         OUTPUT_NAME ${target}
         FOLDER tools/DataManualExamples/CreatingCompatible
@@ -47,11 +49,12 @@ function(ADD_SILO_EXAMPLE target)
     # until Silo is imported as a cmake target
     visit_patch_target(
         NAME        example_${target}
-        INCLUDES    ${SILO_INCLUDE_DIR}
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${SILO_INCLUDE_DIR}
         LINKDIR     ${SILO_LIBRARY_DIR})
 
     set_target_properties(example_${target} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible
+        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible)
 endfunction()
 
 ##
