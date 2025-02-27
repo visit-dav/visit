@@ -59,7 +59,7 @@ visit_add_executable(
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS_ON  ${avtexamples_COMMON_DEPENDS}
                 ${OSMESA_LIBRARIES}
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 ## avtRenderExample
 visit_add_executable(
@@ -72,7 +72,7 @@ visit_add_executable(
                 avtviswindow_ser
                 avtwriter_ser
                 ${OSMESA_LIBRARIES}
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 ## avtPluginExample
 visit_add_executable(
@@ -82,7 +82,7 @@ visit_add_executable(
                 ${VISIT_SOURCE_DIR}/avt/Plotter
     DEPENDS_ON  ${avtexamples_COMMON_DEPENDS}
                 ${OSMESA_LIBRARIES}
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 ## avtPlotPluginExample
 visit_add_executable(
@@ -95,7 +95,7 @@ visit_add_executable(
                 avtviswindow_ser
                 avtwriter_ser
                 ${OSMESA_LIBRARIES}
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 ## networkManagerExample
 visit_add_executable(
@@ -108,7 +108,7 @@ visit_add_executable(
                 avtviswindow_ser
                 avtwriter_ser
                 engine_ser
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 ## qt examples
 
@@ -130,7 +130,7 @@ visit_add_executable(
                 VTK::RenderingOpenGL2
                 ${OPENGL_LIBRARIES}
                 ${ZLIB_LIBRARY}
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
  
 
 # qtvtkExample
@@ -151,7 +151,7 @@ visit_add_executable(
                 VTK::RenderingOpenGL2
                 ${OPENGL_LIBRARIES}
                 ${ZLIB_LIBRARY}
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 set_target_properties(qvtkopenglExample qtvtkExample PROPERTIES AUTOMOC ON)
 
@@ -174,7 +174,7 @@ visit_add_executable(
                 ${QT_QTNETWORK_LIBRARY}
                 ${QT_QTCORE_LIBRARY}
                 VTK::GUISupportQt
-    FOLDER      examples/avtexamples)
+    FOLDER      tools/examples/avtexamples)
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(qtviswinExample)

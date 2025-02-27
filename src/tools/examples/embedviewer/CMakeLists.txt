@@ -114,7 +114,7 @@ visit_add_executable(
     HEADERS     ${embedded_HEADERS}
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS_ON  ${embedded_DEPENDS}
-    FOLDER      examples/embedded
+    FOLDER      tools/examples/embedded
     SKIP_INSTALL)
 
 visit_add_executable(
@@ -123,7 +123,7 @@ visit_add_executable(
     HEADERS     ${multiwindow_HEADERS}
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS_ON  ${embedded_DEPENDS}
-    FOLDER      examples/embedded
+    FOLDER      tools/examples/embedded
     SKIP_INSTALL)
 
 set_target_properties(embedded multiwindow PROPERTIES AUTOMOC ON)

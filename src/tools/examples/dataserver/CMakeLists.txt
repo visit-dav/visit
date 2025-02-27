@@ -49,7 +49,7 @@ visit_add_executable(
                 ${vtkpng_LIBRARIES}
                 Threads::Threads
                 ${ZLIB_LIBRARY}
-    FOLDER      examples
+    FOLDER      tools/examples/usedataserver
     SKIP_INSTALL)
 
 if(NOT WIN32)

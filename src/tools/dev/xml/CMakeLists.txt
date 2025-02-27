@@ -38,7 +38,7 @@ foreach(tool xml2atts xml2avt xml2cmake xml2info xml2java xml2python xml2sim
                     ${VISIT_SOURCE_DIR}/include
                     ${VISIT_SOURCE_DIR}/common/utility
         DEPENDS_ON  ${RELEVANT_QT_LIBS}
-        FOLDER      xml)
+        FOLDER      tools/xml)
     if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
         qt6_disable_unicode_defines(${tool})
     endif()

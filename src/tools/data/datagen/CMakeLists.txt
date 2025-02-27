@@ -145,7 +145,7 @@ function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
                 INCLUDES    ${target_INCLUDE_DIRS}
                 DEFINES     ${target_DEFS}
                 DEPENDS_ON  ${target_LIBS}
-                FOLDER      datagen)
+                FOLDER      tools/data/datagen)
         endif()
     else()
         set(tname ${target_name})
@@ -155,7 +155,7 @@ function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
             INCLUDES    ${target_INCLUDE_DIRS}
             DEFINES     ${target_DEFS}
             DEPENDS_ON  ${target_LIBS}
-            FOLDER      datagen)
+            FOLDER      tools/data/datagen)
     endif()
 
     if(target_LIB_DIRS)

@@ -22,7 +22,7 @@ visit_add_executable(
                 ${VISIT_SOURCE_DIR}/common/utility
     DEPENDS_ON  visit_vtk
                 VTK::IOImage
-    FOLDER      tools/fx/visit_composite)
+    FOLDER      tools/fx/imagetools)
 
 visit_add_executable(
     NAME        visit_transition
@@ -33,5 +33,5 @@ visit_add_executable(
                 ${VISIT_SOURCE_DIR}/common/utility
     DEPENDS_ON  visit_vtk
                 VTK::IOImage
-    FOLDER      tools/fx/visit_composite)
+    FOLDER      tools/fx/imagetools)
 
