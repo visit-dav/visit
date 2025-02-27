@@ -1,21 +1,77 @@
-/*=========================================================================
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
-  Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVisItCutter.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/09/23 15:02:08 $
-  Version:   $Revision: 1.73 $
-
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 #include "vtkVisItCutter.h"
+
+#if LIB_VERSION_GE(VTK,9,4,1)
+
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkUnstructuredGridBase.h>
+
+
+vtkObjectFactoryNewMacro(vtkVisItCutter)
+
+//------------------------------------------------------------------------------
+vtkVisItCutter::vtkVisItCutter(vtkImplicitFunction* cf) : vtkCutter(cf)
+{
+  this->UnstructuredGridBypass = 0;
+}
+
+//------------------------------------------------------------------------------
+vtkVisItCutter::~vtkVisItCutter()
+{
+}
+
+// Cut through data generating surface.
+int vtkVisItCutter::RequestData(
+  vtkInformation* request,
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
+{
+  // get the info objects
+  vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+
+  // get the input and output
+  vtkDataSet* input = vtkDataSet::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData* output = vtkPolyData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+  if (!this->CutFunction)
+  {
+    vtkErrorMacro("No cut function specified");
+    return 0;
+  }
+
+  if (!input)
+  {
+    return 0;
+  }
+
+  if (input->GetNumberOfPoints() < 1 || this->GetNumberOfContours() < 1)
+  {
+    return 1;
+  }
+
+  if (this->UnstructuredGridBypass && vtkUnstructuredGridBase::SafeDownCast(input))
+  {
+      // bypasses the 'executePlaneCutter' for UnstructuredGrids
+      // Useful when Slicing polygons and polyhedra, as the execuctePlaneCutter
+      // method utilizes vtkPlaneCutter, which doesn't process CellData
+      // correctly for these cell types.
+      this->UnstructuredGridCutter(input, output);
+  }
+  else
+  {
+      return this->Superclass::RequestData(request, inputVector, outputVector);
+  }
+
+  return 1;
+}
+
+
+#else // ANCIENT version of vtkCutter from 2003
 
 #include <vtkCellArray.h>
 #include <vtkCellArrayIterator.h>
@@ -822,3 +878,4 @@ void vtkVisItCutter::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Generate Cut Scalars: "
      << (this->GenerateCutScalars ? "On\n" : "Off\n");
 }
+#endif
