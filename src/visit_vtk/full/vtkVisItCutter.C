@@ -54,6 +54,9 @@ int vtkVisItCutter::RequestData(
     return 1;
   }
 
+  //
+  // this begins the change in logic from vtkCutter::RequestData, to work around a bug
+  //
   if (this->UnstructuredGridBypass && vtkUnstructuredGridBase::SafeDownCast(input))
   {
       // bypasses the 'executePlaneCutter' for UnstructuredGrids
@@ -64,6 +67,7 @@ int vtkVisItCutter::RequestData(
   }
   else
   {
+      // call vtkCutter::RequestData to handle the data.
       return this->Superclass::RequestData(request, inputVector, outputVector);
   }
 
