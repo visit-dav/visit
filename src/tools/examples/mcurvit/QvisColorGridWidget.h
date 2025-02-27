@@ -4,7 +4,7 @@
 
 #ifndef QVIS_COLOR_GRID_WIDGET_H
 #define QVIS_COLOR_GRID_WIDGET_H
-#include <gui_exports.h>
+
 #include <QWidget>
 #include <QvisGridWidget.h>
 
@@ -47,7 +47,7 @@ class QPainter;
 //
 // ****************************************************************************
 
-class GUI_API QvisColorGridWidget : public QvisGridWidget
+class QvisColorGridWidget : public QvisGridWidget
 {
     Q_OBJECT
 public:
