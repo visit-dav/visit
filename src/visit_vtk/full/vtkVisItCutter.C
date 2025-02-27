@@ -57,7 +57,7 @@ int vtkVisItCutter::RequestData(
   if (this->UnstructuredGridBypass && vtkUnstructuredGridBase::SafeDownCast(input))
   {
       // bypasses the 'executePlaneCutter' for UnstructuredGrids
-      // Useful when Slicing polygons and polyhedra, as the executePlaneCutter
+      // Necessary when Slicing polygons and polyhedra, as the executePlaneCutter
       // method utilizes vtkPlaneCutter, which doesn't process CellData
       // correctly for these cell types.
       this->UnstructuredGridCutter(input, output);
