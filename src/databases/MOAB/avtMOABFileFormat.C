@@ -63,7 +63,7 @@ using namespace MoabDBOptions;
 //
 // ****************************************************************************
 
-string meshnameArr[5] = { "Verts", "Edges", "Faces", "Solid", "MeshA"}; // all names the same length
+string meshnameArr[5] = { "Vertices", "Edges", "Faces", "Solids", "Mesh"}; // all names have different length
 //string meshnameAll = "4_Meshs";
 
 avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
@@ -873,6 +873,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
                 merr = mbCore->get_entities_by_dimension(0, dim, ents);MBVIS_CHK_ERR(merr);
                 // get all verts from connectivity of ents
                 merr = mbCore->get_connectivity(ents, verts);MBVIS_CHK_ERR(merr);
+                ents = subtract(ents, verts);
             }
             else // dim is 4, get all ents and verts, except sets
             {
@@ -1077,8 +1078,16 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         // basically, use the first / to decide the tag type
         // for vertex tags, strip after the slash,
 
+        const char* slash = strchr( varname, '/' );
+        string tagName(varname);
         string meshFromVarName(varname);
-        meshFromVarName = meshFromVarName.substr(0,7); // we know the length of the mesh part in name is 7
+        if (nullptr != slash )
+        {
+            tagName=string(slash+1);
+            meshFromVarName = meshFromVarName.substr(0, (int)(slash-varname));
+        }
+
+        // we know the length of the mesh part in name is 5
 
 
         int dimMesh = -1;
@@ -1091,10 +1100,21 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         //if ( strcmp(meshName.c_str(), meshnameAll.c_str()) == 0 ) nodeTag = true;
         bool elemTag = !nodeTag;
 
+        if (nodeTag)
+        {
+            // we may need to process further, fringe or cloud mesh
+            const char * currName = tagName.c_str();
+            const char* foundSlash  = strchr( currName, '/' );
+            if (nullptr != foundSlash)
+                tagName=tagName.substr(0, (int)(foundSlash-currName));
+
+        }
+        debug1 << "avtMOABFileFormat::GetVar meshFromVarName: " << meshFromVarName << "\n";
+        debug1 << "avtMOABFileFormat::GetVar tagName: " << tagName << "\n";
         debug1 << "avtMOABFileFormat::GetVar dimMesh: " << dimMesh << "\n";
         debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " elem_tag "
                 << elemTag << " node_tag: " << nodeTag << "\n";
-        string tagNameTmp;
+        /*string tagNameTmp;
         tagNameTmp = string( varname + 8) ; // meshName length + 1 for "/"
         // for vertex tags, strip after the slash,
         char slash = '/';//character to search in what is left of the tag name
@@ -1106,7 +1126,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
             tagName = tagNameTmp.substr( 0, (int)( foundSlash-tagNameTmp.c_str() ) );
         }
 
-        debug1 << "moab tag name:" <<tagName << "\n";
+        debug1 << "moab tag name:" <<tagName << "\n";*/
         vtkDataArray * result = 0;
 
         moab::Range ents;
@@ -1211,8 +1231,9 @@ avtMOABFileFormat::GetPartitionTagAsEnumScalar(){
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
         ents = *select;
-	if (ents.empty())
-          ents = vts; 
+	    if (ents.empty())
+            ents = vts;
+	    debug1 << "avtMOABFileFormat::GetPartitionTagAsEnumScalar():  ents.size()=" << ents.size() << "\n";
         vtkIntArray *pparr = vtkIntArray::New();
         pparr->SetNumberOfComponents(1);
         pparr->SetNumberOfTuples(ents.size());
