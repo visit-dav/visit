@@ -505,14 +505,6 @@ macro(visit_add_executable)
     if(NOT ${vae_SKIP_INSTALL})
         VISIT_INSTALL_TARGETS(${vae_NAME})
     endif()
-
-    # vars that may have been created by calls to visit_append_list
-    #unset(${val_NAME}_SOURCES CACHE)
-    #unset(${val_NAME}_HEADERS CACHE)
-    #unset(${val_NAME}_INCLUDES CACHE)
-    #unset(${val_NAME}_DEFINES CACHE)
-    #unset(${val_NAME}_DEPENDS CACHE)
-    #unset(${val_NAME}_FEATURES CACHE)
 endmacro()
 
 ##############################################################################
