@@ -174,6 +174,9 @@
 #   Eric Brugger, Thu Nov 21 12:15:11 PST 2024
 #   Reorder some git operations when committing changes to GitHub to
 #   avoid unnecessary merges.
+#
+#   Eric Brugger, Mon Mar  3 09:11:37 PST 2025
+#   Include the actual hostname in the name of the sbatch output filename.
 # 
 
 # Determine the users name and e-mail address.
@@ -667,9 +670,10 @@ chmod 750 postit_${testHost}
 
 # Run the test suite.
 if test "$testHost" = "poodle" ; then
+    hostName=`hostname`
     subTag=`date +%Y-%m-%d-%H:%M`
     ./checkout_poodle $subTag
-    sbatch --partition=pbatch --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o poodle_testit_$subTag.out ./runit_poodle $subTag
+    sbatch --partition=pbatch --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o ${hostName}_testit_${subTag}.out ./runit_poodle $subTag
     sleep 28800
     ./postit_poodle $subTag
 fi
