@@ -662,16 +662,17 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 
     points->SetDataTypeToDouble();
 
-    int n_elems = npts;
-    if (n_topo["type"].as_string() == "unstructured" &&
-        n_topo.has_path("elements/shape") &&
-        n_topo["elements/shape"].as_string() == "point" &&
-        n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
-    {
-        n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
-        points->SetNumberOfPoints(n_elems);
-    }
-    else
+//    bool isPointMesh = false;
+//    if (n_topo["type"].as_string() == "unstructured" &&
+//        n_topo.has_path("elements/shape") &&
+//        n_topo["elements/shape"].as_string() == "point" &&
+//        n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
+//    {
+//        isPointMesh = true;
+//        const int n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
+//        points->SetNumberOfPoints(n_elems);
+//    }
+//    else
     {
         points->SetNumberOfPoints(npts);
     }
@@ -700,28 +701,13 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     }
     else // default, simplest case
     {
-        // we need to look at the topo to decide what points to write
-        // we are in the unstructured case
-        if (npts != n_elems)
+        // Normal unstructured case, add all points.
+        for (vtkIdType i = 0; i < npts; i++)
         {
-            int_accessor conn = n_topo["elements/connectivity"].value();
-            for (vtkIdType i = 0; i < n_elems; i++)
-            {
-                double x = x_vals[conn[i]];
-                double y = have_y ? y_vals[conn[i]] : 0;
-                double z = have_z ? z_vals[conn[i]] : 0;
-                points->SetPoint(i, x, y, z);
-            }
-        }
-        else
-        {
-            for (vtkIdType i = 0; i < npts; i++)
-            {
-                double x = x_vals[i];
-                double y = have_y ? y_vals[i] : 0;
-                double z = have_z ? z_vals[i] : 0;
-                points->SetPoint(i, x, y, z);
-            }
+            double x = x_vals[i];
+            double y = have_y ? y_vals[i] : 0;
+            double z = have_z ? z_vals[i] : 0;
+            points->SetPoint(i, x, y, z);
         }
     }
 
@@ -1619,17 +1605,35 @@ debug4 << "UnstructuredTopologyToVTKUnstructuredGrid: start" << std::endl;
             // Add as polygons.
             const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
             const auto nZones = elements_sizes.number_of_elements();
-            conduit::index_t elem_conn_index = 0;
             vtkNew<vtkIdList> pts;
-            for(conduit::index_t zi = 0; zi < nZones; zi++)
+            if(n_topo.has_path("elements/offsets"))
             {
-                conduit::index_t nZonePoints = elements_sizes[zi];
-                for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
+                const auto elements_offsets = n_topo["elements/offsets"].as_index_t_accessor();
+                for(conduit::index_t zi = 0; zi < nZones; zi++)
                 {
-                    pts->InsertNextId(elements_connectivity[elem_conn_index++]);
+                    conduit::index_t nZonePoints = elements_sizes[zi];
+                    conduit::index_t zoneOffset = elements_offsets[zi];
+                    for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
+                    {
+                        pts->InsertNextId(elements_connectivity[zoneOffset + zpi]);
+                    }
+                    ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
+                    pts->Reset();
                 }
-                ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
-                pts->Reset();
+            }
+            else
+            {
+                conduit::index_t elem_conn_index = 0;
+                for(conduit::index_t zi = 0; zi < nZones; zi++)
+                {
+                    conduit::index_t nZonePoints = elements_sizes[zi];
+                    for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
+                    {
+                        pts->InsertNextId(elements_connectivity[elem_conn_index++]);
+                    }
+                    ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
+                    pts->Reset();
+                }
             }
         }
     }
