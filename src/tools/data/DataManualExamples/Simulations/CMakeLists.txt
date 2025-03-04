@@ -138,6 +138,7 @@ function(ADD_FORTRAN_SIMV2_SIMULATION target)
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_SOURCE_DIR}/sim/V2/lib
         DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
         SKIP_INSTALL)
 
     set_target_properties(sim_${target} PROPERTIES
@@ -161,6 +162,7 @@ function(ADD_PARALLEL_SIMV2_SIMULATION target)
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_SOURCE_DIR}/sim/V2/lib
         DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
         SKIP_INSTALL)
 
     set_target_properties(sim_${target} PROPERTIES
@@ -199,6 +201,7 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
                     ${VISIT_SOURCE_DIR}/sim/V2/lib
                     ${MPI_Fortran_INCLUDE_PATH}
         DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
         SKIP_INSTALL)
 
     if(ICET_FOUND)
