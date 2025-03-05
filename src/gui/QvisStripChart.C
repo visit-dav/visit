@@ -18,6 +18,7 @@
 
 #include <DebugStream.h>
 
+#include <cmath>
 #include <sstream>
 #include <iostream>
 #include <limits>
