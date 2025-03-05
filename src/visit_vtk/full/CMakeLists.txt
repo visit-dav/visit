@@ -101,7 +101,7 @@ set(visit_vtk_SOURCES
     vtkVolumeFromCSGVolume.C
     vtkVolumeFromVolume.C)
 
-set(visit_vtk_Headers
+set(visit_vtk_HEADERS
     InitVTK.h
     vtkAccessors.h
     vtkAxisDepthSort.h

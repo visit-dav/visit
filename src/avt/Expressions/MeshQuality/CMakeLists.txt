@@ -44,7 +44,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtVMetricWarpage.C)
 
 visit_append_list(
-    NAME  avtexpressions_ser_Headers
+    NAME  avtexpressions_ser_HEADERS
     ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtCornerAngle.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtEdgeLength.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFacePlanarity.h
