@@ -16,7 +16,7 @@
 
 #include <vector>
 #include <string>
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <map>
 
 class VsAttribute;

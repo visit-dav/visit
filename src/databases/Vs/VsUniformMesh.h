@@ -12,7 +12,7 @@
 #define VSUNIFORMMESH_H_
 
 #include "VsMesh.h"
-#include <hdf5.h>
+#include <vshdf5.h>
 
 class VsGroup;
 
