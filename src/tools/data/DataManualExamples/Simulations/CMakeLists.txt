@@ -180,12 +180,13 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
         simV2f
         ${EXTRA_SIM_LIBS}
         ${VISIT_PARALLEL_FORTRAN_LIBS}
+        # HACK: Force the Fortran MPI libraries.
         ${MPI_Fortran_LIBRARIES})
 
     if(ICET_FOUND)
         list(APPEND sim_${target}_DEPENDS ${ICET_LIB})
     endif()
-    # HACK: Force the Fortran MPI libraries.
+
     if(NOT VISIT_STATIC)
         list(APPEND sim_${target}_DEPENDS simV2)
     else()
