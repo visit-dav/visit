@@ -71,7 +71,7 @@ function(ADD_PARALLEL_LIBRARY target)
                 set(PAR_RPATHS "${PAR_RPATHS} ${X}")
             endforeach()
             set_property(TARGET ${target}
-                     APPEND PROPERTY INSTALL_RPATH ${PAR_RPATHS})
+                     APPEND PROPERTY INSTALL_RPATH "${PAR_RPATHS}")
         endif()
       endif()
 
@@ -301,7 +301,14 @@ macro(visit_patch_target)
     if (vpt_LINKDIR)
         target_link_directories(${vpt_NAME} PRIVATE ${vpt_LINKDIR})
     endif()
-    blt_patch_target(${ARGV})
+
+    # pass along only the args not used above
+    # enclose in quotes in case they aren't defined
+    blt_patch_target(
+        NAME       ${vpt_NAME}
+        INCLUDES   "${vpt_INCLUDES}"
+        DEFINES    "${vpt_DEFINES}"
+        DEPENDS_ON "${vpt_DEPENDS_ON}")
 endmacro()
 
 
@@ -334,12 +341,12 @@ macro(visit_patch_parallel_target)
         if(${CMAKE_INSTALL_RPATH})
             string(REPLACE " " ";" CPAR_RPATHS ${CAKE_INSTALL_RPATH})
             set_property(TARGET ${vppt_NAME} APPEND PROPERTY
-                         INSTALL_RPATH ${CPAR_RPATHS})
+                         INSTALL_RPATH "${CPAR_RPATHS}")
         endif()
 
         if(VISIT_PARALLEL_RPATH)
             set_property(TARGET ${vppt_NAME} APPEND PROPERTY
-                         INSTALL_RPATH ${VISIT_PARALLEL_RPATH})
+                         INSTALL_RPATH "${VISIT_PARALLEL_RPATH}")
         endif()
         if(VISIT_PARALLEL_DEFINES)
             visit_patch_target(

@@ -218,17 +218,17 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
     endif()
 
     if(VISIT_PARALLEL_DEFINES)
-        visit_patch_target(NAME ${target} DEFINES ${VISIT_PARALLEL_DEFINES})
+        visit_patch_target(NAME sim_${target} DEFINES ${VISIT_PARALLEL_DEFINES})
     endif()
 
     if(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
-        set_property(TARGET ${target} APPEND
+        set_property(TARGET sim_${target} APPEND
             PROPERTY LINK_FLAGS ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS})
     endif()
 
     if(VISIT_PARALLEL_RPATH)
-        set_target_property(TARGET ${target} APPEND
-            PROPERY INSTALL_RPATH ${VISIT_PARALLEL_RPATH})
+        set_property(TARGET sim_${target} APPEND
+            PROPERTY INSTALL_RPATH "${VISIT_PARALLEL_RPATH}")
     endif()
 endfunction()
 
