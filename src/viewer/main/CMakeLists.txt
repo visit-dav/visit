@@ -62,6 +62,7 @@ set(VIEWERLIB_SOURCES
 
 set(VIEWERLIB_HEADERS
     SharedDaemon.h
+    viewer_exports.h
     ViewerBaseUI.h
     ViewerClientConnection.h
     ViewerCommandFromSimObserver.h
@@ -79,8 +80,7 @@ set(VIEWERLIB_HEADERS
     ViewerStateBuffered.h
     ViewerSubject.h
     VisItViewer.h
-    WebSocketConnection.h
-    viewer_exports.h)
+    WebSocketConnection.h)
 
 if(WIN32 AND VISIT_PARALLEL AND HAVE_HPC_SCHEDULER)
     list(APPEND VIEWERLIB_SOURCES
@@ -163,52 +163,48 @@ add_subdirectory(ui)
 
 
 #*************************** The viewer executable ***************************
-IF(NOT APPLE)
-    ADD_EXECUTABLE(viewer_exe ${VISIT_APPLICATION_STYLE} viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_VIEWER_RESOURCE_FILE})
-ELSE(NOT APPLE)
-    SET(VIEWER_ICON_FILE VisItIcon.icns)
-    SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE} PROPERTIES
-        MACOSX_PACKAGE_LOCATION Resources
-    )
 
-    ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
 
-    SET_TARGET_PROPERTIES( viewer_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in)
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
-    SET(MACOSX_BUNDLE_ICON_FILE            ${VIEWER_ICON_FILE})
-    SET(MACOSX_BUNDLE_VIEWER_IDENTIFIER       "gov.llnl.visit.viewer")
-    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC")
+if(APPLE)
+    set(VIEWER_ICON_FILE VisItIcon.icns)
+    set(VISIT_VIEWER_RESOURCE_FILE ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
+    set_source_file_properties(${VISIT_VIEWER_RESOURCE_FILE} PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources)
+endif()
 
-    IF(VISIT_STATIC)
+visit_add_executable(
+    NAME        viewer_exe
+    SOURCES     viewer.C
+                ${VIEWER_STATIC_SOURCES}
+                ${VISIT_VIEWER_RESOURCE_FILE}
+    DEPENDS_ON  ${viewer_exe_IOperator}
+                ${viewer_exe_VOperator}
+                ${viewer_exe_IPlot}
+                ${viewer_exe_VPlot}
+                viewer
+                ${vtkpng_LIBRARIES}
+                ${vtkjpeg_LIBRARIES}
+    OUTPUT_NAME viewer)
+    
+
+
+
+if(APPLE)
+    set(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
+    set(MACOSX_BUNDLE_ICON_FILE            ${VIEWER_ICON_FILE})
+    set(MACOSX_BUNDLE_VIEWER_IDENTIFIER       "gov.llnl.visit.viewer")
+    set(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC")
+    set_target_properties(viewer_exe PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST
+            ${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in)
+
+    if(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
-    ENDIF(VISIT_STATIC)
-ENDIF(NOT APPLE)
+    endif()
+endif()
 
-SET_TARGET_PROPERTIES(viewer_exe PROPERTIES OUTPUT_NAME viewer)
-
-TARGET_LINK_LIBRARIES(viewer_exe
-    ${viewer_exe_IOperator}
-    ${viewer_exe_VOperator}
-    ${viewer_exe_IPlot}
-    ${viewer_exe_VPlot}
-    viewer
-    ${vtkpng_LIBRARIES}
-    ${vtkjpeg_LIBRARIES}
-)
-
-# If we're building statically then the viewer can't be linked until the plugin
-# sources are built
-IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(viewer_exe
-        ${viewer_exe_IOperator}
-        ${viewer_exe_VOperator}
-        ${viewer_exe_IPlot}
-        ${viewer_exe_VPlot}
-    )
-ENDIF(VISIT_STATIC)
-
-VISIT_INSTALL_TARGETS(viewer_exe )

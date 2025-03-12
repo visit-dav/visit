@@ -18,16 +18,9 @@
 #
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/include
-${VISIT_SOURCE_DIR}/common/utility
-)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-set(RELEVANT_QT_LIBS ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY})
+set(RELEVANT_QT_LIBS
+    ${QT_QTXML_LIBRARY}
+    ${QT_QTCORE_LIBRARY})
 
 if(VISIT_STATIC)
     list(APPEND RELEVANT_QT_LIBS
@@ -37,8 +30,15 @@ endif()
 
 foreach(tool xml2atts xml2avt xml2cmake xml2info xml2java xml2python xml2sim
              xmltest xml2window)
-    add_executable(${tool} ${tool}.C)
-    target_link_libraries(${tool}  ${RELEVANT_QT_LIBS})
+    visit_add_executable(
+        NAME        ${tool}
+        SOURCES     ${tool}.C
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_BINARY_DIR}/include
+                    ${VISIT_SOURCE_DIR}/include
+                    ${VISIT_SOURCE_DIR}/common/utility
+        DEPENDS_ON  ${RELEVANT_QT_LIBS}
+        FOLDER      tools/xml)
     if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
         qt6_disable_unicode_defines(${tool})
     endif()
@@ -50,6 +50,3 @@ if(HAVE_LIBVTKM)
     target_compile_definitions(xml2cmake PRIVATE VTKM_SMALL=${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 endif()
 
-# Install the targets
-VISIT_INSTALL_TARGETS(xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake)
-VISIT_TOOLS_ADD_FOLDER(xml xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake xml2sim)

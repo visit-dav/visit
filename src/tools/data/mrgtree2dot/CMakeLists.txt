@@ -7,15 +7,17 @@
 #
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-${SILO_INCLUDE_DIR}
-)
-
-# Add link directories
-LINK_DIRECTORIES(${SILO_LIBRARY_DIR})
 
 #********************************* SERIAL ************************************
-ADD_EXECUTABLE(mrgtree2dot mrgtree2dot.C)
-TARGET_LINK_LIBRARIES(mrgtree2dot ${SILO_LIB} )
-VISIT_INSTALL_TARGETS(mrgtree2dot)
-VISIT_DATA_ADD_FOLDER(mrgtree2dot mrgtree2dot)
+
+visit_add_executable(
+    NAME        mrgtree2dot
+    SOURCES     mrgtree2dot.C
+    INCLUDES    ${SILO_INCLUDE_DIR}
+    DEPENDS_ON  ${SILO_LIB}
+    FOLDER      tools/data)
+
+visit_patch_target(
+    NAME        mrgtree2dot
+    LINKDIR     ${SILO_LIBRARY_DIR})
+

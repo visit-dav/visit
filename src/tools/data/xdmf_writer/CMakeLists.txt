@@ -9,44 +9,65 @@
 #
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
-)
-
-# Add link directories
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR}
-${HDF5_LIBRARY_DIR}
-)
-
 
 #********************************* SERIAL ************************************
-ADD_EXECUTABLE(xdmf_curv3d xdmf_curv3d.c)
-TARGET_LINK_LIBRARIES(xdmf_curv3d xdmf_writer_ser m) 
 
-ADD_EXECUTABLE(xdmf_ucd3d xdmf_ucd3d.c)
-TARGET_LINK_LIBRARIES(xdmf_ucd3d xdmf_writer_ser m) 
+visit_add_library(
+    NAME        xdmf_writer_ser
+    SOURCES     xdmf_writer.c
+    HEADERS     xdmf_writer.h
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${HDF5_INCLUDE_DIR}
+    DEPENDS_ON  ${HDF5_LIB} 
+                ${ZLIB_LIBRARY}
+                m
+    SKIP_INSTALL)  
 
-ADD_EXECUTABLE(xdmf_curv3d_wtime xdmf_curv3d_wtime.c)
-TARGET_LINK_LIBRARIES(xdmf_curv3d_wtime xdmf_writer_ser m) 
+function(add_serial_example tname)
 
-ADD_EXECUTABLE(xdmf_multi_curv3d xdmf_multi_curv3d.c)
-TARGET_LINK_LIBRARIES(xdmf_multi_curv3d xdmf_writer_ser m) 
+    visit_add_executable(
+        NAME        ${tname}
+        SOURCES     ${tname}.c
+        HEADERS     xdmf_writer.h
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS_ON  xdmf_writer_ser
+                    m
+        SKIP_INSTALL)  
+endfunction()
 
-ADD_LIBRARY(xdmf_writer_ser xdmf_writer.c)
-TARGET_LINK_LIBRARIES(xdmf_writer_ser ${HDF5_LIB} ${ZLIB_LIBRARY} m)
+add_serial_example(xdmf_curv3d)
+add_serial_example(xdmf_ucd3d)
+add_serial_example(xdmf_curv3d_wtime)
+add_serial_example(xdmf_multi_curv3d)
+
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
-    ADD_PARALLEL_EXECUTABLE(xdmf_mpi_example xdmf_mpi_example.c)
-    TARGET_LINK_LIBRARIES(xdmf_mpi_example xdmf_writer_par m)
+    visit_add_parallel_library(
+        NAME        xdmf_writer_par
+        SOURCES     xdmf_writer.c
+        HEADERS     xdmf_writer.h
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${HDF5_INCLUDE_DIR}
+        DEPENDS_ON  ${HDF5_LIB} 
+                    ${ZLIB_LIBRARY}
+                    m
+        SKIP_INSTALL)  
 
-    ADD_PARALLEL_EXECUTABLE(xdmf_mpi_example2 xdmf_mpi_example2.c)
-    TARGET_LINK_LIBRARIES(xdmf_mpi_example2 xdmf_writer_par m)
+    function(add_parallel_example tname)
 
-    ADD_PARALLEL_EXECUTABLE(xdmf_mpi_example3 xdmf_mpi_example3.c)
-    TARGET_LINK_LIBRARIES(xdmf_mpi_example3 xdmf_writer_par m)
+        visit_add_parallel_executable(
+            NAME        ${tname}
+            SOURCES     ${tname}.c
+            HEADERS     xdmf_writer.h
+            INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+            DEPENDS_ON  xdmf_writer_par
+                        m
+            SKIP_INSTALL)  
+    endfunction()
 
-    ADD_PARALLEL_LIBRARY(xdmf_writer_par xdmf_writer.c)
-    TARGET_LINK_LIBRARIES(xdmf_writer_par ${HDF5_LIB} ${ZLIB_LIBRARY} m)
-ENDIF(VISIT_PARALLEL)
+    add_parallel_example(xdmf_mpi_example)
+    add_parallel_example(xdmf_mpi_example2)
+    add_parallel_example(xdmf_mpi_example3)
+endif()
+

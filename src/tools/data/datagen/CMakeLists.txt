@@ -136,21 +136,32 @@ function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
         set(target_SOURCES ${target_name}.C)
     endif()
 
-    set(tname ${target_name})
     if("${do_parallel}" STREQUAL "ON")
         if(VISIT_PARALLEL)
             set(tname "${target_name}_par")
-            ADD_PARALLEL_EXECUTABLE(${tname} ${target_SOURCES})
+            visit_add_parallel_executable(
+                NAME        ${tname}
+                SOURCES     ${target_SOURCES}
+                INCLUDES    ${target_INCLUDE_DIRS}
+                DEFINES     ${target_DEFS}
+                DEPENDS_ON  ${target_LIBS}
+                FOLDER      tools/data/datagen)
         endif()
     else()
-        add_executable(${tname} ${target_SOURCES})
+        set(tname ${target_name})
+        visit_add_executable(
+            NAME        ${tname}
+            SOURCES     ${target_SOURCES}
+            INCLUDES    ${target_INCLUDE_DIRS}
+            DEFINES     ${target_DEFS}
+            DEPENDS_ON  ${target_LIBS}
+            FOLDER      tools/data/datagen)
     endif()
-    target_include_directories(${tname} PRIVATE ${target_INCLUDE_DIRS})
-    target_link_directories(${tname} PRIVATE ${target_LIB_DIRS})
-    VISIT_DATA_ADD_FOLDER(datagen ${tname})
 
-    target_compile_definitions(${tname} PRIVATE ${target_DEFS})
-    target_link_libraries(${tname} PRIVATE ${target_LIBS})
+    if(target_LIB_DIRS)
+        target_link_directories(${tname} PRIVATE ${target_LIB_DIRS})
+    endif()
+
     set_target_properties(${tname} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()

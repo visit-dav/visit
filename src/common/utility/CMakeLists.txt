@@ -62,36 +62,36 @@ visit_append_list(
           $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/common/utility>)
 
 if(VISIT_ENABLE_UNIT_TESTS)
-    blt_add_executable(
+    visit_add_executable(
         NAME       MRUCache_test
         SOURCES    MRUCache_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
-        FOLDER     unit_tests)
+        FOLDER     unit_tests
+        SKIP_INSTALL)
 
-    blt_add_executable(
+    visit_add_executable(
         NAME       Namescheme_test
         SOURCES    Namescheme_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDS_ON visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB}
-        FOLDER     unit_tests)
+        FOLDER     unit_tests
+        SKIP_INSTALL)
 
-    blt_add_executable(
+    visit_add_executable(
         NAME       Utility_test
         SOURCES    Utility_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDS_ON visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB}
-        FOLDER     unit_tests)
+        FOLDER     unit_tests
+        SKIP_INSTALL)
 
-    blt_add_executable(
+    visit_add_executable(
         NAME       StringHelpers_test
         SOURCES    StringHelpers_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDS_ON visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB}
-        FOLDER     unit_tests)
+        FOLDER     unit_tests
+        SKIP_INSTALL)
 
-    if(DEFINED VISIT_EXE_LINKER_FLAGS)
-        blt_patch_target(NAME Namescheme_test LINK_FLAGS ${VISIT_EXE_LINKER_FLAGS})
-        blt_patch_target(NAME StringHelpers_test LINK_FLAGS ${VISIT_EXE_LINKER_FLAGS})
-    endif()
 endif()
 

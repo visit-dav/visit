@@ -42,18 +42,17 @@ visit_append_list(
 
 
 if(VISIT_ENABLE_UNIT_TESTS AND NOT WIN32)
-    blt_add_executable(NAME exprconfig
+    visit_add_executable(
+        NAME       exprconfig
         SOURCES    ExprConfig.C
-        DEPENDS_ON visitcommon)
+        DEPENDS_ON visitcommon
+        SKIP_INSTALL)
 
-    blt_add_executable(NAME exprtest
-        SOURCES test.C
-        DEPENDS_ON visitcommon)
-
-    if(DEFINED VISIT_EXE_LINKER_FLAGS)
-        blt_patch_target(NAME exprconfig LINK_FLAGS ${VISIT_EXE_LINKER_FLAGS})
-        blt_patch_target(NAME exprtest LINK_FLAGS ${VISIT_EXE_LINKER_FLAGS})
-    endif()
+    visit_add_executable(
+        NAME       exprtest
+        SOURCES    test.C
+        DEPENDS_ON visitcommon
+        SKIP_INSTALL)
 
     add_custom_target(init)
     add_dependencies(init exprconfig)

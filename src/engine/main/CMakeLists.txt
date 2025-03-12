@@ -202,44 +202,31 @@ endif()
 # engine_ser_exe_EOperator_ser = The list of operator libE libraries needed to link
 # engine_ser_exe_EPlot_ser = The list of plot libE libraries needed to link
 
-add_executable(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_SER_RESOURCE_FILE})
-set_target_properties(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
+visit_add_executable(
+    NAME        engine_ser_exe
+    SOURCES     main.C
+                ${ENGINE_STATIC_SOURCES}
+                ${VISIT_ENGINE_SER_RESOURCE_FILE}
+    DEPENDS_ON  ${engine_ser_exe_IDatabase}
+                ${engine_ser_exe_EDatabase_ser}
+                ${engine_ser_exe_IOperator}
+                ${engine_ser_exe_EOperator_ser}
+                ${engine_ser_exe_IPlot}
+                ${engine_ser_exe_EPlot_ser}
+                engine_ser
+                visit_verdict
+                ${vtkjpeg_LIBRARIES}
+                ${vtkpng_LIBRARIES}
+                ${ALL_THIRDPARTY_IO_LIB}
+                Threads::Threads
+                ${ZLIB_LIBRARY}
+    OUTPUT_NAME engine_ser)
 
 if(WIN32 AND MSVC)
     set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
 endif()
 
-target_link_libraries(engine_ser_exe
-    ${VISIT_EXE_LINKER_FLAGS}
-    ${engine_ser_exe_IDatabase}
-    ${engine_ser_exe_EDatabase_ser}
-    ${engine_ser_exe_IOperator}
-    ${engine_ser_exe_EOperator_ser}
-    ${engine_ser_exe_IPlot}
-    ${engine_ser_exe_EPlot_ser}
-    engine_ser
-    visit_verdict
-    ${vtkjpeg_LIBRARIES}
-    ${vtkpng_LIBRARIES}
-    ${ALL_THIRDPARTY_IO_LIB}
-    Threads::Threads
-    ${ZLIB_LIBRARY}
-)
 
-# If we're building statically then the engine can't be linked until the plugin
-# sources are built
-if(VISIT_STATIC)
-    add_dependencies(engine_ser_exe
-        ${engine_ser_exe_IDatabase}
-        ${engine_ser_exe_EDatabase_ser}
-        ${engine_ser_exe_IOperator}
-        ${engine_ser_exe_EOperator_ser}
-        ${engine_ser_exe_IPlot}
-        ${engine_ser_exe_EPlot_ser}
-    )
-endif()
-
-VISIT_INSTALL_TARGETS(engine_ser_exe)
 
 #************************ PARALLEL EXECUTABLE *********************************
 
@@ -256,50 +243,37 @@ if(VISIT_PARALLEL)
         set(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
     endif()
 
-    ADD_PARALLEL_EXECUTABLE(engine_par_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_PAR_RESOURCE_FILE})
+    visit_add_parallel_executable(
+        NAME        engine_par_exe 
+        SOURCES     main.C
+                    ${ENGINE_STATIC_SOURCES}
+                    ${VISIT_ENGINE_PAR_RESOURCE_FILE}
+        DEPENDS_ON  ${engine_par_exe_IDatabase_par}
+                    ${engine_par_exe_EDatabase_par}
+                    ${engine_par_exe_IOperator_par}
+                    ${engine_par_exe_EOperator_par}
+                    ${engine_par_exe_IPlot_par}
+                    ${engine_par_exe_EPlot_par}
+                    engine_par
+                    visit_verdict
+                    ${vtkjpeg_LIBRARIES}
+                    ${vtkpng_LIBRARIES}
+                    ${ALL_THIRDPARTY_IO_LIB}
+                    ${ICET_STATIC_LIB}
+                    Threads::Threads
+                    ${ZLIB_LIBRARY}
+        OUTPUT_NAME engine_par)
 
-    if(ICET_FOUND AND VISIT_STATIC)
-        set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
-    endif(ICET_FOUND AND VISIT_STATIC)
-
-    set_target_properties(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
     if(WIN32 AND MSVC)
         set_target_properties(engine_par_exe PROPERTIES
             LINK_FLAGS "/STACK:4000000")
     endif()
 
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(engine_par_exe
-        ${engine_par_exe_IDatabase_par}
-        ${engine_par_exe_EDatabase_par}
-        ${engine_par_exe_IOperator_par}
-        ${engine_par_exe_EOperator_par}
-        ${engine_par_exe_IPlot_par}
-        ${engine_par_exe_EPlot_par}
-        engine_par
-        visit_verdict
-        ${vtkjpeg_LIBRARIES}
-        ${vtkpng_LIBRARIES}
-        ${ALL_THIRDPARTY_IO_LIB}
-        ${ICET_STATIC_LIB}
-        Threads::Threads
-        ${ZLIB_LIBRARY}
-    )
-
     if(ICET_FOUND)
-        target_link_directories(engine_par_exe PRIVATE ${ICET_LIBRARY_DIR})
-    endif()
-    # If we're building statically then the engine can't be linked until the plugin
-    # sources are built
-    if(VISIT_STATIC)
-        add_dependencies(engine_par_exe
-            ${engine_par_exe_IDatabase_par}
-            ${engine_par_exe_EDatabase_par}
-            ${engine_par_exe_IOperator_par}
-            ${engine_par_exe_EOperator_par}
-            ${engine_par_exe_IPlot_par}
-            ${engine_par_exe_EPlot_par}
-        )
+        visit_PATCH_TARGET(NAME engine_par_exe LINKDIR ${ICET_LIBRARY_DIR})
+        if(VISIT_STATIC)
+            set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
+        endif()
     endif()
 
-    VISIT_INSTALL_TARGETS(engine_par_exe)
 endif()

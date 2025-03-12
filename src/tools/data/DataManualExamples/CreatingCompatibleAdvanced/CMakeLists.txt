@@ -17,23 +17,28 @@
 #
 #****************************************************************************
 
-FUNCTION(ADD_SILO_EXAMPLE target)
-        ADD_EXECUTABLE(adv_example_${target} ${ARGN})
-        TARGET_LINK_LIBRARIES(adv_example_${target} ${SILO_LIB} stdc++ m)
-        SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES
-            OUTPUT_NAME ${target}
-            RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced
-            FOLDER tools/DataManualExamples/CreatingCompatibleAdvanced
-        )
-ENDFUNCTION(ADD_SILO_EXAMPLE)
+if(SILO_FOUND)
 
-IF(SILO_FOUND)
-    INCLUDE_DIRECTORIES(
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${SILO_INCLUDE_DIR}
-    )
+  function(ADD_SILO_EXAMPLE target)
+    visit_add_executable(
+        NAME        adv_example_${target}
+        SOURCES     ${ARGN}
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS_ON  ${SILO_LIB} stdc++ m
+        OUTPUT_NAME ${target}
+        FOLDER      tools/DataManualExamples/CreatingCompatibleAdvanced
+        SKIP_INSTALL)
 
-    LINK_DIRECTORIES(${SILO_LIBRARY_DIR})
+    # until Silo is imported as a CMake target
+    visit_patch_target(
+        NAME        adv_example_${target}
+        INCLUDES    ${SILO_INCLUDE_DIR}
+        LINKDIR     ${SILO_LIBRARY_DIR})
+
+    set_target_properties(adv_example_${target} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced)
+
+  endfunction()
 
     ##
     ## Silo examples
@@ -47,12 +52,13 @@ IF(SILO_FOUND)
     ##
     ## Silo fortran examples
     ##
-    IF(VISIT_FORTRAN)
+    if(VISIT_FORTRAN)
         ADD_SILO_EXAMPLE(fdataextents fdataextents.f)
         ADD_SILO_EXAMPLE(fghostzonesinfile fghostzonesinfile.f)
         ADD_SILO_EXAMPLE(fmixedmaterials fmixedmaterials.f)
         #ADD_SILO_EXAMPLE(fmultimat fmultimat.f)
         ADD_SILO_EXAMPLE(fspatialextents fspatialextents.f)
         ADD_SILO_EXAMPLE(fvectorvar fvectorvar.f)
-    ENDIF(VISIT_FORTRAN)
-ENDIF(SILO_FOUND)
+    endif()
+endif()
+

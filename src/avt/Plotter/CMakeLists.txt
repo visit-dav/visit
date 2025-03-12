@@ -166,7 +166,7 @@ visit_append_list(
           $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Plotter>)
 
 visit_append_list(
-    NAME  avtplotter_DEPENDS
+    NAME  avtplotter_ser_DEPENDS
     ITEMS visitcommon
           avtmath
           avtview
@@ -181,12 +181,13 @@ visit_append_list(
 
 if(TARGET VTK::RenderingRayTracing)
      # RenderingRayTracing available if VTK 9 was built with OSPRAY support
-    list(APPEND avtplotter_DEPENDS VTK::RenderingRayTracing)
+    list(APPEND avtplotter_ser_DEPENDS VTK::RenderingRayTracing)
 endif()
 
 set(avtplotter_par_SOURCES  ${avtplotter_ser_SOURCES})
 set(avtplotter_par_HEADERS  ${avtplotter_ser_HEADERS})
 set(avtplotter_par_INCLUDES ${avtplotter_ser_INCLUDES})
+set(avtplotter_par_DEPENDS  ${avtplotter_ser_DEPENDS})
 
 #********************************* SERIAL ************************************
 visit_add_library(
@@ -194,7 +195,7 @@ visit_add_library(
     SOURCES    ${avtplotter_ser_SOURCES}
     HEADERS    ${avtplotter_ser_HEADERS}
     INCLUDES   ${avtplotter_ser_INCLUDES}
-    DEPENDS_ON ${avtplotter_DEPENDS}
+    DEPENDS_ON ${avtplotter_ser_DEPENDS}
                avtfilters_ser
                avtpipeline_ser)
 
@@ -205,8 +206,9 @@ if(VISIT_PARALLEL)
         SOURCES    ${avtplotter_par_SOURCES}
         HEADERS    ${avtplotter_par_HEADERS}
         INCLUDES   ${avtplotter_par_INCLUDES}
-        DEPENDS_ON ${avtplotter_DEPENDS}
+        DEPENDS_ON ${avtplotter_par_DEPENDS}
                    avtfilters_par
                    avtpipeline_par)
 endif()
+
 

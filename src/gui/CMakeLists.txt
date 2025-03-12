@@ -396,6 +396,7 @@ set(GUI_DEPENDS
     mdserverproxy
     avtdbatts
     winutil
+    rapidjson
     ${QT_QTUITOOLS_LIBRARY}
     ${QT_QTOPENGL_LIBRARY} 
     ${QT_QTGUI_LIBRARY} 
@@ -426,7 +427,6 @@ visit_add_library(
     HEADERS     ${GUILIB_HEADERS}
     INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                 $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/common>
-                $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/third_party_builtin>
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui>
     DEPENDS_ON  ${GUI_DEPENDS})
 

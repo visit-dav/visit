@@ -23,11 +23,17 @@ visit_add_library(
 
 
 if(VISIT_ENABLE_EXAMPLES)
-  add_executable(proxyexample proxyexample.C)
+  visit_add_executable(
+      NAME        proxyexample
+      SOURCES     proxyexample.C
+      DEPENDS_ON  viewerrpc
+                  viewerproxy
+                  visitcommon
+                  avtdbatts
+      FOLDER      examples
+      SKIP_INSTALL)
   set_target_properties(proxyexample PROPERTIES
-                        FOLDER examples
                         EXCLUDE_FROM_ALL 1
                         EXCLUDE_FROM_DEFAULT_BUILD 1)
-  target_link_libraries(proxyexample viewerrpc viewerproxy visitcommon avtdbatts)
 endif()
 

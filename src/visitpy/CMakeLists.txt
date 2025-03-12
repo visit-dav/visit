@@ -276,7 +276,6 @@ set(COMMON_HEADERS
     common/PySILRestrictionBase.h
     common/PySILRestriction.h
     common/PyTable.h
-    common/ViewerRPCArguments.h
     common/ViewerRPCCallbacks.h
     common/visitmodulehelpers.h)
 
@@ -493,108 +492,90 @@ if(NOT WIN32)
     target_compile_definitions(visitpy PRIVATE COMM_EXPORTS)
 endif()
 
+set(cli_DEPENDS
+    ${cli_IOperator}
+    ${cli_SOperator}
+    ${cli_IPlot}
+    ${cli_SPlot}
+    viewerproxy
+    viewerrpc
+    avtdbatts
+    visitcommon
+    visitpy
+    ${PYTHON_LIBRARIES}
+    Threads::Threads)
+
+if(NOT WIN32)
+    list(APPEND cli_DEPENDS dl)
+    if(NOT APPLE)
+        find_library(LIBRT rt)
+        list(APPEND cli_DEPENDS ${LIBRT})
+        # Is this a Python companion libary? We need it for unresolved openpty/forkpty
+        list(APPEND cli_DEPENDS util)
+    endif()
+endif()
 
 # Create the CLI
-ADD_EXECUTABLE(cli
-${COMMON_SOURCES}
-${CLI_SOURCES}
-${VISIT_CLI_RESOURCE_FILE}
-)
+visit_add_executable(
+    NAME        cli
+    SOURCES     ${COMMON_SOURCES}
+                ${CLI_SOURCES}
+                ${VISIT_CLI_RESOURCE_FILE}
+    HEADERS     ${COMMON_HEADERS}
+    INCLUDES    ${PYTHON_INCLUDE_PATH}
+    DEPENDS_ON  ${cli_DEPENDS})
 
-target_include_directories(cli PUBLIC ${PYTHON_INCLUDE_PATH})
 if(NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     target_compile_definitions(cli PRIVATE COMM_EXPORTS)
-endif()
-
-TARGET_LINK_LIBRARIES(cli
-${cli_IOperator}
-${cli_SOperator}
-${cli_IPlot}
-${cli_SPlot}
-viewerproxy
-viewerrpc
-avtdbatts
-visitcommon
-visitpy
-${PYTHON_LIBRARIES}
-Threads::Threads
-)
-IF(NOT WIN32)
-    TARGET_LINK_LIBRARIES(cli dl)
-    IF(NOT APPLE)
-        find_library(LIBRT rt)
-        TARGET_LINK_LIBRARIES(cli ${LIBRT})
-        IF(NOT AIX)
-            # Is this a Python companion libary? We need it for unresolved openpty/forkpty
-            TARGET_LINK_LIBRARIES(cli util)
-        ENDIF(NOT AIX)
-    ENDIF(NOT APPLE)
 else()
     # resolve inconsistent dll-linkage problem
-    set_target_properties(cli PROPERTIES COMPILE_DEFINITIONS "visitmodule_EXPORTS")
-ENDIF(NOT WIN32)
-
-# If we're building statically then the cli can't be linked until the plugin
-# sources are built
-IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(cli
-        ${cli_IOperator}
-        ${cli_SOperator}
-        ${cli_IPlot}
-        ${cli_SPlot}
-    )
-
-    VISIT_INSTALL_TARGETS(cli)
-ELSE(VISIT_STATIC)
+    set_target_properties(cli PROPERTIES
+        COMPILE_DEFINITIONS "visitmodule_EXPORTS"
+        WIN32_EXECUTABLE  FALSE)
+endif()
 
 
+if(NOT VISIT_STATIC)
     # Create the visitmodule
     PYTHON_ADD_MODULE(visitmodule
                       ${COMMON_SOURCES})
-    TARGET_LINK_LIBRARIES(visitmodule PUBLIC
+    target_link_libraries(visitmodule PUBLIC
         viewerproxy
         viewerrpc
         avtdbatts
         visitcommon
         visitpy
-        ${PYTHON_LIBRARY}
-    )
+        ${PYTHON_LIBRARY})
 
-    IF(NOT WIN32)
-        IF(NOT APPLE)
+    if(NOT WIN32)
+        if(NOT APPLE)
             find_library(LIBRT rt)
-            TARGET_LINK_LIBRARIES(visitmodule PUBLIC ${LIBRT})
-        ENDIF(NOT APPLE)
-        SET_TARGET_PROPERTIES(visitmodule PROPERTIES
-                                          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
-    ENDIF(NOT WIN32)
-
-
-    IF(NOT APPLE)
-        SET_TARGET_PROPERTIES(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
-    ENDIF(NOT APPLE)
-
-
-    VISIT_INSTALL_TARGETS(visitpy cli)
+            target_link_libraries(visitmodule PUBLIC ${LIBRT})
+            set_target_properties(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
+        endif()
+        set_target_properties(visitmodule PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
+    endif()
     VISIT_INSTALL_TARGETS_RELATIVE(site-packages/visit visitmodule)
-ENDIF(VISIT_STATIC)
+endif()
 
 #
 # For module setup of the pure python parts of the visit module
 #
-ADD_SUBDIRECTORY(visitmodule)
+add_subdirectory(visitmodule)
 # the visitmodule subdir added above creates the visitmodule_py_setup target
 # visitmodule needs to depend on it so it is built after the py module,
 # otherwise pip install will overwrite the directory and delete visitmodule.so
 target_link_libraries(visitmodule PRIVATE visitmodule_py_setup)
-ADD_SUBDIRECTORY(visit_utils)
-ADD_SUBDIRECTORY(visit_flow)
+add_subdirectory(visit_utils)
+add_subdirectory(visit_flow)
 
 
-IF(VISIT_PYTHON_FILTERS)
-    ADD_SUBDIRECTORY(pyavt)
-    ADD_SUBDIRECTORY(mpicom)
-ENDIF(VISIT_PYTHON_FILTERS)
+if(VISIT_PYTHON_FILTERS)
+    add_subdirectory(pyavt)
+    add_subdirectory(mpicom)
+endif()
 
-ADD_SUBDIRECTORY(pyui)
+add_subdirectory(pyui)
+
