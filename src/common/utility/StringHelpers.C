@@ -868,6 +868,8 @@ StringHelpers::cdr(const std::string s, const char separator)
 //  Creation:   August 20, 2008
 //
 //  Modifications:
+//     Justin Privitera, Wed Mar 12 09:31:48 PDT 2025
+//     Increment iter to avoid infinite loop.
 //
 //****************************************************************************
 bool
@@ -881,6 +883,7 @@ has_nonspace_chars(const std::string &s)
         {
             return true;
         }
+        iter++;
     }
     return false;
 }
