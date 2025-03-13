@@ -657,7 +657,7 @@ Cross Product Function (``cross()``) : ``cross(exprV0,exprV1)``
     by crossing ``exprV0`` *into* ``exprv1``. Both arguments must be *vector*
     expression.
 
-.. _Dot_Proeduct_Expression_Function:
+.. _Dot_Product_Expression_Function:
 
 Dot Product Function (``dot()``) : ``dot(exprV0,exprV1)``
     Creates a new *scalar* expression which is the vector dot product
