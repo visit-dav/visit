@@ -13,6 +13,9 @@
 #include <string>
 #include <vector>
 
+using std::string;
+using std::vector;
+using namespace MoabDBOptions;
 
 // ****************************************************************************
 //  Function: GetMOABReadOptions
@@ -34,7 +37,10 @@ DBOptionsAttributes *
 GetMOABReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
-    rv->SetBool("Parallel format", true);
+    //rv->SetBool("Parallel format", true);
+
+    rv->SetBool(MOAB_SHOW_ENTITY_SETS, false);
+    rv->SetBool(MOAB_SHOW_DEFAULT_TAGS, false);
 /*    rv->SetEnum("Dimension", 1);
     std::vector<std::string> dims;
     dims.push_back("0D");
@@ -42,10 +48,10 @@ GetMOABReadOptions(void)
     dims.push_back("2D");
     dims.push_back("3D");
     rv->SetEnumStrings("Dimension", dims);*/
-    rv->SetString("Partition:", "PARALLEL_PARTITION" );
-    rv->SetBool("edge", false);
+    //rv->SetString("Partition:", "PARALLEL_PARTITION" );
+    /*rv->SetBool("edge", false);
     rv->SetBool("face", true);
-    rv->SetBool("solid", true);
+    rv->SetBool("solid", true);*/
     return rv;
 /* EXAMPLE OF OPTIONS
     rv->SetBool("Big Endian", false);
