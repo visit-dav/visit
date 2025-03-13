@@ -19,6 +19,8 @@
 #    Mark C. Miller, Mon Jun 28 17:00:28 PDT 2021
 #    Add apropos and help override
 #
+#    Mark C. Miller, Wed Mar 12 13:33:23 PDT 2025
+#    Add pure python cli imports
 ###############################################################################
 from .evalfuncs import *
 from .writescript import WriteScript
@@ -27,6 +29,7 @@ from .convert2to3 import GetAutoPy2to3
 from .convert2to3 import SetAutoPy2to3
 from .apropos import *
 from .flatten import *
+from .purepy_cli import *
 
 #
 # Import PySide2 if it exists.
