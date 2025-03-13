@@ -126,8 +126,8 @@ GetSiloWriteOptions(void)
         "<li>Enables HDF5's Fletcher32 checksum filter.</li>"
         "</ul>"
         "<p><b>%s</b>:"
-        "Enter any compression string that would be valid to pass to Silo's"
-        "<a href=\"https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/LLNL-SM-654357.pdf#page=49\">"
+        "Enter any compression string that would be valid to pass to Silo's "
+        "<a href=\"https://silo.readthedocs.io/globals.html#dbsetcompression\">"
         "DBSetCompression()</a> method.",
         SILO_WROPT_DRIVER,
         SILO_WROPT_CKSUMS,
