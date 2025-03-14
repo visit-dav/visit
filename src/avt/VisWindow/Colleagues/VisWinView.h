@@ -49,6 +49,9 @@
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Added SetOsprayRendering.
 //
+//    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
+//    Added SetAnariRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinView : public VisWinColleague
@@ -75,11 +78,12 @@ class VISWINDOW_API VisWinView : public VisWinColleague
     void                 SetOsprayRendering(bool enabled)
                              { viewInfo.useOSPRay = enabled; }
 
+    void                 SetAnariRendering(bool enabled)
+                             { viewInfo.useAnari = enabled; }
+
   protected:
     avtViewInfo          viewInfo;
 };
 
 
 #endif
-
-

@@ -777,7 +777,7 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
-// 
+//
 //   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
@@ -2350,6 +2350,13 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             debug5 << "Engine found OSPRay flag" << endl;
             avtCallback::SetUseOSPRay(true);
+        }
+#endif
+#ifdef VISIT_ANARI
+        else if (strcmp(argv[i], "-anari") == 0)
+        {
+            debug5 << "Engine found ANARI flag" << endl;
+            avtCallback::SetUseAnari(true);
         }
 #endif
     }

@@ -20,6 +20,7 @@ class RenderingAttributes;
 class WindowInformation;
 class QvisOpacitySlider;
 class QLineEdit;
+class AnariRenderingWidget;
 
 // ****************************************************************************
 // Class: QvisRenderingWindow
@@ -99,6 +100,10 @@ class QLineEdit;
 //   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //   add osprayGroup.
 //
+//   Kevin Griffin, Wed Mar 05 2025
+//   Added ANARI widget for setting ANARI device, usd, and rendering
+//   parameters.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -114,6 +119,7 @@ public:
 
     void ConnectRenderingAttributes(RenderingAttributes *);
     void ConnectWindowInformation(WindowInformation *);
+    void SetUpdateApply(bool val) { SetUpdate(val); Apply(); }
 protected slots:
     virtual void apply();
 protected:
@@ -234,6 +240,9 @@ private:
     QLabel            *osprayAOLabel;
     QSpinBox          *osprayAO;
     QCheckBox         *osprayShadowsToggle;
+#endif
+#ifdef VISIT_ANARI
+    AnariRenderingWidget *anariRenderingWidget;
 #endif
     // Labels to display renderer information.
     QLabel            *scalrenUsingLabel;

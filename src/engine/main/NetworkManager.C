@@ -6735,6 +6735,9 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Disable ordered compositing since it doesn't work with VTK9 because
 //    the alpha values left in the frame buffer are incorrect.
 //
+//    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
+//    Pass the Anari settings to the render window.
+//
 // ****************************************************************************
 
 void
@@ -6784,6 +6787,30 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.window->SetOspraySPP(renderAtts.GetOspraySPP());
     renderState.window->SetOsprayAO(renderAtts.GetOsprayAO());
     renderState.window->SetOsprayShadows(renderAtts.GetOsprayShadows());
+#endif
+
+#ifdef VISIT_ANARI
+    renderState.window->SetAnariRendering(renderAtts.GetAnariRendering());
+    renderState.window->SetAnariSPP(renderAtts.GetAnariSPP());
+    renderState.window->SetAnariAO(renderAtts.GetAnariAO());
+    renderState.window->SetAnariLibraryName(renderAtts.GetAnariLibrary());
+    renderState.window->SetAnariLibrarySubtype(renderAtts.GetAnariLibrarySubtype());
+    renderState.window->SetAnariRendererSubtype(renderAtts.GetAnariRendererSubtype());
+    renderState.window->SetUseAnariDenoiser(renderAtts.GetUseAnariDenoiser());
+    renderState.window->SetAnariLightFalloff(renderAtts.GetAnariLightFalloff());
+    renderState.window->SetAnariAmbientIntensity(renderAtts.GetAnariAmbientIntensity());
+    renderState.window->SetAnariMaxDepth(renderAtts.GetAnariMaxDepth());
+    renderState.window->SetAnariRValue(renderAtts.GetAnariRValue());
+    renderState.window->SetAnariDebugMethod(renderAtts.GetAnariDebugMethod());
+    renderState.window->SetUsdDir(renderAtts.GetUsdDir());
+    renderState.window->SetUsdAtCommit(renderAtts.GetUsdAtCommit());
+    renderState.window->SetUsdOutputBinary(renderAtts.GetUsdOutputBinary());
+    renderState.window->SetUsdOutputMaterial(renderAtts.GetUsdOutputMaterial());
+    renderState.window->SetUsdOutputPreviewSurface(renderAtts.GetUsdOutputPreviewSurface());
+    renderState.window->SetUsdOutputMDL(renderAtts.GetUsdOutputMDL());
+    renderState.window->SetUsdOutputMDLColors(renderAtts.GetUsdOutputMDLColors());
+    renderState.window->SetUsdOutputDisplayColors(renderAtts.GetUsdOutputDisplayColors());
+    renderState.window->SetUsingUsdDevice(renderAtts.GetUsingUsdDevice());
 #endif
 
     // Apply any rendering-related changes to the annotation attributes.
