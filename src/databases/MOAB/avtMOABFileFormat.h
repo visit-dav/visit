@@ -13,7 +13,8 @@
 
 #include <vector>
 #include <set>
-class DBOptionsAttributes;
+#include <map> // this is heavy too
+
 
 namespace moab
 {
@@ -33,7 +34,7 @@ struct mhdf_FileDesc ;
 //  Creation:   Wed Jan 20 13:02:35 PST 2016
 //
 // ****************************************************************************
-
+class DBOptionsAttributes;
 class avtMOABFileFormat : public avtSTMDFileFormat
 {
   public:
@@ -69,6 +70,7 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     struct tagBasic {
       std::string nameTag;
       int size;
+      int dim; // 0 , 1, 2, 3 for mesh dimension associated with it; 4 for sets ?
       void * defValue; // size 4 or 8 usually
       int type; // mhdf_INTEGER = 1,    /**< Integer type */
                 // mhdf_FLOAT = 2,      /**< Floating point value */ (double)
@@ -94,13 +96,14 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     vtkDataArray*          GetGeometrySetsVar();
     moab::Core*            mbCore;
     char*                  fileName;
-    const DBOptionsAttributes *  readOptions;
+    bool showAllSets;
+    bool showDefaultTags;
     struct mhdf_FileDesc *       file_descriptor;
     std::set<int>          materials;
     std::set<int>          neumannsets;
     std::set<int>          dirichsets;
 
-    bool opt1d, opt2d, opt3d;
+    bool meshd[4];
     moab::Range           *edges;
     moab::Range           *faces;
     moab::Range           *solids;
@@ -115,6 +118,8 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     int                    num_diri;    // DIRICHLET_SETs
     int                    num_geom;    // geometry dimension sets
     moab::ParallelComm*    pcomm;
+    long                   num_sets, start_set_id;
+    std::map<long, long> setIdMap; // valid only f showAllSets is true
 };
 
 
