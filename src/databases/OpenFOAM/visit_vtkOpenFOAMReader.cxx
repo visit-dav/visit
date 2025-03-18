@@ -6001,6 +6001,8 @@ vtkMultiBlockDataSet *visit_vtkOpenFOAMReaderPrivate::MakeBoundaryMesh(
     const int boundaryStartFace =
         (this->BoundaryDict.size() > 0 ? this->BoundaryDict[0].StartFace : 0);
     this->AllBoundaries = vtkPolyData::New();
+    // needed for RemoveReferenceToCell, fixes crash with VTK 9.4.1.
+    this->AllBoundaries->EditableOn();
     this->AllBoundaries->Allocate(facesPoints->GetNumberOfElements()
         - boundaryStartFace);
     }

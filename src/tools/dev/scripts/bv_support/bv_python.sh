@@ -196,7 +196,6 @@ function bv_python_mpi4py
     export PY_BUILD_MPI4PY="yes"
 }
 
-
 function bv_python_no_sphinx
 {
     echo "Disabling building sphinx"
@@ -414,7 +413,6 @@ function bv_python_info
     export PY_SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
     export PY_SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
     export PY_SPHINX_TABS_SHA256_CHECKSUM=""
-
 }
 
 function bv_python_print
@@ -696,7 +694,7 @@ function build_pillow
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
-     ${PYTHON_COMMAND} ./setup.py build_ext --disable-webp --disable-webpmux --disable-freetype --disable-lcms --disable-tiff --disable-xcb --disable-jpeg2000 --disable-jpeg install --prefix="${PYHOME} --single-version-externally-managed --record record.txt"
+     ${PYTHON_COMMAND} ./setup.py build_ext --disable-webp --disable-webpmux --disable-freetype --disable-lcms --disable-tiff --disable-xcb --disable-jpeg2000 --disable-jpeg install --prefix="${PYHOME}" --single-version-externally-managed --record record.txt
     set +x
 
     if test $? -ne 0 ; then

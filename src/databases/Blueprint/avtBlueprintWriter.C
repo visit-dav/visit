@@ -125,9 +125,11 @@ LoadConduitOptions(const std::string &optString, conduit::Node &out)
 //-----------------------------------------------------------------------------
 void
 blueprint_writer_plugin_print_msg(const std::string &msg,
-                           const std::string &file,
-                           int line)
+                                  const std::string &file,
+                                  int line)
 {
+    (void)file; // Suppress unused parameter warning 
+    (void)line; // Suppress unused parameter warning
     // Uncomment for very verbose traces:
     //
     // debug5 << "File:"    << file << std::endl
@@ -208,7 +210,7 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
         int op_val = options->GetEnum("Operation");
         if(op_val >= 0 && op_val < 4)
         {
-            m_op = (bpMeshOp)op_val;
+            m_op = static_cast<bpMeshOp>(op_val);
         }
         else
         {
@@ -294,6 +296,7 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 void
 avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 {
+    (void)nb; // Suppress unused parameter warning
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called OpenFile().");
 #endif
@@ -320,6 +323,10 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
                                  const vector<string> &vectors,
                                  const vector<string> &materials)
 {
+    (void)scalars; // Suppress unused parameter warning
+    (void)vectors; // Suppress unused parameter warning
+    (void)materials; // Suppress unused parameter warning
+
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteHeaders().");
 #endif
@@ -424,7 +431,7 @@ BuildSelections(Node &domains, Node &selections)
 
         // Build selection element ids
         std::vector<index_t> sel;
-        sel.reserve(dt.number_of_elements());
+        sel.reserve(static_cast<size_t>(dt.number_of_elements()));
         for(index_t i = 0; i < orig_vals.number_of_elements(); i++)
         {
             if(orig_vals[i] == 0)
@@ -539,10 +546,8 @@ avtBlueprintWriter::CloseFile(void)
     if (m_op == BP_MESH_OP_NONE)
     {
         debug5 << "Relay I/O Blueprint options:\n" << m_options.to_string() << std::endl;
-        int rank = 0;
-        const int root = 0;
 #ifdef PARALLEL
-        rank = writeContext.Rank();
+        int rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " relay io blueprint save_mesh.");
         conduit::relay::mpi::io::blueprint::save_mesh(m_chunks, 
                                                       m_stem,
@@ -559,7 +564,7 @@ avtBlueprintWriter::CloseFile(void)
         debug5 << "Flatten options:\n" << m_special_options.to_string() << std::endl;
         conduit::Node table;
         int rank = 0;
-        int root = 0;
+        const int root = 0;
 #ifdef PARALLEL
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " flattening.");
@@ -585,8 +590,6 @@ avtBlueprintWriter::CloseFile(void)
     else if(m_op == BP_MESH_OP_PARTITION)
     {
         debug5 << "Partition options:\n" << m_special_options.to_string() << std::endl;
-        int rank = 0;
-        const int root = 0;
         Node selections, repart_mesh;
         // If the user has not given their own selections then
         //  filter out the ghost nodes/zones
@@ -601,7 +604,7 @@ avtBlueprintWriter::CloseFile(void)
         }
 
 #ifdef PARALLEL
-        rank = writeContext.Rank();
+        int rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
         conduit::blueprint::mpi::mesh::partition(m_chunks, m_special_options, repart_mesh,
             writeContext.GetCommunicator());

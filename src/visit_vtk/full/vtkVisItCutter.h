@@ -1,45 +1,50 @@
-/*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVisItCutter.h,v $
-  Language:  C++
-  Date:      $Date: 2003/07/01 11:20:39 $
-  Version:   $Revision: 1.60 $
-
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
-// .NAME vtkVisItCutter - Cut vtkDataSet with user-specified implicit function
-// .SECTION Description
-// vtkVisItCutter is a filter to cut through data using any subclass of 
-// vtkImplicitFunction. That is, a polygonal surface is created
-// corresponding to the implicit function F(x,y,z) = value(s), where
-// you can specify one or more values used to cut with.
-//
-// In VTK, cutting means reducing a cell of dimension N to a cut surface
-// of dimension N-1. For example, a tetrahedron when cut by a plane (i.e.,
-// vtkPlane implicit function) will generate triangles. (In comparison,
-// clipping takes a N dimensional cell and creates N dimension primitives.)
-//
-// vtkVisItCutter is generally used to "slice-through" a dataset, generating
-// a surface that can be visualized. It is also possible to use vtkVisItCutter
-// to do a form of volume rendering. vtkVisItCutter does this by generating
-// multiple cut surfaces (usually planes) which are ordered (and rendered)
-// from back-to-front. The surfaces are set translucent to give a 
-// volumetric rendering effect.
-
-// .SECTION See Also
-// vtkImplicitFunction vtkClipPolyData
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef __vtkVisItCutter_h
 #define __vtkVisItCutter_h
 #include <visit_vtk_exports.h>
+#include <visit-config.h>
+
+
+#if LIB_VERSION_GE(VTK,9,4,1)
+
+#include <vtkCutter.h>
+
+class VISIT_VTK_API vtkVisItCutter : public vtkCutter
+{
+public:
+  vtkTypeMacro(vtkVisItCutter, vtkCutter)
+  static vtkVisItCutter* New();
+
+
+  // Off by default.
+  // When set to true, forces use of vtkCutter::UnstructuredGridCutter
+  // method. Useful for polygonal and polyhedral cells.
+  // The vtkPlaneCutter path used by default in vtkCutter garbles
+  // CellData for these cell types.
+  vtkSetMacro(UnstructuredGridBypass, vtkTypeBool);
+  vtkGetMacro(UnstructuredGridBypass, vtkTypeBool);
+  vtkBooleanMacro(UnstructuredGridBypass, vtkTypeBool);
+
+protected:
+  vtkVisItCutter(vtkImplicitFunction* cf = nullptr);
+  ~vtkVisItCutter() override;
+
+  // override vtkCutter's method so that a different path can be
+  // taken for UnstructuredGrids when 'UnstructuredGridBypass' is true.
+  int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
+
+  vtkTypeBool UnstructuredGridBypass;
+
+private:
+  vtkVisItCutter(const vtkVisItCutter&) = delete;
+  void operator=(const vtkVisItCutter&) = delete;
+};
+
+
+#else // ANCIENT version of vtkCutter from 2003
 
 #include "vtkPolyDataAlgorithm.h"
 
@@ -72,20 +77,20 @@ public:
   static vtkVisItCutter *New();
 
   // Description:
-  // Set a particular contour value at contour number i. The index i ranges 
+  // Set a particular contour value at contour number i. The index i ranges
   // between 0<=i<NumberOfContours.
-  void SetValue(int i, double value) 
+  void SetValue(int i, double value)
     {this->ContourValues->SetValue(i,value);}
-  
+
   // Description:
   // Get the ith contour value.
-  double GetValue(int i) 
+  double GetValue(int i)
     {return this->ContourValues->GetValue(i);}
 
   // Description:
   // Get a pointer to an array of contour values. There will be
   // GetNumberOfContours() values in the list.
-  double *GetValues() 
+  double *GetValues()
     {return this->ContourValues->GetValues();}
 
   // Description:
@@ -94,29 +99,29 @@ public:
   // enough memory to hold the list.
   void GetValues(double *contourValues)
     {this->ContourValues->GetValues(contourValues);}
-  
+
   // Description:
   // Set the number of contours to place into the list. You only really
   // need to use this method to reduce list size. The method SetValue()
   // will automatically increase list size as needed.
-  void SetNumberOfContours(int number) 
+  void SetNumberOfContours(int number)
     {this->ContourValues->SetNumberOfContours(number);}
 
   // Description:
   // Get the number of contours in the list of contour values.
-  int GetNumberOfContours() 
+  int GetNumberOfContours()
     {return this->ContourValues->GetNumberOfContours();}
 
   // Description:
   // Generate numContours equally spaced contour values between specified
   // range. Contour values will include min/max range values.
-  void GenerateValues(int numContours, double range[2]) 
+  void GenerateValues(int numContours, double range[2])
     {this->ContourValues->GenerateValues(numContours, range);}
 
   // Description:
   // Generate numContours equally spaced contour values between specified
   // range. Contour values will include min/max range values.
-  void GenerateValues(int numContours, double rangeStart, double rangeEnd) 
+  void GenerateValues(int numContours, double rangeStart, double rangeEnd)
     {this->ContourValues->GenerateValues(numContours, rangeStart, rangeEnd);}
 
   // Description:
@@ -138,7 +143,7 @@ public:
   vtkBooleanMacro(GenerateCutScalars,bool);
 
   // Description:
-  // Specify a spatial locator for merging points. By default, 
+  // Specify a spatial locator for merging points. By default,
   // an instance of vtkMergePoints is used.
   void SetLocator(vtkPointLocator *locator);
   vtkGetObjectMacro(Locator,vtkPointLocator);
@@ -150,19 +155,19 @@ public:
   //      all contour values are processed. This is the default.
   //   Sort by cell = 1 - For each contour value, all cells are processed.
   //      This order should be used if the extracted polygons must be rendered
-  //      in a back-to-front or front-to-back order. This is very problem 
+  //      in a back-to-front or front-to-back order. This is very problem
   //      dependent.
   // For most applications, the default order is fine (and faster).
   vtkSetClampMacro(SortBy,int,VTK_SORT_BY_VALUE,VTK_SORT_BY_CELL);
   vtkGetMacro(SortBy,int);
-  void SetSortByToSortByValue() 
+  void SetSortByToSortByValue()
     {this->SetSortBy(VTK_SORT_BY_VALUE);}
-  void SetSortByToSortByCell() 
+  void SetSortByToSortByCell()
     {this->SetSortBy(VTK_SORT_BY_CELL);}
   const char *GetSortByAsString();
 
   // Description:
-  // Create default locator. Used to create one when none is specified. The 
+  // Create default locator. Used to create one when none is specified. The
   // locator is used to merge coincident points.
   void CreateDefaultLocator();
 
@@ -178,7 +183,7 @@ protected:
   void UnstructuredGridCutter();
   void DataSetCutter();
   vtkImplicitFunction *CutFunction;
-  
+
   vtkDataSet *input;
   vtkPolyData *output;
 
@@ -196,14 +201,15 @@ private:
 // Return the sorting procedure as a descriptive character string.
 inline const char *vtkVisItCutter::GetSortByAsString(void)
 {
-  if ( this->SortBy == VTK_SORT_BY_VALUE ) 
+  if ( this->SortBy == VTK_SORT_BY_VALUE )
     {
     return "SortByValue";
     }
-  else 
+  else
     {
     return "SortByCell";
     }
 }
 
+#endif
 #endif

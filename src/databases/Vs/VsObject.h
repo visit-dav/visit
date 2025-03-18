@@ -16,7 +16,7 @@
 #define VS_OBJECT_H_
 
 #include <string>
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <vector>
 #include <map>
 #include "VsRegistryObject.h"

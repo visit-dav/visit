@@ -125,7 +125,7 @@ static bool TetIsInverted(const int *siloTetrahedron,
                             vtkUnstructuredGrid *ugrid);
 
 static void ArbInsertArbitrary(vtkUnstructuredGrid *ugrid,
-    int nsdims, DBphzonelist *phzl, int gz, const vector<int> &nloffs,
+    DBphzonelist *phzl, int gz, const vector<int> &nloffs,
     const vector<int> &floffs, unsigned int ocdata[2],
     vector<int> *cellReMap, vector<int> *nodeReMap);
 
@@ -1153,7 +1153,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Do a recursive search through the subdirectories.
     //
     ReadDir(dbfile, topDir.c_str(), md);
+#ifdef PARALLEL
     BroadcastGlobalInfo(md);
+#endif
     DoRootDirectoryWork(md);
 
     //
@@ -4299,8 +4301,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
-    int ndefvars, char **defvars_names,
-    const char *dirname, avtDatabaseMetaData *md)
+    int ndefvars, char **defvars_names, avtDatabaseMetaData *md)
 {
     for (int i = 0; i < ndefvars; i++)
     {
@@ -4478,7 +4479,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     ReadCSGvars(dbfile, ncsgvar, csgvar_names, dirname, md);
 
     // Defined variables
-    ReadDefvars(dbfile, ndefvars, defvars_names, dirname, md);
+    ReadDefvars(dbfile, ndefvars, defvars_names, md);
 
     //
     // If the meshtv searchpath is defined then replace the list of
@@ -4646,10 +4647,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
 //    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
+#ifdef PARALLEL
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
 {
-#ifdef PARALLEL
     int rank = PAR_Rank();
 
     //
@@ -4750,8 +4751,8 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(have_amr_group_info);
     haveAmrGroupInfo = have_amr_group_info;
 
-#endif
 }
+#endif
 
 // ****************************************************************************
 //  Method:  avtSiloFileFormat::StoreMultimeshInfo
@@ -5705,6 +5706,9 @@ static void copy_mmadj_neighbor_entry(DBmultimeshadj *dst, int dstidx,
 //  pbcBndList and pbcDomList parallel array arguments).
 //
 //  Mark C. Miller, Thu Oct 24 19:12:18 PDT 2024
+//
+//  Mark C. Miller, Fri Jan 17 18:25:55 PST 2025
+//  Adjust to handle 2D as well as 3D meshes.
 // ****************************************************************************
 static bool 
 process_pbcs_for_one_domain(int dom, int const nBndEntries,
@@ -5756,11 +5760,16 @@ process_pbcs_for_one_domain(int dom, int const nBndEntries,
 
     new_mmadj->nneighbors[dom] = ncopied;
 
-    // These consistency checks assume a rectangular arrangement of domains.
-    // 7 is for domains on extreme corners; 11 for domains on edges, 17
-    // for domains on faces and 26 for wholly internal domains
-    return ncopied == 7 || ncopied == 11 ||
-          ncopied == 17 || ncopied == 26;
+    // The consistency checks here assume a rectangular arrangement of domains
+    // in 2D or 3D. A removal of PB domains will wind up copying only specific
+    // numbers of domains. For 2D, there are 3 cases for domains on the extreme
+    // corner, edge or wholly internal to the mesh. For 3D, there are 4 cases 
+    // for domains on the extreme corner, edge, face or wholly internal.
+    // The the 2D cases, ncopied can assume only the values 3, 5 and 8.
+    // For the 3D cases, ncopied can assume only the values 7, 11, 17 and 26.
+    return
+        ncopied == 3 || ncopied == 5  ||  ncopied == 8 || 
+        ncopied == 7 || ncopied == 11 || ncopied == 17 || ncopied == 26;
 }
 
 // ****************************************************************************
@@ -6887,6 +6896,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         edge[2][0] = zl->nodelist[nlIdx+2];
                         edge[2][1] = zl->nodelist[nlIdx+0];
                         nedges = 3;
+                        break;
                     }
                     case DB_ZONETYPE_QUAD_QUAD:
                     case DB_ZONETYPE_QUAD:
@@ -6900,6 +6910,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         edge[3][0] = zl->nodelist[nlIdx+3];
                         edge[3][1] = zl->nodelist[nlIdx+0];
                         nedges = 4;
+                        break;
                     }
                 }
                 nlIdx += zl->shapesize[seg];
@@ -7016,6 +7027,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[3][2] = zl->nodelist[nlIdx+2];
                         face[3][3] = -1;
                         nfaces = 4;
+                        break;
                     }
                     case DB_ZONETYPE_QUAD_PYRAMID:
                     case DB_ZONETYPE_PYRAMID:
@@ -7041,6 +7053,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[4][2] = zl->nodelist[nlIdx+3];
                         face[4][3] = -1;
                         nfaces = 5;
+                        break;
                     }
                     case DB_ZONETYPE_QUAD_PRISM:
                     case DB_ZONETYPE_PRISM:
@@ -7066,6 +7079,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[4][2] = zl->nodelist[nlIdx+4];
                         face[4][3] = zl->nodelist[nlIdx+3];
                         nfaces = 5;
+                        break;
                     }
                     case DB_ZONETYPE_QUAD_HEX:
                     case DB_ZONETYPE_HEX:
@@ -7095,6 +7109,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         face[5][2] = zl->nodelist[nlIdx+6];
                         face[5][3] = zl->nodelist[nlIdx+7];
                         nfaces = 6;
+                        break;
                     }
                 }
                 nlIdx += zl->shapesize[seg];
@@ -8438,6 +8453,8 @@ vtkDataArray *
 avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
                                     const char *tvn, int domain)
 {
+    (void) domain; // if we ever cache mixed components, we'll need this here
+
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
     // library, so let's cast it away.
@@ -8560,6 +8577,7 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 vtkDataArray *
 avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
 {
+    (void) dbfile; // not implemented but issue message if ever encounter it
     EXCEPTION1(InvalidVariableException, vname);
     return 0;
 }
@@ -10363,8 +10381,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //
 // ****************************************************************************
 static int
-LookupPHZonelistFaceIdInFaceHash(const vector<int>& faceNodes,
-    const vector<int>& canonicalFaceNodes,
+LookupPHZonelistFaceIdInFaceHash(const vector<int>& canonicalFaceNodes,
     const map<unsigned int, vector<std::pair<int, vector<int> > > >& faceHash)
 {
     unsigned int hv = BJHash::Hash((const unsigned char*) &canonicalFaceNodes[0],
@@ -10424,7 +10441,7 @@ GetPHZonelistFaceId(int nnodes, const int *const nl,
         if (pass == 0) faceNodesF = canonicalFaceNodes;
 
         // Lookup the face
-        int phzlFaceId = LookupPHZonelistFaceIdInFaceHash(faceNodes, canonicalFaceNodes, faceHash);
+        int phzlFaceId = LookupPHZonelistFaceIdInFaceHash(canonicalFaceNodes, faceHash);
         if (phzlFaceId != -INT_MAX)
         {
             // This is where normal orientation (e.g. inward vs. outward) gets handled.
@@ -10720,7 +10737,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
-                    int nblinnod = 0 ;
+                    size_t nblinnod = 0 ;
 #ifdef DB_ZONETYPE_QUAD_BEAM
                     // Handle quadratic elements assuming the first nodes are in Silo convention.
                     // This is to be more easily compatible with an external face extractor that would consider only
@@ -11401,7 +11418,7 @@ ArbInsertHex(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
 //    DBucdmesh*.
 // ****************************************************************************
 static void
-ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, int nsdims, DBphzonelist *phzl, int gz,
+ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
     const vector<int> &nloffs, const vector<int> &floffs, unsigned int ocdata[2],
     vector<int> *cellReMap, vector<int> *nodeReMap)
 {
@@ -11854,11 +11871,11 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             // Now, based on information we gathered iterating over all the
             // faces of this zone, decide what case it is and handle it.
             //
-            int nids[8];
+            int nids[8] = {0,0,0,0,0,0,0,0};
             set<int>::iterator it;
             if (isNotZooElement)                // Arbitrary
             {
-                ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
+                ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
                 encounteredFullyArbitraryCase = true;
             }
@@ -11878,7 +11895,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 }
                 else
                 {
-                    ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
+                    ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                         cellReMap, nodeReMap);
                     encounteredFullyArbitraryCase = true;
                 }
@@ -12163,14 +12180,14 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             }
             else                        // Arbitrary
             {
-                ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
+                ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
                 encounteredFullyArbitraryCase = true;
             }
         }
         else                            // Arbitrary
         {
-            ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
+            ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                 cellReMap, nodeReMap);
             encounteredFullyArbitraryCase = true;
         }
@@ -13701,6 +13718,7 @@ vtkDataSet *
 avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 {
 #ifdef MDSERVER
+    (void) dbfile; (void) mn; (void) dom;
     return 0;
 #else
     //
@@ -14246,7 +14264,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // We weren't able to find a match -- throw an exception and let the
     // levels above us determine what the right thing to do is.
     //
-    char str[1024];
+    char str[2048];
     snprintf(str, sizeof(str), "Was not able to match multivar \"%s\" and its first \n"
                  "non-empty submesh \"%s\" in file %s to a multi-mesh.\n"
                  "This typically leads to the variable being invalidated\n"
@@ -14940,7 +14958,7 @@ avtSiloFileFormat::GetGlobalIds(int dom, char const *mesh, char const *idtype)
     // Save whatever current data read mask is
     unsigned long long saved_mask = DBGetDataReadMask2();
 
-    int ngids, gidtype;
+    int ngids = 0, gidtype = DB_INT;
     void *gids = 0;
     if (mtype == DB_UCDMESH)
     {
@@ -15034,8 +15052,7 @@ avtSiloFileFormat::GetLocalDomainBoundaryInfo(int domain, const char *var)
     // extract the packed info into a avtLocalStructuredDomainBoundaryList
     //
 
-    int *dc_ptr = decomp;
-    int lid     = *dc_ptr++;
+    int *dc_ptr = decomp+1;
     int nbnd    = *dc_ptr++;
     avtLocalStructuredDomainBoundaryList *res =
                     new avtLocalStructuredDomainBoundaryList(domain,dc_ptr);
@@ -15640,9 +15657,10 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
 bool
 avtSiloFileFormat::PopulateIOInformation(const std::string &meshname, avtIOInformation &io)
 {
+    (void) meshname;
     if(!ioInfoValid)
     {
-        ioInfoValid = PopulateIOInformationEx(meshname, ioInfo);
+        ioInfoValid = PopulateIOInformationEx(ioInfo);
     }
 
     io = ioInfo;
@@ -15696,12 +15714,12 @@ avtSiloFileFormat::PopulateIOInformation(const std::string &meshname, avtIOInfor
 // ****************************************************************************
 
 bool
-avtSiloFileFormat::PopulateIOInformationEx(const std::string &meshname, avtIOInformation &ioInfo)
+avtSiloFileFormat::PopulateIOInformationEx(avtIOInformation &ioInfo)
 {
     bool retval = false;
     TRY
     {
-        int   i, j;
+        int   i;
         int nMeshes = metadata->GetNumMeshes();
 
         if (nMeshes < 1)
@@ -17669,9 +17687,9 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     avtVariableCache *cache, int forceSingle)
 {
 #ifdef MDSERVER
-
+    (void) dbfile; (void) mm; (void) meshName; (void) timestate;
+    (void) db_mesh_type; (void) cache; (void) forceSingle;
     return;
-
 #else
 
     int i, j;

@@ -103,7 +103,7 @@ if(APPLE)
     set(MACOSX_BUNDLE_LONG_VERSION_STRING  "Embedded viewer example version ${VISIT_VERSION}")
     set(MACOSX_BUNDLE_SHORT_VERSION_STRING "Embedded viewer example ${VISIT_VERSION}")
     set(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    set(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC")
+    set(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2025, Lawrence Livermore National Security, LLC")
 
     set(CMAKE_MACOSX_BUNDLE ON)
 endif()

@@ -3,6 +3,7 @@ function bv_vtk_initialize
     info "bv_vtk_initialize"
     export DO_VTK="yes"
     export USE_SYSTEM_VTK="no"
+    add_extra_commandline_args "vtk" "vtk94" 0 "Using VTK-9.4"
     add_extra_commandline_args "vtk" "system-vtk" 0 "Using system VTK (exp)"
     add_extra_commandline_args "vtk" "alt-vtk-dir" 1 "Use alternate VTK (exp)"
 }
@@ -12,12 +13,27 @@ function bv_vtk_enable
     info "bv_vtk_enable"
     DO_VTK="yes"
 }
+function bv_vtk94_enable
+{
+    info "bv_vtk94_enable"
+    DO_VTK94="yes"
+    bv_vtk_enable
+    # osmesa required for vtk 9.4.
+    # not for building vtk, but to have available for VisIt.
+    if [[ "$DO_MESAGL" == "no" ]] ; then
+        bv_osmesa_enable
+    fi
+}
 
 function bv_vtk_disable
 {
     DO_VTK="no"
 }
 
+function bv_vtk_vtk94
+{
+    bv_vtk94_enable
+}
 function bv_vtk_system_vtk
 {
     TEST=`which vtk-config`
@@ -54,6 +70,12 @@ function bv_vtk_depends_on
     if [[ "$DO_OSPRAY" == "yes" ]]; then
         depends_on="${depends_on} ospray"
     fi
+    
+    if [[ "$DO_ANARI" == "yes" ]]; then
+        if [[ "$DO_VTK94" == "yes" ]] ; then
+            depends_on="${depends_on} anari"
+        fi
+    fi
 
     # Only depend on Qt if we're not doing server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
@@ -74,10 +96,20 @@ function bv_vtk_depends_on
 function bv_vtk_info
 {
     info "bv_vtk_info"
-    export VTK_FILE=${VTK_FILE:-"VTK-9.2.6.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
-    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
-    export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
+
+    if [[ "$DO_VTK94" == "yes" ]] ; then
+        info "setting up vtk for version 9.4.1"
+        export VTK_VERSION=${VTK_VERSION:-"9.4.1"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.4"}
+        export VTK_SHA256_CHECKSUM="c253b0c8d002aaf98871c6d0cb76afc4936c301b72358a08d5f3f72ef8bc4529"
+    else
+        info "setting up vtk for version 9.2.6"
+        export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
+        export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
+    fi
+
+    export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-${VTK_VERSION}"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
@@ -92,7 +124,8 @@ function bv_vtk_print
 
 function bv_vtk_print_usage
 {
-    printf "%-20s %s\n" "--vtk" "Build VTK"
+    printf "%-20s %s\n" "--vtk" "Build VTK (9.2.6)"
+    printf "%-20s %s [%s]\n" "--vtk94" "Build VTK-9.4" "$DO_VTK94"
     printf "%-20s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
     printf "%-20s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
 }
@@ -133,7 +166,234 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
-function apply_vtk9_vtkopenglpolydatamapper_patch
+
+function apply_vtk94_vtkmobiledevices_patch
+{
+   # patches to fix CMake warning when VisIt is built with vtk
+   patch -p0 << \EOF
+--- CMake/vtkMobileDevices.cmake.orig	2024-11-18 13:59:29.808679000 -0800
++++ CMake/vtkMobileDevices.cmake	2024-11-18 13:59:49.689677000 -0800
+@@ -31,7 +31,4 @@
+     find_library(OPENGL_gles3_LIBRARY NAMES GLESv3 PATHS ${_ANDROID_LIB_PATH})
+     find_library(OPENGL_egl_LIBRARY NAMES EGL PATHS ${_ANDROID_LIB_PATH})
+   endif()
+-else()
+-  # Choose static or shared libraries.
+-  option(BUILD_SHARED_LIBS "Build VTK with shared libraries." ON)
+ endif()
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkMobileDevices failed."
+        return 1
+    fi
+}
+
+function apply_vtk94_vtkRectilinearGridReader_patch
+{
+  # patch vtkRectilinearGridReader.cxx, per this issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
+   patch -p0 << \EOF
+--- IO/Legacy/vtkRectilinearGridReader.cxx.orig	2024-09-23 21:01:47.000000000 -0700
++++ IO/Legacy/vtkRectilinearGridReader.cxx	2024-09-26 08:37:43.000000000 -0700
+@@ -81,13 +81,20 @@
+     {
+       if (!this->ReadString(line))
+       {
+         break;
+       }
+ 
+-      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
++      // Have to read field data because it may be binary.
++      if (!strncmp(this->LowerCase(line), "field", 5))
++      {
++        vtkFieldData* fd = this->ReadFieldData();
++        fd->Delete();
++      }
++
++      else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+       {
+         int dim[3];
+         if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+         {
+           vtkErrorMacro(<< "Error reading dimensions!");
+           this->CloseVTKFile();
+@@ -112,12 +119,26 @@
+         }
+ 
+         outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extent[0], extent[1],
+           extent[2], extent[3], extent[4], extent[5]);
+ 
+         dimsRead = true;
++      }
++      // if the coordinates have been reached, should be no reason
++      // to keep reading
++      else if (strncmp(this->LowerCase(line), "x_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "y_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "z_coordinate", 12) == 0)
++      {
++        break;
+       }
+     }
+   }
+ 
+   if (!dimsRead)
+   {
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkRectilinearGridReader.cxx failed."
+        return 1
+    fi
+}
+
+function apply_vtk94_vtkdatawriter_patch
+{
+  # patch vtkDataWriter to fix a bug when writing a vtkBitArray
+  # Make it use the same calculation as the reader.
+   patch -p0 << \EOF
+--- IO/Legacy/vtkDataWriter.cxx.orig	2024-09-23 21:01:47.000000000 -0700
++++ IO/Legacy/vtkDataWriter.cxx	2024-09-26 08:44:39.000000000 -0700
+@@ -1118,13 +1118,13 @@
+           }
+         }
+       }
+       else
+       {
+         unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
+-        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
++        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp + 7) / 8));
+       }
+       *fp << "\n";
+     }
+     break;
+ 
+     case VTK_CHAR:
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkDataWriter.cxx failed."
+      return 1
+    fi
+    return 0;
+
+}
+
+function apply_vtk94_vtkospray_patches
+{
+    count_patches=3
+    # patch vtkOSPRay files:
+
+    # 1) expose vtkViewNodeFactory via vtkOSPRayPass.h
+    current_patch=1
+    patch -p0 << \EOF
+--- Rendering/RayTracing/vtkOSPRayPass.h.orig	2024-09-23 21:01:47.000000000 -0700
++++ Rendering/RayTracing/vtkOSPRayPass.h	2024-09-26 12:51:23.000000000 -0700
+@@ -36,12 +36,13 @@
+ class vtkOSPRayPassInternals;
+ class vtkOSPRayRendererNode;
+ class vtkOverlayPass;
+ class vtkRenderPassCollection;
+ class vtkSequencePass;
+ class vtkVolumetricPass;
++class vtkViewNodeFactory;
+ 
+ class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
+ {
+ public:
+   static vtkOSPRayPass* New();
+   vtkTypeMacro(vtkOSPRayPass, vtkRenderPass);
+@@ -61,12 +62,17 @@
+   ///@}
+ 
+   /**
+    * Called by the internals of this class
+    */
+   virtual void RenderInternal(const vtkRenderState* s);
++
++  /**
++   * Called by VisIt
++   */
++  virtual vtkViewNodeFactory* GetViewNodeFactory();
+ 
+   ///@{
+   /**
+    * Wrapper around ospray's init and shutdown that protect
+    * with a reference count.
+    */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass.h failed."
+        return 1
+    fi
+
+    # 2) expose vtkViewNodeFactory via vtkOSPRayPass.cxx
+    ((current_patch++))
+    patch -p0 << \EOF
+--- Rendering/RayTracing/vtkOSPRayPass.cxx.orig	2024-09-23 21:01:47.000000000 -0700
++++ Rendering/RayTracing/vtkOSPRayPass.cxx	2024-09-26 12:53:24.000000000 -0700
+@@ -414,12 +414,18 @@
+     usedDepthTex->Deactivate();
+     usedColorTex->Deactivate();
+   }
+ }
+ 
+ //------------------------------------------------------------------------------
++vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
++{
++  return this->Internal->Factory;
++}
++
++//------------------------------------------------------------------------------
+ bool vtkOSPRayPass::IsSupported()
+ {
+   static bool detected = false;
+   static bool is_supported = true;
+ 
+   // Short-circuit to avoid querying on every call.
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass.cxx failed."
+        return 1
+    fi
+
+    # 3) Set the samples in the VolumeMapper
+    ((current_patch++))
+    patch -p0 << \EOF
+--- Rendering/RayTracing/vtkOSPRayVolumeMapper.cxx.orig	2024-09-23 21:01:47.000000000 -0700
++++ Rendering/RayTracing/vtkOSPRayVolumeMapper.cxx	2024-09-26 12:53:56.000000000 -0700
+@@ -58,12 +58,16 @@
+     return;
+   }
+   if (!this->Initialized)
+   {
+     this->Init();
+   }
++  vtkOSPRayRendererNode::SetSamplesPerPixel(
++    vtkOSPRayRendererNode::GetSamplesPerPixel(ren), this->InternalRenderer);
++  vtkOSPRayRendererNode::SetAmbientSamples(
++    vtkOSPRayRendererNode::GetAmbientSamples(ren), this->InternalRenderer);
+   this->InternalRenderer->SetRenderWindow(ren->GetRenderWindow());
+   this->InternalRenderer->SetActiveCamera(ren->GetActiveCamera());
+   this->InternalRenderer->SetBackground(ren->GetBackground());
+   if (!this->InternalRenderer->HasViewProp(vol))
+   {
+     this->InternalRenderer->RemoveAllViewProps();
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
+        return 1
+    fi
+}
+
+function apply_vtk92_vtkopenglpolydatamapper_patch
 {
   # patch that allows extra large extents datasets to be rendered correctly
    patch -p0 << \EOF
@@ -163,7 +423,7 @@ EOF
 
 }
 
-function apply_vtk9_gcc13_patch
+function apply_vtk92_gcc13_patch
 {
   # patches that allows VTK9 to be built g++-13
    patch -p0 << \EOF
@@ -205,7 +465,7 @@ EOF
     return 0;
 }
 
-function apply_vtk9_allow_onscreen_and_osmesa_patch
+function apply_vtk92_allow_onscreen_and_osmesa_patch
 {
   # patch that allows VTK9 to be built with onscreen and osmesa support.
    patch -p0 << \EOF
@@ -267,7 +527,7 @@ EOF
     return 0;
 }
 
-function apply_vtk9_vtkdatawriter_patch2
+function apply_vtk92_vtkdatawriter_patch2
 {
   # patch vtkDataWriter always write legacy file versions
    patch -p0 << \EOF
@@ -293,7 +553,7 @@ EOF
 
 }
 
-function apply_vtk9_vtkdatawriter_patch
+function apply_vtk92_vtkdatawriter_patch
 {
   # patch vtkDataWriter to fix a bug when writing a vtkBitArray
    patch -p0 << \EOF
@@ -319,7 +579,7 @@ EOF
 
 }
 
-function apply_vtk9_vtkopenfoamreader_header_patch
+function apply_vtk92_vtkopenfoamreader_header_patch
 {
   # patch vtk's OpenFOAMReader to provide more meta data information
   # useful for VisIt's plugin.
@@ -401,7 +661,7 @@ EOF
     return 0;
 }
 
-function apply_vtk9_vtkopenfoamreader_source_patch
+function apply_vtk92_vtkopenfoamreader_source_patch
 {
   # patch vtk's OpenFOAMReader to provide more meta data information
   # useful for VisIt's plugin.
@@ -617,19 +877,20 @@ EOF
     return 0;
 }
 
-function apply_vtk9_vtkopenfoamreader_patch
+function apply_vtk92_vtkopenfoamreader_patch
 {
-    apply_vtk9_vtkopenfoamreader_header_patch
+    apply_vtk92_vtkopenfoamreader_header_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
-    apply_vtk9_vtkopenfoamreader_source_patch
+    apply_vtk92_vtkopenfoamreader_source_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
 }
 
-function apply_vtk9_vtkospray_patches
+
+function apply_vtk92_vtkospray_patches
 {
     count_patches=4
     # patch vtkOSPRay files:
@@ -1120,7 +1381,7 @@ EOF
 }
 
 
-function apply_vtk9_vtkRectilinearGridReader_patch
+function apply_vtk92_vtkRectilinearGridReader_patch
 {
   # patch vtkRectilinearGridReader.cxx, per this issue:
   # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
@@ -1173,7 +1434,7 @@ EOF
     fi
 }
 
-function apply_vtk9_vtkCutter_patch
+function apply_vtk92_vtkCutter_patch
 {
   # patch vtkCutter to remove use of vtk3DLinearPlaneCutter, because it 'promotes'
   # all cell and point data to float/double arrays. See VTK issue:
@@ -1210,7 +1471,7 @@ EOF
     fi
 }
 
-function apply_vtk9_vtkgeotransform_patch
+function apply_vtk92_vtkgeotransform_patch
 {
   # patch vtk's vtkGeoTransform (patch taken from 9.3)
   # can  be removed when version changed to >= 9.3
@@ -1236,7 +1497,7 @@ EOF
     return 0;
 }
 
-function apply_vtk9_osmesa_render_patch
+function apply_vtk92_osmesa_render_patch
 {
     # I updated this patch for VTK 9.2.6, but not really sure it is still needed
     # VTK modified the Resize method ... perhaps that change fixes what this
@@ -1278,54 +1539,79 @@ EOF
 
 function apply_vtk_patch
 {
-    apply_vtk9_gcc13_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-    apply_vtk9_allow_onscreen_and_osmesa_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    if [[ ${VTK_VERSION} == 9.2.6 ]] ; then
+        apply_vtk92_gcc13_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_vtk92_vtkgeotransform_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk9_vtkospray_patches
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+        apply_vtk92_vtkopenglpolydatamapper_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk9_vtkRectilinearGridReader_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+        apply_vtk92_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
 
-    apply_vtk9_vtkCutter_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+        apply_vtk92_vtkdatawriter_patch2
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
 
-    apply_vtk9_vtkdatawriter_patch
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
+        apply_vtk92_vtkospray_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk9_vtkdatawriter_patch2
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
+        apply_vtk92_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk9_osmesa_render_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+        apply_vtk92_vtkCutter_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk9_vtkgeotransform_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+        apply_vtk92_vtkRectilinearGridReader_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk9_vtkopenglpolydatamapper_patch
-    if [[ $? != 0 ]] ; then
-        return 1
+        apply_vtk92_allow_onscreen_and_osmesa_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+    else
+        apply_vtk94_vtkospray_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk94_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
+        # should submit a ticket to kitware
+        apply_vtk94_vtkRectilinearGridReader_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk94_vtkmobiledevices_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
+ 
 
     return 0
 }
@@ -1447,7 +1733,8 @@ function build_vtk
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DVTK_BUILD_TESTING:STRING=OFF"
-    vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
+    vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=OFF"
+    vopts="${vopts} -DVTK_FORBID_DOWNLOADS:BOOL=ON"
     # setting this to true causes errors when building debug versions of
     # visit, so set it to false
     vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=false"
@@ -1509,6 +1796,7 @@ function build_vtk
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersFlowPaths:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersHybrid:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersModeling:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersVerdict:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GeovisCore:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOEnSight:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOGeometry:STRING=YES"
@@ -1529,10 +1817,10 @@ function build_vtk
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES"
                 if [[ "$DO_QT6" == "yes" ]]; then
-                    vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
-                    vopts="${vopts} -DQt6CoreTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
-                    vopts="${vopts} -DQt6GuiTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
-                    vopts="${vopts} -DQt6WidgetsTools_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
+                    vopts="${vopts} -DQt6_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
+                    vopts="${vopts} -DQt6CoreTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
+                    vopts="${vopts} -DQt6GuiTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
+                    vopts="${vopts} -DQt6WidgetsTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
                 else
                     vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                 fi
@@ -1549,7 +1837,9 @@ function build_vtk
             pylib="${PYTHON_LIBRARY}"
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
-            vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            if [[ "$DO_VTK94" == "no" ]] ; then
+                vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            fi
             vopts="${vopts} -DPython3_EXECUTABLE:FILEPATH=${py}"
             vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=\"${VTK_PY_LIBS}\""
             vopts="${vopts} -DPython3_INCLUDE_DIR:PATH=${pyinc}"
@@ -1559,13 +1849,21 @@ function build_vtk
         fi
     fi
 
+    if [[ "$DO_VTK94" == "yes" ]] ; then
+        # For now, turn off EGL (Our large-image regression tests fail)
+        vopts="${vopts} -DOPENGL_EGL_INCLUDE_DIR:PATH=\"\""
+        vopts="${vopts} -DOPENGL_egl_LIBRARY:FILEPATH=\"\""
+        vopts="${vopts} -DVTK_OPENGL_HAS_EGL:BOOL=OFF"
+    fi
+
     # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
         vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
-        # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
+        # for now, until Mesa can be updated to a version that supports GLVND,
+        # set LEGACY preference
         vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
         vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
         vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
@@ -1573,13 +1871,13 @@ function build_vtk
 
         if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-                vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
-                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
                 vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
             fi
         fi
+    elif [[ "$DO_VTK94" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_USE_X:BOOL=ON"
     elif [[ "$DO_OSMESA" == "yes" ]] ; then
+        # Is there a use-case where VTK-9.4 would need to build against only OSMesa?
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
         vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
@@ -1602,6 +1900,17 @@ function build_vtk
             vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"
         fi
     fi
+    
+    # Use ANARI?
+    if [[ "$DO_ANARI" == "yes" ]] && [[ "$DO_VTK94" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersTexture:STRING=YES"
+        vopts="${vopts} -Danari_DIR=${VISITDIR}/anari/${ANARI_VERSION}/${VISITARCH}/lib/cmake/anari-${ANARI_VERSION}"
+
+        if [[ "$DO_ANARI_NVTX" == "yes" ]] ; then
+            vopts="${vopts} -DVTK_ANARI_ENABLE_NVTX:BOOL=ON"
+        fi
+    fi
 
     # zlib support, use the one we build
     vopts="${vopts} -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON"
@@ -1611,21 +1920,26 @@ function build_vtk
     else
         vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
     fi
+    if [[ "$DO_VTK94" == "yes" ]] ; then
+        vopts="${vopts} -DZLIB_BUILD_EXAMPLES:BOOL=false"
+        vopts="${vopts} -DVTK_ENABLE_REMOTE_MODULES:BOOL=OFF"
+    fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
+
+    if [[ "$DO_MESAGL" == "yes" ]] || [[ "$DO_OSMESA" == "yes" && "$DO_VTK94" == "no" ]] ; then
+        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    fi
 
     #
     # Several platforms have had problems with the VTK cmake configure command
     # issued simply via "issue_command".  This was first discovered on
     # BGQ and then showed up in random cases for both OSX and Linux machines.
     # Brad resolved this on BGQ  with a simple work around - we write a simple
-    # script that we invoke with bash which calls cmake with all of the properly
+    # script that we invoke with bash which calls cmake with all of the proper
     # arguments. We are now using this strategy for all platforms.
     #
-    if [[ "$DO_MESAGL" == "yes" || "$DO_OSMESA" == "yes" ]] ; then
-        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-    fi
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh

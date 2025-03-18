@@ -18,7 +18,7 @@
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //-----------------------------------------------------------------------------
 
-vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
+vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter)
 
 // ***************************************************************************
 //  Modifications:
@@ -160,8 +160,8 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
 
   if(accessMethod == 1)
     {
-    const float *in_ptr = (const float *) inPts->GetVoidPointer(0);
-    float *out_ptr = (float *) newPts->GetVoidPointer(0);
+    const float *in_ptr = static_cast<const float *>(inPts->GetVoidPointer(0));
+    float *out_ptr = static_cast<float *>(newPts->GetVoidPointer(0));
     for (vtkIdType i = 0 ; i < numNewPts ; i++)
       {
       const float *src = in_ptr + 3*newToOld[i];
@@ -172,8 +172,8 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
     }
   else if(accessMethod == 2)
     {
-    const double *in_ptr = (const double *) inPts->GetVoidPointer(0);
-    double *out_ptr = (double *) newPts->GetVoidPointer(0);
+    const double *in_ptr = static_cast<const double *>(inPts->GetVoidPointer(0));
+    double *out_ptr = static_cast<double *>( newPts->GetVoidPointer(0));
     for (vtkIdType i = 0 ; i < numNewPts ; i++)
       {
       const double *src = in_ptr + 3*newToOld[i];
@@ -215,7 +215,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
     if(nids > nIdStoreSize)
       {
       delete [] pts;
-      nIdStoreSize = int(nids * 1.25);
+      nIdStoreSize = static_cast<int>(static_cast<double>(nids) * 1.25);
       pts = new vtkIdType[nIdStoreSize];
       }
     int cellType = input->GetCellType(i);
@@ -223,7 +223,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
       {
       pts[j] = oldToNew[oldPts[j]];
       }
-    output->InsertNextCell(cellType, nids, pts);
+    output->InsertNextCell(cellType, static_cast<int>(nids), pts);
     }
   delete [] pts;
   delete [] oldToNew;

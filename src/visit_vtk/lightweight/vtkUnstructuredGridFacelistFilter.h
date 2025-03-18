@@ -33,14 +33,14 @@ class VISIT_VTK_LIGHT_API vtkUnstructuredGridFacelistFilter :
     public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeMacro(vtkUnstructuredGridFacelistFilter, vtkPolyDataAlgorithm);
+    vtkTypeMacro(vtkUnstructuredGridFacelistFilter, vtkPolyDataAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkUnstructuredGridFacelistFilter *New();
 
   protected:
-    vtkUnstructuredGridFacelistFilter() {;};
-    ~vtkUnstructuredGridFacelistFilter() {;};
+    vtkUnstructuredGridFacelistFilter() {;}
+    ~vtkUnstructuredGridFacelistFilter() {;}
  
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,

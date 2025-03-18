@@ -110,8 +110,10 @@ if(CONDUIT_FOUND AND MFEM_FOUND)
     list(APPEND LIBENGINE_DEPENDS mfem avtblueprint)
 endif()
 
-if(HAVE_OSMESA)
-    list(APPEND LIBENGINE_DEPENDS visit_vtk_offscreen)
+if(VTK_VERSION VERSION_LESS "9.4.0")
+    if(HAVE_OSMESA)
+        list(APPEND LIBENGINE_DEPENDS visit_vtk_offscreen)
+    endif()
 endif()
 
 #************************** SERIAL LIBRARY ************************************

@@ -34,10 +34,10 @@
 
 #define BP_PLUGIN_EXCEPTION1(  etype , msg )                        \
 {                                                                   \
-    std::ostringstream bp_err_oss;                                  \
-    bp_err_oss << msg << std::endl;                                 \
-    debug1 << "[blueprint plugin error] " << bp_err_oss.str();      \
-    EXCEPTION1( etype  , bp_err_oss.str() );                        \
+    std::ostringstream bp_exception1_err_oss;                                  \
+    bp_exception1_err_oss << msg << std::endl;                                 \
+    debug1 << "[blueprint plugin error] " << bp_exception1_err_oss.str();      \
+    EXCEPTION1( etype  , bp_exception1_err_oss.str() );                        \
 }                                                                   \
 
 

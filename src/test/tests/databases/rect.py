@@ -21,7 +21,7 @@
 #  individually to match current baseline results.
 #
 # ----------------------------------------------------------------------------
-
+RequiredDatabasePlugin("Rect")
 
 # test the main mesh
 TestSection("Curvilinear grid files")

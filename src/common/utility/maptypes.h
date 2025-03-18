@@ -5,6 +5,7 @@
 #ifndef VISIT_MAP_TYPES_H
 #define VISIT_MAP_TYPES_H
 #include <algorithm>
+#include <cctype>
 #include <map>
 #include <set>
 #include <string>
@@ -23,8 +24,10 @@ struct CIComparator {
   {
       std::string str1(s1.length(),' ');
       std::string str2(s2.length(),' ');
-      std::transform(s1.begin(), s1.end(), str1.begin(), tolower);
-      std::transform(s2.begin(), s2.end(), str2.begin(), tolower);
+      std::transform(s1.begin(), s1.end(), str1.begin(),
+          [](auto c) { return static_cast<char>(std::tolower(c)); });
+      std::transform(s2.begin(), s2.end(), str2.begin(),
+          [](auto c) { return static_cast<char>(std::tolower(c)); });
       return  str1 < str2;
   }
 };

@@ -56,7 +56,7 @@ class HighOrderUnstructuredData {
   public:
 
 // The constructor!!
-    HighOrderUnstructuredData();
+    HighOrderUnstructuredData(VsReader* tReader, VsRegistry* tRegistry);
 
     ~HighOrderUnstructuredData();
 
@@ -65,22 +65,6 @@ class HighOrderUnstructuredData {
  * @param mesh is the mesh of interest
  */
     void getData(VsUnstructuredMesh* mesh);
-
-/**
- * Set the reader that will be used
- * @param tReader is the reader used
- */
-    void setReader(VsReader* tReader) {
-      reader = tReader;
-    }
-
-/**
- * Set the registry to use
- * @param tRegistry is the registry to use
- */
-    void setRegistry(VsRegistry* tRegistry) {
-      registry = tRegistry;
-    }
 
 /**
  * Return the unstructured mesh data

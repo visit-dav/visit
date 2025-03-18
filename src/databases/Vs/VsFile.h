@@ -14,7 +14,7 @@
 #include <string>
 #include "VsGroup.h"
 #include "VsObject.h"
-#include <hdf5.h>
+#include <vshdf5.h>
 
 class VsFile : public VsObject {
 public:

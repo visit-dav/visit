@@ -160,6 +160,18 @@ if(OPENEXR_FOUND)
     list(APPEND visit_vtk_HEADERS vtkOpenEXRWriter.h)
 endif()
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
+    list(APPEND visit_vtk_SOURCES
+         vtkVisItRectilinearGrid.C
+         vtkVisItStructuredGrid.C)
+    list(APPEND visit_vtk_HEADERS
+         vtkVisItRectilinearGrid.h
+         vtkVisItStructuredGrid.h)
+else()
+    list(APPEND visit_vtk_SOURCES vtkVisItDataSetWriter.C)
+    list(APPEND visit_vtk_HEADERS vtkVisItDataSetWriter.h)
+endif()
+
 visit_add_library(
     NAME        visit_vtk
     SOURCES     ${visit_vtk_SOURCES}

@@ -29,7 +29,7 @@
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 
-vtkStandardNewMacro(vtkVisItPointDataToCellData);
+vtkStandardNewMacro(vtkVisItPointDataToCellData)
 
 //----------------------------------------------------------------------------
 // Instantiate object so that point data is not passed to output.
@@ -51,6 +51,12 @@ int vtkVisItPointDataToCellData::RequestData(
   vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
   vtkDataSet *input = vtkDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+  if(input == nullptr || output == nullptr)
+  {
+    vtkWarningMacro(<<"vtkVisItPointDataToCellData could not retrieve either input or output.");
+    return 0;
+  }
 
   vtkIdType cellId, ptId;
   vtkIdType numCells, numPts;
@@ -91,7 +97,7 @@ int vtkVisItPointDataToCellData::RequestData(
     {
     if ( !(cellId % progressInterval) )
       {
-      this->UpdateProgress((double)cellId/numCells);
+      this->UpdateProgress(static_cast<double>(cellId/numCells));
       abort = GetAbortExecute();
       }
 
@@ -99,7 +105,7 @@ int vtkVisItPointDataToCellData::RequestData(
     numPts = cellPts->GetNumberOfIds();
     if ( numPts > 0 )
       {
-      weight = 1.0 / numPts;
+      weight = 1.0 / static_cast<double>(numPts);
       for (ptId=0; ptId < numPts; ptId++)
         {
         weights[ptId] = weight;

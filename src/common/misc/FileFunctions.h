@@ -79,7 +79,7 @@ typedef enum
     FILE_TYPE_NOT_KNOWN
 } FileType;
 
-VisItStat_t* const FILE_TYPE_DONT_STAT = ((VisItStat_t*)0x1);
+VisItStat_t* const FILE_TYPE_DONT_STAT = (reinterpret_cast<VisItStat_t*>(0x1));
 
 PermissionsResult MISC_API CheckPermissions(const std::string &filename);
 

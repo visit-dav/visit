@@ -5,7 +5,17 @@
 # to look natural where it is literalincluded in the docs but still access
 # files in their "normal" places in our test logic.
 #
+# Modifications:
+#   Kathleen Biagas, Fri Feb 21, 2025
+#   Added setting of outputToCurrentDirectory for SaveWindowAttributes.
 # ----------------------------------------------------------------------------
+
+# change where SaveWindow saves files, prevents filling up users home
+# dir on Windows when regression suite is run.
+
+swa = SaveWindowAttributes()
+swa.outputToCurrentDirectory = 1
+SetSaveWindowAttributes(swa)
 
 #
 # Map ordinary string paths used here which appear in rendered docs
@@ -129,3 +139,4 @@ def vqr_GetMachineProfile(name):
 # Override GetMachineProfile
 real_GetMachineProfile = GetMachineProfile
 GetMachineProfile = vqr_GetMachineProfile
+

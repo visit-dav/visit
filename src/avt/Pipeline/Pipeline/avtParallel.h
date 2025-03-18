@@ -18,7 +18,7 @@ class AttributeGroup;
 #ifdef PARALLEL
 // we define VISIT_MPI_COMM this way to avoid having to include mpi.h
 // to get the def'n for MPI_Comm datatype
-#define VISIT_MPI_COMM (*((MPI_Comm*) VISIT_MPI_COMM_PTR))
+#define VISIT_MPI_COMM (*(static_cast<MPI_Comm*>(VISIT_MPI_COMM_PTR)))
 PIPELINE_API extern void *VISIT_MPI_COMM_PTR;
 #endif
 

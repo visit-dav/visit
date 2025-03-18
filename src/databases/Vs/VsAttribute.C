@@ -7,7 +7,7 @@
 
 #include "VsAttribute.h"
 #include "VsLog.h"
-#include <hdf5.h>
+#include <vshdf5.h>
   
 VsAttribute::VsAttribute(VsObject* parentObject, std::string attName, hid_t id):
   VsObject(parentObject->registry, parentObject, attName, id) {

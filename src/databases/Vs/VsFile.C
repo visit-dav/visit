@@ -5,7 +5,7 @@
  *      Author: mdurant
  */
 
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <visit-hdf5.h>
 
 #include "VsFile.h"
@@ -77,6 +77,7 @@ VsFile::~VsFile() {
   }
 
 // Close this file
+  VsLog::debugLog() <<"VsFile::~VsFile() - Closing " <<fileName.c_str() <<std::endl;
   H5Fclose(getId());
 }
 
