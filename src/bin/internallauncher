@@ -2427,6 +2427,9 @@ class DebugArguments(object):
 #   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
 #   Python 3 universal_newlines for Popen
 #
+#   Kathleen Biagas, Tue Mar 18, 2025
+#   Removed support for ultrawrapper.
+#
 ###############################################################################
 
 class MainLauncher(object):
@@ -2449,7 +2452,6 @@ class MainLauncher(object):
         self.visitlauncher = ""
         self.visitlibdir = ""
         self.visitresourcedir = ""
-        self.visitultradir = ""
         self.visitplugins = ""
         self.publicversion = 0
         self.logging = 0
@@ -2864,6 +2866,9 @@ class MainLauncher(object):
     #   I modified the method to leave the visitarch field unchanged if it is
     #   already set, which could happen in a custom launcher.
     #
+    #   Kathleen Biagas, Tue Mar 18, 2025
+    #   Removed support for ultrawrapper.
+    #
     ############################################################################
 
     def SetupDirectoryNames(self, supportedarches):
@@ -2879,7 +2884,6 @@ class MainLauncher(object):
                 self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
             self.visitlibdir = self.visitdir + "lib"
             self.visitresourcedir = self.visitdir + "resources"
-            self.visitultradir = self.visitdir + "ultrawrapper"
             self.visitplugins = self.visitdir + "plugins"
             self.publicversion = 0
             if not os.path.exists(os.path.join(self.visitbindir, self.generalArgs.exe_name)):
@@ -2919,7 +2923,6 @@ class MainLauncher(object):
                 self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
             self.visitlibdir = self.visitdir + archdir + "/lib"
             self.visitresourcedir = self.visitdir + archdir + "/resources"
-            self.visitultradir = self.visitdir + archdir + "/ultrawrapper"
             self.visitplugins = self.visitdir + archdir + "/plugins"
             self.publicversion = 1
 
@@ -2928,7 +2931,6 @@ class MainLauncher(object):
             #print "visitscriptdir=", self.visitscriptdir
             #print "visitlauncher =", self.visitlauncher
             #print "visitlibdir   =", self.visitlibdir
-            #print "visitultradir =", self.visitultradir
             #print "visitplugins  =", self.visitplugins
             #print "publicversion =", self.publicversion
 
@@ -3198,6 +3200,9 @@ class MainLauncher(object):
     #   Justin Privitera, Wed Nov  1 13:55:47 PDT 2023
     #   Unset QT_SCALE_FACTOR.
     #
+    #   Kathleen Biagas, Tue Mar 18, 2025
+    #   Removed support for ultrawrapper.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -3262,7 +3267,6 @@ class MainLauncher(object):
         # Set required environment variables
         SETENV("VISITHOME",     self.visithome)
         SETENV("VISITARCHHOME", self.visitarchdir)
-        SETENV("VISITULTRAHOME", self.visitultradir)
 
         # If we're using VisIt's Python, set PYTHONHOME
         visitlibdir_python = os.path.join(self.visitlibdir, "python")
@@ -3360,6 +3364,9 @@ class MainLauncher(object):
     #
     # Modifications:
     #
+    #   Kathleen Biagas, Tue Mar 18, 2025
+    #   Removed support for ultrawrapper.
+    #
     ############################################################################
 
     def PrintEnvironment(self, file, set, eq, allowempty):
@@ -3369,7 +3376,7 @@ class MainLauncher(object):
 
         # The environment variables whose values we're printing.
         vars = ["LIBPATH", "VISITHOME", "VISITARCHHOME", 
-                "VISITULTRAHOME", "VISITPLUGINDIR","TRAP_FPE",
+                "VISITPLUGINDIR","TRAP_FPE",
                 "MESA_GLX_FX","VISIT_MESA_LIB"]
         # vars = vars + ["PYTHONHOME"] # don't set PYTHONHOME
         # A dictionary of extra vars whose source is different 

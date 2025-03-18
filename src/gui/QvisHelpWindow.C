@@ -369,6 +369,9 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
 //   Replaced manual pages with our new sphinx manuals.
 //
+//   Kathleen Biagas, Tue Mar 18, 2025
+//   Removed ultrawrapper document.
+//
 // ****************************************************************************
 
 void
@@ -412,12 +415,6 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
     contribPage->setText(0, tr("VisIt Contributors"));
     contribPage->setData(0, Qt::UserRole, QVariant("contributors.html"));
     contribPage->setIcon(0, helpIcon);
-
-    QTreeWidgetItem *ultraPage = new QTreeWidgetItem(
-        helpContents);
-    ultraPage->setText(0, tr("VisIt UltraWrapper"));
-    ultraPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
-    ultraPage->setIcon(0, helpIcon);
 
     QTreeWidgetItem *manual = new QTreeWidgetItem(
         helpContents, 0);
@@ -517,6 +514,9 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
 //   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
 //   Added the new sphinx manual path.
 //
+//   Kathleen Biagas, Tue Mar 18, 2025
+//   Removed ultrawrapper document.
+//
 // ****************************************************************************
 
 void
@@ -527,7 +527,6 @@ QvisHelpWindow::BuildIndex()
     AddToIndex(tr("Command line arguments"), "args.html");
     AddToIndex(tr("Frequently asked questions"), "faq.html");
     AddToIndex(tr("FAQ"), "faq.html");
-    AddToIndex(tr("Ultra wrapper"), "ultrawrapper.html");
     AddToIndex(tr("VisIt"), "home.html");
     AddToIndex(tr("Release notes"), ReleaseNotesFile());
     AddToIndex(tr("VisIt Manuals"), manualPath);

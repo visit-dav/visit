@@ -5821,14 +5821,6 @@ door de Lineout operator</translation>
         <source>Add bookmark</source>
         <translation>Voeg bladwijzer toe</translation>
     </message>
-    <message>
-        <source>VisIt UltraWrapper</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Ultra wrapper</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisHistogram</name>
