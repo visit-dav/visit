@@ -86,7 +86,7 @@ def main():
                   "visit%s.linux-x86_64-rocky9.tar.gz" % ver_underscores,
                   "visit%s_x64.exe  " % ver,
                   "build_visit%s" % ver_underscores,
-                  "visit-install%s.txt" % ver_underscores,
+                  "visit-install%s" % ver_underscores,
                   "INSTALL_NOTES_%s.txt" % ver_underscores,
                   "jvisit%s.tar.gz" % ver]
     src_files = ["visit%s.tar.gz" % ver] #, TODO ADD THIS

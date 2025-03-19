@@ -20,6 +20,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#General_features">Features for all users</a></li>
   <li><a href="#Advanced_features">Features for advanced users</a></li>
   <li><a href="#GUI_changes">Changes in GUI behavior</a></li>
+  <li><a href="#CLI_changes">Changes in CLI</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
@@ -49,6 +50,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed an error appearing which states that the properties from a disabled light were modified even though no changes were made and "Apply" was pressed. Now, the error will only appear when a change was made and the light is still disabled as well as listing with all modified lights.</li>
   <li>GUI Change 2</li>
+</ul>
+
+<a name="CLI_changes"></a>
+<p><b><font size="4">Changes in CLI for version 3.5</font></b></p>
+<ul>
+  <li>Added a <code>GetActiveWindow()</code> method to return the currently active window.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -92,7 +99,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed command recording for a Pick query with global element.</li>
   <li>Fixed a crash in structured domain boundaries when exchanging materials that lack a <i>mix_zone</i> array.</li>
   <li>Fixed a crash in structured domain boundaries when exchanging mixed material data using local boundary data.</li>
-  <li>Bug Fix 2</li>
+  <li>Fixed a potential infinite loop in our internal string helper utilities.</li>
 </ul>
 
 <a name="Build_features"></a>

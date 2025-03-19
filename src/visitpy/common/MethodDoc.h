@@ -219,6 +219,7 @@ extern const char *visit_SetDefaultDiscreteColorTable_doc;
 extern const char *visit_SetActivePlots_doc;
 extern const char *visit_SetActiveTimeSlider_doc;
 extern const char *visit_SetActiveWindow_doc;
+extern const char *visit_GetActiveWindow_doc;
 extern const char *visit_SetAnimationTimeout_doc;
 extern const char *visit_SetAnnotationAttributes_doc;
 extern const char *visit_SetBackendType_doc;
