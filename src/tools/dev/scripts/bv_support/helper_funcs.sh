@@ -761,6 +761,58 @@ function check_if_installed
 }
 
 # *************************************************************************** #
+# Function: ensure_built_or_ready_component                                   #
+#                                                                             #
+# Purpose: Helper that checks if libs matching 'PATTERN' are installed.       #
+# If not,  ensures the source tarball is downloaded.                          #
+#                                                                             #
+# Programmer: Kathleen Biagas                                                 #
+# Date: Wed Mar 19 2025                                                       #
+#                                                                             #
+# *************************************************************************** #
+function ensure_built_or_ready_component
+{
+    echo "ensure_built_or_ready_component $3"
+    BUILD_NAME=$1
+    BUILD_VERSION=$2
+    SOURCE_FILE=$3
+    PATTERN=$4
+    DOWNLOAD_PATH=$5
+
+    INSTALL_DIR=$VISITDIR/$BUILD_NAME/$BUILD_VERSION/$VISITARCH
+
+    HAVE_TARBALL="NO"
+    COMPONENT_INSTALLED="NO"
+
+    if [[ -d ${INSTALL_DIR} ]] ; then
+        if [[ -f ${PATTERN[0]} ]] ; then
+            echo "found component for ${PATTERN}"
+            COMPONENT_INSTALLED="YES"
+        else
+            echo "did not find component for ${PATTERN}"
+        fi
+    else
+        echo "INSTALL_DIR does not exist: ${INSTALL_DIR}"
+    fi
+
+    if [[ -e ${SOURCE_FILE%.gz} || -e ${SOURCE_FILE} ]] ; then
+        echo "Have tarball: $SOURCE_FILE}"
+        HAVE_TARBALL="YES"
+    fi
+
+    if [[ "$COMPONENT_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
+        echo "downloading ${SOURCE_FILE}"
+        download_file ${SOURCE_FILE} ${DOWNLOAD_PATH}
+        if [[ $? != 0 ]] ; then
+            warn "Error: Cannot obtain source for $BUILD_NAME."
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# *************************************************************************** #
 # Function: ensure_built_or_ready                                             #
 #                                                                             #
 # Purpose: Helper that checks for proper installed version. If this doesn't   #
