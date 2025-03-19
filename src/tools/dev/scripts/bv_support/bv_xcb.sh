@@ -104,53 +104,57 @@ function bv_xcb_host_profile
 function bv_xcb_ensure
 {
     if [[ "$DO_XCB" == "yes" ]] ; then
-        ensure_built_or_ready "xcb-image" $XCB_IMAGE_VERSION $XCB_IMAGE_BUILD_DIR $XCB_IMAGE_FILE $XCB_IMAGE_URL
+        INSTALL_DIR=$VISITDIR/xcb/$XCB_VERSION/$VISITARCH
+
+        # check if individual libs/components have been installed
+        PATTERN=(${INSTALL_DIR}/lib/*xcb-image.*)
+        ensure_built_or_ready_component "xcb" $XCB_VERSION $XCB_IMAGE_FILE $PATTERN
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XCB="no"
             error "Unable to build xcb image. ${XCB_IMAGE_FILE} not found."
         fi
 
-        ensure_built_or_ready "xcb-keysyms" $XCB_KEYSYMS_VERSION $XCB_KEYSYMS_BUILD_DIR $XCB_KEYSYMS_FILE $XCB_KEYSYMS_URL
+        PATTERN=(${INSTALL_DIR}/lib/*xcb-keysyms.*)
+        ensure_built_or_ready_component "xcb" $XCB_VERSION $XCB_KEYSYMS_FILE $PATTERN
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XCB="no"
             error "Unable to build xcb keysyms. ${XCB_KEYSYMS_FILE} not found."
         fi
 
-        ensure_built_or_ready "xcb-m4" $XCB_M4_VERSION $XCB_M4_BUILD_DIR $XCB_M4_FILE $XCB_M4_URL
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_XCB="no"
-            error "Unable to build xcb m4. ${XCB_M4_FILE} not found."
-        fi
-
-        ensure_built_or_ready "xcb-renderutil" $XCB_RENDERUTIL_VERSION $XCB_RENDERUTIL_BUILD_DIR $XCB_RENDERUTIL_FILE $XCB_RENDERUTIL_URL
+        PATTERN=(${INSTALL_DIR}/lib/*xcb-render-util.*)
+        ensure_built_or_ready_component "xcb" $XCB_VERSION $XCB_RENDERUTIL_FILE $PATTERN
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XCB="no"
             error "Unable to build xcb renderutil. ${XCB_RENDERUTIL_FILE} not found."
         fi
 
-        ensure_built_or_ready "xcb-util" $XCB_UTIL_VERSION $XCB_UTIL_BUILD_DIR $XCB_UTIL_FILE $XCB_UTIL_URL
+        PATTERN=(${INSTALL_DIR}/lib/*xcb-util.*)
+        ensure_built_or_ready_component "xcb"  $XCB_VERSION $XCB_UTIL_FILE $PATTERN
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XCB="no"
             error "Unable to build xcb util. ${XCB_UTIL_FILE} not found."
         fi
 
-        ensure_built_or_ready "xcb-wm" $XCB_WM_VERSION $XCB_WM_BUILD_DIR $XCB_WM_FILE $XCB_WM_URL
+        PATTERN=(${INSTALL_DIR}/lib/*xcb-ewmh.*)
+        ensure_built_or_ready_component "xcb" $XCB_VERSION $XCB_WM_FILE $PATTERN
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XCB="no"
             error "Unable to build xcb wm. ${XCB_WM_FILE} not found."
         fi
 
-        ensure_built_or_ready "xorg-macros" $XORG_MACROS_VERSION $XORG_MACROS_BUILD_DIR $XORG_MACROS_FILE $XORG_MACROS_URL
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_XCB="no"
-            error "Unable to build xorg macros. ${XORG_MACROS_FILE} not found."
+        # if XCB_IMAGE_FILE was downloaded, assume we need the utils as well
+        if [[ -e ${XCB_IMAGE_FILE} ]] ; then
+            if [[ ! -e ${XORG_MACROS_FILE} ]] ; then
+                download_file $XORG_MACROS_FILE
+            fi
+            if [[ ! -e ${XCB_M4_FILE} ]] ; then
+                download_file $XCB_M4_FILE
+            fi
         fi
     fi
 }

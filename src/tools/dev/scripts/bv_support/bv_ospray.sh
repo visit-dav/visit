@@ -127,8 +127,12 @@ function bv_ospray_ensure
 {
     if [[ "$DO_OSPRAY" == "yes" && "$USE_SYSTEM_OSPRAY" == "no" ]]; then
         if [[ "$OPSYS" != "Darwin" ]]; then
-           download_file ${OSPRAY_LIBS_FILE}
+           check_if_installed "ospray" $OSPRAY_VERSION
+           if [[ $? == 1 && ! -e ${OSPRAY_LIBS_FILE} ]] ; then
+               download_file ${OSPRAY_LIBS_FILE}
+           fi
         fi
+
         ensure_built_or_ready "ospray" $OSPRAY_VERSION $OSPRAY_BUILD_DIR $OSPRAY_FILE $OSPRAY_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
