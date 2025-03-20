@@ -485,7 +485,6 @@ static std::map<std::string, PyObject*> macroFunctions;
 static CallbackManager      *callbackMgr = NULL;
 static ViewerRPCCallbacks   *rpcCallbacks = NULL;
 
-static std::string ultraScriptFile = "";
 typedef struct
 {
     AnnotationObject *object;
@@ -16667,54 +16666,6 @@ visit_Argv(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
-// Function: visit_LoadUltra
-//
-// Purpose: Load the ultra command wrapper, which runs until 'quit' is entered.
-//
-// Programmer: Kathleen Bonnell
-// Creation:   November 19, 2008
-//
-// Modifications:
-//
-// ****************************************************************************
-STATIC PyObject *
-visit_SetUltraScript(PyObject *self, PyObject *args)
-{
-    char *sname = NULL;
-    if (!PyArg_ParseTuple(args, "s", &sname))
-    {
-        PyErr_Clear();
-        ultraScriptFile = "";
-    }
-    else
-    {
-        ultraScriptFile = sname;
-    }
-    return PyInt_FromLong(1);
-}
-
-STATIC PyObject *
-visit_GetUltraScript(PyObject *self, PyObject *args)
-{
-    return PyString_FromString(ultraScriptFile.c_str());
-}
-
-STATIC PyObject *
-visit_LoadUltra(PyObject *self, PyObject *args)
-{
-    NO_ARGUMENTS();
-
-    std::string parserFile = std::string(getenv("VISITULTRAHOME")) +
-                        std::string("/ultraparse.py");
-
-    PyObject *argTuple = PyTuple_New(1);
-    PyTuple_SetItem(argTuple, 0, PyString_FromString(parserFile.c_str()));
-    visit_Source(self, argTuple);
-    return PyInt_FromLong(1);
-}
-
-
-// ****************************************************************************
 // Function: PopulateMethodArgs
 //
 // Purpose:
@@ -18245,6 +18196,9 @@ AddMethod(const char *methodName,
 //   Eric Brugger, Tue Sep 24 11:44:41 PDT 2024
 //   Added documentation for GetExportOptions.
 //
+//   Kathleen Biagas, Tue Mar 18, 2025 
+//   Removed Ultrawrapper methods.
+//
 // ****************************************************************************
 
 static void
@@ -18451,11 +18405,6 @@ AddProxyMethods()
     AddMethod("Lineout", visit_Lineout, visit_Lineout_doc);
     AddMethod("LoadNamedSelection", visit_LoadNamedSelection,
                                            visit_LoadNamedSelection_doc);
-    AddMethod("LoadUltra", visit_LoadUltra, visit_LoadUltra_doc);
-    AddMethod("GetUltraScript", visit_GetUltraScript, visit_GetUltraScript_doc);
-    AddMethod("SetUltraScript", visit_SetUltraScript, visit_SetUltraScript_doc);
-
-
     AddMethod("AddMachineProfile", visit_AddMachineProfile,visit_AddMachineProfile_doc);
     AddMethod("RemoveMachineProfile", visit_RemoveMachineProfile, visit_RemoveMachineProfile_doc);
     AddMethod("SetMachineProfile", visit_SetMachineProfile, visit_SetMachineProfile_doc);

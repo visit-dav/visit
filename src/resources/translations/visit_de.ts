@@ -6437,11 +6437,6 @@ vom Lineout-Operator überschrieben werden</translation>
         <translation>VisIt-Mitwirkende</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="418"/>
-        <source>VisIt UltraWrapper</source>
-        <translation>VisIt UltraWrapper</translation>
-    </message>
-    <message>
         <location filename="../../gui/QvisHelpWindow.C" line="424"/>
         <location filename="../../gui/QvisHelpWindow.C" line="533"/>
         <source>VisIt Manuals</source>
@@ -6451,11 +6446,6 @@ vom Lineout-Operator überschrieben werden</translation>
         <location filename="../../gui/QvisHelpWindow.C" line="529"/>
         <source>FAQ</source>
         <translation>FAQ</translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="530"/>
-        <source>Ultra wrapper</source>
-        <translation>Ultra-Wrapper</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHelpWindow.C" line="531"/>

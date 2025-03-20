@@ -6436,11 +6436,6 @@ puede anular estos elementos.</translation>
         <translation>Colaboradores VisIt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="418"/>
-        <source>VisIt UltraWrapper</source>
-        <translation>VisIt UltraWrapper</translation>
-    </message>
-    <message>
         <location filename="../../gui/QvisHelpWindow.C" line="424"/>
         <location filename="../../gui/QvisHelpWindow.C" line="533"/>
         <source>VisIt Manuals</source>
@@ -6450,11 +6445,6 @@ puede anular estos elementos.</translation>
         <location filename="../../gui/QvisHelpWindow.C" line="529"/>
         <source>FAQ</source>
         <translation>Preguntas más frecuentes</translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="530"/>
-        <source>Ultra wrapper</source>
-        <translation>Envoltorio ultra</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHelpWindow.C" line="531"/>
