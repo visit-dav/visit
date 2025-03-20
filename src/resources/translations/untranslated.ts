@@ -6637,11 +6637,6 @@ by the Lineout operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="442"/>
-        <source>VisIt UltraWrapper</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../gui/QvisHelpWindow.C" line="458"/>
         <source>VisIt User&apos;s Manual</source>
         <translation type="unfinished"></translation>
@@ -6654,11 +6649,6 @@ by the Lineout operator</source>
     <message>
         <location filename="../../gui/QvisHelpWindow.C" line="591"/>
         <source>FAQ</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="592"/>
-        <source>Ultra wrapper</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

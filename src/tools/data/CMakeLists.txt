@@ -13,6 +13,9 @@
 #  Only add DataManualExamples if VISIT_ENABLE_DATA_MANUAL_EXAMPLES is
 #  true.
 #
+#  Kathleen Biagas, Tue Mar 18, 2025
+#  Remove ultrawrapper subdir.
+#
 #****************************************************************************
 
 macro(VISIT_DATA_ADD_FOLDER type)
@@ -38,7 +41,6 @@ endif()
 
 if(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
     add_subdirectory(writer)
-    add_subdirectory(ultrawrapper)
 endif()
 
 if(HDF5_FOUND AND NOT WIN32)
