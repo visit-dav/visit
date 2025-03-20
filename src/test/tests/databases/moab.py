@@ -13,8 +13,8 @@ RequiredDatabasePlugin("MOAB")
 
 OpenDatabase(data_path("moab_test_data/64bricks_12ktet.h5m"))
 
-AddPlot("Mesh", "mesh")
-AddPlot("Pseudocolor", "NODE_vertex_field")
+AddPlot("Mesh", "Mesh")
+AddPlot("Pseudocolor", "Vertices/vertex_field/Fringe")
 DrawPlots()
 
 v = GetView3D()
@@ -24,7 +24,7 @@ SetView3D(v)
 Test("moab_01")
 
 DeleteAllPlots()
-AddPlot("Mesh", "mesh")
+AddPlot("Mesh", "Mesh")
 AddPlot("Subset", "Materials")
 DrawPlots()
 Test("moab_02")
@@ -33,7 +33,7 @@ DeleteAllPlots()
 CloseDatabase(data_path("moab_test_data/64bricks_12ktet.h5m"))
 
 OpenDatabase(data_path("moab_test_data/64bricks_512hex_256part.h5m"))
-AddPlot("Mesh", "mesh")
+AddPlot("Mesh", "Mesh")
 DrawPlots()
 
 v = GetView3D()
