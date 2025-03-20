@@ -74,11 +74,11 @@ function bv_openexr_ensure
             DO_OPENEXR="no"
             error "Unable to build OpenEXR.  ${OPENEXR_FILE} not found."
         fi
-        ensure_built_or_ready "openexr (ILMBase) " $ILMBASE_VERSION $ILMBASE_BUILD_DIR $ILMBASE_FILE
+        ensure_built_or_ready "openexr" $ILMBASE_VERSION $ILMBASE_BUILD_DIR $ILMBASE_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_OPENEXR="no"
-            error "Unable to build OpenEXR (ILMBase).  ${ILMBASE_FILE} not found."
+            error "Unable to build OpenEXR.  ${ILMBASE_FILE} not found."
         fi
     fi
 }
