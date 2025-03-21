@@ -70,9 +70,7 @@ protected:
     void GetCurrentValues(const QWidget *widget = 0);
 private slots:
     void processSmallestZoneText();
-    void processSmallestZoneText(const QString &);
     void processFlatEnoughText();
-    void processFlatEnoughText(const QString &);
     void renderCSGDirectChanged(bool);
     void discretizeBoundaryOnlyChanged(bool);
     void discretizationModeChanged(int);

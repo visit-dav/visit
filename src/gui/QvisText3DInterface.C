@@ -75,7 +75,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
 
     // Add controls for entering the text
     textLineEdit = new QLineEdit(this);
-    connect(textLineEdit, SIGNAL(returnPressed()),
+    connect(textLineEdit, SIGNAL(editingFinished()),
             this, SLOT(textChanged()));
     cLayout->addWidget(textLineEdit, row, 1, 1, 2);
     cLayout->addWidget(new QLabel(tr("Text"), this), row, 0);
@@ -83,7 +83,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
 
     // Add controls for the position
     positionEdit = new QLineEdit(this);
-    connect(positionEdit, SIGNAL(returnPressed()),
+    connect(positionEdit, SIGNAL(editingFinished()),
             this, SLOT(positionChanged()));
     cLayout->addWidget(positionEdit, row, 1, 1, 2);
     cLayout->addWidget(new QLabel(tr("Position"), this), row, 0);
@@ -119,7 +119,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
     heightMode->addButton(rb, 1);
     cLayout->addWidget(rb, row, 1);
     fixedHeightEdit = new QLineEdit(this);
-    connect(fixedHeightEdit, SIGNAL(returnPressed()),
+    connect(fixedHeightEdit, SIGNAL(editingFinished()),
             this, SLOT(fixedHeightChanged()));
     cLayout->addWidget(fixedHeightEdit, row, 2);
     cLayout->setColumnStretch(2, 10);

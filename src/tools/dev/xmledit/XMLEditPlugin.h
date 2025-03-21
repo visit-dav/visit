@@ -70,6 +70,10 @@ class QGroupBox;
 //    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
 //    Added hasLicense.
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg from xxxTextChanged slots as they are now connected
+//    to 'editingFinished' signal.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -83,10 +87,10 @@ class XMLEditPlugin : public QFrame
     void UpdateWindowContents();
     void UpdateWindowSensitivity();
     void attpluginGroupChanged(int);
-    void nameTextChanged(const QString&);
-    void labelTextChanged(const QString&);
-    void versionTextChanged(const QString&);
-    void iconFileTextChanged(const QString&);
+    void nameTextChanged();
+    void labelTextChanged();
+    void versionTextChanged();
+    void iconFileTextChanged();
     void hasIconChanged(bool);
     void hasWriterChanged(bool);
     void hasOptionsChanged(bool);
@@ -98,7 +102,7 @@ class XMLEditPlugin : public QFrame
     void inOpVarTypesChanged();
     void outOpVarTypesChanged();
     void dbTypeChanged(int);
-    void filePatternsTextChanged(const QString&);
+    void filePatternsTextChanged();
     void filePatternsStrictChanged(bool);
     void opensWholeDirectoryChanged(bool);
   private:

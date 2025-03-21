@@ -105,6 +105,9 @@ QvisWellBorePlotWindow::~QvisWellBorePlotWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Fri Mar 21, 2025
+//   Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 
 void
@@ -157,8 +160,8 @@ QvisWellBorePlotWindow::CreateWindowContents()
     wellNameLabel = new QLabel(tr("Name"), f2);
     defLayout->addWidget(wellNameLabel,1,0);
     wellName = new QLineEdit(f2);
-    connect(wellName, SIGNAL(textChanged(const QString&)),
-            this, SLOT(wellNameTextChanged(const QString&)));
+    connect(wellName, SIGNAL(editingFinished()),
+            this, SLOT(wellNameTextChanged()));
     defLayout->addWidget(wellName, 1,1);
 
     wellDefinitionLabel = new QLabel(tr("Definition"), f2);
@@ -1513,14 +1516,21 @@ QvisWellBorePlotWindow::deleteWellButtonPressed()
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
+// ****************************************************************************
+
 void
-QvisWellBorePlotWindow::wellNameTextChanged(const QString &text)
+QvisWellBorePlotWindow::wellNameTextChanged()
 {
     int index = wellListBox->currentRow();
     if (index <  0)
         return;
 
-    QString newname = text.trimmed();
+    QString newname = wellName->text().trimmed();
 
     std::vector<string> wellNames = atts->GetWellNames();
 

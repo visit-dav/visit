@@ -88,7 +88,7 @@ private slots:
 
     void setDefaultOptionsForFormatButtonClicked();
     void fileFormatChanged(const QString&);
-    void filenameEditChanged(const QString &text);
+    void filenameEditChanged();
 private:
     DBPluginInfoAttributes *dbplugins;
     UsageMode               usageMode;

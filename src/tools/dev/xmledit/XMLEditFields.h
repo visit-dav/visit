@@ -41,6 +41,10 @@ class QPushButton;
 //    Kathleen Biagas, Thu Aug 25 11:28:49 PDT 2011
 //    Added persistent.
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg from xxxTextChanged slots as they are now connected
+//    to 'editingFinished' signal.
+//
 // ****************************************************************************
 
 class XMLEditFields : public QFrame
@@ -56,13 +60,13 @@ class XMLEditFields : public QFrame
     void UpdateWindowSingleItem();
     void UpdateTypeList();
     void UpdateEnablerList();
-    void nameTextChanged(const QString&);
-    void labelTextChanged(const QString&);
+    void nameTextChanged();
+    void labelTextChanged();
     void typeChanged(int);
-    void subtypeTextChanged(const QString&);
+    void subtypeTextChanged();
     void enablerChanged(int);
-    void enablevalTextChanged(const QString&);
-    void lengthTextChanged(const QString&);
+    void enablevalTextChanged();
+    void lengthTextChanged();
     void internalChanged();
     void persistentChanged();
     void ignoreeqChanged();

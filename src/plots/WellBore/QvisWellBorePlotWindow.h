@@ -41,6 +41,10 @@ class QvisOpacitySlider;
 //   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Fri Mar 21, 2025
+//   Removed QString arg from wellNameTextChanged slot as it is now connected
+//   to 'editingFinished' signal.
+//
 // ****************************************************************************
 
 class QvisWellBorePlotWindow : public QvisPostableWindowObserver
@@ -76,7 +80,7 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     void wellListSelectionChanged();
     void newWellButtonPressed();
     void deleteWellButtonPressed();
-    void wellNameTextChanged(const QString &color);
+    void wellNameTextChanged();
     void wellDefinitionTextChanged();
     void colorModeChanged(int index);
     void singleColorChanged(const QColor &color);

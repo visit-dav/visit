@@ -206,6 +206,9 @@ QvisFileOpenWindow::SetFilename(const QString &f)
 //   Replace `currentIndexChanged` signal for QComboBox with
 //   'currentTextChanged' as the former is not available in Qt 6.
 //
+//   Kathleen Biagas, Tue Mar 18, 2025
+//   Connect to 'editingFinished' instead of 'textChanged' for QLineEdits.
+//
 // ****************************************************************************
 
 void
@@ -301,7 +304,7 @@ QvisFileOpenWindow::CreateWindowContents()
         // Create the filename
         filenameEdit = new QLineEdit(central);
         connect(filenameEdit, SIGNAL(returnPressed()), this, SLOT(okClicked()));
-        connect(filenameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filenameEditChanged(const QString &)));
+        connect(filenameEdit, SIGNAL(editingFinished()), this, SLOT(filenameEditChanged()));
         filenameEdit->setFocus();
         QLabel *filenameLabel = new QLabel(tr("Filename"), central);
         pathLayout->addWidget(filenameLabel, 3, 0, Qt::AlignRight);
@@ -1028,10 +1031,11 @@ QvisFileOpenWindow::SetShowFilename(bool value)
 // ****************************************************************************
 
 void 
-QvisFileOpenWindow::filenameEditChanged(const QString &text)
+QvisFileOpenWindow::filenameEditChanged()
 {
     if(hideFileFormat)
         fileList->clearSelection();
+    QString text(filenameEdit->text());
     if(text.isEmpty())
         okButton->setEnabled(false);
     else
