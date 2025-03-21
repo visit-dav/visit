@@ -33,6 +33,10 @@
 //
 //    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
 //    Added support for custom base class for derived state objects.
+//
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 
 XMLEditAttribute::XMLEditAttribute(QWidget *p)
@@ -82,16 +86,16 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p)
 
     topLayout->setRowStretch(row, 100);
 
-    connect(name, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(nameTextChanged(const QString &)));
-    connect(purpose, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(purposeTextChanged(const QString &)));
-    connect(codefile, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(codefileTextChanged(const QString &)));
-    connect(exportAPI, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(exportAPITextChanged(const QString &)));
-    connect(exportInclude, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(exportIncludeTextChanged(const QString &)));
+    connect(name, SIGNAL(editingFinished()),
+            this,  SLOT(nameTextChanged()));
+    connect(purpose, SIGNAL(editingFinished()),
+            this,  SLOT(purposeTextChanged()));
+    connect(codefile, SIGNAL(editingFinished()),
+            this,  SLOT(codefileTextChanged()));
+    connect(exportAPI, SIGNAL(editingFinished()),
+            this,  SLOT(exportAPITextChanged()));
+    connect(exportInclude, SIGNAL(editingFinished()),
+            this,  SLOT(exportIncludeTextChanged()));
     connect(persistent, SIGNAL(clicked()),
             this, SLOT(persistentChanged()));
     connect(keyframe, SIGNAL(clicked()),
@@ -99,8 +103,8 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p)
 
     connect(customBaseClass, SIGNAL(clicked()),
             this, SLOT(customBaseClassChanged()));
-    connect(baseClass, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(baseClassTextChanged(const QString &)));
+    connect(baseClass, SIGNAL(editingFinished()),
+            this,  SLOT(baseClassTextChanged()));
 }
 
 // ****************************************************************************
@@ -227,11 +231,15 @@ XMLEditAttribute::BlockAllSignals(bool block)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditAttribute::nameTextChanged(const QString &text)
+XMLEditAttribute::nameTextChanged()
 {
-    xmldoc->attribute->name = text;
+    xmldoc->attribute->name = name->text();
 }
 
 // ****************************************************************************
@@ -240,11 +248,15 @@ XMLEditAttribute::nameTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditAttribute::purposeTextChanged(const QString &text)
+XMLEditAttribute::purposeTextChanged()
 {
-    xmldoc->attribute->purpose = text;
+    xmldoc->attribute->purpose = purpose->text();
 }
 
 // ****************************************************************************
@@ -258,16 +270,20 @@ XMLEditAttribute::purposeTextChanged(const QString &text)
 //    Hank Childs, Tue Dec 13 16:16:43 PST 2005
 //    Handle empty code files more gracefully.
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditAttribute::codefileTextChanged(const QString &text)
+XMLEditAttribute::codefileTextChanged()
 {
-    if (text.isEmpty())
+    if (codefile->text().isEmpty())
     {
         xmldoc->attribute->codeFile = NULL;
         return;
     }
-    QString file = text;
+    QString file = codefile->text();
     QString path = FilePath(xmldoc->filename);
     if (!path.isEmpty())
         file = path + file;
@@ -280,14 +296,18 @@ XMLEditAttribute::codefileTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditAttribute::exportAPITextChanged(const QString &text)
+XMLEditAttribute::exportAPITextChanged()
 {
     if (xmldoc->docType == "Plugin")
         return;
 
-    xmldoc->attribute->exportAPI = text;
+    xmldoc->attribute->exportAPI = exportAPI->text();
 }
 
 // ****************************************************************************
@@ -296,14 +316,18 @@ XMLEditAttribute::exportAPITextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditAttribute::exportIncludeTextChanged(const QString &text)
+XMLEditAttribute::exportIncludeTextChanged()
 {
     if (xmldoc->docType == "Plugin")
         return;
 
-    xmldoc->attribute->exportInclude = text;
+    xmldoc->attribute->exportInclude = exportInclude->text();
 }
 
 // ****************************************************************************
@@ -380,13 +404,17 @@ XMLEditAttribute::customBaseClassChanged()
 //  Programmer:  Mark C. Miller
 //  Creation:    Mon Aug 10 17:19:13 PDT 2009
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditAttribute::baseClassTextChanged(const QString &text)
+XMLEditAttribute::baseClassTextChanged()
 {
     if (xmldoc->docType == "Plugin")
         return;
 
-    xmldoc->attribute->baseClass = text;
+    xmldoc->attribute->baseClass = baseClass->text();
 }
 

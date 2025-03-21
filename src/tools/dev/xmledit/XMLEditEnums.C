@@ -28,6 +28,9 @@
 //   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
 //   Ported to Qt 4.4
 //
+//   Kathleen Biagas, Fri Mar 21, 2025
+//   Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 XMLEditEnums::XMLEditEnums(QWidget *p)
     : QFrame(p)
@@ -75,8 +78,8 @@ XMLEditEnums::XMLEditEnums(QWidget *p)
 
     connect(enumlist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(name, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
+    connect(name, SIGNAL(editingFinished()),
+            this, SLOT(nameTextChanged()));
     connect(valuelist, SIGNAL(textChanged()),
             this, SLOT(valuelistChanged()));
 
@@ -284,9 +287,12 @@ XMLEditEnums::BlockAllSignals(bool block)
 //   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
 //   Ported to Qt 4.4
 //
+//   Kathleen Biagas, Fri Mar 21, 2025
+//   Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditEnums::nameTextChanged(const QString &text)
+XMLEditEnums::nameTextChanged()
 {
     int index = enumlist->currentRow();
 
@@ -294,7 +300,7 @@ XMLEditEnums::nameTextChanged(const QString &text)
         return;
 
     EnumType *e = EnumType::FindEnum(enumlist->currentItem()->text());
-    QString newname = text.trimmed();
+    QString newname = name->text().trimmed();
     e->type = newname;
     BlockAllSignals(true);
     enumlist->item(index)->setText(newname);

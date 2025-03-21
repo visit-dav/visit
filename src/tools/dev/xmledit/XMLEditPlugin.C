@@ -71,6 +71,9 @@
 //    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //    Support Qt6: buttonClicked -> idClicked.
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p)
@@ -338,18 +341,18 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     connect(attpluginGroup, SIGNAL(idClicked(int)),
             this, SLOT(attpluginGroupChanged(int)));
 #endif
-    connect(name, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(nameTextChanged(const QString &)));
-    connect(label, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(labelTextChanged(const QString &)));
-    connect(version, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(versionTextChanged(const QString &)));
+    connect(name, SIGNAL(editingFinished()),
+            this,  SLOT(nameTextChanged()));
+    connect(label, SIGNAL(editingFinished()),
+            this,  SLOT(labelTextChanged()));
+    connect(version, SIGNAL(editingFinished()),
+            this,  SLOT(versionTextChanged()));
     connect(pluginType, SIGNAL(activated(int)),
             this,  SLOT(pluginTypeChanged(int)));
     connect(dbType, SIGNAL(activated(int)),
             this,  SLOT(dbTypeChanged(int)));
-    connect(filePatterns, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(filePatternsTextChanged(const QString &)));
+    connect(filePatterns, SIGNAL(editingFinished()),
+            this,  SLOT(filePatternsTextChanged()));
     connect(filePatternsStrict, SIGNAL(toggled(bool)),
             this, SLOT(filePatternsStrictChanged(bool)));
     connect(opensWholeDirectory, SIGNAL(toggled(bool)),
@@ -378,8 +381,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
             this, SLOT(varTypesChanged()));
     connect(hasIcon, SIGNAL(toggled(bool)),
             this, SLOT(hasIconChanged(bool)));
-    connect(iconFile, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(iconFileTextChanged(const QString &)));
+    connect(iconFile, SIGNAL(editingFinished()),
+            this,  SLOT(iconFileTextChanged()));
     connect(createExpressions, SIGNAL(toggled(bool)),
             this, SLOT(createExpressionsChanged(bool)));
     connect(inOpVarTypeMesh, SIGNAL(clicked()),
@@ -936,14 +939,18 @@ XMLEditPlugin::attpluginGroupChanged(int id)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditPlugin::nameTextChanged(const QString &text)
+XMLEditPlugin::nameTextChanged()
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->name = text;
+    xmldoc->plugin->name = name->text();
 }
 
 // ****************************************************************************
@@ -952,14 +959,18 @@ XMLEditPlugin::nameTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditPlugin::labelTextChanged(const QString &text)
+XMLEditPlugin::labelTextChanged()
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->label = text;
+    xmldoc->plugin->label = label->text();
 }
 
 // ****************************************************************************
@@ -968,33 +979,39 @@ XMLEditPlugin::labelTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditPlugin::versionTextChanged(const QString &text)
+XMLEditPlugin::versionTextChanged()
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->version = text;
+    xmldoc->plugin->version = version->text();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditPlugin::versionTextChanged
+//  Method:  XMLEditPlugin::iconFileTextChanged
 //
 //  Programmer:  Brad Whitlock
 //  Creation:    Thu Mar 13 11:33:10 PDT 2003
 //
 //  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
 //
 // ****************************************************************************
 
 void
-XMLEditPlugin::iconFileTextChanged(const QString &text)
+XMLEditPlugin::iconFileTextChanged()
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->iconFile = text;
+    xmldoc->plugin->iconFile = iconFile->text();
 }
 
 // ****************************************************************************
@@ -1216,14 +1233,18 @@ XMLEditPlugin::dbTypeChanged(int index)
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 28, 2009
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditPlugin::filePatternsTextChanged(const QString &text)
+XMLEditPlugin::filePatternsTextChanged()
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->filePatterns = SplitValues(text);
+    xmldoc->plugin->filePatterns = SplitValues(filePatterns->text());
 }
 
 // ****************************************************************************

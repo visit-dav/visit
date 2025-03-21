@@ -47,6 +47,10 @@ class QCheckBox;
 //    Kathleen Biagas, Wed May 4, 2022
 //    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg from xxxTextChanged slots as they are now connected
+//    to 'editingFinished' signal.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -58,22 +62,22 @@ class XMLEditMakefile : public QFrame
   public slots:
     void UpdateWindowContents();
     void UpdateWindowSensitivity();
-    void cxxflagsTextChanged(const QString&);
-    void ldflagsTextChanged(const QString&);
-    void libsTextChanged(const QString&);
-    void defsTextChanged(const QString&);
-    void gfilesTextChanged(const QString&);
-    void glibsTextChanged(const QString&);
-    void sfilesTextChanged(const QString&);
-    void vfilesTextChanged(const QString&);
-    void vlibsTextChanged(const QString&);
-    void mfilesTextChanged(const QString&);
-    void mlibsTextChanged(const QString&);
-    void efilesTextChanged(const QString&);
-    void elibsSerTextChanged(const QString&);
-    void elibsParTextChanged(const QString&);
-    void wfilesTextChanged(const QString&);
-    void vwfilesTextChanged(const QString&);
+    void cxxflagsTextChanged();
+    void ldflagsTextChanged();
+    void libsTextChanged();
+    void defsTextChanged();
+    void gfilesTextChanged();
+    void glibsTextChanged();
+    void sfilesTextChanged();
+    void vfilesTextChanged();
+    void vlibsTextChanged();
+    void mfilesTextChanged();
+    void mlibsTextChanged();
+    void efilesTextChanged();
+    void elibsSerTextChanged();
+    void elibsParTextChanged();
+    void wfilesTextChanged();
+    void vwfilesTextChanged();
     void customgfilesChanged();
     void customglibsChanged();
     void customsfilesChanged();
@@ -89,17 +93,17 @@ class XMLEditMakefile : public QFrame
     void mdSpecificCodeChanged();
     void engSpecificCodeChanged();
 
-    void mcxxflagsTextChanged(const QString&);
-    void mldflagsTextChanged(const QString&);
-    void mdefsTextChanged(const QString&);
+    void mcxxflagsTextChanged();
+    void mldflagsTextChanged();
+    void mdefsTextChanged();
 
-    void ecxxflagsSerTextChanged(const QString&);
-    void eldflagsSerTextChanged(const QString&);
-    void edefsSerTextChanged(const QString&);
+    void ecxxflagsSerTextChanged();
+    void eldflagsSerTextChanged();
+    void edefsSerTextChanged();
 
-    void ecxxflagsParTextChanged(const QString&);
-    void eldflagsParTextChanged(const QString&);
-    void edefsParTextChanged(const QString&);
+    void ecxxflagsParTextChanged();
+    void eldflagsParTextChanged();
+    void edefsParTextChanged();
 
   private:
     XMLDocument     *xmldoc;

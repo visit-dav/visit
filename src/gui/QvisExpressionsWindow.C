@@ -606,6 +606,9 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    editing an expression's name to detect for duplicate expression names
 //    in the gui.
 //
+//    Kathleen Biagas, Tue Mar 18, 2025
+//    Connect to 'editingFinished' instead of 'textChanged' for QLineEdits.
+//
 // ****************************************************************************
 
 void
@@ -835,7 +838,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     row++;
 
 
-    connect(pyArgsEdit, SIGNAL(textChanged (const QString &)),
+    connect(pyArgsEdit, SIGNAL(editingFinished()),
             this, SLOT(pyArgsTextChanged()));
 
 
