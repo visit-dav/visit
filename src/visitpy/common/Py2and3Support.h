@@ -359,6 +359,70 @@ static PyTypeObject VPY_TYPE = \
 };
 
 
+#define VISIT_PY_TYPE_OBJ2(VPY_TYPE,      \
+                           VPY_NAME,      \
+                           VPY_OBJECT,    \
+                           VPY_DEALLOC,   \
+                           VPY_PRINT,     \
+                           VPY_GETATTR,   \
+                           VPY_SETATTR,   \
+                           VPY_STR,       \
+                           VPY_PURPOSE,   \
+                           VPY_RICHCOMP,  \
+                           VPY_AS_NUMBER, \
+                           VPY_METHODS)   \
+static PyTypeObject VPY_TYPE = \
+{ \
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) \
+    VPY_NAME,                  /* tp_name */ \
+    sizeof(VPY_OBJECT),        /* tp_basicsize */ \
+    0,                         /* tp_itemsize */ \
+    (destructor)VPY_DEALLOC,   /* tp_dealloc */ \
+    0,                         /* tp_print (python 2) or tp_vectorcall_offset (python3.8 > ) */ \
+    (getattrfunc)VPY_GETATTR,  /* tp_getattr */ \
+    (setattrfunc)VPY_SETATTR,  /* tp_setattr */ \
+    0,                         /* tp_reserved */ \
+    (reprfunc)VPY_STR,         /* tp_repr */ \
+    VPY_AS_NUMBER,             /* tp_as_number */ \
+    0,                         /* tp_as_sequence */ \
+    0,                         /* tp_as_mapping */ \
+    0,                         /* tp_hash  */ \
+    0,                         /* tp_call */ \
+    (reprfunc)VPY_STR,         /* tp_str */ \
+    0,                         /* tp_getattro */ \
+    0,                         /* tp_setattro */ \
+    0,                         /* tp_as_buffer */ \
+    PY_VISIT_TPFLAGS_DEFAULT,  /* tp_flags */ \
+    VPY_PURPOSE,               /* tp_doc */ \
+    0,                         /* tp_traverse */ \
+    0,                         /* tp_clear */ \
+    (richcmpfunc)VPY_RICHCOMP, /* tp_richcompare */ \
+    0,                         /* tp_weaklistoffset */ \
+    0,                         /* tp_iter */ \
+    0,                         /* tp_iternext */ \
+    VPY_METHODS,               /* tp_methods */ \
+    0,                         /* tp_members */ \
+    0,                         /* tp_getset */ \
+    0,                         /* tp_base */ \
+    0,                         /* tp_dict */ \
+    0,                         /* tp_descr_get */ \
+    0,                         /* tp_descr_set */  \
+    0,                         /* tp_dictoffset */ \
+    0,                         /* tp_init */  \
+    0,                         /* tp_alloc */  \
+    0,                         /* tp_new */  \
+    0,                         /* tp_free */ \
+    0,                         /* tp_is_gc */ \
+    0,                         /* tp_bases */ \
+    0,                         /* tp_mro */ \
+    0,                         /* tp_cache */ \
+    0,                         /* tp_subclasses */ \
+    0,                         /* tp_weaklist */ \
+    0,                         /* tp_del */ \
+    0                          /* tp_version_tag */ \
+    PyVarObject_TAIL                                \
+};
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // End Functions to help with Python 2/3 Compatibility.

@@ -5,6 +5,7 @@
 #include <PySpreadsheetAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <ColorAttribute.h>
 
@@ -126,6 +127,37 @@ SpreadsheetAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+SpreadsheetAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SpreadsheetAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySpreadsheetAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Now members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 11) continue; // internal field
+        if (i == 13) continue; // internal field
+        if (i == 15) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SpreadsheetAttributes_SetSubsetName(PyObject *self, PyObject *args)
 {
@@ -947,7 +979,8 @@ SpreadsheetAttributes_GetPastPickLetters(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySpreadsheetAttributes_methods[SPREADSHEETATTRIBUTES_NMETH] = {
-    {"Notify", SpreadsheetAttributes_Notify, METH_VARARGS},
+    {"__dir__", SpreadsheetAttributes_dir, METH_NOARGS},
+    {"Notify", SpreadsheetAttributes_Notify, METH_NOARGS},
     {"SetSubsetName", SpreadsheetAttributes_SetSubsetName, METH_VARARGS},
     {"GetSubsetName", SpreadsheetAttributes_GetSubsetName, METH_VARARGS},
     {"SetFormatString", SpreadsheetAttributes_SetFormatString, METH_VARARGS},
@@ -1033,17 +1066,6 @@ PySpreadsheetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pastPickLetters") == 0)
         return SpreadsheetAttributes_GetPastPickLetters(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySpreadsheetAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySpreadsheetAttributes_methods[i].ml_name),
-                PyString_FromString(PySpreadsheetAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PySpreadsheetAttributes_methods, self, name);
 }
@@ -1150,7 +1172,8 @@ VISIT_PY_TYPE_OBJ(SpreadsheetAttributesType,         \
                   SpreadsheetAttributes_str,         \
                   SpreadsheetAttributes_Purpose,     \
                   SpreadsheetAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PySpreadsheetAttributes_methods);
 
 //
 // Helper function for comparing.

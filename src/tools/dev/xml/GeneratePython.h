@@ -3041,6 +3041,41 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "}" << Endl;
         c << Endl;
 
+        // Write custom dir() method.
+        c << "static PyObject *" << Endl;
+        c << name << "_dir(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    static "<<name<<" atts; // dummy to access field names" << Endl;
+        c << Endl;
+        c << "    PyObject *dir_list = PyList_New(0);" << Endl; 
+        c << "    if (!dir_list)" << Endl;
+        c << "    {" << Endl;
+        c << "        PyErr_NoMemory();" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Add methods from the methods table" << Endl;
+        c << "    for (PyMethodDef const *method = &Py"<<name<<"_methods[0];" << Endl;
+        c << "         method && method->ml_name;" << Endl;
+        c << "         method++) {" << Endl;
+        c << "        if (!strncmp(method->ml_name, \"__dir__\", 7)) continue;" << Endl;
+        c << "        if (!strncmp(method->ml_name, \"Notify\", 6)) continue;" << Endl;
+        c << "        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Add members using generic AttributeGroup interface" << Endl;
+        c << "    for (int i = 0; i < atts.NumAttributes(); i++) {" << Endl;
+        for(size_t i = 0; i < fields.size(); ++i)
+        {
+            if(fields[i]->internal)
+                c << "        if (i == "<<i<<") continue; // internal field" << Endl;
+        }
+        c << "        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    return dir_list;" << Endl;
+        c << "}" << Endl;
+
         // Write the rest of the methods.
         for(size_t i = 0; i < fields.size(); ++i)
         {
@@ -3091,9 +3126,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         {
             c << Endl;
             c << "PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH] = {" << Endl;
-            c << "    {\"Notify\", " << name << "_Notify, METH_VARARGS}," << Endl;
+            c << "    {\"__dir__\", " << name << "_dir, METH_NOARGS}," << Endl;
+            c << "    {\"Notify\", " << name << "_Notify, METH_NOARGS}," << Endl;
         }
-        methCnt++;
+        methCnt+=2;
         for(size_t i = 0; i < fields.size(); ++i)
         {
             methCnt += fields[i]->WritePyObjectMethodTable(c, name, countOnly);
@@ -3176,17 +3212,6 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << Endl;
             c << "    Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
         }
-        c << Endl;
-        c << "    // Add a __dict__ answer so that dir() works" << Endl;
-        c << "    if (!strcmp(name, \"__dict__\"))" << Endl;
-        c << "    {" << Endl;
-        c << "        PyObject *result = PyDict_New();" << Endl;
-        c << "        for (int i = 0; Py" << name << "_methods[i].ml_meth; i++)" << Endl;
-        c << "            PyDict_SetItem(result," << Endl;
-        c << "                PyString_FromString(Py" << name << "_methods[i].ml_name)," << Endl;
-        c << "                PyString_FromString(Py" << name << "_methods[i].ml_name));" << Endl;
-        c << "        return result;" << Endl;
-        c << "    }" << Endl;
         c << Endl;
         c << "    return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
         c << "}" << Endl;
@@ -3409,7 +3434,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "                  "<<name<<"_str,         \\" << Endl;
         c << "                  "<<name<<"_Purpose,     \\" << Endl;
         c << "                  "<<name<<"_richcompare, \\" << Endl;
-        c << "                  0); /* as_number*/"         << Endl;
+        c << "                  0, /* as_number*/       \\" << Endl;
+        c << "                  Py"<<name<<"_methods);" << Endl;
         c << Endl;
 
         c << "//" << Endl;
@@ -3732,6 +3758,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#include <Py" << name << ".h>" << Endl;
         c << "#include <ObserverToCallback.h>" << Endl;
         c << "#include <stdio.h>" << Endl;
+        c << "#include <string.h>" << Endl;
         c << "#include <Py2and3Support.h>" << Endl;
         WriteIncludedHeaders(c);
         c << Endl;

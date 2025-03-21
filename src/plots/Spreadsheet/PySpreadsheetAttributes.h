@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SPREADSHEETATTRIBUTES_NMETH 30
+#define SPREADSHEETATTRIBUTES_NMETH 31
 void           PySpreadsheetAttributes_StartUp(SpreadsheetAttributes *subj, void *data);
 void           PySpreadsheetAttributes_CloseDown();
 PyMethodDef *  PySpreadsheetAttributes_GetMethodTable(int *nMethods);
