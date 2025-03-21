@@ -113,7 +113,7 @@ private slots:
     void page5_newSequenceClicked(int);
     void page5_deleteSequenceClicked();
     void page5_destinationViewportChanged(int);
-    void page5_typedNewSequenceName(const QString &);
+    void page5_typedNewSequenceName();
     void page5_updatedMapping(const QString &vp1,
                         const QStringList &seqList1);
     void page5_updatedMapping(const QString &vp1,
@@ -125,7 +125,7 @@ private slots:
     void page6_saveAsTemplateChanged(int);
 
     void page7_templateFileChanged(const QString &);
-    void page7_templateNameChanged(const QString &);
+    void page7_templateNameChanged();
     void page7_templateDescriptionChanged();
     void page7_previewImageFileChanged(const QString &);
 
@@ -144,18 +144,18 @@ private slots:
     void page9_stereoTypeChanged(int);
     void page9_screenCaptureChanged(bool);
 
-    void page10_fpsChanged(const QString &s);
-    void page10_startIndexChanged(const QString &s);
-    void page10_endIndexChanged(const QString &s);
+    void page10_fpsChanged();
+    void page10_startIndexChanged();
+    void page10_endIndexChanged();
     void page10_strideChanged(int);
-    void page10_initialFrameValueChanged(const QString &s);
+    void page10_initialFrameValueChanged();
 
-    void page11_processOutputDirectoryText(const QString &);
+    void page11_processOutputDirectoryText();
     void page11_selectOutputDirectory();
-    void page11_processFilebaseText(const QString &);
+    void page11_processFilebaseText();
 
     void page12_emailNotificationChanged(int);
-    void page12_emailAddressChanged(const QString &);
+    void page12_emailAddressChanged();
 
     void page13_generationMethodChanged(int);
 

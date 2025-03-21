@@ -309,10 +309,8 @@ QvisRenderingWindow::CreateBasicPage()
     multiresolutionSmallestCellLabel = new QLabel(tr("Smallest cell"), basicOptions);
     basicLayout->addWidget(multiresolutionSmallestCellLabel, row, 1);
     multiresolutionSmallestCellLineEdit = new QLineEdit(basicOptions);
-    connect(multiresolutionSmallestCellLineEdit, SIGNAL(returnPressed()),
+    connect(multiresolutionSmallestCellLineEdit, SIGNAL(editingFinished()),
             this, SLOT(processMultiresolutionSmallestCellText()));
-    connect(multiresolutionSmallestCellLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processMultiresolutionSmallestCellText(const QString &)));
     basicLayout->addWidget(multiresolutionSmallestCellLineEdit, row, 2, 1, 2);
     row++;
 
@@ -1745,36 +1743,6 @@ QvisRenderingWindow::processMultiresolutionSmallestCellText()
     }
 }
 
-// ****************************************************************************
-// Method: QvisRenderingWindow::processMultiresolutionSmallestCellText
-//
-// Purpose:
-//   This Qt slot function is called when the multiresolution smallest
-//   cell text is changed.
-//
-// Arguments:
-//
-// Programmer: Eric Brugger
-// Creation:   Tue Oct 25 12:32:40 PDT 2011
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisRenderingWindow::processMultiresolutionSmallestCellText(const QString &tols)
-{
-    double temp = -1.0;
-    bool okay = sscanf(multiresolutionSmallestCellLineEdit->displayText().toStdString().c_str(),
-                       "%lg", &temp) == 1;
-
-    if (okay && temp >= 0.0)
-    {
-        renderAtts->SetMultiresolutionCellSize(temp);
-        SetUpdate(false);
-        Apply();
-    }
-}
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::objectRepresentationChanged
