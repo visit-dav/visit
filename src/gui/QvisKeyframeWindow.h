@@ -80,7 +80,7 @@ protected:
 private slots:
     void nFramesProcessText();
     void keyframeEnabledToggled(bool);
-    void userSetNFrames(const QString &);
+    void userSetNFrames();
     void newSelection();
     void stateKFClicked();
     void addViewKeyframe();

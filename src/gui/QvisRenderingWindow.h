@@ -134,7 +134,6 @@ private slots:
     void updateDepthPeeling();
     void multiresolutionModeToggled(bool);
     void processMultiresolutionSmallestCellText();
-    void processMultiresolutionSmallestCellText(const QString &);
     void objectRepresentationChanged(int);
     void stereoToggled(bool);
     void stereoTypeChanged(int);

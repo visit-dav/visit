@@ -31,6 +31,11 @@ class QCheckBox;
 //
 //    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
 //    Added support for custom base class for derived state objects.
+//
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg from xxxTextChanged slots as they are now connected
+//    to 'editingFinished' signal.
+//
 // ****************************************************************************
 class XMLEditAttribute : public QFrame
 {
@@ -42,15 +47,15 @@ class XMLEditAttribute : public QFrame
   public slots:
     void UpdateWindowContents();
     void UpdateWindowSensitivity();
-    void nameTextChanged(const QString&);
-    void purposeTextChanged(const QString&);
-    void codefileTextChanged(const QString&);
-    void exportAPITextChanged(const QString&);
-    void exportIncludeTextChanged(const QString&);
+    void nameTextChanged();
+    void purposeTextChanged();
+    void codefileTextChanged();
+    void exportAPITextChanged();
+    void exportIncludeTextChanged();
     void persistentChanged();
     void keyframeChanged();
     void customBaseClassChanged();
-    void baseClassTextChanged(const QString&);
+    void baseClassTextChanged();
   private:
     XMLDocument   *xmldoc;
 

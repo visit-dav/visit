@@ -158,7 +158,6 @@ to download those additional libraries.
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/setuptools-28.0.0.tar.gz
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/Cython-0.25.2.tar.gz
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/numpy-1.14.1.zip
-  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/pyparsing-1.5.2.tar.gz
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/requests-2.5.1.tar.gz
 
 It's possible that the list could change and the above list becomes outdated.

@@ -341,6 +341,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   passed via stderr without a dialog box popping up.
  *   Removed PrintEnvironment as it wasn't printing all environment strings.
  *
+ *   Kathleen Biagas, Tue Mar 18, 2025
+ *   Remove support for ultrawrapper.
+ *
  *****************************************************************************/
 
 int
@@ -1371,20 +1374,6 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         sprintf(tmp, "VISITPLUGININSTPUB=%s", visitpath);
         env.push_back(tmp);
         sprintf(tmp, "VISITARCHHOME=%s", visitpath);
-        env.push_back(tmp);
-    }
-
-    /*
-     * Set the ultrawrapper dir.
-     */
-    if (!usingdev)
-    {
-        sprintf(tmp, "VISITULTRAHOME=%s\\ultrawrapper", visitpath);
-        env.push_back(tmp);
-    }
-    else
-    {
-        sprintf(tmp, "VISITULTRAHOME=%s\\..\\ultrawrapper", visitpath);
         env.push_back(tmp);
     }
 

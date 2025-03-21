@@ -70,7 +70,9 @@ QvisContextWindow::~QvisContextWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Fri Mar 21, 2025
+//   Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+// 
 // ****************************************************************************
 
 void
@@ -82,21 +84,21 @@ QvisContextWindow::CreateWindowContents()
     offsetLabel = new QLabel(tr("Offset the primary variable by "), central);
     mainLayout->addWidget(offsetLabel,0,0);
     offset = new QLineEdit(central);
-    connect(offset, SIGNAL(returnPressed()),
+    connect(offset, SIGNAL(editingFinished()),
             this, SLOT(offsetProcessText()));
     mainLayout->addWidget(offset, 0,1);
 
     lowLabel = new QLabel(tr("Use the primary variable if it is above "), central);
     mainLayout->addWidget(lowLabel,1,0);
     low = new QLineEdit(central);
-    connect(low, SIGNAL(returnPressed()),
+    connect(low, SIGNAL(editingFinished()),
             this, SLOT(lowProcessText()));
     mainLayout->addWidget(low, 1,1);
 
     hiLabel = new QLabel(tr("Use the primary variable if it is below "), central);
     mainLayout->addWidget(hiLabel,2,0);
     hi = new QLineEdit(central);
-    connect(hi, SIGNAL(returnPressed()),
+    connect(hi, SIGNAL(editingFinished()),
             this, SLOT(hiProcessText()));
     mainLayout->addWidget(hi, 2,1);
 
@@ -111,14 +113,14 @@ QvisContextWindow::CreateWindowContents()
     cutoffLabel = new QLabel(tr("Cutoff for context variable"), central);
     mainLayout->addWidget(cutoffLabel,4,0);
     cutoff = new QLineEdit(central);
-    connect(cutoff, SIGNAL(returnPressed()),
+    connect(cutoff, SIGNAL(editingFinished()),
             this, SLOT(cutoffProcessText()));
     mainLayout->addWidget(cutoff, 4,1);
 
     belowLabel = new QLabel(tr("Map values below the cutoff to "), central);
     mainLayout->addWidget(belowLabel,5,0);
     below = new QLineEdit(central);
-    connect(below, SIGNAL(returnPressed()),
+    connect(below, SIGNAL(editingFinished()),
             this, SLOT(belowProcessText()));
     mainLayout->addWidget(below, 5,1);
 

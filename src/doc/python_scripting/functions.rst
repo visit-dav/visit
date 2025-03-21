@@ -2349,7 +2349,7 @@ return type : CLI_return_t
 **Description:**
 
     The DeleteWindow function deletes the active visualization window and
-    makes the visualization window with the smallest window index the new
+    makes the visualization window with the smallest window identifier the new
     active window. This function has no effect when there is only one remaining
     visualization window.
 
@@ -4906,26 +4906,6 @@ return type : tuple of strings
   print("The list of time sliders is: ", GetTimeSliders())
 
 
-GetUltraScript
---------------
-
-**Synopsis:**
-
-::
-
-  GetUltraScript() -> string
-
-
-return type : string
-    The GetUltraScript function returns a filename.
-
-
-**Description:**
-
-    Return the name of the file in use by the LoadUltra function. Normal users do
-    not need to use this function.
-
-
 GetView2D
 ---------
 
@@ -5614,39 +5594,6 @@ return type : CLI_return_t
   AddPlot("Pseudocolor", "pressure")
   LoadNamedSelection("selection_from_previous_session")
   ApplyNamedSelection("selection_from_previous_session")
-
-
-LoadUltra
----------
-
-**Synopsis:**
-
-::
-
-  LoadUltra()
-
-
-**Description:**
-
-    LoadUltra launches the Ultra command parser, allowing you to enter Ultra
-    commands and have VisIt process them.  A new command prompt is presented,
-    and only Ultra commands will be allowed until 'end' or 'quit' is entered,
-    at which time, you will be returned to VisIt's cli prompt.  For information
-    on currently supported commands, type 'help' at the Ultra prompt
-    Please note that filenames/paths must be surrounded by quotes, unlike with
-    Ultra.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  #>>> LoadUltra()
-  #U-> rd "../../data/distribution.ultra"
-  #U-> select 1
-  #U-> end
-  #>>>
 
 
 LocalNameSpace
@@ -8695,16 +8642,11 @@ SetActiveWindow
 
 ::
 
-  SetActiveWindow(windowIndex) -> integer
-  SetActiveWindow(windowIndex, raiseWindow) -> integer
+  SetActiveWindow(windowId) -> integer
 
 
-windowIndex : integer
-    An integer window index starting at 1.
-
-raiseWindow : integer
-    This is an optional integer argument that raises and activates the window if
-    set to 1. If omitted, the default behavior is to raise and activate the window.
+windowId : integer
+    An integer window identifier.
 
 return type : CLI_return_t
     The SetActiveWindow function returns an integer value of 1 for success and
@@ -8713,13 +8655,14 @@ return type : CLI_return_t
 
 **Description:**
 
-    Most of the functions in the VisIt Python Interface operate on the
-    contents of the active window. If there is more than one window, it is very
-    important to be able to set the active window. To set the active window,
-    use the SetActiveWindow function. The SetActiveWindow function takes a
-    single integer argument which is the index of the new active window. The
-    new window index must be an integer greater than zero and less than or
-    equal to the number of open windows.
+    Most of the functions in the VisIt Python Interface operate on the contents of the *active* window.
+    If there is more than one window, it is very important to be able to set the active window.
+    Use the SetActiveWindow function to do this.
+    This function takes a single integer argument which is the *identifier* of the new active window.
+    As windows are added with ``AddWindow()`` and deleted with ``DeleteWindow()``, the list of available windows (which can be obtained with ``GetGlobalAttributes().windows`` can wind up looking like an arbitrary set of positive integers such as ``(1,2,4,7,8)``.
+    These numbers are also the same numbers that appear in window title strings in the window manager.
+    The *active* window is **NOT** a 0-based index over the number of available windows.
+    The *active* window is identified as one of the numbers in this list.
 
 
 **Example:**
@@ -8727,11 +8670,39 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  SetWindowLayout(2)
-  SetActiveWindow(2)
+  SetWindowLayout(4) # Creates a 2x2 arrangement of 4 windows numbered 1,2,3,4
+  SetActiveWindow(2) # Sets active window to the upper-right of the 4.
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
   AddPlot("Mesh", "mesh1")
   DrawPlots()
+
+
+GetActiveWindow
+---------------
+
+**Synopsis:**
+
+::
+
+  GetActiveWindow() -> integer
+
+return type : CLI_return_t
+    The GetActiveWindow function returns a positive integer on success and 0 on failure.
+
+
+**Description:**
+
+    See ``SetActiveWindow()``.
+
+**Example:**
+
+::
+
+  #% visit -cli
+  SetWindowLayout(4) # creates a 2x2 arrangement of 4 windows numbered 1,2,3,4
+  SetActiveWindow(2)
+  DeleteWindow()     # After this call, the list of available windows is 1,3,4
+  GetActiveWindow()  # Will return 1
 
 
 SetAnimationTimeout
@@ -10889,29 +10860,6 @@ return type : CLI_return_t
   #% visit -cli
   SetTryHarderCyclesTimes(1) # Turn this feature on
   SetTryHarderCyclesTimes(0) # Turn this feature off
-
-
-SetUltraScript
---------------
-
-**Synopsis:**
-
-::
-
-  SetUltraScript(filename) -> integer
-
-
-filename : string
-    The name of the file to be used as the ultra script when LoadUltra is called.
-
-return type : CLI_return_t
-    The SetUltraScript function returns 1.
-
-
-**Description:**
-
-    Set the path to the script to be used by the LoadUltra command. Normal users do
-    not need to use this function.
 
 
 SetView2D

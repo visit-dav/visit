@@ -186,10 +186,10 @@ QvisCreateBondsWindow::CreateWindowContents()
     maxDist = new QLineEdit(bondsDetailsGroup);
     bondDetailsLayout2->addWidget(maxDist);
 
-    connect(minDist, SIGNAL(textChanged(const QString&)),
-            this, SLOT(minDistTextChanged(const QString&)));
-    connect(maxDist, SIGNAL(textChanged(const QString&)),
-            this, SLOT(maxDistTextChanged(const QString&)));
+    connect(minDist, SIGNAL(editingFinished()),
+            this, SLOT(minDistTextChanged()));
+    connect(maxDist, SIGNAL(editingFinished()),
+            this, SLOT(maxDistTextChanged()));
 
     connect(minDist, SIGNAL(returnPressed()),
             this, SLOT(minDistReturnPressed()));
@@ -648,7 +648,7 @@ void QvisCreateBondsWindow::maxBondsReturnPressed()
     Apply();
 }
 
-void QvisCreateBondsWindow::minDistTextChanged(const QString &txt)
+void QvisCreateBondsWindow::minDistTextChanged()
 {
     QTreeWidgetItem *item = bondsTree->currentItem();
     int n = GetListLength();
@@ -661,7 +661,7 @@ void QvisCreateBondsWindow::minDistTextChanged(const QString &txt)
     atts->SelectMinDist();
 }
 
-void QvisCreateBondsWindow::maxDistTextChanged(const QString &txt)
+void QvisCreateBondsWindow::maxDistTextChanged()
 {
     QTreeWidgetItem *item = bondsTree->currentItem();
     int n = GetListLength();

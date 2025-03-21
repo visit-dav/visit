@@ -41,6 +41,9 @@
 //    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //    Support Qt6: buttonClicked -> idClicked.
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 XMLEditFunctions::XMLEditFunctions(QWidget *p)
     : QFrame(p)
@@ -121,8 +124,8 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
 
     connect(functionlist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(name, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
+    connect(name, SIGNAL(editingFinished()),
+            this, SLOT(nameTextChanged()));
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(typeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(typeGroupChanged(int)));
@@ -132,10 +135,10 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
 #endif
     connect(member, SIGNAL(clicked()),
             this, SLOT(memberChanged()));
-    connect(target, SIGNAL(textChanged(const QString&)),
-            this, SLOT(targetTextChanged(const QString&)));
-    connect(declaration, SIGNAL(textChanged(const QString&)),
-            this, SLOT(declarationTextChanged(const QString&)));
+    connect(target, SIGNAL(editingFinished()),
+            this, SLOT(targetTextChanged()));
+    connect(declaration, SIGNAL(editingFinished()),
+            this, SLOT(declarationTextChanged()));
     connect(definition, SIGNAL(textChanged()),
             this, SLOT(definitionChanged()));
     connect(newButton, SIGNAL(clicked()),
@@ -368,6 +371,11 @@ XMLEditFunctions::BlockAllSignals(bool block)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 2008
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    If passed 'text' arg is empty as would be the case when triggered by
+//    'editingFinished' signal, grab contents of file widget.
+//    Arg is only non-empty when this function called from targetTextChanged.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::nameTextChanged(const QString &text)
@@ -378,7 +386,7 @@ XMLEditFunctions::nameTextChanged(const QString &text)
         return;
     Function *f = a->functions[index];
 
-    QString newname = text.trimmed();
+    QString newname = text.isEmpty() ? name->text().trimmed() : text.trimmed();
     f->name = newname;
     if(CountFunctions(newname) > 1)
     {
@@ -447,9 +455,12 @@ XMLEditFunctions::memberChanged()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 2008
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditFunctions::targetTextChanged(const QString &text)
+XMLEditFunctions::targetTextChanged()
 {
     Attribute *a = xmldoc->attribute;
     int index = functionlist->currentRow();
@@ -457,7 +468,7 @@ XMLEditFunctions::targetTextChanged(const QString &text)
         return;
     Function *f = a->functions[index];
 
-    f->target = text;
+    f->target = target->text();
     nameTextChanged(f->name);
 }
 
@@ -471,9 +482,12 @@ XMLEditFunctions::targetTextChanged(const QString &text)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 2008
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditFunctions::declarationTextChanged(const QString &text)
+XMLEditFunctions::declarationTextChanged()
 {
     Attribute *a = xmldoc->attribute;
     int index = functionlist->currentRow();
@@ -481,7 +495,7 @@ XMLEditFunctions::declarationTextChanged(const QString &text)
         return;
     Function *f = a->functions[index];
 
-    f->decl = text;
+    f->decl = declaration->text();
 }
 
 // ****************************************************************************

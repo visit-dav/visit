@@ -64,8 +64,8 @@ class QvisCreateBondsWindow : public QvisOperatorWindow
     void bondsTreeDel();
     void bondsTreeUp();
     void bondsTreeDown();
-    void minDistTextChanged(const QString&);
-    void maxDistTextChanged(const QString&);
+    void minDistTextChanged();
+    void maxDistTextChanged();
     void minDistReturnPressed();
     void maxDistReturnPressed();
     void maxBondsReturnPressed();
