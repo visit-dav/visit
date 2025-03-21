@@ -49,9 +49,6 @@ struct s
 #elif defined(_WIN32)
   static const char lib_osmesa[] = "osmesa32.dll";
   static const char lib_gl[] = "opengl32.dll";
-#elif defined(_AIX)
-  static const char lib_osmesa[] = "./lib/libOSMesa.a(shr_64.o);./lib/libOSMesa.a(shr.o)";
-  static const char lib_gl[] = "libGL.a(shr_64.o);libGL.a(shr.o)";
 #else
   static const char lib_osmesa[] = "./lib/libOSMesa.so";
   static const char lib_gl[] = "libGL.so.1;libGL.so";

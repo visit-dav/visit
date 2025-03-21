@@ -424,10 +424,8 @@ IF(NOT WIN32)
     IF(NOT APPLE)
         find_library(LIBRT rt)
         TARGET_LINK_LIBRARIES(cli ${LIBRT})
-        IF(NOT AIX)
-            # Is this a Python companion libary? We need it for unresolved openpty/forkpty
-            TARGET_LINK_LIBRARIES(cli util)
-        ENDIF(NOT AIX)
+        # Is this a Python companion libary? We need it for unresolved openpty/forkpty
+        TARGET_LINK_LIBRARIES(cli util)
     ENDIF(NOT APPLE)
 else()
     # resolve inconsistent dll-linkage problem
