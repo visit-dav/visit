@@ -5,6 +5,7 @@
 #include <PyPickAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyPickVarInfo.h>
 
@@ -247,6 +248,86 @@ PickAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+PickAttributes_dir(PyObject *self, PyObject *args)
+{
+    static PickAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyPickAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 9) continue; // internal field
+        if (i == 10) continue; // internal field
+        if (i == 11) continue; // internal field
+        if (i == 12) continue; // internal field
+        if (i == 13) continue; // internal field
+        if (i == 14) continue; // internal field
+        if (i == 15) continue; // internal field
+        if (i == 16) continue; // internal field
+        if (i == 17) continue; // internal field
+        if (i == 18) continue; // internal field
+        if (i == 19) continue; // internal field
+        if (i == 20) continue; // internal field
+        if (i == 21) continue; // internal field
+        if (i == 22) continue; // internal field
+        if (i == 23) continue; // internal field
+        if (i == 24) continue; // internal field
+        if (i == 25) continue; // internal field
+        if (i == 26) continue; // internal field
+        if (i == 27) continue; // internal field
+        if (i == 28) continue; // internal field
+        if (i == 29) continue; // internal field
+        if (i == 30) continue; // internal field
+        if (i == 31) continue; // internal field
+        if (i == 32) continue; // internal field
+        if (i == 33) continue; // internal field
+        if (i == 34) continue; // internal field
+        if (i == 35) continue; // internal field
+        if (i == 36) continue; // internal field
+        if (i == 37) continue; // internal field
+        if (i == 39) continue; // internal field
+        if (i == 40) continue; // internal field
+        if (i == 41) continue; // internal field
+        if (i == 42) continue; // internal field
+        if (i == 48) continue; // internal field
+        if (i == 49) continue; // internal field
+        if (i == 50) continue; // internal field
+        if (i == 51) continue; // internal field
+        if (i == 52) continue; // internal field
+        if (i == 55) continue; // internal field
+        if (i == 56) continue; // internal field
+        if (i == 57) continue; // internal field
+        if (i == 59) continue; // internal field
+        if (i == 60) continue; // internal field
+        if (i == 63) continue; // internal field
+        if (i == 64) continue; // internal field
+        if (i == 65) continue; // internal field
+        if (i == 68) continue; // internal field
+        if (i == 71) continue; // internal field
+        if (i == 75) continue; // internal field
+        if (i == 76) continue; // internal field
+        if (i == 83) continue; // internal field
+        if (i == 84) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 PickAttributes_SetVariables(PyObject *self, PyObject *args)
 {
@@ -2205,7 +2286,8 @@ PickAttributes_GetRemoveLabelTwins(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
-    {"Notify", PickAttributes_Notify, METH_VARARGS},
+    {"__dir__", PickAttributes_dir, METH_NOARGS},
+    {"Notify", PickAttributes_Notify, METH_NOARGS},
     {"SetVariables", PickAttributes_SetVariables, METH_VARARGS},
     {"GetVariables", PickAttributes_GetVariables, METH_VARARGS},
     {"SetShowIncidentElements", PickAttributes_SetShowIncidentElements, METH_VARARGS},
@@ -2373,17 +2455,6 @@ PyPickAttributes_getattr(PyObject *self, char *name)
         return PickAttributes_GetRemoveLabelTwins(self, NULL);
 
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyPickAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyPickAttributes_methods[i].ml_name),
-                PyString_FromString(PyPickAttributes_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyPickAttributes_methods, self, name);
 }
 
@@ -2527,7 +2598,8 @@ VISIT_PY_TYPE_OBJ(PickAttributesType,         \
                   PickAttributes_str,         \
                   PickAttributes_Purpose,     \
                   PickAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyPickAttributes_methods);
 
 //
 // Helper function for comparing.

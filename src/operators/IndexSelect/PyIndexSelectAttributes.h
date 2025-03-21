@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define INDEXSELECTATTRIBUTES_NMETH 42
+#define INDEXSELECTATTRIBUTES_NMETH 43
 void           PyIndexSelectAttributes_StartUp(IndexSelectAttributes *subj, void *data);
 void           PyIndexSelectAttributes_CloseDown();
 PyMethodDef *  PyIndexSelectAttributes_GetMethodTable(int *nMethods);

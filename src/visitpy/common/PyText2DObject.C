@@ -685,7 +685,8 @@ VISIT_PY_TYPE_OBJ( Text2DObjectType,         \
                    Text2DObject_str,         \
                    Text2DObject_Purpose,     \
                    Text2DObject_richcompare, \
-                   0); /* as_number*/
+                   0, /* as_number*/
+                   Text2DObject_methods);
 
 // CUSTOM
 static PyObject *

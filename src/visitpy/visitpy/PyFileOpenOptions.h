@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FILEOPENOPTIONS_NMETH 15
+#define FILEOPENOPTIONS_NMETH 16
 void VISITPY_API           PyFileOpenOptions_StartUp(FileOpenOptions *subj, void *data);
 void VISITPY_API           PyFileOpenOptions_CloseDown();
 VISITPY_API PyMethodDef *  PyFileOpenOptions_GetMethodTable(int *nMethods);

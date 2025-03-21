@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ISOSURFACEATTRIBUTES_NMETH 22
+#define ISOSURFACEATTRIBUTES_NMETH 23
 void           PyIsosurfaceAttributes_StartUp(IsosurfaceAttributes *subj, void *data);
 void           PyIsosurfaceAttributes_CloseDown();
 PyMethodDef *  PyIsosurfaceAttributes_GetMethodTable(int *nMethods);

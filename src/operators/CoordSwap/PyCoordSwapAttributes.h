@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define COORDSWAPATTRIBUTES_NMETH 8
+#define COORDSWAPATTRIBUTES_NMETH 9
 void           PyCoordSwapAttributes_StartUp(CoordSwapAttributes *subj, void *data);
 void           PyCoordSwapAttributes_CloseDown();
 PyMethodDef *  PyCoordSwapAttributes_GetMethodTable(int *nMethods);

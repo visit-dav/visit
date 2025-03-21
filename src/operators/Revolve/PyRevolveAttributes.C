@@ -5,6 +5,7 @@
 #include <PyRevolveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -103,6 +104,34 @@ RevolveAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+RevolveAttributes_dir(PyObject *self, PyObject *args)
+{
+    static RevolveAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyRevolveAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 RevolveAttributes_SetMeshType(PyObject *self, PyObject *args)
 {
@@ -493,7 +522,8 @@ RevolveAttributes_GetSteps(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyRevolveAttributes_methods[REVOLVEATTRIBUTES_NMETH] = {
-    {"Notify", RevolveAttributes_Notify, METH_VARARGS},
+    {"__dir__", RevolveAttributes_dir, METH_NOARGS},
+    {"Notify", RevolveAttributes_Notify, METH_NOARGS},
     {"SetMeshType", RevolveAttributes_SetMeshType, METH_VARARGS},
     {"GetMeshType", RevolveAttributes_GetMeshType, METH_VARARGS},
     {"SetAutoAxis", RevolveAttributes_SetAutoAxis, METH_VARARGS},
@@ -549,17 +579,6 @@ PyRevolveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "steps") == 0)
         return RevolveAttributes_GetSteps(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyRevolveAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyRevolveAttributes_methods[i].ml_name),
-                PyString_FromString(PyRevolveAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyRevolveAttributes_methods, self, name);
 }
@@ -650,7 +669,8 @@ VISIT_PY_TYPE_OBJ(RevolveAttributesType,         \
                   RevolveAttributes_str,         \
                   RevolveAttributes_Purpose,     \
                   RevolveAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyRevolveAttributes_methods);
 
 //
 // Helper function for comparing.

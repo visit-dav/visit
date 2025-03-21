@@ -5,6 +5,7 @@
 #include <PyScatterAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <GlyphTypes.h>
 #include <ColorAttribute.h>
@@ -394,6 +395,34 @@ ScatterAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ScatterAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ScatterAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyScatterAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ScatterAttributes_SetVar1(PyObject *self, PyObject *args)
 {
@@ -2868,7 +2897,8 @@ ScatterAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH] = {
-    {"Notify", ScatterAttributes_Notify, METH_VARARGS},
+    {"__dir__", ScatterAttributes_dir, METH_NOARGS},
+    {"Notify", ScatterAttributes_Notify, METH_NOARGS},
     {"SetVar1", ScatterAttributes_SetVar1, METH_VARARGS},
     {"GetVar1", ScatterAttributes_GetVar1, METH_VARARGS},
     {"SetVar1Role", ScatterAttributes_SetVar1Role, METH_VARARGS},
@@ -3160,17 +3190,6 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyScatterAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyScatterAttributes_methods[i].ml_name),
-                PyString_FromString(PyScatterAttributes_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyScatterAttributes_methods, self, name);
 }
 
@@ -3360,7 +3379,8 @@ VISIT_PY_TYPE_OBJ(ScatterAttributesType,         \
                   ScatterAttributes_str,         \
                   ScatterAttributes_Purpose,     \
                   ScatterAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyScatterAttributes_methods);
 
 //
 // Helper function for comparing.

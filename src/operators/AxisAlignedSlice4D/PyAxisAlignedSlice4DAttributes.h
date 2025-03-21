@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXISALIGNEDSLICE4DATTRIBUTES_NMETH 10
+#define AXISALIGNEDSLICE4DATTRIBUTES_NMETH 11
 void           PyAxisAlignedSlice4DAttributes_StartUp(AxisAlignedSlice4DAttributes *subj, void *data);
 void           PyAxisAlignedSlice4DAttributes_CloseDown();
 PyMethodDef *  PyAxisAlignedSlice4DAttributes_GetMethodTable(int *nMethods);

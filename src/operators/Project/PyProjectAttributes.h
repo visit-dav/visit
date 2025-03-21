@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PROJECTATTRIBUTES_NMETH 6
+#define PROJECTATTRIBUTES_NMETH 7
 void           PyProjectAttributes_StartUp(ProjectAttributes *subj, void *data);
 void           PyProjectAttributes_CloseDown();
 PyMethodDef *  PyProjectAttributes_GetMethodTable(int *nMethods);

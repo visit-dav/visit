@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWCURVEATTRIBUTES_NMETH 12
+#define VIEWCURVEATTRIBUTES_NMETH 13
 void VISITPY_API           PyViewCurveAttributes_StartUp(ViewCurveAttributes *subj, void *data);
 void VISITPY_API           PyViewCurveAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyViewCurveAttributes_GetMethodTable(int *nMethods);

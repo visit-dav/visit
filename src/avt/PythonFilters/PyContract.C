@@ -515,7 +515,8 @@ VISIT_PY_TYPE_OBJ(PyContractType,      \
                   0,                   \
                   Contract_Doc,        \
                   0,                   \
-                  0); /* as_number*/
+                  0, /* as_number*/    \
+                  Contract_methods);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

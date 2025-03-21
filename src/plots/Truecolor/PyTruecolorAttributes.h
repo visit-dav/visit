@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TRUECOLORATTRIBUTES_NMETH 6
+#define TRUECOLORATTRIBUTES_NMETH 7
 void           PyTruecolorAttributes_StartUp(TruecolorAttributes *subj, void *data);
 void           PyTruecolorAttributes_CloseDown();
 PyMethodDef *  PyTruecolorAttributes_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define BOUNDARYATTRIBUTES_NMETH 24
+#define BOUNDARYATTRIBUTES_NMETH 25
 void           PyBoundaryAttributes_StartUp(BoundaryAttributes *subj, void *data);
 void           PyBoundaryAttributes_CloseDown();
 PyMethodDef *  PyBoundaryAttributes_GetMethodTable(int *nMethods);

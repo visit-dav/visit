@@ -5,6 +5,7 @@
 #include <PyToroidalPoloidalProjection.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -93,6 +94,34 @@ ToroidalPoloidalProjection_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ToroidalPoloidalProjection_dir(PyObject *self, PyObject *args)
+{
+    static ToroidalPoloidalProjection atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyToroidalPoloidalProjection_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ToroidalPoloidalProjection_SetR0(PyObject *self, PyObject *args)
 {
@@ -421,7 +450,8 @@ ToroidalPoloidalProjection_GetProject2D(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMETH] = {
-    {"Notify", ToroidalPoloidalProjection_Notify, METH_VARARGS},
+    {"__dir__", ToroidalPoloidalProjection_dir, METH_NOARGS},
+    {"Notify", ToroidalPoloidalProjection_Notify, METH_NOARGS},
     {"SetR0", ToroidalPoloidalProjection_SetR0, METH_VARARGS},
     {"GetR0", ToroidalPoloidalProjection_GetR0, METH_VARARGS},
     {"SetR", ToroidalPoloidalProjection_SetR, METH_VARARGS},
@@ -469,17 +499,6 @@ PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
     if(strcmp(name, "project2D") == 0)
         return ToroidalPoloidalProjection_GetProject2D(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyToroidalPoloidalProjection_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyToroidalPoloidalProjection_methods[i].ml_name),
-                PyString_FromString(PyToroidalPoloidalProjection_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyToroidalPoloidalProjection_methods, self, name);
 }
@@ -568,7 +587,8 @@ VISIT_PY_TYPE_OBJ(ToroidalPoloidalProjectionType,         \
                   ToroidalPoloidalProjection_str,         \
                   ToroidalPoloidalProjection_Purpose,     \
                   ToroidalPoloidalProjection_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyToroidalPoloidalProjection_methods);
 
 //
 // Helper function for comparing.

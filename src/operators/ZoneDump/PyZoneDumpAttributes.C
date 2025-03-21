@@ -5,6 +5,7 @@
 #include <PyZoneDumpAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -66,6 +67,34 @@ ZoneDumpAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ZoneDumpAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ZoneDumpAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyZoneDumpAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ZoneDumpAttributes_SetVariable(PyObject *self, PyObject *args)
 {
@@ -347,7 +376,8 @@ ZoneDumpAttributes_GetEnabled(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyZoneDumpAttributes_methods[ZONEDUMPATTRIBUTES_NMETH] = {
-    {"Notify", ZoneDumpAttributes_Notify, METH_VARARGS},
+    {"__dir__", ZoneDumpAttributes_dir, METH_NOARGS},
+    {"Notify", ZoneDumpAttributes_Notify, METH_NOARGS},
     {"SetVariable", ZoneDumpAttributes_SetVariable, METH_VARARGS},
     {"GetVariable", ZoneDumpAttributes_GetVariable, METH_VARARGS},
     {"SetLowerBound", ZoneDumpAttributes_SetLowerBound, METH_VARARGS},
@@ -390,17 +420,6 @@ PyZoneDumpAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "enabled") == 0)
         return ZoneDumpAttributes_GetEnabled(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyZoneDumpAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyZoneDumpAttributes_methods[i].ml_name),
-                PyString_FromString(PyZoneDumpAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyZoneDumpAttributes_methods, self, name);
 }
@@ -489,7 +508,8 @@ VISIT_PY_TYPE_OBJ(ZoneDumpAttributesType,         \
                   ZoneDumpAttributes_str,         \
                   ZoneDumpAttributes_Purpose,     \
                   ZoneDumpAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyZoneDumpAttributes_methods);
 
 //
 // Helper function for comparing.

@@ -5,6 +5,7 @@
 #include <PyTessellateAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -62,6 +63,34 @@ TessellateAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+TessellateAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TessellateAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTessellateAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 TessellateAttributes_SetChordError(PyObject *self, PyObject *args)
 {
@@ -245,7 +274,8 @@ TessellateAttributes_GetMergePoints(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH] = {
-    {"Notify", TessellateAttributes_Notify, METH_VARARGS},
+    {"__dir__", TessellateAttributes_dir, METH_NOARGS},
+    {"Notify", TessellateAttributes_Notify, METH_NOARGS},
     {"SetChordError", TessellateAttributes_SetChordError, METH_VARARGS},
     {"GetChordError", TessellateAttributes_GetChordError, METH_VARARGS},
     {"SetFieldCriterion", TessellateAttributes_SetFieldCriterion, METH_VARARGS},
@@ -280,17 +310,6 @@ PyTessellateAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "mergePoints") == 0)
         return TessellateAttributes_GetMergePoints(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyTessellateAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyTessellateAttributes_methods[i].ml_name),
-                PyString_FromString(PyTessellateAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyTessellateAttributes_methods, self, name);
 }
@@ -375,7 +394,8 @@ VISIT_PY_TYPE_OBJ(TessellateAttributesType,         \
                   TessellateAttributes_str,         \
                   TessellateAttributes_Purpose,     \
                   TessellateAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyTessellateAttributes_methods);
 
 //
 // Helper function for comparing.

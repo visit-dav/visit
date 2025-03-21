@@ -5,6 +5,7 @@
 #include <PyConeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -129,6 +130,34 @@ ConeAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ConeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ConeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyConeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ConeAttributes_SetAngle(PyObject *self, PyObject *args)
 {
@@ -616,7 +645,8 @@ ConeAttributes_GetLength(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyConeAttributes_methods[CONEATTRIBUTES_NMETH] = {
-    {"Notify", ConeAttributes_Notify, METH_VARARGS},
+    {"__dir__", ConeAttributes_dir, METH_NOARGS},
+    {"Notify", ConeAttributes_Notify, METH_NOARGS},
     {"SetAngle", ConeAttributes_SetAngle, METH_VARARGS},
     {"GetAngle", ConeAttributes_GetAngle, METH_VARARGS},
     {"SetOrigin", ConeAttributes_SetOrigin, METH_VARARGS},
@@ -674,17 +704,6 @@ PyConeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "length") == 0)
         return ConeAttributes_GetLength(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyConeAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyConeAttributes_methods[i].ml_name),
-                PyString_FromString(PyConeAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyConeAttributes_methods, self, name);
 }
@@ -777,7 +796,8 @@ VISIT_PY_TYPE_OBJ(ConeAttributesType,         \
                   ConeAttributes_str,         \
                   ConeAttributes_Purpose,     \
                   ConeAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyConeAttributes_methods);
 
 //
 // Helper function for comparing.

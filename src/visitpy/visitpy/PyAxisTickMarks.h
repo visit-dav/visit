@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXISTICKMARKS_NMETH 12
+#define AXISTICKMARKS_NMETH 13
 void VISITPY_API           PyAxisTickMarks_StartUp(AxisTickMarks *subj, void *data);
 void VISITPY_API           PyAxisTickMarks_CloseDown();
 VISITPY_API PyMethodDef *  PyAxisTickMarks_GetMethodTable(int *nMethods);

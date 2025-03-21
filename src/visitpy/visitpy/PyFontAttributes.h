@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FONTATTRIBUTES_NMETH 14
+#define FONTATTRIBUTES_NMETH 15
 void VISITPY_API           PyFontAttributes_StartUp(FontAttributes *subj, void *data);
 void VISITPY_API           PyFontAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyFontAttributes_GetMethodTable(int *nMethods);

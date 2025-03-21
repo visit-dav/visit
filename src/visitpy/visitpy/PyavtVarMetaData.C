@@ -5,6 +5,7 @@
 #include <PyavtVarMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <avtTypes.h>
 
@@ -110,6 +111,34 @@ avtVarMetaData_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+avtVarMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtVarMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtVarMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtVarMetaData_SetCentering(PyObject *self, PyObject *args)
 {
@@ -505,7 +534,8 @@ avtVarMetaData_GetMatRestricted(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH] = {
-    {"Notify", avtVarMetaData_Notify, METH_VARARGS},
+    {"__dir__", avtVarMetaData_dir, METH_NOARGS},
+    {"Notify", avtVarMetaData_Notify, METH_NOARGS},
     {"SetCentering", avtVarMetaData_SetCentering, METH_VARARGS},
     {"GetCentering", avtVarMetaData_GetCentering, METH_VARARGS},
     {"SetHasUnits", avtVarMetaData_SetHasUnits, METH_VARARGS},
@@ -592,17 +622,6 @@ PyavtVarMetaData_getattr(PyObject *self, char *name)
     }
 
     PyavtVarMetaData_ExtendSetGetMethodTable();
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtVarMetaData_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtVarMetaData_methods[i].ml_name),
-                PyString_FromString(PyavtVarMetaData_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyavtVarMetaData_methods, self, name);
 }
@@ -700,7 +719,8 @@ VISIT_PY_TYPE_OBJ(avtVarMetaDataType,         \
                   avtVarMetaData_str,         \
                   avtVarMetaData_Purpose,     \
                   avtVarMetaData_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyavtVarMetaData_methods);
 
 //
 // Helper function for comparing.

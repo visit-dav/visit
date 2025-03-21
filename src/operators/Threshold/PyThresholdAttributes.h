@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define THRESHOLDATTRIBUTES_NMETH (THRESHOLDOPATTRIBUTES_NMETH+2)
+#define THRESHOLDATTRIBUTES_NMETH (THRESHOLDOPATTRIBUTES_NMETH+3)
 void           PyThresholdAttributes_StartUp(ThresholdAttributes *subj, void *data);
 void           PyThresholdAttributes_CloseDown();
 PyMethodDef *  PyThresholdAttributes_GetMethodTable(int *nMethods);

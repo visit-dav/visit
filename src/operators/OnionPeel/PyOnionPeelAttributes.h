@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ONIONPEELATTRIBUTES_NMETH 20
+#define ONIONPEELATTRIBUTES_NMETH 21
 void           PyOnionPeelAttributes_StartUp(OnionPeelAttributes *subj, void *data);
 void           PyOnionPeelAttributes_CloseDown();
 PyMethodDef *  PyOnionPeelAttributes_GetMethodTable(int *nMethods);

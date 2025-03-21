@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MERGEOPERATORATTRIBUTES_NMETH 6
+#define MERGEOPERATORATTRIBUTES_NMETH 7
 void           PyMergeOperatorAttributes_StartUp(MergeOperatorAttributes *subj, void *data);
 void           PyMergeOperatorAttributes_CloseDown();
 PyMethodDef *  PyMergeOperatorAttributes_GetMethodTable(int *nMethods);

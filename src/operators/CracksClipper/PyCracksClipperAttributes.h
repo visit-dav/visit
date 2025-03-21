@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CRACKSCLIPPERATTRIBUTES_NMETH 18
+#define CRACKSCLIPPERATTRIBUTES_NMETH 19
 void           PyCracksClipperAttributes_StartUp(CracksClipperAttributes *subj, void *data);
 void           PyCracksClipperAttributes_CloseDown();
 PyMethodDef *  PyCracksClipperAttributes_GetMethodTable(int *nMethods);

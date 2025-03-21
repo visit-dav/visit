@@ -3177,7 +3177,8 @@ VISIT_PY_TYPE_OBJ(PyDataRequestType,    \
                   0,                    \
                   DataRequest_Doc,      \
                   0,                    \
-                  0); /* as_number*/
+                  0, /* as_number*/     \
+                  DataRequest_methods);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

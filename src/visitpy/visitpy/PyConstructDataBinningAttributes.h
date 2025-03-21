@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONSTRUCTDATABINNINGATTRIBUTES_NMETH 30
+#define CONSTRUCTDATABINNINGATTRIBUTES_NMETH 31
 void VISITPY_API           PyConstructDataBinningAttributes_StartUp(ConstructDataBinningAttributes *subj, void *data);
 void VISITPY_API           PyConstructDataBinningAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyConstructDataBinningAttributes_GetMethodTable(int *nMethods);

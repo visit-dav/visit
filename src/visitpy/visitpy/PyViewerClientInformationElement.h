@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWERCLIENTINFORMATIONELEMENT_NMETH 12
+#define VIEWERCLIENTINFORMATIONELEMENT_NMETH 13
 void VISITPY_API           PyViewerClientInformationElement_StartUp(ViewerClientInformationElement *subj, void *data);
 void VISITPY_API           PyViewerClientInformationElement_CloseDown();
 VISITPY_API PyMethodDef *  PyViewerClientInformationElement_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DEFEREXPRESSIONATTRIBUTES_NMETH 4
+#define DEFEREXPRESSIONATTRIBUTES_NMETH 5
 void           PyDeferExpressionAttributes_StartUp(DeferExpressionAttributes *subj, void *data);
 void           PyDeferExpressionAttributes_CloseDown();
 PyMethodDef *  PyDeferExpressionAttributes_GetMethodTable(int *nMethods);

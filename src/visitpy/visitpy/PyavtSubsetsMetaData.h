@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSUBSETSMETADATA_NMETH (AVTVARMETADATA_NMETH+26)
+#define AVTSUBSETSMETADATA_NMETH (AVTVARMETADATA_NMETH+27)
 void VISITPY_API           PyavtSubsetsMetaData_StartUp(avtSubsetsMetaData *subj, void *data);
 void VISITPY_API           PyavtSubsetsMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSubsetsMetaData_GetMethodTable(int *nMethods);

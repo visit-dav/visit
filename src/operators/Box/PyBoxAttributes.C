@@ -5,6 +5,7 @@
 #include <PyBoxAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -85,6 +86,34 @@ BoxAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+BoxAttributes_dir(PyObject *self, PyObject *args)
+{
+    static BoxAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyBoxAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 BoxAttributes_SetAmount(PyObject *self, PyObject *args)
 {
@@ -574,7 +603,8 @@ BoxAttributes_GetInverse(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyBoxAttributes_methods[BOXATTRIBUTES_NMETH] = {
-    {"Notify", BoxAttributes_Notify, METH_VARARGS},
+    {"__dir__", BoxAttributes_dir, METH_NOARGS},
+    {"Notify", BoxAttributes_Notify, METH_NOARGS},
     {"SetAmount", BoxAttributes_SetAmount, METH_VARARGS},
     {"GetAmount", BoxAttributes_GetAmount, METH_VARARGS},
     {"SetMinx", BoxAttributes_SetMinx, METH_VARARGS},
@@ -634,17 +664,6 @@ PyBoxAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return BoxAttributes_GetInverse(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyBoxAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyBoxAttributes_methods[i].ml_name),
-                PyString_FromString(PyBoxAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyBoxAttributes_methods, self, name);
 }
@@ -739,7 +758,8 @@ VISIT_PY_TYPE_OBJ(BoxAttributesType,         \
                   BoxAttributes_str,         \
                   BoxAttributes_Purpose,     \
                   BoxAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyBoxAttributes_methods);
 
 //
 // Helper function for comparing.

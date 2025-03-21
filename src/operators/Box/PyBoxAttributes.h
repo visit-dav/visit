@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define BOXATTRIBUTES_NMETH 18
+#define BOXATTRIBUTES_NMETH 19
 void           PyBoxAttributes_StartUp(BoxAttributes *subj, void *data);
 void           PyBoxAttributes_CloseDown();
 PyMethodDef *  PyBoxAttributes_GetMethodTable(int *nMethods);

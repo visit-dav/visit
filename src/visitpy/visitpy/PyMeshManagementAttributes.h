@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MESHMANAGEMENTATTRIBUTES_NMETH 16
+#define MESHMANAGEMENTATTRIBUTES_NMETH 17
 void VISITPY_API           PyMeshManagementAttributes_StartUp(MeshManagementAttributes *subj, void *data);
 void VISITPY_API           PyMeshManagementAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyMeshManagementAttributes_GetMethodTable(int *nMethods);

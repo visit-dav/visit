@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONEATTRIBUTES_NMETH 16
+#define CONEATTRIBUTES_NMETH 17
 void           PyConeAttributes_StartUp(ConeAttributes *subj, void *data);
 void           PyConeAttributes_CloseDown();
 PyMethodDef *  PyConeAttributes_GetMethodTable(int *nMethods);

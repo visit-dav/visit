@@ -5,6 +5,7 @@
 #include <PyCoordSwapAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -110,6 +111,34 @@ CoordSwapAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+CoordSwapAttributes_dir(PyObject *self, PyObject *args)
+{
+    static CoordSwapAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyCoordSwapAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 CoordSwapAttributes_SetNewCoord1(PyObject *self, PyObject *args)
 {
@@ -314,7 +343,8 @@ CoordSwapAttributes_GetNewCoord3(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyCoordSwapAttributes_methods[COORDSWAPATTRIBUTES_NMETH] = {
-    {"Notify", CoordSwapAttributes_Notify, METH_VARARGS},
+    {"__dir__", CoordSwapAttributes_dir, METH_NOARGS},
+    {"Notify", CoordSwapAttributes_Notify, METH_NOARGS},
     {"SetNewCoord1", CoordSwapAttributes_SetNewCoord1, METH_VARARGS},
     {"GetNewCoord1", CoordSwapAttributes_GetNewCoord1, METH_VARARGS},
     {"SetNewCoord2", CoordSwapAttributes_SetNewCoord2, METH_VARARGS},
@@ -370,17 +400,6 @@ PyCoordSwapAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CoordSwapAttributes::Coord3));
 
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyCoordSwapAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyCoordSwapAttributes_methods[i].ml_name),
-                PyString_FromString(PyCoordSwapAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyCoordSwapAttributes_methods, self, name);
 }
@@ -465,7 +484,8 @@ VISIT_PY_TYPE_OBJ(CoordSwapAttributesType,         \
                   CoordSwapAttributes_str,         \
                   CoordSwapAttributes_Purpose,     \
                   CoordSwapAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyCoordSwapAttributes_methods);
 
 //
 // Helper function for comparing.

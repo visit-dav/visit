@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DISPLACEATTRIBUTES_NMETH 6
+#define DISPLACEATTRIBUTES_NMETH 7
 void           PyDisplaceAttributes_StartUp(DisplaceAttributes *subj, void *data);
 void           PyDisplaceAttributes_CloseDown();
 PyMethodDef *  PyDisplaceAttributes_GetMethodTable(int *nMethods);

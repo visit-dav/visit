@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MOLECULEATTRIBUTES_NMETH 44
+#define MOLECULEATTRIBUTES_NMETH 45
 void           PyMoleculeAttributes_StartUp(MoleculeAttributes *subj, void *data);
 void           PyMoleculeAttributes_CloseDown();
 PyMethodDef *  PyMoleculeAttributes_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SUBSETATTRIBUTES_NMETH 36
+#define SUBSETATTRIBUTES_NMETH 37
 void           PySubsetAttributes_StartUp(SubsetAttributes *subj, void *data);
 void           PySubsetAttributes_CloseDown();
 PyMethodDef *  PySubsetAttributes_GetMethodTable(int *nMethods);

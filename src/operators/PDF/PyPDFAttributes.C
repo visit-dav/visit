@@ -5,6 +5,7 @@
 #include <PyPDFAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -205,6 +206,34 @@ PDFAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+PDFAttributes_dir(PyObject *self, PyObject *args)
+{
+    static PDFAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyPDFAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 PDFAttributes_SetVar1(PyObject *self, PyObject *args)
 {
@@ -1828,7 +1857,8 @@ PDFAttributes_GetDensityType(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyPDFAttributes_methods[PDFATTRIBUTES_NMETH] = {
-    {"Notify", PDFAttributes_Notify, METH_VARARGS},
+    {"__dir__", PDFAttributes_dir, METH_NOARGS},
+    {"Notify", PDFAttributes_Notify, METH_NOARGS},
     {"SetVar1", PDFAttributes_SetVar1, METH_VARARGS},
     {"GetVar1", PDFAttributes_GetVar1, METH_VARARGS},
     {"SetVar1MinFlag", PDFAttributes_SetVar1MinFlag, METH_VARARGS},
@@ -1991,17 +2021,6 @@ PyPDFAttributes_getattr(PyObject *self, char *name)
 
 
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyPDFAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyPDFAttributes_methods[i].ml_name),
-                PyString_FromString(PyPDFAttributes_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyPDFAttributes_methods, self, name);
 }
 
@@ -2133,7 +2152,8 @@ VISIT_PY_TYPE_OBJ(PDFAttributesType,         \
                   PDFAttributes_str,         \
                   PDFAttributes_Purpose,     \
                   PDFAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyPDFAttributes_methods);
 
 //
 // Helper function for comparing.

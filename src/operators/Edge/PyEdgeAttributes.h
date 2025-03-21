@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EDGEATTRIBUTES_NMETH 4
+#define EDGEATTRIBUTES_NMETH 5
 void           PyEdgeAttributes_StartUp(EdgeAttributes *subj, void *data);
 void           PyEdgeAttributes_CloseDown();
 PyMethodDef *  PyEdgeAttributes_GetMethodTable(int *nMethods);

@@ -5,6 +5,7 @@
 #include <PyavtSubsetsMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyNameschemeAttributes.h>
 
@@ -154,6 +155,34 @@ avtSubsetsMetaData_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+avtSubsetsMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtSubsetsMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtSubsetsMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtSubsetsMetaData_SetCatName(PyObject *self, PyObject *args)
 {
@@ -887,7 +916,8 @@ avtSubsetsMetaData_GetMaxTopoDim(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtSubsetsMetaData_methods[AVTSUBSETSMETADATA_NMETH] = {
-    {"Notify", avtSubsetsMetaData_Notify, METH_VARARGS},
+    {"__dir__", avtSubsetsMetaData_dir, METH_NOARGS},
+    {"Notify", avtSubsetsMetaData_Notify, METH_NOARGS},
     {"SetCatName", avtSubsetsMetaData_SetCatName, METH_VARARGS},
     {"GetCatName", avtSubsetsMetaData_GetCatName, METH_VARARGS},
     {"SetCatCount", avtSubsetsMetaData_SetCatCount, METH_VARARGS},
@@ -995,17 +1025,6 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
 
     PyavtSubsetsMetaData_ExtendSetGetMethodTable();
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtSubsetsMetaData_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtSubsetsMetaData_methods[i].ml_name),
-                PyString_FromString(PyavtSubsetsMetaData_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyavtSubsetsMetaData_methods, self, name);
 }
 
@@ -1112,7 +1131,8 @@ VISIT_PY_TYPE_OBJ(avtSubsetsMetaDataType,         \
                   avtSubsetsMetaData_str,         \
                   avtSubsetsMetaData_Purpose,     \
                   avtSubsetsMetaData_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyavtSubsetsMetaData_methods);
 
 //
 // Helper function for comparing.

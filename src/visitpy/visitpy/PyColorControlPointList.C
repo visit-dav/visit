@@ -5,6 +5,7 @@
 #include <PyColorControlPointList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyColorControlPoint.h>
 
@@ -120,6 +121,36 @@ ColorControlPointList_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ColorControlPointList_dir(PyObject *self, PyObject *args)
+{
+    static ColorControlPointList atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyColorControlPointList_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 4) continue; // internal field
+        if (i == 6) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
 {
@@ -492,7 +523,8 @@ ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
-    {"Notify", ColorControlPointList_Notify, METH_VARARGS},
+    {"__dir__", ColorControlPointList_dir, METH_NOARGS},
+    {"Notify", ColorControlPointList_Notify, METH_NOARGS},
     {"GetControlPoints", ColorControlPointList_GetControlPoints, METH_VARARGS},
     {"GetNumControlPoints", ColorControlPointList_GetNumControlPoints, METH_VARARGS},
     {"AddControlPoints", ColorControlPointList_AddControlPoints, METH_VARARGS},
@@ -566,17 +598,6 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return PyString_FromString("");
     }
 #endif
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyColorControlPointList_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyColorControlPointList_methods[i].ml_name),
-                PyString_FromString(PyColorControlPointList_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyColorControlPointList_methods, self, name);
 }
@@ -681,7 +702,8 @@ VISIT_PY_TYPE_OBJ(ColorControlPointListType,         \
                   ColorControlPointList_str,         \
                   ColorControlPointList_Purpose,     \
                   ColorControlPointList_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyColorControlPointList_methods);
 
 //
 // Helper function for comparing.

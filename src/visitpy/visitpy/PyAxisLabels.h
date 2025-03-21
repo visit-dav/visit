@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXISLABELS_NMETH 8
+#define AXISLABELS_NMETH 9
 void VISITPY_API           PyAxisLabels_StartUp(AxisLabels *subj, void *data);
 void VISITPY_API           PyAxisLabels_CloseDown();
 VISITPY_API PyMethodDef *  PyAxisLabels_GetMethodTable(int *nMethods);

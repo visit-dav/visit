@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SCATTERATTRIBUTES_NMETH 84
+#define SCATTERATTRIBUTES_NMETH 85
 void           PyScatterAttributes_StartUp(ScatterAttributes *subj, void *data);
 void           PyScatterAttributes_CloseDown();
 PyMethodDef *  PyScatterAttributes_GetMethodTable(int *nMethods);

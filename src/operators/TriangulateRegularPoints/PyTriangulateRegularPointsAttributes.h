@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TRIANGULATEREGULARPOINTSATTRIBUTES_NMETH 10
+#define TRIANGULATEREGULARPOINTSATTRIBUTES_NMETH 11
 void           PyTriangulateRegularPointsAttributes_StartUp(TriangulateRegularPointsAttributes *subj, void *data);
 void           PyTriangulateRegularPointsAttributes_CloseDown();
 PyMethodDef *  PyTriangulateRegularPointsAttributes_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define STATISTICALTRENDSATTRIBUTES_NMETH 18
+#define STATISTICALTRENDSATTRIBUTES_NMETH 19
 void           PyStatisticalTrendsAttributes_StartUp(StatisticalTrendsAttributes *subj, void *data);
 void           PyStatisticalTrendsAttributes_CloseDown();
 PyMethodDef *  PyStatisticalTrendsAttributes_GetMethodTable(int *nMethods);

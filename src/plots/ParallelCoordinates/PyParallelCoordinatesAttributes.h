@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PARALLELCOORDINATESATTRIBUTES_NMETH 32
+#define PARALLELCOORDINATESATTRIBUTES_NMETH 33
 void           PyParallelCoordinatesAttributes_StartUp(ParallelCoordinatesAttributes *subj, void *data);
 void           PyParallelCoordinatesAttributes_CloseDown();
 PyMethodDef *  PyParallelCoordinatesAttributes_GetMethodTable(int *nMethods);

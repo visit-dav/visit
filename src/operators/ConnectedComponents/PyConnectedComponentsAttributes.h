@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONNECTEDCOMPONENTSATTRIBUTES_NMETH 4
+#define CONNECTEDCOMPONENTSATTRIBUTES_NMETH 5
 void           PyConnectedComponentsAttributes_StartUp(ConnectedComponentsAttributes *subj, void *data);
 void           PyConnectedComponentsAttributes_CloseDown();
 PyMethodDef *  PyConnectedComponentsAttributes_GetMethodTable(int *nMethods);

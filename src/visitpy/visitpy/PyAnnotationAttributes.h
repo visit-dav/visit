@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ANNOTATIONATTRIBUTES_NMETH 44
+#define ANNOTATIONATTRIBUTES_NMETH 45
 void VISITPY_API           PyAnnotationAttributes_StartUp(AnnotationAttributes *subj, void *data);
 void VISITPY_API           PyAnnotationAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyAnnotationAttributes_GetMethodTable(int *nMethods);

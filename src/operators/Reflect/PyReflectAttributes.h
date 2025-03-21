@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define REFLECTATTRIBUTES_NMETH 24
+#define REFLECTATTRIBUTES_NMETH 25
 void           PyReflectAttributes_StartUp(ReflectAttributes *subj, void *data);
 void           PyReflectAttributes_CloseDown();
 PyMethodDef *  PyReflectAttributes_GetMethodTable(int *nMethods);

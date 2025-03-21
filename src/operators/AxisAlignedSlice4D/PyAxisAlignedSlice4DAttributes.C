@@ -5,6 +5,7 @@
 #include <PyAxisAlignedSlice4DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -117,6 +118,34 @@ AxisAlignedSlice4DAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+AxisAlignedSlice4DAttributes_dir(PyObject *self, PyObject *args)
+{
+    static AxisAlignedSlice4DAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAxisAlignedSlice4DAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_SetI(PyObject *self, PyObject *args)
 {
@@ -424,7 +453,8 @@ AxisAlignedSlice4DAttributes_GetL(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAxisAlignedSlice4DAttributes_methods[AXISALIGNEDSLICE4DATTRIBUTES_NMETH] = {
-    {"Notify", AxisAlignedSlice4DAttributes_Notify, METH_VARARGS},
+    {"__dir__", AxisAlignedSlice4DAttributes_dir, METH_NOARGS},
+    {"Notify", AxisAlignedSlice4DAttributes_Notify, METH_NOARGS},
     {"SetI", AxisAlignedSlice4DAttributes_SetI, METH_VARARGS},
     {"GetI", AxisAlignedSlice4DAttributes_GetI, METH_VARARGS},
     {"SetJ", AxisAlignedSlice4DAttributes_SetJ, METH_VARARGS},
@@ -463,17 +493,6 @@ PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "L") == 0)
         return AxisAlignedSlice4DAttributes_GetL(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAxisAlignedSlice4DAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAxisAlignedSlice4DAttributes_methods[i].ml_name),
-                PyString_FromString(PyAxisAlignedSlice4DAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyAxisAlignedSlice4DAttributes_methods, self, name);
 }
@@ -560,7 +579,8 @@ VISIT_PY_TYPE_OBJ(AxisAlignedSlice4DAttributesType,         \
                   AxisAlignedSlice4DAttributes_str,         \
                   AxisAlignedSlice4DAttributes_Purpose,     \
                   AxisAlignedSlice4DAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyAxisAlignedSlice4DAttributes_methods);
 
 //
 // Helper function for comparing.

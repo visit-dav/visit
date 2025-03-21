@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXISATTRIBUTES_NMETH 10
+#define AXISATTRIBUTES_NMETH 11
 void VISITPY_API           PyAxisAttributes_StartUp(AxisAttributes *subj, void *data);
 void VISITPY_API           PyAxisAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyAxisAttributes_GetMethodTable(int *nMethods);

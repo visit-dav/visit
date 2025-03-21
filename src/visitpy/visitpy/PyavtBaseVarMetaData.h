@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTBASEVARMETADATA_NMETH 12
+#define AVTBASEVARMETADATA_NMETH 13
 void VISITPY_API           PyavtBaseVarMetaData_StartUp(avtBaseVarMetaData *subj, void *data);
 void VISITPY_API           PyavtBaseVarMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtBaseVarMetaData_GetMethodTable(int *nMethods);

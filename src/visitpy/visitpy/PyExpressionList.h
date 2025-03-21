@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXPRESSIONLIST_NMETH 7
+#define EXPRESSIONLIST_NMETH 8
 void VISITPY_API           PyExpressionList_StartUp(ExpressionList *subj, void *data);
 void VISITPY_API           PyExpressionList_CloseDown();
 VISITPY_API PyMethodDef *  PyExpressionList_GetMethodTable(int *nMethods);

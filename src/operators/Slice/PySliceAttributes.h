@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SLICEATTRIBUTES_NMETH 36
+#define SLICEATTRIBUTES_NMETH 37
 void           PySliceAttributes_StartUp(SliceAttributes *subj, void *data);
 void           PySliceAttributes_CloseDown();
 PyMethodDef *  PySliceAttributes_GetMethodTable(int *nMethods);

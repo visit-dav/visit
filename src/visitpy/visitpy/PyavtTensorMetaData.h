@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTTENSORMETADATA_NMETH (AVTVARMETADATA_NMETH+4)
+#define AVTTENSORMETADATA_NMETH (AVTVARMETADATA_NMETH+5)
 void VISITPY_API           PyavtTensorMetaData_StartUp(avtTensorMetaData *subj, void *data);
 void VISITPY_API           PyavtTensorMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtTensorMetaData_GetMethodTable(int *nMethods);

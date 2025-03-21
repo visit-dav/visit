@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SELECTIONSUMMARY_NMETH 19
+#define SELECTIONSUMMARY_NMETH 20
 void VISITPY_API           PySelectionSummary_StartUp(SelectionSummary *subj, void *data);
 void VISITPY_API           PySelectionSummary_CloseDown();
 VISITPY_API PyMethodDef *  PySelectionSummary_GetMethodTable(int *nMethods);

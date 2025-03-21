@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MODELFITATTS_NMETH 24
+#define MODELFITATTS_NMETH 25
 void           PyModelFitAtts_StartUp(ModelFitAtts *subj, void *data);
 void           PyModelFitAtts_CloseDown();
 PyMethodDef *  PyModelFitAtts_GetMethodTable(int *nMethods);

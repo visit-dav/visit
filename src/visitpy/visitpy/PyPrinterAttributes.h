@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PRINTERATTRIBUTES_NMETH 22
+#define PRINTERATTRIBUTES_NMETH 23
 void VISITPY_API           PyPrinterAttributes_StartUp(PrinterAttributes *subj, void *data);
 void VISITPY_API           PyPrinterAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyPrinterAttributes_GetMethodTable(int *nMethods);

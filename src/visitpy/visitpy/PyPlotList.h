@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PLOTLIST_NMETH 7
+#define PLOTLIST_NMETH 8
 void VISITPY_API           PyPlotList_StartUp(PlotList *subj, void *data);
 void VISITPY_API           PyPlotList_CloseDown();
 VISITPY_API PyMethodDef *  PyPlotList_GetMethodTable(int *nMethods);

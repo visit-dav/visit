@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSIMULATIONCOMMANDSPECIFICATION_NMETH 22
+#define AVTSIMULATIONCOMMANDSPECIFICATION_NMETH 23
 void VISITPY_API           PyavtSimulationCommandSpecification_StartUp(avtSimulationCommandSpecification *subj, void *data);
 void VISITPY_API           PyavtSimulationCommandSpecification_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSimulationCommandSpecification_GetMethodTable(int *nMethods);

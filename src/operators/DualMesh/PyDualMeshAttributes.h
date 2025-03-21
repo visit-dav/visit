@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DUALMESHATTRIBUTES_NMETH 4
+#define DUALMESHATTRIBUTES_NMETH 5
 void           PyDualMeshAttributes_StartUp(DualMeshAttributes *subj, void *data);
 void           PyDualMeshAttributes_CloseDown();
 PyMethodDef *  PyDualMeshAttributes_GetMethodTable(int *nMethods);

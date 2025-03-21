@@ -414,7 +414,7 @@ PseudocolorAttributes_dir(PyObject *self, PyObject *args)
         PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
     }
 
-    // Now members using generic AttributeGroup interface
+    // Add members using generic AttributeGroup interface
     for (int i = 0; i < atts.NumAttributes(); i++) {
         PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
     }
@@ -4149,7 +4149,7 @@ static char *PseudocolorAttributes_Purpose = "Attributes for the pseudocolor plo
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ2(PseudocolorAttributesType,         \
+VISIT_PY_TYPE_OBJ(PseudocolorAttributesType,         \
                   "PseudocolorAttributes",           \
                   PseudocolorAttributesObject,       \
                   PseudocolorAttributes_dealloc,     \

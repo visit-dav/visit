@@ -5,6 +5,7 @@
 #include <PyTruecolorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -60,6 +61,34 @@ TruecolorAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+TruecolorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TruecolorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTruecolorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 TruecolorAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
@@ -183,7 +212,8 @@ TruecolorAttributes_GetLightingFlag(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyTruecolorAttributes_methods[TRUECOLORATTRIBUTES_NMETH] = {
-    {"Notify", TruecolorAttributes_Notify, METH_VARARGS},
+    {"__dir__", TruecolorAttributes_dir, METH_NOARGS},
+    {"Notify", TruecolorAttributes_Notify, METH_NOARGS},
     {"SetOpacity", TruecolorAttributes_SetOpacity, METH_VARARGS},
     {"GetOpacity", TruecolorAttributes_GetOpacity, METH_VARARGS},
     {"SetLightingFlag", TruecolorAttributes_SetLightingFlag, METH_VARARGS},
@@ -214,17 +244,6 @@ PyTruecolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "lightingFlag") == 0)
         return TruecolorAttributes_GetLightingFlag(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyTruecolorAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyTruecolorAttributes_methods[i].ml_name),
-                PyString_FromString(PyTruecolorAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyTruecolorAttributes_methods, self, name);
 }
@@ -307,7 +326,8 @@ VISIT_PY_TYPE_OBJ(TruecolorAttributesType,         \
                   TruecolorAttributes_str,         \
                   TruecolorAttributes_Purpose,     \
                   TruecolorAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyTruecolorAttributes_methods);
 
 //
 // Helper function for comparing.

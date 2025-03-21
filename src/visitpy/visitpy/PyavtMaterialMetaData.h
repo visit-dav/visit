@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTMATERIALMETADATA_NMETH (AVTBASEVARMETADATA_NMETH+8)
+#define AVTMATERIALMETADATA_NMETH (AVTBASEVARMETADATA_NMETH+9)
 void VISITPY_API           PyavtMaterialMetaData_StartUp(avtMaterialMetaData *subj, void *data);
 void VISITPY_API           PyavtMaterialMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtMaterialMetaData_GetMethodTable(int *nMethods);

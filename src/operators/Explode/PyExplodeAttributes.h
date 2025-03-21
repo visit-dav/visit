@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXPLODEATTRIBUTES_NMETH 35
+#define EXPLODEATTRIBUTES_NMETH 36
 void           PyExplodeAttributes_StartUp(ExplodeAttributes *subj, void *data);
 void           PyExplodeAttributes_CloseDown();
 PyMethodDef *  PyExplodeAttributes_GetMethodTable(int *nMethods);

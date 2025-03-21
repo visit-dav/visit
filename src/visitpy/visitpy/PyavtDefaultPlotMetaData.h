@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTDEFAULTPLOTMETADATA_NMETH 8
+#define AVTDEFAULTPLOTMETADATA_NMETH 9
 void VISITPY_API           PyavtDefaultPlotMetaData_StartUp(avtDefaultPlotMetaData *subj, void *data);
 void VISITPY_API           PyavtDefaultPlotMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtDefaultPlotMetaData_GetMethodTable(int *nMethods);

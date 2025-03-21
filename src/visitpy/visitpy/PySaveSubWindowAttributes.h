@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SAVESUBWINDOWATTRIBUTES_NMETH 12
+#define SAVESUBWINDOWATTRIBUTES_NMETH 13
 void VISITPY_API           PySaveSubWindowAttributes_StartUp(SaveSubWindowAttributes *subj, void *data);
 void VISITPY_API           PySaveSubWindowAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PySaveSubWindowAttributes_GetMethodTable(int *nMethods);

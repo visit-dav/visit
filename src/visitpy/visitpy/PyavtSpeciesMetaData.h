@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSPECIESMETADATA_NMETH 19
+#define AVTSPECIESMETADATA_NMETH 20
 void VISITPY_API           PyavtSpeciesMetaData_StartUp(avtSpeciesMetaData *subj, void *data);
 void VISITPY_API           PyavtSpeciesMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSpeciesMetaData_GetMethodTable(int *nMethods);

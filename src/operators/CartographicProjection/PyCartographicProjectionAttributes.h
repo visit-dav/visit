@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH 6
+#define CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH 7
 void           PyCartographicProjectionAttributes_StartUp(CartographicProjectionAttributes *subj, void *data);
 void           PyCartographicProjectionAttributes_CloseDown();
 PyMethodDef *  PyCartographicProjectionAttributes_GetMethodTable(int *nMethods);

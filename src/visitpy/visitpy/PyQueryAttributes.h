@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define QUERYATTRIBUTES_NMETH 20
+#define QUERYATTRIBUTES_NMETH 21
 void VISITPY_API           PyQueryAttributes_StartUp(QueryAttributes *subj, void *data);
 void VISITPY_API           PyQueryAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyQueryAttributes_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PDFATTRIBUTES_NMETH 56
+#define PDFATTRIBUTES_NMETH 57
 void           PyPDFAttributes_StartUp(PDFAttributes *subj, void *data);
 void           PyPDFAttributes_CloseDown();
 PyMethodDef *  PyPDFAttributes_GetMethodTable(int *nMethods);

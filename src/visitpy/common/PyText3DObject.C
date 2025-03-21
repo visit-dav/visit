@@ -779,7 +779,8 @@ VISIT_PY_TYPE_OBJ( Text3DObjectType,         \
                    Text3DObject_str,         \
                    Text3DObject_Purpose,     \
                    Text3DObject_richcompare, \
-                   0); /* as_number*/
+                   0, /* as_number*/
+                   Text3DObject_methods);
 
 // CUSTOM
 static PyObject *

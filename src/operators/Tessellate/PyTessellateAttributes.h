@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TESSELLATEATTRIBUTES_NMETH 8
+#define TESSELLATEATTRIBUTES_NMETH 9
 void           PyTessellateAttributes_StartUp(TessellateAttributes *subj, void *data);
 void           PyTessellateAttributes_CloseDown();
 PyMethodDef *  PyTessellateAttributes_GetMethodTable(int *nMethods);

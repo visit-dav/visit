@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ISOVOLUMEATTRIBUTES_NMETH 8
+#define ISOVOLUMEATTRIBUTES_NMETH 9
 void           PyIsovolumeAttributes_StartUp(IsovolumeAttributes *subj, void *data);
 void           PyIsovolumeAttributes_CloseDown();
 PyMethodDef *  PyIsovolumeAttributes_GetMethodTable(int *nMethods);

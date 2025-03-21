@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ELLIPSOIDSLICEATTRIBUTES_NMETH 8
+#define ELLIPSOIDSLICEATTRIBUTES_NMETH 9
 void           PyEllipsoidSliceAttributes_StartUp(EllipsoidSliceAttributes *subj, void *data);
 void           PyEllipsoidSliceAttributes_CloseDown();
 PyMethodDef *  PyEllipsoidSliceAttributes_GetMethodTable(int *nMethods);

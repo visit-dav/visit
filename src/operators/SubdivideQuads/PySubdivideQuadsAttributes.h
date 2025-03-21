@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SUBDIVIDEQUADSATTRIBUTES_NMETH 12
+#define SUBDIVIDEQUADSATTRIBUTES_NMETH 13
 void           PySubdivideQuadsAttributes_StartUp(SubdivideQuadsAttributes *subj, void *data);
 void           PySubdivideQuadsAttributes_CloseDown();
 PyMethodDef *  PySubdivideQuadsAttributes_GetMethodTable(int *nMethods);

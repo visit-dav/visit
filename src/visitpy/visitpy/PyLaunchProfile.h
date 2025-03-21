@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LAUNCHPROFILE_NMETH 78
+#define LAUNCHPROFILE_NMETH 79
 void VISITPY_API           PyLaunchProfile_StartUp(LaunchProfile *subj, void *data);
 void VISITPY_API           PyLaunchProfile_CloseDown();
 VISITPY_API PyMethodDef *  PyLaunchProfile_GetMethodTable(int *nMethods);

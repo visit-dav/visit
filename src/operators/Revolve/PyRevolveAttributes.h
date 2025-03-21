@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define REVOLVEATTRIBUTES_NMETH 14
+#define REVOLVEATTRIBUTES_NMETH 15
 void           PyRevolveAttributes_StartUp(RevolveAttributes *subj, void *data);
 void           PyRevolveAttributes_CloseDown();
 PyMethodDef *  PyRevolveAttributes_GetMethodTable(int *nMethods);

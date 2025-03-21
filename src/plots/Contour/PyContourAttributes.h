@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONTOURATTRIBUTES_NMETH 40
+#define CONTOURATTRIBUTES_NMETH 41
 void           PyContourAttributes_StartUp(ContourAttributes *subj, void *data);
 void           PyContourAttributes_CloseDown();
 PyMethodDef *  PyContourAttributes_GetMethodTable(int *nMethods);

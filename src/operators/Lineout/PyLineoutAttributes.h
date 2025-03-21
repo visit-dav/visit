@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LINEOUTATTRIBUTES_NMETH 16
+#define LINEOUTATTRIBUTES_NMETH 17
 void           PyLineoutAttributes_StartUp(LineoutAttributes *subj, void *data);
 void           PyLineoutAttributes_CloseDown();
 PyMethodDef *  PyLineoutAttributes_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SMOOTHOPERATORATTRIBUTES_NMETH 16
+#define SMOOTHOPERATORATTRIBUTES_NMETH 17
 void           PySmoothOperatorAttributes_StartUp(SmoothOperatorAttributes *subj, void *data);
 void           PySmoothOperatorAttributes_CloseDown();
 PyMethodDef *  PySmoothOperatorAttributes_GetMethodTable(int *nMethods);

@@ -5,6 +5,7 @@
 #include <PyAxisTitles.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyFontAttributes.h>
 
@@ -78,6 +79,34 @@ AxisTitles_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+AxisTitles_dir(PyObject *self, PyObject *args)
+{
+    static AxisTitles atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAxisTitles_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 AxisTitles_SetVisible(PyObject *self, PyObject *args)
 {
@@ -392,7 +421,8 @@ AxisTitles_GetUnits(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAxisTitles_methods[AXISTITLES_NMETH] = {
-    {"Notify", AxisTitles_Notify, METH_VARARGS},
+    {"__dir__", AxisTitles_dir, METH_NOARGS},
+    {"Notify", AxisTitles_Notify, METH_NOARGS},
     {"SetVisible", AxisTitles_SetVisible, METH_VARARGS},
     {"GetVisible", AxisTitles_GetVisible, METH_VARARGS},
     {"SetFont", AxisTitles_SetFont, METH_VARARGS},
@@ -439,17 +469,6 @@ PyAxisTitles_getattr(PyObject *self, char *name)
     if(strcmp(name, "units") == 0)
         return AxisTitles_GetUnits(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAxisTitles_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAxisTitles_methods[i].ml_name),
-                PyString_FromString(PyAxisTitles_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyAxisTitles_methods, self, name);
 }
@@ -540,7 +559,8 @@ VISIT_PY_TYPE_OBJ(AxisTitlesType,         \
                   AxisTitles_str,         \
                   AxisTitles_Purpose,     \
                   AxisTitles_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyAxisTitles_methods);
 
 //
 // Helper function for comparing.

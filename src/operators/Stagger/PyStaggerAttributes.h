@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define STAGGERATTRIBUTES_NMETH 8
+#define STAGGERATTRIBUTES_NMETH 9
 void           PyStaggerAttributes_StartUp(StaggerAttributes *subj, void *data);
 void           PyStaggerAttributes_CloseDown();
 PyMethodDef *  PyStaggerAttributes_GetMethodTable(int *nMethods);

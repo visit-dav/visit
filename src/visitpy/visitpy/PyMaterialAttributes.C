@@ -5,6 +5,7 @@
 #include <PyMaterialAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -120,6 +121,34 @@ MaterialAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+MaterialAttributes_dir(PyObject *self, PyObject *args)
+{
+    static MaterialAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyMaterialAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 MaterialAttributes_SetSmoothing(PyObject *self, PyObject *args)
 {
@@ -852,7 +881,8 @@ MaterialAttributes_GetAnnealingTime(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyMaterialAttributes_methods[MATERIALATTRIBUTES_NMETH] = {
-    {"Notify", MaterialAttributes_Notify, METH_VARARGS},
+    {"__dir__", MaterialAttributes_dir, METH_NOARGS},
+    {"Notify", MaterialAttributes_Notify, METH_NOARGS},
     {"SetSmoothing", MaterialAttributes_SetSmoothing, METH_VARARGS},
     {"GetSmoothing", MaterialAttributes_GetSmoothing, METH_VARARGS},
     {"SetForceMIR", MaterialAttributes_SetForceMIR, METH_VARARGS},
@@ -934,17 +964,6 @@ PyMaterialAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "annealingTime") == 0)
         return MaterialAttributes_GetAnnealingTime(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyMaterialAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyMaterialAttributes_methods[i].ml_name),
-                PyString_FromString(PyMaterialAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyMaterialAttributes_methods, self, name);
 }
@@ -1047,7 +1066,8 @@ VISIT_PY_TYPE_OBJ(MaterialAttributesType,         \
                   MaterialAttributes_str,         \
                   MaterialAttributes_Purpose,     \
                   MaterialAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyMaterialAttributes_methods);
 
 //
 // Helper function for comparing.

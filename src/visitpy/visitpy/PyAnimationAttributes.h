@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ANIMATIONATTRIBUTES_NMETH 12
+#define ANIMATIONATTRIBUTES_NMETH 13
 void VISITPY_API           PyAnimationAttributes_StartUp(AnimationAttributes *subj, void *data);
 void VISITPY_API           PyAnimationAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyAnimationAttributes_GetMethodTable(int *nMethods);

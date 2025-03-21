@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CURVEATTRIBUTES_NMETH 56
+#define CURVEATTRIBUTES_NMETH 57
 void           PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
 void           PyCurveAttributes_CloseDown();
 PyMethodDef *  PyCurveAttributes_GetMethodTable(int *nMethods);

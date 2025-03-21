@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXES2D_NMETH 18
+#define AXES2D_NMETH 19
 void VISITPY_API           PyAxes2D_StartUp(Axes2D *subj, void *data);
 void VISITPY_API           PyAxes2D_CloseDown();
 VISITPY_API PyMethodDef *  PyAxes2D_GetMethodTable(int *nMethods);

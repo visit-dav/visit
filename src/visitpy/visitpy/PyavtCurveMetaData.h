@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTCURVEMETADATA_NMETH (AVTVARMETADATA_NMETH+18)
+#define AVTCURVEMETADATA_NMETH (AVTVARMETADATA_NMETH+19)
 void VISITPY_API           PyavtCurveMetaData_StartUp(avtCurveMetaData *subj, void *data);
 void VISITPY_API           PyavtCurveMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtCurveMetaData_GetMethodTable(int *nMethods);

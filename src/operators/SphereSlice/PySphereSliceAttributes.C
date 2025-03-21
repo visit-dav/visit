@@ -5,6 +5,7 @@
 #include <PySphereSliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -71,6 +72,34 @@ SphereSliceAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+SphereSliceAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SphereSliceAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySphereSliceAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SphereSliceAttributes_SetOrigin(PyObject *self, PyObject *args)
 {
@@ -213,7 +242,8 @@ SphereSliceAttributes_GetRadius(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySphereSliceAttributes_methods[SPHERESLICEATTRIBUTES_NMETH] = {
-    {"Notify", SphereSliceAttributes_Notify, METH_VARARGS},
+    {"__dir__", SphereSliceAttributes_dir, METH_NOARGS},
+    {"Notify", SphereSliceAttributes_Notify, METH_NOARGS},
     {"SetOrigin", SphereSliceAttributes_SetOrigin, METH_VARARGS},
     {"GetOrigin", SphereSliceAttributes_GetOrigin, METH_VARARGS},
     {"SetRadius", SphereSliceAttributes_SetRadius, METH_VARARGS},
@@ -244,17 +274,6 @@ PySphereSliceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "radius") == 0)
         return SphereSliceAttributes_GetRadius(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySphereSliceAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySphereSliceAttributes_methods[i].ml_name),
-                PyString_FromString(PySphereSliceAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PySphereSliceAttributes_methods, self, name);
 }
@@ -337,7 +356,8 @@ VISIT_PY_TYPE_OBJ(SphereSliceAttributesType,         \
                   SphereSliceAttributes_str,         \
                   SphereSliceAttributes_Purpose,     \
                   SphereSliceAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PySphereSliceAttributes_methods);
 
 //
 // Helper function for comparing.

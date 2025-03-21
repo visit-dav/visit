@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TUBEATTRIBUTES_NMETH 16
+#define TUBEATTRIBUTES_NMETH 17
 void           PyTubeAttributes_StartUp(TubeAttributes *subj, void *data);
 void           PyTubeAttributes_CloseDown();
 PyMethodDef *  PyTubeAttributes_GetMethodTable(int *nMethods);

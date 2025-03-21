@@ -5,6 +5,7 @@
 #include <PyFFTAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -55,6 +56,34 @@ FFTAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+FFTAttributes_dir(PyObject *self, PyObject *args)
+{
+    static FFTAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyFFTAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 FFTAttributes_SetDummy(PyObject *self, PyObject *args)
 {
@@ -118,7 +147,8 @@ FFTAttributes_GetDummy(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyFFTAttributes_methods[FFTATTRIBUTES_NMETH] = {
-    {"Notify", FFTAttributes_Notify, METH_VARARGS},
+    {"__dir__", FFTAttributes_dir, METH_NOARGS},
+    {"Notify", FFTAttributes_Notify, METH_NOARGS},
     {"SetDummy", FFTAttributes_SetDummy, METH_VARARGS},
     {"GetDummy", FFTAttributes_GetDummy, METH_VARARGS},
     {NULL, NULL}
@@ -145,17 +175,6 @@ PyFFTAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "dummy") == 0)
         return FFTAttributes_GetDummy(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyFFTAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyFFTAttributes_methods[i].ml_name),
-                PyString_FromString(PyFFTAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyFFTAttributes_methods, self, name);
 }
@@ -236,7 +255,8 @@ VISIT_PY_TYPE_OBJ(FFTAttributesType,         \
                   FFTAttributes_str,         \
                   FFTAttributes_Purpose,     \
                   FFTAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyFFTAttributes_methods);
 
 //
 // Helper function for comparing.

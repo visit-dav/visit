@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LIMITCYCLEATTRIBUTES_NMETH 120
+#define LIMITCYCLEATTRIBUTES_NMETH 121
 void           PyLimitCycleAttributes_StartUp(LimitCycleAttributes *subj, void *data);
 void           PyLimitCycleAttributes_CloseDown();
 PyMethodDef *  PyLimitCycleAttributes_GetMethodTable(int *nMethods);

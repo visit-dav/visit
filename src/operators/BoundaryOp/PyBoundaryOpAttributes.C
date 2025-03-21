@@ -5,6 +5,7 @@
 #include <PyBoundaryOpAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -55,6 +56,34 @@ BoundaryOpAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+BoundaryOpAttributes_dir(PyObject *self, PyObject *args)
+{
+    static BoundaryOpAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyBoundaryOpAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 BoundaryOpAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
@@ -118,7 +147,8 @@ BoundaryOpAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyBoundaryOpAttributes_methods[BOUNDARYOPATTRIBUTES_NMETH] = {
-    {"Notify", BoundaryOpAttributes_Notify, METH_VARARGS},
+    {"__dir__", BoundaryOpAttributes_dir, METH_NOARGS},
+    {"Notify", BoundaryOpAttributes_Notify, METH_NOARGS},
     {"SetSmoothingLevel", BoundaryOpAttributes_SetSmoothingLevel, METH_VARARGS},
     {"GetSmoothingLevel", BoundaryOpAttributes_GetSmoothingLevel, METH_VARARGS},
     {NULL, NULL}
@@ -145,17 +175,6 @@ PyBoundaryOpAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "smoothingLevel") == 0)
         return BoundaryOpAttributes_GetSmoothingLevel(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyBoundaryOpAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyBoundaryOpAttributes_methods[i].ml_name),
-                PyString_FromString(PyBoundaryOpAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyBoundaryOpAttributes_methods, self, name);
 }
@@ -236,7 +255,8 @@ VISIT_PY_TYPE_OBJ(BoundaryOpAttributesType,         \
                   BoundaryOpAttributes_str,         \
                   BoundaryOpAttributes_Purpose,     \
                   BoundaryOpAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyBoundaryOpAttributes_methods);
 
 //
 // Helper function for comparing.

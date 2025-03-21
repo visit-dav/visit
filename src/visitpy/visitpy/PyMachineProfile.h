@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MACHINEPROFILE_NMETH 49
+#define MACHINEPROFILE_NMETH 50
 void VISITPY_API           PyMachineProfile_StartUp(MachineProfile *subj, void *data);
 void VISITPY_API           PyMachineProfile_CloseDown();
 VISITPY_API PyMethodDef *  PyMachineProfile_GetMethodTable(int *nMethods);

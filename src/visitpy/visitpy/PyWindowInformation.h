@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define WINDOWINFORMATION_NMETH 60
+#define WINDOWINFORMATION_NMETH 61
 void VISITPY_API           PyWindowInformation_StartUp(WindowInformation *subj, void *data);
 void VISITPY_API           PyWindowInformation_CloseDown();
 VISITPY_API PyMethodDef *  PyWindowInformation_GetMethodTable(int *nMethods);

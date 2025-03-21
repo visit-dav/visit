@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXPRESSION_NMETH 22
+#define EXPRESSION_NMETH 23
 void VISITPY_API           PyExpression_StartUp(Expression *subj, void *data);
 void VISITPY_API           PyExpression_CloseDown();
 VISITPY_API PyMethodDef *  PyExpression_GetMethodTable(int *nMethods);

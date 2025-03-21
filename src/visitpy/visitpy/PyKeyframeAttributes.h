@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define KEYFRAMEATTRIBUTES_NMETH 8
+#define KEYFRAMEATTRIBUTES_NMETH 9
 void VISITPY_API           PyKeyframeAttributes_StartUp(KeyframeAttributes *subj, void *data);
 void VISITPY_API           PyKeyframeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyKeyframeAttributes_GetMethodTable(int *nMethods);

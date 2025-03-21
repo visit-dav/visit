@@ -5,6 +5,7 @@
 #include <PyParallelCoordinatesAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -172,6 +173,34 @@ ParallelCoordinatesAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ParallelCoordinatesAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ParallelCoordinatesAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyParallelCoordinatesAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetScalarAxisNames(PyObject *self, PyObject *args)
 {
@@ -1166,7 +1195,8 @@ ParallelCoordinatesAttributes_GetDrawFocusAs(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyParallelCoordinatesAttributes_methods[PARALLELCOORDINATESATTRIBUTES_NMETH] = {
-    {"Notify", ParallelCoordinatesAttributes_Notify, METH_VARARGS},
+    {"__dir__", ParallelCoordinatesAttributes_dir, METH_NOARGS},
+    {"Notify", ParallelCoordinatesAttributes_Notify, METH_NOARGS},
     {"SetScalarAxisNames", ParallelCoordinatesAttributes_SetScalarAxisNames, METH_VARARGS},
     {"GetScalarAxisNames", ParallelCoordinatesAttributes_GetScalarAxisNames, METH_VARARGS},
     {"SetVisualAxisNames", ParallelCoordinatesAttributes_SetVisualAxisNames, METH_VARARGS},
@@ -1256,17 +1286,6 @@ PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ParallelCoordinatesAttributes::BinsColoredByPopulation));
 
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyParallelCoordinatesAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyParallelCoordinatesAttributes_methods[i].ml_name),
-                PyString_FromString(PyParallelCoordinatesAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyParallelCoordinatesAttributes_methods, self, name);
 }
@@ -1375,7 +1394,8 @@ VISIT_PY_TYPE_OBJ(ParallelCoordinatesAttributesType,         \
                   ParallelCoordinatesAttributes_str,         \
                   ParallelCoordinatesAttributes_Purpose,     \
                   ParallelCoordinatesAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyParallelCoordinatesAttributes_methods);
 
 //
 // Helper function for comparing.

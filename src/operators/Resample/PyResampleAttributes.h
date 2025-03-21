@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define RESAMPLEATTRIBUTES_NMETH 34
+#define RESAMPLEATTRIBUTES_NMETH 35
 void           PyResampleAttributes_StartUp(ResampleAttributes *subj, void *data);
 void           PyResampleAttributes_CloseDown();
 PyMethodDef *  PyResampleAttributes_GetMethodTable(int *nMethods);

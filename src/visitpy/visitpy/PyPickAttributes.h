@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PICKATTRIBUTES_NMETH 68
+#define PICKATTRIBUTES_NMETH 69
 void VISITPY_API           PyPickAttributes_StartUp(PickAttributes *subj, void *data);
 void VISITPY_API           PyPickAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyPickAttributes_GetMethodTable(int *nMethods);

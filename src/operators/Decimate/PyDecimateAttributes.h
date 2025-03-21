@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DECIMATEATTRIBUTES_NMETH 4
+#define DECIMATEATTRIBUTES_NMETH 5
 void           PyDecimateAttributes_StartUp(DecimateAttributes *subj, void *data);
 void           PyDecimateAttributes_CloseDown();
 PyMethodDef *  PyDecimateAttributes_GetMethodTable(int *nMethods);

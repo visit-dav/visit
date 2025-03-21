@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ELEVATEATTRIBUTES_NMETH 22
+#define ELEVATEATTRIBUTES_NMETH 23
 void           PyElevateAttributes_StartUp(ElevateAttributes *subj, void *data);
 void           PyElevateAttributes_CloseDown();
 PyMethodDef *  PyElevateAttributes_GetMethodTable(int *nMethods);

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CREATEBONDSATTRIBUTES_NMETH 30
+#define CREATEBONDSATTRIBUTES_NMETH 31
 void           PyCreateBondsAttributes_StartUp(CreateBondsAttributes *subj, void *data);
 void           PyCreateBondsAttributes_CloseDown();
 PyMethodDef *  PyCreateBondsAttributes_GetMethodTable(int *nMethods);

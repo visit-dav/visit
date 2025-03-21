@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXESARRAY_NMETH 14
+#define AXESARRAY_NMETH 15
 void VISITPY_API           PyAxesArray_StartUp(AxesArray *subj, void *data);
 void VISITPY_API           PyAxesArray_CloseDown();
 VISITPY_API PyMethodDef *  PyAxesArray_GetMethodTable(int *nMethods);

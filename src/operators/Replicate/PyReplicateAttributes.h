@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define REPLICATEATTRIBUTES_NMETH 24
+#define REPLICATEATTRIBUTES_NMETH 25
 void           PyReplicateAttributes_StartUp(ReplicateAttributes *subj, void *data);
 void           PyReplicateAttributes_CloseDown();
 PyMethodDef *  PyReplicateAttributes_GetMethodTable(int *nMethods);

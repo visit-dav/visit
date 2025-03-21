@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DATABINNINGATTRIBUTES_NMETH 52
+#define DATABINNINGATTRIBUTES_NMETH 53
 void           PyDataBinningAttributes_StartUp(DataBinningAttributes *subj, void *data);
 void           PyDataBinningAttributes_CloseDown();
 PyMethodDef *  PyDataBinningAttributes_GetMethodTable(int *nMethods);

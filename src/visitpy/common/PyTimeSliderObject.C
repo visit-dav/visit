@@ -1002,7 +1002,8 @@ VISIT_PY_TYPE_OBJ( TimeSliderObjectType,              \
                    TimeSliderObject_str,              \
                    TimeSliderObject_Purpose,          \
                    TimeSliderObject_richcompare,      \
-                   0); /* as_number*/
+                   0, /* as_number*/
+                   TimeSliderObject_methods);
 
 // CUSTOM
 static PyObject *

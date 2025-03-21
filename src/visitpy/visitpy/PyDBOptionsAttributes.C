@@ -5,6 +5,7 @@
 #include <PyDBOptionsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -71,6 +72,45 @@ DBOptionsAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+DBOptionsAttributes_dir(PyObject *self, PyObject *args)
+{
+    static DBOptionsAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyDBOptionsAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 1) continue; // internal field
+        if (i == 2) continue; // internal field
+        if (i == 3) continue; // internal field
+        if (i == 4) continue; // internal field
+        if (i == 5) continue; // internal field
+        if (i == 6) continue; // internal field
+        if (i == 7) continue; // internal field
+        if (i == 8) continue; // internal field
+        if (i == 9) continue; // internal field
+        if (i == 10) continue; // internal field
+        if (i == 11) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 DBOptionsAttributes_SetTypes(PyObject *self, PyObject *args)
 {
@@ -199,7 +239,8 @@ DBOptionsAttributes_GetHelp(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyDBOptionsAttributes_methods[DBOPTIONSATTRIBUTES_NMETH] = {
-    {"Notify", DBOptionsAttributes_Notify, METH_VARARGS},
+    {"__dir__", DBOptionsAttributes_dir, METH_NOARGS},
+    {"Notify", DBOptionsAttributes_Notify, METH_NOARGS},
     {"SetTypes", DBOptionsAttributes_SetTypes, METH_VARARGS},
     {"GetTypes", DBOptionsAttributes_GetTypes, METH_VARARGS},
     {"SetHelp", DBOptionsAttributes_SetHelp, METH_VARARGS},
@@ -230,17 +271,6 @@ PyDBOptionsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "help") == 0)
         return DBOptionsAttributes_GetHelp(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyDBOptionsAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyDBOptionsAttributes_methods[i].ml_name),
-                PyString_FromString(PyDBOptionsAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyDBOptionsAttributes_methods, self, name);
 }
@@ -323,7 +353,8 @@ VISIT_PY_TYPE_OBJ(DBOptionsAttributesType,         \
                   DBOptionsAttributes_str,         \
                   DBOptionsAttributes_Purpose,     \
                   DBOptionsAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyDBOptionsAttributes_methods);
 
 //
 // Helper function for comparing.

@@ -5,6 +5,7 @@
 #include <PyExtractPointFunction2DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -85,6 +86,34 @@ ExtractPointFunction2DAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ExtractPointFunction2DAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ExtractPointFunction2DAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyExtractPointFunction2DAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 {
@@ -240,7 +269,8 @@ ExtractPointFunction2DAttributes_GetJ(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyExtractPointFunction2DAttributes_methods[EXTRACTPOINTFUNCTION2DATTRIBUTES_NMETH] = {
-    {"Notify", ExtractPointFunction2DAttributes_Notify, METH_VARARGS},
+    {"__dir__", ExtractPointFunction2DAttributes_dir, METH_NOARGS},
+    {"Notify", ExtractPointFunction2DAttributes_Notify, METH_NOARGS},
     {"SetI", ExtractPointFunction2DAttributes_SetI, METH_VARARGS},
     {"GetI", ExtractPointFunction2DAttributes_GetI, METH_VARARGS},
     {"SetJ", ExtractPointFunction2DAttributes_SetJ, METH_VARARGS},
@@ -271,17 +301,6 @@ PyExtractPointFunction2DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "J") == 0)
         return ExtractPointFunction2DAttributes_GetJ(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyExtractPointFunction2DAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyExtractPointFunction2DAttributes_methods[i].ml_name),
-                PyString_FromString(PyExtractPointFunction2DAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyExtractPointFunction2DAttributes_methods, self, name);
 }
@@ -364,7 +383,8 @@ VISIT_PY_TYPE_OBJ(ExtractPointFunction2DAttributesType,         \
                   ExtractPointFunction2DAttributes_str,         \
                   ExtractPointFunction2DAttributes_Purpose,     \
                   ExtractPointFunction2DAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyExtractPointFunction2DAttributes_methods);
 
 //
 // Helper function for comparing.

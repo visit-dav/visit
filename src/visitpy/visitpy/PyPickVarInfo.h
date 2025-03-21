@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PICKVARINFO_NMETH 28
+#define PICKVARINFO_NMETH 29
 void VISITPY_API           PyPickVarInfo_StartUp(PickVarInfo *subj, void *data);
 void VISITPY_API           PyPickVarInfo_CloseDown();
 VISITPY_API PyMethodDef *  PyPickVarInfo_GetMethodTable(int *nMethods);

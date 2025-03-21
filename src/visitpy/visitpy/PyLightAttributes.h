@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LIGHTATTRIBUTES_NMETH 12
+#define LIGHTATTRIBUTES_NMETH 13
 void VISITPY_API           PyLightAttributes_StartUp(LightAttributes *subj, void *data);
 void VISITPY_API           PyLightAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyLightAttributes_GetMethodTable(int *nMethods);

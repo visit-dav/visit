@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define NAMESCHEMEATTRIBUTES_NMETH 16
+#define NAMESCHEMEATTRIBUTES_NMETH 17
 void VISITPY_API           PyNameschemeAttributes_StartUp(NameschemeAttributes *subj, void *data);
 void VISITPY_API           PyNameschemeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyNameschemeAttributes_GetMethodTable(int *nMethods);

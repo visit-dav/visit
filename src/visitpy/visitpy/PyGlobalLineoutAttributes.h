@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define GLOBALLINEOUTATTRIBUTES_NMETH 20
+#define GLOBALLINEOUTATTRIBUTES_NMETH 21
 void VISITPY_API           PyGlobalLineoutAttributes_StartUp(GlobalLineoutAttributes *subj, void *data);
 void VISITPY_API           PyGlobalLineoutAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyGlobalLineoutAttributes_GetMethodTable(int *nMethods);

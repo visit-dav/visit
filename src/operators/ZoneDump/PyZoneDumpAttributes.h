@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ZONEDUMPATTRIBUTES_NMETH 12
+#define ZONEDUMPATTRIBUTES_NMETH 13
 void           PyZoneDumpAttributes_StartUp(ZoneDumpAttributes *subj, void *data);
 void           PyZoneDumpAttributes_CloseDown();
 PyMethodDef *  PyZoneDumpAttributes_GetMethodTable(int *nMethods);

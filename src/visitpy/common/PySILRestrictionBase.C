@@ -958,7 +958,8 @@ VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
                   0,                           \
                   SILRestriction_Purpose,      \
                   SILRestriction_richcompare,  \
-                  0); /* as_number*/
+                  0, /* as_number*/            \
+                  SILRestriction_methods);
 
 // ****************************************************************************
 // Function: SILRestriction_richcompare

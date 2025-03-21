@@ -5,6 +5,7 @@
 #include <PyInteractorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -111,6 +112,34 @@ InteractorAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+InteractorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static InteractorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyInteractorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 InteractorAttributes_SetShowGuidelines(PyObject *self, PyObject *args)
 {
@@ -488,7 +517,8 @@ InteractorAttributes_GetBoundingBoxMode(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyInteractorAttributes_methods[INTERACTORATTRIBUTES_NMETH] = {
-    {"Notify", InteractorAttributes_Notify, METH_VARARGS},
+    {"__dir__", InteractorAttributes_dir, METH_NOARGS},
+    {"Notify", InteractorAttributes_Notify, METH_NOARGS},
     {"SetShowGuidelines", InteractorAttributes_SetShowGuidelines, METH_VARARGS},
     {"GetShowGuidelines", InteractorAttributes_GetShowGuidelines, METH_VARARGS},
     {"SetClampSquare", InteractorAttributes_SetClampSquare, METH_VARARGS},
@@ -549,17 +579,6 @@ PyInteractorAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(InteractorAttributes::Auto));
 
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyInteractorAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyInteractorAttributes_methods[i].ml_name),
-                PyString_FromString(PyInteractorAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyInteractorAttributes_methods, self, name);
 }
@@ -650,7 +669,8 @@ VISIT_PY_TYPE_OBJ(InteractorAttributesType,         \
                   InteractorAttributes_str,         \
                   InteractorAttributes_Purpose,     \
                   InteractorAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyInteractorAttributes_methods);
 
 //
 // Helper function for comparing.

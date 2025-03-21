@@ -148,7 +148,7 @@ SpreadsheetAttributes_dir(PyObject *self, PyObject *args)
         PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
     }
 
-    // Now members using generic AttributeGroup interface
+    // Add members using generic AttributeGroup interface
     for (int i = 0; i < atts.NumAttributes(); i++) {
         if (i == 11) continue; // internal field
         if (i == 13) continue; // internal field

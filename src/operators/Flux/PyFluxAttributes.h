@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FLUXATTRIBUTES_NMETH 8
+#define FLUXATTRIBUTES_NMETH 9
 void           PyFluxAttributes_StartUp(FluxAttributes *subj, void *data);
 void           PyFluxAttributes_CloseDown();
 PyMethodDef *  PyFluxAttributes_GetMethodTable(int *nMethods);

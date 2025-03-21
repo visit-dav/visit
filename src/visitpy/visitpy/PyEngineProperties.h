@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ENGINEPROPERTIES_NMETH 12
+#define ENGINEPROPERTIES_NMETH 13
 void VISITPY_API           PyEngineProperties_StartUp(EngineProperties *subj, void *data);
 void VISITPY_API           PyEngineProperties_CloseDown();
 VISITPY_API PyMethodDef *  PyEngineProperties_GetMethodTable(int *nMethods);

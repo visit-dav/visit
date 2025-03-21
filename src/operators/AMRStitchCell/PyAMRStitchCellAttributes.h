@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AMRSTITCHCELLATTRIBUTES_NMETH 4
+#define AMRSTITCHCELLATTRIBUTES_NMETH 5
 void           PyAMRStitchCellAttributes_StartUp(AMRStitchCellAttributes *subj, void *data);
 void           PyAMRStitchCellAttributes_CloseDown();
 PyMethodDef *  PyAMRStitchCellAttributes_GetMethodTable(int *nMethods);

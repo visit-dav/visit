@@ -5,6 +5,7 @@
 #include <PyGlobalLineoutAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -112,6 +113,34 @@ GlobalLineoutAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+GlobalLineoutAttributes_dir(PyObject *self, PyObject *args)
+{
+    static GlobalLineoutAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyGlobalLineoutAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetDynamic(PyObject *self, PyObject *args)
 {
@@ -667,7 +696,8 @@ GlobalLineoutAttributes_GetFreezeInTime(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH] = {
-    {"Notify", GlobalLineoutAttributes_Notify, METH_VARARGS},
+    {"__dir__", GlobalLineoutAttributes_dir, METH_NOARGS},
+    {"Notify", GlobalLineoutAttributes_Notify, METH_NOARGS},
     {"SetDynamic", GlobalLineoutAttributes_SetDynamic, METH_VARARGS},
     {"GetDynamic", GlobalLineoutAttributes_GetDynamic, METH_VARARGS},
     {"SetCreateWindow", GlobalLineoutAttributes_SetCreateWindow, METH_VARARGS},
@@ -736,17 +766,6 @@ PyGlobalLineoutAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "freezeInTime") == 0)
         return GlobalLineoutAttributes_GetFreezeInTime(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyGlobalLineoutAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyGlobalLineoutAttributes_methods[i].ml_name),
-                PyString_FromString(PyGlobalLineoutAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyGlobalLineoutAttributes_methods, self, name);
 }
@@ -843,7 +862,8 @@ VISIT_PY_TYPE_OBJ(GlobalLineoutAttributesType,         \
                   GlobalLineoutAttributes_str,         \
                   GlobalLineoutAttributes_Purpose,     \
                   GlobalLineoutAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyGlobalLineoutAttributes_methods);
 
 //
 // Helper function for comparing.

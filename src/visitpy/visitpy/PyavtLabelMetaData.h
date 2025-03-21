@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTLABELMETADATA_NMETH (AVTVARMETADATA_NMETH+2)
+#define AVTLABELMETADATA_NMETH (AVTVARMETADATA_NMETH+3)
 void VISITPY_API           PyavtLabelMetaData_StartUp(avtLabelMetaData *subj, void *data);
 void VISITPY_API           PyavtLabelMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtLabelMetaData_GetMethodTable(int *nMethods);

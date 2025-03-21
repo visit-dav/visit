@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define RADIALRESAMPLEATTRIBUTES_NMETH 24
+#define RADIALRESAMPLEATTRIBUTES_NMETH 25
 void           PyRadialResampleAttributes_StartUp(RadialResampleAttributes *subj, void *data);
 void           PyRadialResampleAttributes_CloseDown();
 PyMethodDef *  PyRadialResampleAttributes_GetMethodTable(int *nMethods);

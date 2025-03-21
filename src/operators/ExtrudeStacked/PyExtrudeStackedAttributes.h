@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTRUDESTACKEDATTRIBUTES_NMETH 26
+#define EXTRUDESTACKEDATTRIBUTES_NMETH 27
 void           PyExtrudeStackedAttributes_StartUp(ExtrudeStackedAttributes *subj, void *data);
 void           PyExtrudeStackedAttributes_CloseDown();
 PyMethodDef *  PyExtrudeStackedAttributes_GetMethodTable(int *nMethods);

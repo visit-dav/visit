@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LAGRANGIANATTRIBUTES_NMETH 12
+#define LAGRANGIANATTRIBUTES_NMETH 13
 void           PyLagrangianAttributes_StartUp(LagrangianAttributes *subj, void *data);
 void           PyLagrangianAttributes_CloseDown();
 PyMethodDef *  PyLagrangianAttributes_GetMethodTable(int *nMethods);

@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define COLORATTRIBUTE_NMETH 4
+#define COLORATTRIBUTE_NMETH 5
 void VISITPY_API           PyColorAttribute_StartUp(ColorAttribute *subj, void *data);
 void VISITPY_API           PyColorAttribute_CloseDown();
 VISITPY_API PyMethodDef *  PyColorAttribute_GetMethodTable(int *nMethods);

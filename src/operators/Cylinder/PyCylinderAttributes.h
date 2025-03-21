@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CYLINDERATTRIBUTES_NMETH 10
+#define CYLINDERATTRIBUTES_NMETH 11
 void           PyCylinderAttributes_StartUp(CylinderAttributes *subj, void *data);
 void           PyCylinderAttributes_CloseDown();
 PyMethodDef *  PyCylinderAttributes_GetMethodTable(int *nMethods);

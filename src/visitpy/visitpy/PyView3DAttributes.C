@@ -1098,17 +1098,6 @@ PyView3DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "windowValid") == 0)
         return View3DAttributes_GetWindowValid(self, NULL);
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyView3DAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyView3DAttributes_methods[i].ml_name),
-                PyString_FromString(PyView3DAttributes_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyView3DAttributes_methods, self, name);
 }
 
@@ -1383,7 +1372,8 @@ VISIT_PY_TYPE_OBJ(View3DAttributesType,          \
                   View3DAttributes_str,          \
                   View3DAttributes_Purpose,      \
                   View3DAttributes_richcompare,  \
-                  &View3DAttributes_as_number);
+                  &View3DAttributes_as_number,   \
+                  PyView3DAttributes_methods);
 
 
 static PyObject *

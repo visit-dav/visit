@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTARRAYMETADATA_NMETH (AVTVARMETADATA_NMETH+6)
+#define AVTARRAYMETADATA_NMETH (AVTVARMETADATA_NMETH+7)
 void VISITPY_API           PyavtArrayMetaData_StartUp(avtArrayMetaData *subj, void *data);
 void VISITPY_API           PyavtArrayMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtArrayMetaData_GetMethodTable(int *nMethods);

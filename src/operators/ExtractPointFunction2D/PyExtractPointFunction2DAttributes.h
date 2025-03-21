@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTRACTPOINTFUNCTION2DATTRIBUTES_NMETH 6
+#define EXTRACTPOINTFUNCTION2DATTRIBUTES_NMETH 7
 void           PyExtractPointFunction2DAttributes_StartUp(ExtractPointFunction2DAttributes *subj, void *data);
 void           PyExtractPointFunction2DAttributes_CloseDown();
 PyMethodDef *  PyExtractPointFunction2DAttributes_GetMethodTable(int *nMethods);

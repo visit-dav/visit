@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTERNALSURFACEATTRIBUTES_NMETH 6
+#define EXTERNALSURFACEATTRIBUTES_NMETH 7
 void           PyExternalSurfaceAttributes_StartUp(ExternalSurfaceAttributes *subj, void *data);
 void           PyExternalSurfaceAttributes_CloseDown();
 PyMethodDef *  PyExternalSurfaceAttributes_GetMethodTable(int *nMethods);

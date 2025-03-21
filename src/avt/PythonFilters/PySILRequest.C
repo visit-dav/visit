@@ -310,7 +310,8 @@ VISIT_PY_TYPE_OBJ(PySILRequestType,      \
                   0,                     \
                   SILRequest_Doc,        \
                   0,                     \
-                  0); /* as_number*/
+                  0, /* as_number*/      \
+                  SILRequest_methods);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

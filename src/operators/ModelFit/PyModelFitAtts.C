@@ -5,6 +5,7 @@
 #include <PyModelFitAtts.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -229,6 +230,34 @@ ModelFitAtts_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ModelFitAtts_dir(PyObject *self, PyObject *args)
+{
+    static ModelFitAtts atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyModelFitAtts_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ModelFitAtts_SetVars(PyObject *self, PyObject *args)
 {
@@ -1055,7 +1084,8 @@ ModelFitAtts_GetModelNums(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyModelFitAtts_methods[MODELFITATTS_NMETH] = {
-    {"Notify", ModelFitAtts_Notify, METH_VARARGS},
+    {"__dir__", ModelFitAtts_dir, METH_NOARGS},
+    {"Notify", ModelFitAtts_Notify, METH_NOARGS},
     {"SetVars", ModelFitAtts_SetVars, METH_VARARGS},
     {"GetVars", ModelFitAtts_GetVars, METH_VARARGS},
     {"SetNumVars", ModelFitAtts_SetNumVars, METH_VARARGS},
@@ -1122,17 +1152,6 @@ PyModelFitAtts_getattr(PyObject *self, char *name)
     if(strcmp(name, "modelNums") == 0)
         return ModelFitAtts_GetModelNums(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyModelFitAtts_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyModelFitAtts_methods[i].ml_name),
-                PyString_FromString(PyModelFitAtts_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyModelFitAtts_methods, self, name);
 }
@@ -1233,7 +1252,8 @@ VISIT_PY_TYPE_OBJ(ModelFitAttsType,         \
                   ModelFitAtts_str,         \
                   ModelFitAtts_Purpose,     \
                   ModelFitAtts_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyModelFitAtts_methods);
 
 //
 // Helper function for comparing.

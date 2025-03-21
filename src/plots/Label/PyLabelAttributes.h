@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LABELATTRIBUTES_NMETH 28
+#define LABELATTRIBUTES_NMETH 29
 void           PyLabelAttributes_StartUp(LabelAttributes *subj, void *data);
 void           PyLabelAttributes_CloseDown();
 PyMethodDef *  PyLabelAttributes_GetMethodTable(int *nMethods);

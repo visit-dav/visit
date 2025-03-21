@@ -671,7 +671,8 @@ VISIT_PY_TYPE_OBJ(ImageObjectType,
                   ImageObject_str,
                   ImageObject_Purpose,
                   ImageObject_richcompare,
-                  0); /* as_number */
+                  0, /* as_number */
+                  ImageObject_methods);
 
 // CUSTOM
 static PyObject *

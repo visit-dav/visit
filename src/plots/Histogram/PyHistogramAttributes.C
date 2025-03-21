@@ -5,6 +5,7 @@
 #include <PyHistogramAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <ColorAttribute.h>
@@ -199,6 +200,34 @@ HistogramAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+HistogramAttributes_dir(PyObject *self, PyObject *args)
+{
+    static HistogramAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyHistogramAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
 {
@@ -1387,7 +1416,8 @@ HistogramAttributes_GetComputeAsCDF(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyHistogramAttributes_methods[HISTOGRAMATTRIBUTES_NMETH] = {
-    {"Notify", HistogramAttributes_Notify, METH_VARARGS},
+    {"__dir__", HistogramAttributes_dir, METH_NOARGS},
+    {"Notify", HistogramAttributes_Notify, METH_NOARGS},
     {"SetBasedOn", HistogramAttributes_SetBasedOn, METH_VARARGS},
     {"GetBasedOn", HistogramAttributes_GetBasedOn, METH_VARARGS},
     {"SetHistogramType", HistogramAttributes_SetHistogramType, METH_VARARGS},
@@ -1523,17 +1553,6 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
         return HistogramAttributes_GetComputeAsCDF(self, NULL);
 
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyHistogramAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyHistogramAttributes_methods[i].ml_name),
-                PyString_FromString(PyHistogramAttributes_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyHistogramAttributes_methods, self, name);
 }
 
@@ -1649,7 +1668,8 @@ VISIT_PY_TYPE_OBJ(HistogramAttributesType,         \
                   HistogramAttributes_str,         \
                   HistogramAttributes_Purpose,     \
                   HistogramAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyHistogramAttributes_methods);
 
 //
 // Helper function for comparing.

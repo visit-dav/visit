@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define INTERACTORATTRIBUTES_NMETH 14
+#define INTERACTORATTRIBUTES_NMETH 15
 void VISITPY_API           PyInteractorAttributes_StartUp(InteractorAttributes *subj, void *data);
 void VISITPY_API           PyInteractorAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyInteractorAttributes_GetMethodTable(int *nMethods);

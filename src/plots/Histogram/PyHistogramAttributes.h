@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define HISTOGRAMATTRIBUTES_NMETH 40
+#define HISTOGRAMATTRIBUTES_NMETH 41
 void           PyHistogramAttributes_StartUp(HistogramAttributes *subj, void *data);
 void           PyHistogramAttributes_CloseDown();
 PyMethodDef *  PyHistogramAttributes_GetMethodTable(int *nMethods);

@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXISTITLES_NMETH 14
+#define AXISTITLES_NMETH 15
 void VISITPY_API           PyAxisTitles_StartUp(AxisTitles *subj, void *data);
 void VISITPY_API           PyAxisTitles_CloseDown();
 VISITPY_API PyMethodDef *  PyAxisTitles_GetMethodTable(int *nMethods);

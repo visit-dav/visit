@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define THRESHOLDOPATTRIBUTES_NMETH 20
+#define THRESHOLDOPATTRIBUTES_NMETH 21
 void VISITPY_API           PyThresholdOpAttributes_StartUp(ThresholdOpAttributes *subj, void *data);
 void VISITPY_API           PyThresholdOpAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyThresholdOpAttributes_GetMethodTable(int *nMethods);

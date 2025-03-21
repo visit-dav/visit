@@ -1401,7 +1401,8 @@ VISIT_PY_TYPE_OBJ(LegendAttributesObjectType,
                   LegendAttributesObject_str,
                   LegendAttributesObject_Purpose,
                   LegendAttributesObject_richcompare,
-                  0); /* as_number */
+                  0, /* as_number */
+                  LegendAttributesObject_methods);
 
 // CUSTOM
 static PyObject *

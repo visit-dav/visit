@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWAXISARRAYATTRIBUTES_NMETH 8
+#define VIEWAXISARRAYATTRIBUTES_NMETH 9
 void VISITPY_API           PyViewAxisArrayAttributes_StartUp(ViewAxisArrayAttributes *subj, void *data);
 void VISITPY_API           PyViewAxisArrayAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyViewAxisArrayAttributes_GetMethodTable(int *nMethods);

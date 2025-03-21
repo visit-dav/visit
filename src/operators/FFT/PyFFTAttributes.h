@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FFTATTRIBUTES_NMETH 4
+#define FFTATTRIBUTES_NMETH 5
 void           PyFFTAttributes_StartUp(FFTAttributes *subj, void *data);
 void           PyFFTAttributes_CloseDown();
 PyMethodDef *  PyFFTAttributes_GetMethodTable(int *nMethods);

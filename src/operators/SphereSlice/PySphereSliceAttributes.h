@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SPHERESLICEATTRIBUTES_NMETH 6
+#define SPHERESLICEATTRIBUTES_NMETH 7
 void           PySphereSliceAttributes_StartUp(SphereSliceAttributes *subj, void *data);
 void           PySphereSliceAttributes_CloseDown();
 PyMethodDef *  PySphereSliceAttributes_GetMethodTable(int *nMethods);

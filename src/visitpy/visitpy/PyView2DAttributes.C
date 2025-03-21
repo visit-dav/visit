@@ -568,17 +568,6 @@ PyView2DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "windowValid") == 0)
         return View2DAttributes_GetWindowValid(self, NULL);
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyView2DAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyView2DAttributes_methods[i].ml_name),
-                PyString_FromString(PyView2DAttributes_methods[i].ml_name));
-        return result;
-    }
-
     return Py_FindMethod(PyView2DAttributes_methods, self, name);
 }
 
@@ -835,7 +824,8 @@ VISIT_PY_TYPE_OBJ(View2DAttributesType,          \
                   View2DAttributes_str,          \
                   View2DAttributes_Purpose,      \
                   View2DAttributes_richcompare,  \
-                  &View2DAttributes_as_number);
+                  &View2DAttributes_as_number,   \
+                  PyView2DAttributes_methods);
 
 
 static PyObject *

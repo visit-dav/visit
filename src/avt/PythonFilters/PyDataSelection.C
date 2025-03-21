@@ -138,7 +138,8 @@ VISIT_PY_TYPE_OBJ(PyDataSelectionType,   \
                   0,                     \
                   DataSelection_Doc,     \
                   0,                     \
-                  0); /* as_number*/
+                  0, /* as_number*/      \
+                  DataSelection_methods);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

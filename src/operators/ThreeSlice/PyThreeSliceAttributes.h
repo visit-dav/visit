@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define THREESLICEATTRIBUTES_NMETH 10
+#define THREESLICEATTRIBUTES_NMETH 11
 void           PyThreeSliceAttributes_StartUp(ThreeSliceAttributes *subj, void *data);
 void           PyThreeSliceAttributes_CloseDown();
 PyMethodDef *  PyThreeSliceAttributes_GetMethodTable(int *nMethods);

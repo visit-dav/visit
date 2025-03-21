@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DELAUNAYATTRIBUTES_NMETH 4
+#define DELAUNAYATTRIBUTES_NMETH 5
 void           PyDelaunayAttributes_StartUp(DelaunayAttributes *subj, void *data);
 void           PyDelaunayAttributes_CloseDown();
 PyMethodDef *  PyDelaunayAttributes_GetMethodTable(int *nMethods);

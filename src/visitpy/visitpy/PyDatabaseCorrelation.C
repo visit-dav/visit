@@ -763,7 +763,8 @@ VISIT_PY_TYPE_OBJ(DatabaseCorrelationType,         \
                   DatabaseCorrelation_str,         \
                   DatabaseCorrelation_Purpose,     \
                   DatabaseCorrelation_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/                \
+                  DatabaseCorrelation_methods);
 
 //
 // Helper function for comparing.

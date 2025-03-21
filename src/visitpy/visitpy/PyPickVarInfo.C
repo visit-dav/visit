@@ -5,6 +5,7 @@
 #include <PyPickVarInfo.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -197,6 +198,35 @@ PickVarInfo_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+PickVarInfo_dir(PyObject *self, PyObject *args)
+{
+    static PickVarInfo atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyPickVarInfo_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 12) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 PickVarInfo_SetVariableName(PyObject *self, PyObject *args)
 {
@@ -1034,7 +1064,8 @@ PickVarInfo_GetFloatFormat(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyPickVarInfo_methods[PICKVARINFO_NMETH] = {
-    {"Notify", PickVarInfo_Notify, METH_VARARGS},
+    {"__dir__", PickVarInfo_dir, METH_NOARGS},
+    {"Notify", PickVarInfo_Notify, METH_NOARGS},
     {"SetVariableName", PickVarInfo_SetVariableName, METH_VARARGS},
     {"GetVariableName", PickVarInfo_GetVariableName, METH_VARARGS},
     {"SetVariableType", PickVarInfo_SetVariableType, METH_VARARGS},
@@ -1118,17 +1149,6 @@ PyPickVarInfo_getattr(PyObject *self, char *name)
     if(strcmp(name, "floatFormat") == 0)
         return PickVarInfo_GetFloatFormat(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyPickVarInfo_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyPickVarInfo_methods[i].ml_name),
-                PyString_FromString(PyPickVarInfo_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyPickVarInfo_methods, self, name);
 }
@@ -1233,7 +1253,8 @@ VISIT_PY_TYPE_OBJ(PickVarInfoType,         \
                   PickVarInfo_str,         \
                   PickVarInfo_Purpose,     \
                   PickVarInfo_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyPickVarInfo_methods);
 
 //
 // Helper function for comparing.

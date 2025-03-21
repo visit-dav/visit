@@ -5,6 +5,7 @@
 #include <PyDeferExpressionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -69,6 +70,34 @@ DeferExpressionAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+DeferExpressionAttributes_dir(PyObject *self, PyObject *args)
+{
+    static DeferExpressionAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyDeferExpressionAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 DeferExpressionAttributes_SetExprs(PyObject *self, PyObject *args)
 {
@@ -141,7 +170,8 @@ DeferExpressionAttributes_GetExprs(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyDeferExpressionAttributes_methods[DEFEREXPRESSIONATTRIBUTES_NMETH] = {
-    {"Notify", DeferExpressionAttributes_Notify, METH_VARARGS},
+    {"__dir__", DeferExpressionAttributes_dir, METH_NOARGS},
+    {"Notify", DeferExpressionAttributes_Notify, METH_NOARGS},
     {"SetExprs", DeferExpressionAttributes_SetExprs, METH_VARARGS},
     {"GetExprs", DeferExpressionAttributes_GetExprs, METH_VARARGS},
     {NULL, NULL}
@@ -168,17 +198,6 @@ PyDeferExpressionAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "exprs") == 0)
         return DeferExpressionAttributes_GetExprs(self, NULL);
 
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyDeferExpressionAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyDeferExpressionAttributes_methods[i].ml_name),
-                PyString_FromString(PyDeferExpressionAttributes_methods[i].ml_name));
-        return result;
-    }
 
     return Py_FindMethod(PyDeferExpressionAttributes_methods, self, name);
 }
@@ -259,7 +278,8 @@ VISIT_PY_TYPE_OBJ(DeferExpressionAttributesType,         \
                   DeferExpressionAttributes_str,         \
                   DeferExpressionAttributes_Purpose,     \
                   DeferExpressionAttributes_richcompare, \
-                  0); /* as_number*/
+                  0, /* as_number*/       \
+                  PyDeferExpressionAttributes_methods);
 
 //
 // Helper function for comparing.

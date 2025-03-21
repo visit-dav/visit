@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MATERIALATTRIBUTES_NMETH 26
+#define MATERIALATTRIBUTES_NMETH 27
 void VISITPY_API           PyMaterialAttributes_StartUp(MaterialAttributes *subj, void *data);
 void VISITPY_API           PyMaterialAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyMaterialAttributes_GetMethodTable(int *nMethods);

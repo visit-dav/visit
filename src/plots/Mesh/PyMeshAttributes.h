@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MESHATTRIBUTES_NMETH 32
+#define MESHATTRIBUTES_NMETH 33
 void           PyMeshAttributes_StartUp(MeshAttributes *subj, void *data);
 void           PyMeshAttributes_CloseDown();
 PyMethodDef *  PyMeshAttributes_GetMethodTable(int *nMethods);
