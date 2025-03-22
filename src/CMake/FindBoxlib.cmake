@@ -23,30 +23,24 @@
 #   Kathleen Biagas, Thu July 15, 2021
 #   Add BOXLIB_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
 #
+#   Kathleen Biagas, Fir Mar 21, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the BOXLIB_DIR hint from the config-site .cmake file 
+# Uses the BOXLIB_DIR hint from the config-site .cmake file
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB LIBS BoxLib2D BoxLib3D)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB LIBS box2D box3D)
-ENDIF (WIN32)
+set(BOXLIB2D_DIR ${BOXLIB_DIR})
 
-IF(BOXLIB_FOUND)
-  # place the 2D and 3D libraries into separate vars for plugin use.
-  LIST(GET BOXLIB_LIB 0 tmp)
-  SET(BOXLIB_2D_LIB ${tmp} CACHE STRING "2D boxlib" FORCE)
+visit_import_third_party(BOXLIB2D
+     LIBNAMES     BoxLib2D box2D
+     DEFINES      BL_SPACEDIM=2
+     WIN32DEFINES BL_FORT_USE_UPPERCASE)
 
-  LIST(GET BOXLIB_LIB 1 tmp)
-  SET(BOXLIB_3D_LIB ${tmp} CACHE STRING "3D boxlib" FORCE)
+set(BOXLIB3D_DIR ${BOXLIB_DIR})
 
-  if(WIN32)
-     set(BOXLIB_WIN32_DEFINES "BL_FORT_USE_UPPERCASE")
-  endif()
-
-  # unset unneeded vars.
-  UNSET(tmp)
-  UNSET(BOXLIB_LIB CACHE)
-ENDIF(BOXLIB_FOUND)
+visit_import_third_party(BOXLIB3D
+     LIBNAMES     BoxLib3D box3D
+     DEFINES      BL_SPACEDIM=3
+     WIN32DEFINES BL_FORT_USE_UPPERCASE)
 
