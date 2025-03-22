@@ -6253,14 +6253,6 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
         <translation>Ajouter un marque page</translation>
     </message>
     <message>
-        <source>VisIt UltraWrapper</source>
-        <translation type="unfinished">Visit Ultra Enveloppement</translation>
-    </message>
-    <message>
-        <source>Ultra wrapper</source>
-        <translation type="unfinished">Ultra enveloppement</translation>
-    </message>
-    <message>
         <source>VisIt Manuals</source>
         <translation>Manuels VisIt</translation>
     </message>

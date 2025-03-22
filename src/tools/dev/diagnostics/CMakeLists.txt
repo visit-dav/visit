@@ -15,7 +15,8 @@ add_subdirectory(networktest)
 add_subdirectory(exceptiontest)
 
 
-if(HAVE_OSMESA AND VTK_VERSION VERSION_LESS "9.4.0")
+# OSMesa should always be available with VTK 9.4.1
+if(HAVE_OSMESA OR VTK_VERSION VERSION_GREATER_EQUAL "9.4.1")
     add_subdirectory(osmesatest)
 endif()
 

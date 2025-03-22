@@ -34,6 +34,7 @@
 
 using std::set;
 using std::string;
+using std::to_string;
 using std::vector;
 
 
@@ -1711,13 +1712,11 @@ avtDataTree::DebugDump(avtWebpage *webpage, const char *prefix,
     if (id == 0)
         nextNodeId = 1;
 
-    char id_str[256];
-    sprintf(id_str, "n%d", id);
+    string id_str("n" + to_string(id));
 
-    char parent_str[32];
-    sprintf(parent_str, "n%d", parent);
+    string parent_str("n" + to_string(parent));
     if (parent < 0)
-        strcpy(parent_str, "root");
+        parent_str = "root";
 
     if (nChildren > 0)
     {
@@ -1726,9 +1725,9 @@ avtDataTree::DebugDump(avtWebpage *webpage, const char *prefix,
         for (i = 0 ; i < nChildren ; i++)
             if (*children[i] == NULL)
                 nNull++;
-        char str[1024];
-        sprintf(str, "%d children (%d NULL)", nChildren, nNull);
-        webpage->AddTableEntry4(id_str, parent_str, "INTERNAL", str);
+        string tableEntry(to_string(nChildren) + " children (" +
+            to_string(nNull) + " NULL)");
+        webpage->AddTableEntry4(id_str.c_str(), parent_str.c_str(), "INTERNAL", tableEntry.c_str());
         int idStart = nextNodeId;
         nextNodeId += (nChildren-nNull);
         for (i = 0 ; i < nChildren ; i++)
@@ -1740,16 +1739,14 @@ avtDataTree::DebugDump(avtWebpage *webpage, const char *prefix,
     else if (dataRep != NULL)
     {
         const char *desc = dataRep->DebugDump(webpage, prefix);
+        string istr("n" + to_string(id) + ", domain = " + to_string(dataRep->GetDomain()));
         if (dataRep->GetLabel() != "")
-            sprintf(id_str, "n%d, domain = %d, label = %s", id, 
-                         dataRep->GetDomain(), dataRep->GetLabel().c_str());
-        else
-            sprintf(id_str, "n%d, domain = %d", id, dataRep->GetDomain());
-        webpage->AddTableEntry4(id_str, parent_str, "LEAF", desc);
+            istr += string(", label = " + dataRep->GetLabel());
+        webpage->AddTableEntry4(istr.c_str(), parent_str.c_str(), "LEAF", desc);
     }
     else
     {
-        webpage->AddTableEntry4(id_str, parent_str, "BAD NODE", NULL);
+        webpage->AddTableEntry4(id_str.c_str(), parent_str.c_str(), "BAD NODE", NULL);
     }
 }
 

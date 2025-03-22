@@ -4906,26 +4906,6 @@ return type : tuple of strings
   print("The list of time sliders is: ", GetTimeSliders())
 
 
-GetUltraScript
---------------
-
-**Synopsis:**
-
-::
-
-  GetUltraScript() -> string
-
-
-return type : string
-    The GetUltraScript function returns a filename.
-
-
-**Description:**
-
-    Return the name of the file in use by the LoadUltra function. Normal users do
-    not need to use this function.
-
-
 GetView2D
 ---------
 
@@ -5614,39 +5594,6 @@ return type : CLI_return_t
   AddPlot("Pseudocolor", "pressure")
   LoadNamedSelection("selection_from_previous_session")
   ApplyNamedSelection("selection_from_previous_session")
-
-
-LoadUltra
----------
-
-**Synopsis:**
-
-::
-
-  LoadUltra()
-
-
-**Description:**
-
-    LoadUltra launches the Ultra command parser, allowing you to enter Ultra
-    commands and have VisIt process them.  A new command prompt is presented,
-    and only Ultra commands will be allowed until 'end' or 'quit' is entered,
-    at which time, you will be returned to VisIt's cli prompt.  For information
-    on currently supported commands, type 'help' at the Ultra prompt
-    Please note that filenames/paths must be surrounded by quotes, unlike with
-    Ultra.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  #>>> LoadUltra()
-  #U-> rd "../../data/distribution.ultra"
-  #U-> select 1
-  #U-> end
-  #>>>
 
 
 LocalNameSpace
@@ -10913,29 +10860,6 @@ return type : CLI_return_t
   #% visit -cli
   SetTryHarderCyclesTimes(1) # Turn this feature on
   SetTryHarderCyclesTimes(0) # Turn this feature off
-
-
-SetUltraScript
---------------
-
-**Synopsis:**
-
-::
-
-  SetUltraScript(filename) -> integer
-
-
-filename : string
-    The name of the file to be used as the ultra script when LoadUltra is called.
-
-return type : CLI_return_t
-    The SetUltraScript function returns 1.
-
-
-**Description:**
-
-    Set the path to the script to be used by the LoadUltra command. Normal users do
-    not need to use this function.
 
 
 SetView2D

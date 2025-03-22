@@ -74,7 +74,7 @@ function bv_vtkm_host_profile
 function bv_vtkm_ensure
 {
     if [[ "$DO_VTKM" == "yes" && "$USE_SYSTEM_VTKM" == "no" ]] ; then
-        ensure_built_or_ready "vtk-m" $VTKM_VERSION $VTKM_BUILD_DIR $VTKM_FILE $VTKM_URL
+        ensure_built_or_ready "vtkm" $VTKM_VERSION $VTKM_BUILD_DIR $VTKM_FILE $VTKM_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_VTKM="no"
